@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/feature/store/products/providers/store_products_providers.dart';
 
 class StoreTrafficDashboard extends HookConsumerWidget {
@@ -73,10 +74,9 @@ class StoreTrafficDashboard extends HookConsumerWidget {
             children: [
               _StatItem(
                 label: '虛擬試穿',
-                value: totalTryOn,
+                value: isLoading ? 8888 : totalTryOn,
                 icon: Icons.checkroom_rounded,
                 isLoading: isLoading,
-                colorScheme: colorScheme,
               ),
               Container(
                 width: 1,
@@ -86,10 +86,9 @@ class StoreTrafficDashboard extends HookConsumerWidget {
               ),
               _StatItem(
                 label: '購買點擊',
-                value: totalPurchaseClicks,
+                value: isLoading ? 8888 : totalPurchaseClicks,
                 icon: Icons.ads_click_rounded,
                 isLoading: isLoading,
-                colorScheme: colorScheme,
               ),
             ],
           ),
@@ -105,17 +104,17 @@ class _StatItem extends StatelessWidget {
     required this.value,
     required this.icon,
     required this.isLoading,
-    required this.colorScheme,
   });
 
   final String label;
   final int value;
   final IconData icon;
   final bool isLoading;
-  final ColorScheme colorScheme;
 
   @override
   Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,17 +134,9 @@ class _StatItem extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          if (isLoading)
-            Container(
-              width: 60,
-              height: 32,
-              decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(8),
-              ),
-            )
-          else
-            Text(
+          Skeletonizer(
+            enabled: isLoading,
+            child: Text(
               value.toString(),
               style: GoogleFonts.outfit(
                 color: colorScheme.primary,
@@ -154,6 +145,7 @@ class _StatItem extends StatelessWidget {
                 height: 1.1,
               ),
             ),
+          ),
         ],
       ),
     );
