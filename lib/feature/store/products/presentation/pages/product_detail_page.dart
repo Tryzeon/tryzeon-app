@@ -15,6 +15,7 @@ import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
+import 'package:tryzeon/feature/store/products/presentation/widgets/product_type_selector.dart';
 import 'package:tryzeon/feature/store/products/providers/store_products_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -401,49 +402,9 @@ class ProductDetailPage extends HookConsumerWidget {
           const SizedBox(height: 12),
           productCategoriesAsync.when(
             data: (final categories) {
-              return Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: colorScheme.outlineVariant),
-                ),
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: categories.map((final category) {
-                    final isSelected = selectedCategories.value.contains(category);
-                    return FilterChip(
-                      label: Text(category),
-                      selected: isSelected,
-                      onSelected: (final selected) {
-                        final newSet = Set<String>.from(selectedCategories.value);
-                        if (selected) {
-                          newSet.add(category);
-                        } else {
-                          newSet.remove(category);
-                        }
-                        selectedCategories.value = newSet;
-                      },
-                      backgroundColor: colorScheme.surface,
-                      selectedColor: colorScheme.primary,
-                      checkmarkColor: colorScheme.onPrimary,
-                      labelStyle: textTheme.bodyMedium?.copyWith(
-                        color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        side: BorderSide(
-                          color: isSelected
-                              ? colorScheme.primary
-                              : colorScheme.outlineVariant,
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
+              return ProductTypeSelector(
+                allCategories: categories,
+                selectedCategories: selectedCategories,
               );
             },
             loading: () => const Center(
