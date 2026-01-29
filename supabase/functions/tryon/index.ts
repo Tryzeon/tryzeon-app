@@ -8,15 +8,13 @@ const CONFIG = {
   SUPABASE_URL: Deno.env.get("SUPABASE_URL"),
   SUPABASE_SERVICE_ROLE_KEY: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
   MODEL_NAME: "models/gemini-2.5-flash-image",
-  MAX_RETRIES: 3,
-  RETRY_DELAY_MS: 1000,
+  MAX_RETRIES: 1,
 };
 
-const PLAN_LIMITS: Record<string, number> = {
-  free: 5,
-  pro: 20,
-  ultra: 50,
-};
+const PLAN_LIMITS: Record<string, number> = {};
+if (Deno.env.get("PLAN_LIMIT_FREE")) PLAN_LIMITS.free = parseInt(Deno.env.get("PLAN_LIMIT_FREE")!);
+if (Deno.env.get("PLAN_LIMIT_PRO")) PLAN_LIMITS.pro = parseInt(Deno.env.get("PLAN_LIMIT_PRO")!);
+if (Deno.env.get("PLAN_LIMIT_MAX")) PLAN_LIMITS.max = parseInt(Deno.env.get("PLAN_LIMIT_MAX")!);
 
 // --- Types & Interfaces ---
 interface TryOnRequest {
@@ -84,6 +82,11 @@ class SubscriptionService {
 
     const subData = data as SubscriptionData;
     const dailyLimit = PLAN_LIMITS[subData.plan];
+
+    if (dailyLimit === undefined) {
+      throw new AppError(`Daily limit not configured for plan: ${subData.plan}`, 500);
+    }
+
     const today = new Date().toISOString().split('T')[0];
 
     let currentUsage = subData.daily_usage_count;
@@ -143,7 +146,6 @@ class AIService {
       } catch (error) {
         console.warn(`AI Generation attempt ${attempt} failed:`, error);
         if (attempt === CONFIG.MAX_RETRIES) throw error;
-        await new Promise((r) => setTimeout(r, CONFIG.RETRY_DELAY_MS));
       }
     }
     throw new AppError("Unable to recognize image, please try another image!", 422);
