@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/di/core_providers.dart';
+import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
 
 class PreferencesPage extends HookConsumerWidget {
@@ -10,6 +13,53 @@ class PreferencesPage extends HookConsumerWidget {
     final recommendNearbyShopsAsync = ref.watch(recommendNearbyShopsProvider);
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+
+    Future<void> handleRecommendNearbyShopsToggle(
+      final bool isNearbyShopsRecommendationEnabled,
+    ) async {
+      if (isNearbyShopsRecommendationEnabled) {
+        final locationService = ref.read(locationServiceProvider);
+        final permission = await locationService.requestPermission();
+
+        if (!context.mounted) return;
+
+        if (permission == LocationPermission.denied) {
+          TopNotification.show(
+            context,
+            message: '需要開啟定位權限才能使用此功能',
+            type: NotificationType.warning,
+          );
+          return;
+        }
+
+        if (permission == LocationPermission.deniedForever) {
+          await showDialog(
+            context: context,
+            builder: (final context) => AlertDialog.adaptive(
+              title: const Text('需要定位權限'),
+              content: const Text('為了推薦附近的店家，我們需要您的位置權限。請前往設定開啟權限。'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('取消'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Geolocator.openAppSettings();
+                  },
+                  child: const Text('前往設定'),
+                ),
+              ],
+            ),
+          );
+          return;
+        }
+      }
+      ref
+          .read(recommendNearbyShopsProvider.notifier)
+          .toggle(isNearbyShopsRecommendationEnabled);
+    }
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -72,11 +122,7 @@ class PreferencesPage extends HookConsumerWidget {
                       recommendNearbyShopsAsync.when(
                         data: (final value) => SwitchListTile.adaptive(
                           value: value,
-                          onChanged: (final newValue) {
-                            ref
-                                .read(recommendNearbyShopsProvider.notifier)
-                                .toggle(newValue);
-                          },
+                          onChanged: handleRecommendNearbyShopsToggle,
                           title: Text(
                             '推薦附近店家',
                             style: textTheme.bodyLarge?.copyWith(

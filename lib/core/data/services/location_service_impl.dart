@@ -7,38 +7,48 @@ import 'package:tryzeon/core/utils/app_logger.dart';
 /// LocationService 實作，使用 Geolocator 和 Geocoding 套件
 class LocationServiceImpl implements LocationService {
   @override
+  Future<bool> hasPermission() async {
+    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) return false;
+
+    final permission = await Geolocator.checkPermission();
+    return permission == LocationPermission.always ||
+        permission == LocationPermission.whileInUse;
+  }
+
+  @override
+  Future<LocationPermission> requestPermission() async {
+    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return LocationPermission.denied;
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+
+    // 尚未授權 → 申請
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+
+    return permission;
+  }
+
+  @override
   Future<UserLocation?> getUserLocation() async {
     try {
-      // 1. 檢查定位服務是否開啟
-      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        AppLogger.info('位置服務未開啟');
+      // 檢查權限
+      if (!await hasPermission()) {
         return null;
       }
 
-      // 2. 檢查並請求權限
-      var permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          AppLogger.info('位置權限被拒絕');
-          return null;
-        }
-      }
-
-      if (permission == LocationPermission.deniedForever) {
-        AppLogger.info('位置權限被永久拒絕');
-        return null;
-      }
-
-      // 3. 取得目前位置
+      // 取得目前位置
       final position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.medium,
           timeLimit: Duration(seconds: 10),
         ),
       );
-      // 4. 反向地理編碼取得地址
+      // 反向地理編碼取得地址
       try {
         await setLocaleIdentifier('zh_TW');
       } catch (e) {
@@ -54,7 +64,7 @@ class LocationServiceImpl implements LocationService {
       }
       final placemark = placemarks.first;
 
-      // 5. 解析城市和區
+      // 解析城市和區
       final city = placemark.administrativeArea;
       final district = placemark.locality;
 
@@ -68,7 +78,7 @@ class LocationServiceImpl implements LocationService {
         return null;
       }
 
-      // 6. 組合完整地址
+      // 組合完整地址
       final addressParts = [
         placemark.administrativeArea,
         placemark.locality,
