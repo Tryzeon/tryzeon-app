@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/store/home/presentation/widgets/store_home_header.dart';
+import 'package:tryzeon/feature/store/home/presentation/widgets/store_traffic_dashboard.dart';
 import 'package:tryzeon/feature/store/products/presentation/pages/add_product_page.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_list_section.dart';
 import 'package:tryzeon/feature/store/products/providers/store_products_providers.dart';
@@ -36,7 +37,9 @@ class StoreHomePage extends HookConsumerWidget {
                   child: const SingleChildScrollView(
                     physics: AlwaysScrollableScrollPhysics(),
                     padding: EdgeInsets.all(16.0),
-                    child: ProductListSection(),
+                    child: Column(
+                      children: [StoreTrafficDashboard(), ProductListSection()],
+                    ),
                   ),
                 ),
               ),

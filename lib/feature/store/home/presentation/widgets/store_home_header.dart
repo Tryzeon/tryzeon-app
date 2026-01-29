@@ -108,10 +108,7 @@ class _StoreLogo extends StatelessWidget {
           child: SizedBox(
             width: 24,
             height: 24,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: colorScheme.primary,
-            ),
+            child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.primary),
           ),
         ),
       ),

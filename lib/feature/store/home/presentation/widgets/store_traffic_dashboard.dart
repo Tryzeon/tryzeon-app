@@ -1,0 +1,161 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/feature/store/products/providers/store_products_providers.dart';
+
+class StoreTrafficDashboard extends HookConsumerWidget {
+  const StoreTrafficDashboard({super.key});
+
+  @override
+  Widget build(final BuildContext context, final WidgetRef ref) {
+    final productsAsync = ref.watch(productsProvider);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    // Calculate stats
+    int totalTryOn = 0;
+    int totalPurchaseClicks = 0;
+
+    productsAsync.whenData((final products) {
+      for (final product in products) {
+        totalTryOn += product.tryonCount ?? 0;
+        totalPurchaseClicks += product.purchaseClickCount ?? 0;
+      }
+    });
+
+    final isLoading = productsAsync.isLoading;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.auto_graph_rounded,
+                  color: colorScheme.primary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                '總流量概況',
+                style: GoogleFonts.outfit(
+                  color: colorScheme.onSurface,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              _StatItem(
+                label: '虛擬試穿',
+                value: totalTryOn,
+                icon: Icons.checkroom_rounded,
+                isLoading: isLoading,
+                colorScheme: colorScheme,
+              ),
+              Container(
+                width: 1,
+                height: 40,
+                margin: const EdgeInsets.symmetric(horizontal: 24),
+                color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+              ),
+              _StatItem(
+                label: '購買點擊',
+                value: totalPurchaseClicks,
+                icon: Icons.ads_click_rounded,
+                isLoading: isLoading,
+                colorScheme: colorScheme,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatItem extends StatelessWidget {
+  const _StatItem({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.isLoading,
+    required this.colorScheme,
+  });
+
+  final String label;
+  final int value;
+  final IconData icon;
+  final bool isLoading;
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(final BuildContext context) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: colorScheme.onSurfaceVariant, size: 14),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: GoogleFonts.outfit(
+                  color: colorScheme.onSurfaceVariant,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (isLoading)
+            Container(
+              width: 60,
+              height: 32,
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            )
+          else
+            Text(
+              value.toString(),
+              style: GoogleFonts.outfit(
+                color: colorScheme.primary,
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                height: 1.1,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
