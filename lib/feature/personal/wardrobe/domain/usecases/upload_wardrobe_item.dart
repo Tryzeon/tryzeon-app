@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:typed_result/typed_result.dart';
 import '../entities/wardrobe_category.dart';
 import '../repositories/wardrobe_repository.dart';
@@ -7,7 +8,7 @@ class UploadWardrobeItem {
   UploadWardrobeItem(this._repository);
   final WardrobeRepository _repository;
 
-  Future<Result<void, String>> call({
+  Future<Result<void, Failure>> call({
     required final File image,
     required final WardrobeCategory category,
     final List<String> tags = const [],

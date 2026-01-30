@@ -1,17 +1,18 @@
 import 'dart:io';
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 import 'package:typed_result/typed_result.dart';
 
 abstract class StoreProfileRepository {
-  Future<Result<StoreProfile?, String>> getStoreProfile({
+  Future<Result<StoreProfile?, Failure>> getStoreProfile({
     final bool forceRefresh = false,
   });
 
-  Future<Result<void, String>> updateStoreProfile({
+  Future<Result<void, Failure>> updateStoreProfile({
     required final StoreProfile original,
     required final StoreProfile target,
     final File? logoFile,
   });
 
-  Future<Result<String, String>> getStoreId();
+  Future<Result<String, Failure>> getStoreId();
 }

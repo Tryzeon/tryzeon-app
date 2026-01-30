@@ -1,4 +1,5 @@
 import 'package:tryzeon/core/domain/entities/user_location.dart';
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/enums/product_sort_option.dart';
 import 'package:tryzeon/feature/personal/shop/domain/repositories/shop_repository.dart';
@@ -8,7 +9,7 @@ class GetShopProducts {
   GetShopProducts(this._repository);
   final ShopRepository _repository;
 
-  Future<Result<List<ShopProduct>, String>> call({
+  Future<Result<List<ShopProduct>, Failure>> call({
     final String? searchQuery,
     final ProductSortOption sortOption = ProductSortOption.latest,
     final int? minPrice,

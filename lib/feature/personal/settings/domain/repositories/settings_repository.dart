@@ -1,4 +1,7 @@
+import 'package:tryzeon/core/error/failures.dart';
+import 'package:typed_result/typed_result.dart';
+
 abstract class SettingsRepository {
-  Future<bool> getRecommendNearbyShops();
-  Future<void> setRecommendNearbyShops(final bool value);
+  Future<Result<bool, Failure>> getRecommendNearbyShops();
+  Future<Result<void, Failure>> setRecommendNearbyShops(final bool value);
 }

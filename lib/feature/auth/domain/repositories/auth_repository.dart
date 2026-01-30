@@ -1,24 +1,25 @@
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:typed_result/typed_result.dart';
 
 abstract class AuthRepository {
-  Future<Result<void, String>> signInWithProvider({
+  Future<Result<void, Failure>> signInWithProvider({
     required final String provider,
     required final UserType userType,
   });
 
-  Future<Result<void, String>> signOut();
+  Future<Result<void, Failure>> signOut();
 
-  Future<Result<UserType?, String>> getLastLoginType();
+  Future<Result<UserType?, Failure>> getLastLoginType();
 
-  Future<Result<void, String>> setLastLoginType(final UserType userType);
+  Future<Result<void, Failure>> setLastLoginType(final UserType userType);
 
-  Future<Result<void, String>> sendEmailOtp({
+  Future<Result<void, Failure>> sendEmailOtp({
     required final String email,
     required final UserType userType,
   });
 
-  Future<Result<void, String>> verifyEmailOtp({
+  Future<Result<void, Failure>> verifyEmailOtp({
     required final String email,
     required final String token,
     required final UserType userType,

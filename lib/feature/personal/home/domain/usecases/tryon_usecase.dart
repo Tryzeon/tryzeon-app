@@ -1,3 +1,4 @@
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/home/domain/repositories/tryon_repository.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
@@ -16,7 +17,7 @@ class TryonUseCase {
   /// Performs virtual try-on.
   /// If [customAvatarBase64] is not provided, automatically fetches current user's avatarPath.
   /// This encapsulates the business logic: "use custom avatar if provided, otherwise use current user avatar"
-  Future<Result<TryonResult, String>> call({
+  Future<Result<TryonResult, Failure>> call({
     final String? customAvatarBase64,
     final String? clothesBase64,
     final String? clothesPath,
