@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
@@ -202,7 +203,7 @@ class ChatPage extends HookConsumerWidget {
         // Show error message
         TopNotification.show(
           context,
-          message: result.getError()!,
+          message: result.getError()!.message(context),
           type: NotificationType.error,
         );
       }

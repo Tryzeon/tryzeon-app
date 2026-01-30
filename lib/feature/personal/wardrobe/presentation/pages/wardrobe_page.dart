@@ -5,6 +5,8 @@ import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
@@ -72,7 +74,7 @@ class PersonalPage extends HookConsumerWidget {
       } else {
         TopNotification.show(
           context,
-          message: result.getError()!,
+          message: result.getError()!.message(context),
           type: NotificationType.error,
         );
       }
@@ -296,7 +298,9 @@ class PersonalPage extends HookConsumerWidget {
                       },
                       loading: () => const Center(child: CircularProgressIndicator()),
                       error: (final error, final __) => ErrorView(
-                        message: error.toString(),
+                        message: error is Failure
+                            ? error.message(context)
+                            : error.toString(),
                         onRetry: () => refreshWardrobeItems(ref),
                       ),
                     ),

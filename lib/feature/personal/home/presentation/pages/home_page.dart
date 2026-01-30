@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gal/gal.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
@@ -85,7 +86,7 @@ class HomePage extends HookConsumerWidget {
       } else {
         TopNotification.show(
           context,
-          message: result.getError()!,
+          message: result.getError()!.message(context),
           type: NotificationType.error,
         );
       }
@@ -158,7 +159,7 @@ class HomePage extends HookConsumerWidget {
 
         TopNotification.show(
           context,
-          message: result.getError()!,
+          message: result.getError()!.message(context),
           type: NotificationType.error,
         );
       }
