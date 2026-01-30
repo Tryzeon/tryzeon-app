@@ -1,10 +1,11 @@
 import 'package:tryzeon/core/domain/entities/user_location.dart';
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/enums/product_sort_option.dart';
 import 'package:typed_result/typed_result.dart';
 
 abstract class ShopRepository {
-  Future<Result<List<ShopProduct>, String>> getProducts({
+  Future<Result<List<ShopProduct>, Failure>> getProducts({
     final ProductSortOption sortOption = ProductSortOption.latest,
     final String? searchQuery,
     final int? minPrice,
@@ -14,9 +15,9 @@ abstract class ShopRepository {
     final bool forceRefresh = false,
   });
 
-  Future<Result<void, String>> incrementTryonCount(final String productId);
+  Future<Result<void, Failure>> incrementTryonCount(final String productId);
 
-  Future<Result<void, String>> incrementPurchaseClickCount(final String productId);
+  Future<Result<void, Failure>> incrementPurchaseClickCount(final String productId);
 
-  Future<Result<List<String>, String>> getAds({final bool forceRefresh = false});
+  Future<Result<List<String>, Failure>> getAds({final bool forceRefresh = false});
 }
