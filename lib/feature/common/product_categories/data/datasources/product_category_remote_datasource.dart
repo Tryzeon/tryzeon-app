@@ -12,7 +12,7 @@ class ProductCategoryRemoteDataSource {
     final response = await _supabaseClient
         .from(_table)
         .select('id, name')
-        .order('priority', ascending: true);
+        .order('priority', ascending: false);
 
     return (response as List)
         .map((final e) => ProductCategoryModel.fromJson(e as Map<String, dynamic>))
