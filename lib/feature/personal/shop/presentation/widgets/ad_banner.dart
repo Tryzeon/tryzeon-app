@@ -52,7 +52,7 @@ class AdBanner extends HookConsumerWidget {
               // TODO: 點擊廣告導向詳情頁或外部連結
             },
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 8),
+              margin: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 image: DecorationImage(

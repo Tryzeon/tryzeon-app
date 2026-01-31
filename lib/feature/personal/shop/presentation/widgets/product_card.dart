@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 
 import 'package:tryzeon/feature/personal/main/personal_entry.dart';
@@ -28,8 +29,6 @@ class ProductCard extends HookConsumerWidget {
           return Colors.amber;
         case FitStatus.poor:
           return Colors.red;
-        case FitStatus.unknown:
-          return colorScheme.primary;
       }
     }
 
@@ -103,32 +102,34 @@ class ProductCard extends HookConsumerWidget {
                       child: InkWell(
                         onTap: handleTryon,
                         borderRadius: BorderRadius.circular(20),
-                        child: Builder(
-                          builder: (final context) {
-                            final buttonColor = fitStatus == null
-                                ? colorScheme.primary
-                                : getFitColor(fitStatus!);
+                        child: Skeleton.ignore(
+                          child: Builder(
+                            builder: (final context) {
+                              final buttonColor = fitStatus == null
+                                  ? colorScheme.primary
+                                  : getFitColor(fitStatus!);
 
-                            return Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: buttonColor,
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: buttonColor.withValues(alpha: 0.4),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Icon(
-                                Icons.auto_awesome,
-                                color: colorScheme.onPrimary,
-                                size: 20,
-                              ),
-                            );
-                          },
+                              return Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: buttonColor,
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: buttonColor.withValues(alpha: 0.4),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Icon(
+                                  Icons.auto_awesome,
+                                  color: colorScheme.onPrimary,
+                                  size: 20,
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),

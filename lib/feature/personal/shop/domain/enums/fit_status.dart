@@ -1,8 +1,7 @@
 enum FitStatus {
   perfect,
   good,
-  poor,
-  unknown;
+  poor;
 
   bool get isPoor => this == FitStatus.poor;
 }

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
+import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
+import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:tryzeon/feature/personal/shop/domain/enums/product_sort_option.dart';
 import 'package:tryzeon/feature/personal/shop/domain/utils/fit_calculator.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
@@ -256,9 +259,19 @@ class ShopPage extends HookConsumerWidget {
                               // 📢 廣告輪播
                               adsAsync.when(
                                 data: (final ads) => AdBanner(adImages: ads),
-                                loading: () => const SizedBox(
-                                  height: 150,
-                                  child: Center(child: CircularProgressIndicator()),
+                                loading: () => Skeletonizer(
+                                  enabled: true,
+                                  child: Skeleton.leaf(
+                                    child: Container(
+                                      height: 180,
+                                      width: double.infinity,
+                                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        color: colorScheme.surfaceContainer,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                                 error: (final e, final s) => const SizedBox.shrink(),
                               ),
@@ -286,10 +299,15 @@ class ShopPage extends HookConsumerWidget {
                                     },
                                   );
                                 },
-                                loading: () => const Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(16.0),
-                                    child: CircularProgressIndicator(),
+                                loading: () => Skeletonizer(
+                                  enabled: true,
+                                  child: ProductCategoryFilter(
+                                    productCategories: List.generate(
+                                      15,
+                                      (final index) => 'Category',
+                                    ),
+                                    selectedCategories: const {},
+                                    onCategoryToggle: (final _) {},
                                   ),
                                 ),
                                 error: (final error, final stack) => ErrorView(
@@ -341,9 +359,36 @@ class ShopPage extends HookConsumerWidget {
                               productsAsync.when(
                                 skipLoadingOnReload: true,
                                 skipError: true,
-                                loading: () => Center(
-                                  child: CircularProgressIndicator(
-                                    color: colorScheme.primary,
+                                loading: () => Skeletonizer(
+                                  enabled: true,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                                    child: GridView.builder(
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      itemCount: 4,
+                                      gridDelegate:
+                                          const SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: 2,
+                                            mainAxisSpacing: 16,
+                                            crossAxisSpacing: 16,
+                                            childAspectRatio: 0.7,
+                                          ),
+                                      itemBuilder: (final context, final index) {
+                                        return const ProductCard(
+                                          product: ShopProduct(
+                                            storeInfo: ShopStoreInfo(id: 'dummy_store'),
+                                            name: 'Loading Product Name',
+                                            types: {'Type'},
+                                            price: 8888,
+                                            imagePath: 'dummy_path',
+                                            imageUrl: '',
+                                            tryonCount: 888,
+                                            purchaseClickCount: 888,
+                                          ),
+                                        );
+                                      },
+                                    ),
                                   ),
                                 ),
                                 error: (final error, final stack) => ErrorView(
