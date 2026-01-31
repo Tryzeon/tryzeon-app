@@ -99,8 +99,6 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
   @override
   Future<Result<void, Failure>> deleteWardrobeItem(final WardrobeItem item) async {
     try {
-      if (item.id == null) return const Err(UnknownFailure('無效的衣物 ID'));
-
       await _remoteDataSource.deleteWardrobeItem(item.id!);
       _remoteDataSource.deleteImage(item.imagePath).ignore();
       _localDataSource.deleteImage(item.imagePath).ignore();

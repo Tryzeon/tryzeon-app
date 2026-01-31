@@ -101,33 +101,4 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
       return Err(mapExceptionToFailure(e));
     }
   }
-
-  @override
-  Future<Result<String, Failure>> getStoreId() async {
-    // 1. Try Local Cache
-    try {
-      final cached = await _localDataSource.getCache();
-      if (cached != null) return Ok(cached.id);
-    } catch (e, stackTrace) {
-      // Log warning and fallback to remote
-      AppLogger.warning('Local cache read failed, falling back to remote', e, stackTrace);
-    }
-
-    // 2. Try Remote
-    try {
-      final profile = await _remoteDataSource.fetchStoreProfile();
-      if (profile == null) return const Err(ValidationFailure('找不到店家資料'));
-
-      try {
-        await _localDataSource.setCache(profile);
-      } catch (e, stackTrace) {
-        AppLogger.warning('Failed to save store profile to cache', e, stackTrace);
-      }
-
-      return Ok(profile.id);
-    } catch (e, stackTrace) {
-      AppLogger.error('無法獲取店家 ID', e, stackTrace);
-      return Err(mapExceptionToFailure(e));
-    }
-  }
 }

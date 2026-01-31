@@ -13,6 +13,4 @@ abstract class StoreProfileRepository {
     required final StoreProfile target,
     final File? logoFile,
   });
-
-  Future<Result<String, Failure>> getStoreId();
 }
