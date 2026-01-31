@@ -70,21 +70,6 @@ class TryOnGallery extends StatelessWidget {
 
               // Gradient overlay (only when not loading and not showing skeleton)
               if (!loadingIndices.contains(index - 1)) ...[
-                // Gradient overlay
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        colorScheme.surface.withValues(alpha: 0.3),
-                        Colors.transparent,
-                        colorScheme.surface.withValues(alpha: 0.3),
-                      ],
-                      stops: const [0.0, 0.4, 1.0],
-                    ),
-                  ),
-                ),
                 if (avatarFile == null)
                   Align(
                     alignment: const Alignment(0, 0.5),
