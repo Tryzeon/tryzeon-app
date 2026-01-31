@@ -54,6 +54,10 @@ class TryOnGallery extends StatelessWidget {
               if (loadingIndices.contains(index - 1))
                 Skeletonizer(
                   enabled: true,
+                  effect: ShimmerEffect(
+                    baseColor: Colors.grey.shade400,
+                    highlightColor: Colors.grey.shade100,
+                  ),
                   child: Skeleton.shade(
                     child: SvgPicture.asset(
                       AppConstants.tryOnSkeleton,
