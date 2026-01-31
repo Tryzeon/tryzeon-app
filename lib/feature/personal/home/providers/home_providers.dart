@@ -15,7 +15,7 @@ final tryonRemoteDataSourceProvider = Provider<TryonRemoteDataSource>((final ref
 final tryOnRepositoryProvider = Provider<TryOnRepository>((final ref) {
   final tryonDataSource = ref.watch(tryonRemoteDataSourceProvider);
 
-  return TryOnRepositoryImpl(tryonDataSource: tryonDataSource);
+  return TryOnRepositoryImpl(remoteDataSource: tryonDataSource);
 });
 
 // Use Case Providers

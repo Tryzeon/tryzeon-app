@@ -14,13 +14,13 @@ class UserProfileLocalDataSource {
   final IsarService _isarService;
   final CacheService _cacheService;
 
-  Future<UserProfileModel?> getCache() async {
+  Future<UserProfileModel?> getUserProfile() async {
     final isar = await _isarService.db;
     final collection = await isar.userProfileCollections.where().findFirst();
     return collection?.toModel();
   }
 
-  Future<void> setCache(final UserProfileModel profile) async {
+  Future<void> saveUserProfile(final UserProfileModel profile) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
       await isar.userProfileCollections.clear();

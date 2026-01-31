@@ -26,7 +26,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
     // 1. Try Local Cache
     if (!forceRefresh) {
       try {
-        final cachedProfile = await _localDataSource.getCache();
+        final cachedProfile = await _localDataSource.getUserProfile();
         if (cachedProfile != null) return Ok(cachedProfile);
       } catch (e, stackTrace) {
         AppLogger.warning(
@@ -39,11 +39,11 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
 
     // 2. Fetch from API
     try {
-      final remoteProfile = await _remoteDataSource.fetchUserProfile();
+      final remoteProfile = await _remoteDataSource.getUserProfile();
 
       // 3. Update Cache
       try {
-        await _localDataSource.setCache(remoteProfile);
+        await _localDataSource.saveUserProfile(remoteProfile);
       } catch (e, stackTrace) {
         AppLogger.warning('Failed to save user profile to cache', e, stackTrace);
       }
@@ -84,7 +84,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
 
       final updatedProfile = await _remoteDataSource.updateUserProfile(targetModel);
 
-      await _localDataSource.setCache(updatedProfile);
+      await _localDataSource.saveUserProfile(updatedProfile);
 
       // Clean up old avatar if changed
       if (avatarFile != null &&

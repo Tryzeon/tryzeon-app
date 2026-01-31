@@ -28,7 +28,7 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
     // 1. Try Local Cache
     if (!forceRefresh) {
       try {
-        final cachedItems = await _localDataSource.getCachedItems();
+        final cachedItems = await _localDataSource.getWardrobeItems();
         if (cachedItems != null) return Ok(cachedItems);
       } catch (e, stackTrace) {
         AppLogger.warning(
@@ -41,11 +41,11 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
 
     // 2. Try Remote
     try {
-      final remoteItems = await _remoteDataSource.fetchWardrobeItems();
+      final remoteItems = await _remoteDataSource.getWardrobeItems();
 
       // 3. Update Cache
       try {
-        await _localDataSource.updateCachedItems(remoteItems);
+        await _localDataSource.saveWardrobeItems(remoteItems);
       } catch (e, stackTrace) {
         AppLogger.warning('Failed to save wardrobe items to cache', e, stackTrace);
       }
@@ -87,7 +87,7 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
 
       final newItem = await _remoteDataSource.createWardrobeItem(newItemModel);
 
-      await _localDataSource.addItemToCache(newItem);
+      await _localDataSource.saveWardrobeItem(newItem);
 
       return const Ok(null);
     } catch (e, stackTrace) {
@@ -102,7 +102,7 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
       await _remoteDataSource.deleteWardrobeItem(item.id!);
       _remoteDataSource.deleteImage(item.imagePath).ignore();
       _localDataSource.deleteImage(item.imagePath).ignore();
-      await _localDataSource.removeItemFromCache(item.id!);
+      await _localDataSource.deleteWardrobeItem(item.id!);
 
       return const Ok(null);
     } catch (e, stackTrace) {

@@ -26,7 +26,7 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
     // 1. Try Local Cache
     if (!forceRefresh) {
       try {
-        final cachedProfile = await _localDataSource.getCache();
+        final cachedProfile = await _localDataSource.getStoreProfile();
         if (cachedProfile != null) return Ok(cachedProfile);
       } catch (e, stackTrace) {
         AppLogger.warning(
@@ -39,12 +39,12 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
 
     // 2. Fetch from API
     try {
-      final remoteProfile = await _remoteDataSource.fetchStoreProfile();
+      final remoteProfile = await _remoteDataSource.getStoreProfile();
       if (remoteProfile == null) return const Ok(null);
 
       // 3. Update Cache
       try {
-        await _localDataSource.setCache(remoteProfile);
+        await _localDataSource.saveStoreProfile(remoteProfile);
       } catch (e, stackTrace) {
         AppLogger.warning('Failed to save store profile to cache', e, stackTrace);
       }
@@ -84,7 +84,7 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
         StoreProfileModel.fromEntity(finalTarget),
       );
 
-      await _localDataSource.setCache(updatedProfile);
+      await _localDataSource.saveStoreProfile(updatedProfile);
 
       // Clean up old logo if changed
       if (logoFile != null &&

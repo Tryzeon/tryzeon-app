@@ -7,9 +7,9 @@ import 'package:tryzeon/feature/common/product_categories/domain/repositories/pr
 import 'package:typed_result/typed_result.dart';
 
 class ProductCategoryRepositoryImpl implements ProductCategoryRepository {
-  ProductCategoryRepositoryImpl(this._remote, this._local);
-  final ProductCategoryRemoteDataSource _remote;
-  final ProductCategoryLocalDataSource _local;
+  ProductCategoryRepositoryImpl(this._remoteDataSource, this._localDataSource);
+  final ProductCategoryRemoteDataSource _remoteDataSource;
+  final ProductCategoryLocalDataSource _localDataSource;
 
   @override
   Future<Result<List<ProductCategory>, Failure>> getProductCategories({
@@ -18,7 +18,7 @@ class ProductCategoryRepositoryImpl implements ProductCategoryRepository {
     // 1. Try Local Cache
     if (!forceRefresh) {
       try {
-        final cachedCategories = await _local.getCached();
+        final cachedCategories = await _localDataSource.getProductCategories();
         if (cachedCategories != null) return Ok(cachedCategories);
       } catch (e, stackTrace) {
         AppLogger.warning(
@@ -31,11 +31,11 @@ class ProductCategoryRepositoryImpl implements ProductCategoryRepository {
 
     // 2. Fetch from API
     try {
-      final remoteCategories = await _remote.fetchProductCategories();
+      final remoteCategories = await _remoteDataSource.getProductCategories();
 
       // 3. Update Cache
       try {
-        await _local.cache(remoteCategories);
+        await _localDataSource.saveProductCategories(remoteCategories);
       } catch (e, stackTrace) {
         AppLogger.warning('Failed to save product categories to cache', e, stackTrace);
       }

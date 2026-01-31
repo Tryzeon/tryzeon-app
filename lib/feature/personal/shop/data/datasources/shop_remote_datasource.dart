@@ -8,7 +8,7 @@ class ShopRemoteDataSource {
   final SupabaseClient _supabaseClient;
   static const _productsTable = 'products';
 
-  Future<List<ShopProductModel>> fetchProducts({
+  Future<List<ShopProductModel>> getProducts({
     final String? searchQuery,
     final ProductSortOption sortOption = ProductSortOption.latest,
     final int? minPrice,

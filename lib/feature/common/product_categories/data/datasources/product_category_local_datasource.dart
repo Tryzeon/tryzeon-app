@@ -9,7 +9,7 @@ class ProductCategoryLocalDataSource {
   ProductCategoryLocalDataSource(this._isarService);
   final IsarService _isarService;
 
-  Future<List<ProductCategoryModel>?> getCached() async {
+  Future<List<ProductCategoryModel>?> getProductCategories() async {
     final isar = await _isarService.db;
     final collections = await isar.productCategoryCollections.where().findAll();
     if (collections.isEmpty) return null;
@@ -17,7 +17,7 @@ class ProductCategoryLocalDataSource {
     return collections.map((final e) => e.toModel()).toList();
   }
 
-  Future<void> cache(final List<ProductCategoryModel> categories) async {
+  Future<void> saveProductCategories(final List<ProductCategoryModel> categories) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
       await isar.productCategoryCollections.clear();

@@ -24,7 +24,7 @@ class ShopRepositoryImpl implements ShopRepository {
     final bool forceRefresh = false,
   }) async {
     try {
-      final result = await _remoteDataSource.fetchProducts(
+      final result = await _remoteDataSource.getProducts(
         searchQuery: searchQuery,
         sortOption: sortOption,
         minPrice: minPrice,

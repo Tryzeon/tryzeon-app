@@ -15,13 +15,13 @@ class StoreProfileLocalDataSource {
   final IsarService _isarService;
   final CacheService _cacheService;
 
-  Future<StoreProfileModel?> getCache() async {
+  Future<StoreProfileModel?> getStoreProfile() async {
     final isar = await _isarService.db;
     final collection = await isar.storeProfileCollections.where().findFirst();
     return collection?.toModel();
   }
 
-  Future<void> setCache(final StoreProfileModel profile) async {
+  Future<void> saveStoreProfile(final StoreProfileModel profile) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
       await isar.storeProfileCollections.clear();
@@ -29,16 +29,16 @@ class StoreProfileLocalDataSource {
     });
   }
 
-  Future<void> saveLogo(final Uint8List bytes, final String path) {
-    return _cacheService.saveImage(bytes, path);
-  }
-
-  Future<File?> getCachedLogo(final String path) {
+  Future<File?> getLogo(final String path) {
     return _cacheService.getImage(path);
   }
 
   Future<File?> downloadLogo(final String path, final String downloadUrl) {
     return _cacheService.getImage(path, downloadUrl: downloadUrl);
+  }
+
+  Future<void> saveLogo(final Uint8List bytes, final String path) {
+    return _cacheService.saveImage(bytes, path);
   }
 
   Future<void> deleteLogo(final String path) {

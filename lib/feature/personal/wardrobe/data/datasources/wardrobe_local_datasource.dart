@@ -14,7 +14,7 @@ class WardrobeLocalDataSource {
   final IsarService _isarService;
   final CacheService _cacheService;
 
-  Future<List<WardrobeItemModel>?> getCachedItems() async {
+  Future<List<WardrobeItemModel>?> getWardrobeItems() async {
     final isar = await _isarService.db;
     final collections = await isar.wardrobeItemCollections
         .where()
@@ -26,7 +26,7 @@ class WardrobeLocalDataSource {
     return collections.map((final e) => e.toModel()).toList();
   }
 
-  Future<void> updateCachedItems(final List<WardrobeItemModel> items) async {
+  Future<void> saveWardrobeItems(final List<WardrobeItemModel> items) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
       await isar.wardrobeItemCollections.clear();
@@ -35,14 +35,14 @@ class WardrobeLocalDataSource {
     });
   }
 
-  Future<void> addItemToCache(final WardrobeItemModel item) async {
+  Future<void> saveWardrobeItem(final WardrobeItemModel item) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
       await isar.wardrobeItemCollections.put(item.toCollection());
     });
   }
 
-  Future<void> removeItemFromCache(final String id) async {
+  Future<void> deleteWardrobeItem(final String id) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
       await isar.wardrobeItemCollections.deleteByItemId(id);

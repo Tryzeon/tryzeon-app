@@ -7,10 +7,10 @@ import 'package:tryzeon/feature/personal/home/domain/repositories/tryon_reposito
 import 'package:typed_result/typed_result.dart';
 
 class TryOnRepositoryImpl implements TryOnRepository {
-  TryOnRepositoryImpl({required final TryonRemoteDataSource tryonDataSource})
-    : _tryonDataSource = tryonDataSource;
+  TryOnRepositoryImpl({required final TryonRemoteDataSource remoteDataSource})
+    : _remoteDataSource = remoteDataSource;
 
-  final TryonRemoteDataSource _tryonDataSource;
+  final TryonRemoteDataSource _remoteDataSource;
 
   @override
   Future<Result<TryonResult, Failure>> tryon({
@@ -20,7 +20,7 @@ class TryOnRepositoryImpl implements TryOnRepository {
     final String? clothesPath,
   }) async {
     try {
-      final imageBase64 = await _tryonDataSource.tryon(
+      final imageBase64 = await _remoteDataSource.tryon(
         avatarBase64: avatarBase64,
         avatarPath: avatarPath,
         clothesBase64: clothesBase64,

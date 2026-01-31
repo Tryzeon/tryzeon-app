@@ -29,7 +29,7 @@ class ProductRepositoryImpl implements ProductRepository {
     // 1. Try Local Cache
     if (!forceRefresh) {
       try {
-        final cachedProducts = await _localDataSource.getCache(sort: sort);
+        final cachedProducts = await _localDataSource.getProducts(sort: sort);
         if (cachedProducts != null) {
           final cachedProductsWithUrl = _attachImageUrls(cachedProducts);
           return Ok(cachedProductsWithUrl);
@@ -45,14 +45,14 @@ class ProductRepositoryImpl implements ProductRepository {
 
     // 2. Try Remote
     try {
-      final remoteProducts = await _remoteDataSource.fetchProducts(
+      final remoteProducts = await _remoteDataSource.getProducts(
         storeId: storeId,
         sort: sort,
       );
 
       // 3. Update Cache
       try {
-        await _localDataSource.setCache(remoteProducts);
+        await _localDataSource.saveProducts(remoteProducts);
       } catch (e, stackTrace) {
         AppLogger.warning('Failed to save products to cache', e, stackTrace);
       }
@@ -114,11 +114,11 @@ class ProductRepositoryImpl implements ProductRepository {
         await _remoteDataSource.insertProductSizes(sizeModels);
       }
 
-      final model = await _remoteDataSource.fetchProduct(productId);
+      final model = await _remoteDataSource.getProduct(productId);
 
       final currentCache =
-          await _localDataSource.getCache(sort: SortCondition.defaultSort) ?? [];
-      await _localDataSource.setCache([model, ...currentCache]);
+          await _localDataSource.getProducts(sort: SortCondition.defaultSort) ?? [];
+      await _localDataSource.saveProducts([model, ...currentCache]);
 
       return const Ok(null);
     } catch (e, stackTrace) {
@@ -205,11 +205,11 @@ class ProductRepositoryImpl implements ProductRepository {
         }
       }
 
-      final model = await _remoteDataSource.fetchProduct(original.id!);
+      final model = await _remoteDataSource.getProduct(original.id!);
 
       final currentCache =
-          await _localDataSource.getCache(sort: SortCondition.defaultSort) ?? [];
-      await _localDataSource.setCache(
+          await _localDataSource.getProducts(sort: SortCondition.defaultSort) ?? [];
+      await _localDataSource.saveProducts(
         currentCache.map((final p) => p.id == model.id ? model : p).toList(),
       );
 
@@ -232,8 +232,8 @@ class ProductRepositoryImpl implements ProductRepository {
       }
 
       final currentCache =
-          await _localDataSource.getCache(sort: SortCondition.defaultSort) ?? [];
-      await _localDataSource.setCache(
+          await _localDataSource.getProducts(sort: SortCondition.defaultSort) ?? [];
+      await _localDataSource.saveProducts(
         currentCache.where((final p) => p.id != product.id).toList(),
       );
 

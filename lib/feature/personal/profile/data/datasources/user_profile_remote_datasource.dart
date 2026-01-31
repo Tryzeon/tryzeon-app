@@ -14,7 +14,7 @@ class UserProfileRemoteDataSource {
   static const _table = AppConstants.tableUserProfile;
   static const _avatarBucket = AppConstants.bucketAvatars;
 
-  Future<UserProfileModel> fetchUserProfile() async {
+  Future<UserProfileModel> getUserProfile() async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();
 

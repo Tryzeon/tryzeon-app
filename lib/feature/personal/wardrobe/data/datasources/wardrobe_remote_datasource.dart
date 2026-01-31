@@ -14,7 +14,7 @@ class WardrobeRemoteDataSource {
   static const _table = AppConstants.tableWardrobeItems;
   static const _bucket = AppConstants.bucketWardrobe;
 
-  Future<List<WardrobeItemModel>> fetchWardrobeItems() async {
+  Future<List<WardrobeItemModel>> getWardrobeItems() async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();
 

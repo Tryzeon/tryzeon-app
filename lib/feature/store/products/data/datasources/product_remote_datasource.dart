@@ -17,7 +17,7 @@ class ProductRemoteDataSource {
   static const _productSizesTable = AppConstants.tableProductSizes;
   static const _productImagesBucket = AppConstants.bucketStore;
 
-  Future<List<ProductModel>> fetchProducts({
+  Future<List<ProductModel>> getProducts({
     required final String storeId,
     required final SortCondition sort,
   }) async {
@@ -65,7 +65,7 @@ class ProductRemoteDataSource {
     await _supabaseClient.from(_productSizesTable).insert(sizesData);
   }
 
-  Future<ProductModel> fetchProduct(final String productId) async {
+  Future<ProductModel> getProduct(final String productId) async {
     final response = await _supabaseClient
         .from(_productsTable)
         .select('*, product_sizes(*)')

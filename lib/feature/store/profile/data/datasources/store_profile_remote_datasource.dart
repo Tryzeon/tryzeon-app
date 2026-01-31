@@ -14,7 +14,7 @@ class StoreProfileRemoteDataSource {
   static const _table = AppConstants.tableStoreProfile;
   static const _logoBucket = AppConstants.bucketStore;
 
-  Future<StoreProfileModel?> fetchStoreProfile() async {
+  Future<StoreProfileModel?> getStoreProfile() async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();
 

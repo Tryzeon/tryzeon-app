@@ -14,7 +14,7 @@ class ProductLocalDataSource {
   final IsarService _isarService;
   final CacheService _cacheService;
 
-  Future<List<ProductModel>?> getCache({required final SortCondition sort}) async {
+  Future<List<ProductModel>?> getProducts({required final SortCondition sort}) async {
     final isar = await _isarService.db;
 
     // 檢查是否有資料
@@ -59,7 +59,7 @@ class ProductLocalDataSource {
     return collections.map((final e) => e.toModel()).toList();
   }
 
-  Future<void> setCache(final List<ProductModel> models) async {
+  Future<void> saveProducts(final List<ProductModel> models) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
       await isar.productCollections.clear();

@@ -8,7 +8,7 @@ class ProductCategoryRemoteDataSource {
   final SupabaseClient _supabaseClient;
   static const _table = AppConstants.tableProductCategories;
 
-  Future<List<ProductCategoryModel>> fetchProductCategories() async {
+  Future<List<ProductCategoryModel>> getProductCategories() async {
     final response = await _supabaseClient
         .from(_table)
         .select('id, name')
