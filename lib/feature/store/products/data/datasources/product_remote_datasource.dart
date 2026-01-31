@@ -4,6 +4,7 @@ import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/feature/store/products/data/mappers/product_sort_field_mapper.dart';
 import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/product_sort_condition.dart';
@@ -125,7 +126,7 @@ class ProductRemoteDataSource {
     required final File image,
   }) async {
     final user = _supabaseClient.auth.currentUser;
-    if (user == null) throw '無法獲取使用者資訊，請重新登入';
+    if (user == null) throw const UnauthenticatedException();
 
     final imageName = p.basename(image.path);
     final productImagePath = '$storeId/products/$imageName';

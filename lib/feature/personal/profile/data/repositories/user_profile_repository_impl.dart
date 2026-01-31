@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_local_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_remote_datasource.dart';
@@ -19,31 +20,43 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
   final UserProfileLocalDataSource _localDataSource;
 
   @override
-  Future<Result<UserProfile, String>> getUserProfile({
+  Future<Result<UserProfile, Failure>> getUserProfile({
     final bool forceRefresh = false,
   }) async {
+    // 1. Try Local Cache
+    if (!forceRefresh) {
+      try {
+        final cachedProfile = await _localDataSource.getCache();
+        if (cachedProfile != null) return Ok(cachedProfile);
+      } catch (e, stackTrace) {
+        AppLogger.warning(
+          'Local cache read failed, falling back to remote',
+          e,
+          stackTrace,
+        );
+      }
+    }
+
+    // 2. Fetch from API
     try {
-      // Cache-first (skip if forceRefresh)
-      if (!forceRefresh) {
-        final cached = await _localDataSource.getCache();
-        if (cached != null) return Ok(cached);
+      final remoteProfile = await _remoteDataSource.fetchUserProfile();
+
+      // 3. Update Cache
+      try {
+        await _localDataSource.setCache(remoteProfile);
+      } catch (e, stackTrace) {
+        AppLogger.warning('Failed to save user profile to cache', e, stackTrace);
       }
 
-      // Fetch from API
-      final profile = await _remoteDataSource.fetchUserProfile();
-
-      // Update cache
-      await _localDataSource.setCache(profile);
-
-      return Ok(profile);
+      return Ok(remoteProfile);
     } catch (e, stackTrace) {
       AppLogger.error('無法載入個人資料', e, stackTrace);
-      return const Err('無法載入個人資料，請稍後再試');
+      return Err(mapExceptionToFailure(e));
     }
   }
 
   @override
-  Future<Result<void, String>> updateUserProfile({
+  Future<Result<void, Failure>> updateUserProfile({
     required final UserProfile original,
     required final UserProfile target,
     final File? avatarFile,
@@ -85,13 +98,12 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('個人資料更新失敗', e, stackTrace);
-
-      return const Err('個人資料更新失敗，請稍後再試');
+      return Err(mapExceptionToFailure(e));
     }
   }
 
   @override
-  Future<Result<File, String>> getUserAvatar(final String path) async {
+  Future<Result<File, Failure>> getUserAvatar(final String path) async {
     try {
       // 1. Try Local Cache
       final cachedAvatar = await _localDataSource.getAvatar(path);
@@ -104,13 +116,13 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       final downloadedAvatar = await _localDataSource.downloadAvatar(path, url);
 
       if (downloadedAvatar == null) {
-        return const Err('無法獲取個人頭像，請稍後再試');
+        return const Err(UnknownFailure('無法獲取個人頭像'));
       }
 
       return Ok(downloadedAvatar);
     } catch (e, stackTrace) {
       AppLogger.error('無法載入個人頭像', e, stackTrace);
-      return const Err('無法載入個人頭像，請稍後再試');
+      return Err(mapExceptionToFailure(e));
     }
   }
 }

@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:mime/mime.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/error/exceptions.dart';
 
 import '../models/wardrobe_item_model.dart';
 
@@ -15,7 +16,7 @@ class WardrobeRemoteDataSource {
 
   Future<List<WardrobeItemModel>> fetchWardrobeItems() async {
     final user = _supabaseClient.auth.currentUser;
-    if (user == null) throw '無法獲取使用者資訊，請重新登入';
+    if (user == null) throw const UnauthenticatedException();
 
     final response = await _supabaseClient
         .from(_table)
@@ -30,7 +31,7 @@ class WardrobeRemoteDataSource {
 
   Future<WardrobeItemModel> createWardrobeItem(final WardrobeItemModel item) async {
     final user = _supabaseClient.auth.currentUser;
-    if (user == null) throw '無法獲取使用者資訊，請重新登入';
+    if (user == null) throw const UnauthenticatedException();
 
     final json = item.toJson();
     json['user_id'] = user.id;
@@ -53,7 +54,7 @@ class WardrobeRemoteDataSource {
     required final Uint8List bytes,
   }) async {
     final user = _supabaseClient.auth.currentUser;
-    if (user == null) throw '無法獲取使用者資訊，請重新登入';
+    if (user == null) throw const UnauthenticatedException();
 
     final imagePath = '${user.id}/$category/$fileName';
     final contentType = lookupMimeType(fileName);

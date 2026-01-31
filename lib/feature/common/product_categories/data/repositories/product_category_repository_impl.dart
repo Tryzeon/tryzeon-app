@@ -1,3 +1,4 @@
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/product_categories/data/datasources/product_category_local_datasource.dart';
 import 'package:tryzeon/feature/common/product_categories/data/datasources/product_category_remote_datasource.dart';
@@ -11,23 +12,38 @@ class ProductCategoryRepositoryImpl implements ProductCategoryRepository {
   final ProductCategoryLocalDataSource _local;
 
   @override
-  Future<Result<List<ProductCategory>, String>> getProductCategories({
+  Future<Result<List<ProductCategory>, Failure>> getProductCategories({
     final bool forceRefresh = false,
   }) async {
+    // 1. Try Local Cache
+    if (!forceRefresh) {
+      try {
+        final cachedCategories = await _local.getCached();
+        if (cachedCategories != null) return Ok(cachedCategories);
+      } catch (e, stackTrace) {
+        AppLogger.warning(
+          'Local cache read failed, falling back to remote',
+          e,
+          stackTrace,
+        );
+      }
+    }
+
+    // 2. Fetch from API
     try {
-      if (!forceRefresh) {
-        final cached = await _local.getCached();
-        if (cached != null && cached.isNotEmpty) {
-          return Ok(cached);
-        }
+      final remoteCategories = await _remote.fetchProductCategories();
+
+      // 3. Update Cache
+      try {
+        await _local.cache(remoteCategories);
+      } catch (e, stackTrace) {
+        AppLogger.warning('Failed to save product categories to cache', e, stackTrace);
       }
 
-      final remote = await _remote.fetchProductCategories();
-      await _local.cache(remote);
-      return Ok(remote);
+      return Ok(remoteCategories);
     } catch (e, stackTrace) {
       AppLogger.error('商品類型獲取失敗', e, stackTrace);
-      return const Err('無法載入商品類型，請檢查網路連線');
+      return Err(mapExceptionToFailure(e));
     }
   }
 }

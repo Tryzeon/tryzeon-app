@@ -2,9 +2,10 @@ import 'dart:io';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/domain/services/cache_service.dart';
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
-import 'package:tryzeon/feature/auth/data/datasources/auth_local_data_source.dart';
-import 'package:tryzeon/feature/auth/data/datasources/auth_remote_data_source.dart';
+import 'package:tryzeon/feature/auth/data/datasources/auth_local_datasource.dart';
+import 'package:tryzeon/feature/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/domain/repositories/auth_repository.dart';
 import 'package:typed_result/typed_result.dart';
@@ -22,7 +23,7 @@ class AuthRepositoryImpl implements AuthRepository {
   final CacheService _cacheService;
 
   @override
-  Future<Result<void, String>> signInWithProvider({
+  Future<Result<void, Failure>> signInWithProvider({
     required final String provider,
     required final UserType userType,
   }) async {
@@ -40,7 +41,7 @@ class AuthRepositoryImpl implements AuthRepository {
           oauthProvider = OAuthProvider.apple;
           break;
         default:
-          return Err('目前不支援 $provider 登入');
+          return const Err(UnknownFailure('Unsupported login method'));
       }
 
       if (oauthProvider == OAuthProvider.apple && Platform.isIOS) {
@@ -54,13 +55,13 @@ class AuthRepositoryImpl implements AuthRepository {
 
       return const Ok(null);
     } catch (e, stackTrace) {
-      AppLogger.error('$provider 登入失敗', e, stackTrace);
-      return Err('$provider 登入失敗，請稍後再試');
+      AppLogger.error('$provider login failed', e, stackTrace);
+      return Err(mapExceptionToFailure(e));
     }
   }
 
   @override
-  Future<Result<void, String>> signOut() async {
+  Future<Result<void, Failure>> signOut() async {
     // Sign out from Supabase
     try {
       await _remoteDataSource.signOut();
@@ -86,7 +87,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Result<UserType?, String>> getLastLoginType() async {
+  Future<Result<UserType?, Failure>> getLastLoginType() async {
     try {
       final typeString = await _localDataSource.getLastLoginType();
       if (typeString == null) return const Ok(null);
@@ -99,23 +100,23 @@ class AuthRepositoryImpl implements AuthRepository {
       return Ok(userType);
     } catch (e, stackTrace) {
       AppLogger.error('取得登入類型失敗', e, stackTrace);
-      return const Err('取得登入類型失敗');
+      return Err(mapExceptionToFailure(e));
     }
   }
 
   @override
-  Future<Result<void, String>> setLastLoginType(final UserType userType) async {
+  Future<Result<void, Failure>> setLastLoginType(final UserType userType) async {
     try {
       await _localDataSource.setLastLoginType(userType.name);
       return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('儲存登入類型失敗', e, stackTrace);
-      return const Err('儲存登入類型失敗');
+      return Err(mapExceptionToFailure(e));
     }
   }
 
   @override
-  Future<Result<void, String>> sendEmailOtp({
+  Future<Result<void, Failure>> sendEmailOtp({
     required final String email,
     required final UserType userType,
   }) async {
@@ -124,12 +125,12 @@ class AuthRepositoryImpl implements AuthRepository {
       return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('發送 Email OTP 失敗', e, stackTrace);
-      return const Err('發送登入連結失敗，請稍後再試');
+      return Err(mapExceptionToFailure(e));
     }
   }
 
   @override
-  Future<Result<void, String>> verifyEmailOtp({
+  Future<Result<void, Failure>> verifyEmailOtp({
     required final String email,
     required final String token,
     required final UserType userType,
@@ -140,7 +141,7 @@ class AuthRepositoryImpl implements AuthRepository {
       return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('Email OTP 驗證失敗', e, stackTrace);
-      return const Err('驗證碼無效或已過期，請重新發送');
+      return Err(mapExceptionToFailure(e));
     }
   }
 }

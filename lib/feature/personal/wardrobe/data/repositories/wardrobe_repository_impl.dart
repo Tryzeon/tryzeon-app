@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:path/path.dart' as p;
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:typed_result/typed_result.dart';
 import '../../domain/entities/wardrobe_category.dart';
@@ -21,27 +22,43 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
   final WardrobeLocalDataSource _localDataSource;
 
   @override
-  Future<Result<List<WardrobeItem>, String>> getWardrobeItems({
+  Future<Result<List<WardrobeItem>, Failure>> getWardrobeItems({
     final bool forceRefresh = false,
   }) async {
+    // 1. Try Local Cache
+    if (!forceRefresh) {
+      try {
+        final cachedItems = await _localDataSource.getCachedItems();
+        if (cachedItems != null) return Ok(cachedItems);
+      } catch (e, stackTrace) {
+        AppLogger.warning(
+          'Local cache read failed, falling back to remote',
+          e,
+          stackTrace,
+        );
+      }
+    }
+
+    // 2. Try Remote
     try {
-      if (!forceRefresh) {
-        final cached = await _localDataSource.getCachedItems();
-        if (cached != null) return Ok(cached);
+      final remoteItems = await _remoteDataSource.fetchWardrobeItems();
+
+      // 3. Update Cache
+      try {
+        await _localDataSource.updateCachedItems(remoteItems);
+      } catch (e, stackTrace) {
+        AppLogger.warning('Failed to save wardrobe items to cache', e, stackTrace);
       }
 
-      final items = await _remoteDataSource.fetchWardrobeItems();
-      await _localDataSource.updateCachedItems(items);
-      return Ok(items);
+      return Ok(remoteItems);
     } catch (e, stackTrace) {
-      AppLogger.error('衣櫃列表獲取失敗', e, stackTrace);
-
-      return const Err('無法載入衣櫃列表，請檢查網路連線');
+      AppLogger.error('Wardrobe fetch failed', e, stackTrace);
+      return Err(mapExceptionToFailure(e));
     }
   }
 
   @override
-  Future<Result<void, String>> uploadWardrobeItem({
+  Future<Result<void, Failure>> uploadWardrobeItem({
     required final File image,
     required final WardrobeCategory category,
     final List<String> tags = const [],
@@ -75,14 +92,14 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
       return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('衣物上傳失敗', e, stackTrace);
-      return const Err('上傳衣物失敗，請稍後再試');
+      return Err(mapExceptionToFailure(e));
     }
   }
 
   @override
-  Future<Result<void, String>> deleteWardrobeItem(final WardrobeItem item) async {
+  Future<Result<void, Failure>> deleteWardrobeItem(final WardrobeItem item) async {
     try {
-      if (item.id == null) return const Err('無效的衣物 ID');
+      if (item.id == null) return const Err(UnknownFailure('無效的衣物 ID'));
 
       await _remoteDataSource.deleteWardrobeItem(item.id!);
       _remoteDataSource.deleteImage(item.imagePath).ignore();
@@ -92,12 +109,12 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
       return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('衣物刪除失敗', e, stackTrace);
-      return const Err('刪除衣物失敗，請稍後再試');
+      return Err(mapExceptionToFailure(e));
     }
   }
 
   @override
-  Future<Result<File, String>> getWardrobeItemImage(final String imagePath) async {
+  Future<Result<File, Failure>> getWardrobeItemImage(final String imagePath) async {
     try {
       final cachedImage = await _localDataSource.getImage(imagePath);
       if (cachedImage != null) return Ok(cachedImage);
@@ -105,12 +122,12 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
       final url = await _remoteDataSource.createSignedUrl(imagePath);
       final image = await _localDataSource.getImage(imagePath, downloadUrl: url);
 
-      if (image == null) return const Err('無法獲取衣物圖片，請稍後再試');
+      if (image == null) return const Err(UnknownFailure('無法獲取衣物圖片'));
 
       return Ok(image);
     } catch (e, stackTrace) {
       AppLogger.error('衣櫃圖片載入失敗', e, stackTrace);
-      return const Err('無法載入衣物圖片，請稍後再試');
+      return Err(mapExceptionToFailure(e));
     }
   }
 }

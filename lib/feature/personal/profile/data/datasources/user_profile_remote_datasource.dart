@@ -4,6 +4,7 @@ import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/feature/personal/profile/data/models/user_profile_model.dart';
 
 class UserProfileRemoteDataSource {
@@ -15,7 +16,7 @@ class UserProfileRemoteDataSource {
 
   Future<UserProfileModel> fetchUserProfile() async {
     final user = _supabaseClient.auth.currentUser;
-    if (user == null) throw '無法獲取使用者資訊，請重新登入';
+    if (user == null) throw const UnauthenticatedException();
 
     final response = await _supabaseClient
         .from(_table)
@@ -30,7 +31,7 @@ class UserProfileRemoteDataSource {
 
   Future<UserProfileModel> updateUserProfile(final UserProfileModel profile) async {
     final user = _supabaseClient.auth.currentUser;
-    if (user == null) throw '無法獲取使用者資訊，請重新登入';
+    if (user == null) throw const UnauthenticatedException();
 
     final json = profile.toJson()
       ..remove('user_id')
@@ -49,7 +50,7 @@ class UserProfileRemoteDataSource {
 
   Future<String> uploadAvatar(final File image) async {
     final user = _supabaseClient.auth.currentUser;
-    if (user == null) throw '無法獲取使用者資訊，請重新登入';
+    if (user == null) throw const UnauthenticatedException();
 
     final imageName = p.basename(image.path);
     final avatarPath = '${user.id}/avatar/$imageName';

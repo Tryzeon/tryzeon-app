@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/home/data/datasources/tryon_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_result.dart';
@@ -12,7 +13,7 @@ class TryOnRepositoryImpl implements TryOnRepository {
   final TryonRemoteDataSource _tryonDataSource;
 
   @override
-  Future<Result<TryonResult, String>> tryon({
+  Future<Result<TryonResult, Failure>> tryon({
     final String? avatarBase64,
     final String? avatarPath,
     final String? clothesBase64,
@@ -32,19 +33,16 @@ class TryOnRepositoryImpl implements TryOnRepository {
       switch (e.status) {
         case 403:
           message = '今日試穿次數已達上限，請明日再試或升級方案';
-          break;
         case 422:
           message = 'AI 無法辨識圖片，請換一張試試';
-          break;
         default:
           message = '虛擬試穿服務暫時無法使用，請稍後再試';
-          AppLogger.error('虛擬試穿失敗 (FunctionException)', e, stackTrace);
-          break;
+          AppLogger.error('虛擬試穿失敗 (Backend Failure)', e, stackTrace);
       }
-      return Err(message);
+      return Err(ServerFailure(message));
     } catch (e, stackTrace) {
       AppLogger.error('虛擬試穿失敗', e, stackTrace);
-      return const Err('虛擬試穿服務暫時無法使用，請稍後再試');
+      return Err(mapExceptionToFailure(e));
     }
   }
 }

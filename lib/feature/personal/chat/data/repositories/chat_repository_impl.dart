@@ -1,3 +1,4 @@
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/chat/data/datasources/chat_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/chat/domain/repositories/chat_repository.dart';
@@ -9,7 +10,7 @@ class ChatRepositoryImpl implements ChatRepository {
   final ChatRemoteDataSource _remoteDataSource;
 
   @override
-  Future<Result<String, String>> getLLMRecommendation(
+  Future<Result<String, Failure>> getLLMRecommendation(
     final Map<String, String> answers,
   ) async {
     try {
@@ -17,7 +18,7 @@ class ChatRepositoryImpl implements ChatRepository {
       return Ok(recommendation);
     } catch (e, stackTrace) {
       AppLogger.error('穿搭建議獲取失敗', e, stackTrace);
-      return const Err('無法取得穿搭建議，請稍後再試');
+      return Err(mapExceptionToFailure(e));
     }
   }
 }

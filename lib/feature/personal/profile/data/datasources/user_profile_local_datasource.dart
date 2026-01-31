@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:isar_community/isar.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/services/cache_service.dart';
+
 import 'package:tryzeon/feature/personal/profile/data/collections/user_profile_collection.dart';
 import 'package:tryzeon/feature/personal/profile/data/mappers/user_profile_mapper.dart';
 import 'package:tryzeon/feature/personal/profile/data/models/user_profile_model.dart';

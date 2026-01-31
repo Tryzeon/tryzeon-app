@@ -1,5 +1,6 @@
 import 'package:isar_community/isar.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
+
 import 'package:tryzeon/feature/common/product_categories/data/collections/product_category_collection.dart';
 import 'package:tryzeon/feature/common/product_categories/data/mappers/product_category_mapper.dart';
 import 'package:tryzeon/feature/common/product_categories/data/models/product_category_model.dart';

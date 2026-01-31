@@ -4,6 +4,7 @@ import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/feature/store/profile/data/models/store_profile_model.dart';
 
 class StoreProfileRemoteDataSource {
@@ -15,7 +16,7 @@ class StoreProfileRemoteDataSource {
 
   Future<StoreProfileModel?> fetchStoreProfile() async {
     final user = _supabaseClient.auth.currentUser;
-    if (user == null) throw '無法獲取使用者資訊，請重新登入';
+    if (user == null) throw const UnauthenticatedException();
 
     final response = await _supabaseClient
         .from(_table)
@@ -36,7 +37,7 @@ class StoreProfileRemoteDataSource {
 
   Future<StoreProfileModel> updateStoreProfile(final StoreProfileModel profile) async {
     final user = _supabaseClient.auth.currentUser;
-    if (user == null) throw '無法獲取使用者資訊，請重新登入';
+    if (user == null) throw const UnauthenticatedException();
 
     final json = profile.toJson()
       ..remove('id')
@@ -66,7 +67,7 @@ class StoreProfileRemoteDataSource {
     required final File image,
   }) async {
     final user = _supabaseClient.auth.currentUser;
-    if (user == null) throw '無法獲取使用者資訊，請重新登入';
+    if (user == null) throw const UnauthenticatedException();
 
     final imageName = p.basename(image.path);
     final logoPath = '$storeId/logo/$imageName';

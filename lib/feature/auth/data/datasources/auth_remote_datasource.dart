@@ -1,6 +1,7 @@
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/core/utils/crypto_utils.dart';
 
 class AuthRemoteDataSource {
@@ -15,7 +16,7 @@ class AuthRemoteDataSource {
     );
 
     if (!success) {
-      throw Exception('OAuth sign-in failed');
+      throw const ServerException();
     }
 
     // Wait for auth state change
@@ -24,7 +25,7 @@ class AuthRemoteDataSource {
         .then((final state) => state.session?.user);
 
     if (user == null) {
-      throw Exception('Failed to get user information');
+      throw const UnauthenticatedException();
     }
   }
 
@@ -39,7 +40,7 @@ class AuthRemoteDataSource {
 
     final idToken = credential.identityToken;
     if (idToken == null) {
-      throw Exception('無法取得 Apple ID Token');
+      throw const UnauthenticatedException();
     }
 
     await _supabase.auth.signInWithIdToken(
@@ -64,7 +65,7 @@ class AuthRemoteDataSource {
     );
 
     if (response.session == null) {
-      throw Exception('驗證碼無效或已過期');
+      throw const UnauthenticatedException();
     }
   }
 

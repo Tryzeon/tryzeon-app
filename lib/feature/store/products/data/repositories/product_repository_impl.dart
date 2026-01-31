@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/store/products/data/datasources/product_local_datasource.dart';
 import 'package:tryzeon/feature/store/products/data/datasources/product_remote_datasource.dart';
@@ -20,43 +21,60 @@ class ProductRepositoryImpl implements ProductRepository {
   final ProductLocalDataSource _localDataSource;
 
   @override
-  Future<Result<List<Product>, String>> getProducts({
+  Future<Result<List<Product>, Failure>> getProducts({
     required final String storeId,
     final SortCondition sort = SortCondition.defaultSort,
     final bool forceRefresh = false,
   }) async {
-    try {
-      // 1. 嘗試從本地快取獲取 (由 Database 直接排序)
-      if (!forceRefresh) {
-        final cached = await _localDataSource.getCache(sort: sort);
-        if (cached != null) {
-          final products = cached.map((final m) {
-            return m.copyWith(
-              imageUrl: _remoteDataSource.getProductImageUrl(m.imagePath),
-            );
-          }).toList();
-          return Ok(products);
+    // 1. Try Local Cache
+    if (!forceRefresh) {
+      try {
+        final cachedProducts = await _localDataSource.getCache(sort: sort);
+        if (cachedProducts != null) {
+          final cachedProductsWithUrl = _attachImageUrls(cachedProducts);
+          return Ok(cachedProductsWithUrl);
         }
+      } catch (e, stackTrace) {
+        AppLogger.warning(
+          'Local cache read failed, falling back to remote',
+          e,
+          stackTrace,
+        );
+      }
+    }
+
+    // 2. Try Remote
+    try {
+      final remoteProducts = await _remoteDataSource.fetchProducts(
+        storeId: storeId,
+        sort: sort,
+      );
+
+      // 3. Update Cache
+      try {
+        await _localDataSource.setCache(remoteProducts);
+      } catch (e, stackTrace) {
+        AppLogger.warning('Failed to save products to cache', e, stackTrace);
       }
 
-      // 2. 本地無快取或強制刷新 -> 從遠端獲取（API 層排序）
-      final models = await _remoteDataSource.fetchProducts(storeId: storeId, sort: sort);
-      await _localDataSource.setCache(models);
-
-      final products = models.map((final m) {
-        return m.copyWith(imageUrl: _remoteDataSource.getProductImageUrl(m.imagePath));
-      }).toList();
-
-      return Ok(products);
+      final remoteProductsWithUrl = _attachImageUrls(remoteProducts);
+      return Ok(remoteProductsWithUrl);
     } catch (e, stackTrace) {
       AppLogger.error('無法載入商品列表', e, stackTrace);
-
-      return const Err('無法載入商品列表，請稍後再試');
+      return Err(mapExceptionToFailure(e));
     }
   }
 
+  List<Product> _attachImageUrls(final List<Product> products) {
+    return products.map((final product) {
+      return product.copyWith(
+        imageUrl: _remoteDataSource.getProductImageUrl(product.imagePath),
+      );
+    }).toList();
+  }
+
   @override
-  Future<Result<void, String>> createProduct({
+  Future<Result<void, Failure>> createProduct({
     required final Product product,
     required final File image,
   }) async {
@@ -66,7 +84,7 @@ class ProductRepositoryImpl implements ProductRepository {
         image: image,
       );
 
-      // 同時保存到本地快取
+      // Save to local cache
       final bytes = await image.readAsBytes();
       await _localDataSource.saveProductImage(bytes, imagePath);
 
@@ -105,12 +123,12 @@ class ProductRepositoryImpl implements ProductRepository {
       return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('商品創建失敗', e, stackTrace);
-      return const Err('新增商品失敗，請稍後再試');
+      return Err(mapExceptionToFailure(e));
     }
   }
 
   @override
-  Future<Result<void, String>> updateProduct({
+  Future<Result<void, Failure>> updateProduct({
     required final Product original,
     required final Product target,
     final File? newImage,
@@ -124,7 +142,7 @@ class ProductRepositoryImpl implements ProductRepository {
         );
         finalTarget = target.copyWith(imagePath: newImagePath);
 
-        // 同時保存到本地快取
+        // Save to local cache
         final bytes = await newImage.readAsBytes();
         await _localDataSource.saveProductImage(bytes, newImagePath);
       }
@@ -198,12 +216,12 @@ class ProductRepositoryImpl implements ProductRepository {
       return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('商品更新失敗', e, stackTrace);
-      return const Err('更新商品失敗，請稍後再試');
+      return Err(mapExceptionToFailure(e));
     }
   }
 
   @override
-  Future<Result<void, String>> deleteProduct(final Product product) async {
+  Future<Result<void, Failure>> deleteProduct(final Product product) async {
     try {
       await _remoteDataSource.deleteProduct(product.id!);
       await _remoteDataSource.deleteProductSizes(product.id!);
@@ -222,7 +240,7 @@ class ProductRepositoryImpl implements ProductRepository {
       return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('商品刪除失敗', e, stackTrace);
-      return const Err('刪除商品失敗，請稍後再試');
+      return Err(mapExceptionToFailure(e));
     }
   }
 }
