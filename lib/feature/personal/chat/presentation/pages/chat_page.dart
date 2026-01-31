@@ -203,7 +203,7 @@ class ChatPage extends HookConsumerWidget {
         // Show error message
         TopNotification.show(
           context,
-          message: result.getError()!.message(context),
+          message: result.getError()!.displayMessage(context),
           type: NotificationType.error,
         );
       }

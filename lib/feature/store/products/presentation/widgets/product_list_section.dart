@@ -57,7 +57,7 @@ class ProductListSection extends HookConsumerWidget {
           skipError: true,
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (final error, final stack) => ErrorView(
-            message: (error as Failure).message(context),
+            message: (error as Failure).displayMessage(context),
             onRetry: () => refreshProducts(ref),
           ),
           data: (final products) {

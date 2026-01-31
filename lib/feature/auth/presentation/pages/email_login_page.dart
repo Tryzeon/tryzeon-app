@@ -88,7 +88,7 @@ class EmailLoginPage extends HookConsumerWidget {
         } else {
           TopNotification.show(
             context,
-            message: result.getError()?.message(context) ?? '發送失敗，請稍後再試',
+            message: result.getError()?.displayMessage(context) ?? '發送失敗，請稍後再試',
             type: NotificationType.error,
           );
         }
@@ -127,7 +127,7 @@ class EmailLoginPage extends HookConsumerWidget {
         } else {
           TopNotification.show(
             context,
-            message: result.getError()?.message(context) ?? '驗證失敗，請檢查驗證碼是否正確',
+            message: result.getError()?.displayMessage(context) ?? '驗證失敗，請檢查驗證碼是否正確',
             type: NotificationType.error,
           );
         }

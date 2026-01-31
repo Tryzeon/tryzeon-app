@@ -74,7 +74,7 @@ class PersonalPage extends HookConsumerWidget {
       } else {
         TopNotification.show(
           context,
-          message: result.getError()!.message(context),
+          message: result.getError()!.displayMessage(context),
           type: NotificationType.error,
         );
       }
@@ -297,11 +297,9 @@ class PersonalPage extends HookConsumerWidget {
                         );
                       },
                       loading: () => const Center(child: CircularProgressIndicator()),
-                      error: (final error, final __) => ErrorView(
-                        message: error is Failure
-                            ? error.message(context)
-                            : error.toString(),
-                        onRetry: () => refreshWardrobeItems(ref),
+                      error: (final error, final stack) => ErrorView(
+                        message: (error as Failure).displayMessage(context),
+                        onRetry: () => ref.refresh(wardrobeItemsProvider),
                       ),
                     ),
                   ),

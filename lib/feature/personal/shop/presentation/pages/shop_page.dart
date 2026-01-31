@@ -347,7 +347,7 @@ class ShopPage extends HookConsumerWidget {
                                   ),
                                 ),
                                 error: (final error, final stack) => ErrorView(
-                                  message: (error as Failure).message(context),
+                                  message: (error as Failure).displayMessage(context),
                                   onRetry: () => refreshShopProducts(ref, filter),
                                 ),
                                 data: (final displayedProducts) {

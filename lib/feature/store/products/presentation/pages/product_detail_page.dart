@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
-
 import 'package:tryzeon/core/shared/measurements/entities/size_measurements.dart';
 import 'package:tryzeon/core/shared/measurements/presentation/mappers/measurement_type_ui_mapper.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
@@ -81,7 +81,7 @@ class ProductDetailPage extends HookConsumerWidget {
       } else {
         TopNotification.show(
           context,
-          message: result.getError()!.message(context),
+          message: result.getError()!.displayMessage(context),
           type: NotificationType.error,
         );
       }
@@ -131,7 +131,7 @@ class ProductDetailPage extends HookConsumerWidget {
       } else {
         TopNotification.show(
           context,
-          message: result.getError()!.message(context),
+          message: result.getError()!.displayMessage(context),
           type: NotificationType.error,
         );
       }
@@ -415,6 +415,7 @@ class ProductDetailPage extends HookConsumerWidget {
               ),
             ),
             error: (final error, final stack) => ErrorView(
+              message: (error as Failure).displayMessage(context),
               onRetry: () => ref.refresh(productCategoriesProvider),
               isCompact: true,
             ),

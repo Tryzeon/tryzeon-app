@@ -97,7 +97,7 @@ class StoreProfileSettingsPage extends HookConsumerWidget {
                     child: CircularProgressIndicator(color: colorScheme.primary),
                   ),
                   error: (final error, final stack) => ErrorView(
-                    message: (error as Failure).message(context),
+                    message: (error as Failure).displayMessage(context),
                     onRetry: () => ref.refresh(storeProfileProvider),
                   ),
                 ),
@@ -156,7 +156,7 @@ class _StoreProfileForm extends HookConsumerWidget {
       } else {
         TopNotification.show(
           context,
-          message: result.getError()!.message(context),
+          message: result.getError()!.displayMessage(context),
           type: NotificationType.error,
         );
       }

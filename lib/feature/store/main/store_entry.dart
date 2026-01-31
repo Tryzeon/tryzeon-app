@@ -26,7 +26,7 @@ class StoreEntry extends HookConsumerWidget {
       loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (final error, final stack) => Scaffold(
         body: ErrorView(
-          message: (error as Failure).message(context),
+          message: (error as Failure).displayMessage(context),
           onRetry: () => ref.refresh(storeProfileProvider),
         ),
       ),
