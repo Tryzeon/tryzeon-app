@@ -5,12 +5,24 @@ class AppLogger {
     logger: TalkerLogger(settings: TalkerLoggerSettings(enableColors: false)),
   );
 
+  static StackTrace? _cropStackTrace(final StackTrace? stackTrace) {
+    if (stackTrace == null) return null;
+
+    final lines = stackTrace.toString().split('\n');
+
+    if (lines.length <= 5) return stackTrace;
+
+    final croppedString = '${lines.take(5).join('\n')}\n... (truncated)';
+
+    return StackTrace.fromString(croppedString);
+  }
+
   static void debug(
     final dynamic message, [
     final dynamic error,
     final StackTrace? stackTrace,
   ]) {
-    talker.debug(message, error, stackTrace);
+    talker.debug(message, error, _cropStackTrace(stackTrace));
   }
 
   static void info(
@@ -18,7 +30,7 @@ class AppLogger {
     final dynamic error,
     final StackTrace? stackTrace,
   ]) {
-    talker.info(message, error, stackTrace);
+    talker.info(message, error, _cropStackTrace(stackTrace));
   }
 
   static void warning(
@@ -26,7 +38,7 @@ class AppLogger {
     final dynamic error,
     final StackTrace? stackTrace,
   ]) {
-    talker.warning(message, error, stackTrace);
+    talker.warning(message, error, _cropStackTrace(stackTrace));
   }
 
   static void error(
@@ -34,7 +46,7 @@ class AppLogger {
     final dynamic error,
     final StackTrace? stackTrace,
   ]) {
-    talker.error(message, error, stackTrace);
+    talker.error(message, error, _cropStackTrace(stackTrace));
   }
 
   static void fatal(
@@ -42,6 +54,6 @@ class AppLogger {
     final dynamic error,
     final StackTrace? stackTrace,
   ]) {
-    talker.critical(message, error, stackTrace);
+    talker.critical(message, error, _cropStackTrace(stackTrace));
   }
 }
