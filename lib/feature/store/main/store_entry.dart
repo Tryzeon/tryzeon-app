@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
 
@@ -24,7 +26,7 @@ class StoreEntry extends HookConsumerWidget {
       loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (final error, final stack) => Scaffold(
         body: ErrorView(
-          message: error.toString(),
+          message: (error as Failure).message(context),
           onRetry: () => ref.refresh(storeProfileProvider),
         ),
       ),

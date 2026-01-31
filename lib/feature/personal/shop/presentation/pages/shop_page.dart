@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
@@ -345,7 +347,7 @@ class ShopPage extends HookConsumerWidget {
                                   ),
                                 ),
                                 error: (final error, final stack) => ErrorView(
-                                  message: error.toString(),
+                                  message: (error as Failure).message(context),
                                   onRetry: () => refreshShopProducts(ref, filter),
                                 ),
                                 data: (final displayedProducts) {

@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
@@ -96,7 +97,7 @@ class StoreProfileSettingsPage extends HookConsumerWidget {
                     child: CircularProgressIndicator(color: colorScheme.primary),
                   ),
                   error: (final error, final stack) => ErrorView(
-                    message: error.toString(),
+                    message: (error as Failure).message(context),
                     onRetry: () => ref.refresh(storeProfileProvider),
                   ),
                 ),

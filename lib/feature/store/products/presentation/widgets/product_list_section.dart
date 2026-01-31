@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/feature/store/products/presentation/dialogs/product_sort_dialog.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_card.dart';
@@ -54,8 +56,10 @@ class ProductListSection extends HookConsumerWidget {
           skipLoadingOnReload: true,
           skipError: true,
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (final error, final stack) =>
-              ErrorView(message: error.toString(), onRetry: () => refreshProducts(ref)),
+          error: (final error, final stack) => ErrorView(
+            message: (error as Failure).message(context),
+            onRetry: () => refreshProducts(ref),
+          ),
           data: (final products) {
             if (products.isEmpty) {
               return LayoutBuilder(
