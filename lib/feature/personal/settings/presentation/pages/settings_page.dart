@@ -7,6 +7,7 @@ import 'package:tryzeon/feature/auth/presentation/pages/login_page.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/store/main/store_entry.dart';
 
+import 'package:tryzeon/feature/subscription/presentation/pages/subscription_page.dart';
 import 'preferences_page.dart';
 import 'profile_setting_page.dart';
 
@@ -71,6 +72,13 @@ class PersonalSettingsPage extends HookConsumerWidget {
       );
     }
 
+    Future<void> navigateToSubscription() async {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (final context) => const SubscriptionPage()),
+      );
+    }
+
     return SettingsPageScaffold(
       onBack: () => Navigator.pop(context),
       onLogout: handleSignOut,
@@ -87,6 +95,13 @@ class PersonalSettingsPage extends HookConsumerWidget {
           title: '偏好設定',
           subtitle: '管理您的個人偏好',
           onTap: navigateToPreferences,
+          color: colorScheme.primary.withValues(alpha: 0.1),
+        ),
+        SettingsMenuItem(
+          icon: Icons.card_membership_rounded,
+          title: '訂閱方案',
+          subtitle: '升級您的帳號',
+          onTap: navigateToSubscription,
           color: colorScheme.primary.withValues(alpha: 0.1),
         ),
         SettingsMenuItem(

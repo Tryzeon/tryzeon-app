@@ -10,6 +10,7 @@ class AppConstants {
   static const String tableProductSizes = 'product_sizes';
   static const String tableProductCategories = 'product_categories';
   static const String tableUserProfile = 'user_profile';
+  static const String tableSubscription = 'subscribe';
   static const String tableWardrobeItems = 'wardrobe_items';
 
   // Supabase Buckets
