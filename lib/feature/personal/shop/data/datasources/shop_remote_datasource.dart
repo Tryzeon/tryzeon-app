@@ -23,9 +23,28 @@ class ShopRemoteDataSource {
           store_profile!inner(*)
         ''');
 
-    // 搜尋過濾（商品名稱或類型）
+    // 搜尋過濾
     if (searchQuery != null && searchQuery.isNotEmpty) {
-      query = query.or('name.ilike.%$searchQuery%,type.cs.{$searchQuery}');
+      // 1. 先找出名稱符合搜尋關鍵字的店家 ID
+      final matchingStores = await _supabaseClient
+          .from('store_profile')
+          .select('id')
+          .ilike('name', '%$searchQuery%');
+
+      final storeIds = (matchingStores as List)
+          .map((final e) => e['id'] as String)
+          .toList();
+
+      // 2. 構建 OR 查詢條件
+      final buffer = StringBuffer();
+      buffer.write('name.ilike.%$searchQuery%');
+      buffer.write(',type.cs.{$searchQuery}');
+
+      if (storeIds.isNotEmpty) {
+        buffer.write(',store_id.in.(${storeIds.join(',')})');
+      }
+
+      query = query.or(buffer.toString());
     }
 
     // 價格區間過濾
