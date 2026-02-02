@@ -37,11 +37,11 @@ class TryOnRepositoryImpl implements TryOnRepository {
           message = 'AI 無法辨識圖片，請換一張試試';
         default:
           message = '虛擬試穿服務暫時無法使用，請稍後再試';
-          AppLogger.error('虛擬試穿失敗 (Backend Failure)', e, stackTrace);
+          AppLogger.error('Virtual try-on failed (Backend Failure)', e, stackTrace);
       }
       return Err(ServerFailure(message));
     } catch (e, stackTrace) {
-      AppLogger.error('虛擬試穿失敗', e, stackTrace);
+      AppLogger.error('Virtual try-on failed', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }

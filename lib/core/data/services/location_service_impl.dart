@@ -100,7 +100,7 @@ class LocationServiceImpl implements LocationService {
         fullAddress: fullAddress,
       );
     } catch (e, stackTrace) {
-      AppLogger.error('取得位置失敗', e, stackTrace);
+      AppLogger.error('Failed to get location', e, stackTrace);
       return null;
     }
   }

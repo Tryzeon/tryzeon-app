@@ -17,7 +17,7 @@ class ChatRepositoryImpl implements ChatRepository {
       final recommendation = await _remoteDataSource.getLLMRecommendation(answers);
       return Ok(recommendation);
     } catch (e, stackTrace) {
-      AppLogger.error('穿搭建議獲取失敗', e, stackTrace);
+      AppLogger.error('Failed to get outfit suggestions', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }

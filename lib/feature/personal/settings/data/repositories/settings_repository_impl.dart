@@ -13,7 +13,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
       final prefs = await SharedPreferences.getInstance();
       return Ok(prefs.getBool(AppConstants.keyRecommendNearbyShops) ?? false);
     } catch (e, stackTrace) {
-      AppLogger.error('無法讀取設定', e, stackTrace);
+      AppLogger.error('Failed to read settings', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }
@@ -26,7 +26,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
       await prefs.setBool(AppConstants.keyRecommendNearbyShops, value);
       return const Ok(null);
     } catch (e, stackTrace) {
-      AppLogger.error('無法儲存設定', e, stackTrace);
+      AppLogger.error('Failed to save settings', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }

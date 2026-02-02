@@ -51,7 +51,7 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
 
       return Ok(remoteProfile);
     } catch (e, stackTrace) {
-      AppLogger.error('無法載入店家資料', e, stackTrace);
+      AppLogger.error('Failed to load store profile', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }
@@ -97,7 +97,7 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
 
       return const Ok(null);
     } catch (e, stackTrace) {
-      AppLogger.error('店家資料更新失敗', e, stackTrace);
+      AppLogger.error('Failed to update store profile', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }

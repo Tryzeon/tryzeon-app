@@ -34,7 +34,7 @@ class ShopRepositoryImpl implements ShopRepository {
       );
       return Ok(result);
     } catch (e, stackTrace) {
-      AppLogger.error('商品列表獲取失敗', e, stackTrace);
+      AppLogger.error('Failed to get product list', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }
@@ -45,7 +45,7 @@ class ShopRepositoryImpl implements ShopRepository {
       await _remoteDataSource.incrementTryonCount(productId);
       return const Ok(null);
     } catch (e, stackTrace) {
-      AppLogger.error('記錄試穿次數失敗', e, stackTrace);
+      AppLogger.error('Failed to record try-on count', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }
@@ -58,7 +58,7 @@ class ShopRepositoryImpl implements ShopRepository {
       await _remoteDataSource.incrementPurchaseClickCount(productId);
       return const Ok(null);
     } catch (e, stackTrace) {
-      AppLogger.error('記錄購買點擊失敗', e, stackTrace);
+      AppLogger.error('Failed to record purchase click', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }
@@ -69,7 +69,7 @@ class ShopRepositoryImpl implements ShopRepository {
       final ads = await _adLocalDataSource.getAdImages(forceRefresh: forceRefresh);
       return Ok(ads);
     } catch (e, stackTrace) {
-      AppLogger.error('獲取廣告失敗', e, stackTrace);
+      AppLogger.error('Failed to get advertisements', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }

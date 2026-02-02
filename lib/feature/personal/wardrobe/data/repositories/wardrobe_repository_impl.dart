@@ -91,7 +91,7 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
 
       return const Ok(null);
     } catch (e, stackTrace) {
-      AppLogger.error('衣物上傳失敗', e, stackTrace);
+      AppLogger.error('Failed to upload wardrobe item', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }
@@ -106,7 +106,7 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
 
       return const Ok(null);
     } catch (e, stackTrace) {
-      AppLogger.error('衣物刪除失敗', e, stackTrace);
+      AppLogger.error('Failed to delete wardrobe item', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }
@@ -124,7 +124,7 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
 
       return Ok(image);
     } catch (e, stackTrace) {
-      AppLogger.error('衣櫃圖片載入失敗', e, stackTrace);
+      AppLogger.error('Failed to load wardrobe images', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }

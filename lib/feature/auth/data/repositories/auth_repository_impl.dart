@@ -66,21 +66,21 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       await _remoteDataSource.signOut();
     } catch (e, stackTrace) {
-      AppLogger.error('Supabase 登出失敗 (已忽略)', e, stackTrace);
+      AppLogger.error('Supabase logout failed (ignored)', e, stackTrace);
     }
 
     // Clear API cache
     try {
       await _cacheService.clearCache();
     } catch (e, stackTrace) {
-      AppLogger.error('清除快取失敗 (已忽略)', e, stackTrace);
+      AppLogger.error('Failed to clear cache (ignored)', e, stackTrace);
     }
 
     // Clear local preferences
     try {
       await _localDataSource.clearAll();
     } catch (e, stackTrace) {
-      AppLogger.error('清除登入類型失敗 (已忽略)', e, stackTrace);
+      AppLogger.error('Failed to clear login type (ignored)', e, stackTrace);
     }
 
     return const Ok(null);
@@ -99,7 +99,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
       return Ok(userType);
     } catch (e, stackTrace) {
-      AppLogger.error('取得登入類型失敗', e, stackTrace);
+      AppLogger.error('Failed to get login type', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }
@@ -110,7 +110,7 @@ class AuthRepositoryImpl implements AuthRepository {
       await _localDataSource.setLastLoginType(userType.name);
       return const Ok(null);
     } catch (e, stackTrace) {
-      AppLogger.error('儲存登入類型失敗', e, stackTrace);
+      AppLogger.error('Failed to save login type', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }
@@ -124,7 +124,7 @@ class AuthRepositoryImpl implements AuthRepository {
       await _remoteDataSource.sendEmailOTP(email);
       return const Ok(null);
     } catch (e, stackTrace) {
-      AppLogger.error('發送 Email OTP 失敗', e, stackTrace);
+      AppLogger.error('Failed to send email OTP', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }
@@ -140,7 +140,7 @@ class AuthRepositoryImpl implements AuthRepository {
       await _localDataSource.setLastLoginType(userType.name);
       return const Ok(null);
     } catch (e, stackTrace) {
-      AppLogger.error('Email OTP 驗證失敗', e, stackTrace);
+      AppLogger.error('Email OTP verification failed', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }

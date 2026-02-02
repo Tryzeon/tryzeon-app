@@ -60,7 +60,7 @@ class ProductRepositoryImpl implements ProductRepository {
       final remoteProductsWithUrl = _attachImageUrls(remoteProducts);
       return Ok(remoteProductsWithUrl);
     } catch (e, stackTrace) {
-      AppLogger.error('無法載入商品列表', e, stackTrace);
+      AppLogger.error('Failed to load product list', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }
@@ -122,7 +122,7 @@ class ProductRepositoryImpl implements ProductRepository {
 
       return const Ok(null);
     } catch (e, stackTrace) {
-      AppLogger.error('商品創建失敗', e, stackTrace);
+      AppLogger.error('Fail to create product', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }
@@ -215,7 +215,7 @@ class ProductRepositoryImpl implements ProductRepository {
 
       return const Ok(null);
     } catch (e, stackTrace) {
-      AppLogger.error('商品更新失敗', e, stackTrace);
+      AppLogger.error('Fail to update product', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }
@@ -239,7 +239,7 @@ class ProductRepositoryImpl implements ProductRepository {
 
       return const Ok(null);
     } catch (e, stackTrace) {
-      AppLogger.error('商品刪除失敗', e, stackTrace);
+      AppLogger.error('Fail to delete product', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }

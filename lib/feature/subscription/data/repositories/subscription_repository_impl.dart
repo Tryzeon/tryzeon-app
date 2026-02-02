@@ -16,7 +16,7 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
       final subscription = await _remoteDataSource.getSubscription(userId);
       return Ok(subscription);
     } catch (e, stackTrace) {
-      AppLogger.error('無法獲取訂閱資料', e, stackTrace);
+      AppLogger.error('Failed to get subscription data', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }

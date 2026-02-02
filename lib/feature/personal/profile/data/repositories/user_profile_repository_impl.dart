@@ -50,7 +50,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
 
       return Ok(remoteProfile);
     } catch (e, stackTrace) {
-      AppLogger.error('無法載入個人資料', e, stackTrace);
+      AppLogger.error('Failed to load user profile', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }
@@ -97,7 +97,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
 
       return const Ok(null);
     } catch (e, stackTrace) {
-      AppLogger.error('個人資料更新失敗', e, stackTrace);
+      AppLogger.error('Failed to update user profile', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }
@@ -121,7 +121,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
 
       return Ok(downloadedAvatar);
     } catch (e, stackTrace) {
-      AppLogger.error('無法載入個人頭像', e, stackTrace);
+      AppLogger.error('Failed to load profile avatar', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }

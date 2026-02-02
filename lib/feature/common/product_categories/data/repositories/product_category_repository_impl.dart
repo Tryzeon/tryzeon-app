@@ -42,7 +42,7 @@ class ProductCategoryRepositoryImpl implements ProductCategoryRepository {
 
       return Ok(remoteCategories);
     } catch (e, stackTrace) {
-      AppLogger.error('商品類型獲取失敗', e, stackTrace);
+      AppLogger.error('Failed to get product categories', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }

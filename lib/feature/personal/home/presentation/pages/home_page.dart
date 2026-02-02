@@ -196,7 +196,7 @@ class HomePage extends HookConsumerWidget {
           );
         }
       } catch (e, stackTrace) {
-        AppLogger.error('照片儲存失敗', e, stackTrace);
+        AppLogger.error('Failed to save photo', e, stackTrace);
         if (context.mounted) {
           TopNotification.show(
             context,
