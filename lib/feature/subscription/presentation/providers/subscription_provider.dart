@@ -5,6 +5,7 @@ import 'package:tryzeon/feature/subscription/data/datasources/subscription_remot
 import 'package:tryzeon/feature/subscription/data/repositories/subscription_repository_impl.dart';
 import 'package:tryzeon/feature/subscription/domain/entities/subscription.dart';
 import 'package:tryzeon/feature/subscription/domain/repositories/subscription_repository.dart';
+import 'package:tryzeon/feature/subscription/domain/usecases/get_subscription.dart';
 import 'package:typed_result/typed_result.dart';
 
 // DataSource Provider
@@ -19,13 +20,18 @@ final subscriptionRepositoryProvider = Provider<SubscriptionRepository>((final r
   return SubscriptionRepositoryImpl(ref.watch(subscriptionRemoteDataSourceProvider));
 });
 
-// Controller Provider
+// Use Case Provider
+final getSubscriptionUseCaseProvider = Provider<GetSubscription>((final ref) {
+  return GetSubscription(
+    userProfileRepository: ref.watch(userProfileRepositoryProvider),
+    subscriptionRepository: ref.watch(subscriptionRepositoryProvider),
+  );
+});
+
 // Subscription Data Provider
 final subscriptionProvider = FutureProvider<Subscription>((final ref) async {
-  final profile = await ref.watch(userProfileProvider.future);
-  final result = await ref
-      .read(subscriptionRepositoryProvider)
-      .getSubscription(profile.userId);
+  final useCase = ref.watch(getSubscriptionUseCaseProvider);
+  final result = await useCase();
 
   if (result.isFailure) {
     throw result.getError()!;
