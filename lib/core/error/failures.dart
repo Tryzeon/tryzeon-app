@@ -29,6 +29,10 @@ class UnknownFailure extends Failure {
   const UnknownFailure([super.message]);
 }
 
+class ValidationFailure extends Failure {
+  const ValidationFailure([super.message]);
+}
+
 /// Maps Exceptions to Failures
 Failure mapExceptionToFailure(final Object e) {
   return switch (e) {

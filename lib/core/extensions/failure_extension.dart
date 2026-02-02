@@ -13,6 +13,9 @@ extension FailureMessage on Failure {
       AuthFailure(message: final msg?) => msg,
       AuthFailure() => '偵測到登入狀態異常，請重新登入',
 
+      ValidationFailure(message: final msg?) => msg,
+      ValidationFailure() => '驗證失敗，請檢查您的方案是否已達上限',
+
       UnknownFailure(message: final msg?) => msg,
       UnknownFailure() => '發生未知錯誤，請稍後再試',
     };

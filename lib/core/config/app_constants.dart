@@ -37,6 +37,11 @@ class AppConstants {
   static const int otpResendCountdownSeconds = 60;
   static const int otpCodeLength = 6;
 
+  // Wardrobe Limits
+  static const int wardrobeLimitFree = 20;
+  static const int wardrobeLimitPro = 50;
+  static const int wardrobeLimitMax = 100;
+
   // Shared Preferences Keys
   static const String keyRecommendNearbyShops = 'recommend_nearby_shops';
 }

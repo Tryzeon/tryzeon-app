@@ -1,3 +1,5 @@
+import 'package:tryzeon/core/config/app_constants.dart';
+
 enum SubscriptionPlan {
   free,
   pro,
@@ -11,6 +13,17 @@ enum SubscriptionPlan {
         return '專業版 Pro';
       case SubscriptionPlan.max:
         return '尊爵版 Max';
+    }
+  }
+
+  int get wardrobeLimit {
+    switch (this) {
+      case SubscriptionPlan.free:
+        return AppConstants.wardrobeLimitFree;
+      case SubscriptionPlan.pro:
+        return AppConstants.wardrobeLimitPro;
+      case SubscriptionPlan.max:
+        return AppConstants.wardrobeLimitMax;
     }
   }
 }

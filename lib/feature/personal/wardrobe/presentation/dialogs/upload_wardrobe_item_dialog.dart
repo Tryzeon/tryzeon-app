@@ -4,10 +4,13 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_category.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
+import 'package:tryzeon/feature/subscription/presentation/pages/subscription_page.dart';
+import 'package:tryzeon/feature/subscription/presentation/providers/subscription_provider.dart';
 import 'package:typed_result/typed_result.dart';
 import '../mappers/category_ui_mapper.dart';
 
@@ -35,6 +38,33 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
+    void showUpgradeDialog() {
+      showDialog<void>(
+        context: context,
+        builder: (final ctx) => AlertDialog(
+          title: const Text('衣櫃已達上限'),
+          content: const Text(
+            '您的衣櫃容量已達上限\n'
+            '升級至更高方案以獲得更多儲存空間！',
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (final context) => const SubscriptionPage()),
+                );
+              },
+              child: const Text('前往訂閱'),
+            ),
+          ],
+        ),
+      );
+    }
+
     Future<void> handleUpload() async {
       isUploading.value = true;
 
@@ -53,11 +83,17 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
         ref.invalidate(wardrobeItemsProvider);
         Navigator.pop(context, true);
       } else {
-        TopNotification.show(
-          context,
-          message: result.getError()!.displayMessage(context),
-          type: NotificationType.error,
-        );
+        final failure = result.getError()!;
+
+        if (failure is ValidationFailure) {
+          showUpgradeDialog();
+        } else {
+          TopNotification.show(
+            context,
+            message: failure.displayMessage(context),
+            type: NotificationType.error,
+          );
+        }
       }
     }
 
@@ -77,6 +113,65 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
         selectedTags.value = [...selectedTags.value, tag];
       }
       customTagController.clear();
+    }
+
+    Widget buildCapacityIndicator() {
+      final subscriptionAsync = ref.watch(subscriptionProvider);
+      final wardrobeItemsAsync = ref.watch(wardrobeItemsProvider);
+
+      return subscriptionAsync.when(
+        data: (final subscription) => wardrobeItemsAsync.when(
+          data: (final items) {
+            final current = items.length;
+            final limit = subscription.plan.wardrobeLimit;
+            final percentage = current / limit;
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '衣櫃容量',
+                        style: textTheme.labelMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSurface.withValues(alpha: 0.7),
+                        ),
+                      ),
+                      Text(
+                        '$current / $limit 件',
+                        style: textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: percentage >= 0.9
+                              ? colorScheme.error
+                              : colorScheme.onSurface,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: LinearProgressIndicator(
+                      value: percentage,
+                      minHeight: 6,
+                      backgroundColor: colorScheme.onSurface.withValues(alpha: 0.1),
+                      color: percentage >= 0.9 ? colorScheme.error : colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+          loading: () => const SizedBox.shrink(),
+          error: (final _, final __) => const SizedBox.shrink(),
+        ),
+        loading: () => const SizedBox.shrink(),
+        error: (final _, final __) => const SizedBox.shrink(),
+      );
     }
 
     Widget buildImagePreview() {
@@ -396,6 +491,9 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 24),
+                    // Capacity Indicator
+                    buildCapacityIndicator(),
+                    const SizedBox(height: 16),
                     buildImagePreview(),
                     const SizedBox(height: 24),
                     buildCategorySelector(),

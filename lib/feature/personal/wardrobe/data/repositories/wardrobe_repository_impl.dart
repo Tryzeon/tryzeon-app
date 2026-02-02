@@ -120,7 +120,9 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
       final url = await _remoteDataSource.createSignedUrl(imagePath);
       final image = await _localDataSource.getImage(imagePath, downloadUrl: url);
 
-      if (image == null) return const Err(UnknownFailure('無法獲取衣物圖片'));
+      if (image == null) {
+        return const Err(UnknownFailure('Failed to retrieve wardrobe image'));
+      }
 
       return Ok(image);
     } catch (e, stackTrace) {

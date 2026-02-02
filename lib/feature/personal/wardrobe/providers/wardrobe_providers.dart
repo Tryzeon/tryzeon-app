@@ -11,6 +11,7 @@ import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/delete_wardrob
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/get_wardrobe_item_image.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/get_wardrobe_items.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/upload_wardrobe_item.dart';
+import 'package:tryzeon/feature/subscription/presentation/providers/subscription_provider.dart';
 import 'package:typed_result/typed_result.dart';
 
 final wardrobeRemoteDataSourceProvider = Provider<WardrobeRemoteDataSource>((final ref) {
@@ -35,7 +36,11 @@ final getWardrobeItemsUseCaseProvider = Provider<GetWardrobeItems>((final ref) {
 });
 
 final uploadWardrobeItemUseCaseProvider = Provider<UploadWardrobeItem>((final ref) {
-  return UploadWardrobeItem(ref.watch(wardrobeRepositoryProvider));
+  return UploadWardrobeItem(
+    wardrobeRepository: ref.watch(wardrobeRepositoryProvider),
+    getSubscriptionUseCase: ref.watch(getSubscriptionUseCaseProvider),
+    getWardrobeItemsUseCase: ref.watch(getWardrobeItemsUseCaseProvider),
+  );
 });
 
 final deleteWardrobeItemUseCaseProvider = Provider<DeleteWardrobeItem>((final ref) {
