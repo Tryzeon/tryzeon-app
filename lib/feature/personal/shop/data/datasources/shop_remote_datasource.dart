@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/domain/entities/user_location.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_product_model.dart';
 import 'package:tryzeon/feature/personal/shop/domain/enums/product_sort_option.dart';
@@ -6,7 +7,9 @@ import 'package:tryzeon/feature/personal/shop/domain/enums/product_sort_option.d
 class ShopRemoteDataSource {
   ShopRemoteDataSource(this._supabaseClient);
   final SupabaseClient _supabaseClient;
-  static const _productsTable = 'products';
+  static const _productsTable = AppConstants.tableProducts;
+  static const _storeProfileTable = AppConstants.tableStoreProfile;
+  static const _storeBucket = AppConstants.bucketStore;
 
   Future<List<ShopProductModel>> getProducts({
     final String? searchQuery,
@@ -27,7 +30,7 @@ class ShopRemoteDataSource {
     if (searchQuery != null && searchQuery.isNotEmpty) {
       // 1. 先找出名稱符合搜尋關鍵字的店家 ID
       final matchingStores = await _supabaseClient
-          .from('store_profile')
+          .from(_storeProfileTable)
           .select('id')
           .ilike('name', '%$searchQuery%');
 
@@ -122,7 +125,7 @@ class ShopRemoteDataSource {
   }
 
   String getProductImageUrl(final String imagePath) {
-    return _supabaseClient.storage.from('store').getPublicUrl(imagePath);
+    return _supabaseClient.storage.from(_storeBucket).getPublicUrl(imagePath);
   }
 
   Future<void> incrementTryonCount(final String productId) async {
