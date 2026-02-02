@@ -59,8 +59,8 @@ final shopProductsProvider = FutureProvider.family<List<ShopProduct>, ShopFilter
   final ref,
   final filter,
 ) async {
-  final useCase = ref.watch(getShopProductsProvider);
-  final result = await useCase(
+  final getShopProductsUseCase = ref.watch(getShopProductsProvider);
+  final result = await getShopProductsUseCase(
     searchQuery: filter.searchQuery,
     sortOption: filter.sortOption,
     minPrice: filter.minPrice,
@@ -75,8 +75,8 @@ final shopProductsProvider = FutureProvider.family<List<ShopProduct>, ShopFilter
 });
 
 final shopAdsProvider = FutureProvider<List<String>>((final ref) async {
-  final useCase = ref.watch(getAdsProvider);
-  final result = await useCase();
+  final getAdsUseCase = ref.watch(getAdsProvider);
+  final result = await getAdsUseCase();
   if (result.isFailure) {
     throw result.getError()!;
   }

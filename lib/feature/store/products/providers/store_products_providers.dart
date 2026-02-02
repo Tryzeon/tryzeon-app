@@ -71,9 +71,9 @@ final productsProvider = FutureProvider.autoDispose<List<Product>>((final ref) a
 /// 注意：此函數會吞掉 refresh 時的異常，確保 ErrorView 的 onRetry 能正常運作
 Future<void> refreshProducts(final WidgetRef ref) async {
   final sort = ref.read(productSortConditionProvider);
-  final useCase = ref.read(getProductsUseCaseProvider);
+  final getProductsUseCase = ref.read(getProductsUseCaseProvider);
 
-  await useCase(sort: sort, forceRefresh: true);
+  await getProductsUseCase(sort: sort, forceRefresh: true);
   try {
     final _ = await ref.refresh(productsProvider.future);
   } catch (_) {

@@ -49,8 +49,8 @@ final getWardrobeItemImageUseCaseProvider = Provider<GetWardrobeItemImage>((fina
 final wardrobeItemsProvider = FutureProvider.autoDispose<List<WardrobeItem>>((
   final ref,
 ) async {
-  final useCase = ref.watch(getWardrobeItemsUseCaseProvider);
-  final result = await useCase();
+  final getWardrobeItemsUseCase = ref.watch(getWardrobeItemsUseCaseProvider);
+  final result = await getWardrobeItemsUseCase();
   if (result.isFailure) {
     throw result.getError()!;
   }
@@ -59,8 +59,8 @@ final wardrobeItemsProvider = FutureProvider.autoDispose<List<WardrobeItem>>((
 
 /// 強制刷新衣櫃列表
 Future<void> refreshWardrobeItems(final WidgetRef ref) async {
-  final useCase = ref.read(getWardrobeItemsUseCaseProvider);
-  await useCase(forceRefresh: true);
+  final getWardrobeItemsUseCase = ref.read(getWardrobeItemsUseCaseProvider);
+  await getWardrobeItemsUseCase(forceRefresh: true);
   try {
     final _ = await ref.refresh(wardrobeItemsProvider.future);
   } catch (_) {
@@ -72,8 +72,8 @@ final wardrobeItemImageProvider = FutureProvider.family.autoDispose<File, String
   final ref,
   final imagePath,
 ) async {
-  final useCase = ref.watch(getWardrobeItemImageUseCaseProvider);
-  final result = await useCase(imagePath);
+  final getWardrobeItemImageUseCase = ref.watch(getWardrobeItemImageUseCaseProvider);
+  final result = await getWardrobeItemImageUseCase(imagePath);
   if (result.isFailure) {
     throw result.getError()!;
   }

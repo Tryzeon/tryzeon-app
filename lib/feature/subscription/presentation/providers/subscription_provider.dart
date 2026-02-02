@@ -30,8 +30,8 @@ final getSubscriptionUseCaseProvider = Provider<GetSubscription>((final ref) {
 
 // Subscription Data Provider
 final subscriptionProvider = FutureProvider<Subscription>((final ref) async {
-  final useCase = ref.watch(getSubscriptionUseCaseProvider);
-  final result = await useCase();
+  final getSubscriptionUseCase = ref.watch(getSubscriptionUseCaseProvider);
+  final result = await getSubscriptionUseCase();
 
   if (result.isFailure) {
     throw result.getError()!;

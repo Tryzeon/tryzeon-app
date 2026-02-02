@@ -71,8 +71,8 @@ class EmailLoginPage extends HookConsumerWidget {
 
       isLoading.value = true;
 
-      final useCase = await ref.read(sendEmailOtpUseCaseProvider.future);
-      final result = await useCase(email: email, userType: userType);
+      final sendEmailOtpUseCase = await ref.read(sendEmailOtpUseCaseProvider.future);
+      final result = await sendEmailOtpUseCase(email: email, userType: userType);
 
       if (context.mounted) {
         isLoading.value = false;
@@ -107,8 +107,12 @@ class EmailLoginPage extends HookConsumerWidget {
       FocusScope.of(context).unfocus();
       isLoading.value = true;
 
-      final useCase = await ref.read(verifyEmailOtpUseCaseProvider.future);
-      final result = await useCase(email: email, token: token, userType: userType);
+      final verifyEmailOtpUseCase = await ref.read(verifyEmailOtpUseCaseProvider.future);
+      final result = await verifyEmailOtpUseCase(
+        email: email,
+        token: token,
+        userType: userType,
+      );
 
       if (context.mounted) {
         isLoading.value = false;

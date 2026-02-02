@@ -67,8 +67,8 @@ final avatarFileProvider = FutureProvider.autoDispose<File?>((final ref) async {
 
 /// 強制刷新用戶資料和頭像
 Future<void> refreshUserProfile(final WidgetRef ref) async {
-  final useCase = ref.read(getUserProfileUseCaseProvider);
-  await useCase(forceRefresh: true);
+  final getUserProfileUseCase = ref.read(getUserProfileUseCaseProvider);
+  await getUserProfileUseCase(forceRefresh: true);
   try {
     await Future.wait([
       ref.refresh(userProfileProvider.future),

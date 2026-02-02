@@ -62,8 +62,8 @@ class PersonalPage extends HookConsumerWidget {
 
       isLoading.value = true;
 
-      final useCase = ref.read(deleteWardrobeItemUseCaseProvider);
-      final result = await useCase(item);
+      final deleteWardrobeItemUseCase = ref.read(deleteWardrobeItemUseCaseProvider);
+      final result = await deleteWardrobeItemUseCase(item);
 
       if (!context.mounted) return;
 
