@@ -11,7 +11,7 @@ class UserProfileRemoteDataSource {
   UserProfileRemoteDataSource(this._supabaseClient);
 
   final SupabaseClient _supabaseClient;
-  static const _table = AppConstants.tableUserProfiles;
+  static const _userProfileTable = AppConstants.tableUserProfiles;
   static const _avatarBucket = AppConstants.bucketUserAvatars;
 
   Future<UserProfileModel> getUserProfile() async {
@@ -19,7 +19,7 @@ class UserProfileRemoteDataSource {
     if (user == null) throw const UnauthenticatedException();
 
     final response = await _supabaseClient
-        .from(_table)
+        .from(_userProfileTable)
         .select(
           'user_id, name, avatar_path, height, chest, waist, hips, shoulder, sleeve, created_at, updated_at',
         )
@@ -39,7 +39,7 @@ class UserProfileRemoteDataSource {
       ..remove('updated_at');
 
     final response = await _supabaseClient
-        .from(_table)
+        .from(_userProfileTable)
         .update(json)
         .eq('user_id', user.id)
         .select()

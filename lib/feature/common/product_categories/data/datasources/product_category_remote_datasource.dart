@@ -6,11 +6,11 @@ class ProductCategoryRemoteDataSource {
   ProductCategoryRemoteDataSource(this._supabaseClient);
 
   final SupabaseClient _supabaseClient;
-  static const _table = AppConstants.tableProductCategories;
+  static const _productCategoryTable = AppConstants.tableProductCategories;
 
   Future<List<ProductCategoryModel>> getProductCategories() async {
     final response = await _supabaseClient
-        .from(_table)
+        .from(_productCategoryTable)
         .select('id, name')
         .order('priority', ascending: false);
 

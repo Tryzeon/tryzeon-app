@@ -11,7 +11,7 @@ class StoreProfileRemoteDataSource {
   StoreProfileRemoteDataSource(this._supabaseClient);
 
   final SupabaseClient _supabaseClient;
-  static const _table = AppConstants.tableStoreProfiles;
+  static const _storeProfileTable = AppConstants.tableStoreProfiles;
   static const _logoBucket = AppConstants.bucketStoreLogos;
 
   Future<StoreProfileModel?> getStoreProfile() async {
@@ -19,7 +19,7 @@ class StoreProfileRemoteDataSource {
     if (user == null) throw const UnauthenticatedException();
 
     final response = await _supabaseClient
-        .from(_table)
+        .from(_storeProfileTable)
         .select('id, owner_id, name, address, logo_path, created_at, updated_at')
         .eq('owner_id', user.id)
         .maybeSingle();
@@ -47,7 +47,7 @@ class StoreProfileRemoteDataSource {
       ..remove('logo_url');
 
     final response = await _supabaseClient
-        .from(_table)
+        .from(_storeProfileTable)
         .update(json)
         .eq('owner_id', user.id)
         .select()

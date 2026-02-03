@@ -11,7 +11,7 @@ class WardrobeRemoteDataSource {
   WardrobeRemoteDataSource(this._supabaseClient);
   final SupabaseClient _supabaseClient;
 
-  static const _table = AppConstants.tableWardrobeItems;
+  static const _wardrobeItemTable = AppConstants.tableWardrobeItems;
   static const _bucket = AppConstants.bucketWardrobeImages;
 
   Future<List<WardrobeItemModel>> getWardrobeItems() async {
@@ -19,7 +19,7 @@ class WardrobeRemoteDataSource {
     if (user == null) throw const UnauthenticatedException();
 
     final response = await _supabaseClient
-        .from(_table)
+        .from(_wardrobeItemTable)
         .select('id, image_path, category, tags, created_at, updated_at')
         .eq('user_id', user.id)
         .order('created_at', ascending: false);
@@ -39,13 +39,17 @@ class WardrobeRemoteDataSource {
     json.remove('created_at');
     json.remove('updated_at');
 
-    final response = await _supabaseClient.from(_table).insert(json).select().single();
+    final response = await _supabaseClient
+        .from(_wardrobeItemTable)
+        .insert(json)
+        .select()
+        .single();
 
     return WardrobeItemModel.fromJson(response);
   }
 
   Future<void> deleteWardrobeItem(final String id) async {
-    await _supabaseClient.from(_table).delete().eq('id', id);
+    await _supabaseClient.from(_wardrobeItemTable).delete().eq('id', id);
   }
 
   Future<String> uploadImage({
