@@ -10,9 +10,9 @@ class AppLogger {
 
     final lines = stackTrace.toString().split('\n');
 
-    if (lines.length <= 5) return stackTrace;
+    if (lines.length <= 15) return stackTrace;
 
-    final croppedString = '${lines.take(5).join('\n')}\n... (truncated)';
+    final croppedString = '${lines.take(15).join('\n')}\n... (truncated)';
 
     return StackTrace.fromString(croppedString);
   }

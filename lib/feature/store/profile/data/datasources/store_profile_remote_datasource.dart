@@ -11,7 +11,7 @@ class StoreProfileRemoteDataSource {
   StoreProfileRemoteDataSource(this._supabaseClient);
 
   final SupabaseClient _supabaseClient;
-  static const _table = AppConstants.tableStoreProfile;
+  static const _table = AppConstants.tableStoreProfiles;
   static const _logoBucket = AppConstants.bucketStoreLogos;
 
   Future<StoreProfileModel?> getStoreProfile() async {

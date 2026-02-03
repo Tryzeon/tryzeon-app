@@ -6,7 +6,7 @@ class SubscriptionRemoteDataSource {
   SubscriptionRemoteDataSource(this._supabaseClient);
 
   final SupabaseClient _supabaseClient;
-  static const _subscriptionTable = AppConstants.tableSubscription;
+  static const _subscriptionTable = AppConstants.tableSubscriptions;
 
   Future<SubscriptionModel> getSubscription(final String userId) async {
     final response = await _supabaseClient

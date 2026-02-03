@@ -22,7 +22,7 @@ class ShopProductModel extends ShopProduct {
   factory ShopProductModel.fromJson(final Map<String, dynamic> json) {
     return ShopProductModel(
       storeInfo: ShopStoreInfoModel.fromJson(
-        Map<String, dynamic>.from(json['store_profile']),
+        Map<String, dynamic>.from(json['store_profiles']),
       ),
       name: json['name'] as String,
       types: (json['type'] as List).map((final e) => e.toString()).toSet(),
@@ -36,7 +36,7 @@ class ShopProductModel extends ShopProduct {
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
       sizes:
-          (json['product_sizes'] as List?)
+          (json['product_variants'] as List?)
               ?.map((final e) => ProductSizeModel.fromJson(Map<String, dynamic>.from(e)))
               .toList() ??
           [],

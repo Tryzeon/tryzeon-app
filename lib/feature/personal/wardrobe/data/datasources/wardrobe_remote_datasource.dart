@@ -12,7 +12,7 @@ class WardrobeRemoteDataSource {
   final SupabaseClient _supabaseClient;
 
   static const _table = AppConstants.tableWardrobeItems;
-  static const _bucket = AppConstants.bucketWardrobe;
+  static const _bucket = AppConstants.bucketWardrobeImages;
 
   Future<List<WardrobeItemModel>> getWardrobeItems() async {
     final user = _supabaseClient.auth.currentUser;

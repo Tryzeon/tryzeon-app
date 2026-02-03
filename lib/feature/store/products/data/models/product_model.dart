@@ -75,8 +75,8 @@ class ProductModel extends Product {
       purchaseClickCount: json['purchase_click_count'] as int? ?? 0,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
-      storeName: json['store_profile']?['name'] as String?,
-      sizes: (json['product_sizes'] as List?)
+      storeName: (json['store_profiles'] ?? json['store_profile'])?['name'] as String?,
+      sizes: (json['product_variants'] as List?)
           ?.map((final e) => ProductSizeModel.fromJson(Map<String, dynamic>.from(e)))
           .toList(),
     );
@@ -113,7 +113,7 @@ class ProductModel extends Product {
       if (createdAt != null) 'created_at': createdAt!.toIso8601String(),
       if (updatedAt != null) 'updated_at': updatedAt!.toIso8601String(),
       if (sizes != null)
-        'product_sizes': sizes!
+        'product_variants': sizes!
             .map(
               (final e) => ProductSizeModel(
                 id: e.id,

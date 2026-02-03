@@ -5,19 +5,19 @@ class AppConstants {
   static const String authCallbackUrl = 'io.supabase.tryzeon://login-callback';
 
   // Supabase Tables
-  static const String tableStoreProfile = 'store_profile';
+  static const String tableUserProfiles = 'user_profiles';
+  static const String tableStoreProfiles = 'store_profiles';
   static const String tableProducts = 'products';
-  static const String tableProductSizes = 'product_sizes';
+  static const String tableProductVariants = 'product_variants';
   static const String tableProductCategories = 'product_categories';
-  static const String tableUserProfile = 'user_profile';
-  static const String tableSubscription = 'subscribe';
+  static const String tableSubscriptions = 'subscriptions';
   static const String tableWardrobeItems = 'wardrobe_items';
 
   // Supabase Buckets
-  static const String bucketStoreLogos = 'store_logos';
-  static const String bucketStoreProducts = 'store_products';
-  static const String bucketAvatars = 'avatars';
-  static const String bucketWardrobe = 'wardrobe';
+  static const String bucketStoreLogos = 'store-logos';
+  static const String bucketProductImages = 'product-images';
+  static const String bucketUserAvatars = 'user-avatars';
+  static const String bucketWardrobeImages = 'wardrobe-images';
 
   // Supabase Functions
   static const String functionChat = 'chat';

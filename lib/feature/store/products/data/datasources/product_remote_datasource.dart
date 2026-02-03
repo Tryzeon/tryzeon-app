@@ -14,8 +14,8 @@ class ProductRemoteDataSource {
 
   final SupabaseClient _supabaseClient;
   static const _productsTable = AppConstants.tableProducts;
-  static const _productSizesTable = AppConstants.tableProductSizes;
-  static const _productImagesBucket = AppConstants.bucketStoreProducts;
+  static const _productSizesTable = AppConstants.tableProductVariants;
+  static const _productImagesBucket = AppConstants.bucketProductImages;
 
   Future<List<ProductModel>> getProducts({
     required final String storeId,
@@ -25,7 +25,7 @@ class ProductRemoteDataSource {
 
     final response = await _supabaseClient
         .from(_productsTable)
-        .select('*, product_sizes(*)')
+        .select('*, product_variants(*)')
         .eq('store_id', storeId)
         .order(dbColumn, ascending: sort.ascending);
 
@@ -44,7 +44,7 @@ class ProductRemoteDataSource {
     json.remove('id');
     json.remove('created_at');
     json.remove('updated_at');
-    json.remove('product_sizes');
+    json.remove('product_variants');
 
     final response = await _supabaseClient
         .from(_productsTable)
@@ -68,7 +68,7 @@ class ProductRemoteDataSource {
   Future<ProductModel> getProduct(final String productId) async {
     final response = await _supabaseClient
         .from(_productsTable)
-        .select('*, product_sizes(*)')
+        .select('*, product_variants(*)')
         .eq('id', productId)
         .single();
 
@@ -86,7 +86,7 @@ class ProductRemoteDataSource {
       ..remove('store_id')
       ..remove('created_at')
       ..remove('updated_at')
-      ..remove('product_sizes');
+      ..remove('product_variants');
 
     await _supabaseClient.from(_productsTable).update(json).eq('id', product.id!);
   }

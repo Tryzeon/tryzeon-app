@@ -8,9 +8,9 @@ class ShopRemoteDataSource {
   ShopRemoteDataSource(this._supabaseClient);
   final SupabaseClient _supabaseClient;
   static const _productsTable = AppConstants.tableProducts;
-  static const _storeProfileTable = AppConstants.tableStoreProfile;
+  static const _storeProfileTable = AppConstants.tableStoreProfiles;
   static const _logoBucket = AppConstants.bucketStoreLogos;
-  static const _productBucket = AppConstants.bucketStoreProducts;
+  static const _productBucket = AppConstants.bucketProductImages;
 
   Future<List<ShopProductModel>> getProducts({
     final String? searchQuery,
@@ -23,8 +23,8 @@ class ShopRemoteDataSource {
     // 查詢所有商品並關聯店家資訊和尺寸資訊
     dynamic query = _supabaseClient.from(_productsTable).select('''
           *,
-          product_sizes(*),
-          store_profile!inner(*)
+          product_variants(*),
+          store_profiles!inner(*)
         ''');
 
     // 搜尋過濾
@@ -91,13 +91,13 @@ class ShopRemoteDataSource {
       }
 
       // 處理店家 Logo
-      if (map['store_profile'] != null) {
-        final storeProfile = Map<String, dynamic>.from(map['store_profile']);
+      if (map['store_profiles'] != null) {
+        final storeProfile = Map<String, dynamic>.from(map['store_profiles']);
         final logoPath = storeProfile['logo_path'] as String?;
         if (logoPath != null && logoPath.isNotEmpty) {
           storeProfile['logo_url'] = getStoreLogoUrl(logoPath);
         }
-        map['store_profile'] = storeProfile;
+        map['store_profiles'] = storeProfile;
       }
 
       return ShopProductModel.fromJson(map);
