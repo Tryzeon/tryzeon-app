@@ -129,7 +129,7 @@ class ProductRemoteDataSource {
     if (user == null) throw const UnauthenticatedException();
 
     final imageName = p.basename(image.path);
-    final productImagePath = '$storeId/$imageName';
+    final productImagePath = '$storeId/products/$imageName';
     final mimeType = lookupMimeType(image.path);
 
     final bytes = await image.readAsBytes();
