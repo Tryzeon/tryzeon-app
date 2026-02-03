@@ -18,7 +18,7 @@ Deno.serve(async () => {
         if (wardrobeOrphans && wardrobeOrphans.length > 0) {
             const paths = wardrobeOrphans.map(item => item.image_path)
             const { error: removeError } = await supabase.storage
-                .from('wardrobe')
+                .from('wardrobe-images')
                 .remove(paths)
 
             if (removeError) throw removeError
@@ -35,7 +35,7 @@ Deno.serve(async () => {
         if (avatarOrphans && avatarOrphans.length > 0) {
             const paths = avatarOrphans.map(item => item.image_path)
             const { error: removeError } = await supabase.storage
-                .from('avatars')
+                .from('user-avatars')
                 .remove(paths)
 
             if (removeError) throw removeError
@@ -52,7 +52,7 @@ Deno.serve(async () => {
         if (storeLogoOrphans && storeLogoOrphans.length > 0) {
             const paths = storeLogoOrphans.map(item => item.image_path)
             const { error: removeError } = await supabase.storage
-                .from('store_logos')
+                .from('store-logos')
                 .remove(paths)
 
             if (removeError) throw removeError
@@ -69,7 +69,7 @@ Deno.serve(async () => {
         if (storeProductOrphans && storeProductOrphans.length > 0) {
             const paths = storeProductOrphans.map(item => item.image_path)
             const { error: removeError } = await supabase.storage
-                .from('store_products')
+                .from('product-images')
                 .remove(paths)
 
             if (removeError) throw removeError
@@ -102,7 +102,7 @@ BEGIN
   RETURN QUERY
   SELECT o.name::text AS image_path
   FROM storage.objects o
-  WHERE o.bucket_id = 'store_products'
+  WHERE o.bucket_id = 'product-images'
   AND NOT EXISTS (
     SELECT 1 
     FROM public.products p 

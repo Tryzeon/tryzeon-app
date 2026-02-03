@@ -50,11 +50,11 @@ class StorageService {
   async fetchImage(path: string): Promise<string> {
     let bucket: string;
     if (path.includes('wardrobe')) {
-      bucket = 'wardrobe';
+      bucket = 'wardrobe-images';
     } else if (path.includes('product')) {
-      bucket = 'store';
+      bucket = 'product-images';
     } else if (path.includes('avatar')) {
-      bucket = 'avatars';
+      bucket = 'user-avatars';
     } else {
       throw new AppError(`Cannot determine bucket from path: ${path}`, 400);
     }
@@ -72,7 +72,7 @@ class SubscriptionService {
 
   async checkAndIncrementLimit(userId: string): Promise<void> {
     const { data, error } = await this.supabase
-      .from('subscribe')
+      .from('subscriptions')
       .select('plan, daily_usage_count, last_reset_date')
       .eq('user_id', userId)
       .single();
@@ -99,7 +99,7 @@ class SubscriptionService {
     }
 
     const { error: updateError } = await this.supabase
-      .from('subscribe')
+      .from('subscriptions')
       .update({
         daily_usage_count: currentUsage + 1,
         last_reset_date: today,
