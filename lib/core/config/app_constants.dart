@@ -14,7 +14,8 @@ class AppConstants {
   static const String tableWardrobeItems = 'wardrobe_items';
 
   // Supabase Buckets
-  static const String bucketStore = 'store';
+  static const String bucketStoreLogos = 'store_logos';
+  static const String bucketStoreProducts = 'store_products';
   static const String bucketAvatars = 'avatars';
   static const String bucketWardrobe = 'wardrobe';
 

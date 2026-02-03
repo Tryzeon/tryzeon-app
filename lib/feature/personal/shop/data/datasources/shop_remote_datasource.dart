@@ -9,7 +9,8 @@ class ShopRemoteDataSource {
   final SupabaseClient _supabaseClient;
   static const _productsTable = AppConstants.tableProducts;
   static const _storeProfileTable = AppConstants.tableStoreProfile;
-  static const _storeBucket = AppConstants.bucketStore;
+  static const _logoBucket = AppConstants.bucketStoreLogos;
+  static const _productBucket = AppConstants.bucketStoreProducts;
 
   Future<List<ShopProductModel>> getProducts({
     final String? searchQuery,
@@ -94,7 +95,7 @@ class ShopRemoteDataSource {
         final storeProfile = Map<String, dynamic>.from(map['store_profile']);
         final logoPath = storeProfile['logo_path'] as String?;
         if (logoPath != null && logoPath.isNotEmpty) {
-          storeProfile['logo_url'] = getProductImageUrl(logoPath);
+          storeProfile['logo_url'] = getStoreLogoUrl(logoPath);
         }
         map['store_profile'] = storeProfile;
       }
@@ -125,7 +126,11 @@ class ShopRemoteDataSource {
   }
 
   String getProductImageUrl(final String imagePath) {
-    return _supabaseClient.storage.from(_storeBucket).getPublicUrl(imagePath);
+    return _supabaseClient.storage.from(_productBucket).getPublicUrl(imagePath);
+  }
+
+  String getStoreLogoUrl(final String logoPath) {
+    return _supabaseClient.storage.from(_logoBucket).getPublicUrl(logoPath);
   }
 
   Future<void> incrementTryonCount(final String productId) async {

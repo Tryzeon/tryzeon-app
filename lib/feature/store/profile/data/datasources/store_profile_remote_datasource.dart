@@ -12,7 +12,7 @@ class StoreProfileRemoteDataSource {
 
   final SupabaseClient _supabaseClient;
   static const _table = AppConstants.tableStoreProfile;
-  static const _logoBucket = AppConstants.bucketStore;
+  static const _logoBucket = AppConstants.bucketStoreLogos;
 
   Future<StoreProfileModel?> getStoreProfile() async {
     final user = _supabaseClient.auth.currentUser;

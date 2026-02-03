@@ -87,10 +87,8 @@ class ProductCard extends HookConsumerWidget {
                       placeholder: (final context, final url) => Center(
                         child: CircularProgressIndicator(color: colorScheme.primary),
                       ),
-                      errorWidget: (final context, final url, final error) => Container(
-                        color: colorScheme.surfaceContainer,
-                        child: const Icon(Icons.image_not_supported),
-                      ),
+                      errorWidget: (final context, final url, final error) =>
+                          const Center(child: Icon(Icons.error_outline)),
                     ),
                   ),
                   // Try-on button with fit color at bottom right

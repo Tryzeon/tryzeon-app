@@ -15,7 +15,7 @@ class ProductRemoteDataSource {
   final SupabaseClient _supabaseClient;
   static const _productsTable = AppConstants.tableProducts;
   static const _productSizesTable = AppConstants.tableProductSizes;
-  static const _productImagesBucket = AppConstants.bucketStore;
+  static const _productImagesBucket = AppConstants.bucketStoreProducts;
 
   Future<List<ProductModel>> getProducts({
     required final String storeId,
@@ -129,7 +129,7 @@ class ProductRemoteDataSource {
     if (user == null) throw const UnauthenticatedException();
 
     final imageName = p.basename(image.path);
-    final productImagePath = '$storeId/products/$imageName';
+    final productImagePath = '$storeId/$imageName';
     final mimeType = lookupMimeType(image.path);
 
     final bytes = await image.readAsBytes();
