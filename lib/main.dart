@@ -3,6 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_config.dart';
+import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/presentation/pages/login_page.dart';
@@ -30,6 +31,13 @@ class Tryzeon extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
+    // Analytics Lifecycle Observer
+    useOnAppLifecycleStateChange((final previous, final current) {
+      if (current == AppLifecycleState.paused || current == AppLifecycleState.detached) {
+        ref.read(analyticsEventQueueServiceProvider).forceFlush();
+      }
+    });
+
     final isLoading = useState(true);
     final userType = useState<UserType?>(null);
 

@@ -1,5 +1,7 @@
+import 'package:tryzeon/core/domain/entities/analytics_event.dart';
 import 'package:tryzeon/core/domain/entities/user_location.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/services/analytics_event_queue_service.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/ad_local_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_remote_datasource.dart';
@@ -11,9 +13,14 @@ import 'package:tryzeon/feature/personal/shop/domain/repositories/shop_repositor
 import 'package:typed_result/typed_result.dart';
 
 class ShopRepositoryImpl implements ShopRepository {
-  ShopRepositoryImpl(this._remoteDataSource, this._adLocalDataSource);
+  ShopRepositoryImpl(
+    this._remoteDataSource,
+    this._adLocalDataSource,
+    this._analyticsQueueService,
+  );
   final ShopRemoteDataSource _remoteDataSource;
   final AdLocalDataSource _adLocalDataSource;
+  final AnalyticsEventQueueService _analyticsQueueService;
 
   @override
   Future<Result<List<ShopProduct>, Failure>> getProducts({
@@ -47,14 +54,17 @@ class ShopRepositoryImpl implements ShopRepository {
     required final String storeId,
   }) async {
     try {
-      await _remoteDataSource.logAnalyticsEvent(
-        productId: productId,
-        storeId: storeId,
-        eventType: AnalyticsEventType.tryOn,
+      // Enqueue event instead of sending immediately
+      _analyticsQueueService.enqueue(
+        AnalyticsEvent(
+          productId: productId,
+          storeId: storeId,
+          eventType: AnalyticsEventType.tryOn.value,
+        ),
       );
       return const Ok(null);
     } catch (e, stackTrace) {
-      AppLogger.error('Failed to record try-on count', e, stackTrace);
+      AppLogger.error('Failed to enqueue try-on event', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }
@@ -65,14 +75,17 @@ class ShopRepositoryImpl implements ShopRepository {
     required final String storeId,
   }) async {
     try {
-      await _remoteDataSource.logAnalyticsEvent(
-        productId: productId,
-        storeId: storeId,
-        eventType: AnalyticsEventType.purchaseClick,
+      // Enqueue event instead of sending immediately
+      _analyticsQueueService.enqueue(
+        AnalyticsEvent(
+          productId: productId,
+          storeId: storeId,
+          eventType: AnalyticsEventType.purchaseClick.value,
+        ),
       );
       return const Ok(null);
     } catch (e, stackTrace) {
-      AppLogger.error('Failed to record purchase click', e, stackTrace);
+      AppLogger.error('Failed to enqueue purchase click event', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }

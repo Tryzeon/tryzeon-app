@@ -30,7 +30,8 @@ final adLocalDataSourceProvider = Provider<AdLocalDataSource>((final ref) {
 final shopRepositoryProvider = Provider<ShopRepository>((final ref) {
   final remote = ref.watch(shopRemoteDataSourceProvider);
   final adLocal = ref.watch(adLocalDataSourceProvider);
-  return ShopRepositoryImpl(remote, adLocal);
+  final analyticsQueue = ref.watch(analyticsEventQueueServiceProvider);
+  return ShopRepositoryImpl(remote, adLocal, analyticsQueue);
 });
 
 // --- Use Cases ---
