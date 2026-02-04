@@ -2,22 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:tryzeon/feature/store/products/providers/store_products_providers.dart';
+import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
 
 class StoreTrafficDashboard extends HookConsumerWidget {
   const StoreTrafficDashboard({super.key});
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final productsAsync = ref.watch(productsProvider);
+    final analyticsAsync = ref.watch(storeAnalyticsSummaryProvider);
     final colorScheme = Theme.of(context).colorScheme;
 
     // Calculate stats
     int totalTryOn = 0;
     int totalPurchaseClicks = 0;
 
+    if (analyticsAsync.hasValue && analyticsAsync.value != null) {
+      totalTryOn = analyticsAsync.value!.totalTryonCount;
+      totalPurchaseClicks = analyticsAsync.value!.totalPurchaseClickCount;
+    }
 
-    final isLoading = productsAsync.isLoading;
+    final isLoading = analyticsAsync.isLoading;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
