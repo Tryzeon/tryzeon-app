@@ -17,8 +17,6 @@ class ProductCollection {
   String? imagePath;
   String? imageUrl;
   String? purchaseLink;
-  int? tryonCount;
-  int? purchaseClickCount;
   DateTime? createdAt;
   DateTime? updatedAt;
   String? storeName;

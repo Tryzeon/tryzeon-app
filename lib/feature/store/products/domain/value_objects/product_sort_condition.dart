@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-enum SortField { name, price, createdAt, updatedAt, tryonCount, purchaseClickCount }
+enum SortField { name, price, createdAt, updatedAt }
 
 class SortCondition extends Equatable {
   const SortCondition({required this.field, required this.ascending});

@@ -73,25 +73,6 @@ class StoreProductCard extends HookConsumerWidget {
                     style: textTheme.labelLarge?.copyWith(color: colorScheme.primary),
                   ),
                   const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.auto_awesome,
-                        size: 14,
-                        color: colorScheme.onSurface.withValues(alpha: 0.6),
-                      ),
-                      const SizedBox(width: 4),
-                      Text('${product.tryonCount}', style: textTheme.bodySmall),
-                      const SizedBox(width: 12),
-                      Icon(
-                        Icons.link,
-                        size: 14,
-                        color: colorScheme.onSurface.withValues(alpha: 0.6),
-                      ),
-                      const SizedBox(width: 4),
-                      Text('${product.purchaseClickCount}', style: textTheme.bodySmall),
-                    ],
-                  ),
                 ],
               ),
             ),

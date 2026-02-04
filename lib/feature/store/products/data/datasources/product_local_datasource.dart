@@ -42,18 +42,6 @@ class ProductLocalDataSource {
             await (sort.ascending ? q.sortByUpdatedAt() : q.sortByUpdatedAtDesc())
                 .findAll();
         break;
-      case SortField.tryonCount:
-        collections =
-            await (sort.ascending ? q.sortByTryonCount() : q.sortByTryonCountDesc())
-                .findAll();
-        break;
-      case SortField.purchaseClickCount:
-        collections =
-            await (sort.ascending
-                    ? q.sortByPurchaseClickCount()
-                    : q.sortByPurchaseClickCountDesc())
-                .findAll();
-        break;
     }
 
     return collections.map((final e) => e.toModel()).toList();

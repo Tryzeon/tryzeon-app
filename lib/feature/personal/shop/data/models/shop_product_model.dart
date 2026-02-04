@@ -12,8 +12,6 @@ class ShopProductModel extends ShopProduct {
     required super.imageUrl,
     super.id,
     super.purchaseLink,
-    super.tryonCount,
-    super.purchaseClickCount,
     super.sizes,
     super.createdAt,
     super.updatedAt,
@@ -31,8 +29,6 @@ class ShopProductModel extends ShopProduct {
       imageUrl: json['image_url'] as String? ?? '',
       id: json['id'] as String?,
       purchaseLink: json['purchase_link'] as String?,
-      tryonCount: json['tryon_count'] as int? ?? 0,
-      purchaseClickCount: json['purchase_click_count'] as int? ?? 0,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
       sizes:

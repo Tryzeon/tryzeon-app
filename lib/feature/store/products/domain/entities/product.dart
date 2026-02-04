@@ -51,8 +51,6 @@ class Product extends Equatable {
     required this.imageUrl,
     this.id,
     this.purchaseLink,
-    this.tryonCount,
-    this.purchaseClickCount,
     this.sizes,
     this.storeName,
     this.createdAt,
@@ -67,8 +65,6 @@ class Product extends Equatable {
   final String imageUrl;
   final String? id;
   final String? purchaseLink;
-  final int? tryonCount;
-  final int? purchaseClickCount;
   final List<ProductSize>? sizes;
   final String? storeName;
   final DateTime? createdAt;
@@ -84,8 +80,6 @@ class Product extends Equatable {
     imageUrl,
     id,
     purchaseLink,
-    tryonCount,
-    purchaseClickCount,
     sizes,
     storeName,
     createdAt,
@@ -101,8 +95,6 @@ class Product extends Equatable {
     final String? imageUrl,
     final String? id,
     final String? purchaseLink,
-    final int? tryonCount,
-    final int? purchaseClickCount,
     final List<ProductSize>? sizes,
     final String? storeName,
     final DateTime? createdAt,
@@ -117,8 +109,6 @@ class Product extends Equatable {
       imageUrl: imageUrl ?? this.imageUrl,
       id: id ?? this.id,
       purchaseLink: purchaseLink ?? this.purchaseLink,
-      tryonCount: tryonCount ?? this.tryonCount,
-      purchaseClickCount: purchaseClickCount ?? this.purchaseClickCount,
       sizes: sizes ?? this.sizes,
       storeName: storeName ?? this.storeName,
       createdAt: createdAt ?? this.createdAt,

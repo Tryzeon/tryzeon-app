@@ -9,8 +9,6 @@ extension SortFieldDbMapper on SortField {
       SortField.price => 'price',
       SortField.createdAt => 'created_at',
       SortField.updatedAt => 'updated_at',
-      SortField.tryonCount => 'tryon_count',
-      SortField.purchaseClickCount => 'purchase_click_count',
     };
   }
 }

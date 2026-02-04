@@ -15,8 +15,6 @@ extension ProductModelMapper on ProductModel {
       ..imagePath = imagePath
       ..imageUrl = imageUrl
       ..purchaseLink = purchaseLink
-      ..tryonCount = tryonCount
-      ..purchaseClickCount = purchaseClickCount
       ..createdAt = createdAt
       ..updatedAt = updatedAt
       ..storeName = storeName
@@ -44,8 +42,6 @@ extension ProductCollectionMapper on ProductCollection {
       imageUrl: imageUrl ?? '',
       id: productId,
       purchaseLink: purchaseLink,
-      tryonCount: tryonCount,
-      purchaseClickCount: purchaseClickCount,
       sizes: sizes?.map((final e) => e.toModel()).toList(),
       storeName: storeName,
       createdAt: createdAt,

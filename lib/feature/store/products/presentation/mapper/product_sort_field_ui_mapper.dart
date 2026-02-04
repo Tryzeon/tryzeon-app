@@ -7,7 +7,5 @@ extension SortFieldLabel on SortField {
     SortField.price => '價格',
     SortField.createdAt => '建立時間',
     SortField.updatedAt => '更新時間',
-    SortField.tryonCount => '試穿次數',
-    SortField.purchaseClickCount => '購買點擊次數',
   };
 }

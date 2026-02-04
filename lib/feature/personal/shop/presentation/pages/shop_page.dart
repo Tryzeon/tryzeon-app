@@ -383,8 +383,6 @@ class ShopPage extends HookConsumerWidget {
                                             price: 8888,
                                             imagePath: 'dummy_path',
                                             imageUrl: '',
-                                            tryonCount: 888,
-                                            purchaseClickCount: 888,
                                           ),
                                         );
                                       },

@@ -16,12 +16,6 @@ class StoreTrafficDashboard extends HookConsumerWidget {
     int totalTryOn = 0;
     int totalPurchaseClicks = 0;
 
-    productsAsync.whenData((final products) {
-      for (final product in products) {
-        totalTryOn += product.tryonCount ?? 0;
-        totalPurchaseClicks += product.purchaseClickCount ?? 0;
-      }
-    });
 
     final isLoading = productsAsync.isLoading;
 
