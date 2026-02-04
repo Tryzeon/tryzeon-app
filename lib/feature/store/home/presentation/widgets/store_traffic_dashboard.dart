@@ -15,10 +15,13 @@ class StoreTrafficDashboard extends HookConsumerWidget {
     // Calculate stats
     int totalTryOn = 0;
     int totalPurchaseClicks = 0;
+    bool hasError = false;
 
     if (analyticsAsync.hasValue && analyticsAsync.value != null) {
       totalTryOn = analyticsAsync.value!.totalTryonCount;
       totalPurchaseClicks = analyticsAsync.value!.totalPurchaseClickCount;
+    } else if (analyticsAsync.hasError) {
+      hasError = true;
     }
 
     final isLoading = analyticsAsync.isLoading;
@@ -65,6 +68,17 @@ class StoreTrafficDashboard extends HookConsumerWidget {
                   letterSpacing: 0.5,
                 ),
               ),
+              if (hasError) ...[
+                const SizedBox(width: 8),
+                Tooltip(
+                  message: '資料載入失敗，請下拉刷新',
+                  child: Icon(
+                    Icons.warning_amber_rounded,
+                    color: colorScheme.error,
+                    size: 16,
+                  ),
+                ),
+              ],
             ],
           ),
           const SizedBox(height: 24),
@@ -75,6 +89,7 @@ class StoreTrafficDashboard extends HookConsumerWidget {
                 value: isLoading ? 8888 : totalTryOn,
                 icon: Icons.checkroom_rounded,
                 isLoading: isLoading,
+                hasError: hasError,
               ),
               Container(
                 width: 1,
@@ -87,6 +102,7 @@ class StoreTrafficDashboard extends HookConsumerWidget {
                 value: isLoading ? 8888 : totalPurchaseClicks,
                 icon: Icons.ads_click_rounded,
                 isLoading: isLoading,
+                hasError: hasError,
               ),
             ],
           ),
@@ -102,12 +118,14 @@ class _StatItem extends StatelessWidget {
     required this.value,
     required this.icon,
     required this.isLoading,
+    required this.hasError,
   });
 
   final String label;
   final int value;
   final IconData icon;
   final bool isLoading;
+  final bool hasError;
 
   @override
   Widget build(final BuildContext context) {
@@ -135,9 +153,9 @@ class _StatItem extends StatelessWidget {
           Skeletonizer(
             enabled: isLoading,
             child: Text(
-              value.toString(),
+              hasError ? '--' : value.toString(),
               style: GoogleFonts.outfit(
-                color: colorScheme.primary,
+                color: hasError ? colorScheme.onSurfaceVariant : colorScheme.primary,
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
                 height: 1.1,

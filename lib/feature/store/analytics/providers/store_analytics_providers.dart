@@ -48,3 +48,12 @@ final storeAnalyticsSummaryProvider = FutureProvider<StoreAnalyticsSummary>((
 
   return result.get()!;
 });
+
+/// 強制刷新分析數據
+Future<void> refreshAnalytics(final WidgetRef ref) async {
+  try {
+    final _ = await ref.refresh(storeAnalyticsSummaryProvider.future);
+  } catch (_) {
+    // Provider 刷新失敗時，忽略異常，讓 UI 顯示 ErrorView 或舊資料
+  }
+}
