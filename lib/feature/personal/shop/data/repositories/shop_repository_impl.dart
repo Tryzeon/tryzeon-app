@@ -3,7 +3,9 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/ad_local_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_remote_datasource.dart';
+
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
+import 'package:tryzeon/feature/personal/shop/domain/enums/analytics_event_type.dart';
 import 'package:tryzeon/feature/personal/shop/domain/enums/product_sort_option.dart';
 import 'package:tryzeon/feature/personal/shop/domain/repositories/shop_repository.dart';
 import 'package:typed_result/typed_result.dart';
@@ -40,9 +42,17 @@ class ShopRepositoryImpl implements ShopRepository {
   }
 
   @override
-  Future<Result<void, Failure>> incrementTryonCount(final String productId) async {
+  @override
+  Future<Result<void, Failure>> incrementTryonCount({
+    required final String productId,
+    required final String storeId,
+  }) async {
     try {
-      await _remoteDataSource.incrementTryonCount(productId);
+      await _remoteDataSource.logAnalyticsEvent(
+        productId: productId,
+        storeId: storeId,
+        eventType: AnalyticsEventType.tryOn,
+      );
       return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to record try-on count', e, stackTrace);
@@ -51,11 +61,16 @@ class ShopRepositoryImpl implements ShopRepository {
   }
 
   @override
-  Future<Result<void, Failure>> incrementPurchaseClickCount(
-    final String productId,
-  ) async {
+  Future<Result<void, Failure>> incrementPurchaseClickCount({
+    required final String productId,
+    required final String storeId,
+  }) async {
     try {
-      await _remoteDataSource.incrementPurchaseClickCount(productId);
+      await _remoteDataSource.logAnalyticsEvent(
+        productId: productId,
+        storeId: storeId,
+        eventType: AnalyticsEventType.purchaseClick,
+      );
       return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to record purchase click', e, stackTrace);

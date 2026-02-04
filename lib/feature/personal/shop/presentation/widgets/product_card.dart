@@ -34,7 +34,10 @@ class ProductCard extends HookConsumerWidget {
 
     Future<void> handleTryon() async {
       // 記錄虛擬試穿點擊次數 (非同步執行，不阻塞 UI)
-      ref.read(incrementTryonCountProvider).call(product.id!).ignore();
+      ref
+          .read(incrementTryonCountProvider)
+          .call(productId: product.id!, storeId: product.storeInfo.id)
+          .ignore();
 
       // 如果契合度為紅色，彈出確認視窗
       if (fitStatus == FitStatus.poor) {

@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/domain/entities/user_location.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_product_model.dart';
+import 'package:tryzeon/feature/personal/shop/domain/enums/analytics_event_type.dart';
 import 'package:tryzeon/feature/personal/shop/domain/enums/product_sort_option.dart';
 
 class ShopRemoteDataSource {
@@ -133,17 +134,18 @@ class ShopRemoteDataSource {
     return _supabaseClient.storage.from(_logoBucket).getPublicUrl(logoPath);
   }
 
-  Future<void> incrementTryonCount(final String productId) async {
+  Future<void> logAnalyticsEvent({
+    required final String productId,
+    required final String storeId,
+    required final AnalyticsEventType eventType,
+  }) async {
     await _supabaseClient.rpc(
-      'increment_tryon_count',
-      params: {'product_uuid': productId},
-    );
-  }
-
-  Future<void> incrementPurchaseClickCount(final String productId) async {
-    await _supabaseClient.rpc(
-      'increment_purchase_click_count',
-      params: {'product_uuid': productId},
+      AppConstants.functionLogAnalyticsEvent,
+      params: {
+        'p_product_id': productId,
+        'p_store_id': storeId,
+        'p_event_type': eventType.value,
+      },
     );
   }
 }

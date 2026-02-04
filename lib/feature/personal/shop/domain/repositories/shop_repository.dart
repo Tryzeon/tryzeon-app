@@ -15,9 +15,15 @@ abstract class ShopRepository {
     final bool forceRefresh = false,
   });
 
-  Future<Result<void, Failure>> incrementTryonCount(final String productId);
+  Future<Result<void, Failure>> incrementTryonCount({
+    required final String productId,
+    required final String storeId,
+  });
 
-  Future<Result<void, Failure>> incrementPurchaseClickCount(final String productId);
+  Future<Result<void, Failure>> incrementPurchaseClickCount({
+    required final String productId,
+    required final String storeId,
+  });
 
   Future<Result<List<String>, Failure>> getAds({final bool forceRefresh = false});
 }

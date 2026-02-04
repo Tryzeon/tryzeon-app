@@ -32,7 +32,10 @@ class ProductDetailPage extends HookConsumerWidget {
       }
 
       // 記錄購買連結點擊次數 (非同步執行，不阻塞 UI)
-      ref.read(incrementPurchaseClickCountProvider).call(product.id!).ignore();
+      ref
+          .read(incrementPurchaseClickCountProvider)
+          .call(productId: product.id!, storeId: product.storeInfo.id)
+          .ignore();
       await launchUrl(url, mode: LaunchMode.externalApplication);
     }
 

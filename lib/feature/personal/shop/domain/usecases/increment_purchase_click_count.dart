@@ -6,7 +6,13 @@ class IncrementPurchaseClickCount {
   IncrementPurchaseClickCount(this._repository);
   final ShopRepository _repository;
 
-  Future<Result<void, Failure>> call(final String productId) {
-    return _repository.incrementPurchaseClickCount(productId);
+  Future<Result<void, Failure>> call({
+    required final String productId,
+    required final String storeId,
+  }) {
+    return _repository.incrementPurchaseClickCount(
+      productId: productId,
+      storeId: storeId,
+    );
   }
 }

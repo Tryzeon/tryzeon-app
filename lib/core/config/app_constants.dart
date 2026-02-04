@@ -12,6 +12,7 @@ class AppConstants {
   static const String tableProductCategories = 'product_categories';
   static const String tableSubscriptions = 'subscriptions';
   static const String tableWardrobeItems = 'wardrobe_items';
+  static const String tableAnalyticsEvents = 'analytics_events';
 
   // Supabase Buckets
   static const String bucketStoreLogos = 'store-logos';
@@ -22,6 +23,7 @@ class AppConstants {
   // Supabase Functions
   static const String functionChat = 'chat';
   static const String functionTryon = 'tryon';
+  static const String functionLogAnalyticsEvent = 'log_analytics_event';
 
   // Assets
   static const String defaultProfileImage = 'assets/images/profile/default.png';
