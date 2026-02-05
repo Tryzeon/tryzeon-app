@@ -13,6 +13,7 @@ class AppConstants {
   static const String tableSubscriptions = 'subscriptions';
   static const String tableWardrobeItems = 'wardrobe_items';
   static const String tableAnalyticsEvents = 'analytics_events';
+  static const String tableAnalyticsMonthlySummary = 'analytics_monthly_summary';
 
   // Supabase Buckets
   static const String bucketStoreLogos = 'store-logos';
@@ -40,6 +41,7 @@ class AppConstants {
   // Logic
   static const int otpResendCountdownSeconds = 60;
   static const int otpCodeLength = 6;
+  static const double productVisibilityThreshold = 0.5;
 
   // Wardrobe Limits
   static const int wardrobeLimitFree = 20;

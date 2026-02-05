@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
@@ -25,10 +26,8 @@ class ProductCard extends HookConsumerWidget {
     final hasLoggedView = useState(false);
 
     void onVisibilityChanged(final VisibilityInfo info) {
-      if (hasLoggedView.value) return;
-
-      // 當可見比例超過 50% 時視為檢視
-      if (info.visibleFraction > 0.5) {
+      if (info.visibleFraction > AppConstants.productVisibilityThreshold &&
+          !hasLoggedView.value) {
         hasLoggedView.value = true;
         ref
             .read(incrementViewCountProvider)

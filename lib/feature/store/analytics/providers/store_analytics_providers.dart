@@ -9,15 +9,19 @@ import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.
 import 'package:typed_result/typed_result.dart';
 
 // --- Data Sources ---
-
 final storeAnalyticsRemoteDataSourceProvider = Provider<StoreAnalyticsRemoteDataSource>((
   final ref,
 ) {
   return StoreAnalyticsRemoteDataSource(Supabase.instance.client);
 });
 
-// --- Repository ---
+// --- Filter Provider ---
+final storeAnalyticsFilterProvider = StateProvider<({int year, int month})?>((final ref) {
+  final now = DateTime.now();
+  return (year: now.year, month: now.month);
+});
 
+// --- Repository ---
 final storeAnalyticsRepositoryProvider = Provider<StoreAnalyticsRepository>((final ref) {
   return StoreAnalyticsRepositoryImpl(ref.watch(storeAnalyticsRemoteDataSourceProvider));
 });
@@ -32,15 +36,13 @@ final getStoreAnalyticsSummaryProvider = Provider<GetStoreAnalyticsSummary>((fin
 });
 
 // --- Feature Providers ---
-
 final storeAnalyticsSummaryProvider = FutureProvider<StoreAnalyticsSummary>((
   final ref,
 ) async {
-  final useCase = ref.watch(getStoreAnalyticsSummaryProvider);
+  final filter = ref.watch(storeAnalyticsFilterProvider);
 
-  // Calls usecase without arguments to fetch "All Time" total.
-  // The UseCase internally fetches the current store profile.
-  final result = await useCase();
+  final useCase = ref.watch(getStoreAnalyticsSummaryProvider);
+  final result = await useCase(year: filter?.year, month: filter?.month);
 
   if (result.isFailure) {
     throw result.getError()!;
