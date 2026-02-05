@@ -1,6 +1,7 @@
 enum AnalyticsEventType {
   tryOn('try_on'),
-  purchaseClick('purchase_click');
+  purchaseClick('purchase_click'),
+  view('view');
 
   const AnalyticsEventType(this.value);
   final String value;

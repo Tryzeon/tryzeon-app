@@ -13,6 +13,7 @@ import 'package:tryzeon/feature/personal/shop/domain/usecases/get_ads.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/get_shop_products.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/increment_purchase_click_count.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/increment_tryon_count.dart';
+import 'package:tryzeon/feature/personal/shop/domain/usecases/increment_view_count.dart';
 import 'package:typed_result/typed_result.dart';
 
 // --- Data Sources ---
@@ -46,6 +47,10 @@ final getAdsProvider = Provider<GetAds>((final ref) {
 
 final incrementTryonCountProvider = Provider<IncrementTryonCount>((final ref) {
   return IncrementTryonCount(ref.watch(shopRepositoryProvider));
+});
+
+final incrementViewCountProvider = Provider<IncrementViewCount>((final ref) {
+  return IncrementViewCount(ref.watch(shopRepositoryProvider));
 });
 
 final incrementPurchaseClickCountProvider = Provider<IncrementPurchaseClickCount>((

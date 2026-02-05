@@ -13,11 +13,13 @@ class StoreTrafficDashboard extends HookConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     // Calculate stats
+    int totalView = 0;
     int totalTryOn = 0;
     int totalPurchaseClicks = 0;
     bool hasError = false;
 
     if (analyticsAsync.hasValue && analyticsAsync.value != null) {
+      totalView = analyticsAsync.value!.totalViewCount;
       totalTryOn = analyticsAsync.value!.totalTryonCount;
       totalPurchaseClicks = analyticsAsync.value!.totalPurchaseClickCount;
     } else if (analyticsAsync.hasError) {
@@ -85,6 +87,19 @@ class StoreTrafficDashboard extends HookConsumerWidget {
           Row(
             children: [
               _StatItem(
+                label: '瀏覽次數',
+                value: isLoading ? 8888 : totalView,
+                icon: Icons.visibility_rounded,
+                isLoading: isLoading,
+                hasError: hasError,
+              ),
+              Container(
+                width: 1,
+                height: 40,
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+              ),
+              _StatItem(
                 label: '虛擬試穿',
                 value: isLoading ? 8888 : totalTryOn,
                 icon: Icons.checkroom_rounded,
@@ -94,7 +109,7 @@ class StoreTrafficDashboard extends HookConsumerWidget {
               Container(
                 width: 1,
                 height: 40,
-                margin: const EdgeInsets.symmetric(horizontal: 24),
+                margin: const EdgeInsets.symmetric(horizontal: 16),
                 color: colorScheme.outlineVariant.withValues(alpha: 0.5),
               ),
               _StatItem(

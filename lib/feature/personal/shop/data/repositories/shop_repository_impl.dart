@@ -70,6 +70,27 @@ class ShopRepositoryImpl implements ShopRepository {
   }
 
   @override
+  Future<Result<void, Failure>> incrementViewCount({
+    required final String productId,
+    required final String storeId,
+  }) async {
+    try {
+      // Enqueue event instead of sending immediately
+      _analyticsQueueService.enqueue(
+        AnalyticsEvent(
+          productId: productId,
+          storeId: storeId,
+          eventType: AnalyticsEventType.view.value,
+        ),
+      );
+      return const Ok(null);
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to enqueue view event', e, stackTrace);
+      return Err(mapExceptionToFailure(e));
+    }
+  }
+
+  @override
   Future<Result<void, Failure>> incrementPurchaseClickCount({
     required final String productId,
     required final String storeId,

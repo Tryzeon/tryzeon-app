@@ -25,5 +25,10 @@ abstract class ShopRepository {
     required final String storeId,
   });
 
+  Future<Result<void, Failure>> incrementViewCount({
+    required final String productId,
+    required final String storeId,
+  });
+
   Future<Result<List<String>, Failure>> getAds({final bool forceRefresh = false});
 }
