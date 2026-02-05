@@ -32,7 +32,7 @@ class ProductSizeEntryController {
   final Map<MeasurementType, TextEditingController> measurementControllers = {};
   final Map<MeasurementType, TextEditingController> offsetControllers = {};
 
-  static const double _cunToCmFactor = 3.03;  // 1 Cun = 3.03 CM
+  static const double _cunToCmFactor = 3.03; // 1 Cun = 3.03 CM
 
   ProductSize toProductSize(final String? productId, {required final bool isCun}) {
     final Map<String, dynamic> measurementsJson = {};
@@ -48,9 +48,13 @@ class ProductSizeEntryController {
       final offset = (offsetText != null ? double.tryParse(offsetText) : null) ?? 0.0;
 
       if (value != null) {
-        measurementsJson[type.name] = value * multiplier;
+        final convertedValue = value * multiplier;
+        measurementsJson[type.name] = double.parse(convertedValue.toStringAsFixed(1));
       }
-      measurementsJson['${type.name}_offset'] = offset * multiplier;
+      final convertedOffset = offset * multiplier;
+      measurementsJson['${type.name}_offset'] = double.parse(
+        convertedOffset.toStringAsFixed(1),
+      );
     }
 
     return ProductSize(
