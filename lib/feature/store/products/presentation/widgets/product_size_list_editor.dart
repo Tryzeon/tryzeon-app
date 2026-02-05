@@ -191,48 +191,86 @@ class ProductSizeListEditor extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      DropdownButtonFormField<String>(
-                        initialValue: _standardSizes.contains(entry.nameController.text)
-                            ? entry.nameController.text
-                            : null,
-                        decoration: InputDecoration(
-                          labelText: '尺寸名稱',
-                          labelStyle: textTheme.bodyMedium,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: colorScheme.outline.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: colorScheme.outline.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: colorScheme.primary, width: 2),
-                          ),
-                          filled: true,
-                          fillColor: colorScheme.surfaceContainer,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 12,
-                          ),
-                        ),
-                        items: _standardSizes.map((final String size) {
-                          return DropdownMenuItem<String>(
-                            value: size,
-                            child: Text(size, style: textTheme.bodyLarge),
+                      // 尺寸名稱輸入
+                      ValueListenableBuilder<TextEditingValue>(
+                        valueListenable: entry.nameController,
+                        builder: (final context, final value, final child) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              TextFormField(
+                                controller: entry.nameController,
+                                decoration: InputDecoration(
+                                  labelText: '尺寸名稱',
+                                  hintText: '例如: XS, S, M, US 10...',
+                                  labelStyle: textTheme.bodyMedium,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(
+                                      color: colorScheme.outline.withValues(alpha: 0.3),
+                                    ),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(
+                                      color: colorScheme.outline.withValues(alpha: 0.3),
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(
+                                      color: colorScheme.primary,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  filled: true,
+                                  fillColor: colorScheme.surfaceContainer,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 12,
+                                  ),
+                                ),
+                                validator: AppValidators.validateSizeName,
+                              ),
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: _standardSizes.map((final size) {
+                                  final isSelected = entry.nameController.text == size;
+                                  return ChoiceChip(
+                                    label: Text(size),
+                                    selected: isSelected,
+                                    showCheckmark: false,
+                                    onSelected: (final selected) {
+                                      if (selected) {
+                                        entry.nameController.text = size;
+                                      }
+                                    },
+                                    labelStyle: TextStyle(
+                                      color: isSelected
+                                          ? colorScheme.onPrimary
+                                          : colorScheme.onSurface,
+                                      fontWeight: isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                    ),
+                                    selectedColor: colorScheme.primary,
+                                    backgroundColor: colorScheme.surface,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      side: BorderSide(
+                                        color: isSelected
+                                            ? Colors.transparent
+                                            : colorScheme.outline.withValues(alpha: 0.3),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ],
                           );
-                        }).toList(),
-                        onChanged: (final value) {
-                          if (value != null) {
-                            entry.nameController.text = value;
-                          }
                         },
-                        validator: AppValidators.validateSizeName,
                       ),
                       const SizedBox(height: 16),
                       ...MeasurementType.values.map((final type) {
