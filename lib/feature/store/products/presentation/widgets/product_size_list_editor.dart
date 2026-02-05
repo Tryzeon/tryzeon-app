@@ -20,6 +20,17 @@ class ProductSizeListEditor extends StatelessWidget {
   final VoidCallback onAdd;
   final ValueChanged<int> onRemove;
 
+  static const List<String> _standardSizes = [
+    'XS',
+    'S',
+    'M',
+    'L',
+    'XL',
+    '2XL',
+    '3XL',
+    'F',
+  ];
+
   @override
   Widget build(final BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -180,11 +191,12 @@ class ProductSizeListEditor extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      TextFormField(
-                        controller: entry.nameController,
-                        style: textTheme.bodyLarge,
+                      DropdownButtonFormField<String>(
+                        initialValue: _standardSizes.contains(entry.nameController.text)
+                            ? entry.nameController.text
+                            : null,
                         decoration: InputDecoration(
-                          labelText: '尺寸名稱 (如: S, M, XL)',
+                          labelText: '尺寸名稱',
                           labelStyle: textTheme.bodyMedium,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -209,7 +221,17 @@ class ProductSizeListEditor extends StatelessWidget {
                             vertical: 12,
                           ),
                         ),
-                        keyboardType: TextInputType.text,
+                        items: _standardSizes.map((final String size) {
+                          return DropdownMenuItem<String>(
+                            value: size,
+                            child: Text(size, style: textTheme.bodyLarge),
+                          );
+                        }).toList(),
+                        onChanged: (final value) {
+                          if (value != null) {
+                            entry.nameController.text = value;
+                          }
+                        },
                         validator: AppValidators.validateSizeName,
                       ),
                       const SizedBox(height: 16),
