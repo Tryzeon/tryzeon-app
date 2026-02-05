@@ -243,7 +243,7 @@ class ProductSizeListEditor extends StatelessWidget {
                                   ),
                                   inputFormatters: [
                                     FilteringTextInputFormatter.allow(
-                                      RegExp(r'^\d*\.?\d*'),
+                                      RegExp(r'^\d*\.?\d{0,1}'),
                                     ),
                                   ],
                                   validator: AppValidators.validateMeasurement,
@@ -262,73 +262,133 @@ class ProductSizeListEditor extends StatelessWidget {
                                         color: colorScheme.outline,
                                       ),
                                     ),
-                                    Row(
-                                      children: [
-                                        Material(
-                                          color: colorScheme.surfaceContainerHighest,
-                                          borderRadius: const BorderRadius.only(
-                                            topLeft: Radius.circular(8),
-                                            bottomLeft: Radius.circular(8),
-                                          ),
-                                          child: InkWell(
-                                            onTap: () =>
-                                                _updateOffset(offsetController, -0.5),
-                                            borderRadius: const BorderRadius.only(
-                                              topLeft: Radius.circular(8),
-                                              bottomLeft: Radius.circular(8),
+                                    FormField<String>(
+                                      initialValue: offsetController.text,
+                                      validator: AppValidators.validateOffset,
+                                      builder: (final field) {
+                                        return Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Material(
+                                                  color:
+                                                      colorScheme.surfaceContainerHighest,
+                                                  borderRadius: const BorderRadius.only(
+                                                    topLeft: Radius.circular(8),
+                                                    bottomLeft: Radius.circular(8),
+                                                  ),
+                                                  child: InkWell(
+                                                    onTap: () {
+                                                      _updateOffset(
+                                                        offsetController,
+                                                        -0.5,
+                                                      );
+                                                      field.didChange(
+                                                        offsetController.text,
+                                                      );
+                                                    },
+                                                    borderRadius: const BorderRadius.only(
+                                                      topLeft: Radius.circular(8),
+                                                      bottomLeft: Radius.circular(8),
+                                                    ),
+                                                    child: Container(
+                                                      padding: const EdgeInsets.all(8),
+                                                      child: const Icon(
+                                                        Icons.remove,
+                                                        size: 16,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                Expanded(
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                      border: Border.symmetric(
+                                                        horizontal: BorderSide(
+                                                          color: colorScheme.outline
+                                                              .withValues(alpha: 0.1),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    child: TextField(
+                                                      controller: offsetController,
+                                                      textAlign: TextAlign.center,
+                                                      style: textTheme.bodyMedium,
+                                                      keyboardType:
+                                                          const TextInputType.numberWithOptions(
+                                                            decimal: true,
+                                                          ),
+                                                      decoration: const InputDecoration(
+                                                        isDense: true,
+                                                        contentPadding:
+                                                            EdgeInsets.symmetric(
+                                                              vertical: 8,
+                                                            ),
+                                                        border: InputBorder.none,
+                                                        focusedBorder: InputBorder.none,
+                                                        enabledBorder: InputBorder.none,
+                                                        errorBorder: InputBorder.none,
+                                                        disabledBorder: InputBorder.none,
+                                                      ),
+                                                      inputFormatters: [
+                                                        FilteringTextInputFormatter.allow(
+                                                          RegExp(r'^\d*\.?\d{0,1}'),
+                                                        ),
+                                                      ],
+                                                      onChanged: field.didChange,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Material(
+                                                  color:
+                                                      colorScheme.surfaceContainerHighest,
+                                                  borderRadius: const BorderRadius.only(
+                                                    topRight: Radius.circular(8),
+                                                    bottomRight: Radius.circular(8),
+                                                  ),
+                                                  child: InkWell(
+                                                    onTap: () {
+                                                      _updateOffset(
+                                                        offsetController,
+                                                        0.5,
+                                                      );
+                                                      field.didChange(
+                                                        offsetController.text,
+                                                      );
+                                                    },
+                                                    borderRadius: const BorderRadius.only(
+                                                      topRight: Radius.circular(8),
+                                                      bottomRight: Radius.circular(8),
+                                                    ),
+                                                    child: Container(
+                                                      padding: const EdgeInsets.all(8),
+                                                      child: const Icon(
+                                                        Icons.add,
+                                                        size: 16,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
-                                            child: Container(
-                                              padding: const EdgeInsets.all(8),
-                                              child: const Icon(Icons.remove, size: 16),
-                                            ),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              vertical: 8,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              border: Border.symmetric(
-                                                horizontal: BorderSide(
-                                                  color: colorScheme.outline.withValues(
-                                                    alpha: 0.1,
+                                            if (field.hasError)
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                  top: 4,
+                                                  left: 4,
+                                                ),
+                                                child: Text(
+                                                  field.errorText!,
+                                                  style: textTheme.bodySmall?.copyWith(
+                                                    color: colorScheme.error,
                                                   ),
                                                 ),
                                               ),
-                                            ),
-                                            child: AnimatedBuilder(
-                                              animation: offsetController,
-                                              builder: (final context, final child) {
-                                                return Text(
-                                                  offsetController.text,
-                                                  textAlign: TextAlign.center,
-                                                  style: textTheme.bodyMedium,
-                                                );
-                                              },
-                                            ),
-                                          ),
-                                        ),
-                                        Material(
-                                          color: colorScheme.surfaceContainerHighest,
-                                          borderRadius: const BorderRadius.only(
-                                            topRight: Radius.circular(8),
-                                            bottomRight: Radius.circular(8),
-                                          ),
-                                          child: InkWell(
-                                            onTap: () =>
-                                                _updateOffset(offsetController, 0.5),
-                                            borderRadius: const BorderRadius.only(
-                                              topRight: Radius.circular(8),
-                                              bottomRight: Radius.circular(8),
-                                            ),
-                                            child: Container(
-                                              padding: const EdgeInsets.all(8),
-                                              child: const Icon(Icons.add, size: 16),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                          ],
+                                        );
+                                      },
                                     ),
                                   ],
                                 ),

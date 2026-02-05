@@ -221,7 +221,12 @@ class AddProductPage extends HookConsumerWidget {
                         child: ProductSizeListEditor(
                           entries: sizeEntries.value,
                           isCun: isCun.value,
-                          onUnitChanged: (final val) => isCun.value = val,
+                          onUnitChanged: (final val) {
+                            isCun.value = val;
+                            for (final entry in sizeEntries.value) {
+                              entry.convertValues(toCun: val);
+                            }
+                          },
                           onAdd: addSizeBlock,
                           onRemove: removeSizeBlock,
                         ),

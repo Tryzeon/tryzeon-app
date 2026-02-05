@@ -14,7 +14,7 @@ class ProductSizeEntryController {
         text: measurements?.getValue(type)?.toString() ?? '',
       );
       offsetControllers[type] = TextEditingController(
-        text: measurements?.getOffset(type)?.toString() ?? '0.0',
+        text: measurements?.getOffset(type)?.toString() ?? '0',
       );
     }
   }
@@ -32,9 +32,11 @@ class ProductSizeEntryController {
   final Map<MeasurementType, TextEditingController> measurementControllers = {};
   final Map<MeasurementType, TextEditingController> offsetControllers = {};
 
+  static const double _cunToCmFactor = 3.03;  // 1 Cun = 3.03 CM
+
   ProductSize toProductSize(final String? productId, {required final bool isCun}) {
     final Map<String, dynamic> measurementsJson = {};
-    final multiplier = isCun ? 3.03 : 1.0;
+    final multiplier = isCun ? _cunToCmFactor : 1.0;
 
     for (final type in MeasurementType.values) {
       final valueText = measurementControllers[type]?.text;
@@ -57,6 +59,25 @@ class ProductSizeEntryController {
       name: nameController.text,
       measurements: SizeMeasurements.fromJson(measurementsJson),
     );
+  }
+
+  void convertValues({required final bool toCun}) {
+    void convert(final TextEditingController controller) {
+      final text = controller.text;
+      if (text.isEmpty) return;
+      final value = double.tryParse(text);
+      if (value == null) return;
+
+      final newValue = toCun ? value / _cunToCmFactor : value * _cunToCmFactor;
+      controller.text = newValue.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '');
+    }
+
+    for (final controller in measurementControllers.values) {
+      convert(controller);
+    }
+    for (final controller in offsetControllers.values) {
+      convert(controller);
+    }
   }
 
   void dispose() {
