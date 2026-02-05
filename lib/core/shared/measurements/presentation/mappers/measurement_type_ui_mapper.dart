@@ -7,17 +7,17 @@ extension MeasurementTypeUiMapper on MeasurementType {
   String get label {
     switch (this) {
       case MeasurementType.height:
-        return '身高 (cm)';
+        return '身高';
       case MeasurementType.chest:
-        return '胸圍 (cm)';
+        return '胸圍';
       case MeasurementType.waist:
-        return '腰圍 (cm)';
+        return '腰圍';
       case MeasurementType.hips:
-        return '臀圍 (cm)';
+        return '臀圍';
       case MeasurementType.shoulder:
-        return '肩寬 (cm)';
+        return '肩寬';
       case MeasurementType.sleeve:
-        return '袖長 (cm)';
+        return '袖長';
     }
   }
 

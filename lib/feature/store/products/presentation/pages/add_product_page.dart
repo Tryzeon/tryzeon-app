@@ -32,6 +32,8 @@ class AddProductPage extends HookConsumerWidget {
 
     final selectedImage = useState<File?>(null);
     final selectedCategories = useState<Set<String>>({});
+
+    final isCun = useState(false);
     final sizeControllers = useState<List<Map<String, TextEditingController>>>([]);
     final isLoading = useState(false);
 
@@ -69,6 +71,8 @@ class AddProductPage extends HookConsumerWidget {
     }
 
     List<ProductSize> buildProductSizes() {
+      final multiplier = isCun.value ? 3.03 : 1.0;
+
       return sizeControllers.value.map((final controllers) {
         final Map<String, dynamic> measurementsJson = {};
         for (final type in MeasurementType.values) {
@@ -76,12 +80,12 @@ class AddProductPage extends HookConsumerWidget {
           final value = text != null && text.isNotEmpty ? double.tryParse(text) : null;
 
           final offsetText = controllers['${type.name}_offset']?.text;
-          final offset = offsetText != null ? double.tryParse(offsetText) : 0.0;
+          final offset = (offsetText != null ? double.tryParse(offsetText) : null) ?? 0.0;
 
           if (value != null) {
-            measurementsJson[type.name] = value;
+            measurementsJson[type.name] = value * multiplier;
           }
-          measurementsJson['${type.name}_offset'] = offset;
+          measurementsJson['${type.name}_offset'] = offset * multiplier;
         }
 
         return ProductSize(
@@ -224,14 +228,85 @@ class AddProductPage extends HookConsumerWidget {
                   ),
                 ],
               ),
-              TextButton.icon(
-                onPressed: addSizeBlock,
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('新增尺寸'),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
+              Row(
+                children: [
+                  // Unit Toggle
+                  Container(
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Semantics(
+                          button: true,
+                          selected: !isCun.value,
+                          label: '切換為公分',
+                          child: InkWell(
+                            onTap: () => isCun.value = false,
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: !isCun.value ? colorScheme.primary : null,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                '公分',
+                                style: textTheme.labelSmall?.copyWith(
+                                  color: !isCun.value
+                                      ? colorScheme.onPrimary
+                                      : colorScheme.onSurfaceVariant,
+                                  fontWeight: !isCun.value ? FontWeight.bold : null,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Semantics(
+                          button: true,
+                          selected: isCun.value,
+                          label: '切換為寸',
+                          child: InkWell(
+                            onTap: () => isCun.value = true,
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: isCun.value ? colorScheme.primary : null,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                '寸',
+                                style: textTheme.labelSmall?.copyWith(
+                                  color: isCun.value
+                                      ? colorScheme.onPrimary
+                                      : colorScheme.onSurfaceVariant,
+                                  fontWeight: isCun.value ? FontWeight.bold : null,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(width: 8),
+                  TextButton.icon(
+                    onPressed: addSizeBlock,
+                    icon: const Icon(Icons.add, size: 18),
+                    label: const Text('新增'),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -334,6 +409,11 @@ class AddProductPage extends HookConsumerWidget {
                           final valueController = controllers[type.name]!;
                           final offsetController = controllers['${type.name}_offset']!;
 
+                          // Dynamic Label
+                          final label = isCun.value
+                              ? '${type.label}(寸)'
+                              : '${type.label}(公分)';
+
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 12),
                             child: Row(
@@ -345,7 +425,7 @@ class AddProductPage extends HookConsumerWidget {
                                     controller: valueController,
                                     style: textTheme.bodyLarge,
                                     decoration: InputDecoration(
-                                      labelText: type.label,
+                                      labelText: label,
                                       labelStyle: textTheme.bodyMedium,
                                       isDense: true,
                                       border: OutlineInputBorder(
