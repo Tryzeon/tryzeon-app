@@ -1,24 +1,20 @@
 import 'dart:io';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
-import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
-import 'package:tryzeon/core/shared/measurements/entities/size_measurements.dart';
-import 'package:tryzeon/core/shared/measurements/presentation/mappers/measurement_type_ui_mapper.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
-import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
-import 'package:tryzeon/feature/store/products/presentation/widgets/product_type_selector.dart';
+import 'package:tryzeon/feature/store/products/presentation/controllers/product_size_entry_controller.dart';
+import 'package:tryzeon/feature/store/products/presentation/widgets/product_basic_info_editor.dart';
+import 'package:tryzeon/feature/store/products/presentation/widgets/product_image_editor.dart';
+import 'package:tryzeon/feature/store/products/presentation/widgets/product_size_list_editor.dart';
 import 'package:tryzeon/feature/store/products/providers/store_products_providers.dart';
-import 'package:typed_result/typed_result.dart';
+import 'package:typed_result/typed_result.dart'; // For Result extensions
 
 class ProductDetailPage extends HookConsumerWidget {
   const ProductDetailPage({super.key, required this.product});
@@ -34,16 +30,18 @@ class ProductDetailPage extends HookConsumerWidget {
     final newImage = useState<File?>(null);
     final isLoading = useState(false);
     final selectedCategories = useState<Set<String>>(Set<String>.from(product.types));
-    final sizeEntries = useState<List<_SizeEntry>>([]);
+
+    final isCun = useState(false);
+    final sizeEntries = useState<List<ProductSizeEntryController>>([]);
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     useEffect(() {
-      final entries = <_SizeEntry>[];
+      final entries = <ProductSizeEntryController>[];
       if (product.sizes != null) {
         for (final size in product.sizes!) {
-          entries.add(_SizeEntry.fromProductSize(size));
+          entries.add(ProductSizeEntryController.fromProductSize(size));
         }
       }
       sizeEntries.value = entries;
@@ -110,7 +108,9 @@ class ProductDetailPage extends HookConsumerWidget {
         imageUrl: product.imageUrl,
         id: product.id,
         purchaseLink: purchaseLinkController.text,
-        sizes: sizeEntries.value.map((final e) => e.toProductSize(product.id!)).toList(),
+        sizes: sizeEntries.value
+            .map((final e) => e.toProductSize(product.id!, isCun: isCun.value))
+            .toList(),
       );
 
       final updateProductUseCase = ref.read(updateProductUseCaseProvider);
@@ -138,7 +138,7 @@ class ProductDetailPage extends HookConsumerWidget {
     }
 
     void addSize() {
-      sizeEntries.value = [...sizeEntries.value, _SizeEntry()];
+      sizeEntries.value = [...sizeEntries.value, ProductSizeEntryController()];
     }
 
     void removeSize(final int index) {
@@ -146,282 +146,6 @@ class ProductDetailPage extends HookConsumerWidget {
       final newList = [...sizeEntries.value];
       newList.removeAt(index);
       sizeEntries.value = newList;
-    }
-
-    Widget buildTextField({
-      required final TextEditingController controller,
-      required final String label,
-      required final IconData icon,
-      final TextInputType? keyboardType,
-      final String? hintText,
-      final Color? filledColor,
-      final bool isDense = false,
-      final String? Function(String?)? validator,
-      final List<TextInputFormatter>? inputFormatters,
-    }) {
-      return TextFormField(
-        controller: controller,
-        keyboardType: keyboardType,
-        inputFormatters: inputFormatters,
-        style: textTheme.bodyLarge,
-        decoration: InputDecoration(
-          labelText: label,
-          hintText: hintText,
-          labelStyle: textTheme.bodyMedium,
-          prefixIcon: Icon(icon, color: colorScheme.outline, size: 20),
-          filled: true,
-          fillColor: filledColor ?? colorScheme.surfaceContainerLow,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: colorScheme.outlineVariant),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: colorScheme.outlineVariant),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: colorScheme.primary, width: 2),
-          ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        ),
-        validator: validator,
-      );
-    }
-
-    void updateOffset(final TextEditingController controller, final double delta) {
-      final currentValue = double.tryParse(controller.text) ?? 0.0;
-      final newValue = (currentValue + delta).clamp(0.0, 100.0);
-      controller.text = newValue.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '');
-    }
-
-    Widget buildMeasurementField(
-      final TextEditingController valueController,
-      final TextEditingController offsetController,
-      final String label,
-      final IconData icon,
-    ) {
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Row(
-          children: [
-            Expanded(
-              flex: 2,
-              child: buildTextField(
-                controller: valueController,
-                label: label,
-                icon: icon,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                filledColor: Theme.of(context).colorScheme.surface,
-                isDense: true,
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-                ],
-                validator: AppValidators.validateMeasurement,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              flex: 2,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '誤差範圍 (±)',
-                    style: textTheme.labelSmall?.copyWith(color: colorScheme.outline),
-                  ),
-                  Row(
-                    children: [
-                      Material(
-                        color: colorScheme.surfaceContainerHighest,
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(8),
-                          bottomLeft: Radius.circular(8),
-                        ),
-                        child: InkWell(
-                          onTap: () => updateOffset(offsetController, -0.5),
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(8),
-                            bottomLeft: Radius.circular(8),
-                          ),
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            child: const Icon(Icons.remove, size: 16),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          decoration: BoxDecoration(
-                            border: Border.symmetric(
-                              horizontal: BorderSide(
-                                color: colorScheme.outline.withValues(alpha: 0.1),
-                              ),
-                            ),
-                          ),
-                          child: AnimatedBuilder(
-                            animation: offsetController,
-                            builder: (final context, final child) {
-                              return Text(
-                                offsetController.text,
-                                textAlign: TextAlign.center,
-                                style: textTheme.bodyMedium,
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      Material(
-                        color: colorScheme.surfaceContainerHighest,
-                        borderRadius: const BorderRadius.only(
-                          topRight: Radius.circular(8),
-                          bottomRight: Radius.circular(8),
-                        ),
-                        child: InkWell(
-                          onTap: () => updateOffset(offsetController, 0.5),
-                          borderRadius: const BorderRadius.only(
-                            topRight: Radius.circular(8),
-                            bottomRight: Radius.circular(8),
-                          ),
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            child: const Icon(Icons.add, size: 16),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    Widget buildSizeList() {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('尺寸詳細資訊', style: textTheme.titleMedium),
-              TextButton.icon(
-                onPressed: addSize,
-                icon: const Icon(Icons.add),
-                label: const Text('新增尺寸'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          if (sizeEntries.value.isEmpty)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: colorScheme.outlineVariant),
-              ),
-              child: Center(
-                child: Text(
-                  '暫無尺寸資訊',
-                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.outline),
-                ),
-              ),
-            ),
-          ...sizeEntries.value.asMap().entries.map((final entry) {
-            final index = entry.key;
-            final sizeEntry = entry.value;
-            return Card(
-              margin: const EdgeInsets.only(bottom: 16),
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: colorScheme.outlineVariant),
-              ),
-              color: colorScheme.surfaceContainerLow,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: buildTextField(
-                            controller: sizeEntry.nameController,
-                            label: '尺寸名稱 (如: S, M)',
-                            icon: Icons.label_outline,
-                            filledColor: colorScheme.surface,
-                            validator: AppValidators.validateSizeName,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline),
-                          color: colorScheme.error,
-                          onPressed: () => removeSize(index),
-                          tooltip: '刪除此尺寸',
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Column(
-                      children: MeasurementType.values.map((final type) {
-                        return buildMeasurementField(
-                          sizeEntry.measurementControllers[type]!,
-                          sizeEntry.offsetControllers[type]!,
-                          type.label,
-                          type.icon,
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
-        ],
-      );
-    }
-
-    Widget buildTypeSelector() {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.category_outlined, color: colorScheme.outline, size: 20),
-              const SizedBox(width: 8),
-              Text('商品類型', style: textTheme.bodyMedium),
-              const SizedBox(width: 8),
-              Text('(可多選)', style: textTheme.bodySmall),
-            ],
-          ),
-          const SizedBox(height: 12),
-          productCategoriesAsync.when(
-            data: (final categories) {
-              return ProductTypeSelector(
-                allCategories: categories,
-                selectedCategories: selectedCategories,
-              );
-            },
-            loading: () => const Center(
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: CircularProgressIndicator(),
-              ),
-            ),
-            error: (final error, final stack) => ErrorView(
-              message: (error as Failure).displayMessage(context),
-              onRetry: () => ref.refresh(productCategoriesProvider),
-              isCompact: true,
-            ),
-          ),
-        ],
-      );
     }
 
     return Scaffold(
@@ -442,106 +166,49 @@ class ProductDetailPage extends HookConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              GestureDetector(
-                onTap: () async {
+              ProductImageEditor(
+                selectedImage: newImage.value,
+                existingImageUrl: product.imageUrl,
+                existingImagePath: product.imagePath,
+                onPickImage: () async {
                   final image = await ImagePickerHelper.pickImage(context);
                   if (image != null) {
                     newImage.value = image;
                   }
                 },
-                child: Container(
-                  height: 180,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: colorScheme.outlineVariant, width: 1),
-                  ),
-                  child: Stack(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(15),
-                        child: newImage.value != null
-                            ? Image.file(
-                                newImage.value!,
-                                fit: BoxFit.contain,
-                                width: double.infinity,
-                              )
-                            : CachedNetworkImage(
-                                imageUrl: product.imageUrl,
-                                cacheKey: product.imagePath,
-                                fit: BoxFit.contain,
-                                width: double.infinity,
-                                placeholder: (final context, final url) => Center(
-                                  child: CircularProgressIndicator(
-                                    color: colorScheme.outline,
-                                    strokeWidth: 2,
-                                  ),
-                                ),
-                                errorWidget: (final context, final url, final error) =>
-                                    Center(
-                                      child: Icon(
-                                        Icons.error_outline,
-                                        color: colorScheme.error,
-                                      ),
-                                    ),
-                              ),
-                      ),
-                      Positioned(
-                        bottom: 12,
-                        right: 12,
-                        child: Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: colorScheme.inverseSurface,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            Icons.edit_outlined,
-                            color: colorScheme.onInverseSurface,
-                            size: 18,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+              ),
+              const SizedBox(height: 24),
+              ProductBasicInfoEditor(
+                nameController: nameController,
+                priceController: priceController,
+                purchaseLinkController: purchaseLinkController,
+                selectedCategories: selectedCategories,
+                productCategoriesAsync: productCategoriesAsync,
+                onRetryCategories: () => ref.refresh(productCategoriesProvider),
+              ),
+              const SizedBox(height: 24),
+
+              Container(
+                decoration: BoxDecoration(
+                  color: colorScheme.surface,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(16),
+                child: ProductSizeListEditor(
+                  entries: sizeEntries.value,
+                  isCun: isCun.value,
+                  onUnitChanged: (final val) => isCun.value = val,
+                  onAdd: addSize,
+                  onRemove: removeSize,
                 ),
               ),
-              const SizedBox(height: 24),
-              buildTextField(
-                controller: nameController,
-                label: '商品名稱',
-                icon: Icons.inventory_2_outlined,
-                validator: AppValidators.validateProductName,
-              ),
-              const SizedBox(height: 16),
-
-              buildTypeSelector(),
-              const SizedBox(height: 16),
-
-              buildTextField(
-                controller: priceController,
-                label: '價格',
-                icon: Icons.attach_money,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-                ],
-                validator: AppValidators.validatePrice,
-              ),
-              const SizedBox(height: 16),
-
-              buildTextField(
-                controller: purchaseLinkController,
-                label: '購買連結',
-                icon: Icons.link,
-                keyboardType: TextInputType.url,
-                hintText: 'https://...',
-                validator: AppValidators.validateUrl,
-              ),
-              const SizedBox(height: 24),
-
-              buildSizeList(),
               const SizedBox(height: 24),
 
               SizedBox(
@@ -581,61 +248,5 @@ class ProductDetailPage extends HookConsumerWidget {
         ),
       ),
     );
-  }
-}
-
-class _SizeEntry {
-  _SizeEntry({this.id, final String name = '', final SizeMeasurements? measurements})
-    : nameController = TextEditingController(text: name) {
-    for (final type in MeasurementType.values) {
-      measurementControllers[type] = TextEditingController(
-        text: measurements?.getValue(type)?.toString() ?? '',
-      );
-      offsetControllers[type] = TextEditingController(
-        text: measurements?.getOffset(type)?.toString() ?? '0.0',
-      );
-    }
-  }
-
-  factory _SizeEntry.fromProductSize(final ProductSize size) {
-    return _SizeEntry(id: size.id, name: size.name, measurements: size.measurements);
-  }
-
-  ProductSize toProductSize(final String productId) {
-    final Map<String, dynamic> measurementsJson = {};
-    for (final type in MeasurementType.values) {
-      final valueText = measurementControllers[type]?.text;
-      final value = valueText != null ? double.tryParse(valueText) : null;
-
-      final offsetText = offsetControllers[type]?.text;
-      final offset = offsetText != null ? double.tryParse(offsetText) : 0.0;
-
-      if (value != null) {
-        measurementsJson[type.name] = value;
-      }
-      measurementsJson['${type.name}_offset'] = offset;
-    }
-
-    return ProductSize(
-      id: id,
-      productId: productId,
-      name: nameController.text,
-      measurements: SizeMeasurements.fromJson(measurementsJson),
-    );
-  }
-
-  final String? id;
-  final TextEditingController nameController;
-  final Map<MeasurementType, TextEditingController> measurementControllers = {};
-  final Map<MeasurementType, TextEditingController> offsetControllers = {};
-
-  void dispose() {
-    nameController.dispose();
-    for (final controller in measurementControllers.values) {
-      controller.dispose();
-    }
-    for (final controller in offsetControllers.values) {
-      controller.dispose();
-    }
   }
 }

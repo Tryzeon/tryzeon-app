@@ -1,20 +1,17 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
-import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
-import 'package:tryzeon/core/shared/measurements/entities/size_measurements.dart';
-import 'package:tryzeon/core/shared/measurements/presentation/mappers/measurement_type_ui_mapper.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
-import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
-import 'package:tryzeon/feature/store/products/presentation/widgets/product_type_selector.dart';
+import 'package:tryzeon/feature/store/products/presentation/controllers/product_size_entry_controller.dart';
+import 'package:tryzeon/feature/store/products/presentation/widgets/product_basic_info_editor.dart';
+import 'package:tryzeon/feature/store/products/presentation/widgets/product_image_editor.dart';
+import 'package:tryzeon/feature/store/products/presentation/widgets/product_size_list_editor.dart';
 import 'package:tryzeon/feature/store/products/providers/store_products_providers.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
 import 'package:typed_result/typed_result.dart';
@@ -34,7 +31,7 @@ class AddProductPage extends HookConsumerWidget {
     final selectedCategories = useState<Set<String>>({});
 
     final isCun = useState(false);
-    final sizeControllers = useState<List<Map<String, TextEditingController>>>([]);
+    final sizeEntries = useState<List<ProductSizeEntryController>>([]);
     final isLoading = useState(false);
 
     final colorScheme = Theme.of(context).colorScheme;
@@ -42,57 +39,27 @@ class AddProductPage extends HookConsumerWidget {
 
     useEffect(() {
       return () {
-        for (final controllers in sizeControllers.value) {
-          for (final controller in controllers.values) {
-            controller.dispose();
-          }
+        for (final entry in sizeEntries.value) {
+          entry.dispose();
         }
       };
     }, const []);
 
     void addSizeBlock() {
-      final Map<String, TextEditingController> newControllers = {
-        'name': TextEditingController(),
-      };
-      for (final type in MeasurementType.values) {
-        newControllers[type.name] = TextEditingController();
-        newControllers['${type.name}_offset'] = TextEditingController(text: '0.0');
-      }
-      sizeControllers.value = [...sizeControllers.value, newControllers];
+      sizeEntries.value = [...sizeEntries.value, ProductSizeEntryController()];
     }
 
     void removeSizeBlock(final int index) {
-      for (final controller in sizeControllers.value[index].values) {
-        controller.dispose();
-      }
-      final newList = [...sizeControllers.value];
+      sizeEntries.value[index].dispose();
+      final newList = [...sizeEntries.value];
       newList.removeAt(index);
-      sizeControllers.value = newList;
+      sizeEntries.value = newList;
     }
 
     List<ProductSize> buildProductSizes() {
-      final multiplier = isCun.value ? 3.03 : 1.0;
-
-      return sizeControllers.value.map((final controllers) {
-        final Map<String, dynamic> measurementsJson = {};
-        for (final type in MeasurementType.values) {
-          final text = controllers[type.name]?.text;
-          final value = text != null && text.isNotEmpty ? double.tryParse(text) : null;
-
-          final offsetText = controllers['${type.name}_offset']?.text;
-          final offset = (offsetText != null ? double.tryParse(offsetText) : null) ?? 0.0;
-
-          if (value != null) {
-            measurementsJson[type.name] = value * multiplier;
-          }
-          measurementsJson['${type.name}_offset'] = offset * multiplier;
-        }
-
-        return ProductSize(
-          name: controllers['name']!.text,
-          measurements: SizeMeasurements.fromJson(measurementsJson),
-        );
-      }).toList();
+      return sizeEntries.value
+          .map((final entry) => entry.toProductSize(null, isCun: isCun.value))
+          .toList();
     }
 
     bool validateProductForm() {
@@ -163,384 +130,6 @@ class AddProductPage extends HookConsumerWidget {
       }
     }
 
-    Widget buildTypeSelector() {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.category_rounded, color: colorScheme.primary, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                '商品類型',
-                style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(width: 8),
-              Text('(可多選)', style: textTheme.bodySmall),
-            ],
-          ),
-          const SizedBox(height: 12),
-          productCategoriesAsync.when(
-            data: (final productCategories) {
-              return ProductTypeSelector(
-                allCategories: productCategories,
-                selectedCategories: selectedCategories,
-              );
-            },
-            loading: () => const Center(
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: CircularProgressIndicator(),
-              ),
-            ),
-            error: (final error, final stack) => ErrorView(
-              message: (error as Failure).displayMessage(context),
-              onRetry: () => ref.refresh(productCategoriesProvider),
-              isCompact: true,
-            ),
-          ),
-        ],
-      );
-    }
-
-    void updateOffset(final TextEditingController controller, final double delta) {
-      final currentValue = double.tryParse(controller.text) ?? 0.0;
-      final newValue = (currentValue + delta).clamp(0.0, 100.0); // 限制 offset 不小於 0
-
-      // 處理浮點數精度問題
-      controller.text = newValue.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '');
-    }
-
-    Widget buildSizeInputs() {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.straighten_rounded, color: colorScheme.primary, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    '尺寸列表',
-                    style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  // Unit Toggle
-                  Container(
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Semantics(
-                          button: true,
-                          selected: !isCun.value,
-                          label: '切換為公分',
-                          child: InkWell(
-                            onTap: () => isCun.value = false,
-                            borderRadius: BorderRadius.circular(8),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: !isCun.value ? colorScheme.primary : null,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                '公分',
-                                style: textTheme.labelSmall?.copyWith(
-                                  color: !isCun.value
-                                      ? colorScheme.onPrimary
-                                      : colorScheme.onSurfaceVariant,
-                                  fontWeight: !isCun.value ? FontWeight.bold : null,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Semantics(
-                          button: true,
-                          selected: isCun.value,
-                          label: '切換為寸',
-                          child: InkWell(
-                            onTap: () => isCun.value = true,
-                            borderRadius: BorderRadius.circular(8),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: isCun.value ? colorScheme.primary : null,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                '寸',
-                                style: textTheme.labelSmall?.copyWith(
-                                  color: isCun.value
-                                      ? colorScheme.onPrimary
-                                      : colorScheme.onSurfaceVariant,
-                                  fontWeight: isCun.value ? FontWeight.bold : null,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(width: 8),
-                  TextButton.icon(
-                    onPressed: addSizeBlock,
-                    icon: const Icon(Icons.add, size: 18),
-                    label: const Text('新增'),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          if (sizeControllers.value.isEmpty)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: colorScheme.surfaceContainer,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
-              ),
-              child: Center(
-                child: Text(
-                  '尚未新增尺寸',
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-            )
-          else
-            ...List.generate(sizeControllers.value.length, (final index) {
-              final controllers = sizeControllers.value[index];
-              return Column(
-                children: [
-                  if (index > 0) const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainer,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: colorScheme.outline.withValues(alpha: 0.3),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              '尺寸 ${index + 1}',
-                              style: textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            IconButton(
-                              icon: Icon(
-                                Icons.delete_outline_rounded,
-                                color: colorScheme.error,
-                                size: 20,
-                              ),
-                              onPressed: () => removeSizeBlock(index),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: controllers['name'],
-                          style: textTheme.bodyLarge,
-                          decoration: InputDecoration(
-                            labelText: '尺寸名稱 (如: S, M, XL)',
-                            labelStyle: textTheme.bodyMedium,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: colorScheme.outline.withValues(alpha: 0.3),
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: colorScheme.outline.withValues(alpha: 0.3),
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: colorScheme.primary,
-                                width: 2,
-                              ),
-                            ),
-                            filled: true,
-                            fillColor: colorScheme.surfaceContainer,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 12,
-                            ),
-                          ),
-                          keyboardType: TextInputType.text,
-                          validator: AppValidators.validateSizeName,
-                        ),
-                        const SizedBox(height: 16),
-                        ...MeasurementType.values.map((final type) {
-                          final valueController = controllers[type.name]!;
-                          final offsetController = controllers['${type.name}_offset']!;
-
-                          // Dynamic Label
-                          final label = isCun.value
-                              ? '${type.label}(寸)'
-                              : '${type.label}(公分)';
-
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: Row(
-                              children: [
-                                // 測量值輸入
-                                Expanded(
-                                  flex: 2,
-                                  child: TextFormField(
-                                    controller: valueController,
-                                    style: textTheme.bodyLarge,
-                                    decoration: InputDecoration(
-                                      labelText: label,
-                                      labelStyle: textTheme.bodyMedium,
-                                      isDense: true,
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    keyboardType: const TextInputType.numberWithOptions(
-                                      decimal: true,
-                                    ),
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.allow(
-                                        RegExp(r'^\d*\.?\d*'),
-                                      ),
-                                    ],
-                                    validator: AppValidators.validateMeasurement,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                // Offset 控制
-                                Expanded(
-                                  flex: 2,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        '誤差範圍 (±)',
-                                        style: textTheme.labelSmall?.copyWith(
-                                          color: colorScheme.outline,
-                                        ),
-                                      ),
-                                      Row(
-                                        children: [
-                                          Material(
-                                            color: colorScheme.surfaceContainerHighest,
-                                            borderRadius: const BorderRadius.only(
-                                              topLeft: Radius.circular(8),
-                                              bottomLeft: Radius.circular(8),
-                                            ),
-                                            child: InkWell(
-                                              onTap: () =>
-                                                  updateOffset(offsetController, -0.5),
-                                              borderRadius: const BorderRadius.only(
-                                                topLeft: Radius.circular(8),
-                                                bottomLeft: Radius.circular(8),
-                                              ),
-                                              child: Container(
-                                                padding: const EdgeInsets.all(8),
-                                                child: const Icon(Icons.remove, size: 16),
-                                              ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                vertical: 8,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                border: Border.symmetric(
-                                                  horizontal: BorderSide(
-                                                    color: colorScheme.outline.withValues(
-                                                      alpha: 0.1,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              child: AnimatedBuilder(
-                                                animation: offsetController,
-                                                builder: (final context, final child) {
-                                                  return Text(
-                                                    offsetController.text,
-                                                    textAlign: TextAlign.center,
-                                                    style: textTheme.bodyMedium,
-                                                  );
-                                                },
-                                              ),
-                                            ),
-                                          ),
-                                          Material(
-                                            color: colorScheme.surfaceContainerHighest,
-                                            borderRadius: const BorderRadius.only(
-                                              topRight: Radius.circular(8),
-                                              bottomRight: Radius.circular(8),
-                                            ),
-                                            child: InkWell(
-                                              onTap: () =>
-                                                  updateOffset(offsetController, 0.5),
-                                              borderRadius: const BorderRadius.only(
-                                                topRight: Radius.circular(8),
-                                                bottomRight: Radius.circular(8),
-                                              ),
-                                              child: Container(
-                                                padding: const EdgeInsets.all(8),
-                                                child: const Icon(Icons.add, size: 16),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            }),
-        ],
-      );
-    }
-
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(color: colorScheme.surface),
@@ -597,73 +186,23 @@ class AddProductPage extends HookConsumerWidget {
                   child: ListView(
                     padding: const EdgeInsets.all(20.0),
                     children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: colorScheme.surface,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 15,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('商品圖片', style: textTheme.titleSmall),
-                            const SizedBox(height: 12),
-                            GestureDetector(
-                              onTap: () async {
-                                final image = await ImagePickerHelper.pickImage(context);
-                                if (image != null) {
-                                  selectedImage.value = image;
-                                }
-                              },
-                              child: Container(
-                                height: 180,
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: colorScheme.primary.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: colorScheme.primary.withValues(alpha: 0.3),
-                                    width: 2,
-                                  ),
-                                ),
-                                child: selectedImage.value == null
-                                    ? Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.add_photo_alternate_rounded,
-                                            size: 40,
-                                            color: colorScheme.primary,
-                                          ),
-                                          const SizedBox(height: 6),
-                                          Text(
-                                            '點擊選擇圖片',
-                                            style: textTheme.labelLarge?.copyWith(
-                                              color: colorScheme.primary,
-                                            ),
-                                          ),
-                                        ],
-                                      )
-                                    : ClipRRect(
-                                        borderRadius: BorderRadius.circular(16),
-                                        child: Image.file(
-                                          selectedImage.value!,
-                                          fit: BoxFit.contain,
-                                          width: double.infinity,
-                                          height: double.infinity,
-                                        ),
-                                      ),
-                              ),
-                            ),
-                          ],
-                        ),
+                      ProductImageEditor(
+                        selectedImage: selectedImage.value,
+                        onPickImage: () async {
+                          final image = await ImagePickerHelper.pickImage(context);
+                          if (image != null) {
+                            selectedImage.value = image;
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      ProductBasicInfoEditor(
+                        nameController: nameController,
+                        priceController: priceController,
+                        purchaseLinkController: purchaseLinkController,
+                        selectedCategories: selectedCategories,
+                        productCategoriesAsync: productCategoriesAsync,
+                        onRetryCategories: () => ref.refresh(productCategoriesProvider),
                       ),
                       const SizedBox(height: 16),
                       Container(
@@ -679,128 +218,12 @@ class AddProductPage extends HookConsumerWidget {
                           ],
                         ),
                         padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('商品資訊', style: textTheme.titleSmall),
-                            const SizedBox(height: 16),
-                            TextFormField(
-                              controller: nameController,
-                              style: textTheme.bodyLarge,
-                              decoration: InputDecoration(
-                                labelText: '商品名稱',
-                                labelStyle: textTheme.bodyMedium,
-                                prefixIcon: Icon(
-                                  Icons.shopping_bag_outlined,
-                                  color: colorScheme.primary,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                    color: colorScheme.outline.withValues(alpha: 0.3),
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                    color: colorScheme.outline.withValues(alpha: 0.3),
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                    color: colorScheme.primary,
-                                    width: 2,
-                                  ),
-                                ),
-                                filled: true,
-                                fillColor: colorScheme.surfaceContainer,
-                              ),
-                              validator: AppValidators.validateProductName,
-                            ),
-                            const SizedBox(height: 12),
-                            buildTypeSelector(),
-                            const SizedBox(height: 16),
-                            buildSizeInputs(),
-                            const SizedBox(height: 16),
-                            TextFormField(
-                              controller: priceController,
-                              style: textTheme.bodyLarge,
-                              decoration: InputDecoration(
-                                labelText: '價格',
-                                labelStyle: textTheme.bodyMedium,
-                                prefixIcon: Icon(
-                                  Icons.attach_money_rounded,
-                                  color: colorScheme.primary,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                    color: colorScheme.outline.withValues(alpha: 0.3),
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                    color: colorScheme.outline.withValues(alpha: 0.3),
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                    color: colorScheme.primary,
-                                    width: 2,
-                                  ),
-                                ),
-                                filled: true,
-                                fillColor: colorScheme.surfaceContainer,
-                              ),
-                              keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true,
-                              ),
-                              inputFormatters: [
-                                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-                              ],
-                              validator: AppValidators.validatePrice,
-                            ),
-                            const SizedBox(height: 12),
-                            TextFormField(
-                              controller: purchaseLinkController,
-                              style: textTheme.bodyLarge,
-                              decoration: InputDecoration(
-                                labelText: '購買連結',
-                                hintText: 'https://...',
-                                labelStyle: textTheme.bodyMedium,
-                                prefixIcon: Icon(
-                                  Icons.link_rounded,
-                                  color: colorScheme.primary,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                    color: colorScheme.outline.withValues(alpha: 0.3),
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                    color: colorScheme.outline.withValues(alpha: 0.3),
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(
-                                    color: colorScheme.primary,
-                                    width: 2,
-                                  ),
-                                ),
-                                filled: true,
-                                fillColor: colorScheme.surfaceContainer,
-                              ),
-                              keyboardType: TextInputType.url,
-                              validator: AppValidators.validateUrl,
-                            ),
-                          ],
+                        child: ProductSizeListEditor(
+                          entries: sizeEntries.value,
+                          isCun: isCun.value,
+                          onUnitChanged: (final val) => isCun.value = val,
+                          onAdd: addSizeBlock,
+                          onRemove: removeSizeBlock,
                         ),
                       ),
                       const SizedBox(height: 16),
