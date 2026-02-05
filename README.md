@@ -20,6 +20,11 @@ Navigate to the project directory and install dependencies:
 flutter pub get
 ```
 
+run build runner
+```bash
+flutter pub run build_runner build --delete-conflicting-outputs
+```
+
 ### 3. Open Simulator/Emulator
 
 **For iOS (macOS only):**
@@ -34,14 +39,14 @@ open -a Simulator
 
 ### 4. Run the Application
 
-Run the app on your connected device:
-```bash
-flutter run --release
-```
-
-Run the app on your simulator:
+Run the app on simulator:
 ```bash
 flutter run
+```
+
+Run the app on physical device:
+```bash
+flutter run --release
 ```
 
 To run on a specific device:
@@ -56,39 +61,39 @@ build apk file for Android
 flutter build apk
 ```
 
-build apk file for Android through Github Actions
-```bash
-git tag v1.0.0
-git push origin v1.0.0
-# or push all tags
-git push origin --tags
-```
-
 ## Linter
 ```bash
-dart fix --apply
-dart format .
+dart fix --apply && dart format .
 ```
 
-## File Storage Location
+## Analytics System
 
-### Avatars: 
-`[avatars_bucket]/${userId}/avator/${timestamp}.jpg` 
+### Traffic Flow
+```mermaid
+graph TD
+    %% Frontend
+    subgraph Frontend [Flutter App]
+        User[User Actions] -->|1. Track| Queue[Analytics Service]
+        Queue -->|2. Buffer & Batch| Batch[Batch Upload]
+    end
 
-### Wardrobe: 
-`[wardrobe_bucket]/${userId}/wardrobe/${categoryCode}/${timestamp}.jpg`
+    %% Backend
+    subgraph Backend [Supabase]
+        Batch -.->|3. RPC Call| API[log_analytics_events]
+        API --> RawTable[(analytics_events)]
+        
+        RawTable -->|4. Trigger| TrigFunction[update_analytics_summary]
+        TrigFunction -->|5. Aggregation| SummaryTable[(analytics_monthly_summary)]
+    end
 
+    %% Dashboard
+    subgraph Dashboard [Store Owner]
+        Owner[User] -->|6. View Stats| GetSum[get_store_analytics_summary]
+        GetSum --> SummaryTable
+    end
+```
 
-## Clothes Categories
-
-- 上衣 : `top`
-- 褲子 : `pants`
-- 裙子 : `skirt`
-- 外套 : `jacket`
-- 鞋子 : `shoes`
-- 配件 : `accessories`
-- 其他 : `others`
-
-
-## TODO, Bugs:
-1. 現在的個人設定-基本資料-更改姓名方式不會被正確更改，因為 metadata['name'] 欄位每次使用第三方登入都會被覆蓋，所以只是拿來 Demo 設定欄位的。
+### Key Features
+1. **Frontend**: Batched upload (10 events/5s), lifecycle awareness (auto-flush).
+2. **Backend**: Trigger-based real-time aggregation, O(1) dashboard queries.
+3. **Events**: `view` (Page/Impression), `try_on`, `purchase_click`.
