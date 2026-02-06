@@ -28,7 +28,7 @@ class IsarService {
           StoreAnalyticsCollectionSchema,
         ],
         directory: dir.path,
-        inspector: true,
+        inspector: false,
       );
     }
 
