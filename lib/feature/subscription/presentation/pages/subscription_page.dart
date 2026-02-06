@@ -72,7 +72,7 @@ class SubscriptionPage extends ConsumerWidget {
                   _buildPlanCard(
                     context,
                     title: SubscriptionPlan.pro.displayName,
-                    price: '\$12.99/月',
+                    price: '\$299/月',
                     description: '進階試穿功能',
                     features: ['每日 20 次試穿', '衣櫃容量 50 件'],
                     isCurrent: currentPlan == SubscriptionPlan.pro,
@@ -81,7 +81,7 @@ class SubscriptionPage extends ConsumerWidget {
                   _buildPlanCard(
                     context,
                     title: SubscriptionPlan.max.displayName,
-                    price: '\$29.99/月',
+                    price: '\$499/月',
                     description: '專業試穿功能',
                     features: ['每日 50 次試穿', '衣櫃容量 200 件'],
                     isCurrent: currentPlan == SubscriptionPlan.max,
