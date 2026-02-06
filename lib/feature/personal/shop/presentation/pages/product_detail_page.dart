@@ -38,6 +38,21 @@ class ProductDetailPage extends HookConsumerWidget {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     }
 
+    Future<void> handleOpenMap() async {
+      final address = product.storeInfo.address!;
+
+      final uri = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(address)}',
+      );
+      if (!await canLaunchUrl(uri)) {
+        if (!context.mounted) return;
+        TopNotification.show(context, message: '無法開啟地圖', type: NotificationType.error);
+        return;
+      }
+
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text('商品詳情', style: Theme.of(context).textTheme.titleMedium),
@@ -235,6 +250,12 @@ class ProductDetailPage extends HookConsumerWidget {
                           ],
                         ),
                       ),
+                      if (product.storeInfo.address != null &&
+                          product.storeInfo.address!.isNotEmpty)
+                        IconButton(
+                          onPressed: handleOpenMap,
+                          icon: Icon(Icons.map, color: colorScheme.primary),
+                        ),
                     ],
                   ),
 

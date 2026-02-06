@@ -34,7 +34,7 @@ class StoreAnalyticsFilter extends _$StoreAnalyticsFilter {
   }
 
   ({int year, int month})? get filter => state;
-  
+
   set filter(final ({int year, int month})? filter) {
     state = filter;
   }
