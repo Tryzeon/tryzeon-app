@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
@@ -163,7 +164,12 @@ class _StoreProfileForm extends HookConsumerWidget {
     }
 
     Future<void> updateLogo() async {
-      final File? image = await ImagePickerHelper.pickImage(context);
+      final File? image = await ImagePickerHelper.pickImage(
+        context,
+        enableCrop: true,
+        cropStyle: CropStyle.circle,
+        aspectRatioPresets: [CropAspectRatioPreset.square],
+      );
       if (image == null) return;
 
       newLogoImage.value = image;

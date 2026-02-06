@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
@@ -15,7 +16,12 @@ class ImagePickerHelper {
     final double maxWidth = 1080,
     final double maxHeight = 1920,
     final int imageQuality = 85,
+    final bool enableCrop = false,
+    final CropStyle cropStyle = CropStyle.rectangle,
+    final List<CropAspectRatioPreset>? aspectRatioPresets,
   }) async {
+    final Color primaryColor = Theme.of(context).colorScheme.primary;
+
     final ImageSource? source = await showModalBottomSheet<ImageSource?>(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -67,6 +73,54 @@ class ImagePickerHelper {
         );
 
         if (pickedFile != null) {
+          String sourcePath = pickedFile.path;
+
+          if (enableCrop) {
+            final croppedFile = await ImageCropper().cropImage(
+              sourcePath: sourcePath,
+              uiSettings: [
+                AndroidUiSettings(
+                  toolbarTitle: '編輯圖片',
+                  toolbarColor: primaryColor,
+                  toolbarWidgetColor: Colors.white,
+                  activeControlsWidgetColor: primaryColor,
+                  initAspectRatio: CropAspectRatioPreset.original,
+                  lockAspectRatio: false,
+                  cropStyle: cropStyle,
+                  aspectRatioPresets:
+                      aspectRatioPresets ??
+                      [
+                        CropAspectRatioPreset.original,
+                        CropAspectRatioPreset.square,
+                        CropAspectRatioPreset.ratio3x2,
+                        CropAspectRatioPreset.ratio4x3,
+                        CropAspectRatioPreset.ratio16x9,
+                      ],
+                ),
+                IOSUiSettings(
+                  title: '編輯圖片',
+                  cropStyle: cropStyle,
+                  aspectRatioPresets:
+                      aspectRatioPresets ??
+                      [
+                        CropAspectRatioPreset.original,
+                        CropAspectRatioPreset.square,
+                        CropAspectRatioPreset.ratio3x2,
+                        CropAspectRatioPreset.ratio4x3,
+                        CropAspectRatioPreset.ratio16x9,
+                      ],
+                ),
+              ],
+            );
+
+            if (croppedFile != null) {
+              sourcePath = croppedFile.path;
+            } else {
+              // User cancelled cropping
+              return null;
+            }
+          }
+
           // Generate timestamp based filename
           final String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
           final String newFileName = '$timestamp.jpg';
@@ -77,7 +131,7 @@ class ImagePickerHelper {
 
           // Compress and convert to JPG
           final XFile? compressedFile = await FlutterImageCompress.compressAndGetFile(
-            pickedFile.path,
+            sourcePath,
             newPath,
             quality: imageQuality,
             format: CompressFormat.jpeg,
