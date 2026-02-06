@@ -238,12 +238,12 @@ class StoreLoginPage extends HookConsumerWidget {
                     color: Colors.white.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: primaryColor.withValues(alpha: 0.3),
+                      color: const Color(0xFF6366F1).withValues(alpha: 0.3),
                       width: 2,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: primaryColor.withValues(alpha: 0.05),
+                        color: const Color(0xFF6366F1).withValues(alpha: 0.05),
                         blurRadius: 16,
                         offset: const Offset(0, 8),
                       ),
@@ -267,7 +267,11 @@ class StoreLoginPage extends HookConsumerWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.email_outlined, size: 24, color: primaryColor),
+                            Icon(
+                              Icons.email_outlined,
+                              size: 24,
+                              color: Color(0xFF6366F1),
+                            ),
                             SizedBox(width: 14),
                             Text(
                               '使用 Email 繼續',
