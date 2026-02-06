@@ -78,19 +78,6 @@ class ChatBubble extends HookConsumerWidget {
                 listBullet: textTheme.bodyLarge?.copyWith(
                   color: isUser ? colorScheme.onPrimary : colorScheme.onSurface,
                 ),
-                code: textTheme.bodyLarge?.copyWith(
-                  color: isUser ? colorScheme.onPrimary : colorScheme.onSurface,
-                  backgroundColor: isUser
-                      ? colorScheme.onPrimary.withValues(alpha: 0.2)
-                      : colorScheme.surfaceContainerHighest,
-                  fontFamily: 'monospace',
-                ),
-                codeblockDecoration: BoxDecoration(
-                  color: isUser
-                      ? colorScheme.onPrimary.withValues(alpha: 0.2)
-                      : colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(8),
-                ),
               ),
               shrinkWrap: true,
             ),

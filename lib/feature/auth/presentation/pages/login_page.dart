@@ -110,11 +110,9 @@ class LoginPage extends HookConsumerWidget {
         const SizedBox(height: 32),
 
         // Title
-        const Text(
+        Text(
           'Tryzeon',
-          style: TextStyle(
-            fontFamily:
-                'Outfit', // Assuming Outfit or use default SANs with refined weight
+          style: Theme.of(context).textTheme.displayMedium?.copyWith(
             color: titleColor,
             fontSize: 40,
             fontWeight: FontWeight.w800,

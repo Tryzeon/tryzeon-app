@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
@@ -53,12 +52,9 @@ class StoreTrafficDashboard extends HookConsumerWidget {
             children: [
               Text(
                 '總流量概況',
-                style: GoogleFonts.outfit(
-                  color: colorScheme.onSurface,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.5,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(letterSpacing: 0.5),
               ),
               if (hasError) ...[
                 const SizedBox(width: 8),
@@ -124,12 +120,9 @@ class StoreTrafficDashboard extends HookConsumerWidget {
                               filter == null
                                   ? '全部時間'
                                   : '${filter.year}年 ${filter.month}月',
-                              style: GoogleFonts.outfit(
-                                color: colorScheme.onSurface,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0.3,
-                              ),
+                              style: Theme.of(
+                                context,
+                              ).textTheme.labelLarge?.copyWith(letterSpacing: 0.3),
                             ),
                           ],
                         ),
@@ -317,9 +310,8 @@ class _StatItem extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 label,
-                style: GoogleFonts.outfit(
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant,
-                  fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -330,11 +322,8 @@ class _StatItem extends StatelessWidget {
             enabled: isLoading,
             child: Text(
               hasError ? '--' : value.toString(),
-              style: GoogleFonts.outfit(
+              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                 color: hasError ? colorScheme.onSurfaceVariant : colorScheme.primary,
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                height: 1.1,
               ),
             ),
           ),

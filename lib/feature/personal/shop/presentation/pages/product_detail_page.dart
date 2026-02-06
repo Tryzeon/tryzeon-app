@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/shared/measurements/presentation/mappers/measurement_type_ui_mapper.dart';
@@ -41,7 +40,7 @@ class ProductDetailPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('商品詳情', style: GoogleFonts.outfit()),
+        title: Text('商品詳情', style: Theme.of(context).textTheme.titleMedium),
         centerTitle: true,
         actions: [
           IconButton(onPressed: handlePurchase, icon: const Icon(Icons.open_in_new)),
