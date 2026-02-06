@@ -48,48 +48,35 @@ class StoreTrafficDashboard extends HookConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 第一行：標題
           Row(
             children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.auto_graph_rounded,
-                        color: colorScheme.primary,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      '總流量概況',
-                      style: GoogleFonts.outfit(
-                        color: colorScheme.onSurface,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    if (hasError) ...[
-                      const SizedBox(width: 8),
-                      Tooltip(
-                        message: '資料載入失敗，請下拉刷新',
-                        child: Icon(
-                          Icons.warning_amber_rounded,
-                          color: colorScheme.error,
-                          size: 16,
-                        ),
-                      ),
-                    ],
-                  ],
+              Text(
+                '總流量概況',
+                style: GoogleFonts.outfit(
+                  color: colorScheme.onSurface,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
                 ),
               ),
-              // 月份篩選器
+              if (hasError) ...[
+                const SizedBox(width: 8),
+                Tooltip(
+                  message: '資料載入失敗，請下拉刷新',
+                  child: Icon(
+                    Icons.warning_amber_rounded,
+                    color: colorScheme.error,
+                    size: 16,
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 16),
+          // 第二行：月份篩選器
+          Row(
+            children: [
               Container(
                 decoration: BoxDecoration(
                   color: colorScheme.surfaceContainerLow,
@@ -103,108 +90,90 @@ class StoreTrafficDashboard extends HookConsumerWidget {
                     ),
                   ],
                 ),
-                child: Material(
-                  color: Colors.transparent,
-                  borderRadius: BorderRadius.circular(32),
-                  clipBehavior: Clip.antiAlias,
-                  child: PopupMenuButton<({int year, int month})>(
-                    initialValue: filter ?? (year: 0, month: 0),
-                    tooltip: '篩選月份',
-                    elevation: 3,
-                    shadowColor: Colors.black.withValues(alpha: 0.2),
-                    surfaceTintColor: colorScheme.surface,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(
-                        color: colorScheme.outline.withValues(alpha: 0.05),
-                      ),
-                    ),
-                    position: PopupMenuPosition.under,
-                    offset: const Offset(0, 8),
-                    onSelected: (final value) {
-                      if (value.year == 0 && value.month == 0) {
-                        ref.read(storeAnalyticsFilterProvider.notifier).state = null;
-                      } else {
-                        ref.read(storeAnalyticsFilterProvider.notifier).state = value;
-                      }
-                    },
-                    itemBuilder: (final context) {
-                      final now = DateTime.now();
-                      final currentYear = now.year;
-                      final currentMonth = now.month;
-
-                      return [
-                        // 選項：全部時間
-                        PopupMenuItem(
-                          value: const (year: 0, month: 0),
-                          height: 48,
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.calendar_today_rounded,
-                                size: 18,
-                                color: filter == null
-                                    ? colorScheme.primary
-                                    : colorScheme.onSurfaceVariant,
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                '全部時間',
-                                style: GoogleFonts.outfit(
-                                  fontWeight: filter == null
-                                      ? FontWeight.w600
-                                      : FontWeight.w400,
-                                  color: filter == null
-                                      ? colorScheme.primary
-                                      : colorScheme.onSurface,
-                                ),
-                              ),
-                              if (filter == null) ...[
-                                const Spacer(),
-                                Icon(
-                                  Icons.check_rounded,
-                                  size: 18,
-                                  color: colorScheme.primary,
-                                ),
-                              ],
-                            ],
-                          ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // 左箭頭：上一個月
+                      IconButton(
+                        icon: Icon(
+                          Icons.chevron_left_rounded,
+                          color: colorScheme.onSurfaceVariant,
+                          size: 20,
                         ),
-                        const PopupMenuDivider(),
-                        // 選項：過去 6 個月
-                        for (int i = 0; i < 6; i++)
-                          _buildMonthItem(context, currentYear, currentMonth, i, filter),
-                      ];
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.calendar_month_rounded,
-                            color: colorScheme.primary,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            filter == null ? '全部時間' : '${filter.year}年 ${filter.month}月',
-                            style: GoogleFonts.outfit(
-                              color: colorScheme.onSurface,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Icon(
-                            Icons.keyboard_arrow_down_rounded,
-                            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-                            size: 20,
-                          ),
-                        ],
+                        tooltip: '上一個月',
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                        onPressed: () => _onPreviousMonth(ref, filter),
                       ),
-                    ),
+                      // 中間顯示區域
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.calendar_month_rounded,
+                              color: colorScheme.primary,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              filter == null
+                                  ? '全部時間'
+                                  : '${filter.year}年 ${filter.month}月',
+                              style: GoogleFonts.outfit(
+                                color: colorScheme.onSurface,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // 右箭頭：下一個月（不能超過當前月份）
+                      IconButton(
+                        icon: Icon(
+                          Icons.chevron_right_rounded,
+                          color: _canGoNextMonth(filter)
+                              ? colorScheme.onSurfaceVariant
+                              : colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+                          size: 20,
+                        ),
+                        tooltip: '下一個月',
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                        onPressed: _canGoNextMonth(filter)
+                            ? () => _onNextMonth(ref, filter)
+                            : null,
+                      ),
+                      // 分隔線
+                      Container(
+                        width: 1,
+                        height: 20,
+                        margin: const EdgeInsets.symmetric(horizontal: 2),
+                        color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                      ),
+                      // "全部時間"按鈕
+                      IconButton(
+                        icon: Icon(
+                          Icons.all_inclusive_rounded,
+                          color: filter == null
+                              ? colorScheme.primary
+                              : colorScheme.onSurfaceVariant,
+                          size: 16,
+                        ),
+                        tooltip: '全部時間',
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                        onPressed: () => _onAllTime(ref),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -253,49 +222,69 @@ class StoreTrafficDashboard extends HookConsumerWidget {
     );
   }
 
-  PopupMenuItem<({int month, int year})> _buildMonthItem(
-    final BuildContext context,
-    final int currentYear,
-    final int currentMonth,
-    final int offset,
-    final ({int year, int month})? currentFilter,
-  ) {
-    var y = currentYear;
-    var m = currentMonth - offset;
-    if (m <= 0) {
-      y -= 1;
-      m += 12;
+  /// 切換到上一個月
+  void _onPreviousMonth(final WidgetRef ref, final ({int year, int month})? filter) {
+    final now = DateTime.now();
+    if (filter == null) {
+      // 從全部時間切換到當前月份
+      ref.read(storeAnalyticsFilterProvider.notifier).state = (
+        year: now.year,
+        month: now.month,
+      );
+    } else {
+      // 往前一個月
+      var newYear = filter.year;
+      var newMonth = filter.month - 1;
+      if (newMonth < 1) {
+        newYear -= 1;
+        newMonth = 12;
+      }
+      ref.read(storeAnalyticsFilterProvider.notifier).state = (
+        year: newYear,
+        month: newMonth,
+      );
     }
+  }
 
-    final isSelected =
-        currentFilter != null && currentFilter.year == y && currentFilter.month == m;
-    final colorScheme = Theme.of(context).colorScheme;
+  /// 切換到下一個月
+  void _onNextMonth(final WidgetRef ref, final ({int year, int month})? filter) {
+    final now = DateTime.now();
+    if (filter == null) {
+      // 從全部時間切換到當前月份
+      ref.read(storeAnalyticsFilterProvider.notifier).state = (
+        year: now.year,
+        month: now.month,
+      );
+    } else {
+      // 往後一個月
+      var newYear = filter.year;
+      var newMonth = filter.month + 1;
+      if (newMonth > 12) {
+        newYear += 1;
+        newMonth = 1;
+      }
+      ref.read(storeAnalyticsFilterProvider.notifier).state = (
+        year: newYear,
+        month: newMonth,
+      );
+    }
+  }
 
-    return PopupMenuItem(
-      value: (year: y, month: m),
-      height: 48,
-      child: Row(
-        children: [
-          Icon(
-            Icons.calendar_month_outlined,
-            size: 18,
-            color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
-          ),
-          const SizedBox(width: 12),
-          Text(
-            '$y年 $m月',
-            style: GoogleFonts.outfit(
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              color: isSelected ? colorScheme.primary : colorScheme.onSurface,
-            ),
-          ),
-          if (isSelected) ...[
-            const Spacer(),
-            Icon(Icons.check_rounded, size: 18, color: colorScheme.primary),
-          ],
-        ],
-      ),
-    );
+  /// 切換到全部時間
+  void _onAllTime(final WidgetRef ref) {
+    ref.read(storeAnalyticsFilterProvider.notifier).state = null;
+  }
+
+  /// 檢查是否可以前往下一個月（不能超過當前月份）
+  bool _canGoNextMonth(final ({int year, int month})? filter) {
+    if (filter == null) return true; // 從全部時間可以切換到當前月份
+
+    final now = DateTime.now();
+    // 如果當前選擇的月份是當前月份，則不能再往後
+    if (filter.year == now.year && filter.month == now.month) {
+      return false;
+    }
+    return true;
   }
 }
 
