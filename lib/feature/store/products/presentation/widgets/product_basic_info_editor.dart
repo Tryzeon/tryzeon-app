@@ -142,7 +142,7 @@ class ProductBasicInfoEditor extends StatelessWidget {
             controller: purchaseLinkController,
             style: textTheme.bodyLarge,
             decoration: InputDecoration(
-              labelText: '購買連結',
+              labelText: '導購連結',
               hintText: 'https://...',
               labelStyle: textTheme.bodyMedium,
               prefixIcon: Icon(Icons.link_rounded, color: colorScheme.primary),
