@@ -1,5 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/data/services/isar_service.dart';
+import 'package:tryzeon/feature/store/analytics/data/datasources/store_analytics_local_datasource.dart';
 import 'package:tryzeon/feature/store/analytics/data/datasources/store_analytics_remote_datasource.dart';
 import 'package:tryzeon/feature/store/analytics/data/repositories/store_analytics_repository_impl.dart';
 import 'package:tryzeon/feature/store/analytics/domain/entities/store_analytics_summary.dart';
@@ -15,6 +17,12 @@ final storeAnalyticsRemoteDataSourceProvider = Provider<StoreAnalyticsRemoteData
   return StoreAnalyticsRemoteDataSource(Supabase.instance.client);
 });
 
+final storeAnalyticsLocalDataSourceProvider = Provider<StoreAnalyticsLocalDataSource>((
+  final ref,
+) {
+  return StoreAnalyticsLocalDataSource(IsarService());
+});
+
 // --- Filter Provider ---
 final storeAnalyticsFilterProvider = StateProvider<({int year, int month})?>((final ref) {
   final now = DateTime.now();
@@ -23,7 +31,10 @@ final storeAnalyticsFilterProvider = StateProvider<({int year, int month})?>((fi
 
 // --- Repository ---
 final storeAnalyticsRepositoryProvider = Provider<StoreAnalyticsRepository>((final ref) {
-  return StoreAnalyticsRepositoryImpl(ref.watch(storeAnalyticsRemoteDataSourceProvider));
+  return StoreAnalyticsRepositoryImpl(
+    ref.watch(storeAnalyticsRemoteDataSourceProvider),
+    ref.watch(storeAnalyticsLocalDataSourceProvider),
+  );
 });
 
 // --- Use Cases ---

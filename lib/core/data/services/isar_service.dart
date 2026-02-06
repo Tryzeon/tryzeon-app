@@ -4,6 +4,7 @@ import 'package:tryzeon/feature/auth/data/collections/auth_settings_collection.d
 import 'package:tryzeon/feature/common/product_categories/data/collections/product_category_collection.dart';
 import 'package:tryzeon/feature/personal/profile/data/collections/user_profile_collection.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/collections/wardrobe_item_collection.dart';
+import 'package:tryzeon/feature/store/analytics/data/collections/store_analytics_collection.dart';
 import 'package:tryzeon/feature/store/products/data/collections/product_collection.dart';
 import 'package:tryzeon/feature/store/profile/data/collections/store_profile_collection.dart';
 
@@ -24,6 +25,7 @@ class IsarService {
           WardrobeItemCollectionSchema,
           ProductCollectionSchema,
           StoreProfileCollectionSchema,
+          StoreAnalyticsCollectionSchema,
         ],
         directory: dir.path,
         inspector: true,
