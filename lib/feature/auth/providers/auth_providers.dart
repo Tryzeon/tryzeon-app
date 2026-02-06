@@ -1,4 +1,4 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/feature/auth/data/datasources/auth_local_datasource.dart';
@@ -12,18 +12,23 @@ import 'package:tryzeon/feature/auth/domain/usecases/sign_in_with_provider.dart'
 import 'package:tryzeon/feature/auth/domain/usecases/sign_out.dart';
 import 'package:tryzeon/feature/auth/domain/usecases/verify_email_otp.dart';
 
-// Data Source Providers
-final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>((final ref) {
-  return AuthRemoteDataSource(Supabase.instance.client);
-});
+part 'auth_providers.g.dart';
 
-final authLocalDataSourceProvider = Provider<AuthLocalDataSource>((final ref) {
+// Data Source Providers
+@riverpod
+AuthRemoteDataSource authRemoteDataSource(final Ref ref) {
+  return AuthRemoteDataSource(Supabase.instance.client);
+}
+
+@riverpod
+AuthLocalDataSource authLocalDataSource(final Ref ref) {
   final isarService = ref.watch(isarServiceProvider);
   return AuthLocalDataSource(isarService);
-});
+}
 
 // Repository Provider
-final authRepositoryProvider = Provider<AuthRepository>((final ref) {
+@riverpod
+AuthRepository authRepository(final Ref ref) {
   final remoteDataSource = ref.watch(authRemoteDataSourceProvider);
   final localDataSource = ref.watch(authLocalDataSourceProvider);
 
@@ -33,45 +38,41 @@ final authRepositoryProvider = Provider<AuthRepository>((final ref) {
     localDataSource: localDataSource,
     cacheService: cacheService,
   );
-});
+}
 
 // Use Case Providers
-final signInWithProviderUseCaseProvider = FutureProvider<SignInWithProviderUseCase>((
-  final ref,
-) async {
+@riverpod
+SignInWithProviderUseCase signInWithProviderUseCase(final Ref ref) {
   final repository = ref.watch(authRepositoryProvider);
   return SignInWithProviderUseCase(repository);
-});
+}
 
-final sendEmailOtpUseCaseProvider = FutureProvider<SendEmailOtpUseCase>((
-  final ref,
-) async {
+@riverpod
+SendEmailOtpUseCase sendEmailOtpUseCase(final Ref ref) {
   final repository = ref.watch(authRepositoryProvider);
   return SendEmailOtpUseCase(repository);
-});
+}
 
-final verifyEmailOtpUseCaseProvider = FutureProvider<VerifyEmailOtpUseCase>((
-  final ref,
-) async {
+@riverpod
+VerifyEmailOtpUseCase verifyEmailOtpUseCase(final Ref ref) {
   final repository = ref.watch(authRepositoryProvider);
   return VerifyEmailOtpUseCase(repository);
-});
+}
 
-final signOutUseCaseProvider = FutureProvider<SignOutUseCase>((final ref) async {
+@riverpod
+SignOutUseCase signOutUseCase(final Ref ref) {
   final repository = ref.watch(authRepositoryProvider);
   return SignOutUseCase(repository);
-});
+}
 
-final getLastLoginTypeUseCaseProvider = FutureProvider<GetLastLoginTypeUseCase>((
-  final ref,
-) async {
+@riverpod
+GetLastLoginTypeUseCase getLastLoginTypeUseCase(final Ref ref) {
   final repository = ref.watch(authRepositoryProvider);
   return GetLastLoginTypeUseCase(repository);
-});
+}
 
-final setLastLoginTypeUseCaseProvider = FutureProvider<SetLastLoginTypeUseCase>((
-  final ref,
-) async {
+@riverpod
+SetLastLoginTypeUseCase setLastLoginTypeUseCase(final Ref ref) {
   final repository = ref.watch(authRepositoryProvider);
   return SetLastLoginTypeUseCase(repository);
-});
+}

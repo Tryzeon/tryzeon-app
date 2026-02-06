@@ -22,7 +22,7 @@ class StoreSettingsPage extends HookConsumerWidget {
       );
       if (confirmed != true) return;
 
-      final setLoginTypeUseCase = await ref.read(setLastLoginTypeUseCaseProvider.future);
+      final setLoginTypeUseCase = ref.read(setLastLoginTypeUseCaseProvider);
       await setLoginTypeUseCase(UserType.personal);
 
       if (!context.mounted) return;
@@ -42,7 +42,7 @@ class StoreSettingsPage extends HookConsumerWidget {
       );
       if (confirmed != true) return;
 
-      final signOutUseCase = await ref.read(signOutUseCaseProvider.future);
+      final signOutUseCase = ref.read(signOutUseCaseProvider);
       await signOutUseCase();
 
       if (!context.mounted) return;

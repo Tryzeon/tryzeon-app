@@ -30,7 +30,7 @@ class StoreEntry extends HookConsumerWidget {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    if (profileAsync.valueOrNull != null) {
+    if (profileAsync.asData?.value != null) {
       return const StoreHomePage();
     }
 

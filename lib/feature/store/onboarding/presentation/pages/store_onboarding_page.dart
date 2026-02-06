@@ -39,9 +39,7 @@ class StoreOnboardingPage extends HookConsumerWidget {
       );
 
       if (confirmed == true) {
-        final setLoginTypeUseCase = await ref.read(
-          setLastLoginTypeUseCaseProvider.future,
-        );
+        final setLoginTypeUseCase = ref.read(setLastLoginTypeUseCaseProvider);
         await setLoginTypeUseCase(UserType.personal);
 
         if (context.mounted) {
@@ -62,7 +60,7 @@ class StoreOnboardingPage extends HookConsumerWidget {
       );
 
       if (confirmed == true) {
-        final signOutUseCase = await ref.read(signOutUseCaseProvider.future);
+        final signOutUseCase = ref.read(signOutUseCaseProvider);
         await signOutUseCase();
         if (!context.mounted) return;
         // 登出後會自動回到登入頁面（main.dart 會處理）

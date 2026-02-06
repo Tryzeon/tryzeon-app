@@ -1,25 +1,28 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/feature/personal/chat/data/datasources/chat_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/chat/data/repositories/chat_repository_impl.dart';
 import 'package:tryzeon/feature/personal/chat/domain/repositories/chat_repository.dart';
 import 'package:tryzeon/feature/personal/chat/domain/usecases/get_llm_recommendation.dart';
 
+part 'chat_providers.g.dart';
+
 // Data Source Provider
-final chatRemoteDataSourceProvider = Provider<ChatRemoteDataSource>((final ref) {
+@riverpod
+ChatRemoteDataSource chatRemoteDataSource(final Ref ref) {
   return ChatRemoteDataSource(Supabase.instance.client);
-});
+}
 
 // Repository Provider
-final chatRepositoryProvider = Provider<ChatRepository>((final ref) {
+@riverpod
+ChatRepository chatRepository(final Ref ref) {
   final remoteDataSource = ref.watch(chatRemoteDataSourceProvider);
   return ChatRepositoryImpl(remoteDataSource: remoteDataSource);
-});
+}
 
 // Use Case Provider
-final getLLMRecommendationUseCaseProvider = Provider<GetLLMRecommendationUseCase>((
-  final ref,
-) {
+@riverpod
+GetLLMRecommendationUseCase getLLMRecommendationUseCase(final Ref ref) {
   final repository = ref.watch(chatRepositoryProvider);
   return GetLLMRecommendationUseCase(repository);
-});
+}

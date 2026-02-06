@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/feature/store/products/data/datasources/product_local_datasource.dart';
@@ -14,48 +15,68 @@ import 'package:tryzeon/feature/store/products/domain/value_objects/product_sort
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
-final productRemoteDataSourceProvider = Provider<ProductRemoteDataSource>((final ref) {
-  return ProductRemoteDataSource(Supabase.instance.client);
-});
+part 'store_products_providers.g.dart';
 
-final productLocalDataSourceProvider = Provider<ProductLocalDataSource>((final ref) {
+@riverpod
+ProductRemoteDataSource productRemoteDataSource(final Ref ref) {
+  return ProductRemoteDataSource(Supabase.instance.client);
+}
+
+@riverpod
+ProductLocalDataSource productLocalDataSource(final Ref ref) {
   final isarService = ref.watch(isarServiceProvider);
   final cacheService = ref.watch(cacheServiceProvider);
   return ProductLocalDataSource(isarService, cacheService);
-});
+}
 
-final productRepositoryProvider = Provider<ProductRepository>((final ref) {
+@riverpod
+ProductRepository productRepository(final Ref ref) {
   return ProductRepositoryImpl(
     remoteDataSource: ref.watch(productRemoteDataSourceProvider),
     localDataSource: ref.watch(productLocalDataSourceProvider),
   );
-});
+}
 
-final getProductsUseCaseProvider = Provider<GetProducts>((final ref) {
+@riverpod
+GetProducts getProductsUseCase(final Ref ref) {
   return GetProducts(
     storeProfileRepository: ref.watch(storeProfileRepositoryProvider),
     productRepository: ref.watch(productRepositoryProvider),
   );
-});
+}
 
-final createProductUseCaseProvider = Provider<CreateProduct>((final ref) {
+@riverpod
+CreateProduct createProductUseCase(final Ref ref) {
   return CreateProduct(ref.watch(productRepositoryProvider));
-});
+}
 
-final updateProductUseCaseProvider = Provider<UpdateProduct>((final ref) {
+@riverpod
+UpdateProduct updateProductUseCase(final Ref ref) {
   return UpdateProduct(ref.watch(productRepositoryProvider));
-});
+}
 
-final deleteProductUseCaseProvider = Provider<DeleteProduct>((final ref) {
+@riverpod
+DeleteProduct deleteProductUseCase(final Ref ref) {
   return DeleteProduct(ref.watch(productRepositoryProvider));
-});
+}
 
 /// Provider for product sort condition
-final productSortConditionProvider = StateProvider<SortCondition>((final ref) {
-  return SortCondition.defaultSort;
-});
+@riverpod
+class ProductSortCondition extends _$ProductSortCondition {
+  @override
+  SortCondition build() {
+    return SortCondition.defaultSort;
+  }
 
-final productsProvider = FutureProvider.autoDispose<List<Product>>((final ref) async {
+  SortCondition get condition => state;
+
+  set condition(final SortCondition newCondition) {
+    state = newCondition;
+  }
+}
+
+@riverpod
+Future<List<Product>> products(final Ref ref) async {
   final sort = ref.watch(productSortConditionProvider);
   final getProductsUseCase = ref.watch(getProductsUseCaseProvider);
 
@@ -65,7 +86,7 @@ final productsProvider = FutureProvider.autoDispose<List<Product>>((final ref) a
     throw result.getError()!;
   }
   return result.get()!;
-});
+}
 
 /// 強制刷新商品列表
 /// 注意：此函數會吞掉 refresh 時的異常，確保 ErrorView 的 onRetry 能正常運作

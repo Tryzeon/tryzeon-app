@@ -29,7 +29,8 @@ dependencies:
   path: any
   typed_result: ^2.0.0
   cached_network_image: ^3.4.1
-  hooks_riverpod: ^2.6.1
+  hooks_riverpod: ^3.0.0
+  riverpod_annotation: ^3.0.0
   flutter_hooks: ^0.21.3+1
   talker_flutter: ^5.1.9
   equatable: ^2.0.8
@@ -48,7 +49,10 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   flutter_launcher_icons: ^0.13.1
   isar_community_generator: ^3.3.0
+  riverpod_generator: ^3.0.0
+  riverpod_lint: ^3.0.0
   build_runner: any
+  custom_lint: ^0.8.0
 
 flutter:
   assets:

@@ -38,7 +38,7 @@ class PersonalLoginPage extends HookConsumerWidget {
     Future<void> handleSignIn(final String provider) async {
       isLoading.value = true;
 
-      final signInUseCase = await ref.read(signInWithProviderUseCaseProvider.future);
+      final signInUseCase = ref.read(signInWithProviderUseCaseProvider);
       final result = await signInUseCase(provider: provider, userType: UserType.personal);
 
       // Check if widget is still mounted

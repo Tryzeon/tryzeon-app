@@ -1,4 +1,4 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_local_datasource.dart';
@@ -10,40 +10,44 @@ import 'package:tryzeon/feature/store/profile/domain/usecases/get_store_profile.
 import 'package:tryzeon/feature/store/profile/domain/usecases/update_store_profile.dart';
 import 'package:typed_result/typed_result.dart';
 
-final storeProfileRemoteDataSourceProvider = Provider<StoreProfileRemoteDataSource>((
-  final ref,
-) {
-  return StoreProfileRemoteDataSource(Supabase.instance.client);
-});
+part 'store_profile_providers.g.dart';
 
-final storeProfileLocalDataSourceProvider = Provider<StoreProfileLocalDataSource>((
-  final ref,
-) {
+@riverpod
+StoreProfileRemoteDataSource storeProfileRemoteDataSource(final Ref ref) {
+  return StoreProfileRemoteDataSource(Supabase.instance.client);
+}
+
+@riverpod
+StoreProfileLocalDataSource storeProfileLocalDataSource(final Ref ref) {
   final isarService = ref.watch(isarServiceProvider);
   final cacheService = ref.watch(cacheServiceProvider);
   return StoreProfileLocalDataSource(isarService, cacheService);
-});
+}
 
-final storeProfileRepositoryProvider = Provider<StoreProfileRepository>((final ref) {
+@riverpod
+StoreProfileRepository storeProfileRepository(final Ref ref) {
   return StoreProfileRepositoryImpl(
     remoteDataSource: ref.watch(storeProfileRemoteDataSourceProvider),
     localDataSource: ref.watch(storeProfileLocalDataSourceProvider),
   );
-});
+}
 
-final getStoreProfileUseCaseProvider = Provider<GetStoreProfile>((final ref) {
+@riverpod
+GetStoreProfile getStoreProfileUseCase(final Ref ref) {
   return GetStoreProfile(ref.watch(storeProfileRepositoryProvider));
-});
+}
 
-final updateStoreProfileUseCaseProvider = Provider<UpdateStoreProfile>((final ref) {
+@riverpod
+UpdateStoreProfile updateStoreProfileUseCase(final Ref ref) {
   return UpdateStoreProfile(ref.watch(storeProfileRepositoryProvider));
-});
+}
 
-final storeProfileProvider = FutureProvider.autoDispose<StoreProfile?>((final ref) async {
+@riverpod
+Future<StoreProfile?> storeProfile(final Ref ref) async {
   final getStoreProfile = ref.watch(getStoreProfileUseCaseProvider);
   final result = await getStoreProfile();
   if (result.isFailure) {
     throw result.getError()!;
   }
   return result.get();
-});
+}

@@ -43,9 +43,7 @@ class Tryzeon extends HookConsumerWidget {
 
     useEffect(() {
       Future<void> checkAuthStatus() async {
-        final getLoginTypeUseCase = await ref.read(
-          getLastLoginTypeUseCaseProvider.future,
-        );
+        final getLoginTypeUseCase = ref.read(getLastLoginTypeUseCaseProvider);
         final result = await getLoginTypeUseCase();
         switch (result) {
           case Ok(:final value):

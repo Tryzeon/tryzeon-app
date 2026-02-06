@@ -1,19 +1,18 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/feature/personal/settings/data/repositories/settings_repository_impl.dart';
 import 'package:tryzeon/feature/personal/settings/domain/repositories/settings_repository.dart';
 import 'package:typed_result/typed_result.dart';
 
-final settingsRepositoryProvider = Provider<SettingsRepository>((final ref) {
+part 'settings_providers.g.dart';
+
+@riverpod
+SettingsRepository settingsRepository(final Ref ref) {
   return SettingsRepositoryImpl();
-});
+}
 
-final recommendNearbyShopsProvider =
-    AsyncNotifierProvider<RecommendNearbyShopsNotifier, bool>(
-      RecommendNearbyShopsNotifier.new,
-    );
-
-class RecommendNearbyShopsNotifier extends AsyncNotifier<bool> {
+@riverpod
+class RecommendNearbyShops extends _$RecommendNearbyShops {
   @override
   Future<bool> build() async {
     final repository = ref.read(settingsRepositoryProvider);

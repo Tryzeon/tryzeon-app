@@ -26,14 +26,14 @@ class _SortOptionsDialogContent extends ConsumerWidget {
     final textTheme = Theme.of(context).textTheme;
 
     void handleSortChange(final SortField newValue) {
-      ref.read(productSortConditionProvider.notifier).state = SortCondition(
+      ref.read(productSortConditionProvider.notifier).condition = SortCondition(
         field: newValue,
         ascending: ascending,
       );
     }
 
     void handleAscendingChange(final bool value) {
-      ref.read(productSortConditionProvider.notifier).state = SortCondition(
+      ref.read(productSortConditionProvider.notifier).condition = SortCondition(
         field: sortField,
         ascending: value,
       );

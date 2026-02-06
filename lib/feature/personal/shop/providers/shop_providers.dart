@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/domain/entities/user_location.dart';
@@ -16,55 +17,61 @@ import 'package:tryzeon/feature/personal/shop/domain/usecases/increment_tryon_co
 import 'package:tryzeon/feature/personal/shop/domain/usecases/increment_view_count.dart';
 import 'package:typed_result/typed_result.dart';
 
+part 'shop_providers.g.dart';
+
 // --- Data Sources ---
 
-final shopRemoteDataSourceProvider = Provider<ShopRemoteDataSource>((final ref) {
+@riverpod
+ShopRemoteDataSource shopRemoteDataSource(final Ref ref) {
   return ShopRemoteDataSource(Supabase.instance.client);
-});
+}
 
-final adLocalDataSourceProvider = Provider<AdLocalDataSource>((final ref) {
+@riverpod
+AdLocalDataSource adLocalDataSource(final Ref ref) {
   return AdLocalDataSource();
-});
+}
 
 // --- Repository ---
 
-final shopRepositoryProvider = Provider<ShopRepository>((final ref) {
+@riverpod
+ShopRepository shopRepository(final Ref ref) {
   final remote = ref.watch(shopRemoteDataSourceProvider);
   final adLocal = ref.watch(adLocalDataSourceProvider);
   final analyticsQueue = ref.watch(analyticsEventQueueServiceProvider);
   return ShopRepositoryImpl(remote, adLocal, analyticsQueue);
-});
+}
 
 // --- Use Cases ---
 
-final getShopProductsProvider = Provider<GetShopProducts>((final ref) {
+@riverpod
+GetShopProducts getShopProducts(final Ref ref) {
   return GetShopProducts(ref.watch(shopRepositoryProvider));
-});
+}
 
-final getAdsProvider = Provider<GetAds>((final ref) {
+@riverpod
+GetAds getAds(final Ref ref) {
   return GetAds(ref.watch(shopRepositoryProvider));
-});
+}
 
-final incrementTryonCountProvider = Provider<IncrementTryonCount>((final ref) {
+@riverpod
+IncrementTryonCount incrementTryonCount(final Ref ref) {
   return IncrementTryonCount(ref.watch(shopRepositoryProvider));
-});
+}
 
-final incrementViewCountProvider = Provider<IncrementViewCount>((final ref) {
+@riverpod
+IncrementViewCount incrementViewCount(final Ref ref) {
   return IncrementViewCount(ref.watch(shopRepositoryProvider));
-});
+}
 
-final incrementPurchaseClickCountProvider = Provider<IncrementPurchaseClickCount>((
-  final ref,
-) {
+@riverpod
+IncrementPurchaseClickCount incrementPurchaseClickCount(final Ref ref) {
   return IncrementPurchaseClickCount(ref.watch(shopRepositoryProvider));
-});
+}
 
 // --- Feature Providers ---
 
-final shopProductsProvider = FutureProvider.family<List<ShopProduct>, ShopFilter>((
-  final ref,
-  final filter,
-) async {
+@riverpod
+Future<List<ShopProduct>> shopProducts(final Ref ref, final ShopFilter filter) async {
   final getShopProductsUseCase = ref.watch(getShopProductsProvider);
   final result = await getShopProductsUseCase(
     searchQuery: filter.searchQuery,
@@ -78,16 +85,17 @@ final shopProductsProvider = FutureProvider.family<List<ShopProduct>, ShopFilter
     throw result.getError()!;
   }
   return result.get()!;
-});
+}
 
-final shopAdsProvider = FutureProvider<List<String>>((final ref) async {
+@riverpod
+Future<List<String>> shopAds(final Ref ref) async {
   final getAdsUseCase = ref.watch(getAdsProvider);
   final result = await getAdsUseCase();
   if (result.isFailure) {
     throw result.getError()!;
   }
   return result.get()!;
-});
+}
 
 /// 強制刷新商品列表
 Future<void> refreshShopProducts(final WidgetRef ref, final ShopFilter filter) async {
@@ -98,7 +106,8 @@ Future<void> refreshShopProducts(final WidgetRef ref, final ShopFilter filter) a
   }
 }
 
-final userLocationProvider = FutureProvider<UserLocation?>((final ref) async {
+@riverpod
+Future<UserLocation?> userLocation(final Ref ref) async {
   final recommendNearbyShops = await ref.watch(recommendNearbyShopsProvider.future);
 
   if (!recommendNearbyShops) {
@@ -107,4 +116,4 @@ final userLocationProvider = FutureProvider<UserLocation?>((final ref) async {
 
   final locationService = ref.watch(locationServiceProvider);
   return locationService.getUserLocation();
-});
+}

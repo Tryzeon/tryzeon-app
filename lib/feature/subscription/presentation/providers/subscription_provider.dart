@@ -1,4 +1,4 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/subscription/data/datasources/subscription_remote_datasource.dart';
@@ -8,28 +8,32 @@ import 'package:tryzeon/feature/subscription/domain/repositories/subscription_re
 import 'package:tryzeon/feature/subscription/domain/usecases/get_subscription.dart';
 import 'package:typed_result/typed_result.dart';
 
+part 'subscription_provider.g.dart';
+
 // DataSource Provider
-final subscriptionRemoteDataSourceProvider = Provider<SubscriptionRemoteDataSource>((
-  final ref,
-) {
+@riverpod
+SubscriptionRemoteDataSource subscriptionRemoteDataSource(final Ref ref) {
   return SubscriptionRemoteDataSource(Supabase.instance.client);
-});
+}
 
 // Repository Provider
-final subscriptionRepositoryProvider = Provider<SubscriptionRepository>((final ref) {
+@riverpod
+SubscriptionRepository subscriptionRepository(final Ref ref) {
   return SubscriptionRepositoryImpl(ref.watch(subscriptionRemoteDataSourceProvider));
-});
+}
 
 // Use Case Provider
-final getSubscriptionUseCaseProvider = Provider<GetSubscription>((final ref) {
+@riverpod
+GetSubscription getSubscriptionUseCase(final Ref ref) {
   return GetSubscription(
     userProfileRepository: ref.watch(userProfileRepositoryProvider),
     subscriptionRepository: ref.watch(subscriptionRepositoryProvider),
   );
-});
+}
 
 // Subscription Data Provider
-final subscriptionProvider = FutureProvider<Subscription>((final ref) async {
+@riverpod
+Future<Subscription> subscription(final Ref ref) async {
   final getSubscriptionUseCase = ref.watch(getSubscriptionUseCaseProvider);
   final result = await getSubscriptionUseCase();
 
@@ -38,4 +42,4 @@ final subscriptionProvider = FutureProvider<Subscription>((final ref) async {
   }
 
   return result.get()!;
-});
+}

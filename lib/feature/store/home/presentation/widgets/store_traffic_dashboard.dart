@@ -220,7 +220,7 @@ class StoreTrafficDashboard extends HookConsumerWidget {
     final now = DateTime.now();
     if (filter == null) {
       // 從全部時間切換到當前月份
-      ref.read(storeAnalyticsFilterProvider.notifier).state = (
+      ref.read(storeAnalyticsFilterProvider.notifier).filter = (
         year: now.year,
         month: now.month,
       );
@@ -232,7 +232,7 @@ class StoreTrafficDashboard extends HookConsumerWidget {
         newYear -= 1;
         newMonth = 12;
       }
-      ref.read(storeAnalyticsFilterProvider.notifier).state = (
+      ref.read(storeAnalyticsFilterProvider.notifier).filter = (
         year: newYear,
         month: newMonth,
       );
@@ -244,7 +244,7 @@ class StoreTrafficDashboard extends HookConsumerWidget {
     final now = DateTime.now();
     if (filter == null) {
       // 從全部時間切換到當前月份
-      ref.read(storeAnalyticsFilterProvider.notifier).state = (
+      ref.read(storeAnalyticsFilterProvider.notifier).filter = (
         year: now.year,
         month: now.month,
       );
@@ -256,7 +256,7 @@ class StoreTrafficDashboard extends HookConsumerWidget {
         newYear += 1;
         newMonth = 1;
       }
-      ref.read(storeAnalyticsFilterProvider.notifier).state = (
+      ref.read(storeAnalyticsFilterProvider.notifier).filter = (
         year: newYear,
         month: newMonth,
       );
@@ -265,7 +265,7 @@ class StoreTrafficDashboard extends HookConsumerWidget {
 
   /// 切換到全部時間
   void _onAllTime(final WidgetRef ref) {
-    ref.read(storeAnalyticsFilterProvider.notifier).state = null;
+    ref.read(storeAnalyticsFilterProvider.notifier).filter = null;
   }
 
   /// 檢查是否可以前往下一個月（不能超過當前月份）

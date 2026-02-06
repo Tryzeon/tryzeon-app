@@ -11,7 +11,6 @@ import flutter_image_compress_macos
 import gal
 import geolocator_apple
 import isar_community_flutter_libs
-import path_provider_foundation
 import share_plus
 import shared_preferences_foundation
 import sign_in_with_apple
@@ -25,7 +24,6 @@ func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   GalPlugin.register(with: registry.registrar(forPlugin: "GalPlugin"))
   GeolocatorPlugin.register(with: registry.registrar(forPlugin: "GeolocatorPlugin"))
   IsarFlutterLibsPlugin.register(with: registry.registrar(forPlugin: "IsarFlutterLibsPlugin"))
-  PathProviderPlugin.register(with: registry.registrar(forPlugin: "PathProviderPlugin"))
   SharePlusMacosPlugin.register(with: registry.registrar(forPlugin: "SharePlusMacosPlugin"))
   SharedPreferencesPlugin.register(with: registry.registrar(forPlugin: "SharedPreferencesPlugin"))
   SignInWithApplePlugin.register(with: registry.registrar(forPlugin: "SignInWithApplePlugin"))

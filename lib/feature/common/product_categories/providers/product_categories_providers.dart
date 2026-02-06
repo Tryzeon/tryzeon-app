@@ -1,4 +1,4 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/feature/common/product_categories/data/datasources/product_category_local_datasource.dart';
@@ -8,40 +8,38 @@ import 'package:tryzeon/feature/common/product_categories/domain/repositories/pr
 import 'package:tryzeon/feature/common/product_categories/domain/usecases/get_product_categories.dart';
 import 'package:typed_result/typed_result.dart';
 
-// Data Sources
-final productCategoryRemoteDataSourceProvider = Provider<ProductCategoryRemoteDataSource>(
-  (final ref) {
-    return ProductCategoryRemoteDataSource(Supabase.instance.client);
-  },
-);
+part 'product_categories_providers.g.dart';
 
-final productCategoryLocalDataSourceProvider = Provider<ProductCategoryLocalDataSource>((
-  final ref,
-) {
+// Data Sources
+@riverpod
+ProductCategoryRemoteDataSource productCategoryRemoteDataSource(final Ref ref) {
+  return ProductCategoryRemoteDataSource(Supabase.instance.client);
+}
+
+@riverpod
+ProductCategoryLocalDataSource productCategoryLocalDataSource(final Ref ref) {
   final isarService = ref.watch(isarServiceProvider);
   return ProductCategoryLocalDataSource(isarService);
-});
+}
 
 // Repository
-final productCategoryRepositoryProvider = Provider<ProductCategoryRepository>((
-  final ref,
-) {
+@riverpod
+ProductCategoryRepository productCategoryRepository(final Ref ref) {
   return ProductCategoryRepositoryImpl(
     ref.watch(productCategoryRemoteDataSourceProvider),
     ref.watch(productCategoryLocalDataSourceProvider),
   );
-});
+}
 
 // Use Cases
-final getProductCategoriesUseCaseProvider = Provider<GetProductCategories>((final ref) {
+@riverpod
+GetProductCategories getProductCategoriesUseCase(final Ref ref) {
   return GetProductCategories(ref.watch(productCategoryRepositoryProvider));
-});
+}
 
 // Providers
-final productCategoriesProvider = FutureProvider<List<String>>((final ref) async {
-  // Cache for the session duration as product categories rarely change
-  ref.keepAlive();
-
+@riverpod
+Future<List<String>> productCategories(final Ref ref) async {
   final result = await ref.watch(getProductCategoriesUseCaseProvider).call();
 
   if (result.isSuccess) {
@@ -49,4 +47,4 @@ final productCategoriesProvider = FutureProvider<List<String>>((final ref) async
   } else {
     throw result.getError()!;
   }
-});
+}

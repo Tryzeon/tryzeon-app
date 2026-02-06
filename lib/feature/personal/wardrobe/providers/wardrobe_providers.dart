@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_local_datasource.dart';
@@ -14,53 +15,61 @@ import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/upload_wardrob
 import 'package:tryzeon/feature/subscription/presentation/providers/subscription_provider.dart';
 import 'package:typed_result/typed_result.dart';
 
-final wardrobeRemoteDataSourceProvider = Provider<WardrobeRemoteDataSource>((final ref) {
-  return WardrobeRemoteDataSource(Supabase.instance.client);
-});
+part 'wardrobe_providers.g.dart';
 
-final wardrobeLocalDataSourceProvider = Provider<WardrobeLocalDataSource>((final ref) {
+@riverpod
+WardrobeRemoteDataSource wardrobeRemoteDataSource(final Ref ref) {
+  return WardrobeRemoteDataSource(Supabase.instance.client);
+}
+
+@riverpod
+WardrobeLocalDataSource wardrobeLocalDataSource(final Ref ref) {
   final isarService = ref.watch(isarServiceProvider);
   final cacheService = ref.watch(cacheServiceProvider);
   return WardrobeLocalDataSource(isarService, cacheService);
-});
+}
 
-final wardrobeRepositoryProvider = Provider<WardrobeRepository>((final ref) {
+@riverpod
+WardrobeRepository wardrobeRepository(final Ref ref) {
   return WardrobeRepositoryImpl(
     remoteDataSource: ref.watch(wardrobeRemoteDataSourceProvider),
     localDataSource: ref.watch(wardrobeLocalDataSourceProvider),
   );
-});
+}
 
-final getWardrobeItemsUseCaseProvider = Provider<GetWardrobeItems>((final ref) {
+@riverpod
+GetWardrobeItems getWardrobeItemsUseCase(final Ref ref) {
   return GetWardrobeItems(ref.watch(wardrobeRepositoryProvider));
-});
+}
 
-final uploadWardrobeItemUseCaseProvider = Provider<UploadWardrobeItem>((final ref) {
+@riverpod
+UploadWardrobeItem uploadWardrobeItemUseCase(final Ref ref) {
   return UploadWardrobeItem(
     wardrobeRepository: ref.watch(wardrobeRepositoryProvider),
     getSubscriptionUseCase: ref.watch(getSubscriptionUseCaseProvider),
     getWardrobeItemsUseCase: ref.watch(getWardrobeItemsUseCaseProvider),
   );
-});
+}
 
-final deleteWardrobeItemUseCaseProvider = Provider<DeleteWardrobeItem>((final ref) {
+@riverpod
+DeleteWardrobeItem deleteWardrobeItemUseCase(final Ref ref) {
   return DeleteWardrobeItem(ref.watch(wardrobeRepositoryProvider));
-});
+}
 
-final getWardrobeItemImageUseCaseProvider = Provider<GetWardrobeItemImage>((final ref) {
+@riverpod
+GetWardrobeItemImage getWardrobeItemImageUseCase(final Ref ref) {
   return GetWardrobeItemImage(ref.watch(wardrobeRepositoryProvider));
-});
+}
 
-final wardrobeItemsProvider = FutureProvider.autoDispose<List<WardrobeItem>>((
-  final ref,
-) async {
+@riverpod
+Future<List<WardrobeItem>> wardrobeItems(final Ref ref) async {
   final getWardrobeItemsUseCase = ref.watch(getWardrobeItemsUseCaseProvider);
   final result = await getWardrobeItemsUseCase();
   if (result.isFailure) {
     throw result.getError()!;
   }
   return result.get()!;
-});
+}
 
 /// 強制刷新衣櫃列表
 Future<void> refreshWardrobeItems(final WidgetRef ref) async {
@@ -73,14 +82,12 @@ Future<void> refreshWardrobeItems(final WidgetRef ref) async {
   }
 }
 
-final wardrobeItemImageProvider = FutureProvider.family.autoDispose<File, String>((
-  final ref,
-  final imagePath,
-) async {
+@riverpod
+Future<File> wardrobeItemImage(final Ref ref, final String imagePath) async {
   final getWardrobeItemImageUseCase = ref.watch(getWardrobeItemImageUseCaseProvider);
   final result = await getWardrobeItemImageUseCase(imagePath);
   if (result.isFailure) {
     throw result.getError()!;
   }
   return result.get()!;
-});
+}

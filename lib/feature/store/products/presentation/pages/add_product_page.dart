@@ -86,7 +86,9 @@ class AddProductPage extends HookConsumerWidget {
 
       isLoading.value = true;
 
-      final storeProfile = ref.read(storeProfileProvider).valueOrNull;
+      final storeProfile = await ref.read(storeProfileProvider.future);
+      if (!context.mounted) return;
+
       if (storeProfile == null) {
         TopNotification.show(
           context,
