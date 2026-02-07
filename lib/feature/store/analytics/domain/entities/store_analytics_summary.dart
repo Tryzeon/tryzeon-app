@@ -1,16 +1,12 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class StoreAnalyticsSummary extends Equatable {
-  const StoreAnalyticsSummary({
-    required this.totalViewCount,
-    required this.totalTryonCount,
-    required this.totalPurchaseClickCount,
-  });
+part 'store_analytics_summary.freezed.dart';
 
-  final int totalViewCount;
-  final int totalTryonCount;
-  final int totalPurchaseClickCount;
-
-  @override
-  List<Object?> get props => [totalViewCount, totalTryonCount, totalPurchaseClickCount];
+@freezed
+sealed class StoreAnalyticsSummary with _$StoreAnalyticsSummary {
+  const factory StoreAnalyticsSummary({
+    required final int totalViewCount,
+    required final int totalTryonCount,
+    required final int totalPurchaseClickCount,
+  }) = _StoreAnalyticsSummary;
 }

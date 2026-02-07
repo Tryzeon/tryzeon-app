@@ -34,7 +34,7 @@ class StoreAnalyticsRepositoryImpl implements StoreAnalyticsRepository {
           month,
         );
         if (cached != null) {
-          return Ok(cached);
+          return Ok(cached.toEntity());
         }
       }
 
@@ -53,7 +53,7 @@ class StoreAnalyticsRepositoryImpl implements StoreAnalyticsRepository {
         );
       }
 
-      return Ok(summary);
+      return Ok(summary.toEntity());
     } catch (e, stackTrace) {
       AppLogger.error('Failed to get store analytics summary', e, stackTrace);
       return Err(mapExceptionToFailure(e));

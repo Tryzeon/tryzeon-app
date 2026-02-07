@@ -1,20 +1,16 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class AnalyticsEvent extends Equatable {
-  const AnalyticsEvent({
-    required this.productId,
-    required this.storeId,
-    required this.eventType,
-  });
+part 'analytics_event.freezed.dart';
+part 'analytics_event.g.dart';
 
-  final String productId;
-  final String storeId;
-  final String eventType;
+@freezed
+sealed class AnalyticsEvent with _$AnalyticsEvent {
+  const factory AnalyticsEvent({
+    required final String productId,
+    required final String storeId,
+    required final String eventType,
+  }) = _AnalyticsEvent;
 
-  @override
-  List<Object?> get props => [productId, storeId, eventType];
-
-  Map<String, dynamic> toJson() {
-    return {'product_id': productId, 'store_id': storeId, 'event_type': eventType};
-  }
+  factory AnalyticsEvent.fromJson(final Map<String, dynamic> json) =>
+      _$AnalyticsEventFromJson(json);
 }

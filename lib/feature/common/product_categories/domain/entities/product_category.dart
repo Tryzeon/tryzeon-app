@@ -1,11 +1,9 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class ProductCategory extends Equatable {
-  const ProductCategory({required this.id, required this.name});
+part 'product_category.freezed.dart';
 
-  final String id;
-  final String name;
-
-  @override
-  List<Object?> get props => [id, name];
+@freezed
+sealed class ProductCategory with _$ProductCategory {
+  const factory ProductCategory({required final String id, required final String name}) =
+      _ProductCategory;
 }

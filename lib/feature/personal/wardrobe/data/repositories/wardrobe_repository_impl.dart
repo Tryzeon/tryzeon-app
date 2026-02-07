@@ -29,7 +29,9 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
     if (!forceRefresh) {
       try {
         final cachedItems = await _localDataSource.getWardrobeItems();
-        if (cachedItems != null) return Ok(cachedItems);
+        if (cachedItems != null) {
+          return Ok(cachedItems.map((final m) => m.toEntity()).toList());
+        }
       } catch (e, stackTrace) {
         AppLogger.warning(
           'Local cache read failed, falling back to remote',
@@ -50,7 +52,7 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
         AppLogger.warning('Failed to save wardrobe items to cache', e, stackTrace);
       }
 
-      return Ok(remoteItems);
+      return Ok(remoteItems.map((final m) => m.toEntity()).toList());
     } catch (e, stackTrace) {
       AppLogger.error('Wardrobe fetch failed', e, stackTrace);
       return Err(mapExceptionToFailure(e));

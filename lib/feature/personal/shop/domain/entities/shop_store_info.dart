@@ -1,13 +1,13 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class ShopStoreInfo extends Equatable {
-  const ShopStoreInfo({required this.id, this.name, this.address, this.logoUrl});
+part 'shop_store_info.freezed.dart';
 
-  final String id;
-  final String? name;
-  final String? address;
-  final String? logoUrl;
-
-  @override
-  List<Object?> get props => [id, name, address, logoUrl];
+@freezed
+sealed class ShopStoreInfo with _$ShopStoreInfo {
+  const factory ShopStoreInfo({
+    required final String id,
+    required final String name,
+    final String? address,
+    final String? logoUrl,
+  }) = _ShopStoreInfo;
 }

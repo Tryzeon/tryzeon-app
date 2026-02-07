@@ -1,35 +1,16 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'wardrobe_category.dart';
+
+part 'wardrobe_item.freezed.dart';
 
 /// Domain entity representing a wardrobe item
 /// Uses WardrobeCategory enum for type safety and business logic
-class WardrobeItem extends Equatable {
-  const WardrobeItem({
-    this.id,
-    required this.imagePath,
-    required this.category,
-    this.tags = const [],
-  });
-
-  final String? id;
-  final String imagePath;
-  final WardrobeCategory category;
-  final List<String> tags;
-
-  @override
-  List<Object?> get props => [id, imagePath, category, tags];
-
-  WardrobeItem copyWith({
+@freezed
+sealed class WardrobeItem with _$WardrobeItem {
+  const factory WardrobeItem({
     final String? id,
-    final String? imagePath,
-    final WardrobeCategory? category,
-    final List<String>? tags,
-  }) {
-    return WardrobeItem(
-      id: id ?? this.id,
-      imagePath: imagePath ?? this.imagePath,
-      category: category ?? this.category,
-      tags: tags ?? this.tags,
-    );
-  }
+    required final String imagePath,
+    required final WardrobeCategory category,
+    @Default([]) final List<String> tags,
+  }) = _WardrobeItem;
 }

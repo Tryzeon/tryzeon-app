@@ -31,7 +31,9 @@ class ProductRepositoryImpl implements ProductRepository {
       try {
         final cachedProducts = await _localDataSource.getProducts(sort: sort);
         if (cachedProducts != null) {
-          final cachedProductsWithUrl = _attachImageUrls(cachedProducts);
+          final cachedProductsWithUrl = _attachImageUrls(
+            cachedProducts.map((final m) => m.toEntity()).toList(),
+          );
           return Ok(cachedProductsWithUrl);
         }
       } catch (e, stackTrace) {
@@ -57,7 +59,9 @@ class ProductRepositoryImpl implements ProductRepository {
         AppLogger.warning('Failed to save products to cache', e, stackTrace);
       }
 
-      final remoteProductsWithUrl = _attachImageUrls(remoteProducts);
+      final remoteProductsWithUrl = _attachImageUrls(
+        remoteProducts.map((final m) => m.toEntity()).toList(),
+      );
       return Ok(remoteProductsWithUrl);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to load product list', e, stackTrace);

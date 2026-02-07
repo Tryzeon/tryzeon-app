@@ -27,7 +27,7 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
     if (!forceRefresh) {
       try {
         final cachedProfile = await _localDataSource.getStoreProfile();
-        if (cachedProfile != null) return Ok(cachedProfile);
+        if (cachedProfile != null) return Ok(cachedProfile.toEntity());
       } catch (e, stackTrace) {
         AppLogger.warning(
           'Local cache read failed, falling back to remote',
@@ -49,7 +49,7 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
         AppLogger.warning('Failed to save store profile to cache', e, stackTrace);
       }
 
-      return Ok(remoteProfile);
+      return Ok(remoteProfile.toEntity());
     } catch (e, stackTrace) {
       AppLogger.error('Failed to load store profile', e, stackTrace);
       return Err(mapExceptionToFailure(e));

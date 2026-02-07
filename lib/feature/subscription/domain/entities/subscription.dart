@@ -1,4 +1,7 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+
+part 'subscription.freezed.dart';
 
 enum SubscriptionPlan {
   free,
@@ -28,8 +31,10 @@ enum SubscriptionPlan {
   }
 }
 
-class Subscription {
-  const Subscription({required this.userId, required this.plan});
-  final String userId;
-  final SubscriptionPlan plan;
+@freezed
+sealed class Subscription with _$Subscription {
+  const factory Subscription({
+    required final String userId,
+    required final SubscriptionPlan plan,
+  }) = _Subscription;
 }

@@ -19,7 +19,9 @@ class ProductCategoryRepositoryImpl implements ProductCategoryRepository {
     if (!forceRefresh) {
       try {
         final cachedCategories = await _localDataSource.getProductCategories();
-        if (cachedCategories != null) return Ok(cachedCategories);
+        if (cachedCategories != null) {
+          return Ok(cachedCategories.map((final c) => c.toEntity()).toList());
+        }
       } catch (e, stackTrace) {
         AppLogger.warning(
           'Local cache read failed, falling back to remote',
@@ -40,7 +42,7 @@ class ProductCategoryRepositoryImpl implements ProductCategoryRepository {
         AppLogger.warning('Failed to save product categories to cache', e, stackTrace);
       }
 
-      return Ok(remoteCategories);
+      return Ok(remoteCategories.map((final c) => c.toEntity()).toList());
     } catch (e, stackTrace) {
       AppLogger.error('Failed to get product categories', e, stackTrace);
       return Err(mapExceptionToFailure(e));

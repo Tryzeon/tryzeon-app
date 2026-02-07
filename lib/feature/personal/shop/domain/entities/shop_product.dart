@@ -1,76 +1,22 @@
-import 'package:equatable/equatable.dart';
-
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 
-class ShopProduct extends Equatable {
-  const ShopProduct({
-    required this.storeInfo,
-    required this.name,
-    required this.types,
-    required this.price,
-    required this.imagePath,
-    required this.imageUrl,
-    this.id,
-    this.purchaseLink,
-    this.sizes,
-    this.createdAt,
-    this.updatedAt,
-  });
+part 'shop_product.freezed.dart';
 
-  final ShopStoreInfo storeInfo;
-  final String name;
-  final Set<String> types;
-  final double price;
-  final String imagePath;
-  final String imageUrl;
-
-  final String? id;
-  final String? purchaseLink;
-  final List<ProductSize>? sizes;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
-
-  @override
-  List<Object?> get props => [
-    storeInfo,
-    name,
-    types,
-    price,
-    imagePath,
-    imageUrl,
-    id,
-    purchaseLink,
-    sizes,
-    createdAt,
-    updatedAt,
-  ];
-
-  ShopProduct copyWith({
-    final ShopStoreInfo? storeInfo,
-    final String? name,
-    final Set<String>? types,
-    final double? price,
-    final String? imagePath,
-    final String? imageUrl,
-    final String? id,
+@freezed
+sealed class ShopProduct with _$ShopProduct {
+  const factory ShopProduct({
+    required final ShopStoreInfo storeInfo,
+    required final String name,
+    required final Set<String> types,
+    required final double price,
+    required final String imagePath,
+    required final String imageUrl,
+    required final String id,
     final String? purchaseLink,
     final List<ProductSize>? sizes,
     final DateTime? createdAt,
     final DateTime? updatedAt,
-  }) {
-    return ShopProduct(
-      storeInfo: storeInfo ?? this.storeInfo,
-      name: name ?? this.name,
-      types: types ?? this.types,
-      price: price ?? this.price,
-      imagePath: imagePath ?? this.imagePath,
-      imageUrl: imageUrl ?? this.imageUrl,
-      id: id ?? this.id,
-      purchaseLink: purchaseLink ?? this.purchaseLink,
-      sizes: sizes ?? this.sizes,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-    );
-  }
+  }) = _ShopProduct;
 }

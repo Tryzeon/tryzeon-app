@@ -1,55 +1,31 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/core/shared/measurements/entities/measurement_type.dart';
 
-class SizeMeasurements extends Equatable {
-  const SizeMeasurements({
-    this.height,
-    this.chest,
-    this.waist,
-    this.hips,
-    this.shoulder,
-    this.sleeve,
-    this.heightOffset,
-    this.chestOffset,
-    this.waistOffset,
-    this.hipsOffset,
-    this.shoulderOffset,
-    this.sleeveOffset,
-  });
+part 'size_measurements.freezed.dart';
+part 'size_measurements.g.dart';
 
-  factory SizeMeasurements.fromJson(final Map<String, dynamic> json) {
-    return SizeMeasurements(
-      height: (json['height'] as num?)?.toDouble(),
-      chest: (json['chest'] as num?)?.toDouble(),
-      waist: (json['waist'] as num?)?.toDouble(),
-      hips: (json['hips'] as num?)?.toDouble(),
-      shoulder: (json['shoulder'] as num?)?.toDouble(),
-      sleeve: (json['sleeve'] as num?)?.toDouble(),
-      heightOffset: (json['height_offset'] as num?)?.toDouble(),
-      chestOffset: (json['chest_offset'] as num?)?.toDouble(),
-      waistOffset: (json['waist_offset'] as num?)?.toDouble(),
-      hipsOffset: (json['hips_offset'] as num?)?.toDouble(),
-      shoulderOffset: (json['shoulder_offset'] as num?)?.toDouble(),
-      sleeveOffset: (json['sleeve_offset'] as num?)?.toDouble(),
-    );
-  }
+@freezed
+sealed class SizeMeasurements with _$SizeMeasurements {
+  const factory SizeMeasurements({
+    final double? height,
+    final double? chest,
+    final double? waist,
+    final double? hips,
+    final double? shoulder,
+    final double? sleeve,
+    final double? heightOffset,
+    final double? chestOffset,
+    final double? waistOffset,
+    final double? hipsOffset,
+    final double? shoulderOffset,
+    final double? sleeveOffset,
+  }) = _SizeMeasurements;
+  const SizeMeasurements._();
+
+  factory SizeMeasurements.fromJson(final Map<String, dynamic> json) =>
+      _$SizeMeasurementsFromJson(json);
 
   @override
-  List<Object?> get props => [
-    height,
-    chest,
-    waist,
-    hips,
-    shoulder,
-    sleeve,
-    heightOffset,
-    chestOffset,
-    waistOffset,
-    hipsOffset,
-    shoulderOffset,
-    sleeveOffset,
-  ];
-
   Map<String, dynamic> toJson() {
     final data = <String, dynamic>{};
     for (final type in MeasurementType.values) {
@@ -64,20 +40,6 @@ class SizeMeasurements extends Equatable {
     }
     return data;
   }
-
-  final double? height;
-  final double? chest;
-  final double? waist;
-  final double? hips;
-  final double? shoulder;
-  final double? sleeve;
-
-  final double? heightOffset;
-  final double? chestOffset;
-  final double? waistOffset;
-  final double? hipsOffset;
-  final double? shoulderOffset;
-  final double? sleeveOffset;
 
   double? getValue(final MeasurementType type) {
     switch (type) {
@@ -122,35 +84,5 @@ class SizeMeasurements extends Equatable {
 
     final offset = getOffset(type) ?? 0.0;
     return (value - offset, value + offset);
-  }
-
-  SizeMeasurements copyWith({
-    final double? height,
-    final double? chest,
-    final double? waist,
-    final double? hips,
-    final double? shoulder,
-    final double? sleeve,
-    final double? heightOffset,
-    final double? chestOffset,
-    final double? waistOffset,
-    final double? hipsOffset,
-    final double? shoulderOffset,
-    final double? sleeveOffset,
-  }) {
-    return SizeMeasurements(
-      height: height ?? this.height,
-      chest: chest ?? this.chest,
-      waist: waist ?? this.waist,
-      hips: hips ?? this.hips,
-      shoulder: shoulder ?? this.shoulder,
-      sleeve: sleeve ?? this.sleeve,
-      heightOffset: heightOffset ?? this.heightOffset,
-      chestOffset: chestOffset ?? this.chestOffset,
-      waistOffset: waistOffset ?? this.waistOffset,
-      hipsOffset: hipsOffset ?? this.hipsOffset,
-      shoulderOffset: shoulderOffset ?? this.shoulderOffset,
-      sleeveOffset: sleeveOffset ?? this.sleeveOffset,
-    );
   }
 }

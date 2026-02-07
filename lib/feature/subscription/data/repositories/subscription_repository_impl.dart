@@ -14,7 +14,7 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
   Future<Result<Subscription, Failure>> getSubscription(final String userId) async {
     try {
       final subscription = await _remoteDataSource.getSubscription(userId);
-      return Ok(subscription);
+      return Ok(subscription.toEntity());
     } catch (e, stackTrace) {
       AppLogger.error('Failed to get subscription data', e, stackTrace);
       return Err(mapExceptionToFailure(e));

@@ -27,7 +27,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
     if (!forceRefresh) {
       try {
         final cachedProfile = await _localDataSource.getUserProfile();
-        if (cachedProfile != null) return Ok(cachedProfile);
+        if (cachedProfile != null) return Ok(cachedProfile.toEntity());
       } catch (e, stackTrace) {
         AppLogger.warning(
           'Local cache read failed, falling back to remote',
@@ -48,7 +48,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
         AppLogger.warning('Failed to save user profile to cache', e, stackTrace);
       }
 
-      return Ok(remoteProfile);
+      return Ok(remoteProfile.toEntity());
     } catch (e, stackTrace) {
       AppLogger.error('Failed to load user profile', e, stackTrace);
       return Err(mapExceptionToFailure(e));

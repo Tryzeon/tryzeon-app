@@ -41,7 +41,7 @@ class ShopRepositoryImpl implements ShopRepository {
         types: types,
         userLocation: userLocation,
       );
-      return Ok(result);
+      return Ok(result.map((final m) => m.toEntity()).toList());
     } catch (e, stackTrace) {
       AppLogger.error('Failed to get product list', e, stackTrace);
       return Err(mapExceptionToFailure(e));
