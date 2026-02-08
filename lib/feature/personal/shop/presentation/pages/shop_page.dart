@@ -377,7 +377,11 @@ class ShopPage extends HookConsumerWidget {
                                       itemBuilder: (final context, final index) {
                                         return const ProductCard(
                                           product: ShopProduct(
-                                            storeInfo: ShopStoreInfo(id: 'dummy_store'),
+                                            id: 'dummy_id',
+                                            storeInfo: ShopStoreInfo(
+                                              id: 'dummy_store',
+                                              name: 'Loading Store',
+                                            ),
                                             name: 'Loading Product Name',
                                             types: {'Type'},
                                             price: 8888,

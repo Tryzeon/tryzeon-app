@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/data/datasources/analytics_remote_datasource.dart';
+import 'package:tryzeon/core/data/models/analytics_event_model.dart';
 import 'package:tryzeon/core/data/services/cache_service_impl.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/data/services/location_service_impl.dart';
@@ -22,7 +23,10 @@ AnalyticsEventQueueService analyticsEventQueueService(final Ref ref) {
   final analyticsDataSource = ref.watch(analyticsRemoteDataSourceProvider);
 
   return AnalyticsEventQueueService(
-    uploadCallback: analyticsDataSource.uploadAnalyticsEvents,
+    uploadCallback: (final events) {
+      final models = events.map(AnalyticsEventModel.fromEntity).toList();
+      return analyticsDataSource.uploadAnalyticsEvents(models);
+    },
   );
 }
 

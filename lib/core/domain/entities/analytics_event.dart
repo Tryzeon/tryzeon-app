@@ -1,7 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'analytics_event.freezed.dart';
-part 'analytics_event.g.dart';
 
 @freezed
 sealed class AnalyticsEvent with _$AnalyticsEvent {
@@ -10,7 +9,4 @@ sealed class AnalyticsEvent with _$AnalyticsEvent {
     required final String storeId,
     required final String eventType,
   }) = _AnalyticsEvent;
-
-  factory AnalyticsEvent.fromJson(final Map<String, dynamic> json) =>
-      _$AnalyticsEventFromJson(json);
 }

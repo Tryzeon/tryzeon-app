@@ -31,7 +31,7 @@ class ProductCard extends HookConsumerWidget {
         hasLoggedView.value = true;
         ref
             .read(incrementViewCountProvider)
-            .call(productId: product.id!, storeId: product.storeInfo.id)
+            .call(productId: product.id, storeId: product.storeInfo.id)
             .ignore();
       }
     }
@@ -51,7 +51,7 @@ class ProductCard extends HookConsumerWidget {
       // 記錄虛擬試穿點擊次數 (非同步執行，不阻塞 UI)
       ref
           .read(incrementTryonCountProvider)
-          .call(productId: product.id!, storeId: product.storeInfo.id)
+          .call(productId: product.id, storeId: product.storeInfo.id)
           .ignore();
 
       // 如果契合度為紅色，彈出確認視窗
@@ -173,7 +173,7 @@ class ProductCard extends HookConsumerWidget {
                       style: textTheme.labelLarge?.copyWith(color: colorScheme.primary),
                     ),
                     Text(
-                      product.storeInfo.name ?? '',
+                      product.storeInfo.name,
                       style: textTheme.bodySmall?.copyWith(
                         color: colorScheme.onSurface.withValues(alpha: 0.6),
                       ),

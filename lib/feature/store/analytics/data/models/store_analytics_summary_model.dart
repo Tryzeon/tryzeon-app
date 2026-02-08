@@ -1,17 +1,30 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'package:tryzeon/feature/store/analytics/domain/entities/store_analytics_summary.dart';
 
-class StoreAnalyticsSummaryModel extends StoreAnalyticsSummary {
+part 'store_analytics_summary_model.g.dart';
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class StoreAnalyticsSummaryModel {
   const StoreAnalyticsSummaryModel({
-    required super.totalViewCount,
-    required super.totalTryonCount,
-    required super.totalPurchaseClickCount,
+    required this.viewCount,
+    required this.tryonCount,
+    required this.purchaseClickCount,
   });
 
-  factory StoreAnalyticsSummaryModel.fromJson(final Map<String, dynamic> json) {
-    return StoreAnalyticsSummaryModel(
-      totalViewCount: json['view_count'] as int? ?? 0,
-      totalTryonCount: json['tryon_count'] as int? ?? 0,
-      totalPurchaseClickCount: json['purchase_click_count'] as int? ?? 0,
+  factory StoreAnalyticsSummaryModel.fromJson(final Map<String, dynamic> json) =>
+      _$StoreAnalyticsSummaryModelFromJson(json);
+
+  final int viewCount;
+  final int tryonCount;
+  final int purchaseClickCount;
+
+  Map<String, dynamic> toJson() => _$StoreAnalyticsSummaryModelToJson(this);
+
+  StoreAnalyticsSummary toEntity() {
+    return StoreAnalyticsSummary(
+      totalViewCount: viewCount,
+      totalTryonCount: tryonCount,
+      totalPurchaseClickCount: purchaseClickCount,
     );
   }
 }

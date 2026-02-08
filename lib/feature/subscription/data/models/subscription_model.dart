@@ -1,15 +1,21 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'package:tryzeon/feature/subscription/domain/entities/subscription.dart';
 
-class SubscriptionModel extends Subscription {
-  const SubscriptionModel({required super.userId, required super.plan});
+part 'subscription_model.g.dart';
 
-  factory SubscriptionModel.fromJson(final Map<String, dynamic> json) {
-    return SubscriptionModel(
-      userId: json['user_id'] as String,
-      plan: SubscriptionPlan.values.firstWhere(
-        (final e) => e.name == (json['plan'] as String).toLowerCase(),
-        orElse: () => SubscriptionPlan.free,
-      ),
-    );
+@JsonSerializable(fieldRename: FieldRename.snake)
+class SubscriptionModel {
+  const SubscriptionModel({required this.userId, required this.plan});
+
+  factory SubscriptionModel.fromJson(final Map<String, dynamic> json) =>
+      _$SubscriptionModelFromJson(json);
+
+  final String userId;
+  final SubscriptionPlan plan;
+
+  Map<String, dynamic> toJson() => _$SubscriptionModelToJson(this);
+
+  Subscription toEntity() {
+    return Subscription(userId: userId, plan: plan);
   }
 }

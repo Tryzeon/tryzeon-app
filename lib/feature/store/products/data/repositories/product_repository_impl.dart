@@ -109,11 +109,7 @@ class ProductRepositoryImpl implements ProductRepository {
       final sizes = product.sizes ?? [];
       if (sizes.isNotEmpty) {
         final sizeModels = sizes.map((final size) {
-          return ProductSizeModel(
-            productId: productId,
-            name: size.name,
-            measurements: size.measurements,
-          );
+          return ProductSizeModel.fromEntity(size.copyWith(productId: productId));
         }).toList();
         await _remoteDataSource.insertProductSizes(sizeModels);
       }
@@ -187,11 +183,7 @@ class ProductRepositoryImpl implements ProductRepository {
         for (final targetSize in targetSizes) {
           if (targetSize.id == null) {
             await _remoteDataSource.insertProductSize(
-              ProductSizeModel(
-                productId: original.id,
-                name: targetSize.name,
-                measurements: targetSize.measurements,
-              ),
+              ProductSizeModel.fromEntity(targetSize.copyWith(productId: original.id)),
             );
           } else {
             // Update existing sizes if changed

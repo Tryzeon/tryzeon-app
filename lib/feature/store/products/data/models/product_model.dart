@@ -1,82 +1,117 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'package:tryzeon/core/shared/measurements/entities/size_measurements.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 
-class ProductSizeModel extends ProductSize {
-  const ProductSizeModel({
-    super.id,
-    super.productId,
-    required super.name,
-    required super.measurements,
-    super.createdAt,
-    super.updatedAt,
-  });
+part 'product_model.g.dart';
 
-  factory ProductSizeModel.fromJson(final Map<String, dynamic> json) {
-    return ProductSizeModel(
-      id: json['id'] as String?,
-      productId: json['product_id'] as String?,
-      name: json['name'] as String,
-      measurements: SizeMeasurements.fromJson(json),
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
-    );
-  }
+@JsonSerializable(fieldRename: FieldRename.snake)
+class ProductSizeModel {
+  const ProductSizeModel({
+    this.id,
+    this.productId,
+    required this.name,
+    this.height,
+    this.chest,
+    this.waist,
+    this.hips,
+    this.shoulder,
+    this.sleeve,
+    this.heightOffset,
+    this.chestOffset,
+    this.waistOffset,
+    this.hipsOffset,
+    this.shoulderOffset,
+    this.sleeveOffset,
+    this.createdAt,
+    this.updatedAt,
+  });
 
   factory ProductSizeModel.fromEntity(final ProductSize entity) {
     return ProductSizeModel(
       id: entity.id,
       productId: entity.productId,
       name: entity.name,
-      measurements: entity.measurements,
+      height: entity.measurements.height,
+      chest: entity.measurements.chest,
+      waist: entity.measurements.waist,
+      hips: entity.measurements.hips,
+      shoulder: entity.measurements.shoulder,
+      sleeve: entity.measurements.sleeve,
+      heightOffset: entity.measurements.heightOffset,
+      chestOffset: entity.measurements.chestOffset,
+      waistOffset: entity.measurements.waistOffset,
+      hipsOffset: entity.measurements.hipsOffset,
+      shoulderOffset: entity.measurements.shoulderOffset,
+      sleeveOffset: entity.measurements.sleeveOffset,
+      createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      if (id != null) 'id': id,
-      if (productId != null) 'product_id': productId,
-      'name': name,
-      if (createdAt != null) 'created_at': createdAt!.toIso8601String(),
-      if (updatedAt != null) 'updated_at': updatedAt!.toIso8601String(),
-      ...measurements.toJson(),
-    };
+  factory ProductSizeModel.fromJson(final Map<String, dynamic> json) =>
+      _$ProductSizeModelFromJson(json);
+
+  final String? id;
+  final String? productId;
+  final String name;
+  final double? height;
+  final double? chest;
+  final double? waist;
+  final double? hips;
+  final double? shoulder;
+  final double? sleeve;
+  final double? heightOffset;
+  final double? chestOffset;
+  final double? waistOffset;
+  final double? hipsOffset;
+  final double? shoulderOffset;
+  final double? sleeveOffset;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  Map<String, dynamic> toJson() => _$ProductSizeModelToJson(this);
+
+  ProductSize toEntity() {
+    return ProductSize(
+      id: id,
+      productId: productId,
+      name: name,
+      measurements: SizeMeasurements(
+        height: height,
+        chest: chest,
+        waist: waist,
+        hips: hips,
+        shoulder: shoulder,
+        sleeve: sleeve,
+        heightOffset: heightOffset,
+        chestOffset: chestOffset,
+        waistOffset: waistOffset,
+        hipsOffset: hipsOffset,
+        shoulderOffset: shoulderOffset,
+        sleeveOffset: sleeveOffset,
+      ),
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    );
   }
 }
 
-class ProductModel extends Product {
+@JsonSerializable(fieldRename: FieldRename.snake)
+class ProductModel {
   const ProductModel({
-    required super.storeId,
-    required super.name,
-    required super.types,
-    required super.price,
-    required super.imagePath,
-    required super.imageUrl,
-    super.id,
-    super.purchaseLink,
-    super.sizes,
-    super.storeName,
-    super.createdAt,
-    super.updatedAt,
+    required this.storeId,
+    required this.name,
+    required this.types,
+    required this.price,
+    required this.imagePath,
+    required this.imageUrl,
+    this.id,
+    this.purchaseLink,
+    this.sizes,
+    this.storeName,
+    this.createdAt,
+    this.updatedAt,
   });
-
-  factory ProductModel.fromJson(final Map<String, dynamic> json) {
-    return ProductModel(
-      storeId: json['store_id'] as String,
-      name: json['name'] as String,
-      types: (json['type'] as List).map((final e) => e.toString()).toSet(),
-      price: (json['price'] as num).toDouble(),
-      imagePath: json['image_path'] as String,
-      imageUrl: json['image_url'] as String? ?? '',
-      id: json['id'] as String?,
-      purchaseLink: json['purchase_link'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
-      storeName: (json['store_profiles'] ?? json['store_profile'])?['name'] as String?,
-      sizes: (json['product_variants'] as List?)
-          ?.map((final e) => ProductSizeModel.fromJson(Map<String, dynamic>.from(e)))
-          .toList(),
-    );
-  }
 
   factory ProductModel.fromEntity(final Product entity) {
     return ProductModel(
@@ -90,33 +125,51 @@ class ProductModel extends Product {
       purchaseLink: entity.purchaseLink,
       sizes: entity.sizes?.map(ProductSizeModel.fromEntity).toList(),
       storeName: entity.storeName,
+      createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'store_id': storeId,
-      'name': name,
-      'type': types.toList(),
-      'price': price,
-      'image_path': imagePath,
-      if (id != null) 'id': id,
-      if (purchaseLink != null) 'purchase_link': purchaseLink,
-      if (createdAt != null) 'created_at': createdAt!.toIso8601String(),
-      if (updatedAt != null) 'updated_at': updatedAt!.toIso8601String(),
-      if (sizes != null)
-        'product_variants': sizes!
-            .map(
-              (final e) => ProductSizeModel(
-                id: e.id,
-                productId: e.productId,
-                name: e.name,
-                measurements: e.measurements,
-                createdAt: e.createdAt,
-                updatedAt: e.updatedAt,
-              ).toJson(),
-            )
-            .toList(),
-    };
+  factory ProductModel.fromJson(final Map<String, dynamic> json) =>
+      _$ProductModelFromJson(json);
+
+  final String storeId;
+  final String name;
+  @JsonKey(name: 'type')
+  final Set<String> types;
+  final double price;
+  final String imagePath;
+  @JsonKey(includeToJson: false)
+  final String imageUrl;
+  final String? id;
+  final String? purchaseLink;
+  @JsonKey(name: 'productVariants', includeToJson: false)
+  final List<ProductSizeModel>? sizes;
+  @JsonKey(readValue: _readStoreName, includeToJson: false)
+  final String? storeName;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  static Object? _readStoreName(final Map json, final String key) {
+    return (json['store_profiles'] ?? json['store_profile'])?['name'];
+  }
+
+  Map<String, dynamic> toJson() => _$ProductModelToJson(this);
+
+  Product toEntity() {
+    return Product(
+      storeId: storeId,
+      name: name,
+      types: types,
+      price: price,
+      imagePath: imagePath,
+      imageUrl: imageUrl,
+      id: id,
+      purchaseLink: purchaseLink,
+      sizes: sizes?.map((final s) => s.toEntity()).toList(),
+      storeName: storeName,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    );
   }
 }

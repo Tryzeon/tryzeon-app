@@ -2,14 +2,14 @@ import 'package:isar_community/isar.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/feature/store/analytics/data/collections/store_analytics_collection.dart';
 import 'package:tryzeon/feature/store/analytics/data/mappers/store_analytics_mapper.dart';
-import 'package:tryzeon/feature/store/analytics/domain/entities/store_analytics_summary.dart';
+import 'package:tryzeon/feature/store/analytics/data/models/store_analytics_summary_model.dart';
 
 class StoreAnalyticsLocalDataSource {
   StoreAnalyticsLocalDataSource(this._isarService);
 
   final IsarService _isarService;
 
-  Future<StoreAnalyticsSummary?> getStoreAnalyticsSummary(
+  Future<StoreAnalyticsSummaryModel?> getStoreAnalyticsSummary(
     final String storeId,
     final int year,
     final int month,
@@ -22,11 +22,12 @@ class StoreAnalyticsLocalDataSource {
         .monthEqualTo(month)
         .findFirst();
 
-    return collection?.toEntity();
+    if (collection == null) return null;
+    return collection.toModel();
   }
 
   Future<void> saveStoreAnalyticsSummary(
-    final StoreAnalyticsSummary summary, {
+    final StoreAnalyticsSummaryModel summary, {
     required final String storeId,
     required final int year,
     required final int month,

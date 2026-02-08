@@ -1,26 +1,20 @@
-import '../../domain/entities/wardrobe_item.dart';
-import '../mappers/category_mapper.dart';
+import 'package:json_annotation/json_annotation.dart';
 
-class WardrobeItemModel extends WardrobeItem {
+import '../../domain/entities/wardrobe_category.dart';
+import '../../domain/entities/wardrobe_item.dart';
+
+part 'wardrobe_item_model.g.dart';
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class WardrobeItemModel {
   const WardrobeItemModel({
-    super.id,
-    required super.imagePath,
-    required super.category,
-    super.tags = const [],
+    this.id,
+    required this.imagePath,
+    required this.category,
+    this.tags = const [],
     this.createdAt,
     this.updatedAt,
   });
-
-  factory WardrobeItemModel.fromJson(final Map<String, dynamic> json) {
-    return WardrobeItemModel(
-      id: json['id'] as String?,
-      imagePath: json['image_path'] as String,
-      category: CategoryMapper.fromApiString(json['category'] as String),
-      tags: json['tags'] != null ? List<String>.from(json['tags'] as List) : const [],
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
-    );
-  }
 
   factory WardrobeItemModel.fromEntity(final WardrobeItem entity) {
     return WardrobeItemModel(
@@ -31,17 +25,19 @@ class WardrobeItemModel extends WardrobeItem {
     );
   }
 
+  factory WardrobeItemModel.fromJson(final Map<String, dynamic> json) =>
+      _$WardrobeItemModelFromJson(json);
+
+  final String? id;
+  final String imagePath;
+  final WardrobeCategory category;
+  final List<String> tags;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'image_path': imagePath,
-      'category': CategoryMapper.toApiString(category),
-      'tags': tags,
-      'created_at': createdAt?.toIso8601String(),
-      'updated_at': updatedAt?.toIso8601String(),
-    };
+  Map<String, dynamic> toJson() => _$WardrobeItemModelToJson(this);
+
+  WardrobeItem toEntity() {
+    return WardrobeItem(id: id, imagePath: imagePath, category: category, tags: tags);
   }
 }

@@ -33,7 +33,7 @@ class ProductDetailPage extends HookConsumerWidget {
       // 記錄購買連結點擊次數 (非同步執行，不阻塞 UI)
       ref
           .read(incrementPurchaseClickCountProvider)
-          .call(productId: product.id!, storeId: product.storeInfo.id)
+          .call(productId: product.id, storeId: product.storeInfo.id)
           .ignore();
       await launchUrl(url, mode: LaunchMode.externalApplication);
     }
@@ -233,7 +233,7 @@ class ProductDetailPage extends HookConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              product.storeInfo.name ?? '未知店家',
+                              product.storeInfo.name,
                               style: textTheme.bodyLarge?.copyWith(
                                 fontWeight: FontWeight.w500,
                               ),

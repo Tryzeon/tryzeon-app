@@ -8,7 +8,6 @@ import '../../domain/entities/wardrobe_item.dart';
 import '../../domain/repositories/wardrobe_repository.dart';
 import '../datasources/wardrobe_local_datasource.dart';
 import '../datasources/wardrobe_remote_datasource.dart';
-import '../mappers/category_mapper.dart';
 import '../models/wardrobe_item_model.dart';
 
 class WardrobeRepositoryImpl implements WardrobeRepository {
@@ -67,7 +66,7 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
   }) async {
     try {
       // Convert category enum to string for API
-      final categoryString = CategoryMapper.toApiString(category);
+      final categoryString = category.name;
       final imageName = p.basename(image.path);
       final bytes = await image.readAsBytes();
 

@@ -1,6 +1,4 @@
-import 'package:tryzeon/core/shared/measurements/entities/size_measurements.dart';
-import 'package:tryzeon/core/shared/measurements/mappers/size_measurements_mapper.dart';
-
+import 'package:tryzeon/core/shared/measurements/collections/size_measurements_collection.dart';
 import '../collections/product_collection.dart';
 import '../models/product_model.dart';
 
@@ -18,16 +16,7 @@ extension ProductModelMapper on ProductModel {
       ..createdAt = createdAt
       ..updatedAt = updatedAt
       ..storeName = storeName
-      ..sizes = sizes?.map((final e) {
-        return ProductSizeModel(
-          id: e.id,
-          productId: e.productId,
-          name: e.name,
-          measurements: e.measurements,
-          createdAt: e.createdAt,
-          updatedAt: e.updatedAt,
-        ).toCollection();
-      }).toList();
+      ..sizes = sizes?.map((final e) => e.toCollection()).toList();
   }
 }
 
@@ -56,7 +45,19 @@ extension ProductSizeModelMapper on ProductSizeModel {
       ..id = id
       ..productId = productId
       ..name = name
-      ..measurements = measurements.toCollection()
+      ..measurements = (SizeMeasurementsCollection()
+        ..height = height
+        ..chest = chest
+        ..waist = waist
+        ..hips = hips
+        ..shoulder = shoulder
+        ..sleeve = sleeve
+        ..heightOffset = heightOffset
+        ..chestOffset = chestOffset
+        ..waistOffset = waistOffset
+        ..hipsOffset = hipsOffset
+        ..shoulderOffset = shoulderOffset
+        ..sleeveOffset = sleeveOffset)
       ..createdAt = createdAt
       ..updatedAt = updatedAt;
   }
@@ -68,7 +69,18 @@ extension ProductSizeCollectionMapper on ProductSizeCollection {
       id: id,
       productId: productId,
       name: name ?? '',
-      measurements: measurements?.toModel() ?? const SizeMeasurements(),
+      height: measurements?.height,
+      chest: measurements?.chest,
+      waist: measurements?.waist,
+      hips: measurements?.hips,
+      shoulder: measurements?.shoulder,
+      sleeve: measurements?.sleeve,
+      heightOffset: measurements?.heightOffset,
+      chestOffset: measurements?.chestOffset,
+      waistOffset: measurements?.waistOffset,
+      hipsOffset: measurements?.hipsOffset,
+      shoulderOffset: measurements?.shoulderOffset,
+      sleeveOffset: measurements?.sleeveOffset,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );

@@ -10,4 +10,7 @@ enum WardrobeCategory {
 
   /// Get all available categories
   static List<WardrobeCategory> get all => WardrobeCategory.values;
+
+  static WardrobeCategory fromApiString(final String value) =>
+      WardrobeCategory.values.byName(value);
 }

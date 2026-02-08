@@ -1,41 +1,60 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_store_info_model.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
 
-class ShopProductModel extends ShopProduct {
+part 'shop_product_model.g.dart';
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class ShopProductModel {
   const ShopProductModel({
-    required ShopStoreInfoModel super.storeInfo,
-    required super.name,
-    required super.types,
-    required super.price,
-    required super.imagePath,
-    required super.imageUrl,
-    super.id,
-    super.purchaseLink,
-    super.sizes,
-    super.createdAt,
-    super.updatedAt,
+    required this.storeInfo,
+    required this.name,
+    required this.types,
+    required this.price,
+    required this.imagePath,
+    required this.imageUrl,
+    required this.id,
+    this.purchaseLink,
+    this.sizes,
+    this.createdAt,
+    this.updatedAt,
   });
 
-  factory ShopProductModel.fromJson(final Map<String, dynamic> json) {
-    return ShopProductModel(
-      storeInfo: ShopStoreInfoModel.fromJson(
-        Map<String, dynamic>.from(json['store_profiles']),
-      ),
-      name: json['name'] as String,
-      types: (json['type'] as List).map((final e) => e.toString()).toSet(),
-      price: (json['price'] as num).toDouble(),
-      imagePath: json['image_path'] as String,
-      imageUrl: json['image_url'] as String? ?? '',
-      id: json['id'] as String?,
-      purchaseLink: json['purchase_link'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
-      sizes:
-          (json['product_variants'] as List?)
-              ?.map((final e) => ProductSizeModel.fromJson(Map<String, dynamic>.from(e)))
-              .toList() ??
-          [],
+  factory ShopProductModel.fromJson(final Map<String, dynamic> json) =>
+      _$ShopProductModelFromJson(json);
+
+  @JsonKey(name: 'store_profiles', includeToJson: false)
+  final ShopStoreInfoModel storeInfo;
+  final String name;
+  @JsonKey(name: 'type')
+  final Set<String> types;
+  final double price;
+  final String imagePath;
+  @JsonKey(includeToJson: false)
+  final String imageUrl;
+  final String id;
+  final String? purchaseLink;
+  @JsonKey(name: 'product_variants', includeToJson: false)
+  final List<ProductSizeModel>? sizes;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  Map<String, dynamic> toJson() => _$ShopProductModelToJson(this);
+
+  ShopProduct toEntity() {
+    return ShopProduct(
+      storeInfo: storeInfo.toEntity(),
+      name: name,
+      types: types,
+      price: price,
+      imagePath: imagePath,
+      imageUrl: imageUrl,
+      id: id,
+      purchaseLink: purchaseLink,
+      sizes: sizes?.map((final s) => s.toEntity()).toList(),
+      createdAt: createdAt,
+      updatedAt: updatedAt,
     );
   }
 }

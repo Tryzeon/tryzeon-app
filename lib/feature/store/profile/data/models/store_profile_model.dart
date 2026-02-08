@@ -1,29 +1,20 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 
-class StoreProfileModel extends StoreProfile {
+part 'store_profile_model.g.dart';
+
+@JsonSerializable(fieldRename: FieldRename.snake)
+class StoreProfileModel {
   const StoreProfileModel({
-    required super.id,
-    required super.ownerId,
-    required super.name,
-    super.address,
-    super.logoPath,
-    super.logoUrl,
+    required this.id,
+    required this.ownerId,
+    required this.name,
+    this.address,
+    this.logoPath,
+    this.logoUrl,
     this.createdAt,
     this.updatedAt,
   });
-
-  factory StoreProfileModel.fromJson(final Map<String, dynamic> json) {
-    return StoreProfileModel(
-      id: json['id'] as String,
-      ownerId: json['owner_id'] as String,
-      name: json['name'] as String,
-      address: json['address'] as String?,
-      logoPath: json['logo_path'] as String?,
-      logoUrl: json['logo_url'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
-    );
-  }
 
   factory StoreProfileModel.fromEntity(final StoreProfile entity) {
     return StoreProfileModel(
@@ -36,18 +27,28 @@ class StoreProfileModel extends StoreProfile {
     );
   }
 
+  factory StoreProfileModel.fromJson(final Map<String, dynamic> json) =>
+      _$StoreProfileModelFromJson(json);
+
+  final String id;
+  final String ownerId;
+  final String name;
+  final String? address;
+  final String? logoPath;
+  final String? logoUrl;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'owner_id': ownerId,
-      'name': name,
-      'address': address,
-      'logo_path': logoPath,
-      'created_at': createdAt?.toIso8601String(),
-      'updated_at': updatedAt?.toIso8601String(),
-    };
+  Map<String, dynamic> toJson() => _$StoreProfileModelToJson(this);
+
+  StoreProfile toEntity() {
+    return StoreProfile(
+      id: id,
+      ownerId: ownerId,
+      name: name,
+      address: address,
+      logoPath: logoPath,
+      logoUrl: logoUrl,
+    );
   }
 }
