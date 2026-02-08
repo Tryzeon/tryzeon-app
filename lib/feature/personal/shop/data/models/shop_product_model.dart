@@ -27,7 +27,6 @@ class ShopProductModel {
   @JsonKey(name: 'store_profiles', includeToJson: false)
   final ShopStoreInfoModel storeInfo;
   final String name;
-  @JsonKey(name: 'type')
   final Set<String> types;
   final double price;
   final String imagePath;

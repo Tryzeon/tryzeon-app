@@ -135,7 +135,6 @@ class ProductModel {
 
   final String storeId;
   final String name;
-  @JsonKey(name: 'type')
   final Set<String> types;
   final double price;
   final String imagePath;
