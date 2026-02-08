@@ -7,11 +7,11 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
+import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
-import 'package:tryzeon/feature/personal/shop/domain/enums/product_sort_option.dart';
-import 'package:tryzeon/feature/personal/shop/domain/utils/fit_calculator.dart';
+import 'package:tryzeon/feature/personal/shop/domain/services/fit_calculator.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 
 import '../dialogs/filter_dialog.dart';

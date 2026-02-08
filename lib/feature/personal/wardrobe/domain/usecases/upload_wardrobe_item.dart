@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:tryzeon/core/error/failures.dart';
-import 'package:tryzeon/feature/subscription/domain/usecases/get_subscription.dart';
+import 'package:tryzeon/feature/personal/subscription/domain/usecases/get_subscription.dart';
 import 'package:typed_result/typed_result.dart';
 import '../entities/wardrobe_category.dart';
 import '../repositories/wardrobe_repository.dart';

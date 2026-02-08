@@ -12,7 +12,7 @@ import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/delete_wardrob
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/get_wardrobe_item_image.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/get_wardrobe_items.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/upload_wardrobe_item.dart';
-import 'package:tryzeon/feature/subscription/presentation/providers/subscription_provider.dart';
+import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_provider.dart';
 import 'package:typed_result/typed_result.dart';
 
 part 'wardrobe_providers.g.dart';

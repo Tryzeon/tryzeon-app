@@ -1,8 +1,8 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
-import 'package:tryzeon/core/domain/entities/user_location.dart';
+import 'package:tryzeon/core/modules/location/domain/entities/user_location.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_product_model.dart';
-import 'package:tryzeon/feature/personal/shop/domain/enums/product_sort_option.dart';
+import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
 
 class ShopRemoteDataSource {
   ShopRemoteDataSource(this._supabaseClient);

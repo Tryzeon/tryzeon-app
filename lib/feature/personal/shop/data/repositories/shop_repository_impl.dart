@@ -1,14 +1,13 @@
-import 'package:tryzeon/core/domain/entities/analytics_event.dart';
-import 'package:tryzeon/core/domain/entities/user_location.dart';
 import 'package:tryzeon/core/error/failures.dart';
-import 'package:tryzeon/core/services/analytics_event_queue_service.dart';
+import 'package:tryzeon/core/modules/analytics/data/services/analytics_event_queue_service.dart';
+import 'package:tryzeon/core/modules/analytics/domain/entities/analytics_event.dart';
+import 'package:tryzeon/core/modules/analytics/domain/entities/analytics_event_type.dart';
+import 'package:tryzeon/core/modules/location/domain/entities/user_location.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/ad_local_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_remote_datasource.dart';
-
+import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
-import 'package:tryzeon/feature/personal/shop/domain/enums/analytics_event_type.dart';
-import 'package:tryzeon/feature/personal/shop/domain/enums/product_sort_option.dart';
 import 'package:tryzeon/feature/personal/shop/domain/repositories/shop_repository.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -59,7 +58,7 @@ class ShopRepositoryImpl implements ShopRepository {
         AnalyticsEvent(
           productId: productId,
           storeId: storeId,
-          eventType: AnalyticsEventType.tryOn.value,
+          eventType: AnalyticsEventType.tryOn,
         ),
       );
       return const Ok(null);
@@ -80,7 +79,7 @@ class ShopRepositoryImpl implements ShopRepository {
         AnalyticsEvent(
           productId: productId,
           storeId: storeId,
-          eventType: AnalyticsEventType.view.value,
+          eventType: AnalyticsEventType.view,
         ),
       );
       return const Ok(null);
@@ -101,7 +100,7 @@ class ShopRepositoryImpl implements ShopRepository {
         AnalyticsEvent(
           productId: productId,
           storeId: storeId,
-          eventType: AnalyticsEventType.purchaseClick.value,
+          eventType: AnalyticsEventType.purchaseClick,
         ),
       );
       return const Ok(null);

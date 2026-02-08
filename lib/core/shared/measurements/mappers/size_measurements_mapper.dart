@@ -1,7 +1,8 @@
 import 'package:tryzeon/core/shared/measurements/collections/size_measurements_collection.dart';
 import 'package:tryzeon/core/shared/measurements/entities/size_measurements.dart';
 
-extension SizeMeasurementsModelMapper on SizeMeasurements {
+/// Extension to map SizeMeasurements entity to SizeMeasurementsCollection
+extension SizeMeasurementsEntityMapper on SizeMeasurements {
   SizeMeasurementsCollection toCollection() {
     return SizeMeasurementsCollection()
       ..height = height
@@ -19,8 +20,9 @@ extension SizeMeasurementsModelMapper on SizeMeasurements {
   }
 }
 
+/// Extension to map SizeMeasurementsCollection to SizeMeasurements entity
 extension SizeMeasurementsCollectionMapper on SizeMeasurementsCollection {
-  SizeMeasurements toModel() {
+  SizeMeasurements toEntity() {
     return SizeMeasurements(
       height: height,
       chest: chest,

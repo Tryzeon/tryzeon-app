@@ -1,7 +1,7 @@
-import 'package:tryzeon/core/domain/entities/user_location.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/modules/location/domain/entities/user_location.dart';
+import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
-import 'package:tryzeon/feature/personal/shop/domain/enums/product_sort_option.dart';
 import 'package:typed_result/typed_result.dart';
 
 abstract class ShopRepository {

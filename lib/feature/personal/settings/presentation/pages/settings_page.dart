@@ -7,7 +7,7 @@ import 'package:tryzeon/feature/auth/presentation/pages/login_page.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/store/main/store_entry.dart';
 
-import 'package:tryzeon/feature/subscription/presentation/pages/subscription_page.dart';
+import 'package:tryzeon/feature/personal/subscription/presentation/pages/subscription_page.dart';
 import 'preferences_page.dart';
 import 'profile_setting_page.dart';
 
