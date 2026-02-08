@@ -27,7 +27,6 @@ sealed class Product with _$Product {
     final String? id,
     final String? purchaseLink,
     final List<ProductSize>? sizes,
-    final String? storeName,
     final DateTime? createdAt,
     final DateTime? updatedAt,
   }) = _Product;

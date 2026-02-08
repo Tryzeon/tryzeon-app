@@ -19,7 +19,6 @@ class ProductCollection {
   String? purchaseLink;
   DateTime? createdAt;
   DateTime? updatedAt;
-  String? storeName;
 
   List<ProductSizeCollection>? sizes;
 }

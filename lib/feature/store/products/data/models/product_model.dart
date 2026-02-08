@@ -108,7 +108,6 @@ class ProductModel {
     this.id,
     this.purchaseLink,
     this.sizes,
-    this.storeName,
     this.createdAt,
     this.updatedAt,
   });
@@ -124,7 +123,6 @@ class ProductModel {
       imageUrl: entity.imageUrl,
       purchaseLink: entity.purchaseLink,
       sizes: entity.sizes?.map(ProductSizeModel.fromEntity).toList(),
-      storeName: entity.storeName,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     );
@@ -144,8 +142,6 @@ class ProductModel {
   final String? purchaseLink;
   @JsonKey(name: 'productVariants', includeToJson: false)
   final List<ProductSizeModel>? sizes;
-  @JsonKey(readValue: _readStoreName, includeToJson: false)
-  final String? storeName;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -166,7 +162,6 @@ class ProductModel {
       id: id,
       purchaseLink: purchaseLink,
       sizes: sizes?.map((final s) => s.toEntity()).toList(),
-      storeName: storeName,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );

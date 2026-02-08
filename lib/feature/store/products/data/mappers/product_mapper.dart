@@ -15,7 +15,6 @@ extension ProductModelMapper on ProductModel {
       ..purchaseLink = purchaseLink
       ..createdAt = createdAt
       ..updatedAt = updatedAt
-      ..storeName = storeName
       ..sizes = sizes?.map((final e) => e.toCollection()).toList();
   }
 }
@@ -32,7 +31,6 @@ extension ProductCollectionMapper on ProductCollection {
       id: productId,
       purchaseLink: purchaseLink,
       sizes: sizes?.map((final e) => e.toModel()).toList(),
-      storeName: storeName,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );
