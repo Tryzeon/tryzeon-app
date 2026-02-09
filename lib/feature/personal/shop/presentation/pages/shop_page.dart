@@ -2,22 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:tryzeon/core/error/failures.dart';
-import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
-import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
-import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
-import 'package:tryzeon/feature/personal/shop/domain/services/fit_calculator.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 
 import '../dialogs/filter_dialog.dart';
 import '../widgets/ad_banner.dart';
-import '../widgets/product_card.dart';
 import '../widgets/product_category_filter.dart';
+import '../widgets/product_grid.dart';
 import '../widgets/search_bar.dart';
 
 class ShopPage extends HookConsumerWidget {
@@ -354,100 +349,10 @@ class ShopPage extends HookConsumerWidget {
                               const SizedBox(height: 16),
 
                               // 商品 Grid（可滾動）
-                              productsAsync.when(
-                                skipLoadingOnReload: true,
-                                skipError: true,
-                                loading: () => Skeletonizer(
-                                  enabled: true,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                                    child: GridView.builder(
-                                      shrinkWrap: true,
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      itemCount: 4,
-                                      gridDelegate:
-                                          const SliverGridDelegateWithFixedCrossAxisCount(
-                                            crossAxisCount: 2,
-                                            mainAxisSpacing: 16,
-                                            crossAxisSpacing: 16,
-                                            childAspectRatio: 0.7,
-                                          ),
-                                      itemBuilder: (final context, final index) {
-                                        return const ProductCard(
-                                          product: ShopProduct(
-                                            id: 'dummy_id',
-                                            storeInfo: ShopStoreInfo(
-                                              id: 'dummy_store',
-                                              name: 'Loading Store',
-                                            ),
-                                            name: 'Loading Product Name',
-                                            types: {'Type'},
-                                            price: 8888,
-                                            imagePath: 'dummy_path',
-                                            imageUrl: '',
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                error: (final error, final stack) => ErrorView(
-                                  message: (error as Failure).displayMessage(context),
-                                  onRetry: () =>
-                                      ref.refresh(shopProductsProvider(filter)),
-                                ),
-                                data: (final displayedProducts) {
-                                  if (displayedProducts.isEmpty) {
-                                    return Center(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(48.0),
-                                        child: Column(
-                                          children: [
-                                            Icon(
-                                              Icons.shopping_bag_outlined,
-                                              size: 64,
-                                              color: colorScheme.outlineVariant,
-                                            ),
-                                            const SizedBox(height: 16),
-                                            Text(
-                                              '目前沒有商品符合搜尋條件',
-                                              style: textTheme.bodyMedium?.copyWith(
-                                                fontSize: 16,
-                                                color: colorScheme.onSurfaceVariant,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                                    child: GridView.builder(
-                                      shrinkWrap: true,
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      itemCount: displayedProducts.length,
-                                      gridDelegate:
-                                          const SliverGridDelegateWithFixedCrossAxisCount(
-                                            crossAxisCount: 2,
-                                            mainAxisSpacing: 16,
-                                            crossAxisSpacing: 16,
-                                            childAspectRatio: 0.7,
-                                          ),
-                                      itemBuilder: (final context, final index) {
-                                        final product = displayedProducts[index];
-                                        final fitStatus = FitCalculator.calculate(
-                                          userProfile: userProfile,
-                                          productSizes: product.sizes,
-                                        );
-                                        return ProductCard(
-                                          product: product,
-                                          fitStatus: fitStatus,
-                                        );
-                                      },
-                                    ),
-                                  );
-                                },
+                              ProductGrid(
+                                productsAsync: productsAsync,
+                                userProfile: userProfile,
+                                onRetry: () => ref.refresh(shopProductsProvider(filter)),
                               ),
 
                               const SizedBox(height: 32),
