@@ -212,7 +212,14 @@ class ProductDetailPage extends HookConsumerWidget {
                         }).toList(),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 8),
+                    Text(
+                      '* 此尺寸數據為手工測量，可能存在些許誤差',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     const Divider(),
                     const SizedBox(height: 16),
                   ],
