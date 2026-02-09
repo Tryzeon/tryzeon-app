@@ -51,6 +51,6 @@ Failure mapExceptionToFailure(final Object e) {
     TlsException() => const ServerFailure(),
 
     // Fallback
-    _ => UnknownFailure(e.toString()),
+    _ => const UnknownFailure(),
   };
 }

@@ -26,6 +26,9 @@ class ProductCard extends HookConsumerWidget {
     final hasLoggedView = useState(false);
 
     void onVisibilityChanged(final VisibilityInfo info) {
+      // Skip analytics for skeleton products
+      if (product.id.startsWith('skeleton_')) return;
+
       if (info.visibleFraction > AppConstants.productVisibilityThreshold &&
           !hasLoggedView.value) {
         hasLoggedView.value = true;

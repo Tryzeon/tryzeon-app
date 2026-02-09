@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:skeletonizer/skeletonizer.dart';
-import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
@@ -252,62 +250,39 @@ class ShopPage extends HookConsumerWidget {
                               const SizedBox(height: 20),
 
                               // 📢 廣告輪播
-                              adsAsync.when(
-                                data: (final ads) => AdBanner(adImages: ads),
-                                loading: () => Skeletonizer(
-                                  enabled: true,
-                                  child: Skeleton.leaf(
-                                    child: Container(
-                                      height: 180,
-                                      width: double.infinity,
-                                      margin: const EdgeInsets.symmetric(horizontal: 16),
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(12),
-                                        color: colorScheme.surfaceContainer,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                error: (final e, final s) => const SizedBox.shrink(),
-                              ),
+                              AdBanner(adsAsync: adsAsync),
 
                               const SizedBox(height: 24),
 
                               // 商品類型篩選標籤
-                              Skeletonizer(
-                                enabled: productCategoryTreeAsync.isLoading,
-                                child: ProductCategoryFilter(
-                                  categoryTree: productCategoryTreeAsync.value,
-                                  selectedRootId: selectedRootId.value,
-                                  selectedSubcategoryIds: selectedSubcategoryIds.value,
-                                  onRootSelected: (final rootId) {
-                                    selectedRootId.value = rootId;
-                                    selectedSubcategoryIds.value = {};
-                                  },
-                                  onSubcategoryToggle: (final subcategoryId) {
-                                    if (selectedSubcategoryIds.value.contains(
+                              ProductCategoryFilter(
+                                categoryTreeAsync: productCategoryTreeAsync,
+                                selectedRootId: selectedRootId.value,
+                                selectedSubcategoryIds: selectedSubcategoryIds.value,
+                                onRootSelected: (final rootId) {
+                                  selectedRootId.value = rootId;
+                                  selectedSubcategoryIds.value = {};
+                                },
+                                onSubcategoryToggle: (final subcategoryId) {
+                                  if (selectedSubcategoryIds.value.contains(
+                                    subcategoryId,
+                                  )) {
+                                    selectedSubcategoryIds.value = selectedSubcategoryIds
+                                        .value
+                                        .where((final id) => id != subcategoryId)
+                                        .toSet();
+                                  } else {
+                                    selectedSubcategoryIds.value = {
+                                      ...selectedSubcategoryIds.value,
                                       subcategoryId,
-                                    )) {
-                                      selectedSubcategoryIds.value =
-                                          selectedSubcategoryIds.value
-                                              .where((final id) => id != subcategoryId)
-                                              .toSet();
-                                    } else {
-                                      selectedSubcategoryIds.value = {
-                                        ...selectedSubcategoryIds.value,
-                                        subcategoryId,
-                                      };
-                                    }
-                                  },
-                                ),
+                                    };
+                                  }
+                                },
+                                onRetry: () {
+                                  // Invalidate upstream provider to refetch from backend
+                                  ref.invalidate(productCategoriesProvider);
+                                },
                               ),
-
-                              // Error state
-                              if (productCategoryTreeAsync.hasError)
-                                ErrorView(
-                                  onRetry: () => ref.refresh(productCategoryTreeProvider),
-                                  isCompact: true,
-                                ),
 
                               const SizedBox(height: 24),
 
