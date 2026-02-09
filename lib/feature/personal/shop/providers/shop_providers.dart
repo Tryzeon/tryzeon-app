@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/modules/location/domain/entities/user_location.dart';
+import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/ad_local_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_remote_datasource.dart';
@@ -100,6 +101,12 @@ Future<List<String>> shopAds(final Ref ref) async {
 /// 強制刷新商品列表
 Future<void> refreshShopProducts(final WidgetRef ref, final ShopFilter filter) async {
   try {
+    // 1. Refresh Categories
+    final getProductCategories = ref.read(getProductCategoriesUseCaseProvider);
+    await getProductCategories(forceRefresh: true);
+    ref.invalidate(productCategoriesProvider);
+
+    // 2. Refresh Products
     final _ = await ref.refresh(shopProductsProvider(filter).future);
   } catch (_) {
     // Provider 刷新失敗時，忽略異常，讓 UI 顯示 ErrorView 或舊資料
