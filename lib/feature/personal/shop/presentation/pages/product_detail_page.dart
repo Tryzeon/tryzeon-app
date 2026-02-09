@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/shared/measurements/presentation/mappers/measurement_type_ui_mapper.dart';
+import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -16,6 +17,13 @@ class ProductDetailPage extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+
+    // Build category ID to name mapping
+    final categoriesAsync = ref.watch(productCategoriesProvider);
+    final categoryIdToName = categoriesAsync.maybeWhen(
+      data: (final categories) => {for (final cat in categories) cat.id: cat.name},
+      orElse: () => <String, String>{},
+    );
 
     Future<void> handlePurchase() async {
       if (product.purchaseLink == null || product.purchaseLink!.isEmpty) {
@@ -123,7 +131,8 @@ class ProductDetailPage extends HookConsumerWidget {
                     Wrap(
                       spacing: 8,
                       runSpacing: 4,
-                      children: product.types.map((final type) {
+                      children: product.types.map((final typeId) {
+                        final categoryName = categoryIdToName[typeId] ?? typeId;
                         return Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 10,
@@ -134,7 +143,7 @@ class ProductDetailPage extends HookConsumerWidget {
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Text(
-                            type,
+                            categoryName,
                             style: textTheme.labelMedium?.copyWith(
                               color: colorScheme.onSurfaceVariant,
                               fontWeight: FontWeight.w500,

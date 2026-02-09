@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 
 import '../pages/product_detail_page.dart';
@@ -13,6 +14,21 @@ class StoreProductCard extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+
+    // Build category ID to name mapping
+    final categoriesAsync = ref.watch(productCategoriesProvider);
+    final categoryNames = categoriesAsync.maybeWhen(
+      data: (final categories) {
+        final Map<String, String> idToName = {
+          for (final cat in categories) cat.id: cat.name,
+        };
+        return product.types
+            .map((final id) => idToName[id] ?? id)
+            .where((final name) => name.isNotEmpty)
+            .join(', ');
+      },
+      orElse: () => '',
+    );
 
     return GestureDetector(
       onTap: () {
@@ -62,7 +78,7 @@ class StoreProductCard extends HookConsumerWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    product.types.join(', '),
+                    categoryNames,
                     style: textTheme.bodySmall,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
