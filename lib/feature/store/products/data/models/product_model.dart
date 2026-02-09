@@ -140,14 +140,10 @@ class ProductModel {
   final String imageUrl;
   final String? id;
   final String? purchaseLink;
-  @JsonKey(name: 'productVariants', includeToJson: false)
+  @JsonKey(name: 'product_variants', includeToJson: false)
   final List<ProductSizeModel>? sizes;
   final DateTime? createdAt;
   final DateTime? updatedAt;
-
-  static Object? _readStoreName(final Map json, final String key) {
-    return (json['store_profiles'] ?? json['store_profile'])?['name'];
-  }
 
   Map<String, dynamic> toJson() => _$ProductModelToJson(this);
 
