@@ -22,13 +22,14 @@ class AddProductPage extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final productCategoriesAsync = ref.watch(productCategoriesProvider);
+    final productCategoryTreeAsync = ref.watch(productCategoryTreeProvider);
     final formKey = useMemoized(GlobalKey<FormState>.new);
     final nameController = useTextEditingController();
     final priceController = useTextEditingController();
     final purchaseLinkController = useTextEditingController();
 
     final selectedImage = useState<File?>(null);
-    final selectedCategories = useState<Set<String>>({});
+    final selectedCategoryIds = useValueNotifier<Set<String>>({});
 
     final isCun = useState(false);
     final sizeEntries = useState<List<ProductSizeEntryController>>([]);
@@ -68,7 +69,7 @@ class AddProductPage extends HookConsumerWidget {
         return false;
       }
 
-      if (selectedCategories.value.isEmpty) {
+      if (selectedCategoryIds.value.isEmpty) {
         TopNotification.show(
           context,
           message: '請至少選擇一種商品類型',
@@ -101,7 +102,7 @@ class AddProductPage extends HookConsumerWidget {
       final newProduct = Product(
         storeId: storeProfile.id,
         name: nameController.text,
-        types: selectedCategories.value,
+        types: selectedCategoryIds.value,
         price: double.parse(priceController.text),
         purchaseLink: purchaseLinkController.text,
         imagePath: '',
@@ -202,8 +203,9 @@ class AddProductPage extends HookConsumerWidget {
                         nameController: nameController,
                         priceController: priceController,
                         purchaseLinkController: purchaseLinkController,
-                        selectedCategories: selectedCategories,
+                        selectedCategoryIds: selectedCategoryIds,
                         productCategoriesAsync: productCategoriesAsync,
+                        productCategoryTreeAsync: productCategoryTreeAsync,
                         onRetryCategories: () => ref.refresh(productCategoriesProvider),
                       ),
                       const SizedBox(height: 16),

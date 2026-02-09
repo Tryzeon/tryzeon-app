@@ -16,8 +16,8 @@ import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 
 import '../dialogs/filter_dialog.dart';
 import '../widgets/ad_banner.dart';
-import '../widgets/category_filter.dart';
 import '../widgets/product_card.dart';
+import '../widgets/product_category_filter.dart';
 import '../widgets/search_bar.dart';
 
 class ShopPage extends HookConsumerWidget {
@@ -25,7 +25,7 @@ class ShopPage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final productCategoriesAsync = ref.watch(productCategoriesProvider);
+    final productCategoryTreeAsync = ref.watch(productCategoryTreeProvider);
     final userProfileAsync = ref.watch(userProfileProvider);
     final userProfile = userProfileAsync.maybeWhen(
       data: (final profile) => profile,
@@ -47,8 +47,8 @@ class ShopPage extends HookConsumerWidget {
     final maxPrice = useState<int?>(null);
     final searchQuery = useState<String?>(null);
 
-    // 商品類型列表
-    final selectedCategories = useState<Set<String>>({});
+    final selectedRootId = useState<String?>(null);
+    final selectedSubcategoryIds = useState<Set<String>>({});
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
@@ -173,7 +173,7 @@ class ShopPage extends HookConsumerWidget {
       sortOption: sortOption.value,
       minPrice: minPrice.value,
       maxPrice: maxPrice.value,
-      types: selectedCategories.value,
+      types: selectedSubcategoryIds.value,
       userLocation: userLocation,
     );
 
@@ -279,42 +279,40 @@ class ShopPage extends HookConsumerWidget {
                               const SizedBox(height: 24),
 
                               // 商品類型篩選標籤
-                              productCategoriesAsync.when(
-                                data: (final categories) {
-                                  return ProductCategoryFilter(
-                                    productCategories: categories,
-                                    selectedCategories: selectedCategories.value,
-                                    onCategoryToggle: (final category) {
-                                      if (selectedCategories.value.contains(category)) {
-                                        selectedCategories.value = selectedCategories
-                                            .value
-                                            .where((final t) => t != category)
-                                            .toSet();
-                                      } else {
-                                        selectedCategories.value = {
-                                          ...selectedCategories.value,
-                                          category,
-                                        };
-                                      }
-                                    },
-                                  );
-                                },
-                                loading: () => Skeletonizer(
-                                  enabled: true,
-                                  child: ProductCategoryFilter(
-                                    productCategories: List.generate(
-                                      15,
-                                      (final index) => 'Category',
-                                    ),
-                                    selectedCategories: const {},
-                                    onCategoryToggle: (final _) {},
-                                  ),
-                                ),
-                                error: (final error, final stack) => ErrorView(
-                                  onRetry: () => ref.refresh(productCategoriesProvider),
-                                  isCompact: true,
+                              Skeletonizer(
+                                enabled: productCategoryTreeAsync.isLoading,
+                                child: ProductCategoryFilter(
+                                  categoryTree: productCategoryTreeAsync.value,
+                                  selectedRootId: selectedRootId.value,
+                                  selectedSubcategoryIds: selectedSubcategoryIds.value,
+                                  onRootSelected: (final rootId) {
+                                    selectedRootId.value = rootId;
+                                    selectedSubcategoryIds.value = {};
+                                  },
+                                  onSubcategoryToggle: (final subcategoryId) {
+                                    if (selectedSubcategoryIds.value.contains(
+                                      subcategoryId,
+                                    )) {
+                                      selectedSubcategoryIds.value =
+                                          selectedSubcategoryIds.value
+                                              .where((final id) => id != subcategoryId)
+                                              .toSet();
+                                    } else {
+                                      selectedSubcategoryIds.value = {
+                                        ...selectedSubcategoryIds.value,
+                                        subcategoryId,
+                                      };
+                                    }
+                                  },
                                 ),
                               ),
+
+                              // Error state
+                              if (productCategoryTreeAsync.hasError)
+                                ErrorView(
+                                  onRetry: () => ref.refresh(productCategoryTreeProvider),
+                                  isCompact: true,
+                                ),
 
                               const SizedBox(height: 24),
 

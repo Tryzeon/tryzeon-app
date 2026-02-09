@@ -5,12 +5,13 @@ extension ProductCategoryModelMapper on ProductCategoryModel {
   ProductCategoryCollection toCollection() {
     return ProductCategoryCollection()
       ..categoryId = id
-      ..name = name;
+      ..name = name
+      ..parentId = parentId;
   }
 }
 
 extension ProductCategoryCollectionMapper on ProductCategoryCollection {
   ProductCategoryModel toModel() {
-    return ProductCategoryModel(id: categoryId, name: name);
+    return ProductCategoryModel(id: categoryId, name: name, parentId: parentId);
   }
 }

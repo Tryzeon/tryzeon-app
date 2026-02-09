@@ -10,4 +10,7 @@ class ProductCategoryCollection {
   late String categoryId;
 
   late String name;
+
+  @Index()
+  String? parentId;
 }

@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/feature/common/product_categories/domain/entities/product_category.dart';
 
 class ProductCategoryFilter extends HookConsumerWidget {
   const ProductCategoryFilter({
     super.key,
     required this.productCategories,
-    required this.selectedCategories,
+    required this.selectedCategoryIds,
     required this.onCategoryToggle,
   });
-  final List<String> productCategories;
-  final Set<String> selectedCategories;
+  final List<ProductCategory> productCategories;
+  final Set<String> selectedCategoryIds;
   final Function(String) onCategoryToggle;
 
   @override
@@ -31,9 +32,9 @@ class ProductCategoryFilter extends HookConsumerWidget {
         ),
         itemBuilder: (final context, final index) {
           final category = productCategories[index];
-          final isSelected = selectedCategories.contains(category);
+          final isSelected = selectedCategoryIds.contains(category.id);
           return GestureDetector(
-            onTap: () => onCategoryToggle(category),
+            onTap: () => onCategoryToggle(category.id),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -51,7 +52,7 @@ class ProductCategoryFilter extends HookConsumerWidget {
                   ),
                   child: Center(
                     child: Text(
-                      category.substring(0, 1),
+                      category.name.substring(0, 1),
                       style: textTheme.titleMedium?.copyWith(
                         color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
                         fontWeight: FontWeight.bold,
@@ -61,7 +62,7 @@ class ProductCategoryFilter extends HookConsumerWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  category,
+                  category.name,
                   style: textTheme.bodyMedium?.copyWith(
                     fontSize: 12,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,

@@ -23,13 +23,16 @@ class ProductDetailPage extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final productCategoriesAsync = ref.watch(productCategoriesProvider);
+    final productCategoryTreeAsync = ref.watch(productCategoryTreeProvider);
     final formKey = useMemoized(GlobalKey<FormState>.new);
     final nameController = useTextEditingController(text: product.name);
     final priceController = useTextEditingController(text: product.price.toString());
     final purchaseLinkController = useTextEditingController(text: product.purchaseLink);
     final newImage = useState<File?>(null);
     final isLoading = useState(false);
-    final selectedCategories = useState<Set<String>>(Set<String>.from(product.types));
+    final selectedCategoryIds = useValueNotifier<Set<String>>(
+      Set<String>.from(product.types),
+    );
 
     final isCun = useState(false);
     final sizeEntries = useState<List<ProductSizeEntryController>>([]);
@@ -88,7 +91,7 @@ class ProductDetailPage extends HookConsumerWidget {
     Future<void> updateProduct() async {
       if (!formKey.currentState!.validate()) return;
 
-      if (selectedCategories.value.isEmpty) {
+      if (selectedCategoryIds.value.isEmpty) {
         TopNotification.show(
           context,
           message: '請至少選擇一個類型',
@@ -102,7 +105,7 @@ class ProductDetailPage extends HookConsumerWidget {
       final targetProduct = Product(
         storeId: product.storeId,
         name: nameController.text,
-        types: selectedCategories.value,
+        types: selectedCategoryIds.value,
         price: double.parse(priceController.text),
         imagePath: product.imagePath,
         imageUrl: product.imageUrl,
@@ -182,8 +185,9 @@ class ProductDetailPage extends HookConsumerWidget {
                 nameController: nameController,
                 priceController: priceController,
                 purchaseLinkController: purchaseLinkController,
-                selectedCategories: selectedCategories,
+                selectedCategoryIds: selectedCategoryIds,
                 productCategoriesAsync: productCategoriesAsync,
+                productCategoryTreeAsync: productCategoryTreeAsync,
                 onRetryCategories: () => ref.refresh(productCategoriesProvider),
               ),
               const SizedBox(height: 24),

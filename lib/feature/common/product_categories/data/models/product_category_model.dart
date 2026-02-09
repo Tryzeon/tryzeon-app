@@ -5,17 +5,18 @@ part 'product_category_model.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class ProductCategoryModel {
-  const ProductCategoryModel({required this.id, required this.name});
+  const ProductCategoryModel({required this.id, required this.name, this.parentId});
 
   factory ProductCategoryModel.fromJson(final Map<String, dynamic> json) =>
       _$ProductCategoryModelFromJson(json);
 
   final String id;
   final String name;
+  final String? parentId;
 
   Map<String, dynamic> toJson() => _$ProductCategoryModelToJson(this);
 
   ProductCategory toEntity() {
-    return ProductCategory(id: id, name: name);
+    return ProductCategory(id: id, name: name, parentId: parentId);
   }
 }

@@ -7,10 +7,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
-import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_category.dart';
-import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/pages/subscription_page.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_provider.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_category.dart';
+import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 import 'package:typed_result/typed_result.dart';
 import '../mappers/category_ui_mapper.dart';
 

@@ -5,6 +5,8 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/utils/validators.dart';
+import 'package:tryzeon/feature/common/product_categories/domain/entities/category_tree_node.dart';
+import 'package:tryzeon/feature/common/product_categories/domain/entities/product_category.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_type_selector.dart';
 
 class ProductBasicInfoEditor extends StatelessWidget {
@@ -13,16 +15,18 @@ class ProductBasicInfoEditor extends StatelessWidget {
     required this.nameController,
     required this.priceController,
     required this.purchaseLinkController,
-    required this.selectedCategories,
+    required this.selectedCategoryIds,
     required this.productCategoriesAsync,
+    required this.productCategoryTreeAsync,
     required this.onRetryCategories,
   });
 
   final TextEditingController nameController;
   final TextEditingController priceController;
   final TextEditingController purchaseLinkController;
-  final ValueNotifier<Set<String>> selectedCategories;
-  final AsyncValue<List<String>> productCategoriesAsync;
+  final ValueNotifier<Set<String>> selectedCategoryIds;
+  final AsyncValue<List<ProductCategory>> productCategoriesAsync;
+  final AsyncValue<List<CategoryTreeNode>> productCategoryTreeAsync;
   final VoidCallback onRetryCategories;
 
   @override
@@ -92,8 +96,9 @@ class ProductBasicInfoEditor extends StatelessWidget {
               productCategoriesAsync.when(
                 data: (final productCategories) {
                   return ProductTypeSelector(
+                    categoryTree: productCategoryTreeAsync.value!,
                     allCategories: productCategories,
-                    selectedCategories: selectedCategories,
+                    selectedCategoryIds: selectedCategoryIds,
                   );
                 },
                 loading: () => const Center(

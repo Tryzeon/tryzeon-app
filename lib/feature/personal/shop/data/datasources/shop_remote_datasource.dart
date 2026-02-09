@@ -42,7 +42,7 @@ class ShopRemoteDataSource {
       // 2. 構建 OR 查詢條件
       final buffer = StringBuffer();
       buffer.write('name.ilike.%$searchQuery%');
-      buffer.write(',type.cs.{$searchQuery}');
+      buffer.write(',types.cs.{$searchQuery}');
 
       if (storeIds.isNotEmpty) {
         buffer.write(',store_id.in.(${storeIds.join(',')})');
@@ -60,7 +60,7 @@ class ShopRemoteDataSource {
     }
     // 類型過濾（使用 PostgreSQL 陣列 overlap 操作符）
     if (types != null && types.isNotEmpty) {
-      query = query.overlaps('type', types.toList());
+      query = query.overlaps('types', types.toList());
     }
 
     // 排序邏輯
