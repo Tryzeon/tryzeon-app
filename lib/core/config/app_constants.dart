@@ -20,6 +20,7 @@ class AppConstants {
   static const String bucketProductImages = 'product-images';
   static const String bucketUserAvatars = 'user-avatars';
   static const String bucketWardrobeImages = 'wardrobe-images';
+  static const String bucketProductCategoryImages = 'product-categories-images';
 
   // Supabase Functions
   static const String functionChat = 'chat';

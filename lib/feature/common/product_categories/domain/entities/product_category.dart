@@ -8,6 +8,8 @@ sealed class ProductCategory with _$ProductCategory {
     required final String id,
     required final String name,
     final String? parentId,
+    final String? imagePath,
+    final String? imageUrl,
   }) = _ProductCategory;
 
   const ProductCategory._();

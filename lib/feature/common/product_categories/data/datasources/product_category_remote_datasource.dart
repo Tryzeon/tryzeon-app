@@ -7,15 +7,20 @@ class ProductCategoryRemoteDataSource {
 
   final SupabaseClient _supabaseClient;
   static const _productCategoryTable = AppConstants.tableProductCategories;
+  static const _bucket = AppConstants.bucketProductCategoryImages;
 
   Future<List<ProductCategoryModel>> getProductCategories() async {
     final response = await _supabaseClient
         .from(_productCategoryTable)
-        .select('id, name, parent_id')
+        .select('id, name, parent_id, image_path')
         .order('priority', ascending: false);
 
     return (response as List)
         .map((final e) => ProductCategoryModel.fromJson(e as Map<String, dynamic>))
         .toList();
+  }
+
+  String getCategoryImageUrl(final String imagePath) {
+    return _supabaseClient.storage.from(_bucket).getPublicUrl(imagePath);
   }
 }

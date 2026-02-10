@@ -13,4 +13,6 @@ class ProductCategoryCollection {
 
   @Index()
   String? parentId;
+
+  String? imagePath;
 }

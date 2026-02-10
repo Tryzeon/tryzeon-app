@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -58,9 +59,9 @@ class ProductCategoryFilter extends HookConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Root Categories (Tabs)
+          // Root Categories (Minimal Tabs)
           SizedBox(
-            height: 48,
+            height: 36,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -74,23 +75,26 @@ class ProductCategoryFilter extends HookConsumerWidget {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () => onRootSelected(node.category.id),
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(20),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? colorScheme.primary
-                            : colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(24),
+                            : Colors.transparent, // Minimal look
+                        border: isSelected
+                            ? null
+                            : Border.all(color: colorScheme.outlineVariant),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       alignment: Alignment.center,
                       child: Text(
                         node.category.name,
-                        style: textTheme.labelLarge?.copyWith(
+                        style: textTheme.labelMedium?.copyWith(
                           color: isSelected
                               ? colorScheme.onPrimary
-                              : colorScheme.onSurfaceVariant,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              : colorScheme.onSurface,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                         ),
                       ),
                     ),
@@ -99,13 +103,13 @@ class ProductCategoryFilter extends HookConsumerWidget {
               },
             ),
           ),
-          const SizedBox(height: 12),
-          // Subcategories (Chips)
+          const SizedBox(height: 16),
+          // Subcategories (Horizontal List with Images)
           selectedRootNode == null
-              ? const SizedBox(height: 40)
+              ? const SizedBox(height: 100)
               : SizedBox(
                   key: ValueKey(selectedRootNode.category.id),
-                  height: 40,
+                  height: 100, // Fixed height for image + text
                   child: selectedRootNode.children.isEmpty
                       ? Center(
                           child: Text(
@@ -120,36 +124,87 @@ class ProductCategoryFilter extends HookConsumerWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           itemCount: selectedRootNode.children.length,
                           separatorBuilder: (final context, final index) =>
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 12),
                           itemBuilder: (final context, final index) {
                             final subNode = selectedRootNode.children[index];
                             final isSelected = selectedSubcategoryIds.contains(
                               subNode.category.id,
                             );
+                            final imageUrl = subNode.category.imageUrl;
 
-                            return FilterChip(
-                              label: Text(subNode.category.name),
-                              selected: isSelected,
-                              onSelected: (_) => onSubcategoryToggle(subNode.category.id),
-                              showCheckmark: true,
-                              checkmarkColor: colorScheme.onSecondaryContainer,
-                              selectedColor: colorScheme.secondaryContainer,
-                              labelStyle: textTheme.labelMedium?.copyWith(
-                                color: isSelected
-                                    ? colorScheme.onSecondaryContainer
-                                    : colorScheme.onSurface,
-                                fontWeight: isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
+                            return GestureDetector(
+                              onTap: () => onSubcategoryToggle(subNode.category.id),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Image Circle with Selection Indicator
+                                  Container(
+                                    padding: EdgeInsets.all(isSelected ? 3.0 : 0.0),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: isSelected
+                                          ? Border.all(
+                                              color: colorScheme.primary,
+                                              width: 2,
+                                            )
+                                          : null,
+                                    ),
+                                    child: ClipOval(
+                                      child: Container(
+                                        width: 60,
+                                        height: 60,
+                                        color: colorScheme.surfaceContainerHighest,
+                                        child: (imageUrl != null && imageUrl.isNotEmpty)
+                                            ? CachedNetworkImage(
+                                                imageUrl: imageUrl,
+                                                fit: BoxFit.cover,
+                                                placeholder: (final context, final url) =>
+                                                    Center(
+                                                      child: SizedBox(
+                                                        width: 20,
+                                                        height: 20,
+                                                        child: CircularProgressIndicator(
+                                                          strokeWidth: 2,
+                                                          color: colorScheme.outline,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                errorWidget:
+                                                    (
+                                                      final context,
+                                                      final url,
+                                                      final error,
+                                                    ) => Icon(
+                                                      Icons.image_not_supported_outlined,
+                                                      size: 24,
+                                                      color: colorScheme.onSurfaceVariant,
+                                                    ),
+                                              )
+                                            : Icon(
+                                                Icons.image_not_supported_outlined,
+                                                size: 24,
+                                                color: colorScheme.onSurfaceVariant,
+                                              ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  // Label
+                                  Text(
+                                    subNode.category.name,
+                                    style: textTheme.labelMedium?.copyWith(
+                                      color: isSelected
+                                          ? colorScheme.primary
+                                          : colorScheme.onSurface,
+                                      fontWeight: isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
                               ),
-                              backgroundColor: colorScheme.surface,
-                              side: isSelected
-                                  ? BorderSide.none
-                                  : BorderSide(color: colorScheme.outlineVariant),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              padding: const EdgeInsets.symmetric(horizontal: 4),
                             );
                           },
                         ),
@@ -161,7 +216,7 @@ class ProductCategoryFilter extends HookConsumerWidget {
     // Priority 2: Show loading indicator when loading without data
     if (categoryTreeAsync.isLoading) {
       return const SizedBox(
-        height: 100,
+        height: 160,
         child: Center(child: CircularProgressIndicator()),
       );
     }
