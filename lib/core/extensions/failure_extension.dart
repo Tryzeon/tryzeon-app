@@ -11,7 +11,7 @@ extension FailureMessage on Failure {
       ServerFailure() => '伺服器發生錯誤，請稍後再試',
 
       AuthFailure(message: final msg?) => msg,
-      AuthFailure() => '偵測到登入狀態異常，請重新登入',
+      AuthFailure() => '偵測到登入狀態異常，請稍後再試',
 
       ValidationFailure(message: final msg?) => msg,
       ValidationFailure() => '驗證失敗，請檢查您的方案是否已達上限',
