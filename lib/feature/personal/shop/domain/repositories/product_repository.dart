@@ -4,7 +4,9 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_optio
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:typed_result/typed_result.dart';
 
-abstract class ShopRepository {
+/// Repository for product query operations.
+abstract class ProductRepository {
+  /// Fetches a list of products based on the provided filters.
   Future<Result<List<ShopProduct>, Failure>> getProducts({
     final ProductSortOption sortOption = ProductSortOption.latest,
     final String? searchQuery,
@@ -14,21 +16,4 @@ abstract class ShopRepository {
     final UserLocation? userLocation,
     final bool forceRefresh = false,
   });
-
-  Future<Result<void, Failure>> incrementTryonCount({
-    required final String productId,
-    required final String storeId,
-  });
-
-  Future<Result<void, Failure>> incrementPurchaseClickCount({
-    required final String productId,
-    required final String storeId,
-  });
-
-  Future<Result<void, Failure>> incrementViewCount({
-    required final String productId,
-    required final String storeId,
-  });
-
-  Future<Result<List<String>, Failure>> getAds({final bool forceRefresh = false});
 }

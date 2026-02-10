@@ -7,10 +7,14 @@ import 'package:tryzeon/feature/common/product_categories/providers/product_cate
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/ad_local_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_remote_datasource.dart';
-import 'package:tryzeon/feature/personal/shop/data/repositories/shop_repository_impl.dart';
+import 'package:tryzeon/feature/personal/shop/data/repositories/ad_repository_impl.dart';
+import 'package:tryzeon/feature/personal/shop/data/repositories/product_analytics_repository_impl.dart';
+import 'package:tryzeon/feature/personal/shop/data/repositories/product_repository_impl.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
-import 'package:tryzeon/feature/personal/shop/domain/repositories/shop_repository.dart';
+import 'package:tryzeon/feature/personal/shop/domain/repositories/ad_repository.dart';
+import 'package:tryzeon/feature/personal/shop/domain/repositories/product_analytics_repository.dart';
+import 'package:tryzeon/feature/personal/shop/domain/repositories/product_repository.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/get_ads.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/get_shop_products.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/increment_purchase_click_count.dart';
@@ -32,41 +36,51 @@ AdLocalDataSource adLocalDataSource(final Ref ref) {
   return AdLocalDataSource();
 }
 
-// --- Repository ---
+// --- Repositories ---
 
 @riverpod
-ShopRepository shopRepository(final Ref ref) {
+ProductRepository productRepository(final Ref ref) {
   final remote = ref.watch(shopRemoteDataSourceProvider);
-  final adLocal = ref.watch(adLocalDataSourceProvider);
+  return ProductRepositoryImpl(remote);
+}
+
+@riverpod
+ProductAnalyticsRepository productAnalyticsRepository(final Ref ref) {
   final analyticsQueue = ref.watch(analyticsEventQueueServiceProvider);
-  return ShopRepositoryImpl(remote, adLocal, analyticsQueue);
+  return ProductAnalyticsRepositoryImpl(analyticsQueue);
+}
+
+@riverpod
+AdRepository adRepository(final Ref ref) {
+  final adLocal = ref.watch(adLocalDataSourceProvider);
+  return AdRepositoryImpl(adLocal);
 }
 
 // --- Use Cases ---
 
 @riverpod
 GetShopProducts getShopProducts(final Ref ref) {
-  return GetShopProducts(ref.watch(shopRepositoryProvider));
+  return GetShopProducts(ref.watch(productRepositoryProvider));
 }
 
 @riverpod
 GetAds getAds(final Ref ref) {
-  return GetAds(ref.watch(shopRepositoryProvider));
+  return GetAds(ref.watch(adRepositoryProvider));
 }
 
 @riverpod
 IncrementTryonCount incrementTryonCount(final Ref ref) {
-  return IncrementTryonCount(ref.watch(shopRepositoryProvider));
+  return IncrementTryonCount(ref.watch(productAnalyticsRepositoryProvider));
 }
 
 @riverpod
 IncrementViewCount incrementViewCount(final Ref ref) {
-  return IncrementViewCount(ref.watch(shopRepositoryProvider));
+  return IncrementViewCount(ref.watch(productAnalyticsRepositoryProvider));
 }
 
 @riverpod
 IncrementPurchaseClickCount incrementPurchaseClickCount(final Ref ref) {
-  return IncrementPurchaseClickCount(ref.watch(shopRepositoryProvider));
+  return IncrementPurchaseClickCount(ref.watch(productAnalyticsRepositoryProvider));
 }
 
 // --- Feature Providers ---
