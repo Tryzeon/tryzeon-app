@@ -35,6 +35,7 @@ dependencies:
   talker_flutter: ^5.1.9
   equatable: ^2.0.8
   sign_in_with_apple: ^6.1.0
+  google_sign_in: ^7.2.0
   crypto: ^3.0.3
   isar_community: ^3.3.0
   isar_community_flutter_libs: ^3.3.0

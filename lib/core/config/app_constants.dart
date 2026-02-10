@@ -2,7 +2,7 @@ class AppConstants {
   // URLs
   static const String storeOnboardingFormUrl =
       'https://docs.google.com/forms/d/e/1FAIpQLScu_hKsOTUVcuB0R3sKnRh9cAbn7zchO7W8izdgG1N9-WC9AQ/viewform';
-  static const String authCallbackUrl = 'io.supabase.tryzeon://login-callback';
+  static const String authCallbackUrl = 'com.tryzeon.app://login-callback';
 
   // Supabase Tables
   static const String tableUserProfiles = 'user_profiles';

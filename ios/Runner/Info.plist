@@ -53,6 +53,10 @@
 	<string>We need access to your camera to take photos</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>We need access to your local network to connect and debug your application</string>
+	<key>GIDClientID</key>
+	<string>186632123893-16j3an6r6oce3hjodgfgg7r5m21u5q3v.apps.googleusercontent.com</string>
+	<key>GIDServerClientID</key>
+	<string>186632123893-sbdmrni6nqbqq5mgteiicuqedsj08jcg.apps.googleusercontent.com</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -60,7 +64,15 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>io.supabase.tryzeon</string>
+				<string>com.tryzeon.app</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.186632123893-16j3an6r6oce3hjodgfgg7r5m21u5q3v</string>
 			</array>
 		</dict>
 	</array>

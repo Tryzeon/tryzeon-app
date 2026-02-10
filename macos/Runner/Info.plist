@@ -35,7 +35,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>io.supabase.tryzeon</string>
+				<string>com.tryzeon.app</string>
 			</array>
 		</dict>
 	</array>

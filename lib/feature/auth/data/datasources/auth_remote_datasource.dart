@@ -1,3 +1,4 @@
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
@@ -47,6 +48,25 @@ class AuthRemoteDataSource {
       provider: OAuthProvider.apple,
       idToken: idToken,
       nonce: rawNonce,
+    );
+  }
+
+  Future<void> signInWithGoogleNative() async {
+    final GoogleSignIn googleSignIn = GoogleSignIn.instance;
+    await googleSignIn.initialize();
+
+    final googleUser = await googleSignIn.authenticate();
+    final googleAuth = googleUser.authentication;
+
+    final idToken = googleAuth.idToken;
+    if (idToken == null) {
+      throw const UnauthenticatedException();
+    }
+
+    await _supabase.auth.signInWithIdToken(
+      provider: OAuthProvider.google,
+      idToken: idToken,
+      // accessToken is not required for Supabase authentication with Google
     );
   }
 

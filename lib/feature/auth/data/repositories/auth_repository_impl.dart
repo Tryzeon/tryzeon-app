@@ -50,6 +50,8 @@ class AuthRepositoryImpl implements AuthRepository {
 
       if (oauthProvider == OAuthProvider.apple && Platform.isIOS) {
         await _remoteDataSource.signInWithAppleNative();
+      } else if (oauthProvider == OAuthProvider.google && Platform.isIOS) {
+        await _remoteDataSource.signInWithGoogleNative();
       } else {
         await _remoteDataSource.signInWithOAuthProvider(oauthProvider);
       }
