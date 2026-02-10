@@ -24,4 +24,6 @@ abstract class AuthRepository {
     required final String token,
     required final UserType userType,
   });
+
+  Future<Result<void, Failure>> deleteAccount();
 }

@@ -5,6 +5,7 @@ import 'package:tryzeon/feature/auth/data/datasources/auth_local_datasource.dart
 import 'package:tryzeon/feature/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:tryzeon/feature/auth/data/repositories/auth_repository_impl.dart';
 import 'package:tryzeon/feature/auth/domain/repositories/auth_repository.dart';
+import 'package:tryzeon/feature/auth/domain/usecases/delete_account.dart';
 import 'package:tryzeon/feature/auth/domain/usecases/get_last_login_type.dart';
 import 'package:tryzeon/feature/auth/domain/usecases/send_email_otp.dart';
 import 'package:tryzeon/feature/auth/domain/usecases/set_last_login_type.dart';
@@ -78,4 +79,10 @@ GetLastLoginTypeUseCase getLastLoginTypeUseCase(final Ref ref) {
 SetLastLoginTypeUseCase setLastLoginTypeUseCase(final Ref ref) {
   final repository = ref.watch(authRepositoryProvider);
   return SetLastLoginTypeUseCase(repository);
+}
+
+@riverpod
+DeleteAccountUseCase deleteAccountUseCase(final Ref ref) {
+  final repository = ref.watch(authRepositoryProvider);
+  return DeleteAccountUseCase(repository);
 }

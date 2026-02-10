@@ -8,11 +8,13 @@ class ConfirmationDialog extends HookConsumerWidget {
     required this.content,
     this.cancelText = '取消',
     this.confirmText = '確定',
+    this.isDestructive = false,
   });
   final String? title;
   final String content;
   final String cancelText;
   final String confirmText;
+  final bool isDestructive;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
@@ -54,7 +56,11 @@ class ConfirmationDialog extends HookConsumerWidget {
               const SizedBox(height: 32),
 
               // 圖示
-              Icon(Icons.error_outline_rounded, size: 48, color: colorScheme.primary),
+              Icon(
+                isDestructive ? Icons.warning_rounded : Icons.error_outline_rounded,
+                size: 48,
+                color: isDestructive ? colorScheme.error : colorScheme.primary,
+              ),
               const SizedBox(height: 12),
 
               // 標題
@@ -131,10 +137,14 @@ class ConfirmationDialog extends HookConsumerWidget {
                         child: ElevatedButton(
                           onPressed: () => Navigator.pop(context, true),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: colorScheme.primary,
+                            backgroundColor: isDestructive
+                                ? colorScheme.error
+                                : colorScheme.primary,
                             foregroundColor: Colors.white,
                             elevation: 0,
-                            shadowColor: colorScheme.primary.withValues(alpha: 0.4),
+                            shadowColor:
+                                (isDestructive ? colorScheme.error : colorScheme.primary)
+                                    .withValues(alpha: 0.4),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
@@ -167,6 +177,7 @@ class ConfirmationDialog extends HookConsumerWidget {
     required final String content,
     final String cancelText = '取消',
     final String confirmText = '確定',
+    final bool isDestructive = false,
   }) {
     return showDialog<bool>(
       context: context,
@@ -176,6 +187,7 @@ class ConfirmationDialog extends HookConsumerWidget {
         content: content,
         cancelText: cancelText,
         confirmText: confirmText,
+        isDestructive: isDestructive,
       ),
     );
   }

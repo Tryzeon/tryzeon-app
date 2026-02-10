@@ -155,4 +155,34 @@ class AuthRepositoryImpl implements AuthRepository {
       return Err(mapExceptionToFailure(e));
     }
   }
+
+  @override
+  Future<Result<void, Failure>> deleteAccount() async {
+    try {
+      await _analyticsEventQueueService.forceFlush();
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to flush analytics events (ignored)', e, stackTrace);
+    }
+
+    try {
+      await _remoteDataSource.deleteAccount();
+    } catch (e, stackTrace) {
+      AppLogger.error('Account deletion failed', e, stackTrace);
+      return Err(mapExceptionToFailure(e));
+    }
+
+    try {
+      await _cacheService.clearCache();
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to clear cache (ignored)', e, stackTrace);
+    }
+
+    try {
+      await _localDataSource.clearAll();
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to clear local data (ignored)', e, stackTrace);
+    }
+
+    return const Ok(null);
+  }
 }

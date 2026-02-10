@@ -43,6 +43,7 @@ Failure mapExceptionToFailure(final Object e) {
     // Supabase Exceptions
     PostgrestException() => const ServerFailure(),
     StorageException() => const ServerFailure(),
+    FunctionException() => const ServerFailure(),
     AuthException() => const AuthFailure(),
 
     // Network Exceptions

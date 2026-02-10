@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/core/presentation/pages/base_settings_page.dart';
+import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/presentation/pages/login_page.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/pages/subscription_page.dart';
 import 'package:tryzeon/feature/store/main/store_entry.dart';
+import 'package:typed_result/typed_result.dart';
 
 import 'preferences_page.dart';
 import 'profile_setting_page.dart';
@@ -79,6 +82,36 @@ class PersonalSettingsPage extends HookConsumerWidget {
       );
     }
 
+    Future<void> handleDeleteAccount() async {
+      final confirmed = await ConfirmationDialog.show(
+        context: context,
+        title: '刪除帳號',
+        content: '此操作將永久刪除您的帳號及所有相關資料，包括個人資料、衣櫃、店家資料（如有）等，且無法復原。您確定要繼續嗎？',
+        confirmText: '刪除帳號',
+        isDestructive: true,
+      );
+      if (confirmed != true) return;
+
+      final deleteAccountUseCase = ref.read(deleteAccountUseCaseProvider);
+      final result = await deleteAccountUseCase();
+
+      if (!context.mounted) return;
+
+      switch (result) {
+        case Ok():
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (final context) => const LoginPage()),
+            (final route) => false,
+          );
+        case Err(:final error):
+          TopNotification.show(
+            context,
+            message: error.displayMessage(context),
+            type: NotificationType.error,
+          );
+      }
+    }
+
     return SettingsPageScaffold(
       onBack: () => Navigator.pop(context),
       onLogout: handleSignOut,
@@ -110,6 +143,13 @@ class PersonalSettingsPage extends HookConsumerWidget {
           subtitle: '管理您的商店',
           onTap: switchToStore,
           color: colorScheme.primary.withValues(alpha: 0.1),
+        ),
+        SettingsMenuItem(
+          icon: Icons.delete_forever_rounded,
+          title: '刪除帳號',
+          subtitle: '永久刪除您的帳號及所有資料',
+          onTap: handleDeleteAccount,
+          color: colorScheme.error.withValues(alpha: 0.1),
         ),
       ],
     );

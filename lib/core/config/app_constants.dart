@@ -24,6 +24,7 @@ class AppConstants {
   // Supabase Functions
   static const String functionChat = 'chat';
   static const String functionTryon = 'tryon';
+  static const String functionDeleteAccount = 'delete-account';
   static const String functionLogAnalyticsEvents = 'log_analytics_events';
   static const String functionGetStoreAnalyticsSummary = 'get_store_analytics_summary';
 
