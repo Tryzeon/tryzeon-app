@@ -17,33 +17,117 @@ class AppError extends Error {
 
 // --- Storage Cleanup Service ---
 class StorageCleanupService {
-  constructor(private supabase: any) {}
+  constructor(private supabase: any) { }
+
+  private async listFilesRecursively(bucket: string, path: string): Promise<string[]> {
+    let allFiles: string[] = [];
+    let stack: string[] = [path];
+
+    while (stack.length > 0) {
+      const currentPath = stack.pop()!;
+      // List contents of current directory
+      const { data: contents, error } = await this.supabase.storage
+        .from(bucket)
+        .list(currentPath);
+
+      if (error) {
+        console.warn(`Error listing files in ${bucket}/${currentPath}:`, error);
+        continue;
+      }
+
+      if (!contents || contents.length === 0) continue;
+
+      for (const item of contents) {
+        // Construct full path relative to bucket root.
+        // If currentPath is empty, item.name is the path.
+        // Otherwise join with slash.
+        const itemPath = currentPath ? `${currentPath}/${item.name}` : item.name;
+
+        if (item.id === null) {
+          // If 'id' is null, it's a folder in Supabase Storage.
+          // Add to stack to explore deeper.
+          stack.push(itemPath);
+        } else {
+          // It's a file, add to list for deletion
+          allFiles.push(itemPath);
+        }
+      }
+    }
+    return allFiles;
+  }
+
+  private async deleteFiles(bucket: string, filePaths: string[]) {
+    if (filePaths.length === 0) return;
+
+    // Supabase can delete multiple files at once.
+    // Batching (e.g. 50 at a time) is good practice if needed.
+    const CHUNK_SIZE = 50;
+    for (let i = 0; i < filePaths.length; i += CHUNK_SIZE) {
+      const chunk = filePaths.slice(i, i + CHUNK_SIZE);
+      const { error } = await this.supabase.storage
+        .from(bucket)
+        .remove(chunk);
+
+      if (error) {
+        console.warn(`Failed to delete chunk from ${bucket}:`, error);
+      }
+    }
+  }
 
   async cleanupUserStorage(userId: string): Promise<void> {
-    const buckets = ["user-avatars", "wardrobe-images", "store-logos", "product-images"];
-
+    // 1. Clean User-Centric Buckets (files stored under userId/)
+    const userBuckets = ["user-avatars", "wardrobe-images"];
     await Promise.all(
-      buckets.map(async (bucket) => {
+      userBuckets.map(async (bucket) => {
         try {
-          const { data: files, error: listError } = await this.supabase.storage
-            .from(bucket)
-            .list(userId);
-
-          if (listError || !files || files.length === 0) return;
-
-          const filePaths = files.map((file: any) => `${userId}/${file.name}`);
-          const { error: removeError } = await this.supabase.storage
-            .from(bucket)
-            .remove(filePaths);
-
-          if (removeError) {
-            console.warn(`Failed to delete files from ${bucket}/${userId}:`, removeError);
+          // List recursively starting from userId/ since these buckets use userId as root folder
+          const files = await this.listFilesRecursively(bucket, userId);
+          if (files.length > 0) {
+            console.log(`Deleting ${files.length} files from ${bucket}/${userId}`);
+            await this.deleteFiles(bucket, files);
           }
         } catch (error) {
-          console.warn(`Storage cleanup error in ${bucket}:`, error);
+          console.warn(`Cleanup error in ${bucket}:`, error);
         }
       })
     );
+
+    // 2. Clean Store-Centric Buckets (files stored under storeId/)
+    try {
+      // Fetch stores owned by user to get storeIds
+      const { data: stores, error: storeError } = await this.supabase
+        .from("store_profiles")
+        .select("id")
+        .eq("owner_id", userId);
+
+      if (storeError) {
+        console.warn("Failed to fetch user stores for cleanup:", storeError);
+      } else if (stores && stores.length > 0) {
+        const storeBuckets = ["store-logos", "product-images"];
+
+        for (const store of stores) {
+          const storeId = store.id;
+          await Promise.all(
+            storeBuckets.map(async (bucket) => {
+              try {
+                // Products bucket structure: storeId/products/filename (files are deeper)
+                // Logos bucket structure: storeId/logo/filename
+                // So we just recursively delete from storeId/
+                const files = await this.listFilesRecursively(bucket, storeId);
+                if (files.length > 0) {
+                  console.log(`Deleting ${files.length} files from ${bucket}/${storeId}`);
+                  await this.deleteFiles(bucket, files);
+                }
+              } catch (error) {
+                console.warn(`Cleanup error in ${bucket} for store ${storeId}:`, error);
+              }
+            })
+          );
+        }
+      }
+    } catch (error) {
+      console.warn("Error in store cleanup logic:", error);
+    }
   }
 }
 
