@@ -27,9 +27,17 @@ class ShopRemoteDataSource {
           store_profiles!inner(*)
         ''');
 
-    // 搜尋過濾
+    // 類型過濾
+    if (categories != null && categories.isNotEmpty) {
+      query = query.overlaps('categories', categories.toList());
+    }
+
+    // 過濾店家名稱或商品名稱
     if (searchQuery != null && searchQuery.isNotEmpty) {
-      // 1. 先找出名稱符合搜尋關鍵字的店家 ID
+      final condition = StringBuffer();
+      condition.write('name.ilike.%$searchQuery%');
+
+      // 找出名稱符合搜尋關鍵字的店家 ID
       final matchingStores = await _supabaseClient
           .from(_storeProfileTable)
           .select('id')
@@ -39,16 +47,11 @@ class ShopRemoteDataSource {
           .map((final e) => e['id'] as String)
           .toList();
 
-      // 2. 構建 OR 查詢條件
-      final buffer = StringBuffer();
-      buffer.write('name.ilike.%$searchQuery%');
-      buffer.write(',categories.cs.{$searchQuery}');
-
       if (storeIds.isNotEmpty) {
-        buffer.write(',store_id.in.(${storeIds.join(',')})');
+        condition.write(',store_id.in.(${storeIds.join(',')})');
       }
 
-      query = query.or(buffer.toString());
+      query = query.or(condition.toString());
     }
 
     // 價格區間過濾
@@ -57,10 +60,6 @@ class ShopRemoteDataSource {
     }
     if (maxPrice != null) {
       query = query.lte('price', maxPrice);
-    }
-    // 類型過濾（使用 PostgreSQL 陣列 overlap 操作符）
-    if (categories != null && categories.isNotEmpty) {
-      query = query.overlaps('categories', categories.toList());
     }
 
     // 排序邏輯
