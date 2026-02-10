@@ -18,7 +18,7 @@ AnalyticsRemoteDataSource analyticsRemoteDataSource(final Ref ref) {
 }
 
 /// Analytics Event Queue Service Provider
-@riverpod
+@Riverpod(keepAlive: true)
 AnalyticsEventQueueService analyticsEventQueueService(final Ref ref) {
   final analyticsDataSource = ref.watch(analyticsRemoteDataSourceProvider);
 

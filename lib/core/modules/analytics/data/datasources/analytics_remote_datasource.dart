@@ -13,6 +13,12 @@ class AnalyticsRemoteDataSource {
       return;
     }
 
+    final user = _supabaseClient.auth.currentUser;
+    if (user == null) {
+      // Cannot log analytics events without an authenticated user.
+      return;
+    }
+
     final eventsJson = events.map((final e) => e.toJson()).toList();
 
     await _supabaseClient.rpc(

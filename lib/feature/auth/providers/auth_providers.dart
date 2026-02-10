@@ -33,10 +33,13 @@ AuthRepository authRepository(final Ref ref) {
   final localDataSource = ref.watch(authLocalDataSourceProvider);
 
   final cacheService = ref.watch(cacheServiceProvider);
+  final analyticsEventQueueService = ref.watch(analyticsEventQueueServiceProvider);
+
   return AuthRepositoryImpl(
     remoteDataSource: remoteDataSource,
     localDataSource: localDataSource,
     cacheService: cacheService,
+    analyticsEventQueueService: analyticsEventQueueService,
   );
 }
 

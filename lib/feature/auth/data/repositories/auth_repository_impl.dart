@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/domain/services/cache_service.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/modules/analytics/data/services/analytics_event_queue_service.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/data/datasources/auth_local_datasource.dart';
 import 'package:tryzeon/feature/auth/data/datasources/auth_remote_datasource.dart';
@@ -15,12 +16,15 @@ class AuthRepositoryImpl implements AuthRepository {
     required final AuthRemoteDataSource remoteDataSource,
     required final AuthLocalDataSource localDataSource,
     required final CacheService cacheService,
+    required final AnalyticsEventQueueService analyticsEventQueueService,
   }) : _remoteDataSource = remoteDataSource,
        _localDataSource = localDataSource,
-       _cacheService = cacheService;
+       _cacheService = cacheService,
+       _analyticsEventQueueService = analyticsEventQueueService;
   final AuthRemoteDataSource _remoteDataSource;
   final AuthLocalDataSource _localDataSource;
   final CacheService _cacheService;
+  final AnalyticsEventQueueService _analyticsEventQueueService;
 
   @override
   Future<Result<void, Failure>> signInWithProvider({
@@ -62,6 +66,13 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Result<void, Failure>> signOut() async {
+    // Flush pending analytics events before logging out
+    try {
+      await _analyticsEventQueueService.forceFlush();
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to flush analytics events (ignored)', e, stackTrace);
+    }
+
     // Sign out from Supabase
     try {
       await _remoteDataSource.signOut();
