@@ -7,7 +7,7 @@ import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/common/product_categories/domain/entities/category_tree_node.dart';
 
-import 'package:tryzeon/feature/store/products/presentation/widgets/product_type_selector.dart';
+import 'package:tryzeon/feature/store/products/presentation/widgets/product_category_selector.dart';
 
 class ProductBasicInfoEditor extends StatelessWidget {
   const ProductBasicInfoEditor({
@@ -95,7 +95,7 @@ class ProductBasicInfoEditor extends StatelessWidget {
               const SizedBox(height: 12),
               productCategoryTreeAsync.when(
                 data: (final categoryTree) {
-                  return ProductTypeSelector(
+                  return ProductCategorySelector(
                     categoryTree: categoryTree,
                     selectedCategoryIds: selectedCategoryIds,
                   );

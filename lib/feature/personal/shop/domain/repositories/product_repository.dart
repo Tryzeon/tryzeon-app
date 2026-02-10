@@ -12,7 +12,7 @@ abstract class ProductRepository {
     final String? searchQuery,
     final int? minPrice,
     final int? maxPrice,
-    final Set<String>? types,
+    final Set<String>? categories,
     final UserLocation? userLocation,
     final bool forceRefresh = false,
   });

@@ -10,7 +10,7 @@ class ShopProductModel {
   const ShopProductModel({
     required this.storeInfo,
     required this.name,
-    required this.types,
+    required this.categories,
     required this.price,
     required this.imagePath,
     required this.imageUrl,
@@ -27,7 +27,7 @@ class ShopProductModel {
   @JsonKey(name: 'store_profiles', includeToJson: false)
   final ShopStoreInfoModel storeInfo;
   final String name;
-  final Set<String> types;
+  final Set<String> categories;
   final double price;
   final String imagePath;
   @JsonKey(includeToJson: false)
@@ -45,7 +45,7 @@ class ShopProductModel {
     return ShopProduct(
       storeInfo: storeInfo.toEntity(),
       name: name,
-      types: types,
+      categories: categories,
       price: price,
       imagePath: imagePath,
       imageUrl: imageUrl,

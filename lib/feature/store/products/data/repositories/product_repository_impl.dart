@@ -97,7 +97,7 @@ class ProductRepositoryImpl implements ProductRepository {
       final productModel = ProductModel(
         storeId: product.storeId,
         name: product.name,
-        types: product.types,
+        categories: product.categories,
         price: product.price,
         imagePath: imagePath,
         imageUrl: imageUrl,

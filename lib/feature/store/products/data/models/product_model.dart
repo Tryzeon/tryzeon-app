@@ -101,7 +101,7 @@ class ProductModel {
   const ProductModel({
     required this.storeId,
     required this.name,
-    required this.types,
+    required this.categories,
     required this.price,
     required this.imagePath,
     required this.imageUrl,
@@ -117,7 +117,7 @@ class ProductModel {
       id: entity.id,
       storeId: entity.storeId,
       name: entity.name,
-      types: entity.types,
+      categories: entity.categories,
       price: entity.price,
       imagePath: entity.imagePath,
       imageUrl: entity.imageUrl,
@@ -133,7 +133,7 @@ class ProductModel {
 
   final String storeId;
   final String name;
-  final Set<String> types;
+  final Set<String> categories;
   final double price;
   final String imagePath;
   @JsonKey(includeToJson: false)
@@ -151,7 +151,7 @@ class ProductModel {
     return Product(
       storeId: storeId,
       name: name,
-      types: types,
+      categories: categories,
       price: price,
       imagePath: imagePath,
       imageUrl: imageUrl,

@@ -18,7 +18,7 @@ class ProductRepositoryImpl implements ProductRepository {
     final ProductSortOption sortOption = ProductSortOption.latest,
     final int? minPrice,
     final int? maxPrice,
-    final Set<String>? types,
+    final Set<String>? categories,
     final UserLocation? userLocation,
     final bool forceRefresh = false,
   }) async {
@@ -28,7 +28,7 @@ class ProductRepositoryImpl implements ProductRepository {
         sortOption: sortOption,
         minPrice: minPrice,
         maxPrice: maxPrice,
-        types: types,
+        categories: categories,
         userLocation: userLocation,
       );
       return Ok(result.map((final m) => m.toEntity()).toList());

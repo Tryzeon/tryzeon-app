@@ -93,7 +93,7 @@ Future<List<ShopProduct>> shopProducts(final Ref ref, final ShopFilter filter) a
     sortOption: filter.sortOption,
     minPrice: filter.minPrice,
     maxPrice: filter.maxPrice,
-    types: filter.types,
+    categories: filter.categories,
     userLocation: filter.userLocation,
   );
   if (result.isFailure) {

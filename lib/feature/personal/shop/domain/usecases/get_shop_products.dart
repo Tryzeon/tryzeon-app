@@ -14,7 +14,7 @@ class GetShopProducts {
     final ProductSortOption sortOption = ProductSortOption.latest,
     final int? minPrice,
     final int? maxPrice,
-    final Set<String>? types,
+    final Set<String>? categories,
     final UserLocation? userLocation,
     final bool forceRefresh = false,
   }) {
@@ -23,7 +23,7 @@ class GetShopProducts {
       sortOption: sortOption,
       minPrice: minPrice,
       maxPrice: maxPrice,
-      types: types,
+      categories: categories,
       userLocation: userLocation,
       forceRefresh: forceRefresh,
     );

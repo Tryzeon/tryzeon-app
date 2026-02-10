@@ -3,8 +3,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/feature/common/product_categories/domain/entities/category_tree_node.dart';
 import 'package:tryzeon/feature/common/product_categories/domain/entities/product_category.dart';
 
-class ProductTypeSelector extends HookWidget {
-  const ProductTypeSelector({
+class ProductCategorySelector extends HookWidget {
+  const ProductCategorySelector({
     super.key,
     required this.categoryTree,
     required this.selectedCategoryIds,
@@ -82,7 +82,7 @@ class ProductTypeSelector extends HookWidget {
             Expanded(
               child: selectedIds.isEmpty
                   ? Text(
-                      '選擇商品類型',
+                      '選擇商品分類',
                       style: textTheme.bodyLarge?.copyWith(
                         color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                       ),
@@ -277,7 +277,7 @@ class _HierarchicalSelectionSheet extends HookWidget {
           child: Padding(
             padding: const EdgeInsets.all(32.0),
             child: Text(
-              '沒有符合的類型',
+              '沒有符合的分類',
               style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
             ),
           ),
@@ -338,7 +338,7 @@ class _HierarchicalSelectionSheet extends HookWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '選擇類型',
+                    '選擇分類',
                     style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   TextButton(
@@ -366,7 +366,7 @@ class _HierarchicalSelectionSheet extends HookWidget {
                   controller: searchController,
                   style: textTheme.bodyLarge,
                   decoration: InputDecoration(
-                    hintText: '搜尋類型...',
+                    hintText: '搜尋分類...',
                     hintStyle: textTheme.bodyMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),

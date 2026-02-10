@@ -20,7 +20,7 @@ sealed class Product with _$Product {
   const factory Product({
     required final String storeId,
     required final String name,
-    required final Set<String> types,
+    required final Set<String> categories,
     required final double price,
     required final String imagePath,
     required final String imageUrl,

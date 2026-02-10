@@ -30,7 +30,7 @@ class ProductDetailPage extends HookConsumerWidget {
     final newImage = useState<File?>(null);
     final isLoading = useState(false);
     final selectedCategoryIds = useValueNotifier<Set<String>>(
-      Set<String>.from(product.types),
+      Set<String>.from(product.categories),
     );
 
     final isCun = useState(false);
@@ -104,7 +104,7 @@ class ProductDetailPage extends HookConsumerWidget {
       final targetProduct = Product(
         storeId: product.storeId,
         name: nameController.text,
-        types: selectedCategoryIds.value,
+        categories: selectedCategoryIds.value,
         price: double.parse(priceController.text),
         imagePath: product.imagePath,
         imageUrl: product.imageUrl,

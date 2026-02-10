@@ -127,11 +127,11 @@ class ProductDetailPage extends HookConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Categories
-                  if (product.types.isNotEmpty) ...[
+                  if (product.categories.isNotEmpty) ...[
                     Wrap(
                       spacing: 8,
                       runSpacing: 4,
-                      children: product.types.map((final typeId) {
+                      children: product.categories.map((final typeId) {
                         final categoryName = categoryIdToName[typeId] ?? typeId;
                         return Container(
                           padding: const EdgeInsets.symmetric(

@@ -12,7 +12,7 @@ class ProductCollection {
 
   late String storeId;
   late String name;
-  List<String>? types;
+  List<String>? categories;
   double? price;
   String? imagePath;
   String? imageUrl;

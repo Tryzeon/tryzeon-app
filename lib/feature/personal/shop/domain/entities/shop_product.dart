@@ -9,7 +9,7 @@ sealed class ShopProduct with _$ShopProduct {
   const factory ShopProduct({
     required final ShopStoreInfo storeInfo,
     required final String name,
-    required final Set<String> types,
+    required final Set<String> categories,
     required final double price,
     required final String imagePath,
     required final String imageUrl,

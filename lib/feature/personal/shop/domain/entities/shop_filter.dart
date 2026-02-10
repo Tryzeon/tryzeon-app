@@ -8,7 +8,7 @@ class ShopFilter extends Equatable {
     this.sortOption = ProductSortOption.latest,
     this.minPrice,
     this.maxPrice,
-    this.types,
+    this.categories,
     this.userLocation,
   });
 
@@ -16,7 +16,7 @@ class ShopFilter extends Equatable {
   final ProductSortOption sortOption;
   final int? minPrice;
   final int? maxPrice;
-  final Set<String>? types;
+  final Set<String>? categories;
 
   /// 使用者位置（用於附近店家排序）
   final UserLocation? userLocation;
@@ -27,7 +27,7 @@ class ShopFilter extends Equatable {
     sortOption,
     minPrice,
     maxPrice,
-    types,
+    categories,
     userLocation,
   ];
 }

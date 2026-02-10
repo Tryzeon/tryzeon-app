@@ -17,7 +17,7 @@ class ShopRemoteDataSource {
     final ProductSortOption sortOption = ProductSortOption.latest,
     final int? minPrice,
     final int? maxPrice,
-    final Set<String>? types,
+    final Set<String>? categories,
     final UserLocation? userLocation,
   }) async {
     // 查詢所有商品並關聯店家資訊和尺寸資訊
@@ -42,7 +42,7 @@ class ShopRemoteDataSource {
       // 2. 構建 OR 查詢條件
       final buffer = StringBuffer();
       buffer.write('name.ilike.%$searchQuery%');
-      buffer.write(',types.cs.{$searchQuery}');
+      buffer.write(',categories.cs.{$searchQuery}');
 
       if (storeIds.isNotEmpty) {
         buffer.write(',store_id.in.(${storeIds.join(',')})');
@@ -59,8 +59,8 @@ class ShopRemoteDataSource {
       query = query.lte('price', maxPrice);
     }
     // 類型過濾（使用 PostgreSQL 陣列 overlap 操作符）
-    if (types != null && types.isNotEmpty) {
-      query = query.overlaps('types', types.toList());
+    if (categories != null && categories.isNotEmpty) {
+      query = query.overlaps('categories', categories.toList());
     }
 
     // 排序邏輯

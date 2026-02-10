@@ -8,7 +8,7 @@ extension ProductModelMapper on ProductModel {
       ..productId = id ?? ''
       ..storeId = storeId
       ..name = name
-      ..types = types.toList()
+      ..categories = categories.toList()
       ..price = price
       ..imagePath = imagePath
       ..imageUrl = imageUrl
@@ -24,7 +24,7 @@ extension ProductCollectionMapper on ProductCollection {
     return ProductModel(
       storeId: storeId,
       name: name,
-      types: types?.toSet() ?? {},
+      categories: categories?.toSet() ?? {},
       price: price ?? 0.0,
       imagePath: imagePath ?? '',
       imageUrl: imageUrl ?? '',

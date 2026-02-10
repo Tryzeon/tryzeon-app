@@ -101,7 +101,7 @@ class AddProductPage extends HookConsumerWidget {
       final newProduct = Product(
         storeId: storeProfile.id,
         name: nameController.text,
-        types: selectedCategoryIds.value,
+        categories: selectedCategoryIds.value,
         price: double.parse(priceController.text),
         purchaseLink: purchaseLinkController.text,
         imagePath: '',

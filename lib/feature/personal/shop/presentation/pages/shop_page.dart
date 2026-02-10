@@ -166,7 +166,7 @@ class ShopPage extends HookConsumerWidget {
       sortOption: sortOption.value,
       minPrice: minPrice.value,
       maxPrice: maxPrice.value,
-      types: selectedSubcategoryIds.value,
+      categories: selectedSubcategoryIds.value,
       userLocation: userLocation,
     );
 

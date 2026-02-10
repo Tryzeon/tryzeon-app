@@ -22,7 +22,7 @@ class StoreProductCard extends HookConsumerWidget {
         final Map<String, String> idToName = {
           for (final cat in categories) cat.id: cat.name,
         };
-        return product.types
+        return product.categories
             .map((final id) => idToName[id] ?? id)
             .where((final name) => name.isNotEmpty)
             .join(', ');
