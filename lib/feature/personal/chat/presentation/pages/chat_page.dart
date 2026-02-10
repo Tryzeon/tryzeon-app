@@ -304,6 +304,9 @@ class ChatPage extends HookConsumerWidget {
       );
     }
 
+    final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
+    final isKeyboardOpen = bottomPadding > 0;
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(color: colorScheme.surface),
@@ -456,7 +459,11 @@ class ChatPage extends HookConsumerWidget {
                   ),
                 ),
               ),
-              SizedBox(height: 10 + (PlatformInfo.isIOS26OrHigher() ? 50 : 0)),
+              SizedBox(
+                height: isKeyboardOpen
+                    ? 5
+                    : 10 + (PlatformInfo.isIOS26OrHigher() ? 50 : 0),
+              ),
             ],
           ),
         ),

@@ -69,49 +69,57 @@ class PersonalEntry extends HookConsumerWidget {
       selectedIndex.value = index;
     }
 
+    final mediaQuery = MediaQuery.of(context);
+
     return PersonalEntryScope(
       tryOnFromStorage: tryOnFromStorage,
-      child: AdaptiveScaffold(
-        minimizeBehavior: TabBarMinimizeBehavior.never,
-        body: IndexedStack(index: selectedIndex.value, children: pages),
-        bottomNavigationBar: AdaptiveBottomNavigationBar(
-          selectedIndex: selectedIndex.value,
-          onTap: onItemTapped,
-          useNativeBottomBar: true,
-          items: [
-            AdaptiveNavigationDestination(
-              icon: PlatformInfo.isIOS26OrHigher()
-                  ? 'house'
-                  : PlatformInfo.isIOS
-                  ? CupertinoIcons.house
-                  : Icons.home_outlined,
-              label: '首頁',
-            ),
-            AdaptiveNavigationDestination(
-              icon: PlatformInfo.isIOS26OrHigher()
-                  ? 'cart'
-                  : PlatformInfo.isIOS
-                  ? CupertinoIcons.cart
-                  : Icons.shopping_cart_outlined,
-              label: '試衣間',
-            ),
-            AdaptiveNavigationDestination(
-              icon: PlatformInfo.isIOS26OrHigher()
-                  ? 'message'
-                  : PlatformInfo.isIOS
-                  ? CupertinoIcons.chat_bubble
-                  : Icons.chat_outlined,
-              label: '聊天',
-            ),
-            AdaptiveNavigationDestination(
-              icon: PlatformInfo.isIOS26OrHigher()
-                  ? 'person'
-                  : PlatformInfo.isIOS
-                  ? CupertinoIcons.person
-                  : Icons.person_outline,
-              label: '個人',
-            ),
-          ],
+      child: MediaQuery(
+        data: mediaQuery.copyWith(viewInsets: mediaQuery.viewInsets.copyWith(bottom: 0)),
+        child: AdaptiveScaffold(
+          minimizeBehavior: TabBarMinimizeBehavior.never,
+          body: MediaQuery(
+            data: mediaQuery,
+            child: IndexedStack(index: selectedIndex.value, children: pages),
+          ),
+          bottomNavigationBar: AdaptiveBottomNavigationBar(
+            selectedIndex: selectedIndex.value,
+            onTap: onItemTapped,
+            useNativeBottomBar: true,
+            items: [
+              AdaptiveNavigationDestination(
+                icon: PlatformInfo.isIOS26OrHigher()
+                    ? 'house'
+                    : PlatformInfo.isIOS
+                    ? CupertinoIcons.house
+                    : Icons.home_outlined,
+                label: '首頁',
+              ),
+              AdaptiveNavigationDestination(
+                icon: PlatformInfo.isIOS26OrHigher()
+                    ? 'cart'
+                    : PlatformInfo.isIOS
+                    ? CupertinoIcons.cart
+                    : Icons.shopping_cart_outlined,
+                label: '試衣間',
+              ),
+              AdaptiveNavigationDestination(
+                icon: PlatformInfo.isIOS26OrHigher()
+                    ? 'message'
+                    : PlatformInfo.isIOS
+                    ? CupertinoIcons.chat_bubble
+                    : Icons.chat_outlined,
+                label: '聊天',
+              ),
+              AdaptiveNavigationDestination(
+                icon: PlatformInfo.isIOS26OrHigher()
+                    ? 'person'
+                    : PlatformInfo.isIOS
+                    ? CupertinoIcons.person
+                    : Icons.person_outline,
+                label: '個人',
+              ),
+            ],
+          ),
         ),
       ),
     );
