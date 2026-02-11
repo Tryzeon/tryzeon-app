@@ -1,3 +1,4 @@
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -67,6 +68,23 @@ class AuthRemoteDataSource {
       provider: OAuthProvider.google,
       idToken: idToken,
       // accessToken is not required for Supabase authentication with Google
+    );
+  }
+
+  Future<void> signInWithFacebookNative() async {
+    final result = await FacebookAuth.instance.login(
+      permissions: ['public_profile', 'email'],
+    );
+
+    if (result.status != LoginStatus.success) {
+      throw const UnauthenticatedException();
+    }
+
+    final accessToken = result.accessToken!.tokenString;
+
+    await _supabase.auth.signInWithIdToken(
+      provider: OAuthProvider.facebook,
+      idToken: accessToken,
     );
   }
 

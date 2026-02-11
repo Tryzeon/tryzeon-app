@@ -57,6 +57,12 @@
 	<string>186632123893-16j3an6r6oce3hjodgfgg7r5m21u5q3v.apps.googleusercontent.com</string>
 	<key>GIDServerClientID</key>
 	<string>186632123893-sbdmrni6nqbqq5mgteiicuqedsj08jcg.apps.googleusercontent.com</string>
+	<key>FacebookAppID</key>
+	<string>822194696967429</string>
+	<key>FacebookClientToken</key>
+	<string>bdab5a9e7c3abd3947ec73547a21bfb2</string>
+	<key>FacebookDisplayName</key>
+	<string>Tryzeon</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -73,6 +79,14 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>com.googleusercontent.apps.186632123893-16j3an6r6oce3hjodgfgg7r5m21u5q3v</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>fb822194696967429</string>
 			</array>
 		</dict>
 	</array>
