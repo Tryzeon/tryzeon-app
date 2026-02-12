@@ -74,6 +74,7 @@ class AuthRemoteDataSource {
   Future<void> signInWithFacebookNative() async {
     final result = await FacebookAuth.instance.login(
       permissions: ['public_profile', 'email'],
+      loginBehavior: LoginBehavior.nativeWithFallback,
     );
 
     if (result.status != LoginStatus.success) {
