@@ -1,22 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
-import 'package:tryzeon/core/presentation/pages/base_settings_page.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
-import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/presentation/pages/login_page.dart';
-import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry.dart';
-import 'package:typed_result/typed_result.dart';
-
-import 'profile_setting_page.dart';
+import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
+import 'package:tryzeon/feature/store/settings/presentation/pages/profile_setting_page.dart';
+import 'package:tryzeon/feature/store/settings/presentation/providers/store_settings_controller.dart';
 
 class StoreSettingsPage extends HookConsumerWidget {
   const StoreSettingsPage({super.key});
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final controller = ref.watch(storeSettingsControllerProvider.notifier);
+    final state = ref.watch(storeSettingsControllerProvider);
+    final isLoading = state.isLoading;
+
+    ref.listen(storeSettingsControllerProvider, (final previous, final next) {
+      if (next is AsyncError) {
+        TopNotification.show(
+          context,
+          message: (next.error as dynamic).displayMessage(context),
+          type: NotificationType.error,
+        );
+      }
+    });
+
     Future<void> switchToPersonal() async {
       final confirmed = await ConfirmationDialog.show(
         context: context,
@@ -25,8 +37,7 @@ class StoreSettingsPage extends HookConsumerWidget {
       );
       if (confirmed != true) return;
 
-      final setLoginTypeUseCase = ref.read(setLastLoginTypeUseCaseProvider);
-      await setLoginTypeUseCase(UserType.personal);
+      await controller.switchToPersonal();
 
       if (!context.mounted) return;
 
@@ -45,21 +56,13 @@ class StoreSettingsPage extends HookConsumerWidget {
       );
       if (confirmed != true) return;
 
-      final signOutUseCase = ref.read(signOutUseCaseProvider);
-      await signOutUseCase();
+      await controller.signOut();
 
       if (!context.mounted) return;
 
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (final context) => const LoginPage()),
         (final route) => false,
-      );
-    }
-
-    Future<void> navigateToProfile() async {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(builder: (final context) => const StoreProfileSettingsPage()),
       );
     }
 
@@ -73,52 +76,423 @@ class StoreSettingsPage extends HookConsumerWidget {
       );
       if (confirmed != true) return;
 
-      final deleteAccountUseCase = ref.read(deleteAccountUseCaseProvider);
-      final result = await deleteAccountUseCase();
+      final result = await controller.deleteAccount();
 
       if (!context.mounted) return;
 
-      switch (result) {
-        case Ok():
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (final context) => const LoginPage()),
-            (final route) => false,
-          );
-        case Err(:final error):
-          TopNotification.show(
-            context,
-            message: error.displayMessage(context),
-            type: NotificationType.error,
-          );
+      if (result.isSuccess) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (final context) => const LoginPage()),
+          (final route) => false,
+        );
       }
     }
 
-    return SettingsPageScaffold(
-      onBack: () => Navigator.pop(context),
-      onLogout: handleSignOut,
-      menuItems: [
-        SettingsMenuItem(
-          icon: Icons.person_outline_rounded,
-          title: '店家設定',
-          subtitle: '管理店家資訊、Logo',
-          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-          onTap: navigateToProfile,
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: colorScheme.surface,
+          body: CustomScrollView(
+            slivers: [
+              _buildSliverAppBar(context),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                  child: Column(
+                    children: [
+                      const _StoreProfileHeader(),
+                      const SizedBox(height: 32),
+
+                      _SettingsSection(
+                        title: '其他',
+                        children: [
+                          _SettingsTile(
+                            icon: Icons.swap_horiz_rounded,
+                            title: '切換到個人帳號',
+                            subtitle: '切換回個人版本',
+                            onTap: switchToPersonal,
+                            color: colorScheme.secondary,
+                            hideChevron: true,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      _SettingsSection(
+                        title: '危險區域',
+                        children: [
+                          _SettingsTile(
+                            icon: Icons.logout_rounded,
+                            title: '登出',
+                            onTap: handleSignOut,
+                            color: colorScheme.error,
+                            isDestructive: true,
+                            hideChevron: true,
+                          ),
+                          _SettingsTile(
+                            icon: Icons.delete_forever_rounded,
+                            title: '刪除帳號',
+                            onTap: handleDeleteAccount,
+                            color: colorScheme.error,
+                            isDestructive: true,
+                            hideChevron: true,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 48),
+                      const _VersionInfo(),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-        SettingsMenuItem(
-          icon: Icons.swap_horiz_rounded,
-          title: '切換到個人帳號',
-          subtitle: '切換回個人版本',
-          color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
-          onTap: switchToPersonal,
+        if (isLoading)
+          Positioned.fill(
+            child: Container(
+              color: Colors.black.withValues(alpha: 0.3),
+              child: const Center(child: CircularProgressIndicator()),
+            ),
+          ),
+      ],
+    );
+  }
+
+  SliverAppBar _buildSliverAppBar(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return SliverAppBar(
+      expandedHeight: 0,
+      floating: true,
+      pinned: true,
+      backgroundColor: colorScheme.surface,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      leading: Container(
+        margin: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(12),
         ),
-        SettingsMenuItem(
-          icon: Icons.delete_forever_rounded,
-          title: '刪除帳號',
-          subtitle: '永久刪除您的帳號及所有資料',
-          color: Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
-          onTap: handleDeleteAccount,
+        child: IconButton(
+          icon: Icon(Icons.arrow_back_ios_rounded, color: colorScheme.primary, size: 20),
+          onPressed: () => Navigator.pop(context),
+          padding: EdgeInsets.zero,
+        ),
+      ),
+      title: Text(
+        '設定',
+        style: Theme.of(
+          context,
+        ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+      ),
+      centerTitle: true,
+    );
+  }
+}
+
+class _StoreProfileHeader extends HookConsumerWidget {
+  const _StoreProfileHeader();
+
+  @override
+  Widget build(final BuildContext context, final WidgetRef ref) {
+    final profileAsync = ref.watch(storeProfileProvider);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return InkWell(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (final context) => const StoreProfileSettingsPage()),
+      ),
+      borderRadius: BorderRadius.circular(24),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 70,
+              height: 70,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: colorScheme.surface,
+                boxShadow: [
+                  BoxShadow(
+                    color: colorScheme.primary.withValues(alpha: 0.15),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+                border: Border.all(color: colorScheme.surface, width: 3),
+              ),
+              child: ClipOval(
+                child: profileAsync.when(
+                  data: (final profile) {
+                    if (profile == null) {
+                      return _buildPlaceholder(colorScheme, '?');
+                    }
+                    // For now, since we don't have a logo file provider,
+                    // we'll use placeholder or network image if we had one.
+                    // Update: StoreProfile has logoUrl.
+                    if (profile.logoUrl != null && profile.logoUrl!.isNotEmpty) {
+                      return Image.network(
+                        profile.logoUrl!,
+                        fit: BoxFit.cover,
+                        width: 70,
+                        height: 70,
+                        errorBuilder: (final context, final error, final stackTrace) =>
+                            _buildPlaceholder(colorScheme, profile.name),
+                      );
+                    }
+
+                    return _buildPlaceholder(colorScheme, profile.name);
+                  },
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (final _, final __) =>
+                      Icon(Icons.store, size: 36, color: colorScheme.primary),
+                ),
+              ),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  profileAsync.maybeWhen(
+                    data: (final profile) {
+                      if (profile == null) return const SizedBox.shrink();
+                      final address = profile.address;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            profile.name,
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                          if (address != null && address.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              address,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ],
+                      );
+                    },
+                    orElse: () => const SizedBox.shrink(),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: colorScheme.outlineVariant,
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder(final ColorScheme colorScheme, final String name) {
+    return Container(
+      color: colorScheme.primary.withValues(alpha: 0.1),
+      alignment: Alignment.center,
+      child: Text(
+        name.isNotEmpty ? name[0].toUpperCase() : '?',
+        style: TextStyle(
+          color: colorScheme.primary,
+          fontSize: 28,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+}
+
+class _SettingsSection extends StatelessWidget {
+  const _SettingsSection({required this.title, required this.children});
+
+  final String title;
+  final List<Widget> children;
+
+  @override
+  Widget build(final BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 8, bottom: 12),
+          child: Text(
+            title,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            children: children.asMap().entries.map((final entry) {
+              final index = entry.key;
+              final child = entry.value;
+              return Column(
+                children: [
+                  if (index > 0)
+                    Divider(
+                      height: 1,
+                      indent: 64,
+                      endIndent: 20,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.outlineVariant.withValues(alpha: 0.5),
+                    ),
+                  child,
+                ],
+              );
+            }).toList(),
+          ),
         ),
       ],
+    );
+  }
+}
+
+class _SettingsTile extends StatelessWidget {
+  const _SettingsTile({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+    this.subtitle,
+    this.color,
+    this.isDestructive = false,
+    this.hideChevron = false,
+  });
+
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final VoidCallback onTap;
+  final Color? color;
+  final bool isDestructive;
+  final bool hideChevron;
+
+  @override
+  Widget build(final BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final contentColor = isDestructive ? colorScheme.error : colorScheme.onSurface;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: (color ?? colorScheme.primary).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  icon,
+                  color: isDestructive
+                      ? colorScheme.error
+                      : (color ?? colorScheme.primary),
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: contentColor,
+                      ),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle!,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (!hideChevron)
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: colorScheme.outlineVariant,
+                  size: 16,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _VersionInfo extends HookConsumerWidget {
+  const _VersionInfo();
+
+  @override
+  Widget build(final BuildContext context, final WidgetRef ref) {
+    final versionFuture = useMemoized(
+      () => ref.read(storeSettingsControllerProvider.notifier).getAppVersion(),
+    );
+    final versionSnapshot = useFuture(versionFuture);
+
+    return Center(
+      child: Text(
+        'Version ${versionSnapshot.data ?? '...'}',
+        style: Theme.of(
+          context,
+        ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.outline),
+      ),
     );
   }
 }
