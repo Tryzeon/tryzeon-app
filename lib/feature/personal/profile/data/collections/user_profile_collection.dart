@@ -11,6 +11,7 @@ class UserProfileCollection {
   late String userId;
 
   String? name;
+  String? email;
   String? avatarPath;
 
   BodyMeasurementsCollection? measurements;

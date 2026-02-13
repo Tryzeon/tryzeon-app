@@ -7,6 +7,7 @@ extension UserProfileModelMapper on UserProfileModel {
     return UserProfileCollection()
       ..userId = userId
       ..name = name
+      ..email = email
       ..avatarPath = avatarPath
       ..measurements = (BodyMeasurementsCollection()
         ..height = height
@@ -25,6 +26,7 @@ extension UserProfileCollectionMapper on UserProfileCollection {
     return UserProfileModel(
       userId: userId,
       name: name ?? '',
+      email: email,
       height: measurements?.height,
       chest: measurements?.chest,
       waist: measurements?.waist,

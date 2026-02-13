@@ -10,5 +10,6 @@ sealed class UserProfile with _$UserProfile {
     required final String name,
     required final BodyMeasurements measurements,
     final String? avatarPath,
+    final String? email,
   }) = _UserProfile;
 }

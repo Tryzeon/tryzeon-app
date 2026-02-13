@@ -9,6 +9,7 @@ class UserProfileModel {
   const UserProfileModel({
     required this.userId,
     required this.name,
+    this.email,
     this.height,
     this.chest,
     this.waist,
@@ -24,6 +25,7 @@ class UserProfileModel {
     return UserProfileModel(
       userId: entity.userId,
       name: entity.name,
+      email: entity.email,
       height: entity.measurements.height,
       chest: entity.measurements.chest,
       waist: entity.measurements.waist,
@@ -39,6 +41,7 @@ class UserProfileModel {
 
   final String userId;
   final String name;
+  final String? email;
   final double? height;
   final double? chest;
   final double? waist;
@@ -55,6 +58,7 @@ class UserProfileModel {
     return UserProfile(
       userId: userId,
       name: name,
+      email: email,
       measurements: BodyMeasurements(
         height: height,
         chest: chest,
