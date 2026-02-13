@@ -11,7 +11,6 @@ import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
-import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_category.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
@@ -28,11 +27,7 @@ class PersonalPage extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     // 1. Data Providers
-    final profileAsync = ref.watch(userProfileProvider);
-    final profile = profileAsync.maybeWhen(
-      data: (final profile) => profile,
-      orElse: () => null,
-    );
+
     final wardrobeItemsAsync = ref.watch(wardrobeItemsProvider);
 
     // 2. State
@@ -324,21 +319,20 @@ class PersonalPage extends HookConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          '我的衣櫃',
-                          style: textTheme.displaySmall?.copyWith(
-                            color: colorScheme.onSurface,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        if (profile != null)
-                          Text(
-                            '你好，${profile.name}',
-                            style: textTheme.bodyMedium?.copyWith(
-                              color: colorScheme.onSurface.withValues(alpha: 0.6),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.checkroom_rounded,
+                              color: colorScheme.onSurface,
+                              size: 20,
                             ),
-                          ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '我的衣櫃',
+                              style: textTheme.titleLarge,
+                            ),
+                          ],
+                        ),
                       ],
                     ),
 
