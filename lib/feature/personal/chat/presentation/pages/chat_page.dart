@@ -1,10 +1,10 @@
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
-import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/constants/qa_config.dart';
@@ -359,12 +359,15 @@ class ChatPage extends HookConsumerWidget {
                     IconButton(
                       icon: Icon(Icons.refresh_rounded, color: colorScheme.primary),
                       onPressed: () async {
-                        final confirmed = await ConfirmationDialog.show(
+                        final result = await showOkCancelAlertDialog(
                           context: context,
-                          content: '你確定要重設整個對話嗎？',
+                          message: '你確定要重設整個對話嗎？',
+                          okLabel: '確定',
+                          cancelLabel: '取消',
+                          isDestructiveAction: true,
                         );
 
-                        if (confirmed == true) {
+                        if (result == OkCancelResult.ok) {
                           resetChat();
                         }
                       },

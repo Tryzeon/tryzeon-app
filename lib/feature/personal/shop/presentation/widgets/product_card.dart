@@ -1,10 +1,10 @@
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
-import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_status.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
@@ -59,15 +59,15 @@ class ProductCard extends HookConsumerWidget {
 
       // 如果契合度為紅色，彈出確認視窗
       if (fitStatus == FitStatus.poor) {
-        final confirmed = await ConfirmationDialog.show(
+        final result = await showOkCancelAlertDialog(
           context: context,
           title: '尺寸不合',
-          content: '這件衣服不合身，是否還要繼續試穿？',
-          confirmText: '繼續試穿',
-          cancelText: '取消',
+          message: '這件衣服沒有符合你的尺寸，是否還要繼續試穿？',
+          okLabel: '繼續試穿',
+          cancelLabel: '取消',
         );
 
-        if (confirmed != true) {
+        if (result != OkCancelResult.ok) {
           return;
         }
       }

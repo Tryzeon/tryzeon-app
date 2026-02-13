@@ -50,6 +50,7 @@ dependencies:
   json_annotation: ^4.9.0
   auto_mappr_annotation: ^2.3.0
   package_info_plus: ^9.0.0
+  adaptive_dialog: ^2.6.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

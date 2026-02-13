@@ -1,13 +1,13 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
-import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
@@ -46,14 +46,16 @@ class PersonalPage extends HookConsumerWidget {
 
     // 5. Actions
     Future<void> showDeleteDialog(final WardrobeItem item) async {
-      final confirmed = await ConfirmationDialog.show(
+      final confirmResult = await showOkCancelAlertDialog(
         context: context,
         title: '刪除衣物',
-        content: '你確定要刪除這件衣物嗎？',
-        confirmText: '刪除',
+        message: '你確定要刪除這件衣物嗎？',
+        okLabel: '刪除',
+        cancelLabel: '取消',
+        isDestructiveAction: true,
       );
 
-      if (confirmed != true || !context.mounted) return;
+      if (confirmResult != OkCancelResult.ok || !context.mounted) return;
 
       isLoading.value = true;
 
@@ -327,10 +329,7 @@ class PersonalPage extends HookConsumerWidget {
                               size: 20,
                             ),
                             const SizedBox(width: 8),
-                            Text(
-                              '我的衣櫃',
-                              style: textTheme.titleLarge,
-                            ),
+                            Text('我的衣櫃', style: textTheme.titleLarge),
                           ],
                         ),
                       ],

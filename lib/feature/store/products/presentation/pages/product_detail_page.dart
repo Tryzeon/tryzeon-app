@@ -1,10 +1,10 @@
 import 'dart:io';
 
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
-import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
@@ -56,14 +56,16 @@ class ProductDetailPage extends HookConsumerWidget {
     }, const []);
 
     Future<void> deleteProduct() async {
-      final confirm = await ConfirmationDialog.show(
+      final dialogResult = await showOkCancelAlertDialog(
         context: context,
         title: '刪除商品',
-        content: '確定要刪除「${product.name}」嗎?',
-        confirmText: '刪除',
+        message: '確定要刪除「${product.name}」嗎?',
+        okLabel: '刪除',
+        cancelLabel: '取消',
+        isDestructiveAction: true,
       );
 
-      if (confirm != true) return;
+      if (dialogResult != OkCancelResult.ok) return;
 
       isLoading.value = true;
 

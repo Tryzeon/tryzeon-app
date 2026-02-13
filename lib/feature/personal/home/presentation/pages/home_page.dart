@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,7 +10,6 @@ import 'package:gal/gal.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
-import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
@@ -226,13 +226,15 @@ class HomePage extends HookConsumerWidget {
     }
 
     Future<void> deleteCurrentTryon() async {
-      final confirmed = await ConfirmationDialog.show(
+      final result = await showOkCancelAlertDialog(
         context: context,
-        content: '確定要刪除這張試穿照片嗎？',
-        confirmText: '刪除',
+        message: '確定要刪除這張試穿照片嗎？',
+        okLabel: '刪除',
+        cancelLabel: '取消',
+        isDestructiveAction: true,
       );
 
-      if (confirmed == true) {
+      if (result == OkCancelResult.ok) {
         final deletedIndex = currentTryonIndex.value;
 
         final newImages = List<Uint8List>.from(tryonImages.value);

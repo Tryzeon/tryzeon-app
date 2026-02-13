@@ -1,6 +1,6 @@
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_overlay.dart';
 import 'package:tryzeon/core/presentation/widgets/settings_list_tile.dart';
 import 'package:tryzeon/core/presentation/widgets/settings_section.dart';
@@ -34,12 +34,14 @@ class StoreSettingsPage extends HookConsumerWidget {
     });
 
     Future<void> switchToPersonal() async {
-      final confirmed = await ConfirmationDialog.show(
+      final result = await showOkCancelAlertDialog(
         context: context,
         title: '切換帳號',
-        content: '你確定要切換到個人版帳號嗎？',
+        message: '你確定要切換到個人版帳號嗎？',
+        okLabel: '確定',
+        cancelLabel: '取消',
       );
-      if (confirmed != true) return;
+      if (result != OkCancelResult.ok) return;
 
       await controller.switchToPersonal();
 
@@ -52,13 +54,15 @@ class StoreSettingsPage extends HookConsumerWidget {
     }
 
     Future<void> handleSignOut() async {
-      final confirmed = await ConfirmationDialog.show(
+      final result = await showOkCancelAlertDialog(
         context: context,
         title: '登出',
-        content: '你確定要登出嗎？',
-        confirmText: '登出',
+        message: '你確定要登出嗎？',
+        okLabel: '登出',
+        cancelLabel: '取消',
+        isDestructiveAction: true,
       );
-      if (confirmed != true) return;
+      if (result != OkCancelResult.ok) return;
 
       await controller.signOut();
 
@@ -71,14 +75,15 @@ class StoreSettingsPage extends HookConsumerWidget {
     }
 
     Future<void> handleDeleteAccount() async {
-      final confirmed = await ConfirmationDialog.show(
+      final dialogResult = await showOkCancelAlertDialog(
         context: context,
         title: '刪除帳號',
-        content: '此操作將永久刪除您的帳號及所有相關資料，包括個人資料、衣櫃、店家資料、商品等，且無法復原。您確定要繼續嗎？',
-        confirmText: '刪除帳號',
-        isDestructive: true,
+        message: '此操作將永久刪除您的帳號及所有相關資料，包括個人資料、衣櫃、店家資料、商品等，且無法復原。您確定要繼續嗎？',
+        okLabel: '刪除帳號',
+        cancelLabel: '取消',
+        isDestructiveAction: true,
       );
-      if (confirmed != true) return;
+      if (dialogResult != OkCancelResult.ok) return;
 
       final result = await controller.deleteAccount();
 

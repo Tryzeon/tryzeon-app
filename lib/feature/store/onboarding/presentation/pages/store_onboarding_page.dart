@@ -1,7 +1,7 @@
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
-import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
@@ -32,13 +32,15 @@ class StoreOnboardingPage extends HookConsumerWidget {
     }
 
     Future<void> switchToPersonalAccount() async {
-      final confirmed = await ConfirmationDialog.show(
+      final result = await showOkCancelAlertDialog(
         context: context,
         title: '切換帳號',
-        content: '你確定要切換到個人版帳號嗎？',
+        message: '你確定要切換到個人版帳號嗎？',
+        okLabel: '確定',
+        cancelLabel: '取消',
       );
 
-      if (confirmed == true) {
+      if (result == OkCancelResult.ok) {
         final setLoginTypeUseCase = ref.read(setLastLoginTypeUseCaseProvider);
         await setLoginTypeUseCase(UserType.personal);
 
@@ -52,14 +54,16 @@ class StoreOnboardingPage extends HookConsumerWidget {
     }
 
     Future<void> handleLogout() async {
-      final confirmed = await ConfirmationDialog.show(
+      final result = await showOkCancelAlertDialog(
         context: context,
         title: '登出',
-        content: '你確定要登出嗎？',
-        confirmText: '登出',
+        message: '你確定要登出嗎？',
+        okLabel: '登出',
+        cancelLabel: '取消',
+        isDestructiveAction: true,
       );
 
-      if (confirmed == true) {
+      if (result == OkCancelResult.ok) {
         final signOutUseCase = ref.read(signOutUseCaseProvider);
         await signOutUseCase();
         if (!context.mounted) return;
