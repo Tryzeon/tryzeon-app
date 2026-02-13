@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/dialogs/confirmation_dialog.dart';
+import 'package:tryzeon/core/presentation/widgets/loading_overlay.dart';
+import 'package:tryzeon/core/presentation/widgets/settings_list_tile.dart';
+import 'package:tryzeon/core/presentation/widgets/settings_section.dart';
+import 'package:tryzeon/core/presentation/widgets/settings_sliver_app_bar.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/core/presentation/widgets/version_info.dart';
 import 'package:tryzeon/feature/auth/presentation/pages/login_page.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
@@ -88,105 +92,70 @@ class StoreSettingsPage extends HookConsumerWidget {
       }
     }
 
-    return Stack(
-      children: [
-        Scaffold(
-          backgroundColor: colorScheme.surface,
-          body: CustomScrollView(
-            slivers: [
-              _buildSliverAppBar(context),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-                  child: Column(
-                    children: [
-                      const _StoreProfileHeader(),
-                      const SizedBox(height: 32),
+    return LoadingOverlay(
+      isLoading: isLoading,
+      child: Scaffold(
+        backgroundColor: colorScheme.surface,
+        body: CustomScrollView(
+          slivers: [
+            const SettingsSliverAppBar(title: '設定'),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                child: Column(
+                  children: [
+                    const _StoreProfileHeader(),
+                    const SizedBox(height: 32),
 
-                      _SettingsSection(
-                        title: '其他',
-                        children: [
-                          _SettingsTile(
-                            icon: Icons.swap_horiz_rounded,
-                            title: '切換到個人帳號',
-                            subtitle: '切換回個人版本',
-                            onTap: switchToPersonal,
-                            color: colorScheme.secondary,
-                            hideChevron: true,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-                      _SettingsSection(
-                        title: '危險區域',
-                        children: [
-                          _SettingsTile(
-                            icon: Icons.logout_rounded,
-                            title: '登出',
-                            onTap: handleSignOut,
-                            color: colorScheme.error,
-                            isDestructive: true,
-                            hideChevron: true,
-                          ),
-                          _SettingsTile(
-                            icon: Icons.delete_forever_rounded,
-                            title: '刪除帳號',
-                            onTap: handleDeleteAccount,
-                            color: colorScheme.error,
-                            isDestructive: true,
-                            hideChevron: true,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 48),
-                      const _VersionInfo(),
-                      const SizedBox(height: 24),
-                    ],
-                  ),
+                    SettingsSection(
+                      title: '其他',
+                      children: [
+                        SettingsListTile(
+                          icon: Icons.swap_horiz_rounded,
+                          title: '切換到個人帳號',
+                          subtitle: '切換回個人版本',
+                          onTap: switchToPersonal,
+                          color: colorScheme.secondary,
+                          hideChevron: true,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    SettingsSection(
+                      title: '危險區域',
+                      children: [
+                        SettingsListTile(
+                          icon: Icons.logout_rounded,
+                          title: '登出',
+                          onTap: handleSignOut,
+                          color: colorScheme.error,
+                          isDestructive: true,
+                          hideChevron: true,
+                        ),
+                        SettingsListTile(
+                          icon: Icons.delete_forever_rounded,
+                          title: '刪除帳號',
+                          onTap: handleDeleteAccount,
+                          color: colorScheme.error,
+                          isDestructive: true,
+                          hideChevron: true,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 48),
+                    VersionInfo(
+                      versionProvider: (final ref) => ref
+                          .read(storeSettingsControllerProvider.notifier)
+                          .getAppVersion(),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-        if (isLoading)
-          Positioned.fill(
-            child: Container(
-              color: Colors.black.withValues(alpha: 0.3),
-              child: const Center(child: CircularProgressIndicator()),
             ),
-          ),
-      ],
-    );
-  }
-
-  SliverAppBar _buildSliverAppBar(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return SliverAppBar(
-      expandedHeight: 0,
-      floating: true,
-      pinned: true,
-      backgroundColor: colorScheme.surface,
-      surfaceTintColor: Colors.transparent,
-      elevation: 0,
-      leading: Container(
-        margin: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: IconButton(
-          icon: Icon(Icons.arrow_back_ios_rounded, color: colorScheme.primary, size: 20),
-          onPressed: () => Navigator.pop(context),
-          padding: EdgeInsets.zero,
+          ],
         ),
       ),
-      title: Text(
-        '設定',
-        style: Theme.of(
-          context,
-        ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-      ),
-      centerTitle: true,
     );
   }
 }
@@ -324,174 +293,6 @@ class _StoreProfileHeader extends HookConsumerWidget {
           fontSize: 28,
           fontWeight: FontWeight.bold,
         ),
-      ),
-    );
-  }
-}
-
-class _SettingsSection extends StatelessWidget {
-  const _SettingsSection({required this.title, required this.children});
-
-  final String title;
-  final List<Widget> children;
-
-  @override
-  Widget build(final BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 8, bottom: 12),
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ),
-        Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerLowest,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            children: children.asMap().entries.map((final entry) {
-              final index = entry.key;
-              final child = entry.value;
-              return Column(
-                children: [
-                  if (index > 0)
-                    Divider(
-                      height: 1,
-                      indent: 64,
-                      endIndent: 20,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.outlineVariant.withValues(alpha: 0.5),
-                    ),
-                  child,
-                ],
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _SettingsTile extends StatelessWidget {
-  const _SettingsTile({
-    required this.icon,
-    required this.title,
-    required this.onTap,
-    this.subtitle,
-    this.color,
-    this.isDestructive = false,
-    this.hideChevron = false,
-  });
-
-  final IconData icon;
-  final String title;
-  final String? subtitle;
-  final VoidCallback onTap;
-  final Color? color;
-  final bool isDestructive;
-  final bool hideChevron;
-
-  @override
-  Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final contentColor = isDestructive ? colorScheme.error : colorScheme.onSurface;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: (color ?? colorScheme.primary).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  icon,
-                  color: isDestructive
-                      ? colorScheme.error
-                      : (color ?? colorScheme.primary),
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: contentColor,
-                      ),
-                    ),
-                    if (subtitle != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle!,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              if (!hideChevron)
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: colorScheme.outlineVariant,
-                  size: 16,
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _VersionInfo extends HookConsumerWidget {
-  const _VersionInfo();
-
-  @override
-  Widget build(final BuildContext context, final WidgetRef ref) {
-    final versionFuture = useMemoized(
-      () => ref.read(storeSettingsControllerProvider.notifier).getAppVersion(),
-    );
-    final versionSnapshot = useFuture(versionFuture);
-
-    return Center(
-      child: Text(
-        'Version ${versionSnapshot.data ?? '...'}',
-        style: Theme.of(
-          context,
-        ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.outline),
       ),
     );
   }
