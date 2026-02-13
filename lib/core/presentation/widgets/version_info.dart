@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:talker_flutter/talker_flutter.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 
 class VersionInfo extends ConsumerWidget {
   const VersionInfo({required this.versionProvider, super.key});
@@ -12,11 +14,20 @@ class VersionInfo extends ConsumerWidget {
       future: versionProvider(ref),
       builder: (final context, final snapshot) {
         return Center(
-          child: Text(
-            'Version ${snapshot.data ?? '...'}',
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.outline),
+          child: GestureDetector(
+            onLongPress: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (final context) => TalkerScreen(talker: AppLogger.talker),
+                ),
+              );
+            },
+            child: Text(
+              'Version ${snapshot.data ?? '...'}',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.outline,
+              ),
+            ),
           ),
         );
       },
