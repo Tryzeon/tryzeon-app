@@ -1,4 +1,5 @@
-import 'package:tryzeon/core/shared/measurements/collections/body_measurements_collection.dart';
+import 'package:tryzeon/core/shared/measurements/data/models/body_measurements_model.dart';
+
 import '../collections/user_profile_collection.dart';
 import '../models/user_profile_model.dart';
 
@@ -9,15 +10,7 @@ extension UserProfileModelMapper on UserProfileModel {
       ..name = name
       ..email = email
       ..avatarPath = avatarPath
-      ..measurements = (BodyMeasurementsCollection()
-        ..height = height
-        ..chest = chest
-        ..waist = waist
-        ..hips = hips
-        ..shoulder = shoulder
-        ..sleeve = sleeve)
-      ..createdAt = createdAt
-      ..updatedAt = updatedAt;
+      ..measurements = measurements?.toCollection();
   }
 }
 
@@ -27,15 +20,10 @@ extension UserProfileCollectionMapper on UserProfileCollection {
       userId: userId,
       name: name ?? '',
       email: email,
-      height: measurements?.height,
-      chest: measurements?.chest,
-      waist: measurements?.waist,
-      hips: measurements?.hips,
-      shoulder: measurements?.shoulder,
-      sleeve: measurements?.sleeve,
+      measurements: measurements != null
+          ? BodyMeasurementsModel.fromCollection(measurements!)
+          : null,
       avatarPath: avatarPath,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
     );
   }
 }

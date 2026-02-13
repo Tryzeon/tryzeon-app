@@ -6,10 +6,10 @@ part 'product.freezed.dart';
 @freezed
 sealed class ProductSize with _$ProductSize {
   const factory ProductSize({
-    final String? id,
-    final String? productId,
+    required final String id,
+    required final String productId,
     required final String name,
-    required final SizeMeasurements measurements,
+    final SizeMeasurements? measurements,
     final DateTime? createdAt,
     final DateTime? updatedAt,
   }) = _ProductSize;
@@ -24,7 +24,7 @@ sealed class Product with _$Product {
     required final double price,
     required final String imagePath,
     required final String imageUrl,
-    final String? id,
+    required final String id,
     final String? purchaseLink,
     final List<ProductSize>? sizes,
     final DateTime? createdAt,

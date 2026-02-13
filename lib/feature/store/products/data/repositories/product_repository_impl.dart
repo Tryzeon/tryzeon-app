@@ -102,6 +102,7 @@ class ProductRepositoryImpl implements ProductRepository {
         imagePath: imagePath,
         imageUrl: imageUrl,
         purchaseLink: product.purchaseLink,
+        id: product.id,
       );
 
       final productId = await _remoteDataSource.insertProduct(productModel);
@@ -174,14 +175,14 @@ class ProductRepositoryImpl implements ProductRepository {
 
         // Delete removed sizes
         for (final originalSize in originalSizes) {
-          if (originalSize.id != null && !targetSizeIds.contains(originalSize.id)) {
-            await _remoteDataSource.deleteProductSize(originalSize.id!);
+          if (originalSize.id.isNotEmpty && !targetSizeIds.contains(originalSize.id)) {
+            await _remoteDataSource.deleteProductSize(originalSize.id);
           }
         }
 
         // Add new sizes
         for (final targetSize in targetSizes) {
-          if (targetSize.id == null) {
+          if (targetSize.id.isEmpty) {
             await _remoteDataSource.insertProductSize(
               ProductSizeModel.fromEntity(targetSize.copyWith(productId: original.id)),
             );
@@ -201,7 +202,7 @@ class ProductRepositoryImpl implements ProductRepository {
         }
       }
 
-      final model = await _remoteDataSource.getProduct(original.id!);
+      final model = await _remoteDataSource.getProduct(original.id);
 
       final currentCache =
           await _localDataSource.getProducts(sort: SortCondition.defaultSort) ?? [];
@@ -219,8 +220,8 @@ class ProductRepositoryImpl implements ProductRepository {
   @override
   Future<Result<void, Failure>> deleteProduct(final Product product) async {
     try {
-      await _remoteDataSource.deleteProduct(product.id!);
-      await _remoteDataSource.deleteProductSizes(product.id!);
+      await _remoteDataSource.deleteProduct(product.id);
+      await _remoteDataSource.deleteProductSizes(product.id);
 
       if (product.imagePath.isNotEmpty) {
         _remoteDataSource.deleteProductImage(product.imagePath).ignore();

@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:tryzeon/core/shared/measurements/data/models/body_measurements_model.dart';
 import 'package:tryzeon/core/shared/measurements/entities/body_measurements.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 
@@ -10,15 +11,8 @@ class UserProfileModel {
     required this.userId,
     required this.name,
     this.email,
-    this.height,
-    this.chest,
-    this.waist,
-    this.hips,
-    this.shoulder,
-    this.sleeve,
+    this.measurements,
     this.avatarPath,
-    this.createdAt,
-    this.updatedAt,
   });
 
   factory UserProfileModel.fromEntity(final UserProfile entity) {
@@ -26,12 +20,7 @@ class UserProfileModel {
       userId: entity.userId,
       name: entity.name,
       email: entity.email,
-      height: entity.measurements.height,
-      chest: entity.measurements.chest,
-      waist: entity.measurements.waist,
-      hips: entity.measurements.hips,
-      shoulder: entity.measurements.shoulder,
-      sleeve: entity.measurements.sleeve,
+      measurements: BodyMeasurementsModel.fromEntity(entity.measurements),
       avatarPath: entity.avatarPath,
     );
   }
@@ -42,16 +31,8 @@ class UserProfileModel {
   final String userId;
   final String name;
   final String? email;
-  final double? height;
-  final double? chest;
-  final double? waist;
-  final double? hips;
-  final double? shoulder;
-  final double? sleeve;
+  final BodyMeasurementsModel? measurements;
   final String? avatarPath;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
-
   Map<String, dynamic> toJson() => _$UserProfileModelToJson(this);
 
   UserProfile toEntity() {
@@ -59,14 +40,7 @@ class UserProfileModel {
       userId: userId,
       name: name,
       email: email,
-      measurements: BodyMeasurements(
-        height: height,
-        chest: chest,
-        waist: waist,
-        hips: hips,
-        shoulder: shoulder,
-        sleeve: sleeve,
-      ),
+      measurements: measurements?.toEntity() ?? const BodyMeasurements(),
       avatarPath: avatarPath,
     );
   }

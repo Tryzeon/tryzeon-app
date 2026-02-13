@@ -202,7 +202,8 @@ class ProductDetailPage extends HookConsumerWidget {
                                 ),
                               ),
                               ...MeasurementType.values.map((final type) {
-                                final value = size.measurements.getValue(type);
+                                final measurements = size.measurements;
+                                final value = measurements?.getValue(type);
                                 return DataCell(
                                   Text(value != null ? value.toStringAsFixed(1) : '-'),
                                 );

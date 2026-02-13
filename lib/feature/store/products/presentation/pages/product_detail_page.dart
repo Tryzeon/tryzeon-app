@@ -113,7 +113,7 @@ class ProductDetailPage extends HookConsumerWidget {
         id: product.id,
         purchaseLink: purchaseLinkController.text,
         sizes: sizeEntries.value
-            .map((final e) => e.toProductSize(product.id!, isCun: isCun.value))
+            .map((final e) => e.toProductSize(product.id, isCun: isCun.value))
             .toList(),
       );
 

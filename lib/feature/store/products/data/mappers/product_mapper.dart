@@ -1,11 +1,12 @@
-import 'package:tryzeon/core/shared/measurements/collections/size_measurements_collection.dart';
+import 'package:tryzeon/core/shared/measurements/data/models/size_measurements_model.dart';
+
 import '../collections/product_collection.dart';
 import '../models/product_model.dart';
 
 extension ProductModelMapper on ProductModel {
   ProductCollection toCollection() {
     return ProductCollection()
-      ..productId = id ?? ''
+      ..productId = id
       ..storeId = storeId
       ..name = name
       ..categories = categories.toList()
@@ -24,10 +25,10 @@ extension ProductCollectionMapper on ProductCollection {
     return ProductModel(
       storeId: storeId,
       name: name,
-      categories: categories?.toSet() ?? {},
-      price: price ?? 0.0,
-      imagePath: imagePath ?? '',
-      imageUrl: imageUrl ?? '',
+      categories: categories.toSet(),
+      price: price,
+      imagePath: imagePath,
+      imageUrl: imageUrl,
       id: productId,
       purchaseLink: purchaseLink,
       sizes: sizes?.map((final e) => e.toModel()).toList(),
@@ -43,19 +44,7 @@ extension ProductSizeModelMapper on ProductSizeModel {
       ..id = id
       ..productId = productId
       ..name = name
-      ..measurements = (SizeMeasurementsCollection()
-        ..height = height
-        ..chest = chest
-        ..waist = waist
-        ..hips = hips
-        ..shoulder = shoulder
-        ..sleeve = sleeve
-        ..heightOffset = heightOffset
-        ..chestOffset = chestOffset
-        ..waistOffset = waistOffset
-        ..hipsOffset = hipsOffset
-        ..shoulderOffset = shoulderOffset
-        ..sleeveOffset = sleeveOffset)
+      ..measurements = measurements?.toCollection()
       ..createdAt = createdAt
       ..updatedAt = updatedAt;
   }
@@ -66,19 +55,10 @@ extension ProductSizeCollectionMapper on ProductSizeCollection {
     return ProductSizeModel(
       id: id,
       productId: productId,
-      name: name ?? '',
-      height: measurements?.height,
-      chest: measurements?.chest,
-      waist: measurements?.waist,
-      hips: measurements?.hips,
-      shoulder: measurements?.shoulder,
-      sleeve: measurements?.sleeve,
-      heightOffset: measurements?.heightOffset,
-      chestOffset: measurements?.chestOffset,
-      waistOffset: measurements?.waistOffset,
-      hipsOffset: measurements?.hipsOffset,
-      shoulderOffset: measurements?.shoulderOffset,
-      sleeveOffset: measurements?.sleeveOffset,
+      name: name,
+      measurements: measurements != null
+          ? SizeMeasurementsModel.fromCollection(measurements!)
+          : null,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );

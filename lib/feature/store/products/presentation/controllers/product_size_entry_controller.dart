@@ -58,8 +58,8 @@ class ProductSizeEntryController {
     }
 
     return ProductSize(
-      id: id,
-      productId: productId,
+      id: id ?? '',
+      productId: productId ?? '',
       name: nameController.text,
       measurements: SizeMeasurements.fromJson(measurementsJson),
     );

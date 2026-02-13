@@ -20,7 +20,7 @@ class FitCalculator {
 
       for (final type in MeasurementType.values) {
         final userValue = userProfile.measurements[type];
-        final range = size.measurements.getRange(type);
+        final range = size.measurements?.getRange(type);
 
         if (userValue != null && range != null) {
           comparisonCount++;

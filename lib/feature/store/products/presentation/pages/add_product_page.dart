@@ -106,6 +106,7 @@ class AddProductPage extends HookConsumerWidget {
         purchaseLink: purchaseLinkController.text,
         imagePath: '',
         imageUrl: '',
+        id: '',
         sizes: buildProductSizes(),
       );
 

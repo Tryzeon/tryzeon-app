@@ -12,10 +12,10 @@ class ProductCollection {
 
   late String storeId;
   late String name;
-  List<String>? categories;
-  double? price;
-  String? imagePath;
-  String? imageUrl;
+  late List<String> categories;
+  late double price;
+  late String imagePath;
+  late String imageUrl;
   String? purchaseLink;
   DateTime? createdAt;
   DateTime? updatedAt;
@@ -25,9 +25,9 @@ class ProductCollection {
 
 @embedded
 class ProductSizeCollection {
-  String? id;
-  String? productId;
-  String? name;
+  late String id;
+  late String productId;
+  late String name;
 
   SizeMeasurementsCollection? measurements;
   DateTime? createdAt;

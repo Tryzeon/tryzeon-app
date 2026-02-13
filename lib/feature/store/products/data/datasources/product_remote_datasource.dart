@@ -88,7 +88,7 @@ class ProductRemoteDataSource {
       ..remove('updated_at')
       ..remove('product_variants');
 
-    await _supabaseClient.from(_productsTable).update(json).eq('id', product.id!);
+    await _supabaseClient.from(_productsTable).update(json).eq('id', product.id);
   }
 
   Future<void> deleteProduct(final String productId) async {
@@ -118,7 +118,7 @@ class ProductRemoteDataSource {
       ..remove('created_at')
       ..remove('updated_at');
 
-    await _supabaseClient.from(_productSizesTable).update(json).eq('id', size.id!);
+    await _supabaseClient.from(_productSizesTable).update(json).eq('id', size.id);
   }
 
   Future<String> uploadProductImage({
