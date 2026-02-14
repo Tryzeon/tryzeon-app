@@ -211,8 +211,8 @@ class PersonalLoginPage extends HookConsumerWidget {
                 // Login Buttons
                 buildLoginButton('Google', () => handleSignIn('Google')),
                 const SizedBox(height: 16),
-                buildLoginButton('Facebook', () => handleSignIn('Facebook')),
-                const SizedBox(height: 16),
+                // buildLoginButton('Facebook', () => handleSignIn('Facebook')),
+                // const SizedBox(height: 16),
                 buildLoginButton('Apple', () => handleSignIn('Apple')),
 
                 const SizedBox(height: 24),
