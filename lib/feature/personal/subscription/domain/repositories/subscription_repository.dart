@@ -3,5 +3,8 @@ import 'package:tryzeon/feature/personal/subscription/domain/entities/subscripti
 import 'package:typed_result/typed_result.dart';
 
 abstract class SubscriptionRepository {
-  Future<Result<Subscription, Failure>> getSubscription(final String userId);
+  Future<Result<Subscription, Failure>> getSubscription(
+    final String userId, {
+    final bool forceRefresh = false,
+  });
 }
