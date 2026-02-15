@@ -6,7 +6,9 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/common/product_categories/domain/entities/category_tree_node.dart';
+import 'package:tryzeon/feature/store/products/domain/value_objects/product_attributes.dart';
 
+import 'package:tryzeon/feature/store/products/presentation/extensions/product_attributes_extension.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_category_selector.dart';
 
 class ProductBasicInfoEditor extends StatelessWidget {
@@ -16,6 +18,8 @@ class ProductBasicInfoEditor extends StatelessWidget {
     required this.priceController,
     required this.purchaseLinkController,
     required this.selectedCategoryIds,
+    required this.selectedElasticity,
+    required this.selectedFit,
 
     required this.productCategoryTreeAsync,
     required this.onRetryCategories,
@@ -25,6 +29,8 @@ class ProductBasicInfoEditor extends StatelessWidget {
   final TextEditingController priceController;
   final TextEditingController purchaseLinkController;
   final ValueNotifier<Set<String>> selectedCategoryIds;
+  final ValueNotifier<ProductElasticity?> selectedElasticity;
+  final ValueNotifier<ProductFit?> selectedFit;
 
   final AsyncValue<List<CategoryTreeNode>> productCategoryTreeAsync;
   final VoidCallback onRetryCategories;
@@ -167,6 +173,66 @@ class ProductBasicInfoEditor extends StatelessWidget {
             ),
             keyboardType: TextInputType.url,
             validator: AppValidators.validateUrl,
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: DropdownButtonFormField<ProductElasticity>(
+                  initialValue: selectedElasticity.value,
+                  decoration: InputDecoration(
+                    labelText: '彈性',
+                    labelStyle: textTheme.bodyMedium,
+                    prefixIcon: Icon(Icons.waves, color: colorScheme.primary),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    filled: true,
+                    fillColor: colorScheme.surfaceContainer,
+                  ),
+                  isExpanded: true,
+                  items: ProductElasticity.values.map((final e) {
+                    return DropdownMenuItem(
+                      value: e,
+                      child: Text(
+                        e.label,
+                        overflow: TextOverflow.ellipsis,
+                        style: textTheme.bodyLarge,
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (final value) {
+                    selectedElasticity.value = value;
+                  },
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: DropdownButtonFormField<ProductFit>(
+                  initialValue: selectedFit.value,
+                  decoration: InputDecoration(
+                    labelText: '版型',
+                    labelStyle: textTheme.bodyMedium,
+                    prefixIcon: Icon(Icons.accessibility_new, color: colorScheme.primary),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    filled: true,
+                    fillColor: colorScheme.surfaceContainer,
+                  ),
+                  isExpanded: true,
+                  items: ProductFit.values.map((final f) {
+                    return DropdownMenuItem(
+                      value: f,
+                      child: Text(
+                        f.label,
+                        overflow: TextOverflow.ellipsis,
+                        style: textTheme.bodyLarge,
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (final value) {
+                    selectedFit.value = value;
+                  },
+                ),
+              ),
+            ],
           ),
         ],
       ),

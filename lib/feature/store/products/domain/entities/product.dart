@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/core/shared/measurements/entities/size_measurements.dart';
+import 'package:tryzeon/feature/store/products/domain/value_objects/product_attributes.dart';
 
 part 'product.freezed.dart';
 
@@ -26,6 +27,8 @@ sealed class Product with _$Product {
     required final String imageUrl,
     required final String id,
     final String? purchaseLink,
+    final ProductElasticity? elasticity,
+    final ProductFit? fit,
     final List<ProductSize>? sizes,
     final DateTime? createdAt,
     final DateTime? updatedAt,

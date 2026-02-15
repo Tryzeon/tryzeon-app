@@ -1,5 +1,6 @@
 import 'package:isar_community/isar.dart';
 import 'package:tryzeon/core/shared/measurements/collections/size_measurements_collection.dart';
+import 'package:tryzeon/feature/store/products/domain/value_objects/product_attributes.dart';
 
 part 'product_collection.g.dart';
 
@@ -17,6 +18,13 @@ class ProductCollection {
   late String imagePath;
   late String imageUrl;
   String? purchaseLink;
+
+  @Enumerated(EnumType.name)
+  ProductElasticity? elasticity;
+
+  @Enumerated(EnumType.name)
+  ProductFit? fit;
+
   DateTime? createdAt;
   DateTime? updatedAt;
 

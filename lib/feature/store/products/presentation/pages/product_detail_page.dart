@@ -9,6 +9,7 @@ import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
+import 'package:tryzeon/feature/store/products/domain/value_objects/product_attributes.dart';
 import 'package:tryzeon/feature/store/products/presentation/controllers/product_size_entry_controller.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_basic_info_editor.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_image_editor.dart';
@@ -32,6 +33,8 @@ class ProductDetailPage extends HookConsumerWidget {
     final selectedCategoryIds = useValueNotifier<Set<String>>(
       Set<String>.from(product.categories),
     );
+    final selectedElasticity = useValueNotifier<ProductElasticity?>(product.elasticity);
+    final selectedFit = useValueNotifier<ProductFit?>(product.fit);
 
     final isCun = useState(false);
     final sizeEntries = useState<List<ProductSizeEntryController>>([]);
@@ -112,6 +115,8 @@ class ProductDetailPage extends HookConsumerWidget {
         imageUrl: product.imageUrl,
         id: product.id,
         purchaseLink: purchaseLinkController.text,
+        elasticity: selectedElasticity.value,
+        fit: selectedFit.value,
         sizes: sizeEntries.value
             .map((final e) => e.toProductSize(product.id, isCun: isCun.value))
             .toList(),
@@ -187,6 +192,8 @@ class ProductDetailPage extends HookConsumerWidget {
                 priceController: priceController,
                 purchaseLinkController: purchaseLinkController,
                 selectedCategoryIds: selectedCategoryIds,
+                selectedElasticity: selectedElasticity,
+                selectedFit: selectedFit,
 
                 productCategoryTreeAsync: productCategoryTreeAsync,
                 onRetryCategories: () => ref.refresh(productCategoriesProvider),

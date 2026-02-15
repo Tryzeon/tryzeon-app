@@ -6,6 +6,7 @@ import 'package:tryzeon/core/shared/measurements/presentation/mappers/measuremen
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
+import 'package:tryzeon/feature/store/products/presentation/extensions/product_attributes_extension.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ProductDetailPage extends HookConsumerWidget {
@@ -126,31 +127,87 @@ class ProductDetailPage extends HookConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Categories
-                  if (product.categories.isNotEmpty) ...[
+                  // Product Attributes (Categories + Elasticity + Fit)
+                  if (product.categories.isNotEmpty ||
+                      product.elasticity != null ||
+                      product.fit != null) ...[
                     Wrap(
                       spacing: 8,
                       runSpacing: 4,
-                      children: product.categories.map((final typeId) {
-                        final categoryName = categoryIdToName[typeId] ?? typeId;
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: colorScheme.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Text(
-                            categoryName,
-                            style: textTheme.labelMedium?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                              fontWeight: FontWeight.w500,
+                      children: [
+                        // Categories
+                        ...product.categories.map((final typeId) {
+                          final categoryName = categoryIdToName[typeId] ?? typeId;
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: colorScheme.surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Text(
+                              categoryName,
+                              style: textTheme.labelMedium,
+                            ),
+                          );
+                        }),
+                        // Elasticity
+                        if (product.elasticity != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: colorScheme.secondaryContainer,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.waves,
+                                  size: 14,
+                                  color: colorScheme.onSecondaryContainer,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '彈性: ${product.elasticity!.label}',
+                                  style: textTheme.labelMedium,
+                                ),
+                              ],
                             ),
                           ),
-                        );
-                      }).toList(),
+                        // Fit
+                        if (product.fit != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: colorScheme.tertiaryContainer,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.accessibility_new,
+                                  size: 14,
+                                  color: colorScheme.onTertiaryContainer,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '版型: ${product.fit!.label}',
+                                  style: textTheme.labelMedium,
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
                     ),
                     const SizedBox(height: 12),
                   ],

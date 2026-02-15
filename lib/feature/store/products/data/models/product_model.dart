@@ -2,6 +2,7 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:tryzeon/core/shared/measurements/data/models/size_measurements_model.dart';
 import 'package:tryzeon/core/shared/measurements/entities/size_measurements.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
+import 'package:tryzeon/feature/store/products/domain/value_objects/product_attributes.dart';
 
 part 'product_model.g.dart';
 
@@ -64,6 +65,8 @@ class ProductModel {
     required this.imageUrl,
     required this.id,
     this.purchaseLink,
+    this.elasticity,
+    this.fit,
     this.sizes,
     this.createdAt,
     this.updatedAt,
@@ -79,6 +82,8 @@ class ProductModel {
       imagePath: entity.imagePath,
       imageUrl: entity.imageUrl,
       purchaseLink: entity.purchaseLink,
+      elasticity: entity.elasticity,
+      fit: entity.fit,
       sizes: entity.sizes?.map(ProductSizeModel.fromEntity).toList(),
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
@@ -97,6 +102,8 @@ class ProductModel {
   final String imageUrl;
   final String id;
   final String? purchaseLink;
+  final ProductElasticity? elasticity;
+  final ProductFit? fit;
   @JsonKey(name: 'product_variants', includeToJson: false)
   final List<ProductSizeModel>? sizes;
   final DateTime? createdAt;
@@ -114,6 +121,8 @@ class ProductModel {
       imageUrl: imageUrl,
       id: id,
       purchaseLink: purchaseLink,
+      elasticity: elasticity,
+      fit: fit,
       sizes: sizes?.map((final s) => s.toEntity()).toList(),
       createdAt: createdAt,
       updatedAt: updatedAt,
