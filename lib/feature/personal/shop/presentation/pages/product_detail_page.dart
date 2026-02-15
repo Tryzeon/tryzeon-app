@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/shared/measurements/presentation/mappers/measurement_type_ui_mapper.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
@@ -51,7 +52,7 @@ class ProductDetailPage extends HookConsumerWidget {
       final address = product.storeInfo.address!;
 
       final uri = Uri.parse(
-        'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(address)}',
+        '${AppConstants.googleMapsQueryUrl}${Uri.encodeComponent(address)}',
       );
       if (!await canLaunchUrl(uri)) {
         if (!context.mounted) return;
@@ -177,10 +178,7 @@ class ProductDetailPage extends HookConsumerWidget {
                   if (product.elasticity != null ||
                       product.fit != null ||
                       (product.material != null && product.material!.isNotEmpty)) ...[
-                    Text(
-                      '產品資訊',
-                      style: textTheme.titleMedium,
-                    ),
+                    Text('產品資訊', style: textTheme.titleMedium),
                     const SizedBox(height: 12),
                     if (product.material != null && product.material!.isNotEmpty) ...[
                       Row(
@@ -188,10 +186,7 @@ class ProductDetailPage extends HookConsumerWidget {
                         children: [
                           SizedBox(
                             width: 60,
-                            child: Text(
-                              '材質',
-                              style: textTheme.bodyMedium,
-                            ),
+                            child: Text('材質', style: textTheme.bodyMedium),
                           ),
                           Expanded(
                             child: Text(product.material!, style: textTheme.bodyMedium),
@@ -205,10 +200,7 @@ class ProductDetailPage extends HookConsumerWidget {
                         children: [
                           SizedBox(
                             width: 60,
-                            child: Text(
-                              '彈性',
-                              style: textTheme.bodyMedium,
-                            ),
+                            child: Text('彈性', style: textTheme.bodyMedium),
                           ),
                           Text(product.elasticity!.label, style: textTheme.bodyMedium),
                         ],
