@@ -28,6 +28,7 @@ class ProductDetailPage extends HookConsumerWidget {
     final nameController = useTextEditingController(text: product.name);
     final priceController = useTextEditingController(text: product.price.toString());
     final purchaseLinkController = useTextEditingController(text: product.purchaseLink);
+    final materialController = useTextEditingController(text: product.material);
     final newImage = useState<File?>(null);
     final isLoading = useState(false);
     final selectedCategoryIds = useValueNotifier<Set<String>>(
@@ -115,6 +116,7 @@ class ProductDetailPage extends HookConsumerWidget {
         imageUrl: product.imageUrl,
         id: product.id,
         purchaseLink: purchaseLinkController.text,
+        material: materialController.text,
         elasticity: selectedElasticity.value,
         fit: selectedFit.value,
         sizes: sizeEntries.value
@@ -191,6 +193,7 @@ class ProductDetailPage extends HookConsumerWidget {
                 nameController: nameController,
                 priceController: priceController,
                 purchaseLinkController: purchaseLinkController,
+                materialController: materialController,
                 selectedCategoryIds: selectedCategoryIds,
                 selectedElasticity: selectedElasticity,
                 selectedFit: selectedFit,

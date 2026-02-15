@@ -14,6 +14,7 @@ extension ProductModelMapper on ProductModel {
       ..imagePath = imagePath
       ..imageUrl = imageUrl
       ..purchaseLink = purchaseLink
+      ..material = material
       ..elasticity = elasticity
       ..fit = fit
       ..createdAt = createdAt
@@ -33,6 +34,7 @@ extension ProductCollectionMapper on ProductCollection {
       imageUrl: imageUrl,
       id: productId,
       purchaseLink: purchaseLink,
+      material: material,
       elasticity: elasticity,
       fit: fit,
       sizes: sizes?.map((final e) => e.toModel()).toList(),

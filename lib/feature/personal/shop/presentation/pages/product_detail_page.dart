@@ -127,10 +127,8 @@ class ProductDetailPage extends HookConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Product Attributes (Categories + Elasticity + Fit)
-                  if (product.categories.isNotEmpty ||
-                      product.elasticity != null ||
-                      product.fit != null) ...[
+                  // Product Attributes (Categories only)
+                  if (product.categories.isNotEmpty) ...[
                     Wrap(
                       spacing: 8,
                       runSpacing: 4,
@@ -147,66 +145,9 @@ class ProductDetailPage extends HookConsumerWidget {
                               color: colorScheme.surfaceContainerHighest,
                               borderRadius: BorderRadius.circular(16),
                             ),
-                            child: Text(
-                              categoryName,
-                              style: textTheme.labelMedium,
-                            ),
+                            child: Text(categoryName, style: textTheme.labelMedium),
                           );
                         }),
-                        // Elasticity
-                        if (product.elasticity != null)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: colorScheme.secondaryContainer,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.waves,
-                                  size: 14,
-                                  color: colorScheme.onSecondaryContainer,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '彈性: ${product.elasticity!.label}',
-                                  style: textTheme.labelMedium,
-                                ),
-                              ],
-                            ),
-                          ),
-                        // Fit
-                        if (product.fit != null)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: colorScheme.tertiaryContainer,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.accessibility_new,
-                                  size: 14,
-                                  color: colorScheme.onTertiaryContainer,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '版型: ${product.fit!.label}',
-                                  style: textTheme.labelMedium,
-                                ),
-                              ],
-                            ),
-                          ),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -231,6 +172,69 @@ class ProductDetailPage extends HookConsumerWidget {
                   const SizedBox(height: 24),
                   const Divider(),
                   const SizedBox(height: 16),
+
+                  // Product Info Section
+                  if (product.elasticity != null ||
+                      product.fit != null ||
+                      (product.material != null && product.material!.isNotEmpty)) ...[
+                    Text(
+                      '產品資訊',
+                      style: textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 12),
+                    if (product.material != null && product.material!.isNotEmpty) ...[
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: 60,
+                            child: Text(
+                              '材質',
+                              style: textTheme.bodyMedium,
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(product.material!, style: textTheme.bodyMedium),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                    if (product.elasticity != null) ...[
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 60,
+                            child: Text(
+                              '彈性',
+                              style: textTheme.bodyMedium,
+                            ),
+                          ),
+                          Text(product.elasticity!.label, style: textTheme.bodyMedium),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                    if (product.fit != null) ...[
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 60,
+                            child: Text(
+                              '版型',
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                          Text(product.fit!.label, style: textTheme.bodyMedium),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    const Divider(),
+                    const SizedBox(height: 16),
+                  ],
 
                   // Size Info Section
                   if (product.sizes != null && product.sizes!.isNotEmpty) ...[

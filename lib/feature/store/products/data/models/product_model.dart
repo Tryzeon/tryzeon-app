@@ -65,6 +65,7 @@ class ProductModel {
     required this.imageUrl,
     required this.id,
     this.purchaseLink,
+    this.material,
     this.elasticity,
     this.fit,
     this.sizes,
@@ -82,6 +83,7 @@ class ProductModel {
       imagePath: entity.imagePath,
       imageUrl: entity.imageUrl,
       purchaseLink: entity.purchaseLink,
+      material: entity.material,
       elasticity: entity.elasticity,
       fit: entity.fit,
       sizes: entity.sizes?.map(ProductSizeModel.fromEntity).toList(),
@@ -102,6 +104,7 @@ class ProductModel {
   final String imageUrl;
   final String id;
   final String? purchaseLink;
+  final String? material;
   final ProductElasticity? elasticity;
   final ProductFit? fit;
   @JsonKey(name: 'product_variants', includeToJson: false)
@@ -121,6 +124,7 @@ class ProductModel {
       imageUrl: imageUrl,
       id: id,
       purchaseLink: purchaseLink,
+      material: material,
       elasticity: elasticity,
       fit: fit,
       sizes: sizes?.map((final s) => s.toEntity()).toList(),

@@ -17,6 +17,7 @@ class ShopProductModel {
     required this.imageUrl,
     required this.id,
     this.purchaseLink,
+    this.material,
     this.elasticity,
     this.fit,
     this.sizes,
@@ -37,6 +38,7 @@ class ShopProductModel {
   final String imageUrl;
   final String id;
   final String? purchaseLink;
+  final String? material;
   final ProductElasticity? elasticity;
   final ProductFit? fit;
   @JsonKey(name: 'product_variants', includeToJson: false)
@@ -56,6 +58,7 @@ class ShopProductModel {
       imageUrl: imageUrl,
       id: id,
       purchaseLink: purchaseLink,
+      material: material,
       elasticity: elasticity,
       fit: fit,
       sizes: sizes?.map((final s) => s.toEntity()).toList(),

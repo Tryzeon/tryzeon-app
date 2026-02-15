@@ -27,6 +27,7 @@ class AddProductPage extends HookConsumerWidget {
     final nameController = useTextEditingController();
     final priceController = useTextEditingController();
     final purchaseLinkController = useTextEditingController();
+    final materialController = useTextEditingController();
 
     final selectedImage = useState<File?>(null);
     final selectedCategoryIds = useValueNotifier<Set<String>>({});
@@ -107,6 +108,7 @@ class AddProductPage extends HookConsumerWidget {
         categories: selectedCategoryIds.value,
         price: double.parse(priceController.text),
         purchaseLink: purchaseLinkController.text,
+        material: materialController.text,
         elasticity: selectedElasticity.value,
         fit: selectedFit.value,
         imagePath: '',
@@ -208,6 +210,7 @@ class AddProductPage extends HookConsumerWidget {
                         nameController: nameController,
                         priceController: priceController,
                         purchaseLinkController: purchaseLinkController,
+                        materialController: materialController,
                         selectedCategoryIds: selectedCategoryIds,
                         selectedElasticity: selectedElasticity,
                         selectedFit: selectedFit,

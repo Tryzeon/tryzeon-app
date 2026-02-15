@@ -16,6 +16,7 @@ sealed class ShopProduct with _$ShopProduct {
     required final String imageUrl,
     required final String id,
     final String? purchaseLink,
+    final String? material,
     final ProductElasticity? elasticity,
     final ProductFit? fit,
     final List<ProductSize>? sizes,

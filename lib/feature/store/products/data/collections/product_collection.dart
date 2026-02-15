@@ -11,6 +11,7 @@ class ProductCollection {
   @Index(unique: true, replace: true)
   late String productId;
 
+  @Index()
   late String storeId;
   late String name;
   late List<String> categories;
@@ -18,6 +19,7 @@ class ProductCollection {
   late String imagePath;
   late String imageUrl;
   String? purchaseLink;
+  String? material;
 
   @Enumerated(EnumType.name)
   ProductElasticity? elasticity;

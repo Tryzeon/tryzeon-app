@@ -17,6 +17,7 @@ class ProductBasicInfoEditor extends StatelessWidget {
     required this.nameController,
     required this.priceController,
     required this.purchaseLinkController,
+    required this.materialController,
     required this.selectedCategoryIds,
     required this.selectedElasticity,
     required this.selectedFit,
@@ -28,6 +29,7 @@ class ProductBasicInfoEditor extends StatelessWidget {
   final TextEditingController nameController;
   final TextEditingController priceController;
   final TextEditingController purchaseLinkController;
+  final TextEditingController materialController;
   final ValueNotifier<Set<String>> selectedCategoryIds;
   final ValueNotifier<ProductElasticity?> selectedElasticity;
   final ValueNotifier<ProductFit?> selectedFit;
@@ -173,6 +175,31 @@ class ProductBasicInfoEditor extends StatelessWidget {
             ),
             keyboardType: TextInputType.url,
             validator: AppValidators.validateUrl,
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: materialController,
+            style: textTheme.bodyLarge,
+            decoration: InputDecoration(
+              labelText: '材質描述',
+              hintText: '例如: 100% 棉',
+              labelStyle: textTheme.bodyMedium,
+              prefixIcon: Icon(Icons.texture, color: colorScheme.primary),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: colorScheme.primary, width: 2),
+              ),
+              filled: true,
+              fillColor: colorScheme.surfaceContainer,
+            ),
           ),
           const SizedBox(height: 16),
           Row(
