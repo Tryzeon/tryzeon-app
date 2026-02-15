@@ -15,4 +15,6 @@ class ProductCategoryCollection {
   String? parentId;
 
   String? imagePath;
+
+  DateTime? lastUpdated;
 }

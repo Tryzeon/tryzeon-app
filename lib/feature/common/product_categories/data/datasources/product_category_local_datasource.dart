@@ -1,4 +1,5 @@
 import 'package:isar_community/isar.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 
 import 'package:tryzeon/feature/common/product_categories/data/collections/product_category_collection.dart';
@@ -14,6 +15,12 @@ class ProductCategoryLocalDataSource {
     final collections = await isar.productCategoryCollections.where().findAll();
     if (collections.isEmpty) return null;
 
+    if (collections.first.lastUpdated == null ||
+        DateTime.now().difference(collections.first.lastUpdated!) >
+            AppConstants.staleDurationProductCategories) {
+      return null;
+    }
+
     return collections.map((final e) => e.toModel()).toList();
   }
 
@@ -21,7 +28,10 @@ class ProductCategoryLocalDataSource {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
       await isar.productCategoryCollections.clear();
-      final collections = categories.map((final e) => e.toCollection()).toList();
+      final now = DateTime.now();
+      final collections = categories
+          .map((final e) => e.toCollection()..lastUpdated = now)
+          .toList();
       await isar.productCategoryCollections.putAll(collections);
     });
   }

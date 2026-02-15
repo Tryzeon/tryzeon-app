@@ -52,4 +52,8 @@ class AppConstants {
 
   // Shared Preferences Keys
   static const String keyRecommendNearbyShops = 'recommend_nearby_shops';
+
+  // Stale Durations
+  static const Duration staleDurationSubscription = Duration(minutes: 10);
+  static const Duration staleDurationProductCategories = Duration(hours: 24);
 }

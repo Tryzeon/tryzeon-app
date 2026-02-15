@@ -12,4 +12,6 @@ class SubscriptionCollection {
 
   @Enumerated(EnumType.name)
   late SubscriptionPlan plan;
+
+  DateTime? lastUpdated;
 }
