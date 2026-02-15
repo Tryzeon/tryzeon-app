@@ -1,13 +1,14 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
-import 'package:tryzeon/core/shared/measurements/presentation/mappers/measurement_type_ui_mapper.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
+import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_header.dart';
+import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_info_section.dart';
+import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_size_table.dart';
+import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_store_info.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
-import 'package:tryzeon/feature/store/products/presentation/extensions/product_attributes_extension.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ProductDetailPage extends HookConsumerWidget {
@@ -17,9 +18,6 @@ class ProductDetailPage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
     // Build category ID to name mapping
     final categoriesAsync = ref.watch(productCategoriesProvider);
     final categoryIdToName = categoriesAsync.maybeWhen(
@@ -75,262 +73,41 @@ class ProductDetailPage extends HookConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Product Image with Zoom
-            GestureDetector(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (final context) => Scaffold(
-                      backgroundColor: Colors.black,
-                      appBar: AppBar(
-                        backgroundColor: Colors.black,
-                        iconTheme: const IconThemeData(color: Colors.white),
-                      ),
-                      body: Center(
-                        child: InteractiveViewer(
-                          child: CachedNetworkImage(
-                            imageUrl: product.imageUrl,
-                            cacheKey: product.imagePath,
-                            fit: BoxFit.contain,
-                            width: double.infinity,
-                            height: double.infinity,
-                            placeholder: (final context, final url) =>
-                                const Center(child: CircularProgressIndicator()),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
-                child: CachedNetworkImage(
-                  imageUrl: product.imageUrl,
-                  cacheKey: product.imagePath,
-                  width: double.infinity,
-                  height: 400,
-                  fit: BoxFit.cover,
-                  placeholder: (final context, final url) => Center(
-                    child: CircularProgressIndicator(color: colorScheme.primary),
-                  ),
-                  errorWidget: (final context, final url, final error) => Container(
-                    height: 400,
-                    color: colorScheme.surfaceContainer,
-                    child: const Icon(Icons.image_not_supported, size: 50),
-                  ),
-                ),
-              ),
-            ),
+            // Product Header (Image, Categories, Name, Price)
+            ProductHeader(product: product, categoryIdToName: categoryIdToName),
 
             Padding(
-              padding: const EdgeInsets.all(20.0),
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Product Attributes (Categories only)
-                  if (product.categories.isNotEmpty) ...[
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      children: [
-                        // Categories
-                        ...product.categories.map((final typeId) {
-                          final categoryName = categoryIdToName[typeId] ?? typeId;
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: colorScheme.surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Text(categoryName, style: textTheme.labelMedium),
-                          );
-                        }),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                  ],
-
-                  // Product Name
-                  Text(
-                    product.name,
-                    style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Price
-                  Text(
-                    '\$${product.price}',
-                    style: textTheme.titleLarge?.copyWith(
-                      color: colorScheme.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
                   const Divider(),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
-                  // Product Info Section
+                  // Store Info Section
+                  ProductStoreInfo(
+                    storeInfo: product.storeInfo,
+                    onOpenMap:
+                        product.storeInfo.address != null &&
+                            product.storeInfo.address!.isNotEmpty
+                        ? handleOpenMap
+                        : null,
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Product Info Section (Material, Elasticity, Fit)
                   if (product.elasticity != null ||
                       product.fit != null ||
                       (product.material != null && product.material!.isNotEmpty)) ...[
-                    Text('產品資訊', style: textTheme.titleMedium),
-                    const SizedBox(height: 12),
-                    if (product.material != null && product.material!.isNotEmpty) ...[
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(
-                            width: 60,
-                            child: Text('材質', style: textTheme.bodyMedium),
-                          ),
-                          Expanded(
-                            child: Text(product.material!, style: textTheme.bodyMedium),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                    ],
-                    if (product.elasticity != null) ...[
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: 60,
-                            child: Text('彈性', style: textTheme.bodyMedium),
-                          ),
-                          Text(product.elasticity!.label, style: textTheme.bodyMedium),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                    ],
-                    if (product.fit != null) ...[
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: 60,
-                            child: Text(
-                              '版型',
-                              style: textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ),
-                          Text(product.fit!.label, style: textTheme.bodyMedium),
-                        ],
-                      ),
-                    ],
-                    const SizedBox(height: 16),
-                    const Divider(),
-                    const SizedBox(height: 16),
+                    ProductInfoSection(product: product),
+                    const SizedBox(height: 32),
                   ],
 
                   // Size Info Section
                   if (product.sizes != null && product.sizes!.isNotEmpty) ...[
-                    Text(
-                      '尺寸資訊',
-                      style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 12),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: DataTable(
-                        columnSpacing: 24,
-                        columns: [
-                          const DataColumn(label: Text('尺寸')),
-                          ...MeasurementType.values.map(
-                            (final type) => DataColumn(label: Text(type.label)),
-                          ),
-                        ],
-                        rows: product.sizes!.map((final size) {
-                          return DataRow(
-                            cells: [
-                              DataCell(
-                                Text(
-                                  size.name,
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                              ...MeasurementType.values.map((final type) {
-                                final measurements = size.measurements;
-                                final value = measurements?.getValue(type);
-                                return DataCell(
-                                  Text(value != null ? value.toStringAsFixed(1) : '-'),
-                                );
-                              }),
-                            ],
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '* 此尺寸數據為手工測量，可能存在些許誤差',
-                      style: textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Divider(),
-                    const SizedBox(height: 16),
+                    ProductSizeTable(sizes: product.sizes!),
+                    const SizedBox(height: 32),
                   ],
-
-                  // Store Info Section
-                  Text(
-                    '店家資訊',
-                    style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      // Store Logo
-                      CircleAvatar(
-                        radius: 20,
-                        backgroundColor: colorScheme.surfaceContainerHighest,
-                        backgroundImage: product.storeInfo.logoUrl != null
-                            ? CachedNetworkImageProvider(product.storeInfo.logoUrl!)
-                            : null,
-                        child: product.storeInfo.logoUrl == null
-                            ? Icon(Icons.store, color: colorScheme.primary)
-                            : null,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              product.storeInfo.name,
-                              style: textTheme.bodyLarge?.copyWith(
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            if (product.storeInfo.address != null) ...[
-                              const SizedBox(height: 4),
-                              Text(
-                                product.storeInfo.address!,
-                                style: textTheme.bodyMedium?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      if (product.storeInfo.address != null &&
-                          product.storeInfo.address!.isNotEmpty)
-                        IconButton(
-                          onPressed: handleOpenMap,
-                          icon: Icon(Icons.map, color: colorScheme.primary),
-                        ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 16),
-                  const Divider(),
                 ],
               ),
             ),
