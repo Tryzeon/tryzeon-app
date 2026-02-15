@@ -58,7 +58,3 @@ app.*.map.json
 
 # supabase temp files
 */.temp
-
-.agent
-.shared
-.github/prompts
