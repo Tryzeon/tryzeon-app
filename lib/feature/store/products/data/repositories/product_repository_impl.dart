@@ -102,6 +102,9 @@ class ProductRepositoryImpl implements ProductRepository {
         imagePath: imagePath,
         imageUrl: imageUrl,
         purchaseLink: product.purchaseLink,
+        material: product.material,
+        elasticity: product.elasticity,
+        fit: product.fit,
         id: product.id,
       );
 

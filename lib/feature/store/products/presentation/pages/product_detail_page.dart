@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -9,13 +7,11 @@ import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
-import 'package:tryzeon/feature/store/products/domain/value_objects/product_attributes.dart';
-import 'package:tryzeon/feature/store/products/presentation/controllers/product_size_entry_controller.dart';
-import 'package:tryzeon/feature/store/products/presentation/widgets/product_basic_info_editor.dart';
-import 'package:tryzeon/feature/store/products/presentation/widgets/product_image_editor.dart';
-import 'package:tryzeon/feature/store/products/presentation/widgets/product_size_list_editor.dart';
+import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_form.dart';
+import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_size_manager.dart';
+import 'package:tryzeon/feature/store/products/presentation/widgets/product_form_layout.dart';
 import 'package:tryzeon/feature/store/products/providers/store_products_providers.dart';
-import 'package:typed_result/typed_result.dart'; // For Result extensions
+import 'package:typed_result/typed_result.dart';
 
 class ProductDetailPage extends HookConsumerWidget {
   const ProductDetailPage({super.key, required this.product});
@@ -23,41 +19,10 @@ class ProductDetailPage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final productCategoryTreeAsync = ref.watch(productCategoryTreeProvider);
-    final formKey = useMemoized(GlobalKey<FormState>.new);
-    final nameController = useTextEditingController(text: product.name);
-    final priceController = useTextEditingController(text: product.price.toString());
-    final purchaseLinkController = useTextEditingController(text: product.purchaseLink);
-    final materialController = useTextEditingController(text: product.material);
-    final newImage = useState<File?>(null);
+    final formData = useProductForm(initialProduct: product);
+    final sizeManager = useProductSizeManager(initialSizes: product.sizes);
     final isLoading = useState(false);
-    final selectedCategoryIds = useValueNotifier<Set<String>>(
-      Set<String>.from(product.categories),
-    );
-    final selectedElasticity = useValueNotifier<ProductElasticity?>(product.elasticity);
-    final selectedFit = useValueNotifier<ProductFit?>(product.fit);
-
-    final isCun = useState(false);
-    final sizeEntries = useState<List<ProductSizeEntryController>>([]);
-
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    useEffect(() {
-      final entries = <ProductSizeEntryController>[];
-      if (product.sizes != null) {
-        for (final size in product.sizes!) {
-          entries.add(ProductSizeEntryController.fromProductSize(size));
-        }
-      }
-      sizeEntries.value = entries;
-
-      return () {
-        for (final entry in sizeEntries.value) {
-          entry.dispose();
-        }
-      };
-    }, const []);
+    final productCategoryTreeAsync = ref.watch(productCategoryTreeProvider);
 
     Future<void> deleteProduct() async {
       final dialogResult = await showOkCancelAlertDialog(
@@ -94,9 +59,9 @@ class ProductDetailPage extends HookConsumerWidget {
     }
 
     Future<void> updateProduct() async {
-      if (!formKey.currentState!.validate()) return;
+      if (!formData.validate(context)) return;
 
-      if (selectedCategoryIds.value.isEmpty) {
+      if (formData.selectedCategoryIds.value.isEmpty) {
         TopNotification.show(
           context,
           message: '請至少選擇一個類型',
@@ -107,28 +72,19 @@ class ProductDetailPage extends HookConsumerWidget {
 
       isLoading.value = true;
 
-      final targetProduct = Product(
+      final targetProduct = formData.toProduct(
+        id: product.id,
         storeId: product.storeId,
-        name: nameController.text,
-        categories: selectedCategoryIds.value,
-        price: double.parse(priceController.text),
         imagePath: product.imagePath,
         imageUrl: product.imageUrl,
-        id: product.id,
-        purchaseLink: purchaseLinkController.text,
-        material: materialController.text,
-        elasticity: selectedElasticity.value,
-        fit: selectedFit.value,
-        sizes: sizeEntries.value
-            .map((final e) => e.toProductSize(product.id, isCun: isCun.value))
-            .toList(),
+        sizes: sizeManager.buildProductSizes(product.id),
       );
 
       final updateProductUseCase = ref.read(updateProductUseCaseProvider);
       final result = await updateProductUseCase(
         original: product,
         target: targetProduct,
-        newImage: newImage.value,
+        newImage: formData.selectedImage.value,
       );
 
       if (!context.mounted) return;
@@ -148,125 +104,23 @@ class ProductDetailPage extends HookConsumerWidget {
       }
     }
 
-    void addSize() {
-      sizeEntries.value = [...sizeEntries.value, ProductSizeEntryController()];
-    }
-
-    void removeSize(final int index) {
-      sizeEntries.value[index].dispose();
-      final newList = [...sizeEntries.value];
-      newList.removeAt(index);
-      sizeEntries.value = newList;
-    }
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('商品資訊', style: textTheme.titleLarge),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.delete_outline, color: colorScheme.onSurfaceVariant),
-            onPressed: deleteProduct,
-            tooltip: '刪除',
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ProductImageEditor(
-                selectedImage: newImage.value,
-                existingImageUrl: product.imageUrl,
-                existingImagePath: product.imagePath,
-                onPickImage: () async {
-                  final image = await ImagePickerHelper.pickImage(context);
-                  if (image != null) {
-                    newImage.value = image;
-                  }
-                },
-              ),
-              const SizedBox(height: 24),
-              ProductBasicInfoEditor(
-                nameController: nameController,
-                priceController: priceController,
-                purchaseLinkController: purchaseLinkController,
-                materialController: materialController,
-                selectedCategoryIds: selectedCategoryIds,
-                selectedElasticity: selectedElasticity,
-                selectedFit: selectedFit,
-
-                productCategoryTreeAsync: productCategoryTreeAsync,
-                onRetryCategories: () => ref.refresh(productCategoriesProvider),
-              ),
-              const SizedBox(height: 24),
-
-              Container(
-                decoration: BoxDecoration(
-                  color: colorScheme.surface,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 15,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.all(16),
-                child: ProductSizeListEditor(
-                  entries: sizeEntries.value,
-                  isCun: isCun.value,
-                  onUnitChanged: (final val) {
-                    isCun.value = val;
-                    for (final entry in sizeEntries.value) {
-                      entry.convertValues(toCun: val);
-                    }
-                  },
-                  onAdd: addSize,
-                  onRemove: removeSize,
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: isLoading.value ? null : updateProduct,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colorScheme.primary,
-                    foregroundColor: colorScheme.onPrimary,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: isLoading.value
-                      ? SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              colorScheme.onPrimary,
-                            ),
-                          ),
-                        )
-                      : Text(
-                          '儲存變更',
-                          style: textTheme.titleSmall?.copyWith(
-                            color: colorScheme.onPrimary,
-                          ),
-                        ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return ProductFormLayout(
+      mode: ProductFormMode.edit,
+      formData: formData,
+      sizeManager: sizeManager,
+      isLoading: isLoading.value,
+      onSubmit: updateProduct,
+      onDelete: deleteProduct,
+      productCategoryTreeAsync: productCategoryTreeAsync,
+      onRetryCategories: () => ref.refresh(productCategoriesProvider),
+      existingImageUrl: product.imageUrl,
+      existingImagePath: product.imagePath,
+      onPickImage: () async {
+        final image = await ImagePickerHelper.pickImage(context);
+        if (image != null) {
+          formData.selectedImage.value = image;
+        }
+      },
     );
   }
 }
