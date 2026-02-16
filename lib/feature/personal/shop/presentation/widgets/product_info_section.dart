@@ -9,7 +9,6 @@ class ProductInfoSection extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return Column(
@@ -42,15 +41,7 @@ class ProductInfoSection extends StatelessWidget {
         if (product.fit != null) ...[
           Row(
             children: [
-              SizedBox(
-                width: 60,
-                child: Text(
-                  '版型',
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
+              SizedBox(width: 60, child: Text('版型', style: textTheme.bodyMedium)),
               Text(product.fit!.label, style: textTheme.bodyMedium),
             ],
           ),

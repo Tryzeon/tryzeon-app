@@ -17,7 +17,6 @@ class SettingsSection extends StatelessWidget {
             title,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
               color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.bold,
               letterSpacing: 0.5,
             ),
           ),

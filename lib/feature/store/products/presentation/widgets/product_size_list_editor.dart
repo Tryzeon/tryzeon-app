@@ -59,10 +59,7 @@ class ProductSizeListEditor extends StatelessWidget {
                 children: [
                   Icon(Icons.straighten_rounded, color: colorScheme.primary, size: 20),
                   const SizedBox(width: 8),
-                  Text(
-                    '尺寸列表',
-                    style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-                  ),
+                  Text('尺寸列表', style: textTheme.bodyMedium),
                 ],
               ),
               Row(
@@ -97,7 +94,6 @@ class ProductSizeListEditor extends StatelessWidget {
                                   color: !isCun
                                       ? colorScheme.onPrimary
                                       : colorScheme.onSurfaceVariant,
-                                  fontWeight: !isCun ? FontWeight.bold : null,
                                 ),
                               ),
                             ),
@@ -123,7 +119,6 @@ class ProductSizeListEditor extends StatelessWidget {
                                   color: isCun
                                       ? colorScheme.onPrimary
                                       : colorScheme.onSurfaceVariant,
-                                  fontWeight: isCun ? FontWeight.bold : null,
                                 ),
                               ),
                             ),
@@ -157,14 +152,7 @@ class ProductSizeListEditor extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
               ),
-              child: Center(
-                child: Text(
-                  '尚未新增尺寸',
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
+              child: Center(child: Text('尚未新增尺寸', style: textTheme.bodyMedium)),
             )
           else
             ...List.generate(entries.length, (final index) {
@@ -187,12 +175,7 @@ class ProductSizeListEditor extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              '尺寸 ${index + 1}',
-                              style: textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                            Text('尺寸 ${index + 1}', style: textTheme.titleSmall),
                             IconButton(
                               icon: Icon(
                                 Icons.delete_outline_rounded,

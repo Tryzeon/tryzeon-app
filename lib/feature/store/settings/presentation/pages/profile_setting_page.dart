@@ -67,20 +67,8 @@ class StoreProfileSettingsPage extends HookConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            '帳號設定',
-                            style: textTheme.titleLarge?.copyWith(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            '管理您的店家資訊',
-                            style: textTheme.bodyMedium?.copyWith(
-                              fontSize: 12,
-                              color: colorScheme.onSurface.withValues(alpha: 0.6),
-                            ),
-                          ),
+                          Text('帳號設定', style: textTheme.headlineMedium),
+                          Text('管理您的店家資訊', style: textTheme.bodySmall),
                         ],
                       ),
                     ),
@@ -183,13 +171,10 @@ class _StoreProfileForm extends HookConsumerWidget {
     }) {
       return TextFormField(
         controller: controller,
-        style: textTheme.bodyMedium?.copyWith(fontSize: 16),
+        style: textTheme.bodyLarge,
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: textTheme.bodyMedium?.copyWith(
-            color: colorScheme.onSurface.withValues(alpha: 0.6),
-            fontSize: 14,
-          ),
+          labelStyle: textTheme.bodyMedium,
           prefixIcon: Icon(icon, color: colorScheme.primary),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
@@ -306,23 +291,11 @@ class _StoreProfileForm extends HookConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
-                    '店家 Logo',
-                    style: textTheme.titleMedium?.copyWith(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  Text('店家 Logo', style: textTheme.titleSmall),
                   const SizedBox(height: 20),
                   GestureDetector(onTap: updateLogo, child: buildLogoPreview()),
                   const SizedBox(height: 12),
-                  Text(
-                    '點擊上傳店家 Logo',
-                    style: textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurface.withValues(alpha: 0.6),
-                      fontSize: 13,
-                    ),
-                  ),
+                  Text('點擊上傳店家 Logo', style: textTheme.bodySmall),
                 ],
               ),
             ),
@@ -346,13 +319,7 @@ class _StoreProfileForm extends HookConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '店家資訊',
-                    style: textTheme.titleMedium?.copyWith(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  Text('店家資訊', style: textTheme.titleSmall),
                   const SizedBox(height: 20),
 
                   // 店家名稱
@@ -424,8 +391,6 @@ class _StoreProfileForm extends HookConsumerWidget {
                                 '儲存',
                                 style: textTheme.titleMedium?.copyWith(
                                   color: colorScheme.onPrimary,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
                                   letterSpacing: 0.5,
                                 ),
                               ),

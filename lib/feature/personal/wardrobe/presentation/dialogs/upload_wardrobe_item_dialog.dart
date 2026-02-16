@@ -137,7 +137,6 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
                       Text(
                         '衣櫃容量',
                         style: textTheme.labelMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
                           color: colorScheme.onSurface.withValues(alpha: 0.7),
                         ),
                       ),
@@ -194,14 +193,7 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '選擇類別',
-            style: textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: colorScheme.onSurface,
-            ),
-          ),
+          Text('選擇類別', style: textTheme.titleMedium),
           const SizedBox(height: 12),
           Wrap(
             spacing: 8,
@@ -238,8 +230,6 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
                           color: isSelected
                               ? colorScheme.onPrimary
                               : colorScheme.onSurface,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                          fontSize: 14,
                         ),
                       ),
                     ),
@@ -258,22 +248,9 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
         children: [
           Row(
             children: [
-              Text(
-                '選擇標籤',
-                style: textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: colorScheme.onSurface,
-                ),
-              ),
+              Text('選擇標籤', style: textTheme.titleMedium),
               const SizedBox(width: 4),
-              Text(
-                '(可選)',
-                style: textTheme.bodySmall?.copyWith(
-                  fontSize: 14,
-                  color: colorScheme.onSurface.withValues(alpha: 0.5),
-                ),
-              ),
+              Text('(可選)', style: textTheme.bodyMedium),
             ],
           ),
           const SizedBox(height: 12),
@@ -326,14 +303,7 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  category,
-                  style: textTheme.labelLarge?.copyWith(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurface.withValues(alpha: 0.6),
-                  ),
-                ),
+                Text(category, style: textTheme.labelLarge),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -388,7 +358,6 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
           Text(
             '自訂標籤',
             style: textTheme.labelLarge?.copyWith(
-              fontSize: 14,
               fontWeight: FontWeight.w600,
               color: colorScheme.onSurface.withValues(alpha: 0.6),
             ),
@@ -484,7 +453,6 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
                           '上傳衣服',
                           style: textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
                             letterSpacing: -0.5,
                           ),
                         ),

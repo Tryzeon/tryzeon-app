@@ -85,13 +85,7 @@ class ProductGrid extends HookConsumerWidget {
                   color: colorScheme.outlineVariant,
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  '目前沒有商品符合搜尋條件',
-                  style: textTheme.bodyMedium?.copyWith(
-                    fontSize: 16,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
+                Text('目前沒有商品符合搜尋條件', style: textTheme.bodyMedium),
               ],
             ),
           ),

@@ -347,12 +347,7 @@ class ChatPage extends HookConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('穿搭顧問', style: textTheme.headlineSmall),
-                          Text(
-                            'AI 時尚助手',
-                            style: textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurface.withValues(alpha: 0.6),
-                            ),
-                          ),
+                          Text('AI 時尚助手', style: textTheme.bodySmall),
                         ],
                       ),
                     ),
@@ -419,9 +414,7 @@ class ChatPage extends HookConsumerWidget {
                             controller: controller,
                             decoration: InputDecoration(
                               hintText: isWaitingForAnswer.value ? '請輸入您的回答...' : '',
-                              hintStyle: textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurface.withValues(alpha: 0.5),
-                              ),
+                              hintStyle: textTheme.bodyMedium,
                               enabled: !isLoadingRecommendation.value,
                               border: InputBorder.none,
                               contentPadding: const EdgeInsets.symmetric(

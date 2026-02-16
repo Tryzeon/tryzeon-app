@@ -35,21 +35,12 @@ class ErrorView extends HookConsumerWidget {
             if (!isCompact) const SizedBox(height: 24),
             Text(
               '歐不，發生錯誤',
-              style: (isCompact ? textTheme.titleSmall : textTheme.titleMedium)?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: colorScheme.onSurface,
-              ),
+              style: (isCompact ? textTheme.titleSmall : textTheme.titleMedium),
               textAlign: TextAlign.center,
             ),
             if (message != null && !isCompact) ...[
               const SizedBox(height: 8),
-              Text(
-                message!,
-                style: textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-                textAlign: TextAlign.center,
-              ),
+              Text(message!, style: textTheme.bodyMedium, textAlign: TextAlign.center),
             ],
             if (onRetry != null) ...[
               SizedBox(height: isCompact ? 10 : 24),
@@ -68,10 +59,7 @@ class ErrorView extends HookConsumerWidget {
                 icon: const Icon(Icons.refresh_rounded, size: 20),
                 label: Text(
                   '點我重試',
-                  style: textTheme.labelLarge?.copyWith(
-                    color: colorScheme.onError,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: textTheme.labelLarge?.copyWith(color: colorScheme.onError),
                 ),
               ),
             ],

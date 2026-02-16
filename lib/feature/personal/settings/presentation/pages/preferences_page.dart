@@ -129,12 +129,7 @@ class PreferencesPage extends HookConsumerWidget {
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          subtitle: Text(
-                            '根據您的位置推薦附近的優質店家',
-                            style: textTheme.bodyMedium?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          ),
+                          subtitle: Text('根據您的位置推薦附近的優質店家', style: textTheme.bodyMedium),
                           activeTrackColor: colorScheme.primary,
                           contentPadding: EdgeInsets.zero,
                           shape: RoundedRectangleBorder(

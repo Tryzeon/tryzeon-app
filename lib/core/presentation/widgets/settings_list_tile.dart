@@ -57,19 +57,11 @@ class SettingsListTile extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: contentColor,
-                      ),
+                      style: theme.textTheme.bodyLarge?.copyWith(color: contentColor),
                     ),
                     if (subtitle != null) ...[
                       const SizedBox(height: 2),
-                      Text(
-                        subtitle!,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
+                      Text(subtitle!, style: theme.textTheme.bodySmall),
                     ],
                   ],
                 ),

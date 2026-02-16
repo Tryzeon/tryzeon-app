@@ -88,20 +88,9 @@ class ProductListSection extends HookConsumerWidget {
                             ),
                           ),
                           const SizedBox(height: 24),
-                          Text(
-                            '還沒有商品',
-                            style: textTheme.titleSmall?.copyWith(
-                              color: colorScheme.onSurface.withValues(alpha: 0.6),
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                          Text('還沒有商品', style: textTheme.titleSmall),
                           const SizedBox(height: 8),
-                          Text(
-                            '點擊右下角按鈕新增商品',
-                            style: textTheme.bodyMedium?.copyWith(
-                              color: colorScheme.onSurface.withValues(alpha: 0.5),
-                            ),
-                          ),
+                          Text('點擊右下角按鈕新增商品', style: textTheme.bodyMedium),
                         ],
                       ),
                     ),

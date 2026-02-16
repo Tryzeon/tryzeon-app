@@ -113,7 +113,6 @@ class ProductCategorySelector extends HookWidget {
                             getCategoryNameById(id),
                             style: textTheme.labelMedium?.copyWith(
                               color: colorScheme.primary,
-                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         );
@@ -282,10 +281,7 @@ class _HierarchicalSelectionSheet extends HookWidget {
         return Center(
           child: Padding(
             padding: const EdgeInsets.all(32.0),
-            child: Text(
-              '沒有符合的分類',
-              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
-            ),
+            child: Text('沒有符合的分類', style: textTheme.bodyMedium),
           ),
         );
       }
@@ -343,17 +339,12 @@ class _HierarchicalSelectionSheet extends HookWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    '選擇分類',
-                    style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                  ),
+                  Text('選擇分類', style: textTheme.titleLarge),
                   TextButton(
                     onPressed: saveAndClose,
                     style: TextButton.styleFrom(
                       foregroundColor: colorScheme.primary,
-                      textStyle: textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      textStyle: textTheme.titleMedium,
                     ),
                     child: const Text('完成'),
                   ),
@@ -373,9 +364,7 @@ class _HierarchicalSelectionSheet extends HookWidget {
                   style: textTheme.bodyLarge,
                   decoration: InputDecoration(
                     hintText: '搜尋分類...',
-                    hintStyle: textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+                    hintStyle: textTheme.bodyMedium,
                     prefixIcon: Icon(
                       Icons.search_rounded,
                       color: colorScheme.onSurfaceVariant,

@@ -55,7 +55,6 @@ class ProductCategoryFilter extends HookConsumerWidget {
                       category.name.substring(0, 1),
                       style: textTheme.titleMedium?.copyWith(
                         color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -63,8 +62,7 @@ class ProductCategoryFilter extends HookConsumerWidget {
                 const SizedBox(height: 4),
                 Text(
                   category.name,
-                  style: textTheme.bodyMedium?.copyWith(
-                    fontSize: 12,
+                  style: textTheme.bodySmall?.copyWith(
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                     color: isSelected ? colorScheme.primary : colorScheme.onSurface,
                   ),

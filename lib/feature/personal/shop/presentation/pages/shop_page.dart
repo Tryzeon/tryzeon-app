@@ -103,7 +103,6 @@ class ShopPage extends HookConsumerWidget {
                     label,
                     style: textTheme.labelLarge?.copyWith(
                       color: isActive ? colorScheme.onPrimary : colorScheme.primary,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -201,20 +200,8 @@ class ShopPage extends HookConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            '試衣間',
-                            style: textTheme.titleLarge?.copyWith(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            '發現時尚新品',
-                            style: textTheme.bodyMedium?.copyWith(
-                              fontSize: 12,
-                              color: colorScheme.onSurface.withValues(alpha: 0.6),
-                            ),
-                          ),
+                          Text('試衣間', style: textTheme.headlineMedium),
+                          Text('發現時尚新品', style: textTheme.bodySmall),
                         ],
                       ),
                     ),
@@ -300,12 +287,7 @@ class ShopPage extends HookConsumerWidget {
                                       ),
                                     ),
                                     const SizedBox(width: 12),
-                                    Text(
-                                      '推薦商品',
-                                      style: textTheme.titleLarge?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
+                                    Text('推薦商品', style: textTheme.titleLarge),
                                     const Spacer(),
                                     Row(
                                       mainAxisSize: MainAxisSize.min,

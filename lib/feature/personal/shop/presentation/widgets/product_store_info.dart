@@ -16,7 +16,7 @@ class ProductStoreInfo extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('店家資訊', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+        Text('店家資訊', style: textTheme.titleMedium),
         const SizedBox(height: 12),
         Row(
           children: [
@@ -36,18 +36,10 @@ class ProductStoreInfo extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    storeInfo.name,
-                    style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
-                  ),
+                  Text(storeInfo.name, style: textTheme.titleSmall),
                   if (storeInfo.address != null) ...[
                     const SizedBox(height: 4),
-                    Text(
-                      storeInfo.address!,
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
+                    Text(storeInfo.address!, style: textTheme.bodyMedium),
                   ],
                 ],
               ),

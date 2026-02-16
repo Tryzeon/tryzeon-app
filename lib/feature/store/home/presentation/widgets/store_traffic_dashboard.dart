@@ -50,12 +50,7 @@ class StoreTrafficDashboard extends HookConsumerWidget {
           // 第一行：標題
           Row(
             children: [
-              Text(
-                '總流量概況',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(letterSpacing: 0.5),
-              ),
+              Text('總流量概況', style: Theme.of(context).textTheme.titleMedium),
               if (hasError) ...[
                 const SizedBox(width: 8),
                 Tooltip(
@@ -120,9 +115,7 @@ class StoreTrafficDashboard extends HookConsumerWidget {
                               filter == null
                                   ? '全部時間'
                                   : '${filter.year}年 ${filter.month}月',
-                              style: Theme.of(
-                                context,
-                              ).textTheme.labelLarge?.copyWith(letterSpacing: 0.3),
+                              style: Theme.of(context).textTheme.labelLarge,
                             ),
                           ],
                         ),
@@ -308,13 +301,7 @@ class _StatItem extends StatelessWidget {
             children: [
               Icon(icon, color: colorScheme.onSurfaceVariant, size: 14),
               const SizedBox(width: 6),
-              Text(
-                label,
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              Text(label, style: Theme.of(context).textTheme.bodySmall),
             ],
           ),
           const SizedBox(height: 8),

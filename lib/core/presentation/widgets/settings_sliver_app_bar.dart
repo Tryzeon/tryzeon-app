@@ -36,12 +36,7 @@ class SettingsSliverAppBar extends StatelessWidget {
           padding: EdgeInsets.zero,
         ),
       ),
-      title: Text(
-        title,
-        style: Theme.of(
-          context,
-        ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-      ),
+      title: Text(title, style: Theme.of(context).textTheme.titleLarge),
       centerTitle: true,
     );
   }

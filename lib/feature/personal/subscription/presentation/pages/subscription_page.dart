@@ -148,27 +148,15 @@ class SubscriptionPage extends ConsumerWidget {
               children: [
                 Text(
                   title,
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: isCurrent ? colorScheme.primary : colorScheme.onSurface,
-                  ),
+                  style: theme.textTheme.headlineSmall,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   price,
-                  style: theme.textTheme.displaySmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 32,
-                    color: colorScheme.onSurface,
-                  ),
+                  style: theme.textTheme.displayLarge
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  description,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
+                Text(description, style: theme.textTheme.bodyMedium),
                 const SizedBox(height: 24),
                 ...features.map(
                   (final feature) => Padding(

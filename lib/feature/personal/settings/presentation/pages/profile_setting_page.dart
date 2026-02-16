@@ -24,72 +24,68 @@ class PersonalProfileSettingsPage extends HookConsumerWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(color: colorScheme.surface),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // 自訂 AppBar
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: colorScheme.surface,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.arrow_back_ios_rounded,
-                          color: colorScheme.primary,
-                          size: 20,
-                        ),
-                        onPressed: () => Navigator.pop(context),
-                        padding: EdgeInsets.zero,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('編輯個人資料', style: textTheme.headlineMedium),
-                          Text('更新您的個人資訊', style: textTheme.bodySmall),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // 表單內容
-              Expanded(
-                child: profileAsync.when(
-                  data: (final profile) {
-                    return _PersonalProfileForm(profile: profile);
-                  },
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (final error, final stack) => ErrorView(
-                    message: (error as Failure).displayMessage(context),
-                    onRetry: () => ref.refresh(userProfileProvider),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // 自訂 AppBar
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
                   ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.arrow_back_ios_rounded,
+                        color: colorScheme.primary,
+                        size: 20,
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                      padding: EdgeInsets.zero,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('編輯個人資料', style: textTheme.headlineMedium),
+                        Text('更新您的個人資訊', style: textTheme.bodySmall),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // 表單內容
+            Expanded(
+              child: profileAsync.when(
+                data: (final profile) {
+                  return _PersonalProfileForm(profile: profile);
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (final error, final stack) => ErrorView(
+                  message: (error as Failure).displayMessage(context),
+                  onRetry: () => ref.refresh(userProfileProvider),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -338,8 +334,6 @@ class _PersonalProfileForm extends HookConsumerWidget {
                                 '儲存',
                                 style: textTheme.titleMedium?.copyWith(
                                   color: colorScheme.onPrimary,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
                                   letterSpacing: 0.5,
                                 ),
                               ),

@@ -36,9 +36,7 @@ class StoreHomeHeader extends StatelessWidget {
                 Text('店家後台', style: textTheme.titleLarge),
                 Text(
                   profile == null ? '歡迎回來' : '歡迎回來，${profile!.name}',
-                  style: textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurface.withValues(alpha: 0.6),
-                  ),
+                  style: textTheme.bodySmall,
                 ),
               ],
             ),

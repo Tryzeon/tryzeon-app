@@ -92,10 +92,7 @@ class ProductBasicInfoEditor extends StatelessWidget {
                 children: [
                   Icon(Icons.category_rounded, color: colorScheme.primary, size: 20),
                   const SizedBox(width: 8),
-                  Text(
-                    '商品類型',
-                    style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-                  ),
+                  Text('商品類型', style: textTheme.bodyMedium),
                   const SizedBox(width: 8),
                   Text('(可多選)', style: textTheme.bodySmall),
                 ],

@@ -48,20 +48,11 @@ class ProductHeader extends StatelessWidget {
               ],
 
               // Product Name
-              Text(
-                product.name,
-                style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-              ),
+              Text(product.name, style: textTheme.headlineSmall),
               const SizedBox(height: 8),
 
               // Price
-              Text(
-                '\$${product.price}',
-                style: textTheme.titleLarge?.copyWith(
-                  color: colorScheme.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              Text('\$${product.price}', style: textTheme.titleLarge),
             ],
           ),
         ),

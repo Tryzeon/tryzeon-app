@@ -92,8 +92,6 @@ class ProductCategoryFilter extends HookConsumerWidget {
                       node.category.name,
                       style: textTheme.labelLarge?.copyWith(
                         color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.5,
                       ),
                     ),
                   ),
@@ -137,7 +135,6 @@ class ProductCategoryFilter extends HookConsumerWidget {
                                   '此分類無子分類',
                                   style: textTheme.bodyMedium?.copyWith(
                                     color: colorScheme.outline,
-                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ],

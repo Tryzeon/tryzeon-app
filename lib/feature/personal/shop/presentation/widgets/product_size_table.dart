@@ -9,13 +9,12 @@ class ProductSizeTable extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('尺寸資訊', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+        Text('尺寸資訊', style: textTheme.titleMedium),
         const SizedBox(height: 12),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
@@ -44,10 +43,7 @@ class ProductSizeTable extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        Text(
-          '* 此尺寸數據為手工測量，可能存在些許誤差',
-          style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-        ),
+        Text('* 此尺寸數據為手工測量，可能存在些許誤差', style: textTheme.bodySmall),
       ],
     );
   }

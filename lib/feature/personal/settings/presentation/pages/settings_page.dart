@@ -283,20 +283,12 @@ class _ProfileHeader extends HookConsumerWidget {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            profile.name,
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.onSurface,
-                            ),
-                          ),
+                          Text(profile.name, style: theme.textTheme.titleLarge),
                           if (email != null && email.isNotEmpty) ...[
                             const SizedBox(height: 4),
                             Text(
                               email,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
+                              style: theme.textTheme.bodyMedium,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
