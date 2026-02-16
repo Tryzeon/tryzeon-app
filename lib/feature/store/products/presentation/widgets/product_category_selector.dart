@@ -8,10 +8,12 @@ class ProductCategorySelector extends HookWidget {
     super.key,
     required this.categoryTree,
     required this.selectedCategoryIds,
+    this.onChanged,
   });
 
   final List<CategoryTreeNode> categoryTree;
   final ValueNotifier<Set<String>> selectedCategoryIds;
+  final ValueChanged<Set<String>>? onChanged;
 
   @override
   Widget build(final BuildContext context) {
@@ -62,7 +64,11 @@ class ProductCategorySelector extends HookWidget {
           allCategories: allCategories,
           selectedIds: selectedIds,
           onSelectionChanged: (final ids) {
-            selectedCategoryIds.value = ids;
+            if (onChanged != null) {
+              onChanged!(ids);
+            } else {
+              selectedCategoryIds.value = ids;
+            }
           },
         ),
       );

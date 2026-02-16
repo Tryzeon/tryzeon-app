@@ -23,27 +23,8 @@ class AddProductPage extends HookConsumerWidget {
     final isLoading = useState(false);
     final productCategoryTreeAsync = ref.watch(productCategoryTreeProvider);
 
-    bool validateProductForm() {
-      if (formData.selectedImage.value == null) {
-        TopNotification.show(context, message: '請選擇商品圖片', type: NotificationType.warning);
-        return false;
-      }
-
-      if (formData.selectedCategoryIds.value.isEmpty) {
-        TopNotification.show(
-          context,
-          message: '請至少選擇一種商品類型',
-          type: NotificationType.warning,
-        );
-        return false;
-      }
-
-      return true;
-    }
-
     Future<void> addProduct() async {
       if (!formData.validate(context)) return;
-      if (!validateProductForm()) return;
 
       isLoading.value = true;
 
@@ -100,10 +81,7 @@ class AddProductPage extends HookConsumerWidget {
       productCategoryTreeAsync: productCategoryTreeAsync,
       onRetryCategories: () => ref.refresh(productCategoriesProvider),
       onPickImage: () async {
-        final image = await ImagePickerHelper.pickImage(context);
-        if (image != null) {
-          formData.selectedImage.value = image;
-        }
+        return ImagePickerHelper.pickImage(context);
       },
     );
   }

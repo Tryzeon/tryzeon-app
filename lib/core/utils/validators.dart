@@ -88,4 +88,21 @@ class AppValidators {
     }
     return null;
   }
+
+  static String? validateSelectedCategories(final Set<String>? value) {
+    if (value == null || value.isEmpty) {
+      return '請至少選擇一種商品類型';
+    }
+    return null;
+  }
+
+  static String? validateProductImage(
+    final Object? value, {
+    required final bool isCreateMode,
+  }) {
+    if (isCreateMode && value == null) {
+      return '請選擇商品圖片';
+    }
+    return null;
+  }
 }

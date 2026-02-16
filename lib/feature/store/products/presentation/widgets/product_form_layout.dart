@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_form.dart';
 import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_size_manager.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_basic_info_editor.dart';
@@ -28,7 +30,7 @@ class ProductFormLayout extends StatelessWidget {
   final ProductSizeManager sizeManager;
   final bool isLoading;
   final VoidCallback onSubmit;
-  final VoidCallback onPickImage;
+  final Future<File?> Function() onPickImage;
   final dynamic productCategoryTreeAsync;
   final VoidCallback onRetryCategories;
   final String? existingImageUrl;
@@ -59,11 +61,41 @@ class ProductFormLayout extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
-            ProductImageEditor(
-              selectedImage: formData.selectedImage.value,
-              existingImageUrl: existingImageUrl,
-              existingImagePath: existingImagePath,
-              onPickImage: onPickImage,
+            FormField<File>(
+              initialValue: formData.selectedImage.value,
+              validator: (final value) => AppValidators.validateProductImage(
+                value,
+                isCreateMode: mode == ProductFormMode.create,
+              ),
+              builder: (final state) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ProductImageEditor(
+                      selectedImage: formData.selectedImage.value,
+                      existingImageUrl: existingImageUrl,
+                      existingImagePath: existingImagePath,
+                      onPickImage: () async {
+                        final file = await onPickImage();
+                        if (file != null) {
+                          formData.selectedImage.value = file;
+                          state.didChange(file);
+                        }
+                      },
+                    ),
+                    if (state.hasError)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8, left: 12),
+                        child: Text(
+                          state.errorText!,
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodySmall?.copyWith(color: colorScheme.error),
+                        ),
+                      ),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 24),
             ProductBasicInfoEditor(

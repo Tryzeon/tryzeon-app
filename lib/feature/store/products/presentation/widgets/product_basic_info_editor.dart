@@ -103,9 +103,34 @@ class ProductBasicInfoEditor extends StatelessWidget {
               const SizedBox(height: 12),
               productCategoryTreeAsync.when(
                 data: (final categoryTree) {
-                  return ProductCategorySelector(
-                    categoryTree: categoryTree,
-                    selectedCategoryIds: selectedCategoryIds,
+                  return FormField<Set<String>>(
+                    initialValue: selectedCategoryIds.value,
+                    validator: AppValidators.validateSelectedCategories,
+                    builder: (final state) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ProductCategorySelector(
+                            categoryTree: categoryTree,
+                            selectedCategoryIds: selectedCategoryIds,
+                            onChanged: (final newSet) {
+                              selectedCategoryIds.value = newSet;
+                              state.didChange(newSet);
+                            },
+                          ),
+                          if (state.hasError)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8, left: 12),
+                              child: Text(
+                                state.errorText!,
+                                style: textTheme.bodySmall?.copyWith(
+                                  color: colorScheme.error,
+                                ),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
                   );
                 },
                 loading: () => const Center(

@@ -61,15 +61,6 @@ class ProductDetailPage extends HookConsumerWidget {
     Future<void> updateProduct() async {
       if (!formData.validate(context)) return;
 
-      if (formData.selectedCategoryIds.value.isEmpty) {
-        TopNotification.show(
-          context,
-          message: '請至少選擇一個類型',
-          type: NotificationType.warning,
-        );
-        return;
-      }
-
       isLoading.value = true;
 
       final targetProduct = formData.toProduct(
@@ -116,10 +107,7 @@ class ProductDetailPage extends HookConsumerWidget {
       existingImageUrl: product.imageUrl,
       existingImagePath: product.imagePath,
       onPickImage: () async {
-        final image = await ImagePickerHelper.pickImage(context);
-        if (image != null) {
-          formData.selectedImage.value = image;
-        }
+        return ImagePickerHelper.pickImage(context);
       },
     );
   }
