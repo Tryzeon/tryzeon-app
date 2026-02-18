@@ -36,6 +36,7 @@ devtools_options.yaml
 *.g.dart
 *.freezed.dart
 *.isar
+*.auto_mappr.dart
 
 # Symbolication related
 app.*.symbols
