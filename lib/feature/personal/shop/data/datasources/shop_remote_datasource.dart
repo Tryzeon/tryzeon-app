@@ -83,20 +83,11 @@ class ShopRemoteDataSource {
 
     // 將結果轉換為 Model
     var products = (response as List).map((final item) {
-      final map = Map<String, dynamic>.from(item);
-      final imagePath = map['image_path'] as String?;
-      if (imagePath != null) {
-        map['image_url'] = getProductImageUrl(imagePath);
-      }
+      final map = _withImageUrl(item);
 
       // 處理店家 Logo
       if (map['store_profiles'] != null) {
-        final storeProfile = Map<String, dynamic>.from(map['store_profiles']);
-        final logoPath = storeProfile['logo_path'] as String?;
-        if (logoPath != null && logoPath.isNotEmpty) {
-          storeProfile['logo_url'] = getStoreLogoUrl(logoPath);
-        }
-        map['store_profiles'] = storeProfile;
+        map['store_profiles'] = _withStoreLogoUrl(map['store_profiles']);
       }
 
       return ShopProductModel.fromJson(map);
@@ -130,5 +121,23 @@ class ShopRemoteDataSource {
 
   String getStoreLogoUrl(final String logoPath) {
     return _supabaseClient.storage.from(_logoBucket).getPublicUrl(logoPath);
+  }
+
+  Map<String, dynamic> _withImageUrl(final Map<String, dynamic> json) {
+    final map = Map<String, dynamic>.from(json);
+    final imagePath = map['image_path'] as String?;
+    if (imagePath != null && imagePath.isNotEmpty) {
+      map['image_url'] = getProductImageUrl(imagePath);
+    }
+    return map;
+  }
+
+  Map<String, dynamic> _withStoreLogoUrl(final Map<String, dynamic> json) {
+    final map = Map<String, dynamic>.from(json);
+    final logoPath = map['logo_path'] as String?;
+    if (logoPath != null && logoPath.isNotEmpty) {
+      map['logo_url'] = getStoreLogoUrl(logoPath);
+    }
+    return map;
   }
 }

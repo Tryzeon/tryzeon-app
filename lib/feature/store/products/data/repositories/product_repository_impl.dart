@@ -33,9 +33,7 @@ class ProductRepositoryImpl implements ProductRepository {
       try {
         final cachedProducts = await _localDataSource.getProducts(sort: sort);
         if (cachedProducts != null) {
-          final products = _mappr.convertList<ProductModel, Product>(cachedProducts);
-          final cachedProductsWithUrl = _attachImageUrls(products);
-          return Ok(cachedProductsWithUrl);
+          return Ok(_mappr.convertList<ProductModel, Product>(cachedProducts));
         }
       } catch (e, stackTrace) {
         AppLogger.warning(
@@ -61,20 +59,11 @@ class ProductRepositoryImpl implements ProductRepository {
       }
 
       final products = _mappr.convertList<ProductModel, Product>(remoteProducts);
-      final remoteProductsWithUrl = _attachImageUrls(products);
-      return Ok(remoteProductsWithUrl);
+      return Ok(products);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to load product list', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
-  }
-
-  List<Product> _attachImageUrls(final List<Product> products) {
-    return products.map((final product) {
-      return product.copyWith(
-        imageUrl: _remoteDataSource.getProductImageUrl(product.imagePath),
-      );
-    }).toList();
   }
 
   @override
@@ -92,15 +81,13 @@ class ProductRepositoryImpl implements ProductRepository {
       final bytes = await image.readAsBytes();
       await _localDataSource.saveProductImage(bytes, imagePath);
 
-      final imageUrl = _remoteDataSource.getProductImageUrl(imagePath);
-
       final productModel = ProductModel(
         storeId: product.storeId,
         name: product.name,
         categories: product.categories,
         price: product.price,
         imagePath: imagePath,
-        imageUrl: imageUrl,
+        imageUrl: '',
         purchaseLink: product.purchaseLink,
         material: product.material,
         elasticity: product.elasticity,

@@ -25,14 +25,7 @@ class StoreProfileRemoteDataSource {
         .maybeSingle();
 
     if (response == null) return null;
-
-    final map = Map<String, dynamic>.from(response);
-    final logoPath = map['logo_path'] as String?;
-    if (logoPath != null) {
-      map['logo_url'] = getLogoPublicUrl(logoPath);
-    }
-
-    return StoreProfileModel.fromJson(map);
+    return StoreProfileModel.fromJson(_withLogoUrl(response));
   }
 
   Future<StoreProfileModel> updateStoreProfile(final StoreProfileModel profile) async {
@@ -53,13 +46,7 @@ class StoreProfileRemoteDataSource {
         .select()
         .single();
 
-    final map = Map<String, dynamic>.from(response);
-    final logoPath = map['logo_path'] as String?;
-    if (logoPath != null) {
-      map['logo_url'] = getLogoPublicUrl(logoPath);
-    }
-
-    return StoreProfileModel.fromJson(map);
+    return StoreProfileModel.fromJson(_withLogoUrl(response));
   }
 
   Future<String> uploadLogo({
@@ -87,5 +74,14 @@ class StoreProfileRemoteDataSource {
 
   String getLogoPublicUrl(final String logoPath) {
     return _supabaseClient.storage.from(_logoBucket).getPublicUrl(logoPath);
+  }
+
+  Map<String, dynamic> _withLogoUrl(final Map<String, dynamic> json) {
+    final map = Map<String, dynamic>.from(json);
+    final logoPath = map['logo_path'] as String?;
+    if (logoPath != null && logoPath.isNotEmpty) {
+      map['logo_url'] = getLogoPublicUrl(logoPath);
+    }
+    return map;
   }
 }

@@ -9,6 +9,7 @@ class ProductCategoryModel {
     required this.name,
     this.parentId,
     this.imagePath,
+    this.imageUrl,
   });
 
   factory ProductCategoryModel.fromJson(final Map<String, dynamic> json) =>
@@ -18,6 +19,8 @@ class ProductCategoryModel {
   final String name;
   final String? parentId;
   final String? imagePath;
+  @JsonKey(includeToJson: false)
+  final String? imageUrl;
 
   Map<String, dynamic> toJson() => _$ProductCategoryModelToJson(this);
 }

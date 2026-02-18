@@ -23,7 +23,9 @@ class ProductCategoryRepositoryImpl implements ProductCategoryRepository {
       try {
         final cachedCategories = await _localDataSource.getProductCategories();
         if (cachedCategories != null) {
-          return Ok(_mapModelsToEntities(cachedCategories));
+          return Ok(
+            _mappr.convertList<ProductCategoryModel, ProductCategory>(cachedCategories),
+          );
         }
       } catch (e, stackTrace) {
         AppLogger.warning(
@@ -45,22 +47,12 @@ class ProductCategoryRepositoryImpl implements ProductCategoryRepository {
         AppLogger.warning('Failed to save product categories to cache', e, stackTrace);
       }
 
-      return Ok(_mapModelsToEntities(remoteCategories));
+      return Ok(
+        _mappr.convertList<ProductCategoryModel, ProductCategory>(remoteCategories),
+      );
     } catch (e, stackTrace) {
       AppLogger.error('Failed to get product categories', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
-  }
-
-  List<ProductCategory> _mapModelsToEntities(final List<ProductCategoryModel> models) {
-    return models.map((final model) {
-      final entity = _mappr.convert<ProductCategoryModel, ProductCategory>(model);
-      if (model.imagePath != null) {
-        return entity.copyWith(
-          imageUrl: _remoteDataSource.getCategoryImageUrl(model.imagePath!),
-        );
-      }
-      return entity;
-    }).toList();
   }
 }

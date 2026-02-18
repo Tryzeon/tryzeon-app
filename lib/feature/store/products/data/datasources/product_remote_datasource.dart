@@ -30,12 +30,7 @@ class ProductRemoteDataSource {
         .order(dbColumn, ascending: sort.ascending);
 
     return (response as List).map((final e) {
-      final map = Map<String, dynamic>.from(e);
-      final imagePath = map['image_path'] as String?;
-      if (imagePath != null) {
-        map['image_url'] = getProductImageUrl(imagePath);
-      }
-      return ProductModel.fromJson(map);
+      return ProductModel.fromJson(_withImageUrl(e));
     }).toList();
   }
 
@@ -72,12 +67,7 @@ class ProductRemoteDataSource {
         .eq('id', productId)
         .single();
 
-    final map = Map<String, dynamic>.from(response);
-    final imagePath = map['image_path'] as String?;
-    if (imagePath != null) {
-      map['image_url'] = getProductImageUrl(imagePath);
-    }
-    return ProductModel.fromJson(map);
+    return ProductModel.fromJson(_withImageUrl(response));
   }
 
   Future<void> updateProduct(final ProductModel product) async {
@@ -152,5 +142,14 @@ class ProductRemoteDataSource {
   String getProductImageUrl(final String imagePath) {
     if (imagePath.isEmpty) return '';
     return _supabaseClient.storage.from(_productImagesBucket).getPublicUrl(imagePath);
+  }
+
+  Map<String, dynamic> _withImageUrl(final Map<String, dynamic> json) {
+    final map = Map<String, dynamic>.from(json);
+    final imagePath = map['image_path'] as String?;
+    if (imagePath != null && imagePath.isNotEmpty) {
+      map['image_url'] = getProductImageUrl(imagePath);
+    }
+    return map;
   }
 }

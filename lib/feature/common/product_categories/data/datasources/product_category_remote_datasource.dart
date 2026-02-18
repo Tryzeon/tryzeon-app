@@ -16,11 +16,20 @@ class ProductCategoryRemoteDataSource {
         .order('priority', ascending: false);
 
     return (response as List)
-        .map((final e) => ProductCategoryModel.fromJson(e as Map<String, dynamic>))
+        .map((final e) => ProductCategoryModel.fromJson(_withImageUrl(e)))
         .toList();
   }
 
-  String getCategoryImageUrl(final String imagePath) {
+  Map<String, dynamic> _withImageUrl(final Map<String, dynamic> json) {
+    final map = Map<String, dynamic>.from(json);
+    final imagePath = map['image_path'] as String?;
+    if (imagePath != null && imagePath.isNotEmpty) {
+      map['image_url'] = _getPublicUrl(imagePath);
+    }
+    return map;
+  }
+
+  String _getPublicUrl(final String imagePath) {
     return _supabaseClient.storage.from(_bucket).getPublicUrl(imagePath);
   }
 }
