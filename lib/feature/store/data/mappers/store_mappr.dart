@@ -47,7 +47,6 @@ import 'store_mappr.auto_mappr.dart';
 
   // StoreAnalyticsSummary mappings
   MapType<StoreAnalyticsSummaryModel, StoreAnalyticsSummary>(),
-  MapType<StoreAnalyticsSummary, StoreAnalyticsSummaryModel>(),
   MapType<StoreAnalyticsCollection, StoreAnalyticsSummaryModel>(),
   MapType<StoreAnalyticsSummaryModel, StoreAnalyticsCollection>(),
 ])
