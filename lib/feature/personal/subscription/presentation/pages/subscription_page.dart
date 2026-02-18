@@ -146,15 +146,9 @@ class SubscriptionPage extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: theme.textTheme.headlineSmall,
-                ),
+                Text(title, style: theme.textTheme.headlineSmall),
                 const SizedBox(height: 8),
-                Text(
-                  price,
-                  style: theme.textTheme.displayLarge
-                ),
+                Text(price, style: theme.textTheme.displayLarge),
                 const SizedBox(height: 8),
                 Text(description, style: theme.textTheme.bodyMedium),
                 const SizedBox(height: 24),

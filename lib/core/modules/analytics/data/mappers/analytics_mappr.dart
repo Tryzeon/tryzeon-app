@@ -16,7 +16,6 @@ import 'analytics_mappr.auto_mappr.dart';
     fields: [Field('eventType', custom: AnalyticsMappr.eventTypeToString)],
   ),
 ])
-
 class AnalyticsMappr extends $AnalyticsMappr {
   const AnalyticsMappr();
 

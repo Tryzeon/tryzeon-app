@@ -63,8 +63,9 @@ class StoreAnalyticsRepositoryImpl implements StoreAnalyticsRepository {
         );
       }
 
-      final summary = _mappr
-          .convert<StoreAnalyticsSummaryModel, StoreAnalyticsSummary>(remoteSummary);
+      final summary = _mappr.convert<StoreAnalyticsSummaryModel, StoreAnalyticsSummary>(
+        remoteSummary,
+      );
       return Ok(summary);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to get store analytics summary', e, stackTrace);
