@@ -27,12 +27,24 @@ class StoreAnalyticsRepositoryImpl implements StoreAnalyticsRepository {
   }) async {
     try {
       final now = DateTime.now();
-      // 判斷是否為過去的月份 (且非 All time)
-      // 如果 year/month 為 null (All time)，或是當前月份/未來，則不讀/存 cache
-      final isPastMonth =
-          year != null &&
-          month != null &&
-          (year < now.year || (year == now.year && month < now.month));
+      final isAllTime = year == null || month == null;
+
+      // All time: fetch all rows, aggregate client-side
+      if (isAllTime) {
+        final summaries = await _remoteDataSource.getAllStoreAnalyticsSummaries(storeId);
+        final summary = StoreAnalyticsSummary(
+          viewCount: summaries.fold(0, (final sum, final s) => sum + s.viewCount),
+          tryonCount: summaries.fold(0, (final sum, final s) => sum + s.tryonCount),
+          purchaseClickCount: summaries.fold(
+            0,
+            (final sum, final s) => sum + s.purchaseClickCount,
+          ),
+        );
+        return Ok(summary);
+      }
+
+      // 判斷是否為過去的月份
+      final isPastMonth = year < now.year || (year == now.year && month < now.month);
 
       if (isPastMonth) {
         final cachedSummary = await _localDataSource.getStoreAnalyticsSummary(
@@ -55,12 +67,7 @@ class StoreAnalyticsRepositoryImpl implements StoreAnalyticsRepository {
       );
 
       if (isPastMonth) {
-        await _localDataSource.saveStoreAnalyticsSummary(
-          remoteSummary,
-          storeId: storeId,
-          year: year,
-          month: month,
-        );
+        await _localDataSource.saveStoreAnalyticsSummary(remoteSummary);
       }
 
       final summary = _mappr.convert<StoreAnalyticsSummaryModel, StoreAnalyticsSummary>(

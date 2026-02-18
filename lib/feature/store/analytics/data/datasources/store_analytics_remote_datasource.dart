@@ -7,16 +7,47 @@ class StoreAnalyticsRemoteDataSource {
 
   final SupabaseClient _supabaseClient;
 
+  /// Fetches analytics for a specific month (single row by primary key).
   Future<StoreAnalyticsSummaryModel> getStoreAnalyticsSummary(
     final String storeId, {
-    final int? year,
-    final int? month,
+    required final int year,
+    required final int month,
   }) async {
-    final response = await _supabaseClient.rpc(
-      AppConstants.functionGetStoreAnalyticsSummary,
-      params: {'p_store_id': storeId, 'p_year': year, 'p_month': month},
-    );
+    final response = await _supabaseClient
+        .from(AppConstants.tableAnalyticsMonthlySummary)
+        .select()
+        .eq('store_id', storeId)
+        .eq('year', year)
+        .eq('month', month)
+        .maybeSingle();
+
+    if (response == null) {
+      return StoreAnalyticsSummaryModel(
+        storeId: storeId,
+        year: year,
+        month: month,
+        viewCount: 0,
+        tryonCount: 0,
+        purchaseClickCount: 0,
+      );
+    }
 
     return StoreAnalyticsSummaryModel.fromJson(Map<String, dynamic>.from(response));
+  }
+
+  /// Fetches all monthly summaries for a store (for All time aggregation).
+  Future<List<StoreAnalyticsSummaryModel>> getAllStoreAnalyticsSummaries(
+    final String storeId,
+  ) async {
+    final response = await _supabaseClient
+        .from(AppConstants.tableAnalyticsMonthlySummary)
+        .select()
+        .eq('store_id', storeId);
+
+    return response
+        .map(
+          (final e) => StoreAnalyticsSummaryModel.fromJson(Map<String, dynamic>.from(e)),
+        )
+        .toList();
   }
 }

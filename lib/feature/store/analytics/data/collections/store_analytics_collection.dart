@@ -18,6 +18,4 @@ class StoreAnalyticsCollection {
   late int tryonCount;
 
   late int purchaseClickCount;
-
-  late DateTime updatedAt;
 }
