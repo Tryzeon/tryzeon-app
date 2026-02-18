@@ -14,8 +14,4 @@ class SubscriptionModel {
   final SubscriptionPlan plan;
 
   Map<String, dynamic> toJson() => _$SubscriptionModelToJson(this);
-
-  Subscription toEntity() {
-    return Subscription(userId: userId, plan: plan);
-  }
 }

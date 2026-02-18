@@ -1,7 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:tryzeon/core/shared/measurements/data/models/size_measurements_model.dart';
-import 'package:tryzeon/core/shared/measurements/entities/size_measurements.dart';
-import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/product_attributes.dart';
 
 part 'product_model.g.dart';
@@ -17,19 +15,6 @@ class ProductSizeModel {
     this.updatedAt,
   });
 
-  factory ProductSizeModel.fromEntity(final ProductSize entity) {
-    return ProductSizeModel(
-      id: entity.id,
-      productId: entity.productId,
-      name: entity.name,
-      measurements: entity.measurements != null
-          ? SizeMeasurementsModel.fromEntity(entity.measurements!)
-          : null,
-      createdAt: entity.createdAt,
-      updatedAt: entity.updatedAt,
-    );
-  }
-
   factory ProductSizeModel.fromJson(final Map<String, dynamic> json) =>
       _$ProductSizeModelFromJson(json);
 
@@ -41,17 +26,6 @@ class ProductSizeModel {
   final DateTime? updatedAt;
 
   Map<String, dynamic> toJson() => _$ProductSizeModelToJson(this);
-
-  ProductSize toEntity() {
-    return ProductSize(
-      id: id,
-      productId: productId,
-      name: name,
-      measurements: measurements?.toEntity() ?? const SizeMeasurements(),
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-    );
-  }
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -72,25 +46,6 @@ class ProductModel {
     this.createdAt,
     this.updatedAt,
   });
-
-  factory ProductModel.fromEntity(final Product entity) {
-    return ProductModel(
-      id: entity.id,
-      storeId: entity.storeId,
-      name: entity.name,
-      categories: entity.categories,
-      price: entity.price,
-      imagePath: entity.imagePath,
-      imageUrl: entity.imageUrl,
-      purchaseLink: entity.purchaseLink,
-      material: entity.material,
-      elasticity: entity.elasticity,
-      fit: entity.fit,
-      sizes: entity.sizes?.map(ProductSizeModel.fromEntity).toList(),
-      createdAt: entity.createdAt,
-      updatedAt: entity.updatedAt,
-    );
-  }
 
   factory ProductModel.fromJson(final Map<String, dynamic> json) =>
       _$ProductModelFromJson(json);
@@ -113,23 +68,4 @@ class ProductModel {
   final DateTime? updatedAt;
 
   Map<String, dynamic> toJson() => _$ProductModelToJson(this);
-
-  Product toEntity() {
-    return Product(
-      storeId: storeId,
-      name: name,
-      categories: categories,
-      price: price,
-      imagePath: imagePath,
-      imageUrl: imageUrl,
-      id: id,
-      purchaseLink: purchaseLink,
-      material: material,
-      elasticity: elasticity,
-      fit: fit,
-      sizes: sizes?.map((final s) => s.toEntity()).toList(),
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-    );
-  }
 }

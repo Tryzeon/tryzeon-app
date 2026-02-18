@@ -1,7 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 
 import '../../domain/entities/wardrobe_category.dart';
-import '../../domain/entities/wardrobe_item.dart';
 
 part 'wardrobe_item_model.g.dart';
 
@@ -16,15 +15,6 @@ class WardrobeItemModel {
     this.updatedAt,
   });
 
-  factory WardrobeItemModel.fromEntity(final WardrobeItem entity) {
-    return WardrobeItemModel(
-      id: entity.id,
-      imagePath: entity.imagePath,
-      category: entity.category,
-      tags: entity.tags,
-    );
-  }
-
   factory WardrobeItemModel.fromJson(final Map<String, dynamic> json) =>
       _$WardrobeItemModelFromJson(json);
 
@@ -36,8 +26,4 @@ class WardrobeItemModel {
   final DateTime? updatedAt;
 
   Map<String, dynamic> toJson() => _$WardrobeItemModelToJson(this);
-
-  WardrobeItem toEntity() {
-    return WardrobeItem(id: id, imagePath: imagePath, category: category, tags: tags);
-  }
 }

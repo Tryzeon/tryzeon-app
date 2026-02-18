@@ -1,5 +1,4 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 
 part 'store_profile_model.g.dart';
 
@@ -16,17 +15,6 @@ class StoreProfileModel {
     this.updatedAt,
   });
 
-  factory StoreProfileModel.fromEntity(final StoreProfile entity) {
-    return StoreProfileModel(
-      id: entity.id,
-      ownerId: entity.ownerId,
-      name: entity.name,
-      address: entity.address,
-      logoPath: entity.logoPath,
-      logoUrl: entity.logoUrl,
-    );
-  }
-
   factory StoreProfileModel.fromJson(final Map<String, dynamic> json) =>
       _$StoreProfileModelFromJson(json);
 
@@ -40,15 +28,4 @@ class StoreProfileModel {
   final DateTime? updatedAt;
 
   Map<String, dynamic> toJson() => _$StoreProfileModelToJson(this);
-
-  StoreProfile toEntity() {
-    return StoreProfile(
-      id: id,
-      ownerId: ownerId,
-      name: name,
-      address: address,
-      logoPath: logoPath,
-      logoUrl: logoUrl,
-    );
-  }
 }

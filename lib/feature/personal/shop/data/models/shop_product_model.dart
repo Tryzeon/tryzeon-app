@@ -1,6 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_store_info_model.dart';
-import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/product_attributes.dart';
 
@@ -47,23 +46,4 @@ class ShopProductModel {
   final DateTime? updatedAt;
 
   Map<String, dynamic> toJson() => _$ShopProductModelToJson(this);
-
-  ShopProduct toEntity() {
-    return ShopProduct(
-      storeInfo: storeInfo.toEntity(),
-      name: name,
-      categories: categories,
-      price: price,
-      imagePath: imagePath,
-      imageUrl: imageUrl,
-      id: id,
-      purchaseLink: purchaseLink,
-      material: material,
-      elasticity: elasticity,
-      fit: fit,
-      sizes: sizes?.map((final s) => s.toEntity()).toList(),
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-    );
-  }
 }

@@ -1,5 +1,4 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 
 part 'shop_store_info_model.g.dart';
 
@@ -21,8 +20,4 @@ class ShopStoreInfoModel {
   final String? logoUrl;
 
   Map<String, dynamic> toJson() => _$ShopStoreInfoModelToJson(this);
-
-  ShopStoreInfo toEntity() {
-    return ShopStoreInfo(id: id, name: name, address: address, logoUrl: logoUrl);
-  }
 }
