@@ -38,7 +38,11 @@ class StoreAnalyticsLocalDataSource {
   }) async {
     final isar = await _isarService.db;
     // Use manual toCollection with extra parameters (preserved method)
-    final collection = summary.toCollection(storeId, year, month);
+    final collection =
+        _mappr.convert<StoreAnalyticsSummaryModel, StoreAnalyticsCollection>(summary)
+          ..storeId = storeId
+          ..year = year
+          ..month = month;
 
     await isar.writeTxn(() async {
       // Find existing to preserve ID if we want upsert, or just simple delete+insert or update

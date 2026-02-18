@@ -5,8 +5,8 @@ part 'store_analytics_summary.freezed.dart';
 @freezed
 sealed class StoreAnalyticsSummary with _$StoreAnalyticsSummary {
   const factory StoreAnalyticsSummary({
-    required final int totalViewCount,
-    required final int totalTryonCount,
-    required final int totalPurchaseClickCount,
+    required final int viewCount,
+    required final int tryonCount,
+    required final int purchaseClickCount,
   }) = _StoreAnalyticsSummary;
 }

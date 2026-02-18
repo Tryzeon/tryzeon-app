@@ -13,11 +13,11 @@ class StoreAnalyticsCollection {
 
   late int month;
 
-  late int totalViewCount; // view_count
+  late int viewCount;
 
-  late int totalTryonCount; // tryon_count
+  late int tryonCount;
 
-  late int totalPurchaseClickCount; // purchase_click_count
+  late int purchaseClickCount;
 
   late DateTime updatedAt;
 }

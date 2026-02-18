@@ -20,9 +20,9 @@ class StoreTrafficDashboard extends HookConsumerWidget {
     bool hasError = false;
 
     if (analyticsAsync.hasValue && analyticsAsync.value != null) {
-      totalView = analyticsAsync.value!.totalViewCount;
-      totalTryOn = analyticsAsync.value!.totalTryonCount;
-      totalPurchaseClicks = analyticsAsync.value!.totalPurchaseClickCount;
+      totalView = analyticsAsync.value!.viewCount;
+      totalTryOn = analyticsAsync.value!.tryonCount;
+      totalPurchaseClicks = analyticsAsync.value!.purchaseClickCount;
     } else if (analyticsAsync.hasError) {
       hasError = true;
     }
