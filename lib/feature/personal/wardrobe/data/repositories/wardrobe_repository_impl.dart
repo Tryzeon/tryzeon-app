@@ -70,7 +70,7 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
   }) async {
     try {
       // Convert category enum to string for API
-      final categoryString = category.name;
+      final categoryString = category.value;
       final imageName = p.basename(image.path);
       final bytes = await image.readAsBytes();
 

@@ -1,29 +1,20 @@
 import '../../domain/value_objects/product_attributes.dart';
 
+/// UI display label extension for [ProductElasticity] in Presentation Layer.
 extension ProductElasticityX on ProductElasticity {
-  String get label {
-    switch (this) {
-      case ProductElasticity.none:
-        return '無';
-      case ProductElasticity.low:
-        return '低';
-      case ProductElasticity.medium:
-        return '中';
-      case ProductElasticity.high:
-        return '高';
-    }
-  }
+  String get label => switch (this) {
+    ProductElasticity.none => '無',
+    ProductElasticity.low => '低',
+    ProductElasticity.medium => '中',
+    ProductElasticity.high => '高',
+  };
 }
 
+/// UI display label extension for [ProductFit] in Presentation Layer.
 extension ProductFitX on ProductFit {
-  String get label {
-    switch (this) {
-      case ProductFit.slim:
-        return '合身';
-      case ProductFit.regular:
-        return '常規';
-      case ProductFit.oversize:
-        return 'Oversize';
-    }
-  }
+  String get label => switch (this) {
+    ProductFit.slim => '合身',
+    ProductFit.regular => '常規',
+    ProductFit.oversize => 'Oversize',
+  };
 }

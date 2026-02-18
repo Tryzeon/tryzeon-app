@@ -121,7 +121,7 @@ class _PersonalProfileForm extends HookConsumerWidget {
       // 收集所有控制器的值並轉換為 Map
       final measurementsJson = <String, dynamic>{
         for (final entry in measurementControllers.entries)
-          entry.key.name: double.tryParse(entry.value.text),
+          entry.key.value: double.tryParse(entry.value.text),
       };
 
       final BodyMeasurements newMeasurements = BodyMeasurements.fromJson(

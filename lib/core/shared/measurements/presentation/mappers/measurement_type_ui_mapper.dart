@@ -3,38 +3,25 @@ import '../../entities/measurement_type.dart';
 
 export '../../entities/measurement_type.dart';
 
+/// UI display extensions for [MeasurementType] in Presentation Layer.
 extension MeasurementTypeUiMapper on MeasurementType {
-  String get label {
-    switch (this) {
-      case MeasurementType.height:
-        return '身高';
-      case MeasurementType.chest:
-        return '胸圍';
-      case MeasurementType.waist:
-        return '腰圍';
-      case MeasurementType.hips:
-        return '臀圍';
-      case MeasurementType.shoulder:
-        return '肩寬';
-      case MeasurementType.sleeve:
-        return '袖長';
-    }
-  }
+  /// The localized label for UI rendering.
+  String get label => switch (this) {
+    MeasurementType.height => '身高',
+    MeasurementType.chest => '胸圍',
+    MeasurementType.waist => '腰圍',
+    MeasurementType.hips => '臀圍',
+    MeasurementType.shoulder => '肩寬',
+    MeasurementType.sleeve => '袖長',
+  };
 
-  IconData get icon {
-    switch (this) {
-      case MeasurementType.height:
-        return Icons.height_rounded;
-      case MeasurementType.chest:
-        return Icons.accessibility_rounded;
-      case MeasurementType.waist:
-        return Icons.accessibility_rounded;
-      case MeasurementType.hips:
-        return Icons.accessibility_rounded;
-      case MeasurementType.shoulder:
-        return Icons.accessibility_rounded;
-      case MeasurementType.sleeve:
-        return Icons.accessibility_rounded;
-    }
-  }
+  /// The icon representing this measurement type.
+  IconData get icon => switch (this) {
+    MeasurementType.height => Icons.height_rounded,
+    MeasurementType.chest => Icons.accessibility_rounded,
+    MeasurementType.waist => Icons.accessibility_rounded,
+    MeasurementType.hips => Icons.accessibility_rounded,
+    MeasurementType.shoulder => Icons.accessibility_rounded,
+    MeasurementType.sleeve => Icons.accessibility_rounded,
+  };
 }

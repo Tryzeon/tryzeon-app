@@ -49,10 +49,10 @@ class ProductSizeEntryController {
 
       if (value != null) {
         final convertedValue = value * multiplier;
-        measurementsJson[type.name] = double.parse(convertedValue.toStringAsFixed(1));
+        measurementsJson[type.value] = double.parse(convertedValue.toStringAsFixed(1));
       }
       final convertedOffset = offset * multiplier;
-      measurementsJson['${type.name}_offset'] = double.parse(
+      measurementsJson['${type.value}_offset'] = double.parse(
         convertedOffset.toStringAsFixed(1),
       );
     }

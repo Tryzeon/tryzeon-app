@@ -1,2 +1,11 @@
-/// 身型測量欄位定義
-enum MeasurementType { height, chest, waist, hips, shoulder, sleeve }
+enum MeasurementType {
+  height('height'),
+  chest('chest'),
+  waist('waist'),
+  hips('hips'),
+  shoulder('shoulder'),
+  sleeve('sleeve');
+
+  const MeasurementType(this.value);
+  final String value;
+}

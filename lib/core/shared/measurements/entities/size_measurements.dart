@@ -31,49 +31,33 @@ sealed class SizeMeasurements with _$SizeMeasurements {
     for (final type in MeasurementType.values) {
       final value = getValue(type);
       if (value != null) {
-        data[type.name] = value;
+        data[type.value] = value;
       }
       final offset = getOffset(type);
       if (offset != null) {
-        data['${type.name}_offset'] = offset;
+        data['${type.value}_offset'] = offset;
       }
     }
     return data;
   }
 
-  double? getValue(final MeasurementType type) {
-    switch (type) {
-      case MeasurementType.height:
-        return height;
-      case MeasurementType.chest:
-        return chest;
-      case MeasurementType.waist:
-        return waist;
-      case MeasurementType.hips:
-        return hips;
-      case MeasurementType.shoulder:
-        return shoulder;
-      case MeasurementType.sleeve:
-        return sleeve;
-    }
-  }
+  double? getValue(final MeasurementType type) => switch (type) {
+    MeasurementType.height => height,
+    MeasurementType.chest => chest,
+    MeasurementType.waist => waist,
+    MeasurementType.hips => hips,
+    MeasurementType.shoulder => shoulder,
+    MeasurementType.sleeve => sleeve,
+  };
 
-  double? getOffset(final MeasurementType type) {
-    switch (type) {
-      case MeasurementType.height:
-        return heightOffset;
-      case MeasurementType.chest:
-        return chestOffset;
-      case MeasurementType.waist:
-        return waistOffset;
-      case MeasurementType.hips:
-        return hipsOffset;
-      case MeasurementType.shoulder:
-        return shoulderOffset;
-      case MeasurementType.sleeve:
-        return sleeveOffset;
-    }
-  }
+  double? getOffset(final MeasurementType type) => switch (type) {
+    MeasurementType.height => heightOffset,
+    MeasurementType.chest => chestOffset,
+    MeasurementType.waist => waistOffset,
+    MeasurementType.hips => hipsOffset,
+    MeasurementType.shoulder => shoulderOffset,
+    MeasurementType.sleeve => sleeveOffset,
+  };
 
   /// 取得該測量類型的區間範圍 (min, max)
   /// 如果沒有值，回傳 null

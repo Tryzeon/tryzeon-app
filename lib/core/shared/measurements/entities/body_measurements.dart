@@ -23,24 +23,16 @@ sealed class BodyMeasurements with _$BodyMeasurements {
 
   @override
   Map<String, dynamic> toJson() {
-    return {for (final type in MeasurementType.values) type.name: this[type]};
+    return {for (final type in MeasurementType.values) type.value: this[type]};
   }
 
   // / 透過 Enum 動態取得數值
-  double? operator [](final MeasurementType type) {
-    switch (type) {
-      case MeasurementType.height:
-        return height;
-      case MeasurementType.chest:
-        return chest;
-      case MeasurementType.waist:
-        return waist;
-      case MeasurementType.hips:
-        return hips;
-      case MeasurementType.shoulder:
-        return shoulder;
-      case MeasurementType.sleeve:
-        return sleeve;
-    }
-  }
+  double? operator [](final MeasurementType type) => switch (type) {
+    MeasurementType.height => height,
+    MeasurementType.chest => chest,
+    MeasurementType.waist => waist,
+    MeasurementType.hips => hips,
+    MeasurementType.shoulder => shoulder,
+    MeasurementType.sleeve => sleeve,
+  };
 }

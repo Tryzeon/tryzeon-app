@@ -59,7 +59,7 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       // Store login type preference
-      await _localDataSource.setLastLoginType(userType.name);
+      await _localDataSource.setLastLoginType(userType.value);
 
       return const Ok(null);
     } catch (e, stackTrace) {
@@ -107,10 +107,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final typeString = await _localDataSource.getLastLoginType();
       if (typeString == null) return const Ok(null);
 
-      final userType = UserType.values.firstWhere(
-        (final type) => type.name == typeString,
-        orElse: () => UserType.personal,
-      );
+      final userType = UserType.tryFromString(typeString) ?? UserType.personal;
 
       return Ok(userType);
     } catch (e, stackTrace) {
@@ -122,7 +119,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Result<void, Failure>> setLastLoginType(final UserType userType) async {
     try {
-      await _localDataSource.setLastLoginType(userType.name);
+      await _localDataSource.setLastLoginType(userType.value);
       return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to save login type', e, stackTrace);
@@ -152,7 +149,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }) async {
     try {
       await _remoteDataSource.verifyEmailOTP(email: email, token: token);
-      await _localDataSource.setLastLoginType(userType.name);
+      await _localDataSource.setLastLoginType(userType.value);
       return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('Email OTP verification failed', e, stackTrace);

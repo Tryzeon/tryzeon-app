@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription.dart';
+import 'package:tryzeon/feature/personal/subscription/presentation/mappers/subscription_plan_ui_mapper.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_provider.dart';
 
 class SubscriptionPage extends ConsumerWidget {

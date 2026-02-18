@@ -39,28 +39,14 @@ import 'personal_mappr.auto_mappr.dart';
     ),
 
     // WardrobeItem mappings
-    MapType<WardrobeItemModel, WardrobeItem>(
-      converters: [
-        TypeConverter<WardrobeCategory, String>(PersonalMappr.categoryToString),
-      ],
-    ),
-    MapType<WardrobeItem, WardrobeItemModel>(
-      converters: [
-        TypeConverter<String, WardrobeCategory>(PersonalMappr.stringToCategory),
-      ],
-    ),
+    MapType<WardrobeItemModel, WardrobeItem>(),
+    MapType<WardrobeItem, WardrobeItemModel>(),
     MapType<WardrobeItemModel, WardrobeItemCollection>(
       fields: [Field('itemId', from: 'id')],
-      converters: [
-        TypeConverter<WardrobeCategory, String>(PersonalMappr.categoryToString),
-        TypeConverter<String?, String>(PersonalMappr.nullableStringToString),
-      ],
+      converters: [TypeConverter<String?, String>(PersonalMappr.nullableStringToString)],
     ),
     MapType<WardrobeItemCollection, WardrobeItemModel>(
       fields: [Field('id', from: 'itemId')],
-      converters: [
-        TypeConverter<String, WardrobeCategory>(PersonalMappr.stringToCategory),
-      ],
     ),
 
     // Subscription mappings
@@ -83,15 +69,6 @@ import 'personal_mappr.auto_mappr.dart';
 )
 class PersonalMappr extends $PersonalMappr {
   const PersonalMappr();
-
-  static String categoryToString(final WardrobeCategory category) => category.name;
-
-  static WardrobeCategory stringToCategory(final String value) {
-    return WardrobeCategory.values.firstWhere(
-      (final cat) => cat.name == value,
-      orElse: () => WardrobeCategory.others,
-    );
-  }
 
   static String itemIdFromModel(final WardrobeItemModel model) => model.id ?? '';
 

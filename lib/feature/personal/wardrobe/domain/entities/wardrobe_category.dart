@@ -1,16 +1,12 @@
-/// Wardrobe item category enum representing business domain concepts.
 enum WardrobeCategory {
-  top,
-  pants,
-  skirt,
-  jacket,
-  shoes,
-  accessories,
-  others;
+  top('top'),
+  pants('pants'),
+  skirt('skirt'),
+  jacket('jacket'),
+  shoes('shoes'),
+  accessories('accessories'),
+  others('others');
 
-  /// Get all available categories
-  static List<WardrobeCategory> get all => WardrobeCategory.values;
-
-  static WardrobeCategory fromApiString(final String value) =>
-      WardrobeCategory.values.byName(value);
+  const WardrobeCategory(this.value);
+  final String value;
 }
