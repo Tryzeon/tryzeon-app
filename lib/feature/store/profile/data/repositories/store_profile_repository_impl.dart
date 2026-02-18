@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:tryzeon/app_mappr.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_local_datasource.dart';
@@ -18,6 +19,7 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
 
   final StoreProfileRemoteDataSource _remoteDataSource;
   final StoreProfileLocalDataSource _localDataSource;
+  static const _mappr = AppMappr();
 
   @override
   Future<Result<StoreProfile?, Failure>> getStoreProfile({
@@ -27,7 +29,10 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
     if (!forceRefresh) {
       try {
         final cachedProfile = await _localDataSource.getStoreProfile();
-        if (cachedProfile != null) return Ok(cachedProfile.toEntity());
+        if (cachedProfile != null) {
+          final profile = _mappr.convert<StoreProfileModel, StoreProfile>(cachedProfile);
+          return Ok(profile);
+        }
       } catch (e, stackTrace) {
         AppLogger.warning(
           'Local cache read failed, falling back to remote',
@@ -49,7 +54,8 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
         AppLogger.warning('Failed to save store profile to cache', e, stackTrace);
       }
 
-      return Ok(remoteProfile.toEntity());
+      final profile = _mappr.convert<StoreProfileModel, StoreProfile>(remoteProfile);
+      return Ok(profile);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to load store profile', e, stackTrace);
       return Err(mapExceptionToFailure(e));
@@ -80,9 +86,8 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
         return const Ok(null);
       }
 
-      final updatedProfile = await _remoteDataSource.updateStoreProfile(
-        StoreProfileModel.fromEntity(finalTarget),
-      );
+      final targetModel = _mappr.convert<StoreProfile, StoreProfileModel>(finalTarget);
+      final updatedProfile = await _remoteDataSource.updateStoreProfile(targetModel);
 
       await _localDataSource.saveStoreProfile(updatedProfile);
 

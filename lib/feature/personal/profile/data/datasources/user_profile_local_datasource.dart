@@ -2,29 +2,33 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:isar_community/isar.dart';
+import 'package:tryzeon/app_mappr.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/services/cache_service.dart';
 
 import 'package:tryzeon/feature/personal/profile/data/collections/user_profile_collection.dart';
-import 'package:tryzeon/feature/personal/profile/data/mappers/user_profile_mapper.dart';
 import 'package:tryzeon/feature/personal/profile/data/models/user_profile_model.dart';
 
 class UserProfileLocalDataSource {
   UserProfileLocalDataSource(this._isarService, this._cacheService);
   final IsarService _isarService;
   final CacheService _cacheService;
+  static const _mappr = AppMappr();
 
   Future<UserProfileModel?> getUserProfile() async {
     final isar = await _isarService.db;
     final collection = await isar.userProfileCollections.where().findFirst();
-    return collection?.toModel();
+    if (collection == null) return null;
+    final model = _mappr.convert<UserProfileCollection, UserProfileModel>(collection);
+    return model;
   }
 
   Future<void> saveUserProfile(final UserProfileModel profile) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
       await isar.userProfileCollections.clear();
-      await isar.userProfileCollections.put(profile.toCollection());
+      final collection = _mappr.convert<UserProfileModel, UserProfileCollection>(profile);
+      await isar.userProfileCollections.put(collection);
     });
   }
 

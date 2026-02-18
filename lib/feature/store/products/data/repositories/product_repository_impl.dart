@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:tryzeon/app_mappr.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/store/products/data/datasources/product_local_datasource.dart';
@@ -19,6 +20,7 @@ class ProductRepositoryImpl implements ProductRepository {
 
   final ProductRemoteDataSource _remoteDataSource;
   final ProductLocalDataSource _localDataSource;
+  static const _mappr = AppMappr();
 
   @override
   Future<Result<List<Product>, Failure>> getProducts({
@@ -31,9 +33,8 @@ class ProductRepositoryImpl implements ProductRepository {
       try {
         final cachedProducts = await _localDataSource.getProducts(sort: sort);
         if (cachedProducts != null) {
-          final cachedProductsWithUrl = _attachImageUrls(
-            cachedProducts.map((final m) => m.toEntity()).toList(),
-          );
+          final products = _mappr.convertList<ProductModel, Product>(cachedProducts);
+          final cachedProductsWithUrl = _attachImageUrls(products);
           return Ok(cachedProductsWithUrl);
         }
       } catch (e, stackTrace) {
@@ -59,9 +60,8 @@ class ProductRepositoryImpl implements ProductRepository {
         AppLogger.warning('Failed to save products to cache', e, stackTrace);
       }
 
-      final remoteProductsWithUrl = _attachImageUrls(
-        remoteProducts.map((final m) => m.toEntity()).toList(),
-      );
+      final products = _mappr.convertList<ProductModel, Product>(remoteProducts);
+      final remoteProductsWithUrl = _attachImageUrls(products);
       return Ok(remoteProductsWithUrl);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to load product list', e, stackTrace);
@@ -113,7 +113,10 @@ class ProductRepositoryImpl implements ProductRepository {
       final sizes = product.sizes ?? [];
       if (sizes.isNotEmpty) {
         final sizeModels = sizes.map((final size) {
-          return ProductSizeModel.fromEntity(size.copyWith(productId: productId));
+          final sizeModel = _mappr.convert<ProductSize, ProductSizeModel>(
+            size.copyWith(productId: productId),
+          );
+          return sizeModel;
         }).toList();
         await _remoteDataSource.insertProductSizes(sizeModels);
       }
@@ -159,7 +162,8 @@ class ProductRepositoryImpl implements ProductRepository {
       }
 
       if (productChanged) {
-        await _remoteDataSource.updateProduct(ProductModel.fromEntity(finalTarget));
+        final targetModel = _mappr.convert<Product, ProductModel>(finalTarget);
+        await _remoteDataSource.updateProduct(targetModel);
       }
 
       if (newImage != null) {
@@ -186,9 +190,10 @@ class ProductRepositoryImpl implements ProductRepository {
         // Add new sizes
         for (final targetSize in targetSizes) {
           if (targetSize.id.isEmpty) {
-            await _remoteDataSource.insertProductSize(
-              ProductSizeModel.fromEntity(targetSize.copyWith(productId: original.id)),
+            final sizeModel = _mappr.convert<ProductSize, ProductSizeModel>(
+              targetSize.copyWith(productId: original.id),
             );
+            await _remoteDataSource.insertProductSize(sizeModel);
           } else {
             // Update existing sizes if changed
             final originalSize = originalSizes.cast<ProductSize?>().firstWhere(
@@ -197,9 +202,8 @@ class ProductRepositoryImpl implements ProductRepository {
             );
 
             if (originalSize != null && originalSize != targetSize) {
-              await _remoteDataSource.updateProductSize(
-                ProductSizeModel.fromEntity(targetSize),
-              );
+              final sizeModel = _mappr.convert<ProductSize, ProductSizeModel>(targetSize);
+              await _remoteDataSource.updateProductSize(sizeModel);
             }
           }
         }

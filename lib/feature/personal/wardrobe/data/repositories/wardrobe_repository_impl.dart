@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:path/path.dart' as p;
+import 'package:tryzeon/app_mappr.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:typed_result/typed_result.dart';
@@ -19,6 +20,7 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
 
   final WardrobeRemoteDataSource _remoteDataSource;
   final WardrobeLocalDataSource _localDataSource;
+  static const _mappr = AppMappr();
 
   @override
   Future<Result<List<WardrobeItem>, Failure>> getWardrobeItems({
@@ -29,7 +31,8 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
       try {
         final cachedItems = await _localDataSource.getWardrobeItems();
         if (cachedItems != null) {
-          return Ok(cachedItems.map((final m) => m.toEntity()).toList());
+          final items = _mappr.convertList<WardrobeItemModel, WardrobeItem>(cachedItems);
+          return Ok(items);
         }
       } catch (e, stackTrace) {
         AppLogger.warning(
@@ -51,7 +54,8 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
         AppLogger.warning('Failed to save wardrobe items to cache', e, stackTrace);
       }
 
-      return Ok(remoteItems.map((final m) => m.toEntity()).toList());
+      final items = _mappr.convertList<WardrobeItemModel, WardrobeItem>(remoteItems);
+      return Ok(items);
     } catch (e, stackTrace) {
       AppLogger.error('Wardrobe fetch failed', e, stackTrace);
       return Err(mapExceptionToFailure(e));

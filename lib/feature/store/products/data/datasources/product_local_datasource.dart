@@ -1,11 +1,11 @@
 import 'dart:typed_data';
 
 import 'package:isar_community/isar.dart';
+import 'package:tryzeon/app_mappr.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/services/cache_service.dart';
 
 import 'package:tryzeon/feature/store/products/data/collections/product_collection.dart';
-import 'package:tryzeon/feature/store/products/data/mappers/product_mapper.dart';
 import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/product_sort_condition.dart';
 
@@ -13,6 +13,7 @@ class ProductLocalDataSource {
   ProductLocalDataSource(this._isarService, this._cacheService);
   final IsarService _isarService;
   final CacheService _cacheService;
+  static const _mappr = AppMappr();
 
   Future<List<ProductModel>?> getProducts({required final SortCondition sort}) async {
     final isar = await _isarService.db;
@@ -44,14 +45,15 @@ class ProductLocalDataSource {
         break;
     }
 
-    return collections.map((final e) => e.toModel()).toList();
+    final models = _mappr.convertList<ProductCollection, ProductModel>(collections);
+    return models;
   }
 
   Future<void> saveProducts(final List<ProductModel> models) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
       await isar.productCollections.clear();
-      final collections = models.map((final e) => e.toCollection()).toList();
+      final collections = _mappr.convertList<ProductModel, ProductCollection>(models);
 
       await isar.productCollections.putAll(collections);
     });

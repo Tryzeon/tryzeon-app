@@ -1,13 +1,14 @@
+import 'package:tryzeon/app_mappr.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/feature/personal/subscription/data/collections/subscription_collection.dart';
-import 'package:tryzeon/feature/personal/subscription/data/mappers/subscription_mapper.dart';
 import 'package:tryzeon/feature/personal/subscription/data/models/subscription_model.dart';
 
 class SubscriptionLocalDataSource {
   SubscriptionLocalDataSource(this._isarService);
 
   final IsarService _isarService;
+  static const _mappr = AppMappr();
 
   Future<SubscriptionModel?> getSubscription(final String userId) async {
     final isar = await _isarService.db;
@@ -20,13 +21,16 @@ class SubscriptionLocalDataSource {
       return null;
     }
 
-    return collection.toModel();
+    final model = _mappr.convert<SubscriptionCollection, SubscriptionModel>(collection);
+    return model;
   }
 
   Future<void> saveSubscription(final SubscriptionModel subscription) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
-      final collection = subscription.toCollection();
+      final collection = _mappr.convert<SubscriptionModel, SubscriptionCollection>(
+        subscription,
+      );
       collection.lastUpdated = DateTime.now();
       await isar.subscriptionCollections.put(collection);
     });

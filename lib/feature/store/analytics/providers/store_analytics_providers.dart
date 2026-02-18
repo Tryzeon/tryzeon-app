@@ -44,8 +44,8 @@ class StoreAnalyticsFilter extends _$StoreAnalyticsFilter {
 @riverpod
 StoreAnalyticsRepository storeAnalyticsRepository(final Ref ref) {
   return StoreAnalyticsRepositoryImpl(
-    ref.watch(storeAnalyticsRemoteDataSourceProvider),
-    ref.watch(storeAnalyticsLocalDataSourceProvider),
+    remoteDataSource: ref.watch(storeAnalyticsRemoteDataSourceProvider),
+    localDataSource: ref.watch(storeAnalyticsLocalDataSourceProvider),
   );
 }
 

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:tryzeon/app_mappr.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_local_datasource.dart';
@@ -18,6 +19,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
 
   final UserProfileRemoteDataSource _remoteDataSource;
   final UserProfileLocalDataSource _localDataSource;
+  static const _mappr = AppMappr();
 
   @override
   Future<Result<UserProfile, Failure>> getUserProfile({
@@ -27,7 +29,10 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
     if (!forceRefresh) {
       try {
         final cachedProfile = await _localDataSource.getUserProfile();
-        if (cachedProfile != null) return Ok(cachedProfile.toEntity());
+        if (cachedProfile != null) {
+          final profile = _mappr.convert<UserProfileModel, UserProfile>(cachedProfile);
+          return Ok(profile);
+        }
       } catch (e, stackTrace) {
         AppLogger.warning(
           'Local cache read failed, falling back to remote',
@@ -48,7 +53,8 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
         AppLogger.warning('Failed to save user profile to cache', e, stackTrace);
       }
 
-      return Ok(remoteProfile.toEntity());
+      final profile = _mappr.convert<UserProfileModel, UserProfile>(remoteProfile);
+      return Ok(profile);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to load user profile', e, stackTrace);
       return Err(mapExceptionToFailure(e));
@@ -80,7 +86,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
         return const Ok(null);
       }
 
-      final targetModel = UserProfileModel.fromEntity(finalTarget);
+      final targetModel = _mappr.convert<UserProfile, UserProfileModel>(finalTarget);
 
       final updatedProfile = await _remoteDataSource.updateUserProfile(targetModel);
 

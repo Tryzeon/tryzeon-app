@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:tryzeon/feature/store/analytics/domain/entities/store_analytics_summary.dart';
+import 'package:tryzeon/feature/store/analytics/data/collections/store_analytics_collection.dart';
 
 part 'store_analytics_summary_model.g.dart';
 
@@ -20,11 +20,18 @@ class StoreAnalyticsSummaryModel {
 
   Map<String, dynamic> toJson() => _$StoreAnalyticsSummaryModelToJson(this);
 
-  StoreAnalyticsSummary toEntity() {
-    return StoreAnalyticsSummary(
-      totalViewCount: viewCount,
-      totalTryonCount: tryonCount,
-      totalPurchaseClickCount: purchaseClickCount,
-    );
+  /// Manual mapper with extra parameters - preserved
+  StoreAnalyticsCollection toCollection(
+    final String storeId,
+    final int year,
+    final int month,
+  ) {
+    return StoreAnalyticsCollection()
+      ..storeId = storeId
+      ..year = year
+      ..month = month
+      ..totalViewCount = viewCount
+      ..totalTryonCount = tryonCount
+      ..totalPurchaseClickCount = purchaseClickCount;
   }
 }

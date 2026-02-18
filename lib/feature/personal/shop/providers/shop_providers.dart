@@ -41,7 +41,7 @@ AdLocalDataSource adLocalDataSource(final Ref ref) {
 @riverpod
 ProductRepository productRepository(final Ref ref) {
   final remote = ref.watch(shopRemoteDataSourceProvider);
-  return ProductRepositoryImpl(remote);
+  return ProductRepositoryImpl(remoteDataSource: remote);
 }
 
 @riverpod

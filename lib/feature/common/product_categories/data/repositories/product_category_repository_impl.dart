@@ -1,3 +1,4 @@
+import 'package:tryzeon/app_mappr.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/product_categories/data/datasources/product_category_local_datasource.dart';
@@ -11,6 +12,7 @@ class ProductCategoryRepositoryImpl implements ProductCategoryRepository {
   ProductCategoryRepositoryImpl(this._remoteDataSource, this._localDataSource);
   final ProductCategoryRemoteDataSource _remoteDataSource;
   final ProductCategoryLocalDataSource _localDataSource;
+  static const _mappr = AppMappr();
 
   @override
   Future<Result<List<ProductCategory>, Failure>> getProductCategories({
@@ -52,7 +54,7 @@ class ProductCategoryRepositoryImpl implements ProductCategoryRepository {
 
   List<ProductCategory> _mapModelsToEntities(final List<ProductCategoryModel> models) {
     return models.map((final model) {
-      final entity = model.toEntity();
+      final entity = _mappr.convert<ProductCategoryModel, ProductCategory>(model);
       if (model.imagePath != null) {
         return entity.copyWith(
           imageUrl: _remoteDataSource.getCategoryImageUrl(model.imagePath!),

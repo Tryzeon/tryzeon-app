@@ -1,13 +1,14 @@
 import 'package:isar_community/isar.dart';
+import 'package:tryzeon/app_mappr.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/feature/store/analytics/data/collections/store_analytics_collection.dart';
-import 'package:tryzeon/feature/store/analytics/data/mappers/store_analytics_mapper.dart';
 import 'package:tryzeon/feature/store/analytics/data/models/store_analytics_summary_model.dart';
 
 class StoreAnalyticsLocalDataSource {
   StoreAnalyticsLocalDataSource(this._isarService);
 
   final IsarService _isarService;
+  static const _mappr = AppMappr();
 
   Future<StoreAnalyticsSummaryModel?> getStoreAnalyticsSummary(
     final String storeId,
@@ -23,7 +24,10 @@ class StoreAnalyticsLocalDataSource {
         .findFirst();
 
     if (collection == null) return null;
-    return collection.toModel();
+    final model = _mappr.convert<StoreAnalyticsCollection, StoreAnalyticsSummaryModel>(
+      collection,
+    );
+    return model;
   }
 
   Future<void> saveStoreAnalyticsSummary(
@@ -33,7 +37,8 @@ class StoreAnalyticsLocalDataSource {
     required final int month,
   }) async {
     final isar = await _isarService.db;
-    final collection = summary.toCollection(storeId: storeId, year: year, month: month);
+    // Use manual toCollection with extra parameters (preserved method)
+    final collection = summary.toCollection(storeId, year, month);
 
     await isar.writeTxn(() async {
       // Find existing to preserve ID if we want upsert, or just simple delete+insert or update
