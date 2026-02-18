@@ -41,13 +41,13 @@ LocationService locationService(final Ref ref) {
 }
 
 /// Cache Service Provider
-@riverpod
+@Riverpod(keepAlive: true)
 CacheService cacheService(final Ref ref) {
   return CacheServiceImpl();
 }
 
 /// Isar Database Service Provider
-@riverpod
+@Riverpod(keepAlive: true)
 IsarService isarService(final Ref ref) {
   return IsarService();
 }
