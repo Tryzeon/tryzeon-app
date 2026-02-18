@@ -8,7 +8,6 @@ import 'product_category_mappr.auto_mappr.dart';
 /// AutoMappr configuration for ProductCategory (Common module)
 @AutoMappr([
   MapType<ProductCategoryModel, ProductCategory>(),
-  MapType<ProductCategory, ProductCategoryModel>(),
   MapType<ProductCategoryModel, ProductCategoryCollection>(
     fields: [Field('categoryId', from: 'id')],
   ),

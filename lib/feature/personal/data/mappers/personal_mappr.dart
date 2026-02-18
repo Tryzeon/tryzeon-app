@@ -16,7 +16,6 @@ import '../../subscription/data/models/subscription_model.dart';
 import '../../subscription/domain/entities/subscription.dart';
 import '../../wardrobe/data/collections/wardrobe_item_collection.dart';
 import '../../wardrobe/data/models/wardrobe_item_model.dart';
-import '../../wardrobe/domain/entities/wardrobe_category.dart';
 import '../../wardrobe/domain/entities/wardrobe_item.dart';
 import 'personal_mappr.auto_mappr.dart';
 
@@ -51,17 +50,14 @@ import 'personal_mappr.auto_mappr.dart';
 
     // Subscription mappings
     MapType<SubscriptionModel, Subscription>(),
-    MapType<Subscription, SubscriptionModel>(),
     MapType<SubscriptionModel, SubscriptionCollection>(),
     MapType<SubscriptionCollection, SubscriptionModel>(),
 
-    // ShopProduct mappings
+    // ShopProduct mappings (read-only for consumer)
     MapType<ShopProductModel, ShopProduct>(),
-    MapType<ShopProduct, ShopProductModel>(),
 
-    // ShopStoreInfo mappings
+    // ShopStoreInfo mappings (read-only for consumer)
     MapType<ShopStoreInfoModel, ShopStoreInfo>(),
-    MapType<ShopStoreInfo, ShopStoreInfoModel>(),
   ],
   includes: [
     StoreMappr(), // ShopProduct.sizes depends on ProductSize mapping
