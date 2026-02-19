@@ -48,6 +48,7 @@ Failure mapExceptionToFailure(final Object e) {
 
     // Network Exceptions
     SocketException() => const NetworkFailure(),
+    HandshakeException() => const NetworkFailure(),
     HttpException() => const ServerFailure(),
     TlsException() => const ServerFailure(),
 
