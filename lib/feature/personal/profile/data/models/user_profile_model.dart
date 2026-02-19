@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:tryzeon/core/shared/measurements/data/models/body_measurements_model.dart';
+import 'package:tryzeon/core/shared/measurements/data/models/measurements_model.dart';
 
 part 'user_profile_model.g.dart';
 
@@ -19,7 +19,7 @@ class UserProfileModel {
   final String userId;
   final String name;
   final String? email;
-  final BodyMeasurementsModel? measurements;
+  final MeasurementsModel? measurements;
   final String? avatarPath;
   Map<String, dynamic> toJson() => _$UserProfileModelToJson(this);
 }

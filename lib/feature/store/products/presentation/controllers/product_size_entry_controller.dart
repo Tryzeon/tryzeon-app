@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tryzeon/core/shared/measurements/entities/size_measurements.dart';
+import 'package:tryzeon/core/shared/measurements/entities/measurements.dart';
 import 'package:tryzeon/core/shared/measurements/presentation/mappers/measurement_type_ui_mapper.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 
@@ -7,7 +7,7 @@ class ProductSizeEntryController {
   ProductSizeEntryController({
     this.id,
     final String name = '',
-    final SizeMeasurements? measurements,
+    final Measurements? measurements,
   }) : nameController = TextEditingController(text: name) {
     for (final type in MeasurementType.values) {
       measurementControllers[type] = TextEditingController(
@@ -61,7 +61,7 @@ class ProductSizeEntryController {
       id: id ?? '',
       productId: productId ?? '',
       name: nameController.text,
-      measurements: SizeMeasurements.fromJson(measurementsJson),
+      measurements: Measurements.fromJson(measurementsJson),
     );
   }
 

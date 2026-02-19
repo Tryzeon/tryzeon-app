@@ -1,10 +1,10 @@
 import 'package:json_annotation/json_annotation.dart';
 
-part 'size_measurements_model.g.dart';
+part 'measurements_model.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.snake)
-class SizeMeasurementsModel {
-  const SizeMeasurementsModel({
+class MeasurementsModel {
+  const MeasurementsModel({
     this.height,
     this.chest,
     this.waist,
@@ -19,8 +19,8 @@ class SizeMeasurementsModel {
     this.sleeveOffset,
   });
 
-  factory SizeMeasurementsModel.fromJson(final Map<String, dynamic> json) =>
-      _$SizeMeasurementsModelFromJson(json);
+  factory MeasurementsModel.fromJson(final Map<String, dynamic> json) =>
+      _$MeasurementsModelFromJson(json);
 
   final double? height;
   final double? chest;
@@ -35,5 +35,5 @@ class SizeMeasurementsModel {
   final double? shoulderOffset;
   final double? sleeveOffset;
 
-  Map<String, dynamic> toJson() => _$SizeMeasurementsModelToJson(this);
+  Map<String, dynamic> toJson() => _$MeasurementsModelToJson(this);
 }

@@ -6,7 +6,7 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
-import 'package:tryzeon/core/shared/measurements/entities/body_measurements.dart';
+import 'package:tryzeon/core/shared/measurements/entities/measurements.dart';
 
 import 'package:tryzeon/core/shared/measurements/presentation/mappers/measurement_type_ui_mapper.dart';
 import 'package:tryzeon/core/utils/validators.dart';
@@ -124,9 +124,7 @@ class _PersonalProfileForm extends HookConsumerWidget {
           entry.key.value: double.tryParse(entry.value.text),
       };
 
-      final BodyMeasurements newMeasurements = BodyMeasurements.fromJson(
-        measurementsJson,
-      );
+      final Measurements newMeasurements = Measurements.fromJson(measurementsJson);
 
       final targetProfile = profile.copyWith(
         name: nameController.text.trim(),

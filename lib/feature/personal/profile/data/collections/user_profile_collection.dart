@@ -1,5 +1,5 @@
 import 'package:isar_community/isar.dart';
-import 'package:tryzeon/core/shared/measurements/collections/body_measurements_collection.dart';
+import 'package:tryzeon/core/shared/measurements/collections/measurements_collection.dart';
 
 part 'user_profile_collection.g.dart';
 
@@ -14,5 +14,5 @@ class UserProfileCollection {
   String? email;
   String? avatarPath;
 
-  BodyMeasurementsCollection? measurements;
+  MeasurementsCollection? measurements;
 }

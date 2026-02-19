@@ -1,9 +1,9 @@
 import 'package:isar_community/isar.dart';
 
-part 'size_measurements_collection.g.dart';
+part 'measurements_collection.g.dart';
 
 @embedded
-class SizeMeasurementsCollection {
+class MeasurementsCollection {
   double? height;
   double? chest;
   double? waist;

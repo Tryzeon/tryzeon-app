@@ -1,12 +1,14 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/core/shared/measurements/entities/measurement_type.dart';
 
-part 'size_measurements.freezed.dart';
-part 'size_measurements.g.dart';
+export 'package:tryzeon/core/shared/measurements/entities/measurement_type.dart';
+
+part 'measurements.freezed.dart';
+part 'measurements.g.dart';
 
 @freezed
-sealed class SizeMeasurements with _$SizeMeasurements {
-  const factory SizeMeasurements({
+sealed class Measurements with _$Measurements {
+  const factory Measurements({
     final double? height,
     final double? chest,
     final double? waist,
@@ -19,11 +21,11 @@ sealed class SizeMeasurements with _$SizeMeasurements {
     final double? hipsOffset,
     final double? shoulderOffset,
     final double? sleeveOffset,
-  }) = _SizeMeasurements;
-  const SizeMeasurements._();
+  }) = _Measurements;
+  const Measurements._();
 
-  factory SizeMeasurements.fromJson(final Map<String, dynamic> json) =>
-      _$SizeMeasurementsFromJson(json);
+  factory Measurements.fromJson(final Map<String, dynamic> json) =>
+      _$MeasurementsFromJson(json);
 
   @override
   Map<String, dynamic> toJson() {
@@ -58,6 +60,9 @@ sealed class SizeMeasurements with _$SizeMeasurements {
     MeasurementType.shoulder => shoulderOffset,
     MeasurementType.sleeve => sleeveOffset,
   };
+
+  /// 透過 Enum 動態取得數值
+  double? operator [](final MeasurementType type) => getValue(type);
 
   /// 取得該測量類型的區間範圍 (min, max)
   /// 如果沒有值，回傳 null
