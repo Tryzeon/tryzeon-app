@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:tryzeon/app_mappr.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:tryzeon/feature/store/products/data/datasources/product_local_datasource.dart';
 import 'package:tryzeon/feature/store/products/data/datasources/product_remote_datasource.dart';
 import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
@@ -20,7 +20,7 @@ class ProductRepositoryImpl implements ProductRepository {
 
   final ProductRemoteDataSource _remoteDataSource;
   final ProductLocalDataSource _localDataSource;
-  static const _mappr = AppMappr();
+  static const _mappr = StoreMappr();
 
   @override
   Future<Result<List<Product>, Failure>> getProducts({

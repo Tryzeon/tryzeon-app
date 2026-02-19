@@ -1,6 +1,6 @@
-import 'package:tryzeon/app_mappr.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/subscription/data/datasources/subscription_local_datasource.dart';
 import 'package:tryzeon/feature/personal/subscription/data/datasources/subscription_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/subscription/data/models/subscription_model.dart';
@@ -17,7 +17,7 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
 
   final SubscriptionRemoteDataSource _remoteDataSource;
   final SubscriptionLocalDataSource _localDataSource;
-  static const _mappr = AppMappr();
+  static const _mappr = PersonalMappr();
 
   @override
   Future<Result<Subscription, Failure>> getSubscription(

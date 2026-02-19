@@ -1,6 +1,8 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
 
-import '../../../../feature/store/data/mappers/store_mappr.dart';
+import '../../../../core/shared/measurements/data/mappers/measurements_mappr.dart';
+import '../../../../feature/store/products/data/models/product_model.dart';
+import '../../../../feature/store/products/domain/entities/product.dart';
 import '../../profile/data/collections/user_profile_collection.dart';
 import '../../profile/data/models/user_profile_model.dart';
 import '../../profile/domain/entities/user_profile.dart';
@@ -18,7 +20,8 @@ import 'personal_mappr.auto_mappr.dart';
 
 /// AutoMappr configuration for Personal feature
 /// Handles UserProfile, WardrobeItem, Subscription, ShopProduct, ShopStoreInfo mappings
-/// Note: Measurements mappings are included via StoreMappr
+/// Note: ProductSize mappings are defined here directly for ShopProduct.sizes dependency
+/// Note: Measurements mappings are included via MeasurementsMappr (for ProductSize.measurements)
 @AutoMappr(
   [
     // UserProfile mappings
@@ -50,9 +53,12 @@ import 'personal_mappr.auto_mappr.dart';
 
     // ShopStoreInfo mappings (read-only for consumer)
     MapType<ShopStoreInfoModel, ShopStoreInfo>(),
+
+    // ProductSize mappings (needed for ShopProduct.sizes)
+    MapType<ProductSizeModel, ProductSize>(),
   ],
   includes: [
-    StoreMappr(), // ShopProduct.sizes depends on ProductSize mapping
+    MeasurementsMappr(), // ProductSize.measurements depends on Measurements mapping
   ],
 )
 class PersonalMappr extends $PersonalMappr {

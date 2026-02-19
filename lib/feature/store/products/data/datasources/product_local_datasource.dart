@@ -1,10 +1,9 @@
 import 'dart:typed_data';
 
 import 'package:isar_community/isar.dart';
-import 'package:tryzeon/app_mappr.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/services/cache_service.dart';
-
+import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:tryzeon/feature/store/products/data/collections/product_collection.dart';
 import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/product_sort_condition.dart';
@@ -13,7 +12,7 @@ class ProductLocalDataSource {
   ProductLocalDataSource(this._isarService, this._cacheService);
   final IsarService _isarService;
   final CacheService _cacheService;
-  static const _mappr = AppMappr();
+  static const _mappr = StoreMappr();
 
   Future<List<ProductModel>?> getProducts({required final SortCondition sort}) async {
     final isar = await _isarService.db;

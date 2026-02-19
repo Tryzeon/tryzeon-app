@@ -1,8 +1,8 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
 
-import '../collections/measurements_collection.dart';
-import '../data/models/measurements_model.dart';
-import '../entities/measurements.dart';
+import '../../collections/measurements_collection.dart';
+import '../../entities/measurements.dart';
+import '../models/measurements_model.dart';
 import 'measurements_mappr.auto_mappr.dart';
 
 /// AutoMappr configuration for shared Measurements

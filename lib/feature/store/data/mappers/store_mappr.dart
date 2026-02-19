@@ -1,6 +1,6 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
 
-import '../../../../core/shared/measurements/mappers/measurements_mappr.dart';
+import '../../../../core/shared/measurements/data/mappers/measurements_mappr.dart';
 import '../../analytics/data/collections/store_analytics_collection.dart';
 import '../../analytics/data/models/store_analytics_summary_model.dart';
 import '../../analytics/domain/entities/store_analytics_summary.dart';

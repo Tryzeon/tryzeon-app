@@ -1,4 +1,3 @@
-import 'package:tryzeon/app_mappr.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/store/analytics/data/datasources/store_analytics_local_datasource.dart';
@@ -6,6 +5,7 @@ import 'package:tryzeon/feature/store/analytics/data/datasources/store_analytics
 import 'package:tryzeon/feature/store/analytics/data/models/store_analytics_summary_model.dart';
 import 'package:tryzeon/feature/store/analytics/domain/entities/store_analytics_summary.dart';
 import 'package:tryzeon/feature/store/analytics/domain/repositories/store_analytics_repository.dart';
+import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:typed_result/typed_result.dart';
 
 class StoreAnalyticsRepositoryImpl implements StoreAnalyticsRepository {
@@ -17,7 +17,7 @@ class StoreAnalyticsRepositoryImpl implements StoreAnalyticsRepository {
 
   final StoreAnalyticsRemoteDataSource _remoteDataSource;
   final StoreAnalyticsLocalDataSource _localDataSource;
-  static const _mappr = AppMappr();
+  static const _mappr = StoreMappr();
 
   @override
   Future<Result<StoreAnalyticsSummary, Failure>> getStoreAnalyticsSummary(

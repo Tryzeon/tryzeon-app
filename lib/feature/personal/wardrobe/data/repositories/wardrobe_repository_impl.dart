@@ -1,9 +1,11 @@
 import 'dart:io';
+
 import 'package:path/path.dart' as p;
-import 'package:tryzeon/app_mappr.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:typed_result/typed_result.dart';
+
 import '../../domain/entities/wardrobe_category.dart';
 import '../../domain/entities/wardrobe_item.dart';
 import '../../domain/repositories/wardrobe_repository.dart';
@@ -20,7 +22,7 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
 
   final WardrobeRemoteDataSource _remoteDataSource;
   final WardrobeLocalDataSource _localDataSource;
-  static const _mappr = AppMappr();
+  static const _mappr = PersonalMappr();
 
   @override
   Future<Result<List<WardrobeItem>, Failure>> getWardrobeItems({

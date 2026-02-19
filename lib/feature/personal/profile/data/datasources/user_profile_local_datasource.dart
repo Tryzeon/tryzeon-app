@@ -2,10 +2,9 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:isar_community/isar.dart';
-import 'package:tryzeon/app_mappr.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/services/cache_service.dart';
-
+import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/profile/data/collections/user_profile_collection.dart';
 import 'package:tryzeon/feature/personal/profile/data/models/user_profile_model.dart';
 
@@ -13,7 +12,7 @@ class UserProfileLocalDataSource {
   UserProfileLocalDataSource(this._isarService, this._cacheService);
   final IsarService _isarService;
   final CacheService _cacheService;
-  static const _mappr = AppMappr();
+  static const _mappr = PersonalMappr();
 
   Future<UserProfileModel?> getUserProfile() async {
     final isar = await _isarService.db;

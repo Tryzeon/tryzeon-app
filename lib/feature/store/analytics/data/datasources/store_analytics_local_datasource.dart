@@ -1,14 +1,14 @@
 import 'package:isar_community/isar.dart';
-import 'package:tryzeon/app_mappr.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/feature/store/analytics/data/collections/store_analytics_collection.dart';
 import 'package:tryzeon/feature/store/analytics/data/models/store_analytics_summary_model.dart';
+import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 
 class StoreAnalyticsLocalDataSource {
   StoreAnalyticsLocalDataSource(this._isarService);
 
   final IsarService _isarService;
-  static const _mappr = AppMappr();
+  static const _mappr = StoreMappr();
 
   Future<StoreAnalyticsSummaryModel?> getStoreAnalyticsSummary(
     final String storeId,

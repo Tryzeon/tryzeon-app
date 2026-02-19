@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/core/shared/measurements/entities/measurements.dart';
-import 'package:tryzeon/core/shared/measurements/presentation/mappers/measurement_type_ui_mapper.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 
 class ProductSizeEntryController {
