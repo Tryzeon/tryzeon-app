@@ -57,5 +57,8 @@ app.*.map.json
 **/fastlane/screenshots
 **/fastlane/test_output
 
+# Environment variables
+.env
+
 # supabase temp files
 */.temp
