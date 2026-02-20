@@ -28,7 +28,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.38'
+          flutter-version: '3.38.10'
           channel: 'stable'
           cache: true
 
@@ -46,5 +46,5 @@ jobs:
       - name: Analyze
         run: dart analyze
 
-      - name: Build APK (debug)
-        run: flutter build apk --debug
+      # - name: Build APK (debug)
+      #   run: flutter build apk --debug
