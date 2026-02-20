@@ -10,7 +10,8 @@ jobs:
   build-and-deploy-ios:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
@@ -29,7 +30,7 @@ jobs:
           echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env
           echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
 
-      - name: Flutter Pub Get
+      - name: Get dependencies
         run: flutter pub get
 
       - name: Run build_runner
