@@ -203,6 +203,7 @@
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				B567BA03763ECBC1759E2FB2 /* [CP] Embed Pods Frameworks */,
 				EEB1D5DB38EF5B29AC4E84B0 /* [CP] Copy Pods Resources */,
+				FA994FA03073FB0937AB9BED /* Inject MinimumOSVersion */,
 			);
 			buildRules = (
 			);
@@ -382,6 +383,24 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources.sh\"\n";
 			showEnvVarsInLog = 0;
+		};
+		FA994FA03073FB0937AB9BED /* Inject MinimumOSVersion */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Inject MinimumOSVersion";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ -f \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/App.framework/Info.plist\" ]; then\n  /usr/libexec/PlistBuddy -c \"Add :MinimumOSVersion string 13.0\" \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/App.framework/Info.plist\" || /usr/libexec/PlistBuddy -c \"Set :MinimumOSVersion 13.0\" \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/App.framework/Info.plist\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
