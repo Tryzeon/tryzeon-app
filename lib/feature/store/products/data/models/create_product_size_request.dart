@@ -5,7 +5,7 @@ part 'create_product_size_request.g.dart';
 
 /// Client → Server：建立商品尺寸時使用
 /// 不含 id, createdAt, updatedAt
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CreateProductSizeRequest {
   const CreateProductSizeRequest({
     required this.productId,
