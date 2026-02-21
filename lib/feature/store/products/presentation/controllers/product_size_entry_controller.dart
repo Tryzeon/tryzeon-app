@@ -33,6 +33,35 @@ class ProductSizeEntryController {
 
   static const double _cunToCmFactor = 3.03; // 1 Cun = 3.03 CM
 
+  CreateProductSizeParams toCreateProductSizeParams({required final bool isCun}) {
+    final Map<String, dynamic> measurementsJson = {};
+    final multiplier = isCun ? _cunToCmFactor : 1.0;
+
+    for (final type in MeasurementType.values) {
+      final valueText = measurementControllers[type]?.text;
+      final value = valueText != null && valueText.isNotEmpty
+          ? double.tryParse(valueText)
+          : null;
+
+      final offsetText = offsetControllers[type]?.text;
+      final offset = (offsetText != null ? double.tryParse(offsetText) : null) ?? 0.0;
+
+      if (value != null) {
+        final convertedValue = value * multiplier;
+        measurementsJson[type.value] = double.parse(convertedValue.toStringAsFixed(1));
+      }
+      final convertedOffset = offset * multiplier;
+      measurementsJson['${type.value}_offset'] = double.parse(
+        convertedOffset.toStringAsFixed(1),
+      );
+    }
+
+    return CreateProductSizeParams(
+      name: nameController.text,
+      measurements: Measurements.fromJson(measurementsJson),
+    );
+  }
+
   ProductSize toProductSize(final String? productId, {required final bool isCun}) {
     final Map<String, dynamic> measurementsJson = {};
     final multiplier = isCun ? _cunToCmFactor : 1.0;

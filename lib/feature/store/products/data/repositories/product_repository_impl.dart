@@ -13,7 +13,6 @@ import 'package:tryzeon/feature/store/products/data/models/create_product_size_r
 import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/domain/repositories/product_repository.dart';
-import 'package:tryzeon/feature/store/products/domain/value_objects/product_attributes.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/product_sort_condition.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -73,43 +72,32 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<Result<void, Failure>> createProduct({
-    required final String storeId,
-    required final String name,
-    required final Set<String> categories,
-    required final double price,
-    required final File image,
-    final String? purchaseLink,
-    final String? material,
-    final ProductElasticity? elasticity,
-    final ProductFit? fit,
-    final List<ProductSize>? sizes,
-  }) async {
+  Future<Result<void, Failure>> createProduct(final CreateProductParams params) async {
     try {
       final imagePath = await _remoteDataSource.uploadProductImage(
-        storeId: storeId,
-        image: image,
+        storeId: params.storeId,
+        image: params.image,
       );
 
       // Save to local cache
-      final bytes = await image.readAsBytes();
+      final bytes = await params.image.readAsBytes();
       await _localDataSource.saveProductImage(bytes, imagePath);
 
       final request = CreateProductRequest(
-        storeId: storeId,
-        name: name,
-        categories: categories,
-        price: price,
+        storeId: params.storeId,
+        name: params.name,
+        categories: params.categories,
+        price: params.price,
         imagePath: imagePath,
-        purchaseLink: purchaseLink,
-        material: material,
-        elasticity: elasticity,
-        fit: fit,
+        purchaseLink: params.purchaseLink,
+        material: params.material,
+        elasticity: params.elasticity,
+        fit: params.fit,
       );
 
       final productId = await _remoteDataSource.insertProduct(request);
 
-      final sizesList = sizes ?? [];
+      final sizesList = params.sizes ?? [];
       if (sizesList.isNotEmpty) {
         final sizeRequests = sizesList
             .map(
