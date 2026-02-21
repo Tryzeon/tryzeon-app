@@ -27,19 +27,3 @@ class WardrobeItemModel {
 
   Map<String, dynamic> toJson() => _$WardrobeItemModelToJson(this);
 }
-
-/// Client → Server：建立衣櫃項目時使用，不含 id/createdAt/updatedAt
-@JsonSerializable(fieldRename: FieldRename.snake)
-class CreateWardrobeItemRequest {
-  const CreateWardrobeItemRequest({
-    required this.imagePath,
-    required this.category,
-    this.tags = const [],
-  });
-
-  final String imagePath;
-  final WardrobeCategory category;
-  final List<String> tags;
-
-  Map<String, dynamic> toJson() => _$CreateWardrobeItemRequestToJson(this);
-}

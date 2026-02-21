@@ -11,6 +11,7 @@ import '../../domain/entities/wardrobe_item.dart';
 import '../../domain/repositories/wardrobe_repository.dart';
 import '../datasources/wardrobe_local_datasource.dart';
 import '../datasources/wardrobe_remote_datasource.dart';
+import '../models/create_wardrobe_item_request.dart';
 import '../models/wardrobe_item_model.dart';
 
 class WardrobeRepositoryImpl implements WardrobeRepository {

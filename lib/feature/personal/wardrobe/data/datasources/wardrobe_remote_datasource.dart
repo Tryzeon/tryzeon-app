@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
 
+import '../models/create_wardrobe_item_request.dart';
 import '../models/wardrobe_item_model.dart';
 
 class WardrobeRemoteDataSource {

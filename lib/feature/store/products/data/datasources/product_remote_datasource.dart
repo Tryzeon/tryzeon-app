@@ -6,6 +6,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/feature/store/products/data/mappers/product_sort_field_mapper.dart';
+import 'package:tryzeon/feature/store/products/data/models/create_product_request.dart';
+import 'package:tryzeon/feature/store/products/data/models/create_product_size_request.dart';
 import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/product_sort_condition.dart';
 
