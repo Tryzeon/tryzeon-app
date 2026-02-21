@@ -48,4 +48,14 @@ post_install do |installer|
       end
     end
   end
+
+  # Ensure AppFrameworkInfo.plist contains MinimumOSVersion to prevent TestFlight errors
+  plist_path = File.join(__dir__, 'Flutter', 'AppFrameworkInfo.plist')
+  if File.exist?(plist_path)
+    content = File.read(plist_path)
+    unless content.include?('MinimumOSVersion')
+      content.gsub!('</dict>', "  <key>MinimumOSVersion</key>\n  <string>13.0</string>\n</dict>")
+      File.write(plist_path, content)
+    end
+  end
 end
