@@ -28,9 +28,7 @@ import 'personal_mappr.auto_mappr.dart';
     MapType<UserProfileModel, UserProfile>(),
     MapType<UserProfile, UserProfileModel>(),
     MapType<UserProfileModel, UserProfileCollection>(),
-    MapType<UserProfileCollection, UserProfileModel>(
-      converters: [TypeConverter<String?, String>(PersonalMappr.nullableStringToString)],
-    ),
+    MapType<UserProfileCollection, UserProfileModel>(),
 
     // WardrobeItem mappings
     MapType<WardrobeItemModel, WardrobeItem>(),
@@ -62,6 +60,4 @@ import 'personal_mappr.auto_mappr.dart';
 )
 class PersonalMappr extends $PersonalMappr {
   const PersonalMappr();
-
-  static String nullableStringToString(final String? value) => value ?? '';
 }

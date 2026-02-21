@@ -10,7 +10,7 @@ class UserProfileCollection {
   @Index(unique: true, replace: true)
   late String userId;
 
-  String? name;
+  late String name;
   String? email;
   String? avatarPath;
 
