@@ -34,29 +34,17 @@ class ProductRemoteDataSource {
     }).toList();
   }
 
-  Future<String> insertProduct(final ProductModel product) async {
-    final json = product.toJson();
-    json.remove('id');
-    json.remove('created_at');
-    json.remove('updated_at');
-    json.remove('product_variants');
-
+  Future<String> insertProduct(final CreateProductRequest request) async {
     final response = await _supabaseClient
         .from(_productsTable)
-        .insert(json)
+        .insert(request.toJson())
         .select('id')
         .single();
     return response['id'] as String;
   }
 
-  Future<void> insertProductSizes(final List<ProductSizeModel> sizes) async {
-    final sizesData = sizes.map((final e) {
-      final json = e.toJson();
-      json.remove('id');
-      json.remove('created_at');
-      json.remove('updated_at');
-      return json;
-    }).toList();
+  Future<void> insertProductSizes(final List<CreateProductSizeRequest> requests) async {
+    final sizesData = requests.map((final e) => e.toJson()).toList();
     await _supabaseClient.from(_productSizesTable).insert(sizesData);
   }
 
@@ -93,12 +81,8 @@ class ProductRemoteDataSource {
     await _supabaseClient.from(_productSizesTable).delete().eq('id', sizeId);
   }
 
-  Future<void> insertProductSize(final ProductSizeModel size) async {
-    final json = size.toJson();
-    json.remove('id');
-    json.remove('created_at');
-    json.remove('updated_at');
-    await _supabaseClient.from(_productSizesTable).insert(json);
+  Future<void> insertProductSize(final CreateProductSizeRequest request) async {
+    await _supabaseClient.from(_productSizesTable).insert(request.toJson());
   }
 
   Future<void> updateProductSize(final ProductSizeModel size) async {

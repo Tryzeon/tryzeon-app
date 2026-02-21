@@ -29,15 +29,14 @@ class WardrobeRemoteDataSource {
     }).toList();
   }
 
-  Future<WardrobeItemModel> createWardrobeItem(final WardrobeItemModel item) async {
+  Future<WardrobeItemModel> createWardrobeItem(
+    final CreateWardrobeItemRequest request,
+  ) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();
 
-    final json = item.toJson();
+    final json = request.toJson();
     json['user_id'] = user.id;
-    json.remove('id');
-    json.remove('created_at');
-    json.remove('updated_at');
 
     final response = await _supabaseClient
         .from(_wardrobeItemTable)

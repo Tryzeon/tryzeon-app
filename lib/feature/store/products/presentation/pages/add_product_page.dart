@@ -41,18 +41,22 @@ class AddProductPage extends HookConsumerWidget {
         return;
       }
 
-      final newProduct = formData.toProduct(
-        id: '',
-        storeId: storeProfile.id,
-        imagePath: '',
-        imageUrl: '',
-        sizes: sizeManager.buildProductSizes(null),
-      );
-
       final createProductUseCase = ref.read(createProductUseCaseProvider);
       final result = await createProductUseCase(
-        product: newProduct,
+        storeId: storeProfile.id,
+        name: formData.nameController.text,
+        categories: formData.selectedCategoryIds.value,
+        price: double.tryParse(formData.priceController.text) ?? 0.0,
         image: formData.selectedImage.value!,
+        purchaseLink: formData.purchaseLinkController.text.isNotEmpty
+            ? formData.purchaseLinkController.text
+            : null,
+        material: formData.materialController.text.isNotEmpty
+            ? formData.materialController.text
+            : null,
+        elasticity: formData.selectedElasticity.value,
+        fit: formData.selectedFit.value,
+        sizes: sizeManager.buildProductSizes(null),
       );
 
       if (!context.mounted) return;

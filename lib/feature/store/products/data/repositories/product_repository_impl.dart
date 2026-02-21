@@ -1,6 +1,9 @@
 import 'dart:io';
 
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/shared/measurements/data/mappers/measurements_mappr.dart';
+import 'package:tryzeon/core/shared/measurements/data/models/measurements_model.dart';
+import 'package:tryzeon/core/shared/measurements/entities/measurements.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:tryzeon/feature/store/products/data/datasources/product_local_datasource.dart';
@@ -8,6 +11,7 @@ import 'package:tryzeon/feature/store/products/data/datasources/product_remote_d
 import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/domain/repositories/product_repository.dart';
+import 'package:tryzeon/feature/store/products/domain/value_objects/product_attributes.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/product_sort_condition.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -68,12 +72,20 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<Result<void, Failure>> createProduct({
-    required final Product product,
+    required final String storeId,
+    required final String name,
+    required final Set<String> categories,
+    required final double price,
     required final File image,
+    final String? purchaseLink,
+    final String? material,
+    final ProductElasticity? elasticity,
+    final ProductFit? fit,
+    final List<ProductSize>? sizes,
   }) async {
     try {
       final imagePath = await _remoteDataSource.uploadProductImage(
-        storeId: product.storeId,
+        storeId: storeId,
         image: image,
       );
 
@@ -81,31 +93,36 @@ class ProductRepositoryImpl implements ProductRepository {
       final bytes = await image.readAsBytes();
       await _localDataSource.saveProductImage(bytes, imagePath);
 
-      final productModel = ProductModel(
-        storeId: product.storeId,
-        name: product.name,
-        categories: product.categories,
-        price: product.price,
+      final request = CreateProductRequest(
+        storeId: storeId,
+        name: name,
+        categories: categories,
+        price: price,
         imagePath: imagePath,
-        imageUrl: '',
-        purchaseLink: product.purchaseLink,
-        material: product.material,
-        elasticity: product.elasticity,
-        fit: product.fit,
-        id: product.id,
+        purchaseLink: purchaseLink,
+        material: material,
+        elasticity: elasticity,
+        fit: fit,
       );
 
-      final productId = await _remoteDataSource.insertProduct(productModel);
+      final productId = await _remoteDataSource.insertProduct(request);
 
-      final sizes = product.sizes ?? [];
-      if (sizes.isNotEmpty) {
-        final sizeModels = sizes.map((final size) {
-          final sizeModel = _mappr.convert<ProductSize, ProductSizeModel>(
-            size.copyWith(productId: productId),
-          );
-          return sizeModel;
-        }).toList();
-        await _remoteDataSource.insertProductSizes(sizeModels);
+      final sizesList = sizes ?? [];
+      if (sizesList.isNotEmpty) {
+        final sizeRequests = sizesList
+            .map(
+              (final size) => CreateProductSizeRequest(
+                productId: productId,
+                name: size.name,
+                measurements: size.measurements != null
+                    ? const MeasurementsMappr().convert<Measurements, MeasurementsModel>(
+                        size.measurements!,
+                      )
+                    : null,
+              ),
+            )
+            .toList();
+        await _remoteDataSource.insertProductSizes(sizeRequests);
       }
 
       final model = await _remoteDataSource.getProduct(productId);
@@ -177,10 +194,16 @@ class ProductRepositoryImpl implements ProductRepository {
         // Add new sizes
         for (final targetSize in targetSizes) {
           if (targetSize.id.isEmpty) {
-            final sizeModel = _mappr.convert<ProductSize, ProductSizeModel>(
-              targetSize.copyWith(productId: original.id),
+            final sizeRequest = CreateProductSizeRequest(
+              productId: original.id,
+              name: targetSize.name,
+              measurements: targetSize.measurements != null
+                  ? const MeasurementsMappr().convert<Measurements, MeasurementsModel>(
+                      targetSize.measurements!,
+                    )
+                  : null,
             );
-            await _remoteDataSource.insertProductSize(sizeModel);
+            await _remoteDataSource.insertProductSize(sizeRequest);
           } else {
             // Update existing sizes if changed
             final originalSize = originalSizes.cast<ProductSize?>().firstWhere(

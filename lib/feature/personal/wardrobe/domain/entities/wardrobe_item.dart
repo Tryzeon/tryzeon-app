@@ -8,7 +8,7 @@ part 'wardrobe_item.freezed.dart';
 @freezed
 sealed class WardrobeItem with _$WardrobeItem {
   const factory WardrobeItem({
-    final String? id,
+    required final String id,
     required final String imagePath,
     required final WardrobeCategory category,
     @Default([]) final List<String> tags,

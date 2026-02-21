@@ -71,7 +71,6 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
     final List<String> tags = const [],
   }) async {
     try {
-      // Convert category enum to string for API
       final categoryString = category.value;
       final imageName = p.basename(image.path);
       final bytes = await image.readAsBytes();
@@ -85,14 +84,14 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
 
       await _localDataSource.saveImage(bytes, imagePath);
 
-      // 2. Create Item Model
-      final newItemModel = WardrobeItemModel(
+      // 2. Create Request DTO
+      final request = CreateWardrobeItemRequest(
         imagePath: imagePath,
         category: category,
         tags: tags,
       );
 
-      final newItem = await _remoteDataSource.createWardrobeItem(newItemModel);
+      final newItem = await _remoteDataSource.createWardrobeItem(request);
 
       await _localDataSource.saveWardrobeItem(newItem);
 
@@ -106,10 +105,10 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
   @override
   Future<Result<void, Failure>> deleteWardrobeItem(final WardrobeItem item) async {
     try {
-      await _remoteDataSource.deleteWardrobeItem(item.id!);
+      await _remoteDataSource.deleteWardrobeItem(item.id);
       _remoteDataSource.deleteImage(item.imagePath).ignore();
       _localDataSource.deleteImage(item.imagePath).ignore();
-      await _localDataSource.deleteWardrobeItem(item.id!);
+      await _localDataSource.deleteWardrobeItem(item.id);
 
       return const Ok(null);
     } catch (e, stackTrace) {

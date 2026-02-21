@@ -37,7 +37,6 @@ import 'personal_mappr.auto_mappr.dart';
     MapType<WardrobeItem, WardrobeItemModel>(),
     MapType<WardrobeItemModel, WardrobeItemCollection>(
       fields: [Field('itemId', from: 'id')],
-      converters: [TypeConverter<String?, String>(PersonalMappr.nullableStringToString)],
     ),
     MapType<WardrobeItemCollection, WardrobeItemModel>(
       fields: [Field('id', from: 'itemId')],
@@ -63,8 +62,6 @@ import 'personal_mappr.auto_mappr.dart';
 )
 class PersonalMappr extends $PersonalMappr {
   const PersonalMappr();
-
-  static String itemIdFromModel(final WardrobeItemModel model) => model.id ?? '';
 
   static String nullableStringToString(final String? value) => value ?? '';
 }
