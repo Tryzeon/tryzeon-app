@@ -33,9 +33,13 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Run build_runner
-        run: flutter pub run build_runner build --delete-conflicting-outputs
-
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: ios/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
 
       - name: Install CocoaPods dependencies
         run: |
@@ -53,6 +57,9 @@ jobs:
           echo "${{ secrets.MATCH_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - name: Run build_runner
+        run: flutter pub run build_runner build --delete-conflicting-outputs
 
       - name: Build and deploy to TestFlight
         run: |
