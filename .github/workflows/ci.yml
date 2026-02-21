@@ -57,7 +57,9 @@ jobs:
 
       - name: Analyze
         run: dart analyze
-
+      
+      - name: Build APK (debug)
+        run: flutter build apk --debug
 
       - name: Cache CocoaPods
         if: matrix.os == 'macos-latest'
