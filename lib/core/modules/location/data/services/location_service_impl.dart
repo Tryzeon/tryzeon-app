@@ -90,8 +90,6 @@ class LocationServiceImpl implements LocationService {
       // 若無法組出完整地址，至少使用城市+區
       final fullAddress = addressParts.isNotEmpty ? addressParts : '$city$district';
 
-      AppLogger.info('使用者位置：$fullAddress');
-
       return UserLocation(
         city: city,
         district: district,
