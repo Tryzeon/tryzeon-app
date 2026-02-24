@@ -22,7 +22,7 @@ flutter pub get
 
 run build runner
 ```bash
-flutter pub run build_runner build --delete-conflicting-outputs
+dart run build_runner build --delete-conflicting-outputs
 ```
 
 ### 3. Open Simulator/Emulator

@@ -46,14 +46,14 @@ jobs:
 
       - name: Create .env file
         run: |
-          echo "SUPABASE_URL=https://placeholder.supabase.co" >> .env
+          echo "SUPABASE_URL=https://placeholder.supabase.co" > .env
           echo "SUPABASE_ANON_KEY=placeholder" >> .env
 
       - name: Get Flutter dependencies
         run: flutter pub get
 
       - name: Run build_runner
-        run: flutter pub run build_runner build --delete-conflicting-outputs
+        run: dart run build_runner build --delete-conflicting-outputs
 
       - name: Analyze Dart
         run: dart analyze

@@ -1,7 +1,7 @@
 default_platform(:android)
 
 platform :android do
-  desc "Submit a new Beta Build to Crashlytics Beta"
+  desc "Submit a new build to Play Store closed test track"
   lane :beta do
     upload_to_play_store(
       track: 'internal',

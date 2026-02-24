@@ -67,8 +67,6 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>We need access to your camera to take photos</string>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>We need access to your local network to connect and debug your application</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We need your location to recommend nearby shops</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

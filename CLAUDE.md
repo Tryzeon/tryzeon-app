@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 flutter pub get
 
 # Run code generation (freezed, riverpod, auto_mappr, json_serializable, isar)
-flutter pub run build_runner build --delete-conflicting-outputs
+dart run build_runner build --delete-conflicting-outputs
 
 # Run on simulator/emulator
 flutter run
