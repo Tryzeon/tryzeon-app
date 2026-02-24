@@ -52,9 +52,6 @@ jobs:
           echo "keyAlias=${{ secrets.PLAYSTORE_KEY_ALIAS }}" >> android/key.properties
           echo "storeFile=upload-keystore.jks" >> android/key.properties
 
-      - name: Build App Bundle
-        run: flutter build appbundle --release
-
       - name: Install Fastlane
         run: |
           cd android

@@ -3,8 +3,24 @@ default_platform(:android)
 platform :android do
   desc "Submit a new build to Play Store closed test track"
   lane :beta do
+    version_codes = google_play_track_version_codes(
+      package_name: "com.tryzeon.app",
+      track: "alpha",
+      json_key_data: ENV["PLAYSTORE_SERVICE_ACCOUNT_JSON"]
+    )
+    
+    version_code = (version_codes.max || 0) + 1
+
+    UI.message("---------------------------------------------------------")
+    UI.message("🚀 Building Version Code: #{version_code}")
+    UI.message("---------------------------------------------------------")
+
+    Dir.chdir("../") do
+      sh("flutter build appbundle --release --build-number=#{version_code}")
+    end
+
     upload_to_play_store(
-      track: 'internal',
+      track: 'alpha',
       aab: "../build/app/outputs/bundle/release/app-release.aab",
       json_key_data: ENV["PLAYSTORE_SERVICE_ACCOUNT_JSON"]
     )
@@ -12,6 +28,22 @@ platform :android do
 
   desc "Deploy a new version to the Google Play"
   lane :deploy do
+    version_codes = google_play_track_version_codes(
+      package_name: "com.tryzeon.app",
+      track: "production",
+      json_key_data: ENV["PLAYSTORE_SERVICE_ACCOUNT_JSON"]
+    )
+    
+    version_code = (version_codes.max || 0) + 1
+
+    UI.message("---------------------------------------------------------")
+    UI.message("🚀 Building Version Code: #{version_code}")
+    UI.message("---------------------------------------------------------")
+
+    Dir.chdir("../") do
+      sh("flutter build appbundle --release --build-number=#{version_code}")
+    end
+
     upload_to_play_store(
       track: 'production',
       aab: "../build/app/outputs/bundle/release/app-release.aab",
