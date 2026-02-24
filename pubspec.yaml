@@ -1,5 +1,5 @@
 name: tryzeon
-description: "Tryzeon App"
+description: "Tryzeon — virtual try-on and wardrobe management for fashion lovers."
 publish_to: 'none'
 version: 1.0.0+1
 environment:
@@ -26,7 +26,7 @@ dependencies:
   mime: ^2.0.0
   flutter_dotenv: ^5.2.1
 
-  path: any
+  path: ^1.9.1
   typed_result: ^2.0.0
   cached_network_image: ^3.4.1
   hooks_riverpod: ^3.0.0
@@ -58,7 +58,7 @@ dev_dependencies:
   flutter_launcher_icons: ^0.13.1
   isar_community_generator: ^3.3.0
   riverpod_generator: ^4.0.0
-  build_runner: any
+  build_runner: ^2.7.1
   freezed: ^3.2.3
   json_serializable: ^6.8.0
   auto_mappr: ^2.10.0
@@ -68,7 +68,6 @@ dependency_overrides:
 
 flutter:
   assets:
-    - .env
     - assets/images/ads/
     - assets/images/profile/
     - assets/images/logo/
