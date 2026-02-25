@@ -175,6 +175,7 @@ class ShopPage extends HookConsumerWidget {
       body: Container(
         decoration: BoxDecoration(color: colorScheme.surface),
         child: SafeArea(
+          bottom: false,
           child: Column(
             children: [
               // 頂部標題欄
@@ -218,7 +219,7 @@ class ShopPage extends HookConsumerWidget {
                     builder: (final context, final constraints) {
                       return SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        padding: const EdgeInsets.only(top: 8),
                         child: ConstrainedBox(
                           constraints: BoxConstraints(minHeight: constraints.maxHeight),
                           child: Column(
@@ -311,8 +312,6 @@ class ShopPage extends HookConsumerWidget {
                                 userProfile: userProfile,
                                 onRetry: () => ref.refresh(shopProductsProvider(filter)),
                               ),
-
-                              const SizedBox(height: 32),
                             ],
                           ),
                         ),
