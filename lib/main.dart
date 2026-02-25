@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/core/config/app_config.dart';
+import 'package:tryzeon/core/config/env.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
@@ -25,11 +25,9 @@ Duration? customRetry(final int retryCount, final Object error) {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await AppConfig.load();
-
   await Supabase.initialize(
-    url: AppConfig.supabaseUrl,
-    anonKey: AppConfig.supabaseAnonKey,
+    url: Env.supabaseUrl,
+    anonKey: Env.supabaseAnonKey,
     authOptions: const FlutterAuthClientOptions(authFlowType: AuthFlowType.pkce),
   );
 
