@@ -105,7 +105,7 @@ class _PersonalProfileForm extends HookConsumerWidget {
     final measurementControllers = <MeasurementType, TextEditingController>{};
     for (final type in MeasurementType.values) {
       measurementControllers[type] = useTextEditingController(
-        text: profile.measurements[type]?.toString() ?? '',
+        text: profile.measurements?[type]?.toString() ?? '',
       );
     }
 
