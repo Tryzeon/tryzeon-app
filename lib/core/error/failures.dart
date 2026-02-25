@@ -35,6 +35,10 @@ class ValidationFailure extends Failure {
 
 /// Maps Exceptions to Failures
 Failure mapExceptionToFailure(final Object e) {
+  if (e is AuthException && (e as dynamic).code == 'otp_expired') {
+    return const AuthFailure('驗證碼錯誤或過期');
+  }
+
   return switch (e) {
     // Custom App Exceptions
     ServerException(message: final msg) => ServerFailure(msg),
