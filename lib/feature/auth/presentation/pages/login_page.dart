@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/auth/presentation/widgets/login_scaffold.dart';
 // Import AppTheme to access static colors if needed, or just use Theme.of(context)
-
-import 'personal_login_page.dart';
-import 'store_login_page.dart';
 
 class LoginPage extends HookConsumerWidget {
   const LoginPage({super.key});
@@ -18,17 +16,11 @@ class LoginPage extends HookConsumerWidget {
     const secondaryColor = Color(0xFFE11D48); // Rose 600 (Store accent)
 
     void navigateToPersonalLogin() {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (final context) => const PersonalLoginPage()),
-      );
+      context.push('/auth/login/personal');
     }
 
     void navigateToStoreLogin() {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (final context) => const StoreLoginPage()),
-      );
+      context.push('/auth/login/store');
     }
 
     return CustomizeScaffold(

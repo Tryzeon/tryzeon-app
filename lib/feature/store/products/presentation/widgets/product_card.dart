@@ -1,10 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
-
-import '../pages/product_detail_page.dart';
 
 class StoreProductCard extends HookConsumerWidget {
   const StoreProductCard({super.key, required this.product});
@@ -32,12 +31,7 @@ class StoreProductCard extends HookConsumerWidget {
 
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (final context) => ProductDetailPage(product: product),
-          ),
-        );
+        context.push('/store/products/${product.id}', extra: product);
       },
       child: Card(
         elevation: 2,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 /// A SliverAppBar specifically designed for settings pages.
 ///
@@ -32,7 +33,7 @@ class SettingsSliverAppBar extends StatelessWidget {
         ),
         child: IconButton(
           icon: Icon(Icons.arrow_back_ios_rounded, color: colorScheme.primary, size: 20),
-          onPressed: onBackPressed ?? () => Navigator.pop(context),
+          onPressed: onBackPressed ?? context.pop,
           padding: EdgeInsets.zero,
         ),
       ),

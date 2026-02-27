@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
 import 'package:tryzeon/feature/store/home/presentation/widgets/store_home_header.dart';
 import 'package:tryzeon/feature/store/home/presentation/widgets/store_traffic_dashboard.dart';
-import 'package:tryzeon/feature/store/products/presentation/pages/add_product_page.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_list_section.dart';
 import 'package:tryzeon/feature/store/products/providers/store_products_providers.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
@@ -67,10 +67,7 @@ class StoreHomePage extends HookConsumerWidget {
           shape: const CircleBorder(),
           child: InkWell(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (final context) => const AddProductPage()),
-              );
+              context.push('/store/products/add');
             },
             customBorder: const CircleBorder(),
             child: SizedBox(

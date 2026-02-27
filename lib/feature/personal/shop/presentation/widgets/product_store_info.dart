@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
-import 'package:tryzeon/feature/personal/shop/presentation/pages/store_page.dart';
 
 class ProductStoreInfo extends StatelessWidget {
   const ProductStoreInfo({required this.storeInfo, super.key});
@@ -22,12 +22,7 @@ class ProductStoreInfo extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (final context) => StorePage(storeId: storeInfo.id),
-                ),
-              );
+              context.push('/personal/store/${storeInfo.id}');
             },
             borderRadius: BorderRadius.circular(12),
             child: Padding(

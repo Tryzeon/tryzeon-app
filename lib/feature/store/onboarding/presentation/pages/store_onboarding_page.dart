@@ -1,5 +1,6 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
@@ -7,9 +8,6 @@ import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-import '../../../../auth/presentation/pages/login_page.dart';
-import '../../../../personal/main/personal_entry.dart';
 
 class StoreOnboardingPage extends HookConsumerWidget {
   const StoreOnboardingPage({super.key});
@@ -45,10 +43,7 @@ class StoreOnboardingPage extends HookConsumerWidget {
         await setLoginTypeUseCase(UserType.personal);
 
         if (context.mounted) {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (final context) => const PersonalEntry()),
-            (final route) => false,
-          );
+          context.go('/personal/home');
         }
       }
     }
@@ -66,12 +61,6 @@ class StoreOnboardingPage extends HookConsumerWidget {
       if (result == OkCancelResult.ok) {
         final signOutUseCase = ref.read(signOutUseCaseProvider);
         await signOutUseCase();
-        if (!context.mounted) return;
-        // 登出後會自動回到登入頁面（main.dart 會處理）
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (final context) => const LoginPage()),
-          (final route) => false,
-        );
       }
     }
 

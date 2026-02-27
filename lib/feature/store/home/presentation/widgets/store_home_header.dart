@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
-import 'package:tryzeon/feature/store/settings/presentation/pages/settings_page.dart';
 
 class StoreHomeHeader extends StatelessWidget {
   const StoreHomeHeader({super.key, required this.profile});
@@ -49,12 +49,7 @@ class StoreHomeHeader extends StatelessWidget {
             child: IconButton(
               icon: Icon(Icons.settings_rounded, color: colorScheme.primary),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (final context) => const StoreSettingsPage(),
-                  ),
-                );
+                context.push('/store/settings');
               },
             ),
           ),

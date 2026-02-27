@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
-import 'package:tryzeon/feature/auth/presentation/pages/email_login_page.dart';
 import 'package:tryzeon/feature/auth/presentation/widgets/login_scaffold.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
-import 'package:tryzeon/feature/store/main/store_entry.dart';
 import 'package:typed_result/typed_result.dart';
 
 class StoreLoginPage extends HookConsumerWidget {
@@ -46,10 +45,7 @@ class StoreLoginPage extends HookConsumerWidget {
       isLoading.value = false;
 
       if (result.isSuccess) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (final context) => const StoreEntry()),
-        );
+        context.go('/store/home');
       } else {
         TopNotification.show(
           context,
@@ -181,7 +177,7 @@ class StoreLoginPage extends HookConsumerWidget {
                   child: Padding(
                     padding: const EdgeInsets.only(top: 8.0),
                     child: IconButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: context.pop,
                       icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
                       style: IconButton.styleFrom(
                         backgroundColor: Colors.white,
@@ -253,13 +249,7 @@ class StoreLoginPage extends HookConsumerWidget {
                     color: Colors.transparent,
                     child: InkWell(
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (final context) =>
-                                const EmailLoginPage(userType: UserType.store),
-                          ),
-                        );
+                        context.push('/auth/login/email', extra: UserType.store);
                       },
                       borderRadius: BorderRadius.circular(20),
                       child: const Padding(

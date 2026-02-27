@@ -2,13 +2,13 @@ import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_status.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
-import 'package:tryzeon/feature/personal/shop/presentation/pages/product_detail_page.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -80,11 +80,7 @@ class ProductCard extends HookConsumerWidget {
 
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (final context) => ProductDetailPage(product: product),
-          ),
-        );
+        context.push('/personal/product/${product.id}', extra: product);
       },
       child: VisibilityDetector(
         key: Key('product-card-${product.id}'),

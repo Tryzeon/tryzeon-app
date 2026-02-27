@@ -5,6 +5,7 @@ import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
@@ -16,7 +17,6 @@ import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
-import '../../../settings/presentation/pages/settings_page.dart';
 import '../dialogs/upload_wardrobe_item_dialog.dart';
 import '../mappers/category_ui_mapper.dart';
 import '../widgets/wardrobe_item_card.dart';
@@ -339,14 +339,7 @@ class PersonalPage extends HookConsumerWidget {
                     buildGlassElement(
                       padding: const EdgeInsets.all(12),
                       borderRadius: 30,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (final context) => const PersonalSettingsPage(),
-                          ),
-                        );
-                      },
+                      onTap: () => context.push('/personal/settings'),
                       child: Icon(
                         Icons.settings_rounded,
                         color: colorScheme.onSurface,
