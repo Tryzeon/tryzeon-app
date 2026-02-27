@@ -2,6 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
@@ -150,7 +152,7 @@ class StorePage extends HookConsumerWidget {
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (final error, final stack) => ErrorView(
-          message: '無法載入店家資訊',
+          message: (error as Failure).displayMessage(context),
           onRetry: () => ref.refresh(storeInfoProvider(storeId)),
         ),
       ),
