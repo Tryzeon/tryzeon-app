@@ -95,31 +95,38 @@ class StorePage extends HookConsumerWidget {
                               if (storeInfo.address != null &&
                                   storeInfo.address!.isNotEmpty) ...[
                                 const SizedBox(height: 8),
-                                InkWell(
-                                  onTap: () => handleOpenMap(storeInfo.address!),
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                    child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Icon(
-                                          Icons.location_on,
-                                          size: 18,
-                                          color: colorScheme.primary,
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Expanded(
-                                          child: Text(
-                                            storeInfo.address!,
-                                            style: textTheme.bodyMedium?.copyWith(
-                                              color: colorScheme.primary,
-                                            ),
+                                Wrap(
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.location_on,
+                                      size: 18,
+                                      color: colorScheme.primary,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      storeInfo.address!,
+                                      style: textTheme.bodyMedium?.copyWith(
+                                        color: colorScheme.primary,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        onTap: () => handleOpenMap(storeInfo.address!),
+                                        borderRadius: BorderRadius.circular(4),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4.0),
+                                          child: Icon(
+                                            Icons.open_in_new,
+                                            size: 16,
+                                            color: colorScheme.primary,
                                           ),
                                         ),
-                                      ],
+                                      ),
                                     ),
-                                  ),
+                                  ],
                                 ),
                               ],
                             ],

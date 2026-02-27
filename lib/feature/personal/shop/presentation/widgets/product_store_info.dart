@@ -4,10 +4,9 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.da
 import 'package:tryzeon/feature/personal/shop/presentation/pages/store_page.dart';
 
 class ProductStoreInfo extends StatelessWidget {
-  const ProductStoreInfo({required this.storeInfo, required this.onOpenMap, super.key});
+  const ProductStoreInfo({required this.storeInfo, super.key});
 
   final ShopStoreInfo storeInfo;
-  final VoidCallback? onOpenMap;
 
   @override
   Widget build(final BuildContext context) {
@@ -60,13 +59,7 @@ class ProductStoreInfo extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (storeInfo.address != null &&
-                      storeInfo.address!.isNotEmpty &&
-                      onOpenMap != null)
-                    IconButton(
-                      onPressed: onOpenMap,
-                      icon: Icon(Icons.map, color: colorScheme.primary),
-                    ),
+                  Icon(Icons.chevron_right, color: colorScheme.outlineVariant),
                 ],
               ),
             ),

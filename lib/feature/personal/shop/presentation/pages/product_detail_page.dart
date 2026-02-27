@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
@@ -46,21 +45,6 @@ class ProductDetailPage extends HookConsumerWidget {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     }
 
-    Future<void> handleOpenMap() async {
-      final address = product.storeInfo.address!;
-
-      final uri = Uri.parse(
-        '${AppConstants.googleMapsQueryUrl}${Uri.encodeComponent(address)}',
-      );
-      if (!await canLaunchUrl(uri)) {
-        if (!context.mounted) return;
-        TopNotification.show(context, message: '無法開啟地圖', type: NotificationType.error);
-        return;
-      }
-
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: Text('商品詳情', style: Theme.of(context).textTheme.titleMedium),
@@ -85,14 +69,7 @@ class ProductDetailPage extends HookConsumerWidget {
                   const SizedBox(height: 20),
 
                   // Store Info Section
-                  ProductStoreInfo(
-                    storeInfo: product.storeInfo,
-                    onOpenMap:
-                        product.storeInfo.address != null &&
-                            product.storeInfo.address!.isNotEmpty
-                        ? handleOpenMap
-                        : null,
-                  ),
+                  ProductStoreInfo(storeInfo: product.storeInfo),
                   const SizedBox(height: 32),
 
                   // Product Info Section (Material, Elasticity, Fit)
