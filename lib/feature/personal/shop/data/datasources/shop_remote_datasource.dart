@@ -89,7 +89,7 @@ class ShopRemoteDataSource {
 
     // 將結果轉換為 Model
     var products = (response as List).map((final item) {
-      final map = _withImageUrl(item);
+      final map = _withProductImageUrl(item);
 
       // 處理店家 Logo
       if (map['store_profiles'] != null) {
@@ -138,7 +138,7 @@ class ShopRemoteDataSource {
     return _supabaseClient.storage.from(_logoBucket).getPublicUrl(logoPath);
   }
 
-  Map<String, dynamic> _withImageUrl(final Map<String, dynamic> json) {
+  Map<String, dynamic> _withProductImageUrl(final Map<String, dynamic> json) {
     final map = Map<String, dynamic>.from(json);
     final imagePath = map['image_path'] as String?;
     if (imagePath != null && imagePath.isNotEmpty) {

@@ -16,11 +16,11 @@ class ProductCategoryRemoteDataSource {
         .order('priority', ascending: false);
 
     return (response as List)
-        .map((final e) => ProductCategoryModel.fromJson(_withImageUrl(e)))
+        .map((final e) => ProductCategoryModel.fromJson(_withCategoryImageUrl(e)))
         .toList();
   }
 
-  Map<String, dynamic> _withImageUrl(final Map<String, dynamic> json) {
+  Map<String, dynamic> _withCategoryImageUrl(final Map<String, dynamic> json) {
     final map = Map<String, dynamic>.from(json);
     final imagePath = map['image_path'] as String?;
     if (imagePath != null && imagePath.isNotEmpty) {

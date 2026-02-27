@@ -32,7 +32,7 @@ class ProductRemoteDataSource {
         .order(dbColumn, ascending: sort.ascending);
 
     return (response as List).map((final e) {
-      return ProductModel.fromJson(_withImageUrl(e));
+      return ProductModel.fromJson(_withProductImageUrl(e));
     }).toList();
   }
 
@@ -57,7 +57,7 @@ class ProductRemoteDataSource {
         .eq('id', productId)
         .single();
 
-    return ProductModel.fromJson(_withImageUrl(response));
+    return ProductModel.fromJson(_withProductImageUrl(response));
   }
 
   Future<void> updateProduct(final ProductModel product) async {
@@ -130,7 +130,7 @@ class ProductRemoteDataSource {
     return _supabaseClient.storage.from(_productImagesBucket).getPublicUrl(imagePath);
   }
 
-  Map<String, dynamic> _withImageUrl(final Map<String, dynamic> json) {
+  Map<String, dynamic> _withProductImageUrl(final Map<String, dynamic> json) {
     final map = Map<String, dynamic>.from(json);
     final imagePath = map['image_path'] as String?;
     if (imagePath != null && imagePath.isNotEmpty) {
