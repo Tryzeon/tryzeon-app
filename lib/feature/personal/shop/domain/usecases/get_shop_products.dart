@@ -10,6 +10,7 @@ class GetShopProducts {
   final ProductRepository _repository;
 
   Future<Result<List<ShopProduct>, Failure>> call({
+    final String? storeId,
     final String? searchQuery,
     final ProductSortOption sortOption = ProductSortOption.latest,
     final int? minPrice,
@@ -19,6 +20,7 @@ class GetShopProducts {
     final bool forceRefresh = false,
   }) {
     return _repository.getProducts(
+      storeId: storeId,
       searchQuery: searchQuery,
       sortOption: sortOption,
       minPrice: minPrice,

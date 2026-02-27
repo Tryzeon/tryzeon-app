@@ -4,6 +4,7 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_optio
 
 class ShopFilter extends Equatable {
   const ShopFilter({
+    this.storeId,
     this.searchQuery,
     this.sortOption = ProductSortOption.latest,
     this.minPrice,
@@ -12,6 +13,7 @@ class ShopFilter extends Equatable {
     this.userLocation,
   });
 
+  final String? storeId;
   final String? searchQuery;
   final ProductSortOption sortOption;
   final int? minPrice;
@@ -23,6 +25,7 @@ class ShopFilter extends Equatable {
 
   @override
   List<Object?> get props => [
+    storeId,
     searchQuery,
     sortOption,
     minPrice,

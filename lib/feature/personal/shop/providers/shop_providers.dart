@@ -12,11 +12,13 @@ import 'package:tryzeon/feature/personal/shop/data/repositories/product_analytic
 import 'package:tryzeon/feature/personal/shop/data/repositories/product_repository_impl.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
+import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:tryzeon/feature/personal/shop/domain/repositories/ad_repository.dart';
 import 'package:tryzeon/feature/personal/shop/domain/repositories/product_analytics_repository.dart';
 import 'package:tryzeon/feature/personal/shop/domain/repositories/product_repository.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/get_ads.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/get_shop_products.dart';
+import 'package:tryzeon/feature/personal/shop/domain/usecases/get_store_info.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/increment_purchase_click_count.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/increment_tryon_count.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/increment_view_count.dart';
@@ -64,6 +66,11 @@ GetShopProducts getShopProducts(final Ref ref) {
 }
 
 @riverpod
+GetStoreInfo getStoreInfo(final Ref ref) {
+  return GetStoreInfo(ref.watch(productRepositoryProvider));
+}
+
+@riverpod
 GetAds getAds(final Ref ref) {
   return GetAds(ref.watch(adRepositoryProvider));
 }
@@ -89,6 +96,7 @@ IncrementPurchaseClickCount incrementPurchaseClickCount(final Ref ref) {
 Future<List<ShopProduct>> shopProducts(final Ref ref, final ShopFilter filter) async {
   final getShopProductsUseCase = ref.watch(getShopProductsProvider);
   final result = await getShopProductsUseCase(
+    storeId: filter.storeId,
     searchQuery: filter.searchQuery,
     sortOption: filter.sortOption,
     minPrice: filter.minPrice,
@@ -106,6 +114,16 @@ Future<List<ShopProduct>> shopProducts(final Ref ref, final ShopFilter filter) a
 Future<List<String>> shopAds(final Ref ref) async {
   final getAdsUseCase = ref.watch(getAdsProvider);
   final result = await getAdsUseCase();
+  if (result.isFailure) {
+    throw result.getError()!;
+  }
+  return result.get()!;
+}
+
+@riverpod
+Future<ShopStoreInfo> storeInfo(final Ref ref, final String storeId) async {
+  final getUseCase = ref.watch(getStoreInfoProvider);
+  final result = await getUseCase(storeId);
   if (result.isFailure) {
     throw result.getError()!;
   }

@@ -2,12 +2,14 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/location/domain/entities/user_location.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
+import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:typed_result/typed_result.dart';
 
 /// Repository for product query operations.
 abstract class ProductRepository {
   /// Fetches a list of products based on the provided filters.
   Future<Result<List<ShopProduct>, Failure>> getProducts({
+    final String? storeId,
     final ProductSortOption sortOption = ProductSortOption.latest,
     final String? searchQuery,
     final int? minPrice,
@@ -16,4 +18,7 @@ abstract class ProductRepository {
     final UserLocation? userLocation,
     final bool forceRefresh = false,
   });
+
+  /// Fetches store profile by storeId.
+  Future<Result<ShopStoreInfo, Failure>> getStoreInfo(final String storeId);
 }

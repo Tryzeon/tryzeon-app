@@ -13,6 +13,7 @@ class ShopRemoteDataSource {
   static const _productBucket = AppConstants.bucketProductImages;
 
   Future<List<ShopProductModel>> getProducts({
+    final String? storeId,
     final String? searchQuery,
     final ProductSortOption sortOption = ProductSortOption.latest,
     final int? minPrice,
@@ -30,6 +31,11 @@ class ShopRemoteDataSource {
     // 類型過濾
     if (categories != null && categories.isNotEmpty) {
       query = query.overlaps('categories', categories.toList());
+    }
+
+    // 店家過濾
+    if (storeId != null && storeId.isNotEmpty) {
+      query = query.eq('store_id', storeId);
     }
 
     // 過濾店家名稱或商品名稱
@@ -113,6 +119,15 @@ class ShopRemoteDataSource {
     }
 
     return products;
+  }
+
+  Future<Map<String, dynamic>> getStoreProfile(final String storeId) async {
+    final response = await _supabaseClient
+        .from(_storeProfileTable)
+        .select('*')
+        .eq('id', storeId)
+        .single();
+    return _withStoreLogoUrl(response);
   }
 
   String getProductImageUrl(final String imagePath) {
