@@ -1,5 +1,6 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_overlay.dart';
 import 'package:tryzeon/core/presentation/widgets/settings_list_tile.dart';
@@ -7,10 +8,7 @@ import 'package:tryzeon/core/presentation/widgets/settings_section.dart';
 import 'package:tryzeon/core/presentation/widgets/settings_sliver_app_bar.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/presentation/widgets/version_info.dart';
-import 'package:tryzeon/feature/auth/presentation/pages/login_page.dart';
-import 'package:tryzeon/feature/personal/main/personal_entry.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
-import 'package:tryzeon/feature/store/settings/presentation/pages/profile_setting_page.dart';
 import 'package:tryzeon/feature/store/settings/presentation/providers/store_settings_controller.dart';
 
 class StoreSettingsPage extends HookConsumerWidget {
@@ -47,10 +45,7 @@ class StoreSettingsPage extends HookConsumerWidget {
 
       if (!context.mounted) return;
 
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (final context) => const PersonalEntry()),
-        (final route) => false,
-      );
+      context.go('/personal/home');
     }
 
     Future<void> handleSignOut() async {
@@ -65,13 +60,6 @@ class StoreSettingsPage extends HookConsumerWidget {
       if (result != OkCancelResult.ok) return;
 
       await controller.signOut();
-
-      if (!context.mounted) return;
-
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (final context) => const LoginPage()),
-        (final route) => false,
-      );
     }
 
     Future<void> handleDeleteAccount() async {
@@ -85,16 +73,7 @@ class StoreSettingsPage extends HookConsumerWidget {
       );
       if (dialogResult != OkCancelResult.ok) return;
 
-      final result = await controller.deleteAccount();
-
-      if (!context.mounted) return;
-
-      if (result.isSuccess) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (final context) => const LoginPage()),
-          (final route) => false,
-        );
-      }
+      await controller.deleteAccount();
     }
 
     return LoadingOverlay(
@@ -175,10 +154,7 @@ class _StoreProfileHeader extends HookConsumerWidget {
     final colorScheme = theme.colorScheme;
 
     return InkWell(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (final context) => const StoreProfileSettingsPage()),
-      ),
+      onTap: () => context.push('/store/settings/profile'),
       borderRadius: BorderRadius.circular(24),
       child: Container(
         padding: const EdgeInsets.all(20),

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
@@ -9,8 +10,6 @@ import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/presentation/widgets/login_scaffold.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
-import 'package:tryzeon/feature/personal/main/personal_entry.dart';
-import 'package:tryzeon/feature/store/main/store_entry.dart';
 import 'package:typed_result/typed_result.dart';
 
 class EmailLoginPage extends HookConsumerWidget {
@@ -119,15 +118,7 @@ class EmailLoginPage extends HookConsumerWidget {
 
         if (result.isSuccess) {
           // Navigate to respective home page
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (final context) => userType == UserType.personal
-                  ? const PersonalEntry()
-                  : const StoreEntry(),
-            ),
-            (final route) => false,
-          );
+          context.go(userType == UserType.personal ? '/personal/home' : '/store/home');
         } else {
           TopNotification.show(
             context,
@@ -315,7 +306,7 @@ class EmailLoginPage extends HookConsumerWidget {
                                   if (isOtpSent.value) {
                                     isOtpSent.value = false;
                                   } else {
-                                    Navigator.pop(context);
+                                    context.pop();
                                   }
                                 },
                                 icon: const Icon(

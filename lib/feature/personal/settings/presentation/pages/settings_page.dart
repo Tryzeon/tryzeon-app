@@ -1,5 +1,6 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_overlay.dart';
 import 'package:tryzeon/core/presentation/widgets/settings_list_tile.dart';
@@ -7,14 +8,8 @@ import 'package:tryzeon/core/presentation/widgets/settings_section.dart';
 import 'package:tryzeon/core/presentation/widgets/settings_sliver_app_bar.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/presentation/widgets/version_info.dart';
-import 'package:tryzeon/feature/auth/presentation/pages/login_page.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/settings/presentation/providers/personal_settings_controller.dart';
-import 'package:tryzeon/feature/personal/subscription/presentation/pages/subscription_page.dart';
-import 'package:tryzeon/feature/store/main/store_entry.dart';
-
-import 'preferences_page.dart';
-import 'profile_setting_page.dart';
 
 class PersonalSettingsPage extends HookConsumerWidget {
   const PersonalSettingsPage({super.key});
@@ -47,13 +42,6 @@ class PersonalSettingsPage extends HookConsumerWidget {
       if (result != OkCancelResult.ok) return;
 
       await controller.signOut();
-
-      if (!context.mounted) return;
-
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (final context) => const LoginPage()),
-        (final route) => false,
-      );
     }
 
     Future<void> switchToStore() async {
@@ -69,10 +57,7 @@ class PersonalSettingsPage extends HookConsumerWidget {
       await controller.switchToStore();
       if (!context.mounted) return;
 
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (final context) => const StoreEntry()),
-        (final route) => false,
-      );
+      context.go('/store/home');
     }
 
     Future<void> handleDeleteAccount() async {
@@ -86,16 +71,7 @@ class PersonalSettingsPage extends HookConsumerWidget {
       );
       if (dialogResult != OkCancelResult.ok) return;
 
-      final result = await controller.deleteAccount();
-
-      if (!context.mounted) return;
-
-      if (result.isSuccess) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (final context) => const LoginPage()),
-          (final route) => false,
-        );
-      }
+      await controller.deleteAccount();
     }
 
     final state = ref.watch(personalSettingsControllerProvider);
@@ -122,24 +98,14 @@ class PersonalSettingsPage extends HookConsumerWidget {
                           icon: Icons.tune_rounded,
                           title: '偏好設定',
                           subtitle: '管理您的個人偏好',
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (final context) => const PreferencesPage(),
-                            ),
-                          ),
+                          onTap: () => context.push('/personal/settings/preferences'),
                           color: colorScheme.secondary,
                         ),
                         SettingsListTile(
                           icon: Icons.card_membership_rounded,
                           title: '訂閱方案',
                           subtitle: '升級您的帳號',
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (final context) => const SubscriptionPage(),
-                            ),
-                          ),
+                          onTap: () => context.push('/personal/subscription'),
                           color: colorScheme.tertiary,
                         ),
                       ],
@@ -209,12 +175,7 @@ class _ProfileHeader extends HookConsumerWidget {
     final colorScheme = theme.colorScheme;
 
     return InkWell(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (final context) => const PersonalProfileSettingsPage(),
-        ),
-      ),
+      onTap: () => context.push('/personal/settings/profile'),
       borderRadius: BorderRadius.circular(24),
       child: Container(
         padding: const EdgeInsets.all(20),
