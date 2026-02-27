@@ -95,15 +95,7 @@ IncrementPurchaseClickCount incrementPurchaseClickCount(final Ref ref) {
 @riverpod
 Future<List<ShopProduct>> shopProducts(final Ref ref, final ShopFilter filter) async {
   final getShopProductsUseCase = ref.watch(getShopProductsProvider);
-  final result = await getShopProductsUseCase(
-    storeId: filter.storeId,
-    searchQuery: filter.searchQuery,
-    sortOption: filter.sortOption,
-    minPrice: filter.minPrice,
-    maxPrice: filter.maxPrice,
-    categories: filter.categories,
-    userLocation: filter.userLocation,
-  );
+  final result = await getShopProductsUseCase(filter: filter);
   if (result.isFailure) {
     throw result.getError()!;
   }
