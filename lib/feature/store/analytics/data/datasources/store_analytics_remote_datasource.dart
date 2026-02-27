@@ -15,7 +15,7 @@ class StoreAnalyticsRemoteDataSource {
   }) async {
     final response = await _supabaseClient
         .from(AppConstants.tableAnalyticsMonthlySummary)
-        .select()
+        .select('store_id, year, month, view_count, tryon_count, purchase_click_count')
         .eq('store_id', storeId)
         .eq('year', year)
         .eq('month', month)
@@ -41,7 +41,7 @@ class StoreAnalyticsRemoteDataSource {
   ) async {
     final response = await _supabaseClient
         .from(AppConstants.tableAnalyticsMonthlySummary)
-        .select()
+        .select('store_id, year, month, view_count, tryon_count, purchase_click_count')
         .eq('store_id', storeId);
 
     return response

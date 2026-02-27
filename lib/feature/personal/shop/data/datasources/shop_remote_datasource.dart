@@ -25,7 +25,7 @@ class ShopRemoteDataSource {
     dynamic query = _supabaseClient.from(_productsTable).select('''
           *,
           product_variants(*),
-          store_profiles!inner(*)
+          store_profiles!inner(id, name, address, logo_path)
         ''');
 
     // 類型過濾
@@ -124,7 +124,7 @@ class ShopRemoteDataSource {
   Future<Map<String, dynamic>> getStoreProfile(final String storeId) async {
     final response = await _supabaseClient
         .from(_storeProfileTable)
-        .select('*')
+        .select('id, name, address, logo_path')
         .eq('id', storeId)
         .single();
     return _withStoreLogoUrl(response);
