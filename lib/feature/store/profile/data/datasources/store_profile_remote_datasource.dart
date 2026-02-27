@@ -72,7 +72,7 @@ class StoreProfileRemoteDataSource {
     await _supabaseClient.storage.from(_logoBucket).remove([logoPath]);
   }
 
-  String getLogoPublicUrl(final String logoPath) {
+  String _getLogoUrl(final String logoPath) {
     return _supabaseClient.storage.from(_logoBucket).getPublicUrl(logoPath);
   }
 
@@ -80,7 +80,7 @@ class StoreProfileRemoteDataSource {
     final map = Map<String, dynamic>.from(json);
     final logoPath = map['logo_path'] as String?;
     if (logoPath != null && logoPath.isNotEmpty) {
-      map['logo_url'] = getLogoPublicUrl(logoPath);
+      map['logo_url'] = _getLogoUrl(logoPath);
     }
     return map;
   }

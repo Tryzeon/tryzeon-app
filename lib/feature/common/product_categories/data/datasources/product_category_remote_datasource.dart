@@ -24,12 +24,12 @@ class ProductCategoryRemoteDataSource {
     final map = Map<String, dynamic>.from(json);
     final imagePath = map['image_path'] as String?;
     if (imagePath != null && imagePath.isNotEmpty) {
-      map['image_url'] = _getPublicUrl(imagePath);
+      map['image_url'] = _getCategoryImageUrl(imagePath);
     }
     return map;
   }
 
-  String _getPublicUrl(final String imagePath) {
+  String _getCategoryImageUrl(final String imagePath) {
     return _supabaseClient.storage.from(_bucket).getPublicUrl(imagePath);
   }
 }

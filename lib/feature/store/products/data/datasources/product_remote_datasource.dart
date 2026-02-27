@@ -125,8 +125,7 @@ class ProductRemoteDataSource {
     await _supabaseClient.storage.from(_productImagesBucket).remove([imagePath]);
   }
 
-  String getProductImageUrl(final String imagePath) {
-    if (imagePath.isEmpty) return '';
+  String _getProductImageUrl(final String imagePath) {
     return _supabaseClient.storage.from(_productImagesBucket).getPublicUrl(imagePath);
   }
 
@@ -134,7 +133,7 @@ class ProductRemoteDataSource {
     final map = Map<String, dynamic>.from(json);
     final imagePath = map['image_path'] as String?;
     if (imagePath != null && imagePath.isNotEmpty) {
-      map['image_url'] = getProductImageUrl(imagePath);
+      map['image_url'] = _getProductImageUrl(imagePath);
     }
     return map;
   }

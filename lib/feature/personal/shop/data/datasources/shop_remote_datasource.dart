@@ -130,11 +130,11 @@ class ShopRemoteDataSource {
     return _withStoreLogoUrl(response);
   }
 
-  String getProductImageUrl(final String imagePath) {
+  String _getProductImageUrl(final String imagePath) {
     return _supabaseClient.storage.from(_productBucket).getPublicUrl(imagePath);
   }
 
-  String getStoreLogoUrl(final String logoPath) {
+  String _getStoreLogoUrl(final String logoPath) {
     return _supabaseClient.storage.from(_logoBucket).getPublicUrl(logoPath);
   }
 
@@ -142,7 +142,7 @@ class ShopRemoteDataSource {
     final map = Map<String, dynamic>.from(json);
     final imagePath = map['image_path'] as String?;
     if (imagePath != null && imagePath.isNotEmpty) {
-      map['image_url'] = getProductImageUrl(imagePath);
+      map['image_url'] = _getProductImageUrl(imagePath);
     }
     return map;
   }
@@ -151,7 +151,7 @@ class ShopRemoteDataSource {
     final map = Map<String, dynamic>.from(json);
     final logoPath = map['logo_path'] as String?;
     if (logoPath != null && logoPath.isNotEmpty) {
-      map['logo_url'] = getStoreLogoUrl(logoPath);
+      map['logo_url'] = _getStoreLogoUrl(logoPath);
     }
     return map;
   }
