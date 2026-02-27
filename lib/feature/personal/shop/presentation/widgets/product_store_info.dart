@@ -25,8 +25,7 @@ class ProductStoreInfo extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (final context) =>
-                      StorePage(storeId: storeInfo.id, initialStoreInfo: storeInfo),
+                  builder: (final context) => StorePage(storeId: storeInfo.id),
                 ),
               );
             },

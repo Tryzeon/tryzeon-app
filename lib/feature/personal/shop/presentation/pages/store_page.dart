@@ -6,23 +6,19 @@ import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
-import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
+
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_grid.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class StorePage extends HookConsumerWidget {
-  const StorePage({super.key, required this.storeId, this.initialStoreInfo});
+  const StorePage({super.key, required this.storeId});
 
   final String storeId;
-  final ShopStoreInfo? initialStoreInfo;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    // If not provided from previous page, fetch it
-    final storeInfoAsync = initialStoreInfo != null
-        ? AsyncValue.data(initialStoreInfo!)
-        : ref.watch(storeInfoProvider(storeId));
+    final storeInfoAsync = ref.watch(storeInfoProvider(storeId));
 
     final userProfileAsync = ref.watch(userProfileProvider);
     final userProfile = userProfileAsync.maybeWhen(
@@ -59,10 +55,10 @@ class StorePage extends HookConsumerWidget {
         data: (final storeInfo) {
           return RefreshIndicator(
             onRefresh: () async {
-              if (initialStoreInfo == null) {
-                ref.invalidate(storeInfoProvider(storeId));
-              }
-              return refreshShopProducts(ref, filter);
+              await Future.wait([
+                ref.refresh(storeInfoProvider(storeId).future),
+                refreshShopProducts(ref, filter),
+              ]);
             },
             color: colorScheme.primary,
             child: SingleChildScrollView(
