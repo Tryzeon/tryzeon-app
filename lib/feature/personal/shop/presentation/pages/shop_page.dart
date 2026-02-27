@@ -213,7 +213,12 @@ class ShopPage extends HookConsumerWidget {
               // 內容區域
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: () => refreshShopProducts(ref, filter),
+                  onRefresh: () async {
+                    await Future.wait([
+                      refreshProductCategories(ref),
+                      refreshShopProducts(ref, filter),
+                    ]);
+                  },
                   color: colorScheme.primary,
                   child: LayoutBuilder(
                     builder: (final context, final constraints) {

@@ -130,15 +130,20 @@ Future<ShopStoreInfo> storeInfo(final Ref ref, final String storeId) async {
   return result.get()!;
 }
 
-/// 強制刷新商品列表
-Future<void> refreshShopProducts(final WidgetRef ref, final ShopFilter filter) async {
+/// 強制刷新商品分類
+Future<void> refreshProductCategories(final WidgetRef ref) async {
   try {
-    // 1. Refresh Categories
     final getProductCategories = ref.read(getProductCategoriesUseCaseProvider);
     await getProductCategories(forceRefresh: true);
     ref.invalidate(productCategoriesProvider);
+  } catch (_) {
+    // Provider 刷新失敗時，忽略異常
+  }
+}
 
-    // 2. Refresh Products
+/// 強制刷新商品列表
+Future<void> refreshShopProducts(final WidgetRef ref, final ShopFilter filter) async {
+  try {
     final _ = await ref.refresh(shopProductsProvider(filter).future);
   } catch (_) {
     // Provider 刷新失敗時，忽略異常，讓 UI 顯示 ErrorView 或舊資料
