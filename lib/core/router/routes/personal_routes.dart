@@ -31,6 +31,22 @@ final personalShellRoute = StatefulShellRoute.indexedStack(
         GoRoute(
           path: '/personal/shop',
           builder: (final context, final state) => const ShopPage(),
+          routes: [
+            GoRoute(
+              path: 'product/:id',
+              builder: (final context, final state) {
+                final product = state.extra! as ShopProduct;
+                return ProductDetailPage(product: product);
+              },
+            ),
+            GoRoute(
+              path: 'store/:storeId',
+              builder: (final context, final state) {
+                final storeId = state.pathParameters['storeId']!;
+                return StorePage(storeId: storeId);
+              },
+            ),
+          ],
         ),
       ],
     ),
@@ -74,19 +90,5 @@ final personalFullScreenRoutes = [
   GoRoute(
     path: '/personal/subscription',
     builder: (final context, final state) => const SubscriptionPage(),
-  ),
-  GoRoute(
-    path: '/personal/product/:id',
-    builder: (final context, final state) {
-      final product = state.extra! as ShopProduct;
-      return ProductDetailPage(product: product);
-    },
-  ),
-  GoRoute(
-    path: '/personal/store/:storeId',
-    builder: (final context, final state) {
-      final storeId = state.pathParameters['storeId']!;
-      return StorePage(storeId: storeId);
-    },
   ),
 ];
