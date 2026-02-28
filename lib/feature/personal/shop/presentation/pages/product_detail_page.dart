@@ -11,17 +11,12 @@ import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ProductDetailPage extends HookConsumerWidget {
-  const ProductDetailPage({super.key, required this.productId, this.product});
+  const ProductDetailPage({super.key, required this.productId});
 
   final String productId;
-  final ShopProduct? product;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    if (product != null) {
-      return _ProductDetailView(product: product!);
-    }
-
     final productAsync = ref.watch(shopProductProvider(productId));
 
     return productAsync.when(
@@ -129,6 +124,8 @@ class _ProductDetailView extends HookConsumerWidget {
                 ],
               ),
             ),
+
+            const SizedBox(height: 70),
           ],
         ),
       ),

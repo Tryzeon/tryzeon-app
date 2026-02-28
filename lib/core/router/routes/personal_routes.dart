@@ -5,7 +5,6 @@ import 'package:tryzeon/feature/personal/home/presentation/pages/home_page.dart'
 import 'package:tryzeon/feature/personal/settings/presentation/pages/preferences_page.dart';
 import 'package:tryzeon/feature/personal/settings/presentation/pages/profile_setting_page.dart';
 import 'package:tryzeon/feature/personal/settings/presentation/pages/settings_page.dart';
-import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/pages/product_detail_page.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/pages/shop_page.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/pages/store_page.dart';
@@ -35,9 +34,8 @@ final personalShellRoute = StatefulShellRoute.indexedStack(
             GoRoute(
               path: 'product/:id',
               builder: (final context, final state) {
-                final product = state.extra as ShopProduct?;
                 final productId = state.pathParameters['id']!;
-                return ProductDetailPage(productId: productId, product: product);
+                return ProductDetailPage(productId: productId);
               },
             ),
             GoRoute(
