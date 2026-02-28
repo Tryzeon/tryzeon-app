@@ -168,8 +168,17 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       await _remoteDataSource.deleteAccount();
     } catch (e, stackTrace) {
-      AppLogger.error('Account deletion failed', e, stackTrace);
-      return Err(mapExceptionToFailure(e));
+      AppLogger.error('Account deletion failed on server (ignored)', e, stackTrace);
+    }
+
+    try {
+      await _remoteDataSource.signOut();
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Supabase logout failed after account deletion (ignored)',
+        e,
+        stackTrace,
+      );
     }
 
     try {
