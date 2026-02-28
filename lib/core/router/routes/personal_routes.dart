@@ -20,7 +20,7 @@ final personalShellRoute = StatefulShellRoute.indexedStack(
       routes: [
         GoRoute(
           path: '/personal/home',
-          builder: (final context, final state) => const HomePage(controller: null),
+          builder: (final context, final state) => const HomePage(),
         ),
       ],
     ),

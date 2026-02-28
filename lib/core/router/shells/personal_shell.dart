@@ -5,7 +5,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/personal/home/presentation/pages/home_page.dart';
-import 'package:tryzeon/feature/personal/main/personal_entry.dart';
+import 'package:tryzeon/feature/personal/main/personal_entry_scope.dart';
 
 class PersonalShell extends HookConsumerWidget {
   const PersonalShell({super.key, required this.navigationShell});
@@ -38,6 +38,7 @@ class PersonalShell extends HookConsumerWidget {
 
     return PersonalEntryScope(
       tryOnFromStorage: tryOnFromStorage,
+      homePageController: homePageController,
       child: MediaQuery(
         data: mediaQuery.copyWith(viewInsets: mediaQuery.viewInsets.copyWith(bottom: 0)),
         child: AdaptiveScaffold(
