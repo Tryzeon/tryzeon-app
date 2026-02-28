@@ -22,7 +22,7 @@ class ProductStoreInfo extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             onTap: () {
-              context.push('/personal/store/${storeInfo.id}');
+              context.push('/personal/shop/store/${storeInfo.id}');
             },
             borderRadius: BorderRadius.circular(12),
             child: Padding(
