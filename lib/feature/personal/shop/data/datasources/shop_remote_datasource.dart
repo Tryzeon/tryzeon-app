@@ -121,6 +121,25 @@ class ShopRemoteDataSource {
     return products;
   }
 
+  Future<ShopProductModel> getProduct(final String productId) async {
+    final response = await _supabaseClient
+        .from(_productsTable)
+        .select('''
+          *,
+          product_variants(*),
+          store_profiles!inner(id, name, address, logo_path)
+        ''')
+        .eq('id', productId)
+        .single();
+
+    final map = _withProductImageUrl(response);
+    if (map['store_profiles'] != null) {
+      map['store_profiles'] = _withStoreLogoUrl(map['store_profiles']);
+    }
+
+    return ShopProductModel.fromJson(map);
+  }
+
   Future<Map<String, dynamic>> getStoreProfile(final String storeId) async {
     final response = await _supabaseClient
         .from(_storeProfileTable)

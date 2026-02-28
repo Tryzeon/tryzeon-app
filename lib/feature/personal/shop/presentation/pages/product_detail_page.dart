@@ -11,7 +11,48 @@ import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ProductDetailPage extends HookConsumerWidget {
-  const ProductDetailPage({super.key, required this.product});
+  const ProductDetailPage({super.key, required this.productId, this.product});
+
+  final String productId;
+  final ShopProduct? product;
+
+  @override
+  Widget build(final BuildContext context, final WidgetRef ref) {
+    if (product != null) {
+      return _ProductDetailView(product: product!);
+    }
+
+    final productAsync = ref.watch(shopProductProvider(productId));
+
+    return productAsync.when(
+      data: (final loadedProduct) => _ProductDetailView(product: loadedProduct),
+      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (final error, final stack) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Text('商品詳情', style: Theme.of(context).textTheme.titleMedium),
+            centerTitle: true,
+          ),
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                '無法載入商品資料',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ProductDetailView extends HookConsumerWidget {
+  const _ProductDetailView({required this.product});
 
   final ShopProduct product;
 

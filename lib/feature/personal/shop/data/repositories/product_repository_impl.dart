@@ -48,6 +48,18 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
+  Future<Result<ShopProduct, Failure>> getProduct(final String productId) async {
+    try {
+      final model = await _remoteDataSource.getProduct(productId);
+      final entity = _mappr.convert<ShopProductModel, ShopProduct>(model);
+      return Ok(entity);
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to get product by id $productId', e, stackTrace);
+      return Err(mapExceptionToFailure(e));
+    }
+  }
+
+  @override
   Future<Result<ShopStoreInfo, Failure>> getStoreInfo(final String storeId) async {
     try {
       final responseMap = await _remoteDataSource.getStoreProfile(storeId);

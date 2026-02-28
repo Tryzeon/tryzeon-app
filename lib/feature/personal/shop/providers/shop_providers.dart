@@ -17,6 +17,7 @@ import 'package:tryzeon/feature/personal/shop/domain/repositories/ad_repository.
 import 'package:tryzeon/feature/personal/shop/domain/repositories/product_analytics_repository.dart';
 import 'package:tryzeon/feature/personal/shop/domain/repositories/product_repository.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/get_ads.dart';
+import 'package:tryzeon/feature/personal/shop/domain/usecases/get_shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/get_shop_products.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/get_store_info.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/increment_purchase_click_count.dart';
@@ -66,6 +67,11 @@ GetShopProducts getShopProducts(final Ref ref) {
 }
 
 @riverpod
+GetShopProduct getShopProduct(final Ref ref) {
+  return GetShopProduct(ref.watch(productRepositoryProvider));
+}
+
+@riverpod
 GetStoreInfo getStoreInfo(final Ref ref) {
   return GetStoreInfo(ref.watch(productRepositoryProvider));
 }
@@ -96,6 +102,16 @@ IncrementPurchaseClickCount incrementPurchaseClickCount(final Ref ref) {
 Future<List<ShopProduct>> shopProducts(final Ref ref, final ShopFilter filter) async {
   final getShopProductsUseCase = ref.watch(getShopProductsProvider);
   final result = await getShopProductsUseCase(filter: filter);
+  if (result.isFailure) {
+    throw result.getError()!;
+  }
+  return result.get()!;
+}
+
+@riverpod
+Future<ShopProduct> shopProduct(final Ref ref, final String productId) async {
+  final getUseCase = ref.watch(getShopProductProvider);
+  final result = await getUseCase(productId);
   if (result.isFailure) {
     throw result.getError()!;
   }
