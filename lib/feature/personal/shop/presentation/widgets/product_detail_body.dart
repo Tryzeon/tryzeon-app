@@ -67,7 +67,7 @@ class _ProductDetailContent extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    // Build category ID to name mappingㄉ
+    // Build category ID to name mapping
     final categoriesAsync = ref.watch(productCategoriesProvider);
     final categoryIdToName = categoriesAsync.maybeWhen(
       data: (final categories) => {for (final cat in categories) cat.id: cat.name},
