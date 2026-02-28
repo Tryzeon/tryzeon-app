@@ -5,13 +5,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/env.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/router/app_router.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
-import 'package:tryzeon/feature/auth/presentation/pages/login_page.dart';
-import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
-import 'package:tryzeon/feature/personal/main/personal_entry.dart';
-import 'package:tryzeon/feature/store/main/store_entry.dart';
-import 'package:typed_result/typed_result.dart';
 
 Duration? customRetry(final int retryCount, final Object error) {
   if (retryCount >= 3) return null;
@@ -46,36 +41,12 @@ class Tryzeon extends HookConsumerWidget {
       }
     });
 
-    final isLoading = useState(true);
-    final userType = useState<UserType?>(null);
+    final router = ref.watch(appRouterProvider);
 
-    useEffect(() {
-      Future<void> checkAuthStatus() async {
-        final getLoginTypeUseCase = ref.read(getLastLoginTypeUseCaseProvider);
-        final result = await getLoginTypeUseCase();
-        switch (result) {
-          case Ok(:final value):
-            userType.value = value;
-          case Err():
-            userType.value = null;
-        }
-        isLoading.value = false;
-      }
-
-      checkAuthStatus();
-      return null;
-    }, []);
-
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'TryZeon',
       theme: AppTheme.lightTheme,
-      home: isLoading.value
-          ? const Scaffold(body: Center(child: CircularProgressIndicator()))
-          : userType.value == null
-          ? const LoginPage()
-          : userType.value == UserType.store
-          ? const StoreEntry()
-          : const PersonalEntry(),
+      routerConfig: router,
     );
   }
 }

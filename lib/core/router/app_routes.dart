@@ -9,6 +9,8 @@ abstract final class AppRoutes {
   // Personal (tabs)
   static const String personalHome = '/personal/home';
   static const String personalShop = '/personal/shop';
+  static const String personalShopProduct = '/personal/shop/product/:id';
+  static const String personalShopStore = '/personal/shop/store/:storeId';
   static const String personalChat = '/personal/chat';
   static const String personalWardrobe = '/personal/wardrobe';
 
@@ -17,8 +19,6 @@ abstract final class AppRoutes {
   static const String personalSettingsProfile = '/personal/settings/profile';
   static const String personalSettingsPreferences = '/personal/settings/preferences';
   static const String personalSubscription = '/personal/subscription';
-  static const String personalShopProduct = '/personal/product/:id';
-  static const String personalShopStore = '/personal/store/:storeId';
 
   // Store (tabs)
   static const String storeHome = '/store/home';
