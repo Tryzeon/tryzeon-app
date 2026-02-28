@@ -9,7 +9,7 @@ final deepLinkRoutes = [
     },
   ),
   GoRoute(
-    path: '/shop/:storeId',
+    path: '/store/:storeId',
     redirect: (final context, final state) {
       final storeId = state.pathParameters['storeId']!;
       return '/personal/shop/store/$storeId';

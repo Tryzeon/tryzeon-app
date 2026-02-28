@@ -47,7 +47,15 @@ Raw<GoRouter> appRouter(final Ref ref) {
 
       // 3. Onboarding Guard for store users
       if (loggedIn) {
-        if (path.startsWith('/store') && !path.startsWith('/store/onboarding')) {
+        // If the route matches /store/UUID, it is a deep link for a specific store.
+        // We shouldn't intercept this with the onboarding guard.
+        final isStoreDeepLink = RegExp(
+          '^/store/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}',
+        ).hasMatch(path);
+        
+        if (path.startsWith('/store') &&
+            !path.startsWith('/store/onboarding') &&
+            !isStoreDeepLink) {
           final hasProfile = storeProfileAsync.asData?.value != null;
           if (!hasProfile && !storeProfileAsync.isLoading) {
             return '/store/onboarding';
