@@ -78,7 +78,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle', '**/*.gradle.kts', '**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('android/build.gradle.kts', 'android/app/build.gradle.kts', 'android/settings.gradle.kts', 'android/gradle/wrapper/gradle-wrapper.properties', 'pubspec.lock') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
 
@@ -110,7 +110,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle', '**/*.gradle.kts', '**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('android/build.gradle.kts', 'android/app/build.gradle.kts', 'android/settings.gradle.kts', 'android/gradle/wrapper/gradle-wrapper.properties', 'pubspec.lock') }}
 
   # ════════════════════════════════════════════════════
   # Job 3: iOS build (macOS)
