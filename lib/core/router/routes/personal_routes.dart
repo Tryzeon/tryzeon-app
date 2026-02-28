@@ -35,8 +35,9 @@ final personalShellRoute = StatefulShellRoute.indexedStack(
             GoRoute(
               path: 'product/:id',
               builder: (final context, final state) {
-                final product = state.extra! as ShopProduct;
-                return ProductDetailPage(product: product);
+                final product = state.extra as ShopProduct?;
+                final productId = state.pathParameters['id']!;
+                return ProductDetailPage(productId: productId, product: product);
               },
             ),
             GoRoute(
