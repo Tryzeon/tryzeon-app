@@ -91,11 +91,6 @@ class ShopRemoteDataSource {
     var products = (response as List).map((final item) {
       final map = _withProductImageUrl(item);
 
-      // 處理店家 Logo
-      if (map['store_profiles'] != null) {
-        map['store_profiles'] = _withStoreLogoUrl(map['store_profiles']);
-      }
-
       return ShopProductModel.fromJson(map);
     }).toList();
 
