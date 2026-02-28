@@ -49,6 +49,13 @@
                 <data android:scheme="com.tryzeon.app"
                       android:host="login-callback"/>
             </intent-filter>
+            <!-- App Links for GoRouter Deep Links -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="tryzeon.com" />
+            </intent-filter>
         </activity>
         <activity
             android:name="com.yalantis.ucrop.UCropActivity"
