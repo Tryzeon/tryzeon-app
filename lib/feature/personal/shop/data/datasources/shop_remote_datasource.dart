@@ -21,11 +21,11 @@ class ShopRemoteDataSource {
     final Set<String>? categories,
     final UserLocation? userLocation,
   }) async {
-    // 查詢所有商品並關聯店家資訊和尺寸資訊
+    // 查詢主頁推薦列表所需欄位（詳細資訊由 getProduct 取得）
     dynamic query = _supabaseClient.from(_productsTable).select('''
-          *,
+          id, store_id, name, categories, price, image_path, created_at,
           product_variants(*),
-          store_profiles!inner(id, name, address, logo_path)
+          store_profiles!inner(id, name, address)
         ''');
 
     // 類型過濾
