@@ -13,13 +13,15 @@ import 'package:typed_result/typed_result.dart';
 
 part 'app_router.g.dart';
 
+/// Matches deep link paths like `/store/<uuid>`.
+final _storeDeepLinkPattern = RegExp(
+  '^/store/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}',
+);
+
 @riverpod
 Raw<GoRouter> appRouter(final Ref ref) {
   final supabase = Supabase.instance.client;
-
-  // Watch store profile for onboarding guard
   final storeProfileAsync = ref.watch(storeProfileProvider);
-
   final refreshListenable = AuthRefreshListenable(supabase.auth.onAuthStateChange);
 
   ref.onDispose(refreshListenable.dispose);
@@ -28,42 +30,22 @@ Raw<GoRouter> appRouter(final Ref ref) {
     initialLocation: '/auth/login',
     refreshListenable: refreshListenable,
     redirect: (final context, final state) async {
-      final session = supabase.auth.currentSession;
-      final loggedIn = session != null;
+      final isLoggedIn = supabase.auth.currentSession != null;
       final path = state.matchedLocation;
+      final isAuthPath = path.startsWith('/auth');
 
-      // 1. Auth Guard: not logged in → /auth/login
-      if (!loggedIn && !path.startsWith('/auth')) {
-        return '/auth/login';
+      // 1. 未登入 → 導向登入頁
+      if (!isLoggedIn) return isAuthPath ? null : '/auth/login';
+
+      // 2. 已登入但仍處於登入頁 → 導向首頁
+      if (isAuthPath) return _resolveHomePath(ref);
+
+      // 3. 商家 Onboarding 攔截 (排除 Deep Link 與 Onboarding 頁面本身)
+      if (_needsStoreOnboarding(path, storeProfileAsync)) {
+        return '/store/onboarding';
       }
 
-      // 2. Logged-in redirect: on auth pages → home
-      if (loggedIn && path.startsWith('/auth')) {
-        final getLoginType = ref.read(getLastLoginTypeUseCaseProvider);
-        final result = await getLoginType();
-        final userType = result.get();
-        return userType == UserType.store ? '/store/home' : '/personal/home';
-      }
-
-      // 3. Onboarding Guard for store users
-      if (loggedIn) {
-        // If the route matches /store/UUID, it is a deep link for a specific store.
-        // We shouldn't intercept this with the onboarding guard.
-        final isStoreDeepLink = RegExp(
-          '^/store/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}',
-        ).hasMatch(path);
-        
-        if (path.startsWith('/store') &&
-            !path.startsWith('/store/onboarding') &&
-            !isStoreDeepLink) {
-          final hasProfile = storeProfileAsync.asData?.value != null;
-          if (!hasProfile && !storeProfileAsync.isLoading) {
-            return '/store/onboarding';
-          }
-        }
-      }
-
-      return null; // no redirect
+      return null;
     },
     routes: [
       authRoutes,
@@ -74,4 +56,25 @@ Raw<GoRouter> appRouter(final Ref ref) {
       ...deepLinkRoutes,
     ],
   );
+}
+
+/// 根據上次登入類型決定首頁路徑。
+Future<String> _resolveHomePath(final Ref ref) async {
+  final getLoginType = ref.read(getLastLoginTypeUseCaseProvider);
+  final result = await getLoginType();
+  final userType = result.get();
+  return userType == UserType.store ? '/store/home' : '/personal/home';
+}
+
+/// 判斷目前商家路徑是否需要被 Onboarding 攔截。
+bool _needsStoreOnboarding(
+  final String path,
+  final AsyncValue<dynamic> storeProfileAsync,
+) {
+  if (!path.startsWith('/store')) return false;
+  if (path.startsWith('/store/onboarding')) return false;
+  if (_storeDeepLinkPattern.hasMatch(path)) return false;
+
+  final hasProfile = storeProfileAsync.asData?.value != null;
+  return !hasProfile && !storeProfileAsync.isLoading;
 }
