@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
-import 'package:tryzeon/feature/personal/main/personal_entry.dart';
+import 'package:tryzeon/feature/personal/main/personal_entry_scope.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_status.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
@@ -74,7 +74,7 @@ class ProductCard extends HookConsumerWidget {
 
       if (!context.mounted) return;
 
-      final personalEntry = PersonalEntry.of(context);
+      final personalEntry = PersonalEntryScope.of(context);
       await personalEntry?.tryOnFromStorage(product.imagePath);
     }
 
