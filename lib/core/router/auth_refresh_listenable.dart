@@ -11,6 +11,9 @@ class AuthRefreshListenable extends ChangeNotifier {
 
   late final StreamSubscription<dynamic> _subscription;
 
+  /// Manually triggers GoRouter's redirect re-evaluation.
+  void refresh() => notifyListeners();
+
   @override
   void dispose() {
     _subscription.cancel();

@@ -21,12 +21,11 @@ final _storeDeepLinkPattern = RegExp(
 @riverpod
 Raw<GoRouter> appRouter(final Ref ref) {
   final supabase = Supabase.instance.client;
-  final storeProfileAsync = ref.watch(storeProfileProvider);
   final refreshListenable = AuthRefreshListenable(supabase.auth.onAuthStateChange);
 
   ref.onDispose(refreshListenable.dispose);
 
-  return GoRouter(
+  final router = GoRouter(
     initialLocation: '/auth/login',
     refreshListenable: refreshListenable,
     redirect: (final context, final state) async {
@@ -41,6 +40,8 @@ Raw<GoRouter> appRouter(final Ref ref) {
       if (isAuthPath) return _resolveHomePath(ref);
 
       // 3. 商家 Onboarding 攔截 (排除 Deep Link 與 Onboarding 頁面本身)
+      //    使用 ref.read 取得最新的 store profile 狀態
+      final storeProfileAsync = ref.read(storeProfileProvider);
       if (_needsStoreOnboarding(path, storeProfileAsync)) {
         return '/store/onboarding';
       }
@@ -56,6 +57,14 @@ Raw<GoRouter> appRouter(final Ref ref) {
       ...deepLinkRoutes,
     ],
   );
+
+  // 監聽 store profile 變化，觸發 redirect 重新評估，
+  // 而不是重建整個 GoRouter（避免覆蓋 deep link 導航）。
+  ref.listen(storeProfileProvider, (final _, final __) {
+    refreshListenable.refresh();
+  });
+
+  return router;
 }
 
 /// 根據上次登入類型決定首頁路徑。
