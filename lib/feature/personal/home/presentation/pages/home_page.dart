@@ -22,6 +22,8 @@ import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_more_o
 import 'package:tryzeon/feature/personal/home/providers/home_providers.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry_scope.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
+import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription.dart';
+import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_provider.dart';
 import 'package:typed_result/typed_result.dart';
 
 class HomePageController {
@@ -183,10 +185,15 @@ class HomePage extends HookConsumerWidget {
     Future<void> downloadCurrentImage() async {
       try {
         final originalBytes = tryonImages.value[currentTryonIndex.value];
-        final watermarkedBytes = await ImageWatermarkHelper.addWatermark(originalBytes);
+        Uint8List imageToSave = originalBytes;
+
+        final subscription = await ref.read(subscriptionProvider.future);
+        if (subscription.plan == SubscriptionPlan.free) {
+          imageToSave = await ImageWatermarkHelper.addWatermark(originalBytes);
+        }
 
         await Gal.putImageBytes(
-          watermarkedBytes,
+          imageToSave,
           name: 'tryzeon_${DateTime.now().millisecondsSinceEpoch}',
         );
 
