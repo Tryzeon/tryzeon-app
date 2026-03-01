@@ -10,6 +10,7 @@ import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/presentation/widgets/version_info.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
 import 'package:tryzeon/feature/store/settings/presentation/providers/store_settings_controller.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class StoreSettingsPage extends HookConsumerWidget {
   const StoreSettingsPage({super.key});
@@ -101,6 +102,18 @@ class StoreSettingsPage extends HookConsumerWidget {
                           onTap: switchToPersonal,
                           color: colorScheme.secondary,
                           hideChevron: true,
+                        ),
+                        SettingsListTile(
+                          icon: Icons.contact_support_outlined,
+                          title: '聯絡我們',
+                          subtitle: '前往官方 Instagram',
+                          onTap: () async {
+                            final url = Uri.parse('https://www.instagram.com/tryzeon/');
+                            if (await canLaunchUrl(url)) {
+                              await launchUrl(url, mode: LaunchMode.externalApplication);
+                            }
+                          },
+                          color: colorScheme.secondary,
                         ),
                       ],
                     ),
