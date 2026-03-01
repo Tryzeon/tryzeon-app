@@ -14,6 +14,7 @@ import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
+import 'package:tryzeon/core/utils/image_watermark_helper.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_action_button.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_gallery.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_indicator.dart';
@@ -181,10 +182,11 @@ class HomePage extends HookConsumerWidget {
 
     Future<void> downloadCurrentImage() async {
       try {
-        final imageBytes = tryonImages.value[currentTryonIndex.value];
+        final originalBytes = tryonImages.value[currentTryonIndex.value];
+        final watermarkedBytes = await ImageWatermarkHelper.addWatermark(originalBytes);
 
         await Gal.putImageBytes(
-          imageBytes,
+          watermarkedBytes,
           name: 'tryzeon_${DateTime.now().millisecondsSinceEpoch}',
         );
 
