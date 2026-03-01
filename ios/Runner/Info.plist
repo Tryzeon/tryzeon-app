@@ -68,13 +68,13 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>We need access to your camera to take photos</string>
+	<string>Tryzeon requires camera access so you can take a profile photo to create your virtual try-on avatar and capture photos of clothing items to upload.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>We need your location to recommend nearby shops</string>
+	<string>Tryzeon requires your location while using the app to calculate the distance to local clothing stores and recommend nearby fashion retailers based on your current position.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>We need permission to save images to your photo library</string>
+	<string>Tryzeon requires permission to save photos so you can download and save your generated virtual try-on result images directly to your device's photo library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We need access to your photo library to select images</string>
+	<string>Tryzeon requires photo library access so you can select your existing photos to generate your personal try-on avatar, or choose clothing images from your gallery to upload to your digital wardrobe.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
