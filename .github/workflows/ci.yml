@@ -73,6 +73,7 @@ jobs:
           java-version: '17'
 
       - name: Restore Gradle cache
+        id: cache-gradle
         uses: actions/cache/restore@v4
         with:
           path: |
@@ -104,7 +105,7 @@ jobs:
         run: flutter build apk --debug
 
       - name: Save Gradle cache
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && steps.cache-gradle.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: |
@@ -137,6 +138,7 @@ jobs:
           cache: true
 
       - name: Restore CocoaPods cache
+        id: cache-cocoapods
         uses: actions/cache/restore@v4
         with:
           path: ios/Pods
@@ -155,6 +157,9 @@ jobs:
       - name: Run build_runner
         run: dart run build_runner build --delete-conflicting-outputs
 
+      - name: Install exact CocoaPods version
+        run: sudo gem install cocoapods -v 1.16.2
+
       - name: Install CocoaPods dependencies
         run: |
           cd ios
@@ -164,7 +169,7 @@ jobs:
         run: flutter build ios --debug --no-codesign
 
       - name: Save CocoaPods cache
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && steps.cache-cocoapods.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: ios/Pods
