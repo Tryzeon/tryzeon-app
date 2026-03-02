@@ -137,12 +137,16 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Calculate CocoaPods Key
+        id: compute-pod-key
+        run: echo "key=${{ runner.os }}-CocoaPods-${{ hashFiles('ios/Podfile.lock') }}" >> $GITHUB_OUTPUT
+
       - name: Restore CocoaPods cache
         id: cache-cocoapods
         uses: actions/cache/restore@v4
         with:
           path: ios/Pods
-          key: ${{ runner.os }}-CocoaPods-${{ hashFiles('ios/Podfile.lock') }}
+          key: ${{ steps.compute-pod-key.outputs.key }}
           restore-keys: |
             ${{ runner.os }}-CocoaPods-
 
@@ -176,4 +180,4 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: ios/Pods
-          key: ${{ runner.os }}-CocoaPods-${{ hashFiles('ios/Podfile.lock') }}
+          key: ${{ steps.compute-pod-key.outputs.key }}
