@@ -72,6 +72,10 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
+      - name: Calculate Gradle Key
+        id: compute-gradle-key
+        run: echo "key=${{ runner.os }}-gradle-${{ hashFiles('android/build.gradle.kts', 'android/app/build.gradle.kts', 'android/settings.gradle.kts', 'android/gradle/wrapper/gradle-wrapper.properties', 'pubspec.lock') }}" >> $GITHUB_OUTPUT
+
       - name: Restore Gradle cache
         id: cache-gradle
         uses: actions/cache/restore@v4
@@ -79,7 +83,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('android/build.gradle.kts', 'android/app/build.gradle.kts', 'android/settings.gradle.kts', 'android/gradle/wrapper/gradle-wrapper.properties', 'pubspec.lock') }}
+          key: ${{ steps.compute-gradle-key.outputs.key }}
           restore-keys: |
             ${{ runner.os }}-gradle-
 
@@ -111,7 +115,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('android/build.gradle.kts', 'android/app/build.gradle.kts', 'android/settings.gradle.kts', 'android/gradle/wrapper/gradle-wrapper.properties', 'pubspec.lock') }}
+          key: ${{ steps.compute-gradle-key.outputs.key }}
 
   # ════════════════════════════════════════════════════
   # Job 3: iOS build (macOS)
