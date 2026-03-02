@@ -63,4 +63,42 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
       return Err(mapExceptionToFailure(e));
     }
   }
+
+  @override
+  Future<Result<Subscription, Failure>> updateSubscription({
+    required final SubscriptionPlan targetPlan,
+  }) async {
+    try {
+      final remoteSubscription =
+          await _remoteDataSource.updateSubscription(
+        targetPlan: targetPlan,
+      );
+
+      // Update local cache with new plan
+      try {
+        await _localDataSource.saveSubscription(
+          remoteSubscription,
+        );
+      } catch (e, stackTrace) {
+        AppLogger.warning(
+          'Failed to update subscription cache',
+          e,
+          stackTrace,
+        );
+      }
+
+      final subscription =
+          _mappr.convert<SubscriptionModel, Subscription>(
+        remoteSubscription,
+      );
+      return Ok(subscription);
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Failed to update subscription',
+        e,
+        stackTrace,
+      );
+      return Err(mapExceptionToFailure(e));
+    }
+  }
 }
