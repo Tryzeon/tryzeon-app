@@ -27,14 +27,6 @@ jobs:
           channel: 'stable'
           cache: true
 
-      # ───── CocoaPods cache (read-only, reuses CI cache from main) ─────
-      - name: Restore CocoaPods cache
-        uses: actions/cache/restore@v4
-        with:
-          path: ios/Pods
-          key: ${{ runner.os }}-CocoaPods-${{ hashFiles('ios/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-CocoaPods-
 
       # ───── Build dependencies ─────
       - name: Create .env file
