@@ -7,4 +7,8 @@ abstract class SubscriptionRepository {
     final String userId, {
     final bool forceRefresh = false,
   });
+
+  Future<Result<Subscription, Failure>> updateSubscription({
+    required SubscriptionPlan targetPlan,
+  });
 }
