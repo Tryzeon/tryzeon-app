@@ -165,6 +165,9 @@ jobs:
           cd ios
           pod install
 
+      - name: Debug Podfile.lock diff
+        run: git diff ios/Podfile.lock
+
       - name: Build iOS (debug, no codesign)
         run: flutter build ios --debug --no-codesign
 
