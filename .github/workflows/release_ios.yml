@@ -67,12 +67,10 @@ jobs:
           key: ${{ steps.compute-pods-key.outputs.key }}
 
       # ───── Ruby / Fastlane ─────
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.2'
-          working-directory: ios
-          bundler-cache: true
+      - name: Install Bundle
+        run: |
+          cd ios
+          bundle install
 
       - name: Setup SSH for match
         run: |

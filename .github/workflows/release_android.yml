@@ -45,7 +45,11 @@ jobs:
         with:
           ruby-version: '3.2'
           working-directory: android
-          bundler-cache: true
+
+      - name: Install Fastlane
+        run: |
+          cd android
+          bundle install
 
       # ───── Build & deploy ─────
       - name: Create .env file
