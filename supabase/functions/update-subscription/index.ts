@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
       throw new AppError(
         `Invalid target plan: ${targetPlan}. Must be one of: ${VALID_PLANS.join(", ")}`,
         400,
-        );
+      );
     }
 
     // Get current subscription
