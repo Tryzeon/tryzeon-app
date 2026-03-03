@@ -8,6 +8,7 @@ import 'package:tryzeon/feature/personal/subscription/data/repositories/subscrip
 import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription.dart';
 import 'package:tryzeon/feature/personal/subscription/domain/repositories/subscription_repository.dart';
 import 'package:tryzeon/feature/personal/subscription/domain/usecases/get_subscription.dart';
+import 'package:tryzeon/feature/personal/subscription/domain/usecases/update_subscription.dart';
 import 'package:typed_result/typed_result.dart';
 
 part 'subscription_provider.g.dart';
@@ -36,6 +37,14 @@ SubscriptionRepository subscriptionRepository(final Ref ref) {
 @riverpod
 GetSubscription getSubscriptionUseCase(final Ref ref) {
   return GetSubscription(
+    userProfileRepository: ref.watch(userProfileRepositoryProvider),
+    subscriptionRepository: ref.watch(subscriptionRepositoryProvider),
+  );
+}
+
+@riverpod
+UpdateSubscription updateSubscriptionUseCase(final Ref ref) {
+  return UpdateSubscription(
     userProfileRepository: ref.watch(userProfileRepositoryProvider),
     subscriptionRepository: ref.watch(subscriptionRepositoryProvider),
   );

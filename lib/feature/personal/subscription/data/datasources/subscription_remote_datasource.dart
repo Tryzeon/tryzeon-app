@@ -26,8 +26,6 @@ class SubscriptionRemoteDataSource {
       AppConstants.functionUpdateSubscription,
       body: {'targetPlan': targetPlan.name},
     );
-    return SubscriptionModel.fromJson(
-      response.data as Map<String, dynamic>,
-    );
+    return SubscriptionModel.fromJson(response.data as Map<String, dynamic>);
   }
 }

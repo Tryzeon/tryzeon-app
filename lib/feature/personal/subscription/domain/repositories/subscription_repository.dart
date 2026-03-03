@@ -9,6 +9,6 @@ abstract class SubscriptionRepository {
   });
 
   Future<Result<Subscription, Failure>> updateSubscription({
-    required SubscriptionPlan targetPlan,
+    required final SubscriptionPlan targetPlan,
   });
 }
