@@ -45,7 +45,6 @@ GetSubscription getSubscriptionUseCase(final Ref ref) {
 @riverpod
 UpdateSubscription updateSubscriptionUseCase(final Ref ref) {
   return UpdateSubscription(
-    userProfileRepository: ref.watch(userProfileRepositoryProvider),
     subscriptionRepository: ref.watch(subscriptionRepositoryProvider),
   );
 }

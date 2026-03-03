@@ -4,9 +4,8 @@ import 'package:tryzeon/feature/personal/subscription/domain/repositories/subscr
 import 'package:typed_result/typed_result.dart';
 
 class UpdateSubscription {
-  UpdateSubscription({
-    required final SubscriptionRepository subscriptionRepository,
-  }) : _subscriptionRepository = subscriptionRepository;
+  UpdateSubscription({required final SubscriptionRepository subscriptionRepository})
+    : _subscriptionRepository = subscriptionRepository;
 
   final SubscriptionRepository _subscriptionRepository;
 
