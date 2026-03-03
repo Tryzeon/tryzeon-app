@@ -187,12 +187,10 @@ class _HierarchicalSelectionSheet extends HookWidget {
 
       final filtered = <CategoryTreeNode>[];
       for (final node in nodes) {
-        final matchingChildren = node.children.where((final child) {
-          return child.category.name.toLowerCase().contains(query);
-        }).toList();
+        final matchesNode = node.category.name.toLowerCase().contains(query);
+        final matchingChildren = filterTree(node.children, query);
 
-        if (matchingChildren.isNotEmpty) {
-          // If children match, include parent with only matching children
+        if (matchesNode || matchingChildren.isNotEmpty) {
           filtered.add(node.copyWith(children: matchingChildren));
         }
       }
@@ -207,7 +205,17 @@ class _HierarchicalSelectionSheet extends HookWidget {
     // Auto-expand all parents when searching
     useEffect(() {
       if (isSearching) {
-        final allParentIds = displayTree.map((final e) => e.category.id).toSet();
+        final allParentIds = <String>{};
+        void collectIds(final List<CategoryTreeNode> nodes) {
+          for (final node in nodes) {
+            if (node.children.isNotEmpty) {
+              allParentIds.add(node.category.id);
+              collectIds(node.children);
+            }
+          }
+        }
+
+        collectIds(displayTree);
         expandedParents.value = {...expandedParents.value, ...allParentIds};
       }
       return null;
@@ -215,13 +223,13 @@ class _HierarchicalSelectionSheet extends HookWidget {
 
     Widget buildCategoryTile(
       final ProductCategory category, {
-      final bool isChild = false,
+      final int level = 0,
       final bool hasChildren = false,
       final bool isExpanded = false,
       final VoidCallback? onExpand,
     }) {
       final isSelected = currentSelection.value.contains(category.id);
-      final isSelectable = isChild; // Only child categories are selectable
+      final isSelectable = !hasChildren; // Only leaf nodes are selectable
 
       return InkWell(
         onTap: isSelectable
@@ -229,7 +237,7 @@ class _HierarchicalSelectionSheet extends HookWidget {
             : (hasChildren ? onExpand : null),
         child: Container(
           padding: EdgeInsets.only(
-            left: isChild ? 60 : 24,
+            left: 24.0 + (level * 36.0),
             right: 24,
             top: 14,
             bottom: 14,
@@ -250,7 +258,7 @@ class _HierarchicalSelectionSheet extends HookWidget {
                     ),
                   ),
                 )
-              else if (isChild)
+              else if (level > 0)
                 const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -288,25 +296,28 @@ class _HierarchicalSelectionSheet extends HookWidget {
 
       final widgets = <Widget>[];
 
-      for (final node in tree) {
-        final hasChildren = node.children.isNotEmpty;
-        final isExpanded = expandedParents.value.contains(node.category.id);
+      void collectNodes(final List<CategoryTreeNode> nodes, final int level) {
+        for (final node in nodes) {
+          final hasChildren = node.children.isNotEmpty;
+          final isExpanded = expandedParents.value.contains(node.category.id);
 
-        widgets.add(
-          buildCategoryTile(
-            node.category,
-            hasChildren: hasChildren,
-            isExpanded: isExpanded,
-            onExpand: () => toggleExpand(node.category.id),
-          ),
-        );
+          widgets.add(
+            buildCategoryTile(
+              node.category,
+              level: level,
+              hasChildren: hasChildren,
+              isExpanded: isExpanded,
+              onExpand: () => toggleExpand(node.category.id),
+            ),
+          );
 
-        if (hasChildren && isExpanded) {
-          for (final child in node.children) {
-            widgets.add(buildCategoryTile(child.category, isChild: true));
+          if (hasChildren && isExpanded) {
+            collectNodes(node.children, level + 1);
           }
         }
       }
+
+      collectNodes(tree, 0);
 
       return ListView(
         shrinkWrap: true,

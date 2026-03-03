@@ -117,111 +117,124 @@ class ProductCategoryFilter extends HookConsumerWidget {
                       ),
                     );
                   },
-                  child: SizedBox(
+                  child: Column(
                     key: ValueKey(selectedRootNode.category.id),
-                    height: 120,
-                    child: selectedRootNode.children.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.search_off_rounded,
-                                  size: 32,
-                                  color: colorScheme.outline,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  '此分類無子分類',
-                                  style: textTheme.bodyMedium?.copyWith(
-                                    color: colorScheme.outline,
-                                  ),
-                                ),
-                              ],
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: selectedRootNode.children.map((final level2Node) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              left: 30,
+                              right: 0,
+                              top: 0,
+                              bottom: 5,
                             ),
-                          )
-                        : ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            itemCount: selectedRootNode.children.length,
-                            separatorBuilder: (final context, final index) =>
-                                const SizedBox(width: 16),
-                            itemBuilder: (final context, final index) {
-                              final subNode = selectedRootNode.children[index];
-                              final isSelected = selectedSubcategoryIds.contains(
-                                subNode.category.id,
-                              );
-                              final imageUrl = subNode.category.imageUrl;
+                            child: Text(
+                              level2Node.category.name,
+                              style: textTheme.titleSmall,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 96,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              itemCount: level2Node.children.length,
+                              separatorBuilder: (final context, final index) =>
+                                  const SizedBox(width: 16),
+                              itemBuilder: (final context, final index) {
+                                final level3Node = level2Node.children[index];
+                                final isSelected = selectedSubcategoryIds.contains(
+                                  level3Node.category.id,
+                                );
+                                final imageUrl = level3Node.category.imageUrl;
 
-                              return GestureDetector(
-                                onTap: () {
-                                  HapticFeedback.selectionClick();
-                                  onSubcategoryToggle(subNode.category.id);
-                                },
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    // Squircle Image Container
-                                    AnimatedContainer(
-                                      duration: const Duration(milliseconds: 200),
-                                      width: 80,
-                                      height: 80,
-                                      decoration: BoxDecoration(
-                                        color: colorScheme.surfaceContainerHighest,
-                                        borderRadius: BorderRadius.circular(28),
-                                        border: isSelected
-                                            ? Border.all(
-                                                color: colorScheme.primary,
-                                                width: 3,
-                                              )
-                                            : null,
-                                      ),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(25),
-                                        child: (imageUrl != null && imageUrl.isNotEmpty)
-                                            ? CachedNetworkImage(
-                                                imageUrl: imageUrl,
-                                                fit: BoxFit.cover,
-                                                placeholder: (final context, final url) =>
-                                                    Center(
-                                                      child: SizedBox(
-                                                        width: 24,
-                                                        height: 24,
-                                                        child: CircularProgressIndicator(
-                                                          strokeWidth: 2.5,
-                                                          color: colorScheme.outline,
+                                return GestureDetector(
+                                  onTap: () {
+                                    HapticFeedback.selectionClick();
+                                    onSubcategoryToggle(level3Node.category.id);
+                                  },
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      // Squircle Image Container
+                                      AnimatedContainer(
+                                        duration: const Duration(milliseconds: 200),
+                                        width: 60,
+                                        height: 60,
+                                        decoration: BoxDecoration(
+                                          color: colorScheme.surfaceContainerHighest,
+                                          borderRadius: BorderRadius.circular(20),
+                                          border: isSelected
+                                              ? Border.all(
+                                                  color: colorScheme.primary,
+                                                  width: 2.5,
+                                                )
+                                              : null,
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(18),
+                                          child: (imageUrl != null && imageUrl.isNotEmpty)
+                                              ? CachedNetworkImage(
+                                                  imageUrl: imageUrl,
+                                                  fit: BoxFit.cover,
+                                                  placeholder:
+                                                      (
+                                                        final context,
+                                                        final url,
+                                                      ) => Center(
+                                                        child: SizedBox(
+                                                          width: 20,
+                                                          height: 20,
+                                                          child:
+                                                              CircularProgressIndicator(
+                                                                strokeWidth: 2.5,
+                                                                color:
+                                                                    colorScheme.outline,
+                                                              ),
                                                         ),
                                                       ),
-                                                    ),
-                                                errorWidget:
-                                                    (
-                                                      final context,
-                                                      final url,
-                                                      final error,
-                                                    ) => Icon(
-                                                      Icons.image_not_supported_outlined,
-                                                      color: colorScheme.onSurfaceVariant,
-                                                    ),
-                                              )
-                                            : Icon(
-                                                Icons.image_not_supported_outlined,
-                                                color: colorScheme.onSurfaceVariant,
-                                              ),
+                                                  errorWidget:
+                                                      (
+                                                        final context,
+                                                        final url,
+                                                        final error,
+                                                      ) => Icon(
+                                                        Icons
+                                                            .image_not_supported_outlined,
+                                                        color:
+                                                            colorScheme.onSurfaceVariant,
+                                                      ),
+                                                )
+                                              : Icon(
+                                                  Icons.image_not_supported_outlined,
+                                                  color: colorScheme.onSurfaceVariant,
+                                                ),
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    // Label
-                                    Text(
-                                      subNode.category.name,
-                                      style: textTheme.labelLarge,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
+                                      const SizedBox(height: 6),
+                                      // Label
+                                      SizedBox(
+                                        width: 72,
+                                        child: Text(
+                                          level3Node.category.name,
+                                          style: textTheme.labelMedium,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
                           ),
+                        ],
+                      );
+                    }).toList(),
                   ),
                 ),
         ],
