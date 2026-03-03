@@ -45,6 +45,7 @@ jobs:
         with:
           ruby-version: '3.2'
           working-directory: android
+          bundler-cache: true
 
       # ───── Build & deploy ─────
       - name: Create .env file
@@ -66,10 +67,6 @@ jobs:
           echo "keyAlias=${{ secrets.PLAYSTORE_KEY_ALIAS }}" >> android/key.properties
           echo "storeFile=upload-keystore.jks" >> android/key.properties
 
-      - name: Install Fastlane
-        run: |
-          cd android
-          bundle install
 
       - name: Deploy to Play Store
         run: |

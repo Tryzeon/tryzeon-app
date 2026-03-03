@@ -27,6 +27,21 @@ jobs:
           channel: 'stable'
           cache: true
 
+      # ───── CocoaPods cache ─────
+      - name: Calculate CocoaPods Key
+        id: compute-pods-key
+        run: echo "key=${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}" >> $GITHUB_OUTPUT
+
+      - name: Restore CocoaPods cache
+        id: cache-pods
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ios/Pods
+            ~/Library/Caches/CocoaPods
+          key: ${{ steps.compute-pods-key.outputs.key }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
 
       # ───── Build dependencies ─────
       - name: Create .env file
@@ -42,11 +57,22 @@ jobs:
           cd ios
           pod install
 
+      - name: Save CocoaPods cache
+        if: steps.cache-pods.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ios/Pods
+            ~/Library/Caches/CocoaPods
+          key: ${{ steps.compute-pods-key.outputs.key }}
+
       # ───── Ruby / Fastlane ─────
-      - name: Install Bundle
-        run: |
-          cd ios
-          bundle install
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          working-directory: ios
+          bundler-cache: true
 
       - name: Setup SSH for match
         run: |
