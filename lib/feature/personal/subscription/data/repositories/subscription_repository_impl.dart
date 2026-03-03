@@ -69,35 +69,23 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
     required final SubscriptionPlan targetPlan,
   }) async {
     try {
-      final remoteSubscription =
-          await _remoteDataSource.updateSubscription(
+      final remoteSubscription = await _remoteDataSource.updateSubscription(
         targetPlan: targetPlan,
       );
 
       // Update local cache with new plan
       try {
-        await _localDataSource.saveSubscription(
-          remoteSubscription,
-        );
+        await _localDataSource.saveSubscription(remoteSubscription);
       } catch (e, stackTrace) {
-        AppLogger.warning(
-          'Failed to update subscription cache',
-          e,
-          stackTrace,
-        );
+        AppLogger.warning('Failed to update subscription cache', e, stackTrace);
       }
 
-      final subscription =
-          _mappr.convert<SubscriptionModel, Subscription>(
+      final subscription = _mappr.convert<SubscriptionModel, Subscription>(
         remoteSubscription,
       );
       return Ok(subscription);
     } catch (e, stackTrace) {
-      AppLogger.error(
-        'Failed to update subscription',
-        e,
-        stackTrace,
-      );
+      AppLogger.error('Failed to update subscription', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }

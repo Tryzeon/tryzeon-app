@@ -17,15 +17,12 @@ class UpdateSubscription {
   Future<Result<Subscription, Failure>> call({
     required final SubscriptionPlan targetPlan,
   }) async {
-    final profileResult =
-        await _userProfileRepository.getUserProfile();
+    final profileResult = await _userProfileRepository.getUserProfile();
 
     if (profileResult.isFailure) {
       return Err(profileResult.getError()!);
     }
 
-    return _subscriptionRepository.updateSubscription(
-      targetPlan: targetPlan,
-    );
+    return _subscriptionRepository.updateSubscription(targetPlan: targetPlan);
   }
 }
