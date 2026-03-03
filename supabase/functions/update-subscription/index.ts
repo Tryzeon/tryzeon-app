@@ -86,6 +86,10 @@ Deno.serve(async (req) => {
       throw new AppError("Already on this plan", 400);
     }
 
+    if (targetPlan === "max") {
+      throw new AppError("The MAX plan is not yet available.", 400);
+    }
+
     const direction =
       PLAN_ORDER[targetPlan as PlanType] > PLAN_ORDER[currentPlan]
         ? "upgrade"
