@@ -25,7 +25,6 @@ class SubscriptionPage extends HookConsumerWidget {
     final BuildContext context,
     final WidgetRef ref,
     final ValueNotifier<SubscriptionPlan?> processingPlan,
-    final SubscriptionPlan currentPlan,
     final SubscriptionPlan targetPlan,
   ) async {
     // ★ Future payment integration placeholder:
@@ -154,7 +153,7 @@ class SubscriptionPage extends HookConsumerWidget {
     required final SubscriptionPlan plan,
     required final String description,
     required final List<String> features,
-    required final SubscriptionPlan? currentPlan,
+    required final SubscriptionPlan currentPlan,
   }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -227,18 +226,12 @@ class SubscriptionPage extends HookConsumerWidget {
                     ),
                   ),
                 ),
-                if (currentPlan != null && !isCurrent)
+                if (!isCurrent)
                   _buildActionButton(
-                    context,
                     isLoading: processingPlan.value == plan,
                     isDisabled: processingPlan.value != null,
-                    onPressed: () => _handleSubscriptionChange(
-                      context,
-                      ref,
-                      processingPlan,
-                      currentPlan,
-                      plan,
-                    ),
+                    onPressed: () =>
+                        _handleSubscriptionChange(context, ref, processingPlan, plan),
                   ),
               ],
             ),
@@ -248,8 +241,7 @@ class SubscriptionPage extends HookConsumerWidget {
     );
   }
 
-  Widget _buildActionButton(
-    final BuildContext context, {
+  Widget _buildActionButton({
     required final bool isLoading,
     required final bool isDisabled,
     required final VoidCallback onPressed,
