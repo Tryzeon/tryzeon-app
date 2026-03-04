@@ -30,6 +30,7 @@ class SubscriptionRemoteDataSource {
     final response = await _supabaseClient
         .from(AppConstants.tableSubscriptionPlans)
         .select()
+        .eq('is_active', true)
         .order('sort_order');
 
     return response.map(SubscriptionPlanModel.fromJson).toList();

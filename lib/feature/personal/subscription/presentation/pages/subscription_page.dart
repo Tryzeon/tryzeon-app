@@ -90,7 +90,6 @@ class SubscriptionPage extends HookConsumerWidget {
                 onRetry: () => ref.refresh(subscriptionPlansProvider),
               ),
               data: (final plans) {
-                final activePlans = plans.where((final p) => p.isActive).toList();
                 return SingleChildScrollView(
                   padding: const EdgeInsets.all(24),
                   child: Column(
@@ -112,7 +111,7 @@ class SubscriptionPage extends HookConsumerWidget {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 32),
-                      ...activePlans.map(
+                      ...plans.map(
                         (final planInfo) => Padding(
                           padding: const EdgeInsets.only(bottom: 20),
                           child: _buildPlanCard(
