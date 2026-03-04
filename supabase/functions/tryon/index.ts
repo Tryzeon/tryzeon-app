@@ -11,10 +11,6 @@ const CONFIG = {
   MAX_RETRIES: 1,
 };
 
-const PLAN_LIMITS: Record<string, number> = {};
-if (Deno.env.get("PLAN_LIMIT_FREE")) PLAN_LIMITS.free = parseInt(Deno.env.get("PLAN_LIMIT_FREE")!);
-if (Deno.env.get("PLAN_LIMIT_PRO")) PLAN_LIMITS.pro = parseInt(Deno.env.get("PLAN_LIMIT_PRO")!);
-if (Deno.env.get("PLAN_LIMIT_MAX")) PLAN_LIMITS.max = parseInt(Deno.env.get("PLAN_LIMIT_MAX")!);
 
 // --- Types & Interfaces ---
 interface TryOnRequest {
@@ -32,6 +28,9 @@ interface SubscriptionData {
   plan: string;
   daily_usage_count: number;
   last_reset_date: string | null;
+  subscription_plans: {
+    tryon_daily_limit: number;
+  };
 }
 
 // --- Error Handling ---
@@ -73,7 +72,7 @@ class SubscriptionService {
   async checkAndIncrementLimit(userId: string): Promise<void> {
     const { data, error } = await this.supabase
       .from('subscriptions')
-      .select('plan, daily_usage_count, last_reset_date')
+      .select('plan, daily_usage_count, last_reset_date, subscription_plans!plan(tryon_daily_limit)')
       .eq('user_id', userId)
       .single();
 
@@ -81,11 +80,12 @@ class SubscriptionService {
     if (!data) throw new AppError("User subscription not found", 404);
 
     const subData = data as SubscriptionData;
-    const dailyLimit = PLAN_LIMITS[subData.plan];
 
-    if (dailyLimit === undefined) {
-      throw new AppError(`Daily limit not configured for plan: ${subData.plan}`, 500);
+    if (!subData.subscription_plans) {
+      throw new AppError(`Plan configuration not found for plan: ${subData.plan}`, 500);
     }
+
+    const dailyLimit = subData.subscription_plans.tryon_daily_limit;
 
     const today = new Date().toISOString().split('T')[0];
 

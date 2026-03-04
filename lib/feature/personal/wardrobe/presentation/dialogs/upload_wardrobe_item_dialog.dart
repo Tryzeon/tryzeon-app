@@ -8,7 +8,6 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/pages/subscription_page.dart';
-import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_provider.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_category.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 import 'package:typed_result/typed_result.dart';
@@ -116,58 +115,53 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
     }
 
     Widget buildCapacityIndicator() {
-      final subscriptionAsync = ref.watch(subscriptionProvider);
-      final wardrobeItemsAsync = ref.watch(wardrobeItemsProvider);
+      final capacityAsync = ref.watch(wardrobeCapacityProvider);
 
-      return subscriptionAsync.when(
-        data: (final subscription) => wardrobeItemsAsync.when(
-          data: (final items) {
-            final current = items.length;
-            final limit = subscription.plan.wardrobeLimit;
-            final percentage = current / limit;
+      return capacityAsync.when(
+        data: (final capacity) {
+          final current = capacity.current;
+          final limit = capacity.limit;
+          final percentage = current / limit;
 
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '衣櫃容量',
-                        style: textTheme.labelMedium?.copyWith(
-                          color: colorScheme.onSurface.withValues(alpha: 0.7),
-                        ),
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '衣櫃容量',
+                      style: textTheme.labelMedium?.copyWith(
+                        color: colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
-                      Text(
-                        '$current / $limit 件',
-                        style: textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: percentage >= 0.9
-                              ? colorScheme.error
-                              : colorScheme.onSurface,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: LinearProgressIndicator(
-                      value: percentage,
-                      minHeight: 6,
-                      backgroundColor: colorScheme.onSurface.withValues(alpha: 0.1),
-                      color: percentage >= 0.9 ? colorScheme.error : colorScheme.primary,
                     ),
+                    Text(
+                      '$current / $limit 件',
+                      style: textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: percentage >= 0.9
+                            ? colorScheme.error
+                            : colorScheme.onSurface,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(
+                    value: percentage,
+                    minHeight: 6,
+                    backgroundColor: colorScheme.onSurface.withValues(alpha: 0.1),
+                    color: percentage >= 0.9 ? colorScheme.error : colorScheme.primary,
                   ),
-                ],
-              ),
-            );
-          },
-          loading: () => const SizedBox.shrink(),
-          error: (final _, final __) => const SizedBox.shrink(),
-        ),
+                ),
+              ],
+            ),
+          );
+        },
         loading: () => const SizedBox.shrink(),
         error: (final _, final __) => const SizedBox.shrink(),
       );

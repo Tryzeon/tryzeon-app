@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gal/gal.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
@@ -22,7 +23,6 @@ import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_more_o
 import 'package:tryzeon/feature/personal/home/providers/home_providers.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry_scope.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
-import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_provider.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -188,7 +188,7 @@ class HomePage extends HookConsumerWidget {
         Uint8List imageToSave = originalBytes;
 
         final subscription = await ref.read(subscriptionProvider.future);
-        if (subscription.plan == SubscriptionPlan.free) {
+        if (subscription.plan == AppConstants.planFree) {
           imageToSave = await ImageWatermarkHelper.addWatermark(originalBytes);
         }
 

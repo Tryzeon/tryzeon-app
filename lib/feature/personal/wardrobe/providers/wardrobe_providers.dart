@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
+import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription_plan_info.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_provider.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_local_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_remote_datasource.dart';
@@ -47,6 +48,7 @@ UploadWardrobeItem uploadWardrobeItemUseCase(final Ref ref) {
   return UploadWardrobeItem(
     wardrobeRepository: ref.watch(wardrobeRepositoryProvider),
     getSubscriptionUseCase: ref.watch(getSubscriptionUseCaseProvider),
+    getSubscriptionPlansUseCase: ref.watch(getSubscriptionPlansUseCaseProvider),
     getWardrobeItemsUseCase: ref.watch(getWardrobeItemsUseCaseProvider),
   );
 }
@@ -80,6 +82,28 @@ Future<void> refreshWardrobeItems(final WidgetRef ref) async {
   } catch (_) {
     // Provider 刷新失敗時，忽略異常，讓 UI 顯示 ErrorView 或舊資料
   }
+}
+
+/// Wardrobe capacity information combining subscription plan limits with
+/// current wardrobe item count.
+typedef WardrobeCapacity = ({int current, int limit});
+
+@riverpod
+Future<WardrobeCapacity> wardrobeCapacity(final Ref ref) async {
+  final subscription = await ref.watch(subscriptionProvider.future);
+  final plans = await ref.watch(subscriptionPlansProvider.future);
+  final items = await ref.watch(wardrobeItemsProvider.future);
+
+  final planInfo = plans.cast<SubscriptionPlanInfo?>().firstWhere(
+    (final p) => p!.id == subscription.plan,
+    orElse: () => null,
+  );
+
+  if (planInfo == null) {
+    throw StateError('Subscription plan not found: ${subscription.plan}');
+  }
+
+  return (current: items.length, limit: planInfo.wardrobeLimit);
 }
 
 @riverpod

@@ -1,5 +1,6 @@
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription.dart';
+import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription_plan_info.dart';
 import 'package:typed_result/typed_result.dart';
 
 abstract class SubscriptionRepository {
@@ -9,6 +10,8 @@ abstract class SubscriptionRepository {
   });
 
   Future<Result<Subscription, Failure>> updateSubscription({
-    required final SubscriptionPlan targetPlan,
+    required final String targetPlan,
   });
+
+  Future<Result<List<SubscriptionPlanInfo>, Failure>> getSubscriptionPlans();
 }

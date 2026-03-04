@@ -9,9 +9,7 @@ class UpdateSubscription {
 
   final SubscriptionRepository _subscriptionRepository;
 
-  Future<Result<Subscription, Failure>> call({
-    required final SubscriptionPlan targetPlan,
-  }) async {
+  Future<Result<Subscription, Failure>> call({required final String targetPlan}) async {
     return _subscriptionRepository.updateSubscription(targetPlan: targetPlan);
   }
 }

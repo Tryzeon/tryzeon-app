@@ -1,5 +1,4 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription.dart';
 
 part 'subscription_model.g.dart';
 
@@ -11,7 +10,7 @@ class SubscriptionModel {
       _$SubscriptionModelFromJson(json);
 
   final String userId;
-  final SubscriptionPlan plan;
+  final String plan;
 
   Map<String, dynamic> toJson() => _$SubscriptionModelToJson(this);
 }

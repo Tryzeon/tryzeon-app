@@ -6,8 +6,10 @@ import 'package:tryzeon/feature/personal/subscription/data/datasources/subscript
 import 'package:tryzeon/feature/personal/subscription/data/datasources/subscription_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/subscription/data/repositories/subscription_repository_impl.dart';
 import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription.dart';
+import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription_plan_info.dart';
 import 'package:tryzeon/feature/personal/subscription/domain/repositories/subscription_repository.dart';
 import 'package:tryzeon/feature/personal/subscription/domain/usecases/get_subscription.dart';
+import 'package:tryzeon/feature/personal/subscription/domain/usecases/get_subscription_plans.dart';
 import 'package:tryzeon/feature/personal/subscription/domain/usecases/update_subscription.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -33,7 +35,7 @@ SubscriptionRepository subscriptionRepository(final Ref ref) {
   );
 }
 
-// Use Case Provider
+// Use Case Providers
 @riverpod
 GetSubscription getSubscriptionUseCase(final Ref ref) {
   return GetSubscription(
@@ -49,11 +51,30 @@ UpdateSubscription updateSubscriptionUseCase(final Ref ref) {
   );
 }
 
-// Subscription Data Provider
+@riverpod
+GetSubscriptionPlans getSubscriptionPlansUseCase(final Ref ref) {
+  return GetSubscriptionPlans(
+    subscriptionRepository: ref.watch(subscriptionRepositoryProvider),
+  );
+}
+
+// Data Providers
 @riverpod
 Future<Subscription> subscription(final Ref ref) async {
   final getSubscriptionUseCase = ref.watch(getSubscriptionUseCaseProvider);
   final result = await getSubscriptionUseCase();
+
+  if (result.isFailure) {
+    throw result.getError()!;
+  }
+
+  return result.get()!;
+}
+
+@riverpod
+Future<List<SubscriptionPlanInfo>> subscriptionPlans(final Ref ref) async {
+  final useCase = ref.watch(getSubscriptionPlansUseCaseProvider);
+  final result = await useCase();
 
   if (result.isFailure) {
     throw result.getError()!;

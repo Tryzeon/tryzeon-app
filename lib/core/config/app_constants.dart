@@ -13,6 +13,7 @@ class AppConstants {
   static const String tableProductVariants = 'product_variants';
   static const String tableProductCategories = 'product_categories';
   static const String tableSubscriptions = 'subscriptions';
+  static const String tableSubscriptionPlans = 'subscription_plans';
   static const String tableWardrobeItems = 'wardrobe_items';
   static const String tableAnalyticsEvents = 'analytics_events';
   static const String tableAnalyticsMonthlySummary = 'analytics_monthly_summary';
@@ -47,15 +48,14 @@ class AppConstants {
   static const int otpCodeLength = 6;
   static const double productVisibilityThreshold = 0.5;
 
-  // Wardrobe Limits
-  static const int wardrobeLimitFree = 20;
-  static const int wardrobeLimitPro = 50;
-  static const int wardrobeLimitMax = 100;
+  // Subscription Plan IDs
+  static const String planFree = 'free';
 
   // Shared Preferences Keys
   static const String keyRecommendNearbyShops = 'recommend_nearby_shops';
 
   // Stale Durations
   static const Duration staleDurationSubscription = Duration(minutes: 10);
+  static const Duration staleDurationSubscriptionPlans = Duration(hours: 24);
   static const Duration staleDurationProductCategories = Duration(hours: 24);
 }

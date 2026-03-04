@@ -7,16 +7,12 @@ const CONFIG = {
   SUPABASE_SERVICE_ROLE_KEY: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
 };
 
-const VALID_PLANS = ["free", "pro", "max"] as const;
-type PlanType = (typeof VALID_PLANS)[number];
-
-const PLAN_ORDER: Record<PlanType, number> = {
-  free: 0,
-  pro: 1,
-  max: 2,
-};
-
 // --- Types ---
+interface PlanInfo {
+  id: string;
+  is_active: boolean;
+}
+
 interface UpdateSubscriptionRequest {
   targetPlan: string;
 }
@@ -56,15 +52,34 @@ Deno.serve(async (req) => {
     } = await userClient.auth.getUser();
     if (authError || !user) throw new AppError("Unauthorized", 401);
 
+    const adminClient = createClient(
+      CONFIG.SUPABASE_URL,
+      CONFIG.SUPABASE_SERVICE_ROLE_KEY,
+    );
+
     // Parse and validate request body
     const body = (await req.json()) as UpdateSubscriptionRequest;
     const { targetPlan } = body;
 
-    if (!targetPlan || !VALID_PLANS.includes(targetPlan as PlanType)) {
-      throw new AppError(
-        `Invalid target plan: ${targetPlan}. Must be one of: ${VALID_PLANS.join(", ")}`,
-        400,
-      );
+    if (!targetPlan) {
+      throw new AppError("Target plan is required", 400);
+    }
+
+    // Validate target plan exists and is active
+    const { data: targetPlanInfo, error: planError } = await adminClient
+      .from("subscription_plans")
+      .select("id, is_active")
+      .eq("id", targetPlan)
+      .single();
+
+    if (planError || !targetPlanInfo) {
+      throw new AppError(`Invalid target plan: ${targetPlan}`, 400);
+    }
+
+    const targetInfo = targetPlanInfo as PlanInfo;
+
+    if (!targetInfo.is_active) {
+      throw new AppError("This plan is not currently available.", 400);
     }
 
     // Get current subscription
@@ -79,30 +94,16 @@ Deno.serve(async (req) => {
     }
 
     const currentRow = currentSub as SubscriptionRow;
-    const currentPlan = currentRow.plan as PlanType;
+    const currentPlan = currentRow.plan;
 
     // Validate plan change
     if (currentPlan === targetPlan) {
       throw new AppError("Already on this plan", 400);
     }
 
-    if (targetPlan === "max") {
-      throw new AppError("The MAX plan is not yet available.", 400);
-    }
-
-    const direction =
-      PLAN_ORDER[targetPlan as PlanType] > PLAN_ORDER[currentPlan]
-        ? "upgrade"
-        : "downgrade";
-
     // ★ Future payment integration point:
-    // Insert payment verification logic here for upgrades
+    // Insert payment verification logic here
     // e.g., verify payment token, process charge, etc.
-
-    const adminClient = createClient(
-      CONFIG.SUPABASE_URL,
-      CONFIG.SUPABASE_SERVICE_ROLE_KEY,
-    );
 
     // Update subscription
     const { error: updateError } = await adminClient
@@ -123,7 +124,6 @@ Deno.serve(async (req) => {
         user_id: user.id,
         plan: targetPlan,
         previous_plan: currentPlan,
-        direction,
       }),
       { headers: { "Content-Type": "application/json" } },
     );

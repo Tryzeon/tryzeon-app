@@ -1,5 +1,4 @@
 import 'package:isar_community/isar.dart';
-import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription.dart';
 
 part 'subscription_collection.g.dart';
 
@@ -10,8 +9,7 @@ class SubscriptionCollection {
   @Index(unique: true, replace: true)
   late String userId;
 
-  @Enumerated(EnumType.name)
-  late SubscriptionPlan plan;
+  late String plan;
 
   DateTime? lastUpdated;
 }

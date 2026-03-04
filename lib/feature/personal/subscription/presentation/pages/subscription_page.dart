@@ -5,46 +5,42 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
-import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription.dart';
-import 'package:tryzeon/feature/personal/subscription/presentation/mappers/subscription_plan_ui_mapper.dart';
+import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription_plan_info.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_provider.dart';
 import 'package:typed_result/typed_result.dart';
 
 class SubscriptionPage extends HookConsumerWidget {
   const SubscriptionPage({super.key});
 
-  String _priceText(final SubscriptionPlan plan) => switch (plan) {
-    SubscriptionPlan.free => '\$0',
-    SubscriptionPlan.pro => '\$299/月',
-    SubscriptionPlan.max => '\$499/月',
-  };
+  String _priceText(final SubscriptionPlanInfo planInfo) {
+    if (planInfo.price == 0) return '\$0';
+    return '\$${planInfo.price}/月';
+  }
 
-  /// Processes a subscription plan change.
-  /// Checks limits and calls the backend with a placeholder for future payment integration.
+  List<String> _features(final SubscriptionPlanInfo planInfo) {
+    return ['每日 ${planInfo.tryonDailyLimit} 次試穿', '衣櫃容量 ${planInfo.wardrobeLimit} 件'];
+  }
+
   Future<void> _handleSubscriptionChange(
     final BuildContext context,
     final WidgetRef ref,
-    final ValueNotifier<SubscriptionPlan?> processingPlan,
-    final SubscriptionPlan targetPlan,
+    final ValueNotifier<String?> processingPlanId,
+    final SubscriptionPlanInfo targetPlanInfo,
   ) async {
-    // ★ Future payment integration placeholder:
-    // e.g., final paymentToken = await ApplePay.presentPaymentSheet(...);
-    // if (paymentToken == null) return; // User cancelled
-
-    processingPlan.value = targetPlan;
+    processingPlanId.value = targetPlanInfo.id;
 
     final useCase = ref.read(updateSubscriptionUseCaseProvider);
-    final result = await useCase(targetPlan: targetPlan);
+    final result = await useCase(targetPlan: targetPlanInfo.id);
 
     if (!context.mounted) return;
-    processingPlan.value = null;
+    processingPlanId.value = null;
 
     switch (result) {
-      case Ok(value: final subscription):
+      case Ok():
         ref.invalidate(subscriptionProvider);
         TopNotification.show(
           context,
-          message: '已成功變更至${subscription.plan.displayName}',
+          message: '已成功變更至${targetPlanInfo.name}',
           type: NotificationType.success,
         );
       case Err(error: final failure):
@@ -59,10 +55,9 @@ class SubscriptionPage extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final subscriptionAsync = ref.watch(subscriptionProvider);
+    final plansAsync = ref.watch(subscriptionPlansProvider);
     final colorScheme = Theme.of(context).colorScheme;
-    final processingPlan = useState<SubscriptionPlan?>(
-      null,
-    ); // Tracks which plan is currently being processed
+    final processingPlanId = useState<String?>(null);
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -79,66 +74,60 @@ class SubscriptionPage extends HookConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (final error, final stack) => ErrorView(
             message: (error as Failure).displayMessage(context),
-            onRetry: () => ref.refresh(subscriptionProvider),
+            onRetry: () {
+              ref.invalidate(subscriptionProvider);
+              ref.invalidate(subscriptionPlansProvider);
+            },
           ),
           data: (final subscription) {
-            final currentPlan = subscription.plan;
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    '解鎖完整功能',
-                    style: TextStyle(
-                      color: colorScheme.onSurface,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '選擇最適合您的方案',
-                    style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 16),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 32),
-                  Column(
+            final currentPlanId = subscription.plan;
+            return plansAsync.when(
+              skipLoadingOnReload: true,
+              skipError: true,
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (final error, final stack) => ErrorView(
+                message: (error as Failure).displayMessage(context),
+                onRetry: () => ref.refresh(subscriptionPlansProvider),
+              ),
+              data: (final plans) {
+                final activePlans = plans.where((final p) => p.isActive).toList();
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      _buildPlanCard(
-                        context,
-                        ref,
-                        processingPlan,
-                        plan: SubscriptionPlan.free,
-                        description: '基本試穿功能',
-                        features: ['每日 5 次試穿', '衣櫃容量 20 件'],
-                        currentPlan: currentPlan,
+                      Text(
+                        '解鎖完整功能',
+                        style: TextStyle(
+                          color: colorScheme.onSurface,
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 20),
-                      _buildPlanCard(
-                        context,
-                        ref,
-                        processingPlan,
-                        plan: SubscriptionPlan.pro,
-                        description: '進階試穿功能',
-                        features: ['每日 20 次試穿', '衣櫃容量 50 件'],
-                        currentPlan: currentPlan,
+                      const SizedBox(height: 8),
+                      Text(
+                        '選擇最適合您的方案',
+                    style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 16),
+                        textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 20),
-                      _buildPlanCard(
-                        context,
-                        ref,
-                        processingPlan,
-                        plan: SubscriptionPlan.max,
-                        description: '專業試穿功能',
-                        features: ['每日 50 次試穿', '衣櫃容量 200 件'],
-                        currentPlan: currentPlan,
+                      const SizedBox(height: 32),
+                      ...activePlans.map(
+                        (final planInfo) => Padding(
+                          padding: const EdgeInsets.only(bottom: 20),
+                          child: _buildPlanCard(
+                            context,
+                            ref,
+                            processingPlanId,
+                            planInfo: planInfo,
+                            currentPlanId: currentPlanId,
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                ],
-              ),
+                );
+              },
             );
           },
         ),
@@ -149,15 +138,13 @@ class SubscriptionPage extends HookConsumerWidget {
   Widget _buildPlanCard(
     final BuildContext context,
     final WidgetRef ref,
-    final ValueNotifier<SubscriptionPlan?> processingPlan, {
-    required final SubscriptionPlan plan,
-    required final String description,
-    required final List<String> features,
-    required final SubscriptionPlan currentPlan,
+    final ValueNotifier<String?> processingPlanId, {
+    required final SubscriptionPlanInfo planInfo,
+    required final String currentPlanId,
   }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isCurrent = currentPlan == plan;
+    final isCurrent = currentPlanId == planInfo.id;
 
     final borderColor = isCurrent ? colorScheme.primary : colorScheme.outlineVariant;
     final borderWidth = isCurrent ? 2.0 : 1.0;
@@ -199,13 +186,11 @@ class SubscriptionPage extends HookConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(plan.displayName, style: theme.textTheme.headlineSmall),
+                Text(planInfo.name, style: theme.textTheme.headlineSmall),
                 const SizedBox(height: 8),
-                Text(_priceText(plan), style: theme.textTheme.displayLarge),
-                const SizedBox(height: 8),
-                Text(description, style: theme.textTheme.bodyMedium),
+                Text(_priceText(planInfo), style: theme.textTheme.displayLarge),
                 const SizedBox(height: 24),
-                ...features.map(
+                ..._features(planInfo).map(
                   (final feature) => Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: Row(
@@ -228,10 +213,14 @@ class SubscriptionPage extends HookConsumerWidget {
                 ),
                 if (!isCurrent)
                   _buildActionButton(
-                    isLoading: processingPlan.value == plan,
-                    isDisabled: processingPlan.value != null,
-                    onPressed: () =>
-                        _handleSubscriptionChange(context, ref, processingPlan, plan),
+                    isLoading: processingPlanId.value == planInfo.id,
+                    isDisabled: processingPlanId.value != null,
+                    onPressed: () => _handleSubscriptionChange(
+                      context,
+                      ref,
+                      processingPlanId,
+                      planInfo,
+                    ),
                   ),
               ],
             ),
