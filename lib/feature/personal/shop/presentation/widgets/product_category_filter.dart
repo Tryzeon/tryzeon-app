@@ -44,15 +44,14 @@ class ProductCategoryFilter extends HookConsumerWidget {
         return null;
       }, [categoryTree, selectedRootId]);
 
-      // Find currently selected root node
+      // Find currently selected root node, fallback to first node
       final selectedRootNode = useMemoized(() {
-        if (selectedRootId == null) return null;
+        if (categoryTree.isEmpty) return null;
+        final effectiveId = selectedRootId ?? categoryTree.first.category.id;
         try {
-          return categoryTree.firstWhere(
-            (final node) => node.category.id == selectedRootId,
-          );
+          return categoryTree.firstWhere((final node) => node.category.id == effectiveId);
         } catch (_) {
-          return null;
+          return categoryTree.first;
         }
       }, [categoryTree, selectedRootId]);
 
@@ -103,139 +102,116 @@ class ProductCategoryFilter extends HookConsumerWidget {
           // Subcategories (Squircle Cards)
           selectedRootNode == null
               ? const SizedBox(height: 120)
-              : AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  transitionBuilder: (final child, final animation) {
-                    return FadeTransition(
-                      opacity: animation,
-                      child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0.0, 0.1),
-                          end: Offset.zero,
-                        ).animate(animation),
-                        child: child,
-                      ),
-                    );
-                  },
-                  child: Column(
-                    key: ValueKey(selectedRootNode.category.id),
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: selectedRootNode.children.map((final level2Node) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              left: 30,
-                              right: 0,
-                              top: 0,
-                              bottom: 5,
-                            ),
-                            child: Text(
-                              level2Node.category.name,
-                              style: textTheme.titleSmall,
-                            ),
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: selectedRootNode.children.map((final level2Node) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 30,
+                            right: 0,
+                            top: 0,
+                            bottom: 5,
                           ),
-                          SizedBox(
-                            height: 96,
-                            child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              itemCount: level2Node.children.length,
-                              separatorBuilder: (final context, final index) =>
-                                  const SizedBox(width: 16),
-                              itemBuilder: (final context, final index) {
-                                final level3Node = level2Node.children[index];
-                                final isSelected = selectedSubcategoryIds.contains(
-                                  level3Node.category.id,
-                                );
-                                final imageUrl = level3Node.category.imageUrl;
+                          child: Text(
+                            level2Node.category.name,
+                            style: textTheme.titleSmall,
+                          ),
+                        ),
+                        SizedBox(
+                          height: 96,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: level2Node.children.length,
+                            separatorBuilder: (final context, final index) =>
+                                const SizedBox(width: 16),
+                            itemBuilder: (final context, final index) {
+                              final level3Node = level2Node.children[index];
+                              final isSelected = selectedSubcategoryIds.contains(
+                                level3Node.category.id,
+                              );
+                              final imageUrl = level3Node.category.imageUrl;
 
-                                return GestureDetector(
-                                  onTap: () {
-                                    HapticFeedback.selectionClick();
-                                    onSubcategoryToggle(level3Node.category.id);
-                                  },
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      // Squircle Image Container
-                                      AnimatedContainer(
-                                        duration: const Duration(milliseconds: 200),
-                                        width: 60,
-                                        height: 60,
-                                        decoration: BoxDecoration(
-                                          color: colorScheme.surfaceContainerHighest,
-                                          borderRadius: BorderRadius.circular(20),
-                                          border: isSelected
-                                              ? Border.all(
-                                                  color: colorScheme.primary,
-                                                  width: 2.5,
-                                                )
-                                              : null,
-                                        ),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(18),
-                                          child: (imageUrl != null && imageUrl.isNotEmpty)
-                                              ? CachedNetworkImage(
-                                                  imageUrl: imageUrl,
-                                                  fit: BoxFit.cover,
-                                                  placeholder:
-                                                      (
-                                                        final context,
-                                                        final url,
-                                                      ) => Center(
-                                                        child: SizedBox(
-                                                          width: 20,
-                                                          height: 20,
-                                                          child:
-                                                              CircularProgressIndicator(
-                                                                strokeWidth: 2.5,
-                                                                color:
-                                                                    colorScheme.outline,
-                                                              ),
+                              return GestureDetector(
+                                onTap: () {
+                                  HapticFeedback.selectionClick();
+                                  onSubcategoryToggle(level3Node.category.id);
+                                },
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // Squircle Image Container
+                                    AnimatedContainer(
+                                      duration: const Duration(milliseconds: 200),
+                                      width: 60,
+                                      height: 60,
+                                      decoration: BoxDecoration(
+                                        color: colorScheme.surfaceContainerHighest,
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: isSelected
+                                            ? Border.all(
+                                                color: colorScheme.primary,
+                                                width: 2.5,
+                                              )
+                                            : null,
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(18),
+                                        child: (imageUrl != null && imageUrl.isNotEmpty)
+                                            ? CachedNetworkImage(
+                                                imageUrl: imageUrl,
+                                                fit: BoxFit.cover,
+                                                placeholder: (final context, final url) =>
+                                                    Center(
+                                                      child: SizedBox(
+                                                        width: 20,
+                                                        height: 20,
+                                                        child: CircularProgressIndicator(
+                                                          strokeWidth: 2.5,
+                                                          color: colorScheme.outline,
                                                         ),
                                                       ),
-                                                  errorWidget:
-                                                      (
-                                                        final context,
-                                                        final url,
-                                                        final error,
-                                                      ) => Icon(
-                                                        Icons
-                                                            .image_not_supported_outlined,
-                                                        color:
-                                                            colorScheme.onSurfaceVariant,
-                                                      ),
-                                                )
-                                              : Icon(
-                                                  Icons.image_not_supported_outlined,
-                                                  color: colorScheme.onSurfaceVariant,
-                                                ),
-                                        ),
+                                                    ),
+                                                errorWidget:
+                                                    (
+                                                      final context,
+                                                      final url,
+                                                      final error,
+                                                    ) => Icon(
+                                                      Icons.image_not_supported_outlined,
+                                                      color: colorScheme.onSurfaceVariant,
+                                                    ),
+                                              )
+                                            : Icon(
+                                                Icons.image_not_supported_outlined,
+                                                color: colorScheme.onSurfaceVariant,
+                                              ),
                                       ),
-                                      const SizedBox(height: 6),
-                                      // Label
-                                      SizedBox(
-                                        width: 72,
-                                        child: Text(
-                                          level3Node.category.name,
-                                          style: textTheme.labelMedium,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          textAlign: TextAlign.center,
-                                        ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    // Label
+                                    SizedBox(
+                                      width: 72,
+                                      child: Text(
+                                        level3Node.category.name,
+                                        style: textTheme.labelMedium,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.center,
                                       ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
                           ),
-                        ],
-                      );
-                    }).toList(),
-                  ),
+                        ),
+                      ],
+                    );
+                  }).toList(),
                 ),
         ],
       );
