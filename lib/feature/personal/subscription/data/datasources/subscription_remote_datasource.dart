@@ -31,7 +31,7 @@ class SubscriptionRemoteDataSource {
         .from(AppConstants.tableSubscriptionPlans)
         .select()
         .eq('is_active', true)
-        .order('sort_order');
+        .order('sort_order', ascending: true);
 
     return response.map(SubscriptionPlanModel.fromJson).toList();
   }

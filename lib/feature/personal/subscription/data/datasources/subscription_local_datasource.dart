@@ -56,7 +56,10 @@ class SubscriptionLocalDataSource {
       return null;
     }
 
-    final models = collections.map((final c) => _mappr.convert<SubscriptionPlanCollection, SubscriptionPlanModel>(c)).toList();
+    final models = collections.map((final c) =>
+              _mappr.convert<SubscriptionPlanCollection, SubscriptionPlanModel>(c),
+        ).toList()
+        ..sort((final a, final b) => a.sortOrder.compareTo(b.sortOrder));
     return models;
   }
 
