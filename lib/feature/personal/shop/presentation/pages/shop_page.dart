@@ -8,7 +8,7 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 
 import '../dialogs/filter_dialog.dart';
-// import '../widgets/ad_banner.dart';
+import '../widgets/ad_banner.dart';
 import '../widgets/product_category_filter.dart';
 import '../widgets/product_grid.dart';
 import '../widgets/search_bar.dart';
@@ -25,7 +25,7 @@ class ShopPage extends HookConsumerWidget {
       orElse: () => null,
     );
 
-    // final adsAsync = ref.watch(shopAdsProvider);
+    final adsAsync = ref.watch(shopAdsProvider);
 
     // 取得使用者位置（用於附近店家排序）
     final userLocationAsync = ref.watch(userLocationProvider);
@@ -242,8 +242,8 @@ class ShopPage extends HookConsumerWidget {
                               const SizedBox(height: 20),
 
                               // 📢 廣告輪播
-                              // AdBanner(adsAsync: adsAsync),
-                              // const SizedBox(height: 24),
+                              AdBanner(adsAsync: adsAsync),
+                              const SizedBox(height: 24),
 
                               // 商品類型篩選標籤
                               ProductCategoryFilter(
