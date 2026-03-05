@@ -25,7 +25,7 @@ class ShopRemoteDataSource {
     dynamic query = _supabaseClient.from(_productsTable).select('''
           id, store_id, name, categories, price, image_path, created_at,
           product_variants(*),
-          store_profiles!inner(id, name, address)
+          store_profiles!products_store_id_fkey(id, name, address)
         ''');
 
     // 類型過濾
@@ -122,7 +122,7 @@ class ShopRemoteDataSource {
         .select('''
           *,
           product_variants(*),
-          store_profiles!inner(id, name, address, logo_path)
+          store_profiles!products_store_id_fkey(id, name, address, logo_path)
         ''')
         .eq('id', productId)
         .single();

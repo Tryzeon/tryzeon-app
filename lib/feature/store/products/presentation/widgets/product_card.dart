@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
+import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 
 class StoreProductCard extends HookConsumerWidget {
@@ -83,11 +84,74 @@ class StoreProductCard extends HookConsumerWidget {
                     style: textTheme.labelLarge?.copyWith(color: colorScheme.primary),
                   ),
                   const SizedBox(height: 4),
+
+                  // Analytics badges
+                  _buildAnalyticsBadges(ref, textTheme),
+                  const SizedBox(height: 4),
                 ],
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildAnalyticsBadges(final WidgetRef ref, final TextTheme textTheme) {
+    final analyticsMap = ref.watch(productAnalyticsMapProvider);
+    final analytics = analyticsMap[product.id];
+
+    if (analytics == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Wrap(
+      spacing: 4,
+      runSpacing: 4,
+      children: [
+        _buildBadge(
+          icon: Icons.visibility_outlined,
+          count: analytics.viewCount,
+          textTheme: textTheme,
+        ),
+        _buildBadge(
+          icon: Icons.checkroom_outlined,
+          count: analytics.tryonCount,
+          textTheme: textTheme,
+        ),
+        _buildBadge(
+          icon: Icons.shopping_cart_outlined,
+          count: analytics.purchaseClickCount,
+          textTheme: textTheme,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBadge({
+    required final IconData icon,
+    required final int count,
+    required final TextTheme textTheme,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: Colors.grey.shade700),
+          const SizedBox(width: 2),
+          Text(
+            count.toString(),
+            style: textTheme.bodySmall?.copyWith(
+              color: Colors.grey.shade700,
+              fontSize: 10,
+            ),
+          ),
+        ],
       ),
     );
   }

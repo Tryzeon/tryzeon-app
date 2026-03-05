@@ -89,7 +89,11 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
     try {
       final cachedPlans = await _localDataSource.getSubscriptionPlans();
       if (cachedPlans != null) {
-        final subscriptionPlanInfos = cachedPlans.map((final m) => _mappr.convert<SubscriptionPlanModel, SubscriptionPlanInfo>(m)).toList();
+        final subscriptionPlanInfos = cachedPlans
+            .map(
+              (final m) => _mappr.convert<SubscriptionPlanModel, SubscriptionPlanInfo>(m),
+            )
+            .toList();
         return Ok(subscriptionPlanInfos);
       }
     } catch (e, stackTrace) {
@@ -105,7 +109,11 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
         AppLogger.warning('Failed to save plans to cache', e, stackTrace);
       }
 
-      final subscriptionPlanInfos = remotePlans.map((final m) => _mappr.convert<SubscriptionPlanModel, SubscriptionPlanInfo>(m)).toList();
+      final subscriptionPlanInfos = remotePlans
+          .map(
+            (final m) => _mappr.convert<SubscriptionPlanModel, SubscriptionPlanInfo>(m),
+          )
+          .toList();
       return Ok(subscriptionPlanInfos);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to get subscription plans', e, stackTrace);

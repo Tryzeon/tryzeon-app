@@ -1,16 +1,16 @@
 import 'package:tryzeon/core/error/failures.dart';
-import 'package:tryzeon/feature/store/analytics/domain/entities/store_analytics_summary.dart';
-import 'package:tryzeon/feature/store/analytics/domain/repositories/store_analytics_repository.dart';
+import 'package:tryzeon/feature/store/analytics/domain/entities/product_analytics_summary.dart';
+import 'package:tryzeon/feature/store/analytics/domain/repositories/product_analytics_repository.dart';
 import 'package:tryzeon/feature/store/profile/domain/repositories/store_profile_repository.dart';
 import 'package:typed_result/typed_result.dart';
 
-class GetStoreAnalyticsSummary {
-  GetStoreAnalyticsSummary(this._analyticsRepository, this._profileRepository);
+class GetProductAnalyticsSummaries {
+  GetProductAnalyticsSummaries(this._analyticsRepository, this._profileRepository);
 
-  final StoreAnalyticsRepository _analyticsRepository;
+  final ProductAnalyticsRepository _analyticsRepository;
   final StoreProfileRepository _profileRepository;
 
-  Future<Result<StoreAnalyticsSummary, Failure>> call({
+  Future<Result<List<ProductAnalyticsSummary>, Failure>> call({
     final int? year,
     final int? month,
   }) async {
@@ -21,7 +21,7 @@ class GetStoreAnalyticsSummary {
 
     final profile = profileResult.get()!;
 
-    return _analyticsRepository.getStoreAnalyticsSummary(
+    return _analyticsRepository.getProductAnalyticsSummaries(
       profile.id,
       year: year,
       month: month,

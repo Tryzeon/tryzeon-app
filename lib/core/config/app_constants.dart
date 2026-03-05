@@ -16,7 +16,8 @@ class AppConstants {
   static const String tableSubscriptionPlans = 'subscription_plans';
   static const String tableWardrobeItems = 'wardrobe_items';
   static const String tableAnalyticsEvents = 'analytics_events';
-  static const String tableAnalyticsMonthlySummary = 'analytics_monthly_summary';
+  static const String tableAnalyticsProductMonthlySummary =
+      'analytics_product_monthly_summary';
 
   // Supabase Buckets
   static const String bucketStoreLogos = 'store-logos';

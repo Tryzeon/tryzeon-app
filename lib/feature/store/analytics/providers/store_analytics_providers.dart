@@ -2,29 +2,18 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
-import 'package:tryzeon/feature/store/analytics/data/datasources/store_analytics_local_datasource.dart';
-import 'package:tryzeon/feature/store/analytics/data/datasources/store_analytics_remote_datasource.dart';
-import 'package:tryzeon/feature/store/analytics/data/repositories/store_analytics_repository_impl.dart';
-import 'package:tryzeon/feature/store/analytics/domain/entities/store_analytics_summary.dart';
-import 'package:tryzeon/feature/store/analytics/domain/repositories/store_analytics_repository.dart';
-import 'package:tryzeon/feature/store/analytics/domain/usecases/get_store_analytics_summary.dart';
+import 'package:tryzeon/feature/store/analytics/data/datasources/product_analytics_local_datasource.dart';
+import 'package:tryzeon/feature/store/analytics/data/datasources/product_analytics_remote_datasource.dart';
+import 'package:tryzeon/feature/store/analytics/data/repositories/product_analytics_repository_impl.dart';
+import 'package:tryzeon/feature/store/analytics/domain/entities/product_analytics_summary.dart';
+import 'package:tryzeon/feature/store/analytics/domain/repositories/product_analytics_repository.dart';
+import 'package:tryzeon/feature/store/analytics/domain/usecases/get_product_analytics_summaries.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 part 'store_analytics_providers.g.dart';
 
-// --- Data Sources ---
-@riverpod
-StoreAnalyticsRemoteDataSource storeAnalyticsRemoteDataSource(final Ref ref) {
-  return StoreAnalyticsRemoteDataSource(Supabase.instance.client);
-}
-
-@riverpod
-StoreAnalyticsLocalDataSource storeAnalyticsLocalDataSource(final Ref ref) {
-  return StoreAnalyticsLocalDataSource(IsarService());
-}
-
-// --- Filter Provider ---
+// --- Filter Provider (shared by dashboard + product cards) ---
 @riverpod
 class StoreAnalyticsFilter extends _$StoreAnalyticsFilter {
   @override
@@ -40,30 +29,40 @@ class StoreAnalyticsFilter extends _$StoreAnalyticsFilter {
   }
 }
 
+// --- Data Sources ---
+@riverpod
+ProductAnalyticsRemoteDataSource productAnalyticsRemoteDataSource(final Ref ref) {
+  return ProductAnalyticsRemoteDataSource(Supabase.instance.client);
+}
+
+@riverpod
+ProductAnalyticsLocalDataSource productAnalyticsLocalDataSource(final Ref ref) {
+  return ProductAnalyticsLocalDataSource(IsarService());
+}
+
 // --- Repository ---
 @riverpod
-StoreAnalyticsRepository storeAnalyticsRepository(final Ref ref) {
-  return StoreAnalyticsRepositoryImpl(
-    remoteDataSource: ref.watch(storeAnalyticsRemoteDataSourceProvider),
-    localDataSource: ref.watch(storeAnalyticsLocalDataSourceProvider),
+ProductAnalyticsRepository productAnalyticsRepository(final Ref ref) {
+  return ProductAnalyticsRepositoryImpl(
+    remoteDataSource: ref.watch(productAnalyticsRemoteDataSourceProvider),
+    localDataSource: ref.watch(productAnalyticsLocalDataSourceProvider),
   );
 }
 
-// --- Use Cases ---
+// --- Use Case ---
 @riverpod
-GetStoreAnalyticsSummary getStoreAnalyticsSummary(final Ref ref) {
-  return GetStoreAnalyticsSummary(
-    ref.watch(storeAnalyticsRepositoryProvider),
+GetProductAnalyticsSummaries getProductAnalyticsSummaries(final Ref ref) {
+  return GetProductAnalyticsSummaries(
+    ref.watch(productAnalyticsRepositoryProvider),
     ref.watch(storeProfileRepositoryProvider),
   );
 }
 
-// --- Feature Providers ---
+// --- Feature Provider: per-product summaries ---
 @riverpod
-Future<StoreAnalyticsSummary> storeAnalyticsSummary(final Ref ref) async {
+Future<List<ProductAnalyticsSummary>> productAnalyticsSummaries(final Ref ref) async {
   final filter = ref.watch(storeAnalyticsFilterProvider);
-
-  final useCase = ref.watch(getStoreAnalyticsSummaryProvider);
+  final useCase = ref.watch(getProductAnalyticsSummariesProvider);
   final result = await useCase(year: filter?.year, month: filter?.month);
 
   if (result.isFailure) {
@@ -73,11 +72,21 @@ Future<StoreAnalyticsSummary> storeAnalyticsSummary(final Ref ref) async {
   return result.get()!;
 }
 
-/// 強制刷新分析數據
+/// Convenience provider: `Map<productId, summary>` for O(1) lookup
+@riverpod
+Map<String, ProductAnalyticsSummary> productAnalyticsMap(final Ref ref) {
+  final summariesAsync = ref.watch(productAnalyticsSummariesProvider);
+  return summariesAsync.maybeWhen(
+    data: (final summaries) => {for (final s in summaries) s.productId: s},
+    orElse: () => {},
+  );
+}
+
+/// Force refresh analytics data
 Future<void> refreshAnalytics(final WidgetRef ref) async {
   try {
-    final _ = await ref.refresh(storeAnalyticsSummaryProvider.future);
+    final _ = await ref.refresh(productAnalyticsSummariesProvider.future);
   } catch (_) {
-    // Provider 刷新失敗時，忽略異常，讓 UI 顯示 ErrorView 或舊資料
+    // Let UI show ErrorView or stale data
   }
 }

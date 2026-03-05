@@ -1,9 +1,9 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
 
 import '../../../../core/shared/measurements/data/mappers/measurements_mappr.dart';
-import '../../analytics/data/collections/store_analytics_collection.dart';
-import '../../analytics/data/models/store_analytics_summary_model.dart';
-import '../../analytics/domain/entities/store_analytics_summary.dart';
+import '../../analytics/data/collections/product_analytics_collection.dart';
+import '../../analytics/data/models/product_analytics_summary_model.dart';
+import '../../analytics/domain/entities/product_analytics_summary.dart';
 import '../../products/data/collections/product_collection.dart';
 import '../../products/data/models/product_model.dart';
 import '../../products/domain/entities/product.dart';
@@ -13,7 +13,7 @@ import '../../profile/domain/entities/store_profile.dart';
 import 'store_mappr.auto_mappr.dart';
 
 /// AutoMappr configuration for Store feature
-/// Handles Product, StoreProfile, and StoreAnalyticsSummary mappings
+/// Handles Product, StoreProfile, and ProductAnalyticsSummary mappings
 /// Note: Measurements mappings are included via MeasurementsMappr
 @AutoMappr(
   [
@@ -39,10 +39,10 @@ import 'store_mappr.auto_mappr.dart';
       fields: [Field('id', from: 'storeId')],
     ),
 
-    // StoreAnalyticsSummary mappings
-    MapType<StoreAnalyticsSummaryModel, StoreAnalyticsSummary>(),
-    MapType<StoreAnalyticsCollection, StoreAnalyticsSummaryModel>(),
-    MapType<StoreAnalyticsSummaryModel, StoreAnalyticsCollection>(),
+    // ProductAnalyticsSummary mappings
+    MapType<ProductAnalyticsSummaryModel, ProductAnalyticsSummary>(),
+    MapType<ProductAnalyticsSummaryModel, ProductAnalyticsCollection>(),
+    MapType<ProductAnalyticsCollection, ProductAnalyticsSummaryModel>(),
   ],
   includes: [MeasurementsMappr()],
 )

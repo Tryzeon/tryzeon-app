@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
+import 'package:tryzeon/feature/store/home/presentation/widgets/month_filter_widget.dart';
 import 'package:tryzeon/feature/store/home/presentation/widgets/store_home_header.dart';
 import 'package:tryzeon/feature/store/home/presentation/widgets/store_traffic_dashboard.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_list_section.dart';
@@ -41,7 +42,12 @@ class StoreHomePage extends HookConsumerWidget {
                     physics: AlwaysScrollableScrollPhysics(),
                     padding: EdgeInsets.all(16.0),
                     child: Column(
-                      children: [StoreTrafficDashboard(), ProductListSection()],
+                      children: [
+                        MonthFilterWidget(),
+                        SizedBox(height: 16),
+                        StoreTrafficDashboard(),
+                        ProductListSection(),
+                      ],
                     ),
                   ),
                 ),
