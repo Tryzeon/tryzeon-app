@@ -9,8 +9,11 @@ part 'personal_settings_controller.g.dart';
 
 @riverpod
 class PersonalSettingsController extends _$PersonalSettingsController {
+  bool _mounted = true;
+
   @override
   FutureOr<void> build() async {
+    ref.onDispose(() => _mounted = false);
     // Initial build doesn't need to do anything specifically
     // But we might want to load version info here if we want to expose it via state
   }
@@ -25,6 +28,8 @@ class PersonalSettingsController extends _$PersonalSettingsController {
     final signOutUseCase = ref.read(signOutUseCaseProvider);
     final result = await signOutUseCase();
 
+    if (!_mounted) return;
+
     if (result.isFailure) {
       state = AsyncError(result.getError()!, StackTrace.current);
     } else {
@@ -37,6 +42,8 @@ class PersonalSettingsController extends _$PersonalSettingsController {
     final setLoginTypeUseCase = ref.read(setLastLoginTypeUseCaseProvider);
     final result = await setLoginTypeUseCase(UserType.store);
 
+    if (!_mounted) return;
+
     if (result.isFailure) {
       state = AsyncError(result.getError()!, StackTrace.current);
     } else {
@@ -48,6 +55,8 @@ class PersonalSettingsController extends _$PersonalSettingsController {
     state = const AsyncLoading();
     final deleteAccountUseCase = ref.read(deleteAccountUseCaseProvider);
     final result = await deleteAccountUseCase();
+
+    if (!_mounted) return result;
 
     if (result.isFailure) {
       state = AsyncError(result.getError()!, StackTrace.current);
