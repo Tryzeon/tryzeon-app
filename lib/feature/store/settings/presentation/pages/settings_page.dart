@@ -1,4 +1,5 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -205,16 +206,16 @@ class _StoreProfileHeader extends HookConsumerWidget {
                     if (profile == null) {
                       return _buildPlaceholder(colorScheme, '?');
                     }
-                    // For now, since we don't have a logo file provider,
-                    // we'll use placeholder or network image if we had one.
-                    // Update: StoreProfile has logoUrl.
                     if (profile.logoUrl != null && profile.logoUrl!.isNotEmpty) {
-                      return Image.network(
-                        profile.logoUrl!,
+                      return CachedNetworkImage(
+                        imageUrl: profile.logoUrl!,
+                        cacheKey: profile.logoPath!,
                         fit: BoxFit.cover,
                         width: 70,
                         height: 70,
-                        errorBuilder: (final context, final error, final stackTrace) =>
+                        placeholder: (final context, final url) =>
+                            const Center(child: CircularProgressIndicator()),
+                        errorWidget: (final context, final url, final error) =>
                             _buildPlaceholder(colorScheme, profile.name),
                       );
                     }
