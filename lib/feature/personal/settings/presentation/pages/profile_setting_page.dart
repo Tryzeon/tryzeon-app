@@ -110,6 +110,30 @@ class _PersonalProfileForm extends HookConsumerWidget {
     }
 
     final isLoading = useState(false);
+
+    // 監聽輸入與圖片變化
+    final userName = useValueListenable(nameController).text;
+
+    // 檢查基本資料是否修改
+    bool hasChanges = userName.trim() != profile.name;
+
+    // 檢查身型資料是否修改
+    if (!hasChanges) {
+      for (final type in MeasurementType.values) {
+        final currentValue = useValueListenable(measurementControllers[type]!).text;
+        final originalValue = profile.measurements?[type]?.toString() ?? '';
+
+        // 處理小數點比較 (例如 '170' 和 '170.0' 應該視為相同)
+        final currentDouble = double.tryParse(currentValue);
+        final originalDouble = double.tryParse(originalValue);
+
+        if (currentDouble != originalDouble) {
+          hasChanges = true;
+          break;
+        }
+      }
+    }
+
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -139,9 +163,13 @@ class _PersonalProfileForm extends HookConsumerWidget {
       isLoading.value = false;
 
       if (result.isSuccess) {
-        ref.invalidate(userProfileProvider);
-        Navigator.pop(context);
         TopNotification.show(context, message: '個人資料已更新', type: NotificationType.success);
+
+        if (context.mounted) Navigator.pop(context);
+
+        Future.delayed(const Duration(milliseconds: 100), () {
+          ref.invalidate(userProfileProvider);
+        });
       } else {
         TopNotification.show(
           context,
@@ -290,24 +318,15 @@ class _PersonalProfileForm extends HookConsumerWidget {
               width: double.infinity,
               height: 56,
               decoration: BoxDecoration(
-                color: isLoading.value
+                color: isLoading.value || !hasChanges
                     ? colorScheme.onSurface.withValues(alpha: 0.12)
                     : colorScheme.primary,
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: isLoading.value
-                    ? []
-                    : [
-                        BoxShadow(
-                          color: colorScheme.primary.withValues(alpha: 0.3),
-                          blurRadius: 15,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
               ),
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: isLoading.value ? null : updateProfile,
+                  onTap: isLoading.value || !hasChanges ? null : updateProfile,
                   borderRadius: BorderRadius.circular(16),
                   child: Center(
                     child: isLoading.value

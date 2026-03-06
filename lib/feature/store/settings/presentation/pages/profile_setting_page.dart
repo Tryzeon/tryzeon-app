@@ -114,6 +114,17 @@ class _StoreProfileForm extends HookConsumerWidget {
     final storeNameController = useTextEditingController(text: profile.name);
     final storeAddressController = useTextEditingController(text: profile.address);
 
+    // 監聽輸入與圖片變化
+    final storeName = useValueListenable(storeNameController).text;
+    final storeAddress = useValueListenable(storeAddressController).text;
+    final newLogo = newLogoImage.value;
+
+    // 檢查是否有修改過資料
+    final hasChanges =
+        storeName.trim() != profile.name ||
+        storeAddress.trim() != profile.address ||
+        newLogo != null;
+
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -139,9 +150,13 @@ class _StoreProfileForm extends HookConsumerWidget {
       isLoading.value = false;
 
       if (result.isSuccess) {
-        ref.invalidate(storeProfileProvider);
-        Navigator.pop(context);
         TopNotification.show(context, message: '店家資訊已更新', type: NotificationType.success);
+
+        if (context.mounted) Navigator.pop(context);
+
+        Future.delayed(const Duration(milliseconds: 100), () {
+          ref.invalidate(storeProfileProvider);
+        });
       } else {
         TopNotification.show(
           context,
@@ -349,24 +364,15 @@ class _StoreProfileForm extends HookConsumerWidget {
               width: double.infinity,
               height: 56,
               decoration: BoxDecoration(
-                color: isLoading.value
+                color: isLoading.value || !hasChanges
                     ? colorScheme.onSurface.withValues(alpha: 0.12)
                     : colorScheme.primary,
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: isLoading.value
-                    ? null
-                    : [
-                        BoxShadow(
-                          color: colorScheme.primary.withValues(alpha: 0.3),
-                          blurRadius: 15,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
               ),
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: isLoading.value ? null : updateProfile,
+                  onTap: isLoading.value || !hasChanges ? null : updateProfile,
                   borderRadius: BorderRadius.circular(16),
                   child: Center(
                     child: isLoading.value
