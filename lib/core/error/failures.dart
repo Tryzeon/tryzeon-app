@@ -39,6 +39,13 @@ Failure mapExceptionToFailure(final Object e) {
     return const AuthFailure('驗證碼錯誤或過期');
   }
 
+  // Handle ClientException with SocketException escaping Supabase
+  final eString = e.toString();
+  if (eString.contains('SocketException') ||
+      eString.contains('ClientException')) {
+    return const NetworkFailure();
+  }
+
   return switch (e) {
     // Custom App Exceptions
     ServerException(message: final msg) => ServerFailure(msg),
@@ -48,6 +55,7 @@ Failure mapExceptionToFailure(final Object e) {
     PostgrestException() => const ServerFailure(),
     StorageException() => const ServerFailure(),
     FunctionException() => const ServerFailure(),
+    AuthRetryableFetchException() => const NetworkFailure(),
     AuthException() => const AuthFailure(),
 
     // Network Exceptions
