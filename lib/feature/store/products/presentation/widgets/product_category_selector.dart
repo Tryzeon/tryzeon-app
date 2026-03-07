@@ -7,21 +7,21 @@ class ProductCategorySelector extends HookWidget {
   const ProductCategorySelector({
     super.key,
     required this.categoryTree,
-    required this.selectedCategoryIds,
+    required this.selectedCategoryId,
     this.onChanged,
   });
 
   final List<CategoryTreeNode> categoryTree;
-  final ValueNotifier<Set<String>> selectedCategoryIds;
-  final ValueChanged<Set<String>>? onChanged;
+  final ValueNotifier<String?> selectedCategoryId;
+  final ValueChanged<String?>? onChanged;
 
   @override
   Widget build(final BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    final selectedIdsNotifier = useListenable(selectedCategoryIds);
-    final selectedIds = selectedIdsNotifier.value;
+    final selectedIdNotifier = useListenable(selectedCategoryId);
+    final selectedId = selectedIdNotifier.value;
 
     // Flatten tree into a map for quick access
     final categoryMap = useMemoized(() {
@@ -62,12 +62,12 @@ class ProductCategorySelector extends HookWidget {
         builder: (final context) => _HierarchicalSelectionSheet(
           categoryTree: categoryTree,
           allCategories: allCategories,
-          selectedIds: selectedIds,
-          onSelectionChanged: (final ids) {
+          selectedId: selectedId,
+          onSelectionChanged: (final id) {
             if (onChanged != null) {
-              onChanged!(ids);
+              onChanged!(id);
             } else {
-              selectedCategoryIds.value = ids;
+              selectedCategoryId.value = id;
             }
           },
         ),
@@ -86,37 +86,28 @@ class ProductCategorySelector extends HookWidget {
         child: Row(
           children: [
             Expanded(
-              child: selectedIds.isEmpty
+              child: selectedId == null || selectedId.isEmpty
                   ? Text(
                       '選擇商品分類',
                       style: textTheme.bodyLarge?.copyWith(
                         color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                       ),
                     )
-                  : Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: selectedIds.map((final id) {
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: colorScheme.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: colorScheme.primary.withValues(alpha: 0.2),
-                            ),
-                          ),
-                          child: Text(
-                            getCategoryNameById(id),
-                            style: textTheme.labelMedium?.copyWith(
-                              color: colorScheme.primary,
-                            ),
-                          ),
-                        );
-                      }).toList(),
+                  : Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: colorScheme.primary.withValues(alpha: 0.2),
+                        ),
+                      ),
+                      child: Text(
+                        getCategoryNameById(selectedId),
+                        style: textTheme.labelMedium?.copyWith(
+                          color: colorScheme.primary,
+                        ),
+                      ),
                     ),
             ),
             const SizedBox(width: 8),
@@ -132,33 +123,31 @@ class _HierarchicalSelectionSheet extends HookWidget {
   const _HierarchicalSelectionSheet({
     required this.categoryTree,
     required this.allCategories,
-    required this.selectedIds,
+    required this.selectedId,
     required this.onSelectionChanged,
   });
 
   final List<CategoryTreeNode> categoryTree;
   final List<ProductCategory> allCategories;
-  final Set<String> selectedIds;
-  final ValueChanged<Set<String>> onSelectionChanged;
+  final String? selectedId;
+  final ValueChanged<String?> onSelectionChanged;
 
   @override
   Widget build(final BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    final currentSelection = useState<Set<String>>({...selectedIds});
+    final currentSelection = useState<String?>(selectedId);
     final expandedParents = useState<Set<String>>({});
     final searchController = useTextEditingController();
     useListenable(searchController);
 
     void toggleSelection(final String id) {
-      final newSet = {...currentSelection.value};
-      if (newSet.contains(id)) {
-        newSet.remove(id);
+      if (currentSelection.value == id) {
+        currentSelection.value = null;
       } else {
-        newSet.add(id);
+        currentSelection.value = id;
       }
-      currentSelection.value = newSet;
     }
 
     void toggleExpand(final String parentId) {
@@ -228,7 +217,7 @@ class _HierarchicalSelectionSheet extends HookWidget {
       final bool isExpanded = false,
       final VoidCallback? onExpand,
     }) {
-      final isSelected = currentSelection.value.contains(category.id);
+      final isSelected = currentSelection.value == category.id;
       final isSelectable = !hasChildren; // Only leaf nodes are selectable
 
       return InkWell(

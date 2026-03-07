@@ -47,7 +47,7 @@ class AddProductPage extends HookConsumerWidget {
         CreateProductParams(
           storeId: storeProfile.id,
           name: formData.nameController.text,
-          categories: formData.selectedCategoryIds.value,
+          categoryId: formData.selectedCategoryId.value ?? '',
           price: double.tryParse(formData.priceController.text) ?? 0.0,
           image: formData.selectedImage.value!,
           purchaseLink: formData.purchaseLinkController.text.isNotEmpty

@@ -24,25 +24,18 @@ class ProductHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Product Attributes (Categories only)
-              if (product.categories.isNotEmpty) ...[
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 4,
-                  children: [
-                    // Categories
-                    ...product.categories.map((final typeId) {
-                      final categoryName = categoryIdToName[typeId] ?? typeId;
-                      return Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: colorScheme.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(categoryName, style: textTheme.labelMedium),
-                      );
-                    }),
-                  ],
+              // Product Category
+              if (product.categoryId.isNotEmpty) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    categoryIdToName[product.categoryId] ?? product.categoryId,
+                    style: textTheme.labelMedium,
+                  ),
                 ),
                 const SizedBox(height: 12),
               ],

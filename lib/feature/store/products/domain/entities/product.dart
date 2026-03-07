@@ -19,7 +19,7 @@ sealed class CreateProductParams with _$CreateProductParams {
   const factory CreateProductParams({
     required final String storeId,
     required final String name,
-    required final Set<String> categories,
+    required final String categoryId,
     required final double price,
     required final File image,
     final String? purchaseLink,
@@ -47,7 +47,7 @@ sealed class Product with _$Product {
   const factory Product({
     required final String storeId,
     required final String name,
-    required final Set<String> categories,
+    required final String categoryId,
     required final double price,
     required final String imagePath,
     required final String imageUrl,

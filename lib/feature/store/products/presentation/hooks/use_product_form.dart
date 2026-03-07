@@ -13,7 +13,7 @@ class ProductFormData {
     required this.purchaseLinkController,
     required this.materialController,
     required this.selectedImage,
-    required this.selectedCategoryIds,
+    required this.selectedCategoryId,
     required this.selectedElasticity,
     required this.selectedFit,
   });
@@ -24,7 +24,7 @@ class ProductFormData {
   final TextEditingController purchaseLinkController;
   final TextEditingController materialController;
   final ValueNotifier<File?> selectedImage;
-  final ValueNotifier<Set<String>> selectedCategoryIds;
+  final ValueNotifier<String?> selectedCategoryId;
   final ValueNotifier<ProductElasticity?> selectedElasticity;
   final ValueNotifier<ProductFit?> selectedFit;
 
@@ -44,7 +44,7 @@ class ProductFormData {
     return Product(
       storeId: storeId,
       name: nameController.text,
-      categories: selectedCategoryIds.value,
+      categoryId: selectedCategoryId.value ?? '',
       price: double.tryParse(priceController.text) ?? 0.0,
       purchaseLink: purchaseLinkController.text,
       material: materialController.text,
@@ -72,9 +72,7 @@ ProductFormData useProductForm({final Product? initialProduct}) {
   final materialController = useTextEditingController(text: initialProduct?.material);
 
   final selectedImage = useState<File?>(null);
-  final selectedCategoryIds = useValueNotifier<Set<String>>(
-    initialProduct != null ? Set<String>.from(initialProduct.categories) : <String>{},
-  );
+  final selectedCategoryId = useValueNotifier<String?>(initialProduct?.categoryId);
   final selectedElasticity = useValueNotifier<ProductElasticity?>(
     initialProduct?.elasticity,
   );
@@ -87,7 +85,7 @@ ProductFormData useProductForm({final Product? initialProduct}) {
     purchaseLinkController: purchaseLinkController,
     materialController: materialController,
     selectedImage: selectedImage,
-    selectedCategoryIds: selectedCategoryIds,
+    selectedCategoryId: selectedCategoryId,
     selectedElasticity: selectedElasticity,
     selectedFit: selectedFit,
   );

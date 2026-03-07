@@ -14,7 +14,7 @@ class ProductCollection {
   @Index()
   late String storeId;
   late String name;
-  late List<String> categories;
+  late String categoryId;
   late double price;
   late String imagePath;
   late String imageUrl;
