@@ -136,7 +136,19 @@ class StorePage extends HookConsumerWidget {
                   const Divider(height: 1),
                   Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: Text('所有商品', style: textTheme.titleLarge),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.ideographic,
+                      children: [
+                        Text('所有商品', style: textTheme.titleLarge),
+                        const SizedBox(width: 8),
+                        if (productsAsync.hasValue)
+                          Text(
+                            '共 ${productsAsync.value!.length} 件',
+                            style: textTheme.bodyMedium,
+                          ),
+                      ],
+                    ),
                   ),
                   // Products Section
                   ProductGrid(
