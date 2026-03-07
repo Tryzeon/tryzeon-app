@@ -95,13 +95,6 @@ class ProductCategorySelector extends HookWidget {
                     )
                   : Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: colorScheme.primary.withValues(alpha: 0.2),
-                        ),
-                      ),
                       child: Text(
                         getCategoryNameById(selectedId),
                         style: textTheme.labelMedium?.copyWith(
