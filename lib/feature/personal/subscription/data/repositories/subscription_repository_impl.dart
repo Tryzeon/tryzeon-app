@@ -36,7 +36,11 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
           return Ok(subscription);
         }
       } catch (e, stackTrace) {
-        AppLogger.warning('Local cache read failed, falling back to remote', e, stackTrace);
+        AppLogger.warning(
+          'Local cache read failed, falling back to remote',
+          e,
+          stackTrace,
+        );
       }
     }
 
@@ -97,7 +101,11 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
         return Ok(subscriptionPlanInfos);
       }
     } catch (e, stackTrace) {
-      AppLogger.warning('Local plan cache read failed, falling back to remote', e, stackTrace);
+      AppLogger.warning(
+        'Local plan cache read failed, falling back to remote',
+        e,
+        stackTrace,
+      );
     }
 
     try {

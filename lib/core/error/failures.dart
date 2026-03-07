@@ -41,8 +41,7 @@ Failure mapExceptionToFailure(final Object e) {
 
   // Handle ClientException with SocketException escaping Supabase
   final eString = e.toString();
-  if (eString.contains('SocketException') ||
-      eString.contains('ClientException')) {
+  if (eString.contains('SocketException') || eString.contains('ClientException')) {
     return const NetworkFailure();
   }
 

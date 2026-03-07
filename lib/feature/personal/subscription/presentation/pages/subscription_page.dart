@@ -107,7 +107,10 @@ class SubscriptionPage extends HookConsumerWidget {
                       const SizedBox(height: 8),
                       Text(
                         '選擇最適合您的方案',
-                        style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 16),
+                        style: TextStyle(
+                          color: colorScheme.onSurfaceVariant,
+                          fontSize: 16,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 32),
