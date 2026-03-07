@@ -125,7 +125,7 @@ class AIService {
   }
 
   async generateTryOn(avatarBase64: string, clothesBase64: string): Promise<string> {
-    const prompt = "Please dress the person in the first photo with the clothes from the second photo, keeping the person's face clear and posture natural, generating a complete composite image. Output in a vertical 9:16 aspect ratio.";
+    const prompt = "Please dress the person in the first photo with the clothes from the second photo, keeping the person's face clear and posture natural, generating a complete composite image. It is extremely important that the details, wrinkles, patterns, styling, and overall look of the clothing when worn by the model are exactly consistent with the original clothing in the second photo. Output in a vertical 9:16 aspect ratio.";
 
     for (let attempt = 1; attempt <= CONFIG.MAX_RETRIES; attempt++) {
       try {
