@@ -314,6 +314,8 @@ class ShopPage extends HookConsumerWidget {
                                 userProfile: userProfile,
                                 onRetry: () => ref.refresh(shopProductsProvider(filter)),
                               ),
+
+                              const SizedBox(height: 120), // 預留底部空白，避免被導覽列遮擋或增加滾動空間
                             ],
                           ),
                         ),
