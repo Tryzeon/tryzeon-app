@@ -127,7 +127,7 @@ class ProductCategoryFilter extends HookConsumerWidget {
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             itemCount: level2Node.children.length,
                             separatorBuilder: (final context, final index) =>
-                                const SizedBox(width: 16),
+                                const SizedBox(width: 2),
                             itemBuilder: (final context, final index) {
                               final level3Node = level2Node.children[index];
                               final isSelected = selectedSubcategoryIds.contains(
@@ -194,10 +194,10 @@ class ProductCategoryFilter extends HookConsumerWidget {
                                     const SizedBox(height: 6),
                                     // Label
                                     SizedBox(
-                                      width: 72,
+                                      width: 82,
                                       child: Text(
                                         level3Node.category.name,
-                                        style: textTheme.labelMedium,
+                                        style: textTheme.labelSmall,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         textAlign: TextAlign.center,
