@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -32,43 +33,59 @@ class AuthRemoteDataSource {
   }
 
   Future<void> signInWithAppleNative() async {
-    final rawNonce = CryptoUtils.generateNonce();
-    final hashedNonce = CryptoUtils.sha256Hash(rawNonce);
+    try {
+      final rawNonce = CryptoUtils.generateNonce();
+      final hashedNonce = CryptoUtils.sha256Hash(rawNonce);
 
-    final credential = await SignInWithApple.getAppleIDCredential(
-      scopes: [AppleIDAuthorizationScopes.email, AppleIDAuthorizationScopes.fullName],
-      nonce: hashedNonce,
-    );
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [AppleIDAuthorizationScopes.email, AppleIDAuthorizationScopes.fullName],
+        nonce: hashedNonce,
+      );
 
-    final idToken = credential.identityToken;
-    if (idToken == null) {
-      throw const UnauthenticatedException();
+      final idToken = credential.identityToken;
+      if (idToken == null) {
+        throw const UnauthenticatedException();
+      }
+
+      await _supabase.auth.signInWithIdToken(
+        provider: OAuthProvider.apple,
+        idToken: idToken,
+        nonce: rawNonce,
+      );
+    } on SignInWithAppleAuthorizationException catch (e) {
+      if (e.code == AuthorizationErrorCode.canceled ||
+          e.code == AuthorizationErrorCode.unknown) {
+        throw const UserCanceledException();
+      }
+      rethrow;
     }
-
-    await _supabase.auth.signInWithIdToken(
-      provider: OAuthProvider.apple,
-      idToken: idToken,
-      nonce: rawNonce,
-    );
   }
 
   Future<void> signInWithGoogleNative() async {
-    final GoogleSignIn googleSignIn = GoogleSignIn.instance;
-    await googleSignIn.initialize();
+    try {
+      final GoogleSignIn googleSignIn = GoogleSignIn.instance;
+      await googleSignIn.initialize();
 
-    final googleUser = await googleSignIn.authenticate();
-    final googleAuth = googleUser.authentication;
+      final googleUser = await googleSignIn.authenticate();
+      final googleAuth = googleUser.authentication;
+      final idToken = googleAuth.idToken;
 
-    final idToken = googleAuth.idToken;
-    if (idToken == null) {
-      throw const UnauthenticatedException();
+      await _supabase.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken!,
+        // accessToken is not required for Supabase authentication with Google
+      );
+    } on PlatformException catch (e) {
+      if (e.code == 'sign_in_canceled') {
+        throw const UserCanceledException();
+      }
+      rethrow;
+    } on GoogleSignInException catch (e) {
+      if (e.code == GoogleSignInExceptionCode.canceled) {
+        throw const UserCanceledException();
+      }
+      rethrow;
     }
-
-    await _supabase.auth.signInWithIdToken(
-      provider: OAuthProvider.google,
-      idToken: idToken,
-      // accessToken is not required for Supabase authentication with Google
-    );
   }
 
   Future<void> signInWithFacebookNative() async {
@@ -78,6 +95,9 @@ class AuthRemoteDataSource {
     );
 
     if (result.status != LoginStatus.success) {
+      if (result.status == LoginStatus.cancelled) {
+        throw const UserCanceledException();
+      }
       throw const UnauthenticatedException();
     }
 

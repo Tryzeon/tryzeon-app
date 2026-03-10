@@ -33,14 +33,19 @@ class ValidationFailure extends Failure {
   const ValidationFailure([super.message]);
 }
 
+class UserCanceledFailure extends Failure {
+  const UserCanceledFailure([super.message]);
+}
+
 /// Maps Exceptions to Failures
 Failure mapExceptionToFailure(final Object e) {
+  final eString = e.toString();
+
   if (e is AuthException && (e as dynamic).code == 'otp_expired') {
     return const AuthFailure('驗證碼錯誤或過期');
   }
 
   // Handle ClientException with SocketException escaping Supabase
-  final eString = e.toString();
   if (eString.contains('SocketException') || eString.contains('ClientException')) {
     return const NetworkFailure();
   }
@@ -49,6 +54,7 @@ Failure mapExceptionToFailure(final Object e) {
     // Custom App Exceptions
     ServerException(message: final msg) => ServerFailure(msg),
     UnauthenticatedException(message: final msg) => AuthFailure(msg),
+    UserCanceledException(message: final msg) => UserCanceledFailure(msg),
 
     // Supabase Exceptions
     PostgrestException() => const ServerFailure(),

@@ -16,6 +16,9 @@ extension FailureMessage on Failure {
       ValidationFailure(message: final msg?) => msg,
       ValidationFailure() => '驗證失敗，請檢查您的方案是否已達上限',
 
+      UserCanceledFailure(message: final msg?) => msg,
+      UserCanceledFailure() => '',
+
       UnknownFailure(message: final msg?) => msg,
       UnknownFailure() => '發生未知錯誤，請稍後再試',
     };

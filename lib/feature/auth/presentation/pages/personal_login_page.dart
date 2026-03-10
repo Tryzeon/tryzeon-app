@@ -3,6 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
@@ -47,9 +48,12 @@ class PersonalLoginPage extends HookConsumerWidget {
       if (result.isSuccess) {
         context.go('/personal/home');
       } else {
+        final failure = result.getError()!;
+        if (failure is UserCanceledFailure) return;
+
         TopNotification.show(
           context,
-          message: result.getError()!.displayMessage(context),
+          message: failure.displayMessage(context),
           type: NotificationType.error,
         );
       }

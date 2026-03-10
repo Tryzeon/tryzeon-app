@@ -17,3 +17,8 @@ class ServerException extends AppException {
 class UnauthenticatedException extends AppException {
   const UnauthenticatedException([super.message]);
 }
+
+/// Thrown when the user cancels an ongoing operation (e.g. social login)
+class UserCanceledException extends AppException {
+  const UserCanceledException([super.message]);
+}
