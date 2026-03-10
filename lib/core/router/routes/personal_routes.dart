@@ -84,10 +84,10 @@ final personalFullScreenRoutes = [
         path: 'preferences',
         builder: (final context, final state) => const PreferencesPage(),
       ),
+      GoRoute(
+        path: 'subscription',
+        builder: (final context, final state) => const SubscriptionPage(),
+      ),
     ],
-  ),
-  GoRoute(
-    path: '/personal/subscription',
-    builder: (final context, final state) => const SubscriptionPage(),
   ),
 ];

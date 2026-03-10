@@ -14,7 +14,10 @@ extension FailureMessage on Failure {
       AuthFailure() => '登入狀態異常，請稍後再試',
 
       ValidationFailure(message: final msg?) => msg,
-      ValidationFailure() => '驗證失敗，請檢查您的方案是否已達上限',
+      ValidationFailure() => '驗證失敗，請檢查您的輸入',
+
+      RateLimitFailure(message: final msg?) => msg,
+      RateLimitFailure() => '使用次數已達上限，請升級您的方案',
 
       UserCanceledFailure(message: final msg?) => msg,
       UserCanceledFailure() => '',

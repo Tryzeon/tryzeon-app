@@ -33,6 +33,10 @@ class ValidationFailure extends Failure {
   const ValidationFailure([super.message]);
 }
 
+class RateLimitFailure extends Failure {
+  const RateLimitFailure([super.message]);
+}
+
 class UserCanceledFailure extends Failure {
   const UserCanceledFailure([super.message]);
 }
@@ -48,6 +52,14 @@ Failure mapExceptionToFailure(final Object e) {
   // Handle ClientException with SocketException escaping Supabase
   if (eString.contains('SocketException') || eString.contains('ClientException')) {
     return const NetworkFailure();
+  }
+
+  if (e is FunctionException) {
+    if (e.status == 429) {
+      return const RateLimitFailure();
+    } else if (e.status == 422) {
+      return const ServerFailure('AI 無法辨識圖片，請換一張試試');
+    }
   }
 
   return switch (e) {

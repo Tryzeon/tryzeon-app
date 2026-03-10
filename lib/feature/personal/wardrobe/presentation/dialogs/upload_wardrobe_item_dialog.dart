@@ -6,11 +6,12 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
+import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
-import 'package:tryzeon/feature/personal/subscription/presentation/pages/subscription_page.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_category.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 import 'package:typed_result/typed_result.dart';
+
 import '../mappers/category_ui_mapper.dart';
 
 class UploadWardrobeItemDialog extends HookConsumerWidget {
@@ -37,33 +38,6 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    void showUpgradeDialog() {
-      showDialog<void>(
-        context: context,
-        builder: (final ctx) => AlertDialog(
-          title: const Text('衣櫃已達上限'),
-          content: const Text(
-            '您的衣櫃容量已達上限\n'
-            '升級至更高方案以獲得更多儲存空間！',
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (final context) => const SubscriptionPage()),
-                );
-              },
-              child: const Text('前往訂閱'),
-            ),
-          ],
-        ),
-      );
-    }
-
     Future<void> handleUpload() async {
       isUploading.value = true;
 
@@ -85,7 +59,11 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
         final failure = result.getError()!;
 
         if (failure is ValidationFailure) {
-          showUpgradeDialog();
+          UpgradeDialog.show(
+            context,
+            title: '衣櫃已達上限',
+            content: '您的衣櫃容量已達上限\n升級至更高方案以獲得更多儲存空間！',
+          );
         } else {
           TopNotification.show(
             context,

@@ -1,4 +1,3 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/home/data/datasources/tryon_remote_data_source.dart';
@@ -28,18 +27,6 @@ class TryOnRepositoryImpl implements TryOnRepository {
       );
 
       return Ok(TryonResult(imageBase64: imageBase64));
-    } on FunctionException catch (e, stackTrace) {
-      String message;
-      switch (e.status) {
-        case 403:
-          message = '今日試穿次數已達上限，請明日再試或升級方案';
-        case 422:
-          message = 'AI 無法辨識圖片，請換一張試試';
-        default:
-          message = '虛擬試穿服務暫時無法使用，請稍後再試';
-          AppLogger.error('Virtual try-on failed (Backend Failure)', e, stackTrace);
-      }
-      return Err(ServerFailure(message));
     } catch (e, stackTrace) {
       AppLogger.error('Virtual try-on failed', e, stackTrace);
       return Err(mapExceptionToFailure(e));

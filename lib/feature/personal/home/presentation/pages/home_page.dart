@@ -11,6 +11,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
+import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
@@ -161,11 +162,20 @@ class HomePage extends HookConsumerWidget {
         loadingIndices.value = {...loadingIndices.value}..remove(newIndex);
         currentTryonIndex.value = tryonImages.value.length - 1;
 
-        TopNotification.show(
-          context,
-          message: result.getError()!.displayMessage(context),
-          type: NotificationType.error,
-        );
+        final failure = result.getError()!;
+        if (failure is RateLimitFailure) {
+          UpgradeDialog.show(
+            context,
+            title: '試穿次數已達上限',
+            content: '您的今日試穿次數已達上限\n升級至更高方案以獲得更多次數！',
+          );
+        } else {
+          TopNotification.show(
+            context,
+            message: failure.displayMessage(context),
+            type: NotificationType.error,
+          );
+        }
       }
     }
 

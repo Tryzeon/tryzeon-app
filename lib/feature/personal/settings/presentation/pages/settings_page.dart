@@ -106,7 +106,7 @@ class PersonalSettingsPage extends HookConsumerWidget {
                           icon: Icons.card_membership_rounded,
                           title: '訂閱方案',
                           subtitle: '升級您的帳號',
-                          onTap: () => context.push('/personal/subscription'),
+                          onTap: () => context.push('/personal/settings/subscription'),
                           color: colorScheme.tertiary,
                         ),
                       ],

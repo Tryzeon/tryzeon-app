@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
+import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/constants/qa_config.dart';
@@ -188,11 +190,20 @@ class ChatPage extends HookConsumerWidget {
         ];
       } else {
         // Show error message
-        TopNotification.show(
-          context,
-          message: result.getError()!.displayMessage(context),
-          type: NotificationType.error,
-        );
+        final failure = result.getError()!;
+        if (failure is RateLimitFailure) {
+          UpgradeDialog.show(
+            context,
+            title: '顧問對話已達上限',
+            content: '您的今日對話次數已達上限\n升級至更高方案以獲得更多次數！',
+          );
+        } else {
+          TopNotification.show(
+            context,
+            message: failure.displayMessage(context),
+            type: NotificationType.error,
+          );
+        }
       }
 
       scrollToBottom();
