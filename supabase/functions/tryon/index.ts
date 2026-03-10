@@ -24,15 +24,6 @@ interface TryOnResponse {
   image: string; // Base64 data URI
 }
 
-interface SubscriptionData {
-  plan: string;
-  daily_usage_count: number;
-  last_reset_date: string | null;
-  subscription_plans: {
-    tryon_daily_limit: number;
-  };
-}
-
 // --- Error Handling ---
 class AppError extends Error {
   constructor(public message: string, public statusCode: number = 500) {
@@ -70,43 +61,19 @@ class SubscriptionService {
   constructor(private supabase: SupabaseClient) { }
 
   async checkAndIncrementLimit(userId: string): Promise<void> {
-    const { data, error } = await this.supabase
-      .from('subscriptions')
-      .select('plan, daily_usage_count, last_reset_date, subscription_plans!plan(tryon_daily_limit)')
-      .eq('user_id', userId)
-      .single();
+    const { data: isAllowed, error: rpcError } = await this.supabase.rpc(
+      "increment_feature_usage",
+      { p_user_id: userId, p_feature_name: "tryon" }
+    );
 
-    if (error) throw new AppError(`Subscription check failed: ${error.message}`, 500);
-    if (!data) throw new AppError("User subscription not found", 404);
-
-    const subData = data as SubscriptionData;
-
-    if (!subData.subscription_plans) {
-      throw new AppError(`Plan configuration not found for plan: ${subData.plan}`, 500);
+    if (rpcError) {
+      console.error("RPC Error:", rpcError);
+      throw new AppError(`Failed to check usage limits: ${rpcError.message}`, 500);
     }
 
-    const dailyLimit = subData.subscription_plans.tryon_daily_limit;
-
-    const today = new Date().toISOString().split('T')[0];
-
-    let currentUsage = subData.daily_usage_count;
-    if (subData.last_reset_date !== today) {
-      currentUsage = 0;
-    }
-
-    if (currentUsage >= dailyLimit) {
+    if (!isAllowed) {
       throw new AppError('Daily try-on limit reached. Please try again tomorrow or upgrade your plan.', 403);
     }
-
-    const { error: updateError } = await this.supabase
-      .from('subscriptions')
-      .update({
-        daily_usage_count: currentUsage + 1,
-        last_reset_date: today,
-      })
-      .eq('user_id', userId);
-
-    if (updateError) throw new AppError(`Failed to update usage: ${updateError.message}`, 500);
   }
 }
 
