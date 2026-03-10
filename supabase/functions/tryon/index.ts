@@ -1,186 +1,119 @@
+// current model: nano-banana-pro-preview
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { GoogleGenerativeAI, GenerativeModel } from "npm:@google/generative-ai";
-import { createClient, SupabaseClient } from "jsr:@supabase/supabase-js@2";
+import { GoogleGenerativeAI } from "npm:@google/generative-ai";
+import { CONFIG, getAuthenticatedUserClient, getAdminClient } from "../_shared/supabase.ts";
 
-// --- Configuration & Constants ---
-const CONFIG = {
-  GEMINI_API_KEY: Deno.env.get("GEMINI_API_KEY"),
-  SUPABASE_URL: Deno.env.get("SUPABASE_URL"),
-  SUPABASE_SERVICE_ROLE_KEY: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
-  MODEL_NAME: "models/gemini-2.5-flash-image",
-  MAX_RETRIES: 1,
-};
+Deno.serve(async (req) => {
+  try {
+    // Auth & Setup
+    const { userClient, user, errorResponse } = await getAuthenticatedUserClient(req);
+    if (errorResponse) return errorResponse;
+    const adminClient = getAdminClient();
 
-
-// --- Types & Interfaces ---
-interface TryOnRequest {
-  avatarBase64?: string;
-  avatarPath?: string;
-  clothesBase64?: string;
-  clothesPath?: string;
-}
-
-interface TryOnResponse {
-  image: string; // Base64 data URI
-}
-
-// --- Error Handling ---
-class AppError extends Error {
-  constructor(public message: string, public statusCode: number = 500) {
-    super(message);
-    this.name = "AppError";
-  }
-}
-
-// --- Services ---
-
-class StorageService {
-  constructor(private supabase: SupabaseClient) { }
-
-  async fetchImage(path: string): Promise<string> {
-    let bucket: string;
-    if (path.includes('wardrobe')) {
-      bucket = 'wardrobe-images';
-    } else if (path.includes('product')) {
-      bucket = 'product-images';
-    } else if (path.includes('avatar')) {
-      bucket = 'user-avatars';
-    } else {
-      throw new AppError(`Cannot determine bucket from path: ${path}`, 400);
+    // Parse Body
+    const bodyText = await req.text();
+    if (!bodyText) {
+      return new Response(
+        JSON.stringify({ error: "Empty request body", code: "BAD_REQUEST" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
     }
 
-    const { data, error } = await this.supabase.storage.from(bucket).download(path);
-    if (error) throw new AppError(`Failed to download image from ${bucket}/${path}: ${error.message}`, 500);
+    const body = JSON.parse(bodyText);
+    const { avatarBase64, avatarPath, clothesBase64, clothesPath } = body;
 
-    const buf = new Uint8Array(await data.arrayBuffer());
-    return btoa(Array.from(buf, (b) => String.fromCharCode(b)).join(""));
-  }
-}
+    if (!avatarPath && !avatarBase64) {
+      return new Response(
+        JSON.stringify({ error: "Missing required fields", code: "VALIDATION_ERROR" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+    if (!clothesPath && !clothesBase64) {
+      return new Response(
+        JSON.stringify({ error: "Missing required fields", code: "VALIDATION_ERROR" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
 
-class SubscriptionService {
-  constructor(private supabase: SupabaseClient) { }
-
-  async checkAndIncrementLimit(userId: string): Promise<void> {
-    const { data: isAllowed, error: rpcError } = await this.supabase.rpc(
+    // User Quota Limit Check via RPC
+    const { data: isAllowed, error: rpcError } = await adminClient.rpc(
       "increment_feature_usage",
-      { p_user_id: userId, p_feature_name: "tryon" }
+      { p_user_id: user!.id, p_feature_name: "tryon" }
     );
 
     if (rpcError) {
       console.error("RPC Error:", rpcError);
-      throw new AppError(`Failed to check usage limits: ${rpcError.message}`, 500);
+      return new Response(
+        JSON.stringify({ error: "Internal server error", code: "INTERNAL_ERROR" }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     if (!isAllowed) {
-      throw new AppError('Daily try-on limit reached. Please try again tomorrow or upgrade your plan.', 403);
+      return new Response(
+        JSON.stringify({ error: "Rate limit exceeded", code: "RATE_LIMIT_EXCEEDED" }),
+        { status: 429, headers: { "Content-Type": "application/json" } }
+      );
     }
-  }
-}
 
-class AIService {
-  private model: GenerativeModel;
+    // Storage Fetch Helper
+    const fetchImageBase64 = async (path: string) => {
+      let bucket: string;
+      if (path.includes('wardrobe')) bucket = 'wardrobe-images';
+      else if (path.includes('product')) bucket = 'product-images';
+      else if (path.includes('avatar')) bucket = 'user-avatars';
+      else throw new Error(`Cannot determine bucket from path: ${path}`);
 
-  constructor(apiKey: string, modelName: string) {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    this.model = genAI.getGenerativeModel({
-      model: modelName,
+      const { data, error } = await userClient!.storage.from(bucket).download(path);
+      if (error) throw new Error(`Failed to download image from ${bucket}/${path}: ${error.message}`);
+
+      const buf = new Uint8Array(await data!.arrayBuffer());
+      return btoa(Array.from(buf, (b) => String.fromCharCode(b)).join(""));
+    };
+
+    const avatarImage = avatarBase64 ? avatarBase64 : await fetchImageBase64(avatarPath!);
+    const clothesImage = clothesBase64 ? clothesBase64 : await fetchImageBase64(clothesPath!);
+
+    // Generate Try-on via Gemini
+    const genAI = new GoogleGenerativeAI(CONFIG.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({
+      model: CONFIG.GEMINI_TRYON_MODEL,
       generationConfig: {
         responseModalities: ["TEXT", "IMAGE"],
         imageConfig: { aspect_ratio: "9:16" }
       }
     });
-  }
 
-  async generateTryOn(avatarBase64: string, clothesBase64: string): Promise<string> {
     const prompt = "Please dress the person in the first photo with the clothes from the second photo, keeping the person's face clear and posture natural, generating a complete composite image. It is extremely important that the details, wrinkles, patterns, styling, and overall look of the clothing when worn by the model are exactly consistent with the original clothing in the second photo. Output in a vertical 9:16 aspect ratio.";
 
-    for (let attempt = 1; attempt <= CONFIG.MAX_RETRIES; attempt++) {
-      try {
-        const result = await this.model.generateContent([
-          { text: prompt },
-          { inlineData: { data: avatarBase64, mimeType: "image/jpeg" } },
-          { inlineData: { data: clothesBase64, mimeType: "image/jpeg" } }
-        ]);
+    const result = await model.generateContent([
+      { text: prompt },
+      { inlineData: { data: avatarImage, mimeType: "image/jpeg" } },
+      { inlineData: { data: clothesImage, mimeType: "image/jpeg" } }
+    ]);
 
-        const candidates = result.response.candidates ?? [];
-        for (const c of candidates) {
-          for (const p of c.content.parts ?? []) {
-            if (p.inlineData?.mimeType?.startsWith("image/")) {
-              return p.inlineData.data;
-            }
-          }
+    const candidates = result.response.candidates ?? [];
+    for (const c of candidates) {
+      for (const p of c.content.parts ?? []) {
+        if (p.inlineData?.mimeType?.startsWith("image/")) {
+          const resultImageBase64 = p.inlineData.data;
+
+          return new Response(JSON.stringify({ image: `data:image/png;base64,${resultImageBase64}` }), {
+            headers: { "Content-Type": "application/json" }
+          });
         }
-      } catch (error) {
-        console.warn(`AI Generation attempt ${attempt} failed:`, error);
-        if (attempt === CONFIG.MAX_RETRIES) throw error;
       }
     }
-    throw new AppError("Unable to recognize image, please try another image!", 422);
-  }
-}
 
-// --- Main Handler ---
-
-Deno.serve(async (req) => {
-  try {
-    // 1. Init & Auth
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new AppError("Missing Authorization header", 401);
-
-    // Create user client for auth
-    const userClient = createClient(
-      CONFIG.SUPABASE_URL,
-      CONFIG.SUPABASE_SERVICE_ROLE_KEY,
-      { global: { headers: { Authorization: authHeader } } }
+    return new Response(
+      JSON.stringify({ error: "Image generation failed", code: "AI_GENERATION_FAILED" }),
+      { status: 422, headers: { "Content-Type": "application/json" } }
     );
-
-    // Create admin client for subscription updates (bypasses RLS)
-    const adminClient = createClient(
-      CONFIG.SUPABASE_URL,
-      CONFIG.SUPABASE_SERVICE_ROLE_KEY
-    );
-
-    const { data: { user }, error: authError } = await userClient.auth.getUser();
-    if (authError || !user) throw new AppError("Unauthorized", 401);
-
-    // 2. Parse Body
-    const body = await req.json() as TryOnRequest;
-    const { avatarBase64, avatarPath, clothesBase64, clothesPath } = body;
-
-    if (!avatarPath && !avatarBase64) throw new AppError("Avatar image or path not provided", 400);
-    if (!clothesPath && !clothesBase64) throw new AppError("Clothes image or path not provided", 400);
-
-    // 3. Check Subscription (use admin client to bypass RLS)
-    const subService = new SubscriptionService(adminClient);
-    await subService.checkAndIncrementLimit(user.id);
-
-    // 4. Prepare Images (use user client for storage access)
-    const storageService = new StorageService(userClient);
-    const avatarImage = avatarBase64 ? avatarBase64 : await storageService.fetchImage(avatarPath!);
-    const clothesImage = clothesBase64 ? clothesBase64 : await storageService.fetchImage(clothesPath!);
-
-    // 5. Generate Try-on
-    const aiService = new AIService(CONFIG.GEMINI_API_KEY, CONFIG.MODEL_NAME);
-    const resultImageBase64 = await aiService.generateTryOn(avatarImage, clothesImage);
-
-    // 6. Response
-    const response: TryOnResponse = {
-      image: `data:image/png;base64,${resultImageBase64}`
-    };
-
-    return new Response(JSON.stringify(response), {
-      headers: { "Content-Type": "application/json" }
-    });
-
   } catch (err) {
-    console.error(err);
-
-    const status = err instanceof AppError ? err.statusCode : 500;
-    const message = err instanceof AppError ? err.message : "Internal Server Error";
-
-    return new Response(JSON.stringify({ message }), {
-      status,
-      headers: { "Content-Type": "application/json" }
-    });
+    console.error("Unexpected error:", err);
+    return new Response(
+      JSON.stringify({ error: "Internal server error", code: "INTERNAL_ERROR" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
   }
 });
