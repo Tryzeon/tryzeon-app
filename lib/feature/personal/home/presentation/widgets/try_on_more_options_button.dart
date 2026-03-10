@@ -37,6 +37,7 @@ class TryOnMoreOptionsButton extends StatelessWidget {
                   onPressed: () {
                     showModalBottomSheet(
                       context: context,
+                      useRootNavigator: true,
                       builder: (final context) => SafeArea(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,

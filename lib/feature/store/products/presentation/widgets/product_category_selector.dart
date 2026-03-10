@@ -59,6 +59,7 @@ class ProductCategorySelector extends HookWidget {
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
+        useRootNavigator: true,
         builder: (final context) => _HierarchicalSelectionSheet(
           categoryTree: categoryTree,
           allCategories: allCategories,

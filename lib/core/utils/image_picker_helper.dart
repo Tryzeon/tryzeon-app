@@ -24,6 +24,7 @@ class ImagePickerHelper {
 
     final ImageSource? source = await showModalBottomSheet<ImageSource?>(
       context: context,
+      useRootNavigator: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),

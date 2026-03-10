@@ -9,6 +9,7 @@ void showSortOptionsDialog(final BuildContext context) {
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
+    useRootNavigator: true,
     builder: (final context) => const _SortOptionsDialogContent(),
   );
 }
@@ -137,17 +138,21 @@ class _SortOptionsDialogContent extends ConsumerWidget {
         right: 24,
         bottom: MediaQuery.of(context).viewInsets.bottom + 24,
       ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            buildHeader(),
-            const SizedBox(height: 24),
-            buildSortOptions(),
-            const SizedBox(height: 16),
-            buildAscendingSwitch(),
-          ],
+      child: SafeArea(
+        bottom: true,
+        top: false,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              buildHeader(),
+              const SizedBox(height: 24),
+              buildSortOptions(),
+              const SizedBox(height: 16),
+              buildAscendingSwitch(),
+            ],
+          ),
         ),
       ),
     );
