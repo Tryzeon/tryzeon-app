@@ -9,7 +9,7 @@ sealed class SubscriptionPlanInfo with _$SubscriptionPlanInfo {
     required final String name,
     required final int price,
     required final int wardrobeLimit,
-    required final int tryonDailyLimit,
+    required final int tryonLimit,
     required final int sortOrder,
     required final bool isActive,
   }) = _SubscriptionPlanInfo;

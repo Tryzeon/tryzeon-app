@@ -12,7 +12,7 @@ class SubscriptionPlanCollection {
   late String name;
   late int price;
   late int wardrobeLimit;
-  late int tryonDailyLimit;
+  late int tryonLimit;
   @Index()
   late int sortOrder;
   late bool isActive;

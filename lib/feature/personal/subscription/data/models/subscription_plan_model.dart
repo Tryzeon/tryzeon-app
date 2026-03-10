@@ -9,7 +9,7 @@ class SubscriptionPlanModel {
     required this.name,
     required this.price,
     required this.wardrobeLimit,
-    required this.tryonDailyLimit,
+    required this.tryonLimit,
     required this.sortOrder,
     required this.isActive,
   });
@@ -21,7 +21,7 @@ class SubscriptionPlanModel {
   final String name;
   final int price;
   final int wardrobeLimit;
-  final int tryonDailyLimit;
+  final int tryonLimit;
   final int sortOrder;
   final bool isActive;
 
