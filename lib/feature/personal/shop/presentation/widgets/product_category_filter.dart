@@ -164,6 +164,8 @@ class ProductCategoryFilter extends HookConsumerWidget {
                                             ? CachedNetworkImage(
                                                 imageUrl: imageUrl,
                                                 fit: BoxFit.cover,
+                                                memCacheWidth: 180,
+                                                memCacheHeight: 180,
                                                 placeholder: (final context, final url) =>
                                                     Center(
                                                       child: SizedBox(
