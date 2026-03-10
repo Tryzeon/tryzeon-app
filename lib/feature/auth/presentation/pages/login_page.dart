@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:tryzeon/core/presentation/widgets/version_info.dart';
 import 'package:tryzeon/feature/auth/presentation/widgets/login_scaffold.dart';
 // Import AppTheme to access static colors if needed, or just use Theme.of(context)
 
@@ -63,6 +65,14 @@ class LoginPage extends HookConsumerWidget {
             ),
 
             SizedBox(height: screenHeight * 0.05),
+
+            VersionInfo(
+              versionProvider: (final ref) async {
+                final packageInfo = await PackageInfo.fromPlatform();
+                return '${packageInfo.version} (${packageInfo.buildNumber})';
+              },
+            ),
+            const SizedBox(height: 24),
           ],
         ),
       ),
