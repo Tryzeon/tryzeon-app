@@ -138,7 +138,7 @@ class StoreOnboardingPage extends HookConsumerWidget {
               // 內容區域
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: () async => ref.refresh(storeProfileProvider.future),
+                  onRefresh: () => refreshStoreProfile(ref),
                   child: Center(
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),

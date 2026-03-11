@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
@@ -54,4 +57,18 @@ Future<StoreProfile?> storeProfile(final Ref ref) async {
     throw result.getError()!;
   }
   return result.get();
+}
+
+/// 強制刷新店家資料和標誌
+Future<void> refreshStoreProfile(final WidgetRef ref) async {
+  final getStoreProfileUseCase = ref.read(getStoreProfileUseCaseProvider);
+  await getStoreProfileUseCase(forceRefresh: true);
+  try {
+    await Future.wait([
+      ref.refresh(storeProfileProvider.future),
+    ]);
+  } catch (_) {
+    // Provider 刷新失敗時（例如網絡錯誤），忽略異常
+    // Provider 會自動進入 error 狀態，UI 會顯示 ErrorView 或舊資料
+  }
 }
