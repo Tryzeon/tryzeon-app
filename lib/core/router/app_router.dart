@@ -44,6 +44,11 @@ Raw<GoRouter> appRouter(final Ref ref) {
       // 3. 商家 Onboarding 攔截 (排除 Deep Link 與 Onboarding 頁面本身)
       //    使用 ref.read 取得最新的 store profile 狀態
       final storeProfileAsync = ref.read(storeProfileProvider);
+
+      if (path == '/store/onboarding' && storeProfileAsync.asData?.value != null) {
+        return '/store/home';
+      }
+
       if (_needsStoreOnboarding(path, storeProfileAsync)) {
         return '/store/onboarding';
       }
