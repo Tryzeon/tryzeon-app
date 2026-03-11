@@ -25,9 +25,7 @@ Raw<GoRouter> appRouter(final Ref ref) {
   final authStream = supabase.auth.onAuthStateChange;
   final refreshListenable = AuthRefreshListenable(authStream);
 
-  ref.onDispose(() {
-    refreshListenable.dispose();
-  });
+  ref.onDispose(refreshListenable.dispose);
 
   final router = GoRouter(
     initialLocation: '/auth/login',
