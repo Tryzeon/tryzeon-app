@@ -66,3 +66,7 @@ app.*.map.json
 # supabase temp files
 */.temp
 .worktrees/
+
+# Worktrees
+.worktrees/
+
