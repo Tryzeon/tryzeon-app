@@ -76,6 +76,9 @@ class PersonalProfileSettingsPage extends HookConsumerWidget {
             Expanded(
               child: profileAsync.when(
                 data: (final profile) {
+                  if (profile == null) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
                   return _PersonalProfileForm(profile: profile);
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),

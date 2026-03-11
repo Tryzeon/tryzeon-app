@@ -223,6 +223,9 @@ class _ProfileHeader extends HookConsumerWidget {
               child: ClipOval(
                 child: profileAsync.when(
                   data: (final profile) {
+                    if (profile == null) {
+                      return Icon(Icons.person, size: 36, color: colorScheme.primary);
+                    }
                     return avatarFileAsync.when(
                       data: (final file) {
                         if (file != null) {
@@ -253,6 +256,7 @@ class _ProfileHeader extends HookConsumerWidget {
                 children: [
                   profileAsync.maybeWhen(
                     data: (final profile) {
+                      if (profile == null) return const SizedBox.shrink();
                       final email = profile.email;
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

@@ -75,6 +75,8 @@ class HomePage extends HookConsumerWidget {
 
       // Upload
       final profile = await ref.read(userProfileProvider.future);
+      if (profile == null) return;
+
       final result = await ref.read(updateUserProfileUseCaseProvider)(
         original: profile,
         target: profile,

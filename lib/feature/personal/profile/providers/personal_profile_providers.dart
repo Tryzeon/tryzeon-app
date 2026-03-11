@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
+import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_local_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/repositories/user_profile_repository_impl.dart';
@@ -46,7 +47,10 @@ UpdateUserProfile updateUserProfileUseCase(final Ref ref) {
 }
 
 @riverpod
-Future<UserProfile> userProfile(final Ref ref) async {
+Future<UserProfile?> userProfile(final Ref ref) async {
+  final isLoggedIn = ref.watch(isAuthenticatedProvider);
+  if (!isLoggedIn) return null;
+
   final getUserProfileUseCase = ref.watch(getUserProfileUseCaseProvider);
   final result = await getUserProfileUseCase();
   if (result.isFailure) {
@@ -58,7 +62,7 @@ Future<UserProfile> userProfile(final Ref ref) async {
 @riverpod
 Future<File?> avatarFile(final Ref ref) async {
   final profile = await ref.watch(userProfileProvider.future);
-  if (profile.avatarPath == null || profile.avatarPath!.isEmpty) {
+  if (profile == null || profile.avatarPath == null || profile.avatarPath!.isEmpty) {
     return null;
   }
 
