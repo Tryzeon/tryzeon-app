@@ -1,0 +1,89 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/feature/personal/onboarding/providers/personal_onboarding_providers.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/style_preference.dart';
+import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
+import 'package:typed_result/typed_result.dart';
+
+part 'onboarding_notifier.freezed.dart';
+part 'onboarding_notifier.g.dart';
+
+@freezed
+sealed class OnboardingState with _$OnboardingState {
+  const factory OnboardingState({
+    @Default(0) final int currentStep,
+    final Gender? gender,
+    final AgeRange? ageRange,
+    @Default([]) final List<StylePreference> stylePreferences,
+    @Default(false) final bool isSubmitting,
+  }) = _OnboardingState;
+}
+
+@riverpod
+class OnboardingNotifier extends _$OnboardingNotifier {
+  @override
+  OnboardingState build() => const OnboardingState();
+
+  void setGender(final Gender gender) {
+    state = state.copyWith(gender: gender);
+  }
+
+  void setAgeRange(final AgeRange ageRange) {
+    state = state.copyWith(ageRange: ageRange);
+  }
+
+  void toggleStylePreference(final StylePreference style) {
+    final current = List<StylePreference>.from(state.stylePreferences);
+    if (current.contains(style)) {
+      current.remove(style);
+    } else {
+      current.add(style);
+    }
+    state = state.copyWith(stylePreferences: current);
+  }
+
+  void nextStep() {
+    if (state.currentStep < 2) {
+      state = state.copyWith(currentStep: state.currentStep + 1);
+    }
+  }
+
+  void previousStep() {
+    if (state.currentStep > 0) {
+      state = state.copyWith(currentStep: state.currentStep - 1);
+    }
+  }
+
+  bool get canProceed => switch (state.currentStep) {
+    0 => state.gender != null,
+    1 => state.ageRange != null,
+    2 => true, // Style is skippable
+    _ => false,
+  };
+
+  Future<Result<void, Failure>> completeOnboarding() async {
+    if (state.gender == null || state.ageRange == null) {
+      return const Err(ValidationFailure('請完成所有必填步驟'));
+    }
+
+    state = state.copyWith(isSubmitting: true);
+
+    final useCase = ref.read(completeOnboardingUseCaseProvider);
+    final result = await useCase(
+      gender: state.gender!,
+      ageRange: state.ageRange!,
+      stylePreferences: state.stylePreferences.isEmpty ? null : state.stylePreferences,
+    );
+
+    state = state.copyWith(isSubmitting: false);
+
+    if (result.isSuccess) {
+      ref.invalidate(userProfileProvider);
+    }
+
+    return result;
+  }
+}

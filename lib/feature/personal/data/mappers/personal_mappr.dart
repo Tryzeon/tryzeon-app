@@ -5,6 +5,9 @@ import '../../../../feature/store/products/data/models/product_model.dart';
 import '../../../../feature/store/products/domain/entities/product.dart';
 import '../../profile/data/collections/user_profile_collection.dart';
 import '../../profile/data/models/user_profile_model.dart';
+import '../../profile/domain/entities/age_range.dart';
+import '../../profile/domain/entities/gender.dart';
+import '../../profile/domain/entities/style_preference.dart';
 import '../../profile/domain/entities/user_profile.dart';
 import '../../shop/data/models/shop_product_model.dart';
 import '../../shop/data/models/shop_store_info_model.dart';
@@ -28,8 +31,26 @@ import 'personal_mappr.auto_mappr.dart';
 @AutoMappr(
   [
     // UserProfile mappings
-    MapType<UserProfileModel, UserProfile>(),
-    MapType<UserProfile, UserProfileModel>(),
+    MapType<UserProfileModel, UserProfile>(
+      fields: [
+        Field('gender', custom: UserProfileMapprHelper.genderFromString),
+        Field('ageRange', custom: UserProfileMapprHelper.ageRangeFromString),
+        Field(
+          'stylePreferences',
+          custom: UserProfileMapprHelper.stylePreferencesFromStrings,
+        ),
+      ],
+    ),
+    MapType<UserProfile, UserProfileModel>(
+      fields: [
+        Field('gender', custom: UserProfileMapprHelper.genderToString),
+        Field('ageRange', custom: UserProfileMapprHelper.ageRangeToString),
+        Field(
+          'stylePreferences',
+          custom: UserProfileMapprHelper.stylePreferencesToStrings,
+        ),
+      ],
+    ),
     MapType<UserProfileModel, UserProfileCollection>(),
     MapType<UserProfileCollection, UserProfileModel>(),
 
@@ -72,4 +93,31 @@ import 'personal_mappr.auto_mappr.dart';
 )
 class PersonalMappr extends $PersonalMappr {
   const PersonalMappr();
+}
+
+class UserProfileMapprHelper {
+  static Gender? genderFromString(final UserProfileModel source) =>
+      source.gender != null ? Gender.tryFromString(source.gender!) : null;
+
+  static String? genderToString(final UserProfile source) =>
+      source.gender?.value;
+
+  static AgeRange? ageRangeFromString(final UserProfileModel source) =>
+      source.ageRange != null
+          ? AgeRange.tryFromString(source.ageRange!)
+          : null;
+
+  static String? ageRangeToString(final UserProfile source) =>
+      source.ageRange?.value;
+
+  static List<StylePreference>? stylePreferencesFromStrings(
+    final UserProfileModel source,
+  ) =>
+      source.stylePreferences
+          ?.map(StylePreference.tryFromString)
+          .whereType<StylePreference>()
+          .toList();
+
+  static List<String>? stylePreferencesToStrings(final UserProfile source) =>
+      source.stylePreferences?.map((final e) => e.value).toList();
 }

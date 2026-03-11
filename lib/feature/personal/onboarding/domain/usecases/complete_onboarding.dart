@@ -11,7 +11,6 @@ class CompleteOnboarding {
   final UserProfileRepository _repository;
 
   Future<Result<void, Failure>> call({
-    required final String name,
     required final Gender gender,
     required final AgeRange ageRange,
     final List<StylePreference>? stylePreferences,
@@ -24,7 +23,6 @@ class CompleteOnboarding {
 
     final original = profileResult.get()!;
     final target = original.copyWith(
-      name: name,
       gender: gender,
       ageRange: ageRange,
       stylePreferences: stylePreferences,
