@@ -22,9 +22,20 @@ final _storeDeepLinkPattern = RegExp(
 @riverpod
 Raw<GoRouter> appRouter(final Ref ref) {
   final supabase = Supabase.instance.client;
-  final refreshListenable = AuthRefreshListenable(supabase.auth.onAuthStateChange);
+  final authStream = supabase.auth.onAuthStateChange;
+  final refreshListenable = AuthRefreshListenable(authStream);
 
-  ref.onDispose(refreshListenable.dispose);
+  final authSub = authStream.listen((final data) {
+    if (data.session == null) {
+      ref.invalidate(userProfileProvider);
+      ref.invalidate(storeProfileProvider);
+    }
+  });
+
+  ref.onDispose(() {
+    refreshListenable.dispose();
+    authSub.cancel();
+  });
 
   final router = GoRouter(
     initialLocation: '/auth/login',
