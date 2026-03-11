@@ -18,8 +18,10 @@ migrate_working_dir/
 *.iws
 .idea/
 
-# VSCode
-.vscode/
+# IDE
+.vscode
+.claude
+.agent
 
 # Flutter/Dart/Pub related
 **/doc/api/
