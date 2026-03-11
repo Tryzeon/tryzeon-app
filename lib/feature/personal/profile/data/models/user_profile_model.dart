@@ -11,6 +11,10 @@ class UserProfileModel {
     this.email,
     this.measurements,
     this.avatarPath,
+    this.gender,
+    this.ageRange,
+    this.stylePreferences,
+    this.isOnboarded = false,
   });
 
   factory UserProfileModel.fromJson(final Map<String, dynamic> json) =>
@@ -21,5 +25,11 @@ class UserProfileModel {
   final String? email;
   final MeasurementsModel? measurements;
   final String? avatarPath;
+  final String? gender;
+  final String? ageRange;
+  final List<String>? stylePreferences;
+  @JsonKey(defaultValue: false)
+  final bool isOnboarded;
+
   Map<String, dynamic> toJson() => _$UserProfileModelToJson(this);
 }

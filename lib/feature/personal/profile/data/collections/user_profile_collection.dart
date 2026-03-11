@@ -15,4 +15,9 @@ class UserProfileCollection {
   String? avatarPath;
 
   MeasurementsCollection? measurements;
+
+  String? gender;
+  String? ageRange;
+  List<String>? stylePreferences;
+  late bool isOnboarded;
 }

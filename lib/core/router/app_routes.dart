@@ -15,6 +15,7 @@ abstract final class AppRoutes {
   static const String personalWardrobe = '/personal/wardrobe';
 
   // Personal (full screen, outside shell)
+  static const String personalOnboarding = '/personal/onboarding';
   static const String personalSettings = '/personal/settings';
   static const String personalSettingsProfile = '/personal/settings/profile';
   static const String personalSettingsPreferences = '/personal/settings/preferences';

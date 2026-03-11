@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:tryzeon/core/router/shells/personal_shell.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/pages/chat_page.dart';
 import 'package:tryzeon/feature/personal/home/presentation/pages/home_page.dart';
+import 'package:tryzeon/feature/personal/onboarding/presentation/pages/personal_onboarding_page.dart';
 import 'package:tryzeon/feature/personal/settings/presentation/pages/preferences_page.dart';
 import 'package:tryzeon/feature/personal/settings/presentation/pages/profile_setting_page.dart';
 import 'package:tryzeon/feature/personal/settings/presentation/pages/settings_page.dart';
@@ -89,5 +90,9 @@ final personalFullScreenRoutes = [
         builder: (final context, final state) => const SubscriptionPage(),
       ),
     ],
+  ),
+  GoRoute(
+    path: '/personal/onboarding',
+    builder: (final context, final state) => const PersonalOnboardingPage(),
   ),
 ];

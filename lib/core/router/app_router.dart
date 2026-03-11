@@ -8,6 +8,7 @@ import 'package:tryzeon/core/router/routes/personal_routes.dart';
 import 'package:tryzeon/core/router/routes/store_routes.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
+import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -46,6 +47,12 @@ Raw<GoRouter> appRouter(final Ref ref) {
         return '/store/onboarding';
       }
 
+      // 4. 個人 Onboarding 攔截
+      final userProfileAsync = ref.read(userProfileProvider);
+      if (_needsPersonalOnboarding(path, userProfileAsync)) {
+        return '/personal/onboarding';
+      }
+
       return null;
     },
     routes: [
@@ -61,6 +68,11 @@ Raw<GoRouter> appRouter(final Ref ref) {
   // 監聽 store profile 變化，觸發 redirect 重新評估，
   // 而不是重建整個 GoRouter（避免覆蓋 deep link 導航）。
   ref.listen(storeProfileProvider, (final _, final __) {
+    refreshListenable.refresh();
+  });
+
+  // 監聽 user profile 變化，觸發 redirect 重新評估（例如完成 onboarding 後）
+  ref.listen(userProfileProvider, (final _, final __) {
     refreshListenable.refresh();
   });
 
@@ -86,4 +98,18 @@ bool _needsStoreOnboarding(
 
   final hasProfile = storeProfileAsync.asData?.value != null;
   return !hasProfile && !storeProfileAsync.isLoading;
+}
+
+/// 判斷目前個人路徑是否需要被 Onboarding 攔截。
+bool _needsPersonalOnboarding(
+  final String path,
+  final AsyncValue<dynamic> userProfileAsync,
+) {
+  if (!path.startsWith('/personal')) return false;
+  if (path.startsWith('/personal/onboarding')) return false;
+
+  final profile = userProfileAsync.asData?.value;
+  final isOnboarded = profile?.isOnboarded ?? false;
+
+  return !isOnboarded && !userProfileAsync.isLoading;
 }
