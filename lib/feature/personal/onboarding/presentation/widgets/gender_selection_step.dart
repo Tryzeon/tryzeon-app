@@ -27,7 +27,9 @@ class GenderSelectionStep extends HookConsumerWidget {
             (final gender) => RadioListTile<Gender>(
               title: Text(gender.label),
               value: gender,
+              // ignore: deprecated_member_use
               groupValue: onboardingState.gender,
+              // ignore: deprecated_member_use
               onChanged: (final value) {
                 if (value != null) notifier.setGender(value);
               },

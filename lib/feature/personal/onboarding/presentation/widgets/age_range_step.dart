@@ -27,7 +27,9 @@ class AgeRangeStep extends HookConsumerWidget {
             (final ageRange) => RadioListTile<AgeRange>(
               title: Text(ageRange.label),
               value: ageRange,
+              // ignore: deprecated_member_use
               groupValue: onboardingState.ageRange,
+              // ignore: deprecated_member_use
               onChanged: (final value) {
                 if (value != null) {
                   notifier.setAgeRange(value);
