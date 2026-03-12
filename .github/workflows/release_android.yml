@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # ───── Java ─────
       - name: Setup Java
@@ -25,7 +25,7 @@ jobs:
 
       # ───── Gradle cache (read-only, reuses CI cache from main) ─────
       - name: Restore Gradle cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: |
             ~/.gradle/caches

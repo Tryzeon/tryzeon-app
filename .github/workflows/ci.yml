@@ -34,7 +34,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -67,7 +67,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -81,7 +81,7 @@ jobs:
 
       - name: Restore Gradle cache
         id: cache-gradle
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: |
             ~/.gradle/caches
@@ -113,7 +113,7 @@ jobs:
 
       - name: Save Gradle cache
         if: github.ref == 'refs/heads/main' && steps.cache-gradle.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: |
             ~/.gradle/caches
@@ -130,7 +130,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
@@ -150,7 +150,7 @@ jobs:
 
       - name: Restore CocoaPods cache
         id: cache-pods
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: |
             ios/Pods
@@ -175,7 +175,7 @@ jobs:
 
       - name: Save CocoaPods cache
         if: github.ref == 'refs/heads/main' && steps.cache-pods.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: |
             ios/Pods

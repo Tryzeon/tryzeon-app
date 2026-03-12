@@ -14,7 +14,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # ───── Xcode ─────
       - name: Setup Xcode
@@ -37,7 +37,7 @@ jobs:
 
       - name: Restore CocoaPods cache
         id: cache-pods
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: |
             ios/Pods
@@ -62,7 +62,7 @@ jobs:
 
       - name: Save CocoaPods cache
         if: steps.cache-pods.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: |
             ios/Pods
