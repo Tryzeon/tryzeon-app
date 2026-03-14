@@ -1,4 +1,5 @@
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/home/domain/repositories/tryon_repository.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
@@ -21,6 +22,7 @@ class TryonUseCase {
     final String? customAvatarBase64,
     final String? clothesBase64,
     final String? clothesPath,
+    required final TryOnMode mode,
   }) async {
     // Business Logic: If no custom avatar provided, fetch current user's avatar path
     String? avatarPathToUse;
@@ -40,6 +42,7 @@ class TryonUseCase {
       avatarPath: avatarPathToUse,
       clothesBase64: clothesBase64,
       clothesPath: clothesPath,
+      mode: mode,
     );
   }
 }

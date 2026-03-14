@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/home/presentation/pages/home_page.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry_scope.dart';
 
@@ -20,10 +21,13 @@ class PersonalShell extends HookConsumerWidget {
       return homePageController.dispose;
     }, [homePageController]);
 
-    Future<void> tryOnFromStorage(final String clothesPath) async {
+    Future<void> tryOnFromStorage(
+      final String clothesPath, {
+      final TryOnMode mode = TryOnMode.photo,
+    }) async {
       navigationShell.goBranch(0);
       if (homePageController.tryOnFromStorage != null) {
-        await homePageController.tryOnFromStorage!(clothesPath);
+        await homePageController.tryOnFromStorage!(clothesPath, mode: mode);
       }
     }
 

@@ -141,7 +141,7 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
           );
         },
         loading: () => const SizedBox.shrink(),
-        error: (final _, final __) => const SizedBox.shrink(),
+        error: (final _, final _) => const SizedBox.shrink(),
       );
     }
 

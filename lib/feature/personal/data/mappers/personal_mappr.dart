@@ -97,26 +97,22 @@ class PersonalMappr extends $PersonalMappr {
 
 class UserProfileMapprHelper {
   static Gender? genderFromString(final UserProfileModel source) =>
-    source.gender != null ? Gender.tryFromString(source.gender!) : null;
+      source.gender != null ? Gender.tryFromString(source.gender!) : null;
 
-  static String? genderToString(final UserProfile source) =>
-    source.gender?.value;
+  static String? genderToString(final UserProfile source) => source.gender?.value;
 
   static AgeRange? ageRangeFromString(final UserProfileModel source) =>
-    source.ageRange != null
-      ? AgeRange.tryFromString(source.ageRange!)
-      : null;
+      source.ageRange != null ? AgeRange.tryFromString(source.ageRange!) : null;
 
-  static String? ageRangeToString(final UserProfile source) =>
-    source.ageRange?.value;
+  static String? ageRangeToString(final UserProfile source) => source.ageRange?.value;
 
   static List<StylePreference>? stylePreferencesFromStrings(
     final UserProfileModel source,
   ) => source.stylePreferences
-          ?.map(StylePreference.tryFromString)
-          .whereType<StylePreference>()
-          .toList();
+      ?.map(StylePreference.tryFromString)
+      .whereType<StylePreference>()
+      .toList();
 
   static List<String>? stylePreferencesToStrings(final UserProfile source) =>
-    source.stylePreferences?.map((final e) => e.value).toList();
+      source.stylePreferences?.map((final e) => e.value).toList();
 }

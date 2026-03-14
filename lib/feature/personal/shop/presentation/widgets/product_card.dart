@@ -6,10 +6,12 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry_scope.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_status.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
+import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 class ProductCard extends HookConsumerWidget {
@@ -24,6 +26,9 @@ class ProductCard extends HookConsumerWidget {
     final textTheme = Theme.of(context).textTheme;
 
     final hasLoggedView = useState(false);
+
+    final subscription = ref.watch(subscriptionProvider).value;
+    final isMax = subscription?.isMax ?? false;
 
     void onVisibilityChanged(final VisibilityInfo info) {
       // Skip analytics for skeleton products
@@ -50,7 +55,7 @@ class ProductCard extends HookConsumerWidget {
       }
     }
 
-    Future<void> handleTryon() async {
+    Future<void> handleTryon({final TryOnMode mode = TryOnMode.photo}) async {
       // 記錄虛擬試穿點擊次數 (非同步執行，不阻塞 UI)
       ref
           .read(incrementTryonCountProvider)
@@ -75,7 +80,29 @@ class ProductCard extends HookConsumerWidget {
       if (!context.mounted) return;
 
       final personalEntry = PersonalEntryScope.of(context);
-      await personalEntry?.tryOnFromStorage(product.imagePath);
+      await personalEntry?.tryOnFromStorage(product.imagePath, mode: mode);
+    }
+
+    Widget buildTryonButton() {
+      final buttonColor = fitStatus == null
+          ? colorScheme.primary
+          : getFitColor(fitStatus!);
+
+      return Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: buttonColor,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: buttonColor.withValues(alpha: 0.4),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Icon(Icons.auto_awesome, color: colorScheme.onPrimary, size: 20),
+      );
     }
 
     return GestureDetector(
@@ -117,39 +144,38 @@ class ProductCard extends HookConsumerWidget {
                       right: 8,
                       child: Material(
                         color: Colors.transparent,
-                        child: InkWell(
-                          onTap: handleTryon,
-                          borderRadius: BorderRadius.circular(20),
-                          child: Skeleton.ignore(
-                            child: Builder(
-                              builder: (final context) {
-                                final buttonColor = fitStatus == null
-                                    ? colorScheme.primary
-                                    : getFitColor(fitStatus!);
-
-                                return Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: buttonColor,
-                                    borderRadius: BorderRadius.circular(20),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: buttonColor.withValues(alpha: 0.4),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
+                        child: isMax
+                            ? PopupMenuButton<TryOnMode>(
+                                onSelected: (final mode) => handleTryon(mode: mode),
+                                itemBuilder: (final context) => [
+                                  const PopupMenuItem(
+                                    value: TryOnMode.photo,
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.photo_outlined),
+                                        SizedBox(width: 8),
+                                        Text('照片試穿'),
+                                      ],
+                                    ),
                                   ),
-                                  child: Icon(
-                                    Icons.auto_awesome,
-                                    color: colorScheme.onPrimary,
-                                    size: 20,
+                                  const PopupMenuItem(
+                                    value: TryOnMode.video,
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.videocam_outlined),
+                                        SizedBox(width: 8),
+                                        Text('影片試穿'),
+                                      ],
+                                    ),
                                   ),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
+                                ],
+                                child: Skeleton.ignore(child: buildTryonButton()),
+                              )
+                            : InkWell(
+                                onTap: handleTryon,
+                                borderRadius: BorderRadius.circular(20),
+                                child: Skeleton.ignore(child: buildTryonButton()),
+                              ),
                       ),
                     ),
                   ],
@@ -167,10 +193,7 @@ class ProductCard extends HookConsumerWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      '\$${product.price}',
-                      style: textTheme.labelLarge?.copyWith(color: colorScheme.primary),
-                    ),
+                    Text('\$${product.price}', style: textTheme.labelLarge),
                     Text(
                       product.storeInfo.name,
                       style: textTheme.bodySmall,

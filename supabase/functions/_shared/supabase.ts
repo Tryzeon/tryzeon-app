@@ -6,6 +6,7 @@ export const CONFIG = {
     GEMINI_API_KEY: Deno.env.get("GEMINI_API_KEY")!,
     GEMINI_CHAT_MODEL: Deno.env.get("GEMINI_CHAT_MODEL"),
     GEMINI_TRYON_MODEL: Deno.env.get("GEMINI_TRYON_MODEL"),
+    GEMINI_VIDEO_MODEL: Deno.env.get("GEMINI_VIDEO_MODEL"),
 }
 
 /**

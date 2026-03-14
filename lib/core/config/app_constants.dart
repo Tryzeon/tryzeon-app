@@ -51,6 +51,13 @@ class AppConstants {
 
   // Subscription Plan IDs
   static const String planFree = 'free';
+  static const String planPro = 'pro';
+  static const String planMax = 'max';
+
+  // TryOn Params
+  static const String paramMode = 'mode';
+  static const String modePhoto = 'photo';
+  static const String modeVideo = 'video';
 
   // Shared Preferences Keys
   static const String keyRecommendNearbyShops = 'recommend_nearby_shops';

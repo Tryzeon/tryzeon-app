@@ -1,0 +1,1 @@
+enum TryOnMode { photo, video }

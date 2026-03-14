@@ -239,12 +239,12 @@ class _ProfileHeader extends HookConsumerWidget {
                         return _buildPlaceholder(colorScheme, profile.name);
                       },
                       loading: () => const Center(child: CircularProgressIndicator()),
-                      error: (final _, final __) =>
+                      error: (final _, final _) =>
                           _buildPlaceholder(colorScheme, profile.name),
                     );
                   },
                   loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (final _, final __) =>
+                  error: (final _, final _) =>
                       Icon(Icons.person, size: 36, color: colorScheme.primary),
                 ),
               ),

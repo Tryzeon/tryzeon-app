@@ -10,6 +10,7 @@ class SubscriptionPlanModel {
     required this.price,
     required this.wardrobeLimit,
     required this.tryonLimit,
+    required this.videoLimit,
     required this.sortOrder,
     required this.isActive,
   });
@@ -22,6 +23,7 @@ class SubscriptionPlanModel {
   final int price;
   final int wardrobeLimit;
   final int tryonLimit;
+  final int videoLimit;
   final int sortOrder;
   final bool isActive;
 

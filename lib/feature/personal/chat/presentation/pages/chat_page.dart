@@ -83,7 +83,7 @@ class ChatBubble extends HookConsumerWidget {
               ),
               shrinkWrap: true,
             ),
-            if (child != null) child!,
+            ?child,
           ],
         ),
       ),
