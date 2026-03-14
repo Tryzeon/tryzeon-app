@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../home/domain/entities/tryon_mode.dart';
 import '../home/presentation/pages/home_page.dart';
 
 class PersonalEntryScope extends InheritedWidget {
@@ -11,7 +12,7 @@ class PersonalEntryScope extends InheritedWidget {
     required super.child,
   });
 
-  final Future<void> Function(String clothesPath) tryOnFromStorage;
+  final Future<void> Function(String clothesPath, {TryOnMode mode}) tryOnFromStorage;
   final HomePageController homePageController;
 
   static PersonalEntryScope? of(final BuildContext context) {

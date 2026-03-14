@@ -18,7 +18,11 @@ class SubscriptionPage extends HookConsumerWidget {
   }
 
   List<String> _features(final SubscriptionPlanInfo planInfo) {
-    return ['每日 ${planInfo.tryonLimit} 次試穿', '衣櫃容量 ${planInfo.wardrobeLimit} 件'];
+    return [
+      '衣櫃容量 ${planInfo.wardrobeLimit} 件',
+      '每日 ${planInfo.tryonLimit} 次照片試穿',
+      '每日 ${planInfo.videoLimit} 次影片試穿',
+    ];
   }
 
   Future<void> _handleSubscriptionChange(

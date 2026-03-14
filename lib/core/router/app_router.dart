@@ -73,12 +73,12 @@ Raw<GoRouter> appRouter(final Ref ref) {
 
   // 監聽 store profile 變化，觸發 redirect 重新評估，
   // 而不是重建整個 GoRouter（避免覆蓋 deep link 導航）。
-  ref.listen(storeProfileProvider, (final _, final __) {
+  ref.listen(storeProfileProvider, (final _, final _) {
     refreshListenable.refresh();
   });
 
   // 監聽 user profile 變化，觸發 redirect 重新評估（例如完成 onboarding 後）
-  ref.listen(userProfileProvider, (final _, final __) {
+  ref.listen(userProfileProvider, (final _, final _) {
     refreshListenable.refresh();
   });
 

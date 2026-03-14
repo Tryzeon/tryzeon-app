@@ -13,6 +13,7 @@ class SubscriptionPlanCollection {
   late int price;
   late int wardrobeLimit;
   late int tryonLimit;
+  late int videoLimit;
   @Index()
   late int sortOrder;
   late bool isActive;

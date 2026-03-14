@@ -82,6 +82,11 @@ Deno.serve(async (req) => {
       throw new AppError("This plan is not currently available.", 400);
     }
 
+    // Hardcoded restriction: Prevent upgrading to max plan
+    if (targetPlan === "max") {
+      throw new AppError("Upgrading to max plan is not allowed", 403);
+    }
+
     // Get current subscription
     const { data: currentSub, error: fetchError } = await userClient
       .from("subscriptions")

@@ -1,18 +1,23 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:skeletonizer/skeletonizer.dart';
-import 'package:tryzeon/core/config/app_constants.dart';
 
-class TryOnGallery extends StatelessWidget {
+import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
+import 'package:chewie/chewie.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
+import 'package:tryzeon/feature/personal/home/domain/entities/tryon_result.dart';
+import 'package:video_player/video_player.dart';
+
+class TryOnGallery extends HookWidget {
   const TryOnGallery({
     super.key,
     required this.pageController,
     required this.onPageChanged,
     required this.onUploadTap,
-    required this.tryonImages,
+    required this.tryonResults,
     required this.loadingIndices,
     required this.currentTryonIndex,
     required this.avatarFile,
@@ -21,85 +26,129 @@ class TryOnGallery extends StatelessWidget {
   final PageController pageController;
   final ValueChanged<int> onPageChanged;
   final VoidCallback onUploadTap;
-  final List<Uint8List> tryonImages;
+  final List<TryonResult> tryonResults;
   final Set<int> loadingIndices;
   final int currentTryonIndex;
   final File? avatarFile;
 
   @override
   Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return GestureDetector(
       onTap: currentTryonIndex == -1 ? onUploadTap : null,
       child: PageView.builder(
         controller: pageController,
         onPageChanged: onPageChanged,
-        itemCount: tryonImages.length + 1,
+        itemCount: tryonResults.length + 1,
         itemBuilder: (final context, final index) {
-          ImageProvider imageProvider;
-          if (index > 0) {
-            imageProvider = MemoryImage(tryonImages[index - 1]);
-          } else if (avatarFile != null) {
-            imageProvider = FileImage(avatarFile!);
-          } else {
-            imageProvider = const AssetImage(AppConstants.defaultProfileImage);
+          if (index == 0) {
+            // Original Avatar
+            final ImageProvider imageProvider = avatarFile != null
+                ? FileImage(avatarFile!)
+                : const AssetImage(AppConstants.defaultProfileImage);
+            final showUploadOverlay = avatarFile == null;
+            return _buildImageItem(context, imageProvider, showUploadOverlay);
           }
 
-          return Stack(
-            fit: StackFit.expand,
-            children: [
-              // Background Image with gaplessPlayback
-              // 只在非加载状态下显示原图，加载状态下显示SVG骨架
-              if (loadingIndices.contains(index - 1))
-                Skeletonizer(
-                  enabled: true,
-                  effect: ShimmerEffect(
-                    baseColor: Colors.grey.shade400,
-                    highlightColor: Colors.grey.shade100,
-                  ),
-                  child: Skeleton.shade(
-                    child: SvgPicture.asset(
-                      AppConstants.tryOnSkeleton,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                )
-              else
-                Image(image: imageProvider, fit: BoxFit.cover, gaplessPlayback: true),
+          final result = tryonResults[index - 1];
+          final isLoading = loadingIndices.contains(index - 1);
 
-              // Gradient overlay (only when not loading and not showing skeleton)
-              if (!loadingIndices.contains(index - 1)) ...[
-                if (avatarFile == null)
-                  Align(
-                    alignment: const Alignment(0, 0.5),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          color: colorScheme.surface.withValues(alpha: 0.3),
-                          child: Text(
-                            '點擊上傳照片',
-                            style: TextStyle(
-                              color: colorScheme.onSurface,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ],
-          );
+          if (isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (result.mode == TryOnMode.video) {
+            return _VideoPlayerItem(videoPath: result.videoPath!);
+          }
+
+          if (result.mode == TryOnMode.photo) {
+            final imageProvider = MemoryImage(base64Decode(result.imageBase64!));
+            return _buildImageItem(context, imageProvider, false);
+          }
+
+          return const Center(child: Text('Invalid TryOn Result'));
         },
       ),
     );
+  }
+
+  Widget _buildImageItem(
+    final BuildContext context,
+    final ImageProvider imageProvider,
+    final bool showUploadOverlay,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Image(image: imageProvider, fit: BoxFit.cover, gaplessPlayback: true),
+        if (showUploadOverlay) _buildUploadOverlay(context, colorScheme),
+      ],
+    );
+  }
+
+  Widget _buildUploadOverlay(final BuildContext context, final ColorScheme colorScheme) {
+    return Align(
+      alignment: const Alignment(0, 0.5),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            color: colorScheme.surface.withValues(alpha: 0.3),
+            child: Text(
+              '點擊上傳照片',
+              style: TextStyle(
+                color: colorScheme.onSurface,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _VideoPlayerItem extends HookWidget {
+  const _VideoPlayerItem({required this.videoPath});
+  final String videoPath;
+
+  @override
+  Widget build(final BuildContext context) {
+    final controllerState = useState<VideoPlayerController?>(null);
+    final chewieState = useState<ChewieController?>(null);
+
+    useEffect(() {
+      final controller = VideoPlayerController.file(File(videoPath));
+      controller.initialize().then((_) {
+        controllerState.value = controller;
+        chewieState.value = ChewieController(
+          videoPlayerController: controller,
+          autoPlay: true,
+          looping: true,
+          aspectRatio: controller.value.aspectRatio,
+          showControls: true,
+        );
+      });
+      return () {
+        chewieState.value?.dispose();
+        controller.dispose();
+      };
+    }, [videoPath]);
+
+    if (chewieState.value != null && controllerState.value != null) {
+      final bottomPadding =
+          MediaQuery.of(context).padding.bottom +
+          (PlatformInfo.isIOS26OrHigher() ? 10 : 0);
+
+      return Padding(
+        padding: EdgeInsets.only(bottom: bottomPadding),
+        child: SafeArea(child: Chewie(controller: chewieState.value!)),
+      );
+    } else {
+      return const Center(child: CircularProgressIndicator());
+    }
   }
 }

@@ -8,7 +8,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gal/gal.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
@@ -17,6 +16,8 @@ import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/core/utils/image_watermark_helper.dart';
+import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
+import 'package:tryzeon/feature/personal/home/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_action_button.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_gallery.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_indicator.dart';
@@ -28,7 +29,7 @@ import 'package:tryzeon/feature/personal/subscription/presentation/providers/sub
 import 'package:typed_result/typed_result.dart';
 
 class HomePageController {
-  Future<void> Function(String clothesPath)? tryOnFromStorage;
+  Future<void> Function(String clothesPath, {TryOnMode mode})? tryOnFromStorage;
 
   void dispose() {
     tryOnFromStorage = null;
@@ -41,7 +42,7 @@ class HomePage extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final avatarAsync = ref.watch(avatarFileProvider);
-    final tryonImages = useState<List<Uint8List>>([]);
+    final tryonImages = useState<List<TryonResult>>([]);
     final loadingIndices = useState<Set<int>>({});
     final currentTryonIndex = useState(-1);
     final customAvatarIndex = useState<int?>(null);
@@ -104,60 +105,58 @@ class HomePage extends HookConsumerWidget {
     Future<void> performTryOn({
       final String? clothesBase64,
       final String? clothesPath,
+      final TryOnMode mode = TryOnMode.photo,
     }) async {
-      Uint8List? placeholderBytes;
-
-      // 1. Determine Placeholder Image
-      if (customAvatarIndex.value != null &&
-          customAvatarIndex.value! < tryonImages.value.length) {
-        placeholderBytes = tryonImages.value[customAvatarIndex.value!];
-      } else {
-        final avatarFile = await ref.read(avatarFileProvider.future);
-        if (avatarFile == null) {
-          if (context.mounted) {
-            TopNotification.show(
-              context,
-              message: '請先上傳您的照片',
-              type: NotificationType.error,
-            );
-          }
-          return;
-        }
-        placeholderBytes = await avatarFile.readAsBytes();
+      // 0. Check if avatar is uploaded
+      final avatarFile = ref.read(avatarFileProvider).value;
+      if (avatarFile == null) {
+        TopNotification.show(
+          context,
+          message: '請先上傳您的照片才能進行虛擬試穿',
+          type: NotificationType.warning,
+        );
+        return;
       }
 
-      // 2. Prepare Request Data
+      // 1. Prepare Request Data
       String? customAvatarBase64;
       if (customAvatarIndex.value != null &&
           customAvatarIndex.value! < tryonImages.value.length) {
-        customAvatarBase64 = base64Encode(tryonImages.value[customAvatarIndex.value!]);
+        final result = tryonImages.value[customAvatarIndex.value!];
+        if (result.imageBase64 != null) {
+          customAvatarBase64 = result.imageBase64!;
+        }
       }
 
-      // 3. Optimistic Update (Add Placeholder)
+      // 2. Optimistic Update (Add Loading Placeholder)
       final newIndex = tryonImages.value.length;
-      tryonImages.value = [...tryonImages.value, placeholderBytes];
+      final placeholderResult = TryonResult(mode: mode);
+      tryonImages.value = [...tryonImages.value, placeholderResult];
       loadingIndices.value = {...loadingIndices.value, newIndex};
       currentTryonIndex.value = newIndex;
 
-      // 4. API Call
+      // 3. API Call
       final tryonUseCase = ref.read(tryonUseCaseProvider);
       final result = await tryonUseCase(
         customAvatarBase64: customAvatarBase64,
         clothesBase64: clothesBase64,
         clothesPath: clothesPath,
+        mode: mode,
       );
 
       if (!context.mounted) return;
 
-      // 5. Handle Result
+      // 4. Handle Result
       if (result.isSuccess) {
-        final base64String = result.get()!.imageBase64.split(',')[1];
-        final imageBytes = base64Decode(base64String);
-
-        tryonImages.value = [...tryonImages.value]..[newIndex] = imageBytes;
+        final tryonResult = result.get()!;
+        tryonImages.value = [...tryonImages.value]..[newIndex] = tryonResult;
         loadingIndices.value = {...loadingIndices.value}..remove(newIndex);
 
-        TopNotification.show(context, message: '試穿成功！', type: NotificationType.success);
+        TopNotification.show(
+          context,
+          message: mode == TryOnMode.video ? '影片生成成功！' : '試穿成功！',
+          type: NotificationType.success,
+        );
       } else {
         // Failure: Remove placeholder
         tryonImages.value = [...tryonImages.value]..removeAt(newIndex);
@@ -166,10 +165,13 @@ class HomePage extends HookConsumerWidget {
 
         final failure = result.getError()!;
         if (failure is RateLimitFailure) {
+          final isVideo = mode == TryOnMode.video;
           UpgradeDialog.show(
             context,
-            title: '試穿次數已達上限',
-            content: '您的今日試穿次數已達上限\n升級至更高方案以獲得更多次數！',
+            title: isVideo ? '影片試穿次數已達上限' : '試穿次數已達上限',
+            content: isVideo
+                ? '您的今日影片試穿次數已達上限\n升級至更高方案以獲得更多影片次數！'
+                : '您的今日試穿次數已達上限\n升級至更高方案以獲得更多次數！',
           );
         } else {
           TopNotification.show(
@@ -187,20 +189,27 @@ class HomePage extends HookConsumerWidget {
 
       final clothesBytes = await clothesImage.readAsBytes();
       final clothesBase64 = base64Encode(clothesBytes);
-      performTryOn(clothesBase64: clothesBase64);
+      performTryOn(clothesBase64: clothesBase64, mode: TryOnMode.photo);
     }
 
-    Future<void> tryOnFromStorage(final String clothesPath) async {
-      performTryOn(clothesPath: clothesPath);
+    Future<void> tryOnFromStorage(
+      final String clothesPath, {
+      final TryOnMode mode = TryOnMode.photo,
+    }) async {
+      performTryOn(clothesPath: clothesPath, mode: mode);
     }
 
     Future<void> downloadCurrentImage() async {
       try {
-        final originalBytes = tryonImages.value[currentTryonIndex.value];
+        final result = tryonImages.value[currentTryonIndex.value];
+
+        final base64String = result.imageBase64!;
+        final originalBytes = base64Decode(base64String);
+
         Uint8List imageToSave = originalBytes;
 
         final subscription = await ref.read(subscriptionProvider.future);
-        if (subscription.plan == AppConstants.planFree) {
+        if (subscription.requiresWatermark) {
           imageToSave = await ImageWatermarkHelper.addWatermark(originalBytes);
         }
 
@@ -258,7 +267,7 @@ class HomePage extends HookConsumerWidget {
       if (result == OkCancelResult.ok) {
         final deletedIndex = currentTryonIndex.value;
 
-        final newImages = List<Uint8List>.from(tryonImages.value);
+        final newImages = List<TryonResult>.from(tryonImages.value);
         newImages.removeAt(deletedIndex);
         tryonImages.value = newImages;
 
@@ -322,7 +331,7 @@ class HomePage extends HookConsumerWidget {
                     pageController: pageController,
                     onPageChanged: (final index) => currentTryonIndex.value = index - 1,
                     onUploadTap: uploadAvatar,
-                    tryonImages: tryonImages.value,
+                    tryonResults: tryonImages.value,
                     loadingIndices: loadingIndices.value,
                     currentTryonIndex: currentTryonIndex.value,
                     avatarFile: newAvatarFile.value ?? avatarFile,
@@ -337,7 +346,7 @@ class HomePage extends HookConsumerWidget {
               left: 0,
               child: SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.all(24.0),
+                  padding: const EdgeInsets.all(30.0),
                   child: Text(
                     'Tryzeon',
                     style: textTheme.displayLarge?.copyWith(

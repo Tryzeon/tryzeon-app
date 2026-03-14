@@ -223,7 +223,7 @@ class _StoreProfileHeader extends HookConsumerWidget {
                     return _buildPlaceholder(colorScheme, profile.name);
                   },
                   loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (final _, final __) =>
+                  error: (final _, final _) =>
                       Icon(Icons.store, size: 36, color: colorScheme.primary),
                 ),
               ),

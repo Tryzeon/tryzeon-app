@@ -26,14 +26,19 @@ class TryOnMoreOptionsButton extends StatelessWidget {
       right: 0,
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.only(top: 35, right: 20),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(20),
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
               child: Container(
+                width: 36,
+                height: 36,
                 color: colorScheme.onSurface.withValues(alpha: 0.1),
                 child: IconButton(
+                  iconSize: 20,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                   onPressed: () {
                     showModalBottomSheet(
                       context: context,
