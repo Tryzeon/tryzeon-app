@@ -94,43 +94,47 @@ class SubscriptionPage extends HookConsumerWidget {
                 onRetry: () => ref.refresh(subscriptionPlansProvider),
               ),
               data: (final plans) {
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        '解鎖完整功能',
-                        style: TextStyle(
-                          color: colorScheme.onSurface,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
+                return RefreshIndicator(
+                  onRefresh: () => refreshSubscription(ref),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          '解鎖完整功能',
+                          style: TextStyle(
+                            color: colorScheme.onSurface,
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '選擇最適合您的方案',
-                        style: TextStyle(
-                          color: colorScheme.onSurfaceVariant,
-                          fontSize: 16,
+                        const SizedBox(height: 8),
+                        Text(
+                          '選擇最適合您的方案',
+                          style: TextStyle(
+                            color: colorScheme.onSurfaceVariant,
+                            fontSize: 16,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 32),
-                      ...plans.map(
-                        (final planInfo) => Padding(
-                          padding: const EdgeInsets.only(bottom: 20),
-                          child: _buildPlanCard(
-                            context,
-                            ref,
-                            processingPlanId,
-                            planInfo: planInfo,
-                            currentPlanId: currentPlanId,
+                        const SizedBox(height: 32),
+                        ...plans.map(
+                          (final planInfo) => Padding(
+                            padding: const EdgeInsets.only(bottom: 20),
+                            child: _buildPlanCard(
+                              context,
+                              ref,
+                              processingPlanId,
+                              planInfo: planInfo,
+                              currentPlanId: currentPlanId,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 );
               },

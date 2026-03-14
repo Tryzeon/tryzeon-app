@@ -1,3 +1,4 @@
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
@@ -81,4 +82,15 @@ Future<List<SubscriptionPlanInfo>> subscriptionPlans(final Ref ref) async {
   }
 
   return result.get()!;
+}
+
+/// 強制刷新訂閱資訊
+Future<void> refreshSubscription(final WidgetRef ref) async {
+  final getSubscriptionUseCase = ref.read(getSubscriptionUseCaseProvider);
+  await getSubscriptionUseCase(forceRefresh: true);
+  try {
+    final _ = await ref.refresh(subscriptionProvider.future);
+  } catch (_) {
+    // Provider 刷新失敗時，忽略異常，讓 UI 顯示 ErrorView 或舊資料
+  }
 }

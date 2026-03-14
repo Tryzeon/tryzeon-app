@@ -14,7 +14,7 @@ class GetSubscription {
   final UserProfileRepository _userProfileRepository;
   final SubscriptionRepository _subscriptionRepository;
 
-  Future<Result<Subscription, Failure>> call() async {
+  Future<Result<Subscription, Failure>> call({final bool forceRefresh = false}) async {
     // 1. Get user profile to extract userId
     final profileResult = await _userProfileRepository.getUserProfile();
 
@@ -25,6 +25,9 @@ class GetSubscription {
     final profile = profileResult.get()!;
 
     // 2. Fetch subscription using userId
-    return _subscriptionRepository.getSubscription(profile.userId);
+    return _subscriptionRepository.getSubscription(
+      profile.userId,
+      forceRefresh: forceRefresh,
+    );
   }
 }
