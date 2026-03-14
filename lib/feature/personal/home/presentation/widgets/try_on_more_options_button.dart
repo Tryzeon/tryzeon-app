@@ -50,7 +50,7 @@ class TryOnMoreOptionsButton extends StatelessWidget {
                             const SizedBox(height: 16),
                             ListTile(
                               leading: const Icon(Icons.download_rounded),
-                              title: const Text('下載照片'),
+                              title: const Text('下載'),
                               subtitle: const Text('儲存到相簿'),
                               onTap: () {
                                 Navigator.pop(context);

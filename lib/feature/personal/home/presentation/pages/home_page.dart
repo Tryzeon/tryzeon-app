@@ -199,34 +199,60 @@ class HomePage extends HookConsumerWidget {
       performTryOn(clothesPath: clothesPath, mode: mode);
     }
 
-    Future<void> downloadCurrentImage() async {
+    Future<void> downloadVideo(final TryonResult result) async {
+      if (result.videoPath == null) {
+        throw Exception('Video path is null');
+      }
+
+      await Gal.putVideo(result.videoPath!);
+
+      if (context.mounted) {
+        TopNotification.show(
+          context,
+          message: '影片已儲存到相簿',
+          type: NotificationType.success,
+        );
+      }
+    }
+
+    Future<void> downloadImage(final TryonResult result) async {
+      if (result.imageBase64 == null) {
+        throw Exception('Image data is null');
+      }
+
+      final originalBytes = base64Decode(result.imageBase64!);
+      Uint8List imageToSave = originalBytes;
+
+      final subscription = await ref.read(subscriptionProvider.future);
+      if (subscription.requiresWatermark) {
+        imageToSave = await ImageWatermarkHelper.addWatermark(originalBytes);
+      }
+
+      await Gal.putImageBytes(
+        imageToSave,
+        name: 'tryzeon_${DateTime.now().millisecondsSinceEpoch}',
+      );
+
+      if (context.mounted) {
+        TopNotification.show(
+          context,
+          message: '照片已儲存到相簿',
+          type: NotificationType.success,
+        );
+      }
+    }
+
+    Future<void> downloadCurrentMedia() async {
       try {
         final result = tryonImages.value[currentTryonIndex.value];
 
-        final base64String = result.imageBase64!;
-        final originalBytes = base64Decode(base64String);
-
-        Uint8List imageToSave = originalBytes;
-
-        final subscription = await ref.read(subscriptionProvider.future);
-        if (subscription.requiresWatermark) {
-          imageToSave = await ImageWatermarkHelper.addWatermark(originalBytes);
-        }
-
-        await Gal.putImageBytes(
-          imageToSave,
-          name: 'tryzeon_${DateTime.now().millisecondsSinceEpoch}',
-        );
-
-        if (context.mounted) {
-          TopNotification.show(
-            context,
-            message: '照片已儲存到相簿',
-            type: NotificationType.success,
-          );
+        if (result.mode == TryOnMode.video) {
+          await downloadVideo(result);
+        } else {
+          await downloadImage(result);
         }
       } catch (e, stackTrace) {
-        AppLogger.error('Failed to save photo', e, stackTrace);
+        AppLogger.error('Failed to save media', e, stackTrace);
         if (context.mounted) {
           TopNotification.show(
             context,
@@ -372,7 +398,7 @@ class HomePage extends HookConsumerWidget {
               TryOnMoreOptionsButton(
                 currentTryonIndex: currentTryonIndex.value,
                 customAvatarIndex: customAvatarIndex.value,
-                onDownload: downloadCurrentImage,
+                onDownload: downloadCurrentMedia,
                 onToggleAvatar: toggleAvatar,
                 onDelete: deleteCurrentTryon,
               ),
