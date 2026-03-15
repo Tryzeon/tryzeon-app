@@ -1,15 +1,39 @@
 import { CONFIG } from "../_shared/supabase.ts";
 
-const VIDEO_PROMPT =
+const DEFAULT_VIDEO_PROMPT =
   "The person is wearing the new outfit and turning slightly to show the fit of the clothing. Natural movement, professional fashion video style.";
+
+function buildVideoPrompt(scenePrompt?: string, transitionPrompt?: string): string {
+  if (!scenePrompt && !transitionPrompt) {
+    return DEFAULT_VIDEO_PROMPT;
+  }
+
+  let prompt = "The person is wearing the new outfit and showing the fit of the clothing.";
+
+  if (scenePrompt) {
+    prompt += ` Scene setting: ${scenePrompt}.`;
+  }
+
+  if (transitionPrompt) {
+    prompt += ` Camera and transition style: ${transitionPrompt}.`;
+  }
+
+  prompt += " Natural movement, professional fashion video style.";
+  return prompt;
+}
 
 const MAX_POLL_ATTEMPTS = 60;
 const POLL_INTERVAL_MS = 2000;
 
-async function startVideoGeneration(tryonImageBase64: string): Promise<string> {
+async function startVideoGeneration(
+  tryonImageBase64: string,
+  scenePrompt?: string,
+  transitionPrompt?: string,
+): Promise<string> {
+  const prompt = buildVideoPrompt(scenePrompt, transitionPrompt);
   const requestBody = {
     instances: [{
-      prompt: VIDEO_PROMPT,
+      prompt,
       image: {
         bytesBase64Encoded: tryonImageBase64,
         mimeType: "image/png",
@@ -99,7 +123,11 @@ async function pollForCompletion(operationName: string): Promise<string> {
   throw new Error("Video generation timeout");
 }
 
-export async function generateTryonVideo(tryonImageBase64: string): Promise<string> {
-  const operationName = await startVideoGeneration(tryonImageBase64);
+export async function generateTryonVideo(
+  tryonImageBase64: string,
+  scenePrompt?: string,
+  transitionPrompt?: string,
+): Promise<string> {
+  const operationName = await startVideoGeneration(tryonImageBase64, scenePrompt, transitionPrompt);
   return pollForCompletion(operationName);
 }
