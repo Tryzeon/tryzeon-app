@@ -34,18 +34,18 @@ class EmailLoginPage extends HookConsumerWidget {
 
     // Countdown timer effect
     useEffect(() {
-      Timer? timer;
-      if (resendCountdown.value > 0) {
-        timer = Timer.periodic(const Duration(seconds: 1), (final t) {
-          if (resendCountdown.value > 0) {
-            resendCountdown.value--;
-          } else {
-            t.cancel();
-          }
-        });
-      }
-      return () => timer?.cancel();
-    }, [resendCountdown.value]);
+      if (resendCountdown.value <= 0) return null;
+
+      final timer = Timer.periodic(const Duration(seconds: 1), (final t) {
+        if (resendCountdown.value > 0) {
+          resendCountdown.value--;
+        } else {
+          t.cancel();
+        }
+      });
+
+      return timer.cancel;
+    }, [resendCountdown.value > 0]);
 
     // Validation
     bool isValidEmail(final String email) {
