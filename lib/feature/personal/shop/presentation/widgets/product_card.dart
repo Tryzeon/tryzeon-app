@@ -10,6 +10,7 @@ import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry_scope.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_status.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
+import 'package:tryzeon/feature/personal/shop/presentation/widgets/tryon_mode_sheet.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -144,38 +145,17 @@ class ProductCard extends HookConsumerWidget {
                       right: 8,
                       child: Material(
                         color: Colors.transparent,
-                        child: isMax
-                            ? PopupMenuButton<TryOnMode>(
-                                onSelected: (final mode) => handleTryon(mode: mode),
-                                itemBuilder: (final context) => [
-                                  const PopupMenuItem(
-                                    value: TryOnMode.photo,
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.photo_outlined),
-                                        SizedBox(width: 8),
-                                        Text('照片試穿'),
-                                      ],
-                                    ),
-                                  ),
-                                  const PopupMenuItem(
-                                    value: TryOnMode.video,
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.videocam_outlined),
-                                        SizedBox(width: 8),
-                                        Text('影片試穿'),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                                child: Skeleton.ignore(child: buildTryonButton()),
-                              )
-                            : InkWell(
-                                onTap: handleTryon,
-                                borderRadius: BorderRadius.circular(20),
-                                child: Skeleton.ignore(child: buildTryonButton()),
-                              ),
+                        child: InkWell(
+                          onTap: () {
+                            TryOnModeSheet.show(
+                              context: context,
+                              hasVideoAccess: isMax,
+                              onModeSelected: (final mode) => handleTryon(mode: mode),
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(20),
+                          child: Skeleton.ignore(child: buildTryonButton()),
+                        ),
                       ),
                     ),
                   ],
