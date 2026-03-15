@@ -73,10 +73,11 @@ dependency_overrides:
 
 flutter:
   assets:
-    - assets/images/ads/
+    - assets/images/onboarding/
     - assets/images/profile/
     - assets/images/logo/
     - assets/images/tryon/
+    - assets/images/ads/
 
   uses-material-design: true
 
