@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
     }
 
     const body = JSON.parse(bodyText);
-    const { avatarBase64, avatarPath, clothesBase64, clothesPath, mode = "photo" } = body;
+    const { avatarBase64, avatarPath, clothesBase64, clothesPath, mode = "photo", scenePrompt, transitionPrompt } = body;
 
     if (!avatarPath && !avatarBase64) {
       return new Response(
@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
     }
 
     if (mode === "video") {
-      const videoBase64 = await generateTryonVideo(tryonImageBase64);
+      const videoBase64 = await generateTryonVideo(tryonImageBase64, scenePrompt, transitionPrompt);
       return new Response(
         JSON.stringify({ video: videoBase64 }),
         { headers: { "Content-Type": "application/json" } },
