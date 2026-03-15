@@ -67,7 +67,7 @@ class StylePreferenceStep extends HookConsumerWidget {
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(10),
                                 child: Image.asset(
-                                  'assets/images/onboarding/${style.value}.png',
+                                  'assets/images/onboarding/${style.value}.webp',
                                   fit: BoxFit.cover,
                                   width: double.infinity,
                                   height: double.infinity,
