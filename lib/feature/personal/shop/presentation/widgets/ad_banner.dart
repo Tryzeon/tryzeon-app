@@ -13,7 +13,6 @@ class AdBanner extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final pageController = usePageController();
-    final currentPage = useState(0);
 
     // Priority 1: Show data if available (even during loading or error)
     if (adsAsync.hasValue) {
@@ -25,17 +24,17 @@ class AdBanner extends HookConsumerWidget {
       }
 
       useEffect(() {
+        if (adImages.isEmpty) return null;
+
         final timer = Timer.periodic(const Duration(seconds: 3), (final timer) {
           if (!pageController.hasClients) return;
 
-          if (currentPage.value < adImages.length - 1) {
-            currentPage.value++;
-          } else {
-            currentPage.value = 0;
-          }
+          // Compute next page without triggering a rebuild via State
+          final nextPage = (pageController.page?.round() ?? 0) + 1;
+          final targetPage = nextPage >= adImages.length ? 0 : nextPage;
 
           pageController.animateToPage(
-            currentPage.value,
+            targetPage,
             duration: const Duration(milliseconds: 500),
             curve: Curves.easeInOut,
           );
@@ -48,9 +47,6 @@ class AdBanner extends HookConsumerWidget {
         child: PageView.builder(
           controller: pageController,
           itemCount: adImages.length,
-          onPageChanged: (final index) {
-            currentPage.value = index;
-          },
           itemBuilder: (final context, final index) {
             return GestureDetector(
               onTap: () {
