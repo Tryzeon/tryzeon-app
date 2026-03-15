@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:isar_community/isar.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/services/cache_service.dart';
 import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
@@ -19,6 +20,13 @@ class StoreProfileLocalDataSource {
     final isar = await _isarService.db;
     final collection = await isar.storeProfileCollections.where().findFirst();
     if (collection == null) return null;
+
+    if (collection.lastUpdated == null ||
+        DateTime.now().difference(collection.lastUpdated!) >
+            AppConstants.staleDurationStoreProfile) {
+      return null;
+    }
+
     final model = _mappr.convert<StoreProfileCollection, StoreProfileModel>(collection);
     return model;
   }
@@ -30,6 +38,7 @@ class StoreProfileLocalDataSource {
       final collection = _mappr.convert<StoreProfileModel, StoreProfileCollection>(
         profile,
       );
+      collection.lastUpdated = DateTime.now();
       await isar.storeProfileCollections.put(collection);
     });
   }

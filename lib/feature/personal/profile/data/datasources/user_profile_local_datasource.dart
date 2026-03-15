@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:isar_community/isar.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/services/cache_service.dart';
 import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
@@ -18,6 +19,13 @@ class UserProfileLocalDataSource {
     final isar = await _isarService.db;
     final collection = await isar.userProfileCollections.where().findFirst();
     if (collection == null) return null;
+
+    if (collection.lastUpdated == null ||
+        DateTime.now().difference(collection.lastUpdated!) >
+            AppConstants.staleDurationUserProfile) {
+      return null;
+    }
+
     final model = _mappr.convert<UserProfileCollection, UserProfileModel>(collection);
     return model;
   }
@@ -27,6 +35,7 @@ class UserProfileLocalDataSource {
     await isar.writeTxn(() async {
       await isar.userProfileCollections.clear();
       final collection = _mappr.convert<UserProfileModel, UserProfileCollection>(profile);
+      collection.lastUpdated = DateTime.now();
       await isar.userProfileCollections.put(collection);
     });
   }
