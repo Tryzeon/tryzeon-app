@@ -58,9 +58,13 @@ class AppConstants {
   static const String paramMode = 'mode';
   static const String modePhoto = 'photo';
   static const String modeVideo = 'video';
+  static const String paramScenePrompt = 'scenePrompt';
+  static const String paramTransitionPrompt = 'transitionPrompt';
 
   // Shared Preferences Keys
   static const String keyRecommendNearbyShops = 'recommend_nearby_shops';
+  static const String keyVideoScenePrompt = 'video_scene_prompt';
+  static const String keyVideoTransitionPrompt = 'video_transition_prompt';
 
   // Stale Durations
   static const Duration staleDurationSubscription = Duration(minutes: 10);
