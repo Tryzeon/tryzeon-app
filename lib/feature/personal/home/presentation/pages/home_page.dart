@@ -25,6 +25,7 @@ import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_more_o
 import 'package:tryzeon/feature/personal/home/providers/home_providers.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry_scope.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
+import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_provider.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -136,12 +137,28 @@ class HomePage extends HookConsumerWidget {
       currentTryonIndex.value = newIndex;
 
       // 3. API Call
+      String? scenePrompt;
+      String? transitionPrompt;
+      if (mode == TryOnMode.video) {
+        final promptConfig = ref
+            .read(videoPromptConfigProvider)
+            .when(
+              data: (final data) => data,
+              loading: () => null,
+              error: (_, final _) => null,
+            );
+        scenePrompt = promptConfig?.scenePrompt;
+        transitionPrompt = promptConfig?.transitionPrompt;
+      }
+
       final tryonUseCase = ref.read(tryonUseCaseProvider);
       final result = await tryonUseCase(
         customAvatarBase64: customAvatarBase64,
         clothesBase64: clothesBase64,
         clothesPath: clothesPath,
         mode: mode,
+        scenePrompt: scenePrompt,
+        transitionPrompt: transitionPrompt,
       );
 
       if (!context.mounted) return;
