@@ -18,7 +18,7 @@ class AgeRangeStep extends HookConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 24),
+          const SizedBox(height: 10),
           Text('你的年齡範圍', style: textTheme.headlineMedium),
           const SizedBox(height: 8),
           Text('請選擇一個區間', style: textTheme.bodyMedium),

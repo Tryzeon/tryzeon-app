@@ -73,7 +73,7 @@ class PersonalOnboardingPage extends HookConsumerWidget {
           // Bottom Action Area
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [

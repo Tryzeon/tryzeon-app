@@ -18,7 +18,7 @@ class GenderSelectionStep extends HookConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 24),
+          const SizedBox(height: 10),
           Text('你的性別', style: textTheme.headlineMedium),
           const SizedBox(height: 8),
           Text('選擇一個選項', style: textTheme.bodyMedium),
