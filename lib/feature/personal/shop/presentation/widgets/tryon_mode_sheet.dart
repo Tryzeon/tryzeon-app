@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
+import 'package:tryzeon/feature/personal/shop/presentation/widgets/video_prompt_customize_sheet.dart';
 
 class TryOnModeSheet extends StatelessWidget {
   const TryOnModeSheet({
@@ -101,6 +102,9 @@ class TryOnModeSheet extends StatelessWidget {
                   Navigator.pop(context);
                   onModeSelected(TryOnMode.video);
                 },
+                onCustomize: () {
+                  VideoPromptCustomizeSheet.show(context);
+                },
                 colorScheme: colorScheme,
                 textTheme: textTheme,
               ),
@@ -122,6 +126,7 @@ class _ModeCard extends StatelessWidget {
     required this.onTap,
     required this.colorScheme,
     required this.textTheme,
+    this.onCustomize,
   });
 
   final IconData icon;
@@ -132,6 +137,7 @@ class _ModeCard extends StatelessWidget {
   final VoidCallback onTap;
   final ColorScheme colorScheme;
   final TextTheme textTheme;
+  final VoidCallback? onCustomize;
 
   @override
   Widget build(final BuildContext context) {
@@ -209,6 +215,20 @@ class _ModeCard extends StatelessWidget {
                       ],
                     ),
                   ),
+
+                  // Customize button (pencil) — only when unlocked and callback provided
+                  if (!isLocked && onCustomize != null)
+                    GestureDetector(
+                      onTap: onCustomize,
+                      child: Padding(
+                        padding: const EdgeInsets.all(15),
+                        child: Icon(
+                          Icons.edit_outlined,
+                          size: 20,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
 
                   // Chevron (only show when unlocked)
                   if (!isLocked)
