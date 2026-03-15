@@ -46,7 +46,10 @@ class TryOnGallery extends HookWidget {
                 ? FileImage(avatarFile!)
                 : const AssetImage(AppConstants.defaultProfileImage);
             final showUploadOverlay = avatarFile == null;
-            return _buildImageItem(context, imageProvider, showUploadOverlay);
+            return _ImageItem(
+              imageProvider: imageProvider,
+              showUploadOverlay: showUploadOverlay,
+            );
           }
 
           final result = tryonResults[index - 1];
@@ -61,8 +64,7 @@ class TryOnGallery extends HookWidget {
           }
 
           if (result.mode == TryOnMode.photo) {
-            final imageProvider = MemoryImage(base64Decode(result.imageBase64!));
-            return _buildImageItem(context, imageProvider, false);
+            return _ImageItem(imageBase64: result.imageBase64);
           }
 
           return const Center(child: Text('Invalid TryOn Result'));
@@ -70,43 +72,61 @@ class TryOnGallery extends HookWidget {
       ),
     );
   }
+}
 
-  Widget _buildImageItem(
-    final BuildContext context,
-    final ImageProvider imageProvider,
-    final bool showUploadOverlay,
-  ) {
+class _ImageItem extends HookWidget {
+  const _ImageItem({
+    this.imageBase64,
+    this.imageProvider,
+    this.showUploadOverlay = false,
+  });
+
+  final String? imageBase64;
+  final ImageProvider? imageProvider;
+  final bool showUploadOverlay;
+
+  @override
+  Widget build(final BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+
+    final finalImageProvider = useMemoized(() {
+      if (imageProvider != null) {
+        return imageProvider!;
+      }
+      if (imageBase64 != null) {
+        final imageBytes = base64Decode(imageBase64!);
+        return MemoryImage(imageBytes);
+      }
+      throw Exception('Either imageBase64 or imageProvider must be provided');
+    }, [imageBase64, imageProvider]);
+
     return Stack(
       fit: StackFit.expand,
       children: [
-        Image(image: imageProvider, fit: BoxFit.cover, gaplessPlayback: true),
-        if (showUploadOverlay) _buildUploadOverlay(context, colorScheme),
-      ],
-    );
-  }
-
-  Widget _buildUploadOverlay(final BuildContext context, final ColorScheme colorScheme) {
-    return Align(
-      alignment: const Alignment(0, 0.5),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: colorScheme.surface.withValues(alpha: 0.3),
-            child: Text(
-              '點擊上傳照片',
-              style: TextStyle(
-                color: colorScheme.onSurface,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+        Image(image: finalImageProvider, fit: BoxFit.cover, gaplessPlayback: true),
+        if (showUploadOverlay)
+          Align(
+            alignment: const Alignment(0, 0.5),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  color: colorScheme.surface.withValues(alpha: 0.3),
+                  child: Text(
+                    '點擊上傳照片',
+                    style: TextStyle(
+                      color: colorScheme.onSurface,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
-        ),
-      ),
+      ],
     );
   }
 }
