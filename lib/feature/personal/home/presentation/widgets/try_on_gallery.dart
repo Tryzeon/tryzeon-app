@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
-import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
@@ -138,34 +136,65 @@ class _VideoPlayerItem extends HookWidget {
   @override
   Widget build(final BuildContext context) {
     final controllerState = useState<VideoPlayerController?>(null);
-    final chewieState = useState<ChewieController?>(null);
+    final isPlaying = useState<bool>(true);
 
     useEffect(() {
       final controller = VideoPlayerController.file(File(videoPath));
       controller.initialize().then((_) {
         controllerState.value = controller;
-        chewieState.value = ChewieController(
-          videoPlayerController: controller,
-          autoPlay: true,
-          looping: true,
-          aspectRatio: controller.value.aspectRatio,
-          showControls: true,
-        );
+        controller.play(); // 自動播放
+        controller.setLooping(true); // 循環播放
+
+        // 監聽播放狀態變化
+        void listener() {
+          isPlaying.value = controller.value.isPlaying;
+        }
+
+        controller.addListener(listener);
       });
       return () {
-        chewieState.value?.dispose();
-        controller.dispose();
+        controllerState.value?.dispose();
       };
     }, [videoPath]);
 
-    if (chewieState.value != null && controllerState.value != null) {
-      final bottomPadding =
-          MediaQuery.of(context).padding.bottom +
-          (PlatformInfo.isIOS26OrHigher() ? 10 : 0);
-
-      return Padding(
-        padding: EdgeInsets.only(bottom: bottomPadding),
-        child: SafeArea(child: Chewie(controller: chewieState.value!)),
+    if (controllerState.value != null && controllerState.value!.value.isInitialized) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          FittedBox(
+            fit: BoxFit.cover,
+            child: SizedBox(
+              width: controllerState.value!.value.size.width,
+              height: controllerState.value!.value.size.height,
+              child: VideoPlayer(controllerState.value!),
+            ),
+          ),
+          if (!isPlaying.value)
+            Center(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.6),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.play_arrow, color: Colors.white, size: 40),
+              ),
+            ),
+          GestureDetector(
+            onTap: () {
+              if (controllerState.value!.value.isPlaying) {
+                controllerState.value!.pause();
+              } else {
+                controllerState.value!.play();
+              }
+            },
+            child: Container(
+              color: Colors.transparent,
+              width: double.infinity,
+              height: double.infinity,
+            ),
+          ),
+        ],
       );
     } else {
       return const Center(child: CircularProgressIndicator());
