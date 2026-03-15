@@ -10,5 +10,7 @@ abstract class TryOnRepository {
     final String? clothesBase64,
     final String? clothesPath,
     required final TryOnMode mode,
+    final String? scenePrompt,
+    final String? transitionPrompt,
   });
 }

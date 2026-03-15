@@ -23,6 +23,8 @@ class TryonUseCase {
     final String? clothesBase64,
     final String? clothesPath,
     required final TryOnMode mode,
+    final String? scenePrompt,
+    final String? transitionPrompt,
   }) async {
     // Business Logic: If no custom avatar provided, fetch current user's avatar path
     String? avatarPathToUse;
@@ -43,6 +45,8 @@ class TryonUseCase {
       clothesBase64: clothesBase64,
       clothesPath: clothesPath,
       mode: mode,
+      scenePrompt: scenePrompt,
+      transitionPrompt: transitionPrompt,
     );
   }
 }

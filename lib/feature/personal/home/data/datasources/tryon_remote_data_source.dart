@@ -12,13 +12,23 @@ class TryonRemoteDataSource {
     final String? clothesBase64,
     final String? clothesPath,
     required final TryOnMode mode,
+    final String? scenePrompt,
+    final String? transitionPrompt,
   }) async {
     final Map<String, dynamic> body = {};
     body['avatarBase64'] = avatarBase64;
     body['avatarPath'] = avatarPath;
     body['clothesBase64'] = clothesBase64;
     body['clothesPath'] = clothesPath;
+
     body[AppConstants.paramMode] = mode.name;
+
+    if (scenePrompt != null && scenePrompt.isNotEmpty) {
+      body[AppConstants.paramScenePrompt] = scenePrompt;
+    }
+    if (transitionPrompt != null && transitionPrompt.isNotEmpty) {
+      body[AppConstants.paramTransitionPrompt] = transitionPrompt;
+    }
 
     final response = await _supabase.functions.invoke(
       AppConstants.functionTryon,

@@ -22,6 +22,8 @@ class TryOnRepositoryImpl implements TryOnRepository {
     final String? clothesBase64,
     final String? clothesPath,
     required final TryOnMode mode,
+    final String? scenePrompt,
+    final String? transitionPrompt,
   }) async {
     try {
       final data = await _remoteDataSource.tryon(
@@ -30,6 +32,8 @@ class TryOnRepositoryImpl implements TryOnRepository {
         clothesBase64: clothesBase64,
         clothesPath: clothesPath,
         mode: mode,
+        scenePrompt: scenePrompt,
+        transitionPrompt: transitionPrompt,
       );
 
       String? videoPath;
