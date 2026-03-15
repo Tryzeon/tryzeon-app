@@ -23,14 +23,12 @@ enum StylePreference {
   artsy('artsy'),
   literary('literary'),
   elegant('elegant'),
-  socialite('socialite'),
 
   // ✨ 個人特質 / 氛圍風格
   mature('mature'),
   neutral('neutral'),
   spicy('spicy'),
-  sweet('sweet'),
-  gentle('gentle');
+  sweet('sweet');
 
   const StylePreference(this.value);
   final String value;
@@ -60,14 +58,12 @@ enum StylePreference {
     StylePreference.artsy => '文青風',
     StylePreference.literary => '文藝風',
     StylePreference.elegant => '優雅風',
-    StylePreference.socialite => '名媛風',
 
     // ✨ 個人特質 / 氛圍風格
     StylePreference.mature => '輕熟風',
     StylePreference.neutral => '中性風',
     StylePreference.spicy => '辣妹風',
     StylePreference.sweet => '甜美風',
-    StylePreference.gentle => '溫柔風',
   };
 
   static StylePreference? tryFromString(final String value) =>
