@@ -1,23 +1,27 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getAuthenticatedUserClient, getAdminClient } from "../_shared/supabase.ts";
+import { QuotaManager, FeatureName } from "../_shared/quota.ts";
 import { generateTryonImage } from "./photo.ts";
 import { generateTryonVideo } from "./video.ts";
-
 Deno.serve(async (req) => {
+  let quotaManager: QuotaManager | undefined;
+
   try {
     const { userClient, user, errorResponse } = await getAuthenticatedUserClient(req);
     if (errorResponse) return errorResponse;
+
     const adminClient = getAdminClient();
 
-    const bodyText = await req.text();
-    if (!bodyText) {
+    let body;
+    try {
+      const bodyText = await req.text();
+      body = JSON.parse(bodyText);
+    } catch (err) {
       return new Response(
-        JSON.stringify({ error: "Empty request body", code: "BAD_REQUEST" }),
-        { status: 400, headers: { "Content-Type": "application/json" } },
+        JSON.stringify({ error: "Invalid JSON format", code: "BAD_REQUEST" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
-
-    const body = JSON.parse(bodyText);
     const { avatarBase64, avatarPath, clothesBase64, clothesPath, mode = "photo", scenePrompt, transitionPrompt } = body;
 
     if (!avatarPath && !avatarBase64) {
@@ -33,21 +37,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    const featureName = mode === "video" ? "tryon_video" : "tryon";
-    const { data: isAllowed, error: rpcError } = await adminClient.rpc(
-      "increment_feature_usage",
-      { p_user_id: user!.id, p_feature_name: featureName },
-    );
+    const featureName: FeatureName = mode === "video" ? "tryon_video" : "tryon";
+    quotaManager = new QuotaManager(adminClient, user!.id, featureName);
 
-    if (rpcError) {
-      console.error("RPC Error:", rpcError);
-      return new Response(
-        JSON.stringify({ error: "Internal server error", code: "INTERNAL_ERROR" }),
-        { status: 500, headers: { "Content-Type": "application/json" } },
-      );
-    }
-
-    if (!isAllowed) {
+    const canProceed = await quotaManager.incrementQuota();
+    if (!canProceed) {
       return new Response(
         JSON.stringify({ error: "Rate limit exceeded", code: "RATE_LIMIT_EXCEEDED" }),
         { status: 429, headers: { "Content-Type": "application/json" } },
@@ -94,6 +88,9 @@ Deno.serve(async (req) => {
     );
   } catch (err) {
     console.error("Unexpected error:", err);
+
+    await quotaManager?.rollbackQuota();
+
     return new Response(
       JSON.stringify({ error: "Internal server error", code: "INTERNAL_ERROR" }),
       { status: 500, headers: { "Content-Type": "application/json" } },
