@@ -140,15 +140,9 @@ class HomePage extends HookConsumerWidget {
       String? scenePrompt;
       String? transitionPrompt;
       if (mode == TryOnMode.video) {
-        final promptConfig = ref
-            .read(videoPromptConfigProvider)
-            .when(
-              data: (final data) => data,
-              loading: () => null,
-              error: (_, final _) => null,
-            );
-        scenePrompt = promptConfig?.scenePrompt;
-        transitionPrompt = promptConfig?.transitionPrompt;
+        final promptConfig = await ref.read(videoPromptConfigProvider.future);
+        scenePrompt = promptConfig.scenePrompt;
+        transitionPrompt = promptConfig.transitionPrompt;
       }
 
       final tryonUseCase = ref.read(tryonUseCaseProvider);
