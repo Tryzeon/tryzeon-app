@@ -1,12 +1,12 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class Question extends Equatable {
-  const Question({required this.id, required this.text, required this.quickReplies});
+part 'question.freezed.dart';
 
-  final String id;
-  final String text;
-  final List<String> quickReplies;
-
-  @override
-  List<Object?> get props => [id, text, quickReplies];
+@freezed
+sealed class Question with _$Question {
+  const factory Question({
+    required final String id,
+    required final String text,
+    required final List<String> quickReplies,
+  }) = _Question;
 }

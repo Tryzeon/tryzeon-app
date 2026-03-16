@@ -1,12 +1,12 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class ChatMessage extends Equatable {
-  const ChatMessage({required this.text, required this.isUser, this.questionId});
+part 'chat_message.freezed.dart';
 
-  final String text;
-  final bool isUser;
-  final String? questionId;
-
-  @override
-  List<Object?> get props => [text, isUser, questionId];
+@freezed
+sealed class ChatMessage with _$ChatMessage {
+  const factory ChatMessage({
+    required final String text,
+    required final bool isUser,
+    final String? questionId,
+  }) = _ChatMessage;
 }

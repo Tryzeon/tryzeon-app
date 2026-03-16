@@ -1,13 +1,13 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'tryon_mode.dart';
 
-class TryonResult extends Equatable {
-  const TryonResult({this.imageBase64, this.videoPath, this.mode = TryOnMode.photo});
+part 'tryon_result.freezed.dart';
 
-  final String? imageBase64;
-  final String? videoPath;
-  final TryOnMode mode;
-
-  @override
-  List<Object?> get props => [imageBase64, videoPath, mode];
+@freezed
+sealed class TryonResult with _$TryonResult {
+  const factory TryonResult({
+    final String? imageBase64,
+    final String? videoPath,
+    @Default(TryOnMode.photo) final TryOnMode mode,
+  }) = _TryonResult;
 }

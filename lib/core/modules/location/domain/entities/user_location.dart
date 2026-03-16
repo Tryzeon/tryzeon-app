@@ -1,29 +1,27 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'user_location.freezed.dart';
 
 /// 使用者位置資訊
-class UserLocation extends Equatable {
-  const UserLocation({
-    required this.city,
-    required this.district,
-    required this.latitude,
-    required this.longitude,
-    required this.fullAddress,
-  });
+@freezed
+sealed class UserLocation with _$UserLocation {
+  const factory UserLocation({
+    /// 城市名稱，如「台北市」
+    required final String city,
 
-  /// 城市名稱，如「台北市」
-  final String city;
+    /// 區名稱，如「信義區」
+    required final String district,
 
-  /// 區名稱，如「信義區」
-  final String district;
+    /// 緯度
+    required final double latitude,
 
-  /// 緯度
-  final double latitude;
+    /// 經度
+    required final double longitude,
 
-  /// 經度
-  final double longitude;
-
-  /// 完整地址（如「台北市信義區市府路1號」）
-  final String fullAddress;
+    /// 完整地址（如「台北市信義區市府路1號」）
+    required final String fullAddress,
+  }) = _UserLocation;
+  const UserLocation._();
 
   /// 取得城市+區的組合字串，如「台北市信義區」
   String get cityDistrict => '$city$district';
@@ -47,7 +45,4 @@ class UserLocation extends Equatable {
     if (isSameCity(address)) return 1;
     return 0;
   }
-
-  @override
-  List<Object?> get props => [city, district, latitude, longitude, fullAddress];
 }
