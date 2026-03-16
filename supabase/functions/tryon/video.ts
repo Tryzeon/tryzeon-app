@@ -21,11 +21,20 @@ function buildVideoPrompt(transitionPrompt?: string): string {
 const MAX_POLL_ATTEMPTS = 60;
 const POLL_INTERVAL_MS = 2000;
 
+function getVertexEndpoint(model: string, action: "predictLongRunning" | "fetchPredictOperation"): string {
+  const location = CONFIG.GOOGLE_CLOUD_LOCATION;
+  const projectId = CONFIG.GOOGLE_CLOUD_PROJECT_ID;
+  return `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${model}:${action}`;
+}
+
 async function startVideoGeneration(
   tryonImageBase64: string,
   transitionPrompt?: string,
 ): Promise<string> {
   const prompt = buildVideoPrompt(transitionPrompt);
+  const model = CONFIG.VERTEX_VIDEO_MODEL;
+  const endpoint = getVertexEndpoint(model, "predictLongRunning");
+
   const requestBody = {
     instances: [{
       prompt,
@@ -37,24 +46,23 @@ async function startVideoGeneration(
     parameters: {
       aspectRatio: "9:16",
       durationSeconds: 8,
+      generateAudio: true,
     },
   };
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${CONFIG.GEMINI_VIDEO_MODEL}:predictLongRunning`,
-    {
-      method: "POST",
-      headers: {
-        "x-goog-api-key": CONFIG.GEMINI_API_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestBody),
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "x-goog-api-key": CONFIG.GOOGLE_CLOUD_API_KEY,
+      "Content-Type": "application/json",
     },
-  );
+    body: JSON.stringify(requestBody),
+  });
 
   if (!response.ok) {
-    console.error("Failed to start video generation:", await response.text());
-    throw new Error("Failed to start video generation");
+    const errorText = await response.text();
+    console.error("Failed to start video generation:", errorText);
+    throw new Error(`Failed to start video generation: ${response.status} ${errorText}`);
   }
 
   const data = await response.json();
@@ -68,12 +76,15 @@ async function startVideoGeneration(
 
 async function downloadVideo(videoUri: string): Promise<string> {
   const videoResponse = await fetch(videoUri, {
-    headers: { "x-goog-api-key": CONFIG.GEMINI_API_KEY },
+    headers: {
+      "x-goog-api-key": CONFIG.GOOGLE_CLOUD_API_KEY,
+    },
   });
 
   if (!videoResponse.ok) {
-    console.error("Failed to download video:", await videoResponse.text());
-    throw new Error("Failed to download video");
+    const errorText = await videoResponse.text();
+    console.error("Failed to download video:", errorText);
+    throw new Error(`Failed to download video: ${videoResponse.status}`);
   }
 
   const videoBuffer = await videoResponse.arrayBuffer();
@@ -82,18 +93,26 @@ async function downloadVideo(videoUri: string): Promise<string> {
 
 async function pollForCompletion(operationName: string): Promise<string> {
   let attempts = 0;
+  const pollUrl = getVertexEndpoint(CONFIG.VERTEX_VIDEO_MODEL, "fetchPredictOperation");
 
   while (attempts < MAX_POLL_ATTEMPTS) {
     await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
     attempts++;
 
-    const pollResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/${operationName}`,
-      { headers: { "x-goog-api-key": CONFIG.GEMINI_API_KEY } },
-    );
+    const pollResponse = await fetch(pollUrl, {
+      method: "POST",
+      headers: {
+        "x-goog-api-key": CONFIG.GOOGLE_CLOUD_API_KEY,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        operationName: operationName,
+      }),
+    });
 
     if (!pollResponse.ok) {
-      console.error("Failed to poll operation:", await pollResponse.text());
+      const errorText = await pollResponse.text();
+      console.error(`Poll attempt ${attempts} failed:`, errorText);
       continue;
     }
 
@@ -103,13 +122,19 @@ async function pollForCompletion(operationName: string): Promise<string> {
 
     if (pollData.error) {
       console.error("Video generation failed:", pollData.error);
-      throw new Error("Video generation failed");
+      throw new Error(`Video generation failed: ${JSON.stringify(pollData.error)}`);
     }
 
-    const videoUri = pollData.response?.generateVideoResponse?.generatedSamples?.[0]?.video?.uri;
+    const videos = pollData.response?.videos;
+    if (!videos || videos.length === 0) {
+      console.error("No videos in completed response:", pollData);
+      throw new Error("No videos in response");
+    }
+
+    const videoUri = videos[0].gcsUri;
     if (!videoUri) {
-      console.error("No video URL in completed response:", pollData);
-      throw new Error("No video URL in response");
+      console.error("No video URI in response:", pollData);
+      throw new Error("No video URI in response");
     }
 
     return downloadVideo(videoUri);
@@ -123,5 +148,7 @@ export async function generateTryonVideo(
   transitionPrompt?: string,
 ): Promise<string> {
   const operationName = await startVideoGeneration(tryonImageBase64, transitionPrompt);
-  return pollForCompletion(operationName);
+  const videoBase64 = await pollForCompletion(operationName);
+  
+  return videoBase64;
 }

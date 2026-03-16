@@ -3,10 +3,17 @@ import { createClient, SupabaseClient, User } from "jsr:@supabase/supabase-js@2"
 export const CONFIG = {
     SUPABASE_URL: Deno.env.get("SUPABASE_URL")!,
     SUPABASE_SERVICE_ROLE_KEY: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+
+    // Gemini
     GEMINI_API_KEY: Deno.env.get("GEMINI_API_KEY")!,
     GEMINI_CHAT_MODEL: Deno.env.get("GEMINI_CHAT_MODEL"),
     GEMINI_TRYON_MODEL: Deno.env.get("GEMINI_TRYON_MODEL"),
-    GEMINI_VIDEO_MODEL: Deno.env.get("GEMINI_VIDEO_MODEL"),
+
+    // Vertex AI
+    GOOGLE_CLOUD_PROJECT_ID: Deno.env.get("GOOGLE_CLOUD_PROJECT_ID"),
+    GOOGLE_CLOUD_LOCATION: Deno.env.get("GOOGLE_CLOUD_LOCATION"),
+    GOOGLE_CLOUD_API_KEY: Deno.env.get("GOOGLE_CLOUD_API_KEY"),
+    VERTEX_VIDEO_MODEL: Deno.env.get("VERTEX_VIDEO_MODEL"),
 }
 
 /**
