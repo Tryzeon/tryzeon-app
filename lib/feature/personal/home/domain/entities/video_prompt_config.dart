@@ -9,12 +9,4 @@ sealed class VideoPromptConfig with _$VideoPromptConfig {
     final String? transitionPrompt,
   }) = _VideoPromptConfig;
   const VideoPromptConfig._();
-
-  /// Whether user has customized any prompt field.
-  bool get hasCustomization =>
-      (scenePrompt != null && scenePrompt!.isNotEmpty) ||
-      (transitionPrompt != null && transitionPrompt!.isNotEmpty);
-
-  /// Returns a new config with both fields cleared.
-  static const empty = VideoPromptConfig();
 }
