@@ -141,7 +141,7 @@ class VideoPromptCustomizeSheet extends HookConsumerWidget {
               TextField(
                 controller: sceneController,
                 decoration: InputDecoration(
-                  hintText: '例如：純白攝影棚 都會街頭',
+                  hintText: '例如：純白攝影棚',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -173,7 +173,7 @@ class VideoPromptCustomizeSheet extends HookConsumerWidget {
               TextField(
                 controller: transitionController,
                 decoration: InputDecoration(
-                  hintText: '例如：一鏡到底 柔和淡入淡出',
+                  hintText: '例如：一鏡到底',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
