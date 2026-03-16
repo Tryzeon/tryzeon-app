@@ -100,14 +100,14 @@ class PersonalSettingsPage extends HookConsumerWidget {
                           title: '偏好設定',
                           subtitle: '管理您的個人偏好',
                           onTap: () => context.push('/personal/settings/preferences'),
-                          color: colorScheme.secondary,
+                          color: colorScheme.primary,
                         ),
                         SettingsListTile(
                           icon: Icons.card_membership_rounded,
                           title: '訂閱方案',
                           subtitle: '升級您的帳號',
                           onTap: () => context.push('/personal/settings/subscription'),
-                          color: colorScheme.tertiary,
+                          color: colorScheme.primary,
                         ),
                       ],
                     ),
@@ -133,7 +133,7 @@ class PersonalSettingsPage extends HookConsumerWidget {
                               await launchUrl(url, mode: LaunchMode.externalApplication);
                             }
                           },
-                          color: colorScheme.secondary,
+                          color: colorScheme.primary,
                         ),
                       ],
                     ),

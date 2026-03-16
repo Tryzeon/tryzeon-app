@@ -101,7 +101,7 @@ class StoreSettingsPage extends HookConsumerWidget {
                           title: '切換到個人帳號',
                           subtitle: '切換回個人版本',
                           onTap: switchToPersonal,
-                          color: colorScheme.secondary,
+                          color: colorScheme.primary,
                           hideChevron: true,
                         ),
                         SettingsListTile(
@@ -114,7 +114,7 @@ class StoreSettingsPage extends HookConsumerWidget {
                               await launchUrl(url, mode: LaunchMode.externalApplication);
                             }
                           },
-                          color: colorScheme.secondary,
+                          color: colorScheme.primary,
                         ),
                       ],
                     ),
