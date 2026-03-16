@@ -1,29 +1,24 @@
 // current model: gemini-2.5-flash
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { GoogleGenerativeAI } from "npm:@google/generative-ai";
-import { CONFIG, getAuthenticatedUserClient } from "../_shared/supabase.ts";
+import { CONFIG, getAuthenticatedUserClient, getAdminClient } from "../_shared/supabase.ts";
+import { QuotaManager } from "../_shared/quota.ts";
 
 Deno.serve(async (req) => {
+  let quotaManager: QuotaManager | undefined;
+
   try {
     // Auth: Verify JWT and get user securely
     const { userClient, user, errorResponse } = await getAuthenticatedUserClient(req);
     if (errorResponse) return errorResponse;
+    
+    const adminClient = getAdminClient();
 
     // Check and Increment Usage Quota via RPC
-    const { data: isAllowed, error: rpcError } = await userClient!.rpc(
-      "increment_feature_usage",
-      { p_user_id: user!.id, p_feature_name: "chat" }
-    );
+    quotaManager = new QuotaManager(adminClient, user!.id, "chat");
 
-    if (rpcError) {
-      console.error("RPC Error:", rpcError);
-      return new Response(
-        JSON.stringify({ error: "Internal server error", code: "INTERNAL_ERROR" }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    if (!isAllowed) {
+    const canProceed = await quotaManager.incrementQuota();
+    if (!canProceed) {
       return new Response(
         JSON.stringify({ error: "Rate limit exceeded", code: "RATE_LIMIT_EXCEEDED" }),
         { status: 429, headers: { "Content-Type": "application/json" } }
@@ -63,6 +58,9 @@ Deno.serve(async (req) => {
 
   } catch (err) {
     console.error("Unexpected error:", err);
+    
+    await quotaManager?.rollbackQuota();
+
     return new Response(
       JSON.stringify({ error: "Internal server error", code: "INTERNAL_ERROR" }),
       { status: 500, headers: { "Content-Type": "application/json" } }
