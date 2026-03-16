@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
     const avatarImage = avatarBase64 ? avatarBase64 : await fetchImageBase64(avatarPath!);
     const clothesImage = clothesBase64 ? clothesBase64 : await fetchImageBase64(clothesPath!);
 
-    const tryonImageBase64 = await generateTryonImage(avatarImage, clothesImage);
+    const tryonImageBase64 = await generateTryonImage(avatarImage, clothesImage, scenePrompt);
 
     if (!tryonImageBase64) {
       return new Response(
@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
     }
 
     if (mode === "video") {
-      const videoBase64 = await generateTryonVideo(tryonImageBase64, scenePrompt, transitionPrompt);
+      const videoBase64 = await generateTryonVideo(tryonImageBase64, transitionPrompt);
       return new Response(
         JSON.stringify({ video: videoBase64 }),
         { headers: { "Content-Type": "application/json" } },

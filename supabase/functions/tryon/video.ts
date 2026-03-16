@@ -3,16 +3,12 @@ import { CONFIG } from "../_shared/supabase.ts";
 const DEFAULT_VIDEO_PROMPT =
   "The person is wearing the new outfit and turning slightly to show the fit of the clothing. Natural movement, professional fashion video style.";
 
-function buildVideoPrompt(scenePrompt?: string, transitionPrompt?: string): string {
-  if (!scenePrompt && !transitionPrompt) {
+function buildVideoPrompt(transitionPrompt?: string): string {
+  if (!transitionPrompt) {
     return DEFAULT_VIDEO_PROMPT;
   }
 
   let prompt = "The person is wearing the new outfit and showing the fit of the clothing.";
-
-  if (scenePrompt) {
-    prompt += ` Scene setting: ${scenePrompt}.`;
-  }
 
   if (transitionPrompt) {
     prompt += ` Camera and transition style: ${transitionPrompt}.`;
@@ -27,10 +23,9 @@ const POLL_INTERVAL_MS = 2000;
 
 async function startVideoGeneration(
   tryonImageBase64: string,
-  scenePrompt?: string,
   transitionPrompt?: string,
 ): Promise<string> {
-  const prompt = buildVideoPrompt(scenePrompt, transitionPrompt);
+  const prompt = buildVideoPrompt(transitionPrompt);
   const requestBody = {
     instances: [{
       prompt,
@@ -125,9 +120,8 @@ async function pollForCompletion(operationName: string): Promise<string> {
 
 export async function generateTryonVideo(
   tryonImageBase64: string,
-  scenePrompt?: string,
   transitionPrompt?: string,
 ): Promise<string> {
-  const operationName = await startVideoGeneration(tryonImageBase64, scenePrompt, transitionPrompt);
+  const operationName = await startVideoGeneration(tryonImageBase64, transitionPrompt);
   return pollForCompletion(operationName);
 }
