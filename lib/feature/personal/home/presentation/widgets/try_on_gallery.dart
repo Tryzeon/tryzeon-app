@@ -161,12 +161,14 @@ class _VideoPlayerItem extends HookWidget {
       return Stack(
         fit: StackFit.expand,
         children: [
-          FittedBox(
-            fit: BoxFit.cover,
-            child: SizedBox(
-              width: controllerState.value!.value.size.width,
-              height: controllerState.value!.value.size.height,
-              child: VideoPlayer(controllerState.value!),
+          ClipRect(
+            child: FittedBox(
+              fit: BoxFit.cover,
+              child: SizedBox(
+                width: controllerState.value!.value.size.width,
+                height: controllerState.value!.value.size.height,
+                child: VideoPlayer(controllerState.value!),
+              ),
             ),
           ),
           if (!isPlaying.value)
