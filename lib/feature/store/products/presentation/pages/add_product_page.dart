@@ -58,6 +58,7 @@ class AddProductPage extends HookConsumerWidget {
               : null,
           elasticity: formData.selectedElasticity.value,
           fit: formData.selectedFit.value,
+          styles: formData.selectedStyles.value,
           sizes: sizeManager.buildCreateProductSizeParams(),
         ),
       );
