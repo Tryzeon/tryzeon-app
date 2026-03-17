@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/product_attributes.dart';
 
@@ -16,6 +17,7 @@ class ProductFormData {
     required this.selectedCategoryId,
     required this.selectedElasticity,
     required this.selectedFit,
+    required this.selectedStyles,
   });
 
   final GlobalKey<FormState> formKey;
@@ -27,6 +29,7 @@ class ProductFormData {
   final ValueNotifier<String?> selectedCategoryId;
   final ValueNotifier<ProductElasticity?> selectedElasticity;
   final ValueNotifier<ProductFit?> selectedFit;
+  final ValueNotifier<List<ClothingStyle>?> selectedStyles;
 
   bool validate(final BuildContext context) {
     return formKey.currentState?.validate() ?? false;
@@ -50,6 +53,7 @@ class ProductFormData {
       material: materialController.text,
       elasticity: selectedElasticity.value,
       fit: selectedFit.value,
+      styles: selectedStyles.value,
       imagePath: imagePath,
       imageUrl: imageUrl,
       id: id,
@@ -77,6 +81,7 @@ ProductFormData useProductForm({final Product? initialProduct}) {
     initialProduct?.elasticity,
   );
   final selectedFit = useValueNotifier<ProductFit?>(initialProduct?.fit);
+  final selectedStyles = useValueNotifier<List<ClothingStyle>?>(initialProduct?.styles);
 
   return ProductFormData(
     formKey: formKey,
@@ -88,5 +93,6 @@ ProductFormData useProductForm({final Product? initialProduct}) {
     selectedCategoryId: selectedCategoryId,
     selectedElasticity: selectedElasticity,
     selectedFit: selectedFit,
+    selectedStyles: selectedStyles,
   );
 }
