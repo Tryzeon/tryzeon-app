@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_store_info_model.dart';
 import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/product_attributes.dart';
@@ -19,6 +20,7 @@ class ShopProductModel {
     this.material,
     this.elasticity,
     this.fit,
+    this.styles,
     this.sizes,
     this.createdAt,
     this.updatedAt,
@@ -40,6 +42,8 @@ class ShopProductModel {
   final String? material;
   final ProductElasticity? elasticity;
   final ProductFit? fit;
+  @JsonKey(fromJson: _clothingStylesFromJson)
+  final List<ClothingStyle>? styles;
   @JsonKey(name: 'product_variants', includeToJson: false)
   final List<ProductSizeModel>? sizes;
   final DateTime? createdAt;
@@ -47,3 +51,8 @@ class ShopProductModel {
 
   Map<String, dynamic> toJson() => _$ShopProductModelToJson(this);
 }
+
+List<ClothingStyle>? _clothingStylesFromJson(final List<dynamic>? json) => json
+    ?.map((final e) => ClothingStyle.tryFromString(e as String))
+    .whereType<ClothingStyle>()
+    .toList();
