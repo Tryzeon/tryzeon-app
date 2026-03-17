@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/core/shared/measurements/entities/measurements.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/product_attributes.dart';
 
 part 'product.freezed.dart';
@@ -26,6 +27,7 @@ sealed class CreateProductParams with _$CreateProductParams {
     final String? material,
     final ProductElasticity? elasticity,
     final ProductFit? fit,
+    final List<ClothingStyle>? styles,
     final List<CreateProductSizeParams>? sizes,
   }) = _CreateProductParams;
 }
@@ -56,6 +58,7 @@ sealed class Product with _$Product {
     final String? material,
     final ProductElasticity? elasticity,
     final ProductFit? fit,
+    final List<ClothingStyle>? styles,
     final List<ProductSize>? sizes,
     final DateTime? createdAt,
     final DateTime? updatedAt,
