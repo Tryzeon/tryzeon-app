@@ -93,6 +93,7 @@ class ProductRepositoryImpl implements ProductRepository {
         material: params.material,
         elasticity: params.elasticity,
         fit: params.fit,
+        styles: params.styles,
       );
 
       final productId = await _remoteDataSource.insertProduct(request);
