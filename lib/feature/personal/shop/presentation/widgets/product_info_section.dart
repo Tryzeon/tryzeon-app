@@ -45,37 +45,6 @@ class ProductInfoSection extends StatelessWidget {
               Text(product.fit!.label, style: textTheme.bodyMedium),
             ],
           ),
-          const SizedBox(height: 8),
-        ],
-
-        if (product.styles != null && product.styles!.isNotEmpty) ...[
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(width: 60, child: Text('風格', style: textTheme.bodyMedium)),
-              Expanded(
-                child: Wrap(
-                  spacing: 6,
-                  runSpacing: 4,
-                  children: product.styles!
-                      .map(
-                        (final s) => Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Text(s.label, style: textTheme.bodySmall),
-                        ),
-                      )
-                      .toList(),
-                ),
-              ),
-            ],
-          ),
         ],
       ],
     );

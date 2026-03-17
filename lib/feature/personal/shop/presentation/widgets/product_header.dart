@@ -24,21 +24,40 @@ class ProductHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Product Category
-              if (product.categoryId.isNotEmpty) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Text(
-                    categoryIdToName[product.categoryId] ?? product.categoryId,
-                    style: textTheme.labelMedium,
-                  ),
-                ),
-                const SizedBox(height: 12),
-              ],
+              // Product Category and Styles
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  // Product Category
+                  if (product.categoryId.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        categoryIdToName[product.categoryId] ?? product.categoryId,
+                        style: textTheme.labelMedium,
+                      ),
+                    ),
+
+                  // Product Styles
+                  if (product.styles != null && product.styles!.isNotEmpty)
+                    ...product.styles!.map(
+                      (final style) => Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: colorScheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(style.label, style: textTheme.labelMedium),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 12),
 
               // Product Name
               Text(product.name, style: textTheme.headlineSmall),
