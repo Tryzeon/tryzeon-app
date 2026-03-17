@@ -1,7 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
 
-import '../../domain/entities/wardrobe_category.dart';
-
 part 'wardrobe_item_model.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.snake)
@@ -20,7 +18,7 @@ class WardrobeItemModel {
 
   final String id;
   final String imagePath;
-  final WardrobeCategory category;
+  final String category;
   final List<String> tags;
   final DateTime? createdAt;
   final DateTime? updatedAt;

@@ -9,4 +9,7 @@ enum WardrobeCategory {
 
   const WardrobeCategory(this.value);
   final String value;
+
+  static WardrobeCategory? tryFromString(final String? value) =>
+      WardrobeCategory.values.where((final e) => e.value == value).firstOrNull;
 }

@@ -1,5 +1,4 @@
 import 'package:isar_community/isar.dart';
-import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_category.dart';
 
 part 'wardrobe_item_collection.g.dart';
 
@@ -12,8 +11,7 @@ class WardrobeItemCollection {
 
   late String imagePath;
 
-  @Enumerated(EnumType.name)
-  late WardrobeCategory category;
+  late String category;
 
   List<String>? tags;
 

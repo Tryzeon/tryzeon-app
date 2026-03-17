@@ -22,6 +22,7 @@ import '../../subscription/domain/entities/subscription.dart';
 import '../../subscription/domain/entities/subscription_plan_info.dart';
 import '../../wardrobe/data/collections/wardrobe_item_collection.dart';
 import '../../wardrobe/data/models/wardrobe_item_model.dart';
+import '../../wardrobe/domain/entities/wardrobe_category.dart';
 import '../../wardrobe/domain/entities/wardrobe_item.dart';
 import 'personal_mappr.auto_mappr.dart';
 
@@ -56,8 +57,12 @@ import 'personal_mappr.auto_mappr.dart';
     MapType<UserProfileCollection, UserProfileModel>(),
 
     // WardrobeItem mappings
-    MapType<WardrobeItemModel, WardrobeItem>(),
-    MapType<WardrobeItem, WardrobeItemModel>(),
+    MapType<WardrobeItemModel, WardrobeItem>(
+      fields: [Field('category', custom: WardrobeItemMapprHelper.stringToCategory)],
+    ),
+    MapType<WardrobeItem, WardrobeItemModel>(
+      fields: [Field('category', custom: WardrobeItemMapprHelper.categoryToString)],
+    ),
     MapType<WardrobeItemModel, WardrobeItemCollection>(
       fields: [Field('itemId', from: 'id')],
     ),
@@ -100,6 +105,13 @@ import 'personal_mappr.auto_mappr.dart';
 )
 class PersonalMappr extends $PersonalMappr {
   const PersonalMappr();
+}
+
+class WardrobeItemMapprHelper {
+  static WardrobeCategory stringToCategory(final WardrobeItemModel source) =>
+      WardrobeCategory.tryFromString(source.category) ?? WardrobeCategory.others;
+
+  static String categoryToString(final WardrobeItem source) => source.category.value;
 }
 
 class ShopProductMapprHelper {
