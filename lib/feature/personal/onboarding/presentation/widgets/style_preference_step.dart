@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/feature/personal/profile/domain/entities/style_preference.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/clothing_style.dart';
 
 import '../providers/onboarding_notifier.dart';
 
@@ -41,9 +41,9 @@ class StylePreferenceStep extends HookConsumerWidget {
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 20,
               ),
-              itemCount: StylePreference.values.length,
+              itemCount: ClothingStyle.values.length,
               itemBuilder: (final context, final index) {
-                final style = StylePreference.values[index];
+                final style = ClothingStyle.values[index];
                 final isSelected = onboardingState.stylePreferences.contains(style);
 
                 return GestureDetector(

@@ -6,8 +6,8 @@ import '../../../../feature/store/products/domain/entities/product.dart';
 import '../../profile/data/collections/user_profile_collection.dart';
 import '../../profile/data/models/user_profile_model.dart';
 import '../../profile/domain/entities/age_range.dart';
+import '../../profile/domain/entities/clothing_style.dart';
 import '../../profile/domain/entities/gender.dart';
-import '../../profile/domain/entities/style_preference.dart';
 import '../../profile/domain/entities/user_profile.dart';
 import '../../shop/data/models/shop_product_model.dart';
 import '../../shop/data/models/shop_store_info_model.dart';
@@ -106,11 +106,11 @@ class UserProfileMapprHelper {
 
   static String? ageRangeToString(final UserProfile source) => source.ageRange?.value;
 
-  static List<StylePreference>? stylePreferencesFromStrings(
+  static List<ClothingStyle>? stylePreferencesFromStrings(
     final UserProfileModel source,
   ) => source.stylePreferences
-      ?.map(StylePreference.tryFromString)
-      .whereType<StylePreference>()
+      ?.map(ClothingStyle.tryFromString)
+      .whereType<ClothingStyle>()
       .toList();
 
   static List<String>? stylePreferencesToStrings(final UserProfile source) =>

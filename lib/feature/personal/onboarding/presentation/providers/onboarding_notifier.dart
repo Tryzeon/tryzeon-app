@@ -3,8 +3,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/personal/onboarding/providers/personal_onboarding_providers.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
-import 'package:tryzeon/feature/personal/profile/domain/entities/style_preference.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -17,7 +17,7 @@ sealed class OnboardingState with _$OnboardingState {
     @Default(0) final int currentStep,
     final Gender? gender,
     final AgeRange? ageRange,
-    @Default([]) final List<StylePreference> stylePreferences,
+    @Default([]) final List<ClothingStyle> stylePreferences,
     @Default(false) final bool isSubmitting,
   }) = _OnboardingState;
 }
@@ -35,8 +35,8 @@ class OnboardingNotifier extends _$OnboardingNotifier {
     state = state.copyWith(ageRange: ageRange);
   }
 
-  void toggleStylePreference(final StylePreference style) {
-    final current = List<StylePreference>.from(state.stylePreferences);
+  void toggleStylePreference(final ClothingStyle style) {
+    final current = List<ClothingStyle>.from(state.stylePreferences);
     if (current.contains(style)) {
       current.remove(style);
     } else {
