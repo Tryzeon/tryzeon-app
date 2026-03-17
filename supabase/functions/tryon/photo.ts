@@ -2,7 +2,13 @@ import { GoogleGenerativeAI } from "npm:@google/generative-ai";
 import { CONFIG } from "../_shared/supabase.ts";
 
 const SYSTEM_INSTRUCTION =
-  `You are a virtual try-on system. Your ONLY job is to dress the person in a new garment while preserving their identity exactly. You must NEVER alter the person's face, body, hair, or pose. You must NEVER invent garment details that aren't in the reference image.`;
+  `You are a virtual try-on system. Your ONLY job is to dress the person in a new garment while preserving their identity exactly. 
+
+CORE TASK: Remove the original clothing completely and replace it with the new garment. Think of this as a two-step process:
+1. REMOVE: Completely erase all traces of the original clothing
+2. REPLACE: Apply the new garment in its place
+
+You must NEVER alter the person's face, body, hair, or pose. You must NEVER invent garment details that aren't in the reference image. You must NEVER leave remnants of the original clothing visible.`;
 
 function buildTaskPrompt(scenePrompt?: string): string {
   let prompt =
@@ -24,7 +30,20 @@ GARMENT TRANSFER — MUST MATCH THE SECOND IMAGE EXACTLY
 - Preserve print/pattern scale, placement, and color exactly — do not simplify or genericize.
 - Maintain material properties: sheen, thickness, texture, translucency.
 - Fit the garment naturally to this person's body: realistic drape, wrinkles, and tension points for their specific pose.
-- Fully replace the person's original clothing in the covered area. Keep exposed skin natural.
+
+CRITICAL: ORIGINAL CLOTHING REMOVAL
+- COMPLETELY REMOVE all traces of the person's original clothing from the first image.
+- If the new garment has shorter sleeves (e.g., sleeveless, short sleeves) than the original, the person's arms MUST be fully visible with natural skin — NO remnants of original sleeves.
+- If the new garment has a different neckline (e.g., lower cut, wider), the person's chest/shoulders MUST show natural skin — NO remnants of original collar or fabric.
+- If the new garment is shorter in length, the person's torso/legs MUST be visible with natural skin — NO remnants of original hem.
+- The boundary between the new garment and exposed skin must be clean, natural, and seamless with proper shadows and skin texture.
+- Areas not covered by the new garment should show the person's natural body as if they were never wearing the original clothing.
+
+EXAMPLE SCENARIOS
+- Original: long-sleeved shirt → New: sleeveless top = Show full bare arms with natural skin tone and texture
+- Original: turtleneck → New: V-neck = Show natural chest/collarbone area with no fabric remnants
+- Original: full-length dress → New: short dress = Show natural legs below the new hem
+- The key is: treat uncovered areas as if the person is wearing ONLY the new garment, nothing else.
 
 SOURCE IMAGE ISOLATION
 - Treat the second image as a product reference ONLY.
