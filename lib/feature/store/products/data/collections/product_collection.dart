@@ -1,6 +1,5 @@
 import 'package:isar_community/isar.dart';
 import 'package:tryzeon/core/shared/measurements/collections/measurements_collection.dart';
-import 'package:tryzeon/feature/store/products/domain/value_objects/product_attributes.dart';
 
 part 'product_collection.g.dart';
 
@@ -21,11 +20,8 @@ class ProductCollection {
   String? purchaseLink;
   String? material;
 
-  @Enumerated(EnumType.name)
-  ProductElasticity? elasticity;
-
-  @Enumerated(EnumType.name)
-  ProductFit? fit;
+  String? elasticity;
+  String? fit;
 
   List<String>? styles;
 

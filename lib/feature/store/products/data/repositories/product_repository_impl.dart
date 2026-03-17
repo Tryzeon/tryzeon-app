@@ -91,9 +91,9 @@ class ProductRepositoryImpl implements ProductRepository {
         imagePath: imagePath,
         purchaseLink: params.purchaseLink,
         material: params.material,
-        elasticity: params.elasticity,
-        fit: params.fit,
-        styles: params.styles,
+        elasticity: params.elasticity?.value,
+        fit: params.fit?.value,
+        styles: params.styles?.map((final e) => e.value).toList(),
       );
 
       final productId = await _remoteDataSource.insertProduct(request);

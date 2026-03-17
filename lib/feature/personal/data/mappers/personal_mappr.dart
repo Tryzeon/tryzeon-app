@@ -3,6 +3,7 @@ import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
 import '../../../../core/shared/measurements/data/mappers/measurements_mappr.dart';
 import '../../../../feature/store/products/data/models/product_model.dart';
 import '../../../../feature/store/products/domain/entities/product.dart';
+import '../../../../feature/store/products/domain/value_objects/product_attributes.dart';
 import '../../profile/data/collections/user_profile_collection.dart';
 import '../../profile/data/models/user_profile_model.dart';
 import '../../profile/domain/entities/age_range.dart';
@@ -79,7 +80,13 @@ import 'personal_mappr.auto_mappr.dart';
     ),
 
     // ShopProduct mappings (read-only for consumer)
-    MapType<ShopProductModel, ShopProduct>(),
+    MapType<ShopProductModel, ShopProduct>(
+      fields: [
+        Field('elasticity', custom: ShopProductMapprHelper.elasticityFromString),
+        Field('fit', custom: ShopProductMapprHelper.fitFromString),
+        Field('styles', custom: ShopProductMapprHelper.stylesFromProductModelStrings),
+      ],
+    ),
 
     // ShopStoreInfo mappings (read-only for consumer)
     MapType<ShopStoreInfoModel, ShopStoreInfo>(),
@@ -93,6 +100,19 @@ import 'personal_mappr.auto_mappr.dart';
 )
 class PersonalMappr extends $PersonalMappr {
   const PersonalMappr();
+}
+
+class ShopProductMapprHelper {
+  static ProductElasticity? elasticityFromString(final ShopProductModel source) =>
+      ProductElasticity.tryFromString(source.elasticity);
+
+  static ProductFit? fitFromString(final ShopProductModel source) =>
+      ProductFit.tryFromString(source.fit);
+
+  static List<ClothingStyle>? stylesFromProductModelStrings(
+    final ShopProductModel source,
+  ) =>
+      source.styles?.map(ClothingStyle.tryFromString).whereType<ClothingStyle>().toList();
 }
 
 class UserProfileMapprHelper {

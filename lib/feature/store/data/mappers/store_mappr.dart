@@ -2,6 +2,7 @@ import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
 
 import '../../../../core/shared/measurements/data/mappers/measurements_mappr.dart';
 import '../../../../feature/personal/profile/domain/entities/clothing_style.dart';
+import '../../../../feature/store/products/domain/value_objects/product_attributes.dart';
 import '../../analytics/data/collections/product_analytics_collection.dart';
 import '../../analytics/data/models/product_analytics_summary_model.dart';
 import '../../analytics/domain/entities/product_analytics_summary.dart';
@@ -14,31 +15,33 @@ import '../../profile/domain/entities/store_profile.dart';
 import 'store_mappr.auto_mappr.dart';
 
 /// AutoMappr configuration for Store feature
-/// Handles Product, StoreProfile, and ProductAnalyticsSummary mappings
-/// Note: Measurements mappings are included via MeasurementsMappr
 @AutoMappr(
   [
-    // ProductSize nested object mappings
+    // ProductSize mappings
     MapType<ProductSizeModel, ProductSize>(),
     MapType<ProductSize, ProductSizeModel>(),
     MapType<ProductSizeModel, ProductSizeCollection>(),
     MapType<ProductSizeCollection, ProductSizeModel>(),
 
-    // Product mappings
-    MapType<ProductModel, Product>(),
-    MapType<Product, ProductModel>(),
-    MapType<ProductModel, ProductCollection>(
+    // Product mappings (String ↔ Enum conversion only at Model ↔ Entity boundary)
+    MapType<ProductModel, Product>(
       fields: [
-        Field('productId', from: 'id'),
+        Field('elasticity', custom: StoreMapprHelper.stringToElasticity),
+        Field('fit', custom: StoreMapprHelper.stringToFit),
+        Field('styles', custom: StoreMapprHelper.stringsToStyles),
+      ],
+    ),
+    MapType<Product, ProductModel>(
+      fields: [
+        Field('elasticity', custom: StoreMapprHelper.elasticityToString),
+        Field('fit', custom: StoreMapprHelper.fitToString),
         Field('styles', custom: StoreMapprHelper.stylesToStrings),
       ],
     ),
-    MapType<ProductCollection, ProductModel>(
-      fields: [
-        Field('id', from: 'productId'),
-        Field('styles', custom: StoreMapprHelper.stylesFromStrings),
-      ],
-    ),
+
+    // Collection mappings (String ↔ String, only field name mapping needed)
+    MapType<ProductModel, ProductCollection>(fields: [Field('productId', from: 'id')]),
+    MapType<ProductCollection, ProductModel>(fields: [Field('id', from: 'productId')]),
 
     // StoreProfile mappings
     MapType<StoreProfileModel, StoreProfile>(),
@@ -62,9 +65,21 @@ class StoreMappr extends $StoreMappr {
 }
 
 class StoreMapprHelper {
-  static List<String>? stylesToStrings(final ProductModel source) =>
-      source.styles?.map((final e) => e.value).toList();
+  // String to Enum conversions
+  static ProductElasticity? stringToElasticity(final ProductModel source) =>
+      ProductElasticity.tryFromString(source.elasticity);
 
-  static List<ClothingStyle>? stylesFromStrings(final ProductCollection source) =>
+  static ProductFit? stringToFit(final ProductModel source) =>
+      ProductFit.tryFromString(source.fit);
+
+  static List<ClothingStyle>? stringsToStyles(final ProductModel source) =>
       source.styles?.map(ClothingStyle.tryFromString).whereType<ClothingStyle>().toList();
+
+  // Enum to String conversions
+  static String? elasticityToString(final Product source) => source.elasticity?.value;
+
+  static String? fitToString(final Product source) => source.fit?.value;
+
+  static List<String>? stylesToStrings(final Product source) =>
+      source.styles?.map((final e) => e.value).toList();
 }
