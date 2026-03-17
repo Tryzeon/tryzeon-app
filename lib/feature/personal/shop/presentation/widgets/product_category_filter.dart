@@ -159,7 +159,9 @@ class ProductCategoryFilter extends HookConsumerWidget {
                                             : null,
                                       ),
                                       child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(18),
+                                        borderRadius: BorderRadius.circular(
+                                          isSelected ? 17.5 : 20,
+                                        ),
                                         child: (imageUrl != null && imageUrl.isNotEmpty)
                                             ? CachedNetworkImage(
                                                 imageUrl: imageUrl,
