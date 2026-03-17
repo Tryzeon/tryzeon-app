@@ -27,6 +27,8 @@ class ProductCollection {
   @Enumerated(EnumType.name)
   ProductFit? fit;
 
+  List<String>? styles;
+
   DateTime? createdAt;
   DateTime? updatedAt;
 
