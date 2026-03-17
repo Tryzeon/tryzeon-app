@@ -1,6 +1,7 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
 
 import '../../../../core/shared/measurements/data/mappers/measurements_mappr.dart';
+import '../../../../feature/personal/profile/domain/entities/clothing_style.dart';
 import '../../analytics/data/collections/product_analytics_collection.dart';
 import '../../analytics/data/models/product_analytics_summary_model.dart';
 import '../../analytics/domain/entities/product_analytics_summary.dart';
@@ -26,8 +27,18 @@ import 'store_mappr.auto_mappr.dart';
     // Product mappings
     MapType<ProductModel, Product>(),
     MapType<Product, ProductModel>(),
-    MapType<ProductModel, ProductCollection>(fields: [Field('productId', from: 'id')]),
-    MapType<ProductCollection, ProductModel>(fields: [Field('id', from: 'productId')]),
+    MapType<ProductModel, ProductCollection>(
+      fields: [
+        Field('productId', from: 'id'),
+        Field('styles', custom: StoreMapprHelper.stylesToStrings),
+      ],
+    ),
+    MapType<ProductCollection, ProductModel>(
+      fields: [
+        Field('id', from: 'productId'),
+        Field('styles', custom: StoreMapprHelper.stylesFromStrings),
+      ],
+    ),
 
     // StoreProfile mappings
     MapType<StoreProfileModel, StoreProfile>(),
@@ -48,4 +59,12 @@ import 'store_mappr.auto_mappr.dart';
 )
 class StoreMappr extends $StoreMappr {
   const StoreMappr();
+}
+
+class StoreMapprHelper {
+  static List<String>? stylesToStrings(final ProductModel source) =>
+      source.styles?.map((final e) => e.value).toList();
+
+  static List<ClothingStyle>? stylesFromStrings(final ProductCollection source) =>
+      source.styles?.map(ClothingStyle.tryFromString).whereType<ClothingStyle>().toList();
 }
