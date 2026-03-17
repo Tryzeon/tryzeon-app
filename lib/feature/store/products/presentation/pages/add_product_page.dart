@@ -5,7 +5,6 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
-import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 
 import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_form.dart';
 import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_size_manager.dart';
@@ -44,21 +43,8 @@ class AddProductPage extends HookConsumerWidget {
 
       final createProductUseCase = ref.read(createProductUseCaseProvider);
       final result = await createProductUseCase(
-        CreateProductParams(
+        formData.toCreateProductParams(
           storeId: storeProfile.id,
-          name: formData.nameController.text,
-          categoryId: formData.selectedCategoryId.value ?? '',
-          price: double.tryParse(formData.priceController.text) ?? 0.0,
-          image: formData.selectedImage.value!,
-          purchaseLink: formData.purchaseLinkController.text.isNotEmpty
-              ? formData.purchaseLinkController.text
-              : null,
-          material: formData.materialController.text.isNotEmpty
-              ? formData.materialController.text
-              : null,
-          elasticity: formData.selectedElasticity.value,
-          fit: formData.selectedFit.value,
-          styles: formData.selectedStyles.value,
           sizes: sizeManager.buildCreateProductSizeParams(),
         ),
       );

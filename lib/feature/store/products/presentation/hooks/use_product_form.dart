@@ -35,6 +35,27 @@ class ProductFormData {
     return formKey.currentState?.validate() ?? false;
   }
 
+  CreateProductParams toCreateProductParams({
+    required final String storeId,
+    required final List<CreateProductSizeParams>? sizes,
+  }) {
+    return CreateProductParams(
+      storeId: storeId,
+      name: nameController.text,
+      categoryId: selectedCategoryId.value ?? '',
+      price: double.tryParse(priceController.text) ?? 0.0,
+      image: selectedImage.value!,
+      purchaseLink: purchaseLinkController.text.isNotEmpty
+          ? purchaseLinkController.text
+          : null,
+      material: materialController.text.isNotEmpty ? materialController.text : null,
+      elasticity: selectedElasticity.value,
+      fit: selectedFit.value,
+      styles: selectedStyles.value,
+      sizes: sizes,
+    );
+  }
+
   Product toProduct({
     required final String id,
     required final String storeId,
