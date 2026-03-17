@@ -106,6 +106,7 @@ class ProductFormLayout extends StatelessWidget {
               selectedCategoryId: formData.selectedCategoryId,
               selectedElasticity: formData.selectedElasticity,
               selectedFit: formData.selectedFit,
+              selectedStyles: formData.selectedStyles,
               productCategoryTreeAsync: productCategoryTreeAsync,
               onRetryCategories: onRetryCategories,
             ),

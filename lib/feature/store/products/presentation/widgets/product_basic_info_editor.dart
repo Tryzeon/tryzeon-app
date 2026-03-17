@@ -6,10 +6,12 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/common/product_categories/domain/entities/category_tree_node.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/product_attributes.dart';
 
 import 'package:tryzeon/feature/store/products/presentation/extensions/product_attributes_extension.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_category_selector.dart';
+import 'package:tryzeon/feature/store/products/presentation/widgets/product_style_selector.dart';
 
 class ProductBasicInfoEditor extends StatelessWidget {
   const ProductBasicInfoEditor({
@@ -21,7 +23,7 @@ class ProductBasicInfoEditor extends StatelessWidget {
     required this.selectedCategoryId,
     required this.selectedElasticity,
     required this.selectedFit,
-
+    required this.selectedStyles,
     required this.productCategoryTreeAsync,
     required this.onRetryCategories,
   });
@@ -33,6 +35,7 @@ class ProductBasicInfoEditor extends StatelessWidget {
   final ValueNotifier<String?> selectedCategoryId;
   final ValueNotifier<ProductElasticity?> selectedElasticity;
   final ValueNotifier<ProductFit?> selectedFit;
+  final ValueNotifier<List<ClothingStyle>?> selectedStyles;
 
   final AsyncValue<List<CategoryTreeNode>> productCategoryTreeAsync;
   final VoidCallback onRetryCategories;
@@ -140,6 +143,21 @@ class ProductBasicInfoEditor extends StatelessWidget {
                   isCompact: true,
                 ),
               ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.style_rounded, color: colorScheme.primary, size: 20),
+                  const SizedBox(width: 8),
+                  Text('風格標籤', style: textTheme.bodyMedium),
+                ],
+              ),
+              const SizedBox(height: 12),
+              ProductStyleSelector(selectedStyles: selectedStyles),
             ],
           ),
           const SizedBox(height: 16),
