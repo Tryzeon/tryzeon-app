@@ -16,15 +16,20 @@ import 'package:tryzeon/feature/auth/domain/usecases/verify_email_otp.dart';
 part 'auth_providers.g.dart';
 
 @riverpod
-bool isAuthenticated(final Ref ref) {
-  final client = Supabase.instance.client;
-  // Listen to auth state changes and invalidate the provider to trigger rebuilds.
-  final subscription = client.auth.onAuthStateChange.listen((final _) {
-    ref.invalidateSelf();
-  });
-  ref.onDispose(subscription.cancel);
+Stream<AuthState> authState(final Ref ref) {
+  return Supabase.instance.client.auth.onAuthStateChange;
+}
 
-  return client.auth.currentSession != null;
+@riverpod
+bool isAuthenticated(final Ref ref) {
+  // Watch the authState stream to properly react to auth changes
+  // without manually invalidating (which causes infinite rebuild loops)
+  ref.watch(authStateProvider);
+
+  // By watching the stream, this provider will automatically update
+  // when auth state changes. The stream updates directly instead of
+  // triggering manual invalidation loops.
+  return Supabase.instance.client.auth.currentSession != null;
 }
 
 // Data Source Providers
