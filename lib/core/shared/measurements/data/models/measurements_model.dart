@@ -2,7 +2,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'measurements_model.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, includeIfNull: false)
 class MeasurementsModel {
   const MeasurementsModel({
     this.height,
