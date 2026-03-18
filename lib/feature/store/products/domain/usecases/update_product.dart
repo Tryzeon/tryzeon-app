@@ -11,6 +11,16 @@ class UpdateProduct {
   Future<Result<void, Failure>> call({
     required final Product original,
     required final Product target,
+    required final List<CreateProductSizeParams> sizesToAdd,
+    required final List<ProductSize> sizesToUpdate,
+    required final List<String> sizeIdsToDelete,
     final File? newImage,
-  }) => _repository.updateProduct(original: original, target: target, newImage: newImage);
+  }) => _repository.updateProduct(
+    original: original,
+    target: target,
+    sizesToAdd: sizesToAdd,
+    sizesToUpdate: sizesToUpdate,
+    sizeIdsToDelete: sizeIdsToDelete,
+    newImage: newImage,
+  );
 }

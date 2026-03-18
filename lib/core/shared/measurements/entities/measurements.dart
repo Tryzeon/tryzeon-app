@@ -27,22 +27,6 @@ sealed class Measurements with _$Measurements {
   factory Measurements.fromJson(final Map<String, dynamic> json) =>
       _$MeasurementsFromJson(json);
 
-  @override
-  Map<String, dynamic> toJson() {
-    final data = <String, dynamic>{};
-    for (final type in MeasurementType.values) {
-      final value = getValue(type);
-      if (value != null) {
-        data[type.value] = value;
-      }
-      final offset = getOffset(type);
-      if (offset != null) {
-        data['${type.value}_offset'] = offset;
-      }
-    }
-    return data;
-  }
-
   double? getValue(final MeasurementType type) => switch (type) {
     MeasurementType.height => height,
     MeasurementType.chest => chest,

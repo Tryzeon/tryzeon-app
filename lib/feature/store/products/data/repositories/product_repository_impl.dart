@@ -133,6 +133,9 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<Result<void, Failure>> updateProduct({
     required final Product original,
     required final Product target,
+    required final List<CreateProductSizeParams> sizesToAdd,
+    required final List<ProductSize> sizesToUpdate,
+    required final List<String> sizeIdsToDelete,
     final File? newImage,
   }) async {
     try {
@@ -150,7 +153,8 @@ class ProductRepositoryImpl implements ProductRepository {
       }
 
       final productChanged = original != finalTarget;
-      final sizesChanged = original.sizes != target.sizes;
+      final sizesChanged =
+          sizesToAdd.isNotEmpty || sizesToUpdate.isNotEmpty || sizeIdsToDelete.isNotEmpty;
 
       if (!productChanged && !sizesChanged && newImage == null) {
         return const Ok(null);
@@ -167,46 +171,29 @@ class ProductRepositoryImpl implements ProductRepository {
       }
 
       if (sizesChanged) {
-        final originalSizes = original.sizes ?? [];
-        final targetSizes = target.sizes ?? [];
-
-        final targetSizeIds = targetSizes
-            .map((final s) => s.id)
-            .whereType<String>()
-            .toSet();
-
         // Delete removed sizes
-        for (final originalSize in originalSizes) {
-          if (originalSize.id.isNotEmpty && !targetSizeIds.contains(originalSize.id)) {
-            await _remoteDataSource.deleteProductSize(originalSize.id);
-          }
+        for (final sizeId in sizeIdsToDelete) {
+          await _remoteDataSource.deleteProductSize(sizeId);
         }
 
         // Add new sizes
-        for (final targetSize in targetSizes) {
-          if (targetSize.id.isEmpty) {
-            final sizeRequest = CreateProductSizeRequest(
-              productId: original.id,
-              name: targetSize.name,
-              measurements: targetSize.measurements != null
-                  ? const MeasurementsMappr().convert<Measurements, MeasurementsModel>(
-                      targetSize.measurements!,
-                    )
-                  : null,
-            );
-            await _remoteDataSource.insertProductSize(sizeRequest);
-          } else {
-            // Update existing sizes if changed
-            final originalSize = originalSizes.cast<ProductSize?>().firstWhere(
-              (final s) => s?.id == targetSize.id,
-              orElse: () => null,
-            );
+        for (final sizeParams in sizesToAdd) {
+          final sizeRequest = CreateProductSizeRequest(
+            productId: original.id,
+            name: sizeParams.name,
+            measurements: sizeParams.measurements != null
+                ? const MeasurementsMappr().convert<Measurements, MeasurementsModel>(
+                    sizeParams.measurements!,
+                  )
+                : null,
+          );
+          await _remoteDataSource.insertProductSize(sizeRequest);
+        }
 
-            if (originalSize != null && originalSize != targetSize) {
-              final sizeModel = _mappr.convert<ProductSize, ProductSizeModel>(targetSize);
-              await _remoteDataSource.updateProductSize(sizeModel);
-            }
-          }
+        // Update existing sizes
+        for (final size in sizesToUpdate) {
+          final sizeModel = _mappr.convert<ProductSize, ProductSizeModel>(size);
+          await _remoteDataSource.updateProductSize(sizeModel);
         }
       }
 

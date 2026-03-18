@@ -63,18 +63,23 @@ class ProductDetailPage extends HookConsumerWidget {
 
       isLoading.value = true;
 
+      final deltas = sizeManager.calculateDeltas(product.id, product.sizes);
+
       final targetProduct = formData.toProduct(
         id: product.id,
         storeId: product.storeId,
         imagePath: product.imagePath,
         imageUrl: product.imageUrl,
-        sizes: sizeManager.buildProductSizes(product.id),
+        sizes: product.sizes,
       );
 
       final updateProductUseCase = ref.read(updateProductUseCaseProvider);
       final result = await updateProductUseCase(
         original: product,
         target: targetProduct,
+        sizesToAdd: deltas.sizesToAdd,
+        sizesToUpdate: deltas.sizesToUpdate,
+        sizeIdsToDelete: deltas.sizeIdsToDelete,
         newImage: formData.selectedImage.value,
       );
 

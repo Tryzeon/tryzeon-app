@@ -12,10 +12,10 @@ class ProductSizeEntryController {
       measurementControllers[type] = TextEditingController(
         text: measurements?.getValue(type)?.toString() ?? '',
       );
-      
+
       final offsetValue = measurements?.getOffset(type);
       offsetControllers[type] = TextEditingController(
-        text: offsetValue != null ? offsetValue.toString() : '0',
+        text: offsetValue != null ? offsetValue.toString() : '0.0',
       );
     }
   }
@@ -35,101 +35,67 @@ class ProductSizeEntryController {
 
   static const double _cunToCmFactor = 3.03; // 1 Cun = 3.03 CM
 
-  CreateProductSizeParams toCreateProductSizeParams({required final bool isCun}) {
-    final Map<String, dynamic> measurementsJson = {};
+  double? _parseAndConvert(final String? text, final double multiplier) {
+    if (text == null || text.isEmpty) return null;
+    final value = double.tryParse(text);
+    if (value == null) return null;
+    return double.parse((value * multiplier).toStringAsFixed(1));
+  }
+
+  Measurements _buildMeasurements({required final bool isCun}) {
     final multiplier = isCun ? _cunToCmFactor : 1.0;
 
-    for (final type in MeasurementType.values) {
-      final valueText = measurementControllers[type]?.text;
-      final value = valueText != null && valueText.isNotEmpty
-          ? double.tryParse(valueText)
-          : null;
+    double? getValue(final MeasurementType type) =>
+        _parseAndConvert(measurementControllers[type]?.text, multiplier);
 
-      if (value != null) {
-        final convertedValue = value * multiplier;
-        measurementsJson[type.value] = double.parse(convertedValue.toStringAsFixed(1));
+    double? getOffset(final MeasurementType type) =>
+        _parseAndConvert(offsetControllers[type]?.text.trim(), multiplier);
 
-        final offsetText = offsetControllers[type]?.text;
-        final offset = (offsetText != null && offsetText.trim().isNotEmpty)
-            ? double.tryParse(offsetText.trim())
-            : null;
-
-        // 儲存 offset（可以是 null、0 或正數）
-        // null = 未設定誤差（不儲存到資料庫）
-        // 0 = 明確設定為無誤差（精確測量）
-        // > 0 = 有誤差範圍
-        if (offset != null) {
-          final convertedOffset = offset * multiplier;
-          measurementsJson['${type.value}_offset'] = double.parse(
-            convertedOffset.toStringAsFixed(1),
-          );
-        }
-      }
-    }
-
-    return CreateProductSizeParams(
-      name: nameController.text,
-      measurements: Measurements.fromJson(measurementsJson),
+    return Measurements(
+      height: getValue(MeasurementType.height),
+      chest: getValue(MeasurementType.chest),
+      waist: getValue(MeasurementType.waist),
+      hips: getValue(MeasurementType.hips),
+      shoulder: getValue(MeasurementType.shoulder),
+      sleeve: getValue(MeasurementType.sleeve),
+      heightOffset: getOffset(MeasurementType.height),
+      chestOffset: getOffset(MeasurementType.chest),
+      waistOffset: getOffset(MeasurementType.waist),
+      hipsOffset: getOffset(MeasurementType.hips),
+      shoulderOffset: getOffset(MeasurementType.shoulder),
+      sleeveOffset: getOffset(MeasurementType.sleeve),
     );
   }
 
-  ProductSize toProductSize(final String? productId, {required final bool isCun}) {
-    final Map<String, dynamic> measurementsJson = {};
-    final multiplier = isCun ? _cunToCmFactor : 1.0;
-
-    for (final type in MeasurementType.values) {
-      final valueText = measurementControllers[type]?.text;
-      final value = valueText != null && valueText.isNotEmpty
-          ? double.tryParse(valueText)
-          : null;
-
-      if (value != null) {
-        final convertedValue = value * multiplier;
-        measurementsJson[type.value] = double.parse(convertedValue.toStringAsFixed(1));
-
-        final offsetText = offsetControllers[type]?.text;
-        final offset = (offsetText != null && offsetText.trim().isNotEmpty)
-            ? double.tryParse(offsetText.trim())
-            : null;
-
-        // 儲存 offset（可以是 null、0 或正數）
-        // null = 未設定誤差（不儲存到資料庫）
-        // 0 = 明確設定為無誤差（精確測量）
-        // > 0 = 有誤差範圍
-        if (offset != null) {
-          final convertedOffset = offset * multiplier;
-          measurementsJson['${type.value}_offset'] = double.parse(
-            convertedOffset.toStringAsFixed(1),
-          );
-        }
-      }
-    }
-
-    return ProductSize(
-      id: id ?? '',
-      productId: productId ?? '',
+  CreateProductSizeParams toCreateProductSizeParams({required final bool isCun}) {
+    return CreateProductSizeParams(
       name: nameController.text,
-      measurements: Measurements.fromJson(measurementsJson),
+      measurements: _buildMeasurements(isCun: isCun),
+    );
+  }
+
+  ProductSize toProductSize(final String productId, {required final bool isCun}) {
+    return ProductSize(
+      id: id!,
+      productId: productId,
+      name: nameController.text,
+      measurements: _buildMeasurements(isCun: isCun),
     );
   }
 
   void convertValues({required final bool toCun}) {
+    final factor = toCun ? 1 / _cunToCmFactor : _cunToCmFactor;
+
     void convert(final TextEditingController controller) {
-      final text = controller.text;
-      if (text.isEmpty) return;
-      final value = double.tryParse(text);
+      final value = double.tryParse(controller.text);
       if (value == null) return;
-
-      final newValue = toCun ? value / _cunToCmFactor : value * _cunToCmFactor;
-      controller.text = newValue.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '');
+      controller.text = (value * factor)
+          .toStringAsFixed(1)
+          .replaceAll(RegExp(r'\.0$'), '');
     }
 
-    for (final controller in measurementControllers.values) {
-      convert(controller);
-    }
-    for (final controller in offsetControllers.values) {
-      convert(controller);
-    }
+    measurementControllers.values.forEach(convert);
+    offsetControllers.values.forEach(convert);
   }
 
   void dispose() {
