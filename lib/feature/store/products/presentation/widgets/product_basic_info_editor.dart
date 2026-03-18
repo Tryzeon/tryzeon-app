@@ -157,7 +157,34 @@ class ProductBasicInfoEditor extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              ProductStyleSelector(selectedStyles: selectedStyles),
+              FormField<List<ClothingStyle>?>(
+                initialValue: selectedStyles.value,
+                validator: AppValidators.validateProductStyles,
+                builder: (final state) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ProductStyleSelector(
+                        selectedStyles: selectedStyles,
+                        onChanged: (final newStyles) {
+                          selectedStyles.value = newStyles;
+                          state.didChange(newStyles);
+                        },
+                      ),
+                      if (state.hasError)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8, left: 12),
+                          child: Text(
+                            state.errorText!,
+                            style: textTheme.bodySmall?.copyWith(
+                              color: colorScheme.error,
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
             ],
           ),
           const SizedBox(height: 16),
