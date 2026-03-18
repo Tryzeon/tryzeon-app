@@ -45,7 +45,7 @@ class AddProductPage extends HookConsumerWidget {
       final result = await createProductUseCase(
         formData.toCreateProductParams(
           storeId: storeProfile.id,
-          sizes: sizeManager.buildCreateProductSizeParams(),
+          sizes: sizeManager.toCreateProductSizeParams(),
         ),
       );
 

@@ -30,7 +30,7 @@ class ProductSizeManager {
   final void Function(int index) removeSize;
   final void Function(bool toCun) toggleUnit;
 
-  List<CreateProductSizeParams> buildCreateProductSizeParams() {
+  List<CreateProductSizeParams> toCreateProductSizeParams() {
     return sizeEntries
         .map((final entry) => entry.toCreateProductSizeParams(isCun: isCun))
         .toList();
