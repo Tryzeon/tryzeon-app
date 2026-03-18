@@ -15,7 +15,7 @@ class ProductSizeEntryController {
 
       final offsetValue = measurements?.getOffset(type);
       offsetControllers[type] = TextEditingController(
-        text: offsetValue != null ? offsetValue.toString() : '0.0',
+        text: offsetValue?.toString() ?? '',
       );
     }
   }

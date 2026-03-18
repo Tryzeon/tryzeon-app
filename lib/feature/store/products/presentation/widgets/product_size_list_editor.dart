@@ -324,7 +324,11 @@ class ProductSizeListEditor extends StatelessWidget {
                                       ),
                                       FormField<String>(
                                         initialValue: offsetController.text,
-                                        validator: AppValidators.validateOffset,
+                                        validator: (final value) =>
+                                            AppValidators.validateOffset(
+                                              offsetValue: value,
+                                              measurementValue: valueController.text,
+                                            ),
                                         builder: (final field) {
                                           return Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -395,6 +399,7 @@ class ProductSizeListEditor extends StatelessWidget {
                                                           errorBorder: InputBorder.none,
                                                           disabledBorder:
                                                               InputBorder.none,
+                                                          hintText: '0.0',
                                                         ),
                                                         inputFormatters: [
                                                           FilteringTextInputFormatter.allow(

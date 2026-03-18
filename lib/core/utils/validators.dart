@@ -72,11 +72,19 @@ class AppValidators {
     return null;
   }
 
-  static String? validateOffset(final String? value) {
-    if (value == null || value.trim().isEmpty) {
+  static String? validateOffset({
+    required final String? offsetValue,
+    required final String? measurementValue,
+  }) {
+    if (offsetValue == null || offsetValue.trim().isEmpty) {
       return null;
     }
-    final number = double.tryParse(value);
+
+    if (measurementValue == null || measurementValue.trim().isEmpty) {
+      return '請先輸入測量值';
+    }
+
+    final number = double.tryParse(offsetValue);
     if (number == null) {
       return '請輸入有效數字';
     }
