@@ -12,8 +12,10 @@ class ProductSizeEntryController {
       measurementControllers[type] = TextEditingController(
         text: measurements?.getValue(type)?.toString() ?? '',
       );
+      
+      final offsetValue = measurements?.getOffset(type);
       offsetControllers[type] = TextEditingController(
-        text: measurements?.getOffset(type)?.toString() ?? '0',
+        text: offsetValue != null ? offsetValue.toString() : '0',
       );
     }
   }
@@ -43,17 +45,26 @@ class ProductSizeEntryController {
           ? double.tryParse(valueText)
           : null;
 
-      final offsetText = offsetControllers[type]?.text;
-      final offset = (offsetText != null ? double.tryParse(offsetText) : null) ?? 0.0;
-
       if (value != null) {
         final convertedValue = value * multiplier;
         measurementsJson[type.value] = double.parse(convertedValue.toStringAsFixed(1));
+
+        final offsetText = offsetControllers[type]?.text;
+        final offset = (offsetText != null && offsetText.trim().isNotEmpty)
+            ? double.tryParse(offsetText.trim())
+            : null;
+
+        // 儲存 offset（可以是 null、0 或正數）
+        // null = 未設定誤差（不儲存到資料庫）
+        // 0 = 明確設定為無誤差（精確測量）
+        // > 0 = 有誤差範圍
+        if (offset != null) {
+          final convertedOffset = offset * multiplier;
+          measurementsJson['${type.value}_offset'] = double.parse(
+            convertedOffset.toStringAsFixed(1),
+          );
+        }
       }
-      final convertedOffset = offset * multiplier;
-      measurementsJson['${type.value}_offset'] = double.parse(
-        convertedOffset.toStringAsFixed(1),
-      );
     }
 
     return CreateProductSizeParams(
@@ -72,17 +83,26 @@ class ProductSizeEntryController {
           ? double.tryParse(valueText)
           : null;
 
-      final offsetText = offsetControllers[type]?.text;
-      final offset = (offsetText != null ? double.tryParse(offsetText) : null) ?? 0.0;
-
       if (value != null) {
         final convertedValue = value * multiplier;
         measurementsJson[type.value] = double.parse(convertedValue.toStringAsFixed(1));
+
+        final offsetText = offsetControllers[type]?.text;
+        final offset = (offsetText != null && offsetText.trim().isNotEmpty)
+            ? double.tryParse(offsetText.trim())
+            : null;
+
+        // 儲存 offset（可以是 null、0 或正數）
+        // null = 未設定誤差（不儲存到資料庫）
+        // 0 = 明確設定為無誤差（精確測量）
+        // > 0 = 有誤差範圍
+        if (offset != null) {
+          final convertedOffset = offset * multiplier;
+          measurementsJson['${type.value}_offset'] = double.parse(
+            convertedOffset.toStringAsFixed(1),
+          );
+        }
       }
-      final convertedOffset = offset * multiplier;
-      measurementsJson['${type.value}_offset'] = double.parse(
-        convertedOffset.toStringAsFixed(1),
-      );
     }
 
     return ProductSize(
