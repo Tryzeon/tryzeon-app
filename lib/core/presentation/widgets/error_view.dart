@@ -34,7 +34,7 @@ class ErrorView extends HookConsumerWidget {
             ),
             if (!isCompact) const SizedBox(height: 24),
             Text(
-              '歐不，發生錯誤',
+              '很抱歉發生錯誤，我們正在努力搶修',
               style: (isCompact ? textTheme.titleSmall : textTheme.titleMedium),
               textAlign: TextAlign.center,
             ),
