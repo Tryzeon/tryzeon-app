@@ -18,26 +18,26 @@ class ProductCategoryRepositoryImpl implements ProductCategoryRepository {
   Future<Result<List<ProductCategory>, Failure>> getProductCategories({
     final bool forceRefresh = false,
   }) async {
-    // 1. Try Local Cache
-    if (!forceRefresh) {
-      try {
-        final cachedCategories = await _localDataSource.getProductCategories();
-        if (cachedCategories != null) {
-          return Ok(
-            _mappr.convertList<ProductCategoryModel, ProductCategory>(cachedCategories),
+    try {
+      // 1. Try Local Cache
+      if (!forceRefresh) {
+        try {
+          final cachedCategories = await _localDataSource.getProductCategories();
+          if (cachedCategories != null) {
+            return Ok(
+              _mappr.convertList<ProductCategoryModel, ProductCategory>(cachedCategories),
+            );
+          }
+        } catch (e, stackTrace) {
+          AppLogger.warning(
+            'Local cache read failed, falling back to remote',
+            e,
+            stackTrace,
           );
         }
-      } catch (e, stackTrace) {
-        AppLogger.warning(
-          'Local cache read failed, falling back to remote',
-          e,
-          stackTrace,
-        );
       }
-    }
 
-    // 2. Fetch from API
-    try {
+      // 2. Fetch from API
       final remoteCategories = await _remoteDataSource.getProductCategories();
 
       // 3. Update Cache

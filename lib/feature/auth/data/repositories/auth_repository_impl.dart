@@ -70,35 +70,40 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Result<void, Failure>> signOut() async {
-    // Flush pending analytics events before logging out
     try {
-      await _analyticsEventQueueService.forceFlush();
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to flush analytics events (ignored)', e, stackTrace);
-    }
+      // Flush pending analytics events before logging out
+      try {
+        await _analyticsEventQueueService.forceFlush();
+      } catch (e, stackTrace) {
+        AppLogger.error('Failed to flush analytics events (ignored)', e, stackTrace);
+      }
 
-    // Sign out from Supabase
-    try {
-      await _remoteDataSource.signOut();
-    } catch (e, stackTrace) {
-      AppLogger.error('Supabase logout failed (ignored)', e, stackTrace);
-    }
+      // Sign out from Supabase
+      try {
+        await _remoteDataSource.signOut();
+      } catch (e, stackTrace) {
+        AppLogger.error('Supabase logout failed (ignored)', e, stackTrace);
+      }
 
-    // Clear API cache
-    try {
-      await _cacheService.clearCache();
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to clear cache (ignored)', e, stackTrace);
-    }
+      // Clear API cache
+      try {
+        await _cacheService.clearCache();
+      } catch (e, stackTrace) {
+        AppLogger.error('Failed to clear cache (ignored)', e, stackTrace);
+      }
 
-    // Clear local preferences
-    try {
-      await _localDataSource.clearAll();
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to clear login type (ignored)', e, stackTrace);
-    }
+      // Clear local preferences
+      try {
+        await _localDataSource.clearAll();
+      } catch (e, stackTrace) {
+        AppLogger.error('Failed to clear login type (ignored)', e, stackTrace);
+      }
 
-    return const Ok(null);
+      return const Ok(null);
+    } catch (e, stackTrace) {
+      AppLogger.error('Unexpected error during sign out', e, stackTrace);
+      return Err(mapExceptionToFailure(e));
+    }
   }
 
   @override
@@ -160,39 +165,44 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Result<void, Failure>> deleteAccount() async {
     try {
-      await _analyticsEventQueueService.forceFlush();
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to flush analytics events (ignored)', e, stackTrace);
-    }
+      try {
+        await _analyticsEventQueueService.forceFlush();
+      } catch (e, stackTrace) {
+        AppLogger.error('Failed to flush analytics events (ignored)', e, stackTrace);
+      }
 
-    try {
-      await _remoteDataSource.deleteAccount();
-    } catch (e, stackTrace) {
-      AppLogger.error('Account deletion failed on server (ignored)', e, stackTrace);
-    }
+      try {
+        await _remoteDataSource.deleteAccount();
+      } catch (e, stackTrace) {
+        AppLogger.error('Account deletion failed on server (ignored)', e, stackTrace);
+      }
 
-    try {
-      await _remoteDataSource.signOut();
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'Supabase logout failed after account deletion (ignored)',
-        e,
-        stackTrace,
-      );
-    }
+      try {
+        await _remoteDataSource.signOut();
+      } catch (e, stackTrace) {
+        AppLogger.error(
+          'Supabase logout failed after account deletion (ignored)',
+          e,
+          stackTrace,
+        );
+      }
 
-    try {
-      await _cacheService.clearCache();
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to clear cache (ignored)', e, stackTrace);
-    }
+      try {
+        await _cacheService.clearCache();
+      } catch (e, stackTrace) {
+        AppLogger.error('Failed to clear cache (ignored)', e, stackTrace);
+      }
 
-    try {
-      await _localDataSource.clearAll();
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to clear local data (ignored)', e, stackTrace);
-    }
+      try {
+        await _localDataSource.clearAll();
+      } catch (e, stackTrace) {
+        AppLogger.error('Failed to clear local data (ignored)', e, stackTrace);
+      }
 
-    return const Ok(null);
+      return const Ok(null);
+    } catch (e, stackTrace) {
+      AppLogger.error('Unexpected error during account deletion', e, stackTrace);
+      return Err(mapExceptionToFailure(e));
+    }
   }
 }

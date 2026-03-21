@@ -29,25 +29,27 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
   Future<Result<List<WardrobeItem>, Failure>> getWardrobeItems({
     final bool forceRefresh = false,
   }) async {
-    // 1. Try Local Cache
-    if (!forceRefresh) {
-      try {
-        final cachedItems = await _localDataSource.getWardrobeItems();
-        if (cachedItems != null) {
-          final items = _mappr.convertList<WardrobeItemModel, WardrobeItem>(cachedItems);
-          return Ok(items);
-        }
-      } catch (e, stackTrace) {
-        AppLogger.warning(
-          'Local cache read failed, falling back to remote',
-          e,
-          stackTrace,
-        );
-      }
-    }
-
-    // 2. Try Remote
     try {
+      // 1. Try Local Cache
+      if (!forceRefresh) {
+        try {
+          final cachedItems = await _localDataSource.getWardrobeItems();
+          if (cachedItems != null) {
+            final items = _mappr.convertList<WardrobeItemModel, WardrobeItem>(
+              cachedItems,
+            );
+            return Ok(items);
+          }
+        } catch (e, stackTrace) {
+          AppLogger.warning(
+            'Local cache read failed, falling back to remote',
+            e,
+            stackTrace,
+          );
+        }
+      }
+
+      // 2. Try Remote
       final remoteItems = await _remoteDataSource.getWardrobeItems();
 
       // 3. Update Cache

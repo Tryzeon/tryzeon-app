@@ -33,24 +33,24 @@ class ProductRepositoryImpl implements ProductRepository {
     final SortCondition sort = SortCondition.defaultSort,
     final bool forceRefresh = false,
   }) async {
-    // 1. Try Local Cache
-    if (!forceRefresh) {
-      try {
-        final cachedProducts = await _localDataSource.getProducts(sort: sort);
-        if (cachedProducts != null) {
-          return Ok(_mappr.convertList<ProductModel, Product>(cachedProducts));
-        }
-      } catch (e, stackTrace) {
-        AppLogger.warning(
-          'Local cache read failed, falling back to remote',
-          e,
-          stackTrace,
-        );
-      }
-    }
-
-    // 2. Try Remote
     try {
+      // 1. Try Local Cache
+      if (!forceRefresh) {
+        try {
+          final cachedProducts = await _localDataSource.getProducts(sort: sort);
+          if (cachedProducts != null) {
+            return Ok(_mappr.convertList<ProductModel, Product>(cachedProducts));
+          }
+        } catch (e, stackTrace) {
+          AppLogger.warning(
+            'Local cache read failed, falling back to remote',
+            e,
+            stackTrace,
+          );
+        }
+      }
+
+      // 2. Try Remote
       final remoteProducts = await _remoteDataSource.getProducts(
         storeId: storeId,
         sort: sort,

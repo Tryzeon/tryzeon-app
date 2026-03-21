@@ -25,25 +25,25 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
   Future<Result<UserProfile, Failure>> getUserProfile({
     final bool forceRefresh = false,
   }) async {
-    // 1. Try Local Cache
-    if (!forceRefresh) {
-      try {
-        final cachedProfile = await _localDataSource.getUserProfile();
-        if (cachedProfile != null) {
-          final profile = _mappr.convert<UserProfileModel, UserProfile>(cachedProfile);
-          return Ok(profile);
-        }
-      } catch (e, stackTrace) {
-        AppLogger.warning(
-          'Local cache read failed, falling back to remote',
-          e,
-          stackTrace,
-        );
-      }
-    }
-
-    // 2. Fetch from API
     try {
+      // 1. Try Local Cache
+      if (!forceRefresh) {
+        try {
+          final cachedProfile = await _localDataSource.getUserProfile();
+          if (cachedProfile != null) {
+            final profile = _mappr.convert<UserProfileModel, UserProfile>(cachedProfile);
+            return Ok(profile);
+          }
+        } catch (e, stackTrace) {
+          AppLogger.warning(
+            'Local cache read failed, falling back to remote',
+            e,
+            stackTrace,
+          );
+        }
+      }
+
+      // 2. Fetch from API
       final remoteProfile = await _remoteDataSource.getUserProfile();
 
       // 3. Update Cache

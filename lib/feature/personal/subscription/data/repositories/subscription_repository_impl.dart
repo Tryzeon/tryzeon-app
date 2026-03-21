@@ -26,25 +26,25 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
     final String userId, {
     final bool forceRefresh = false,
   }) async {
-    if (!forceRefresh) {
-      try {
-        final cachedSubscription = await _localDataSource.getSubscription(userId);
-        if (cachedSubscription != null) {
-          final subscription = _mappr.convert<SubscriptionModel, Subscription>(
-            cachedSubscription,
-          );
-          return Ok(subscription);
-        }
-      } catch (e, stackTrace) {
-        AppLogger.warning(
-          'Local cache read failed, falling back to remote',
-          e,
-          stackTrace,
-        );
-      }
-    }
-
     try {
+      if (!forceRefresh) {
+        try {
+          final cachedSubscription = await _localDataSource.getSubscription(userId);
+          if (cachedSubscription != null) {
+            final subscription = _mappr.convert<SubscriptionModel, Subscription>(
+              cachedSubscription,
+            );
+            return Ok(subscription);
+          }
+        } catch (e, stackTrace) {
+          AppLogger.warning(
+            'Local cache read failed, falling back to remote',
+            e,
+            stackTrace,
+          );
+        }
+      }
+
       final remoteSubscription = await _remoteDataSource.getSubscription(userId);
 
       try {
@@ -91,24 +91,25 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
   @override
   Future<Result<List<SubscriptionPlanInfo>, Failure>> getSubscriptionPlans() async {
     try {
-      final cachedPlans = await _localDataSource.getSubscriptionPlans();
-      if (cachedPlans != null) {
-        final subscriptionPlanInfos = cachedPlans
-            .map(
-              (final m) => _mappr.convert<SubscriptionPlanModel, SubscriptionPlanInfo>(m),
-            )
-            .toList();
-        return Ok(subscriptionPlanInfos);
+      try {
+        final cachedPlans = await _localDataSource.getSubscriptionPlans();
+        if (cachedPlans != null) {
+          final subscriptionPlanInfos = cachedPlans
+              .map(
+                (final m) =>
+                    _mappr.convert<SubscriptionPlanModel, SubscriptionPlanInfo>(m),
+              )
+              .toList();
+          return Ok(subscriptionPlanInfos);
+        }
+      } catch (e, stackTrace) {
+        AppLogger.warning(
+          'Local plan cache read failed, falling back to remote',
+          e,
+          stackTrace,
+        );
       }
-    } catch (e, stackTrace) {
-      AppLogger.warning(
-        'Local plan cache read failed, falling back to remote',
-        e,
-        stackTrace,
-      );
-    }
 
-    try {
       final remotePlans = await _remoteDataSource.getSubscriptionPlans();
 
       try {

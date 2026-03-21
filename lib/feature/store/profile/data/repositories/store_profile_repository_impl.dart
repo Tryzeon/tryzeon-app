@@ -25,25 +25,27 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
   Future<Result<StoreProfile?, Failure>> getStoreProfile({
     final bool forceRefresh = false,
   }) async {
-    // 1. Try Local Cache
-    if (!forceRefresh) {
-      try {
-        final cachedProfile = await _localDataSource.getStoreProfile();
-        if (cachedProfile != null) {
-          final profile = _mappr.convert<StoreProfileModel, StoreProfile>(cachedProfile);
-          return Ok(profile);
-        }
-      } catch (e, stackTrace) {
-        AppLogger.warning(
-          'Local cache read failed, falling back to remote',
-          e,
-          stackTrace,
-        );
-      }
-    }
-
-    // 2. Fetch from API
     try {
+      // 1. Try Local Cache
+      if (!forceRefresh) {
+        try {
+          final cachedProfile = await _localDataSource.getStoreProfile();
+          if (cachedProfile != null) {
+            final profile = _mappr.convert<StoreProfileModel, StoreProfile>(
+              cachedProfile,
+            );
+            return Ok(profile);
+          }
+        } catch (e, stackTrace) {
+          AppLogger.warning(
+            'Local cache read failed, falling back to remote',
+            e,
+            stackTrace,
+          );
+        }
+      }
+
+      // 2. Fetch from API
       final remoteProfile = await _remoteDataSource.getStoreProfile();
       if (remoteProfile == null) return const Ok(null);
 
