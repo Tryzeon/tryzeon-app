@@ -9,7 +9,7 @@ class CreateProductRequest {
   const CreateProductRequest({
     required this.storeId,
     required this.name,
-    required this.categoryId,
+    required this.categoryIds,
     required this.price,
     required this.imagePath,
     this.purchaseLink,
@@ -21,7 +21,7 @@ class CreateProductRequest {
 
   final String storeId;
   final String name;
-  final String categoryId;
+  final List<String> categoryIds;
   final double price;
   final String imagePath;
   final String? purchaseLink;

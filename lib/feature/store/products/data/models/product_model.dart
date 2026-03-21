@@ -32,7 +32,7 @@ class ProductModel {
   const ProductModel({
     required this.storeId,
     required this.name,
-    required this.categoryId,
+    required this.categoryIds,
     required this.price,
     required this.imagePath,
     required this.imageUrl,
@@ -52,7 +52,7 @@ class ProductModel {
 
   final String storeId;
   final String name;
-  final String categoryId;
+  final List<String> categoryIds;
   final double price;
   final String imagePath;
   @JsonKey(includeToJson: false)
