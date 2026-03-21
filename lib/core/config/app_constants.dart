@@ -1,5 +1,6 @@
 class AppConstants {
   // URLs
+  static const String webBaseUrl = 'https://tryzeon.com';
   static const String storeOnboardingFormUrl =
       'https://docs.google.com/forms/d/e/1FAIpQLScu_hKsOTUVcuB0R3sKnRh9cAbn7zchO7W8izdgG1N9-WC9AQ/viewform';
   static const String authCallbackUrl = 'com.tryzeon.app://login-callback';

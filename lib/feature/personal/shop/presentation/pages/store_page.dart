@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:share_plus/share_plus.dart' as share_plus;
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
@@ -52,6 +53,20 @@ class StorePage extends HookConsumerWidget {
             ? Text(storeInfoAsync.value!.name, style: textTheme.titleMedium)
             : const Text('店家'),
         centerTitle: true,
+        actions: [
+          if (storeInfoAsync.hasValue)
+            IconButton(
+              onPressed: () {
+                final store = storeInfoAsync.value!;
+                share_plus.SharePlus.instance.share(
+                  share_plus.ShareParams(
+                    text: '${AppConstants.webBaseUrl}/store/${store.id}',
+                  ),
+                );
+              },
+              icon: const Icon(Icons.share),
+            ),
+        ],
       ),
       body: storeInfoAsync.when(
         data: (final storeInfo) {

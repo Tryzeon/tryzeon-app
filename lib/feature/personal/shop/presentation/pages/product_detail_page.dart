@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:share_plus/share_plus.dart' as share_plus;
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_detail_body.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
@@ -42,6 +44,18 @@ class ProductDetailPage extends HookConsumerWidget {
         title: Text('商品詳情', style: Theme.of(context).textTheme.titleMedium),
         centerTitle: true,
         actions: [
+          if (productAsync.hasValue)
+            IconButton(
+              onPressed: () {
+                final product = productAsync.value!;
+                share_plus.SharePlus.instance.share(
+                  share_plus.ShareParams(
+                    text: '${AppConstants.webBaseUrl}/product/${product.id}',
+                  ),
+                );
+              },
+              icon: const Icon(Icons.share),
+            ),
           if (hasPurchaseLink)
             IconButton(onPressed: handlePurchase, icon: const Icon(Icons.open_in_new)),
         ],
