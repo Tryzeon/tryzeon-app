@@ -14,7 +14,7 @@ class ProductFormData {
     required this.purchaseLinkController,
     required this.materialController,
     required this.selectedImage,
-    required this.selectedCategoryId,
+    required this.selectedCategoryIds,
     required this.selectedElasticity,
     required this.selectedFit,
     required this.selectedStyles,
@@ -26,7 +26,7 @@ class ProductFormData {
   final TextEditingController purchaseLinkController;
   final TextEditingController materialController;
   final ValueNotifier<File?> selectedImage;
-  final ValueNotifier<String?> selectedCategoryId;
+  final ValueNotifier<Set<String>> selectedCategoryIds;
   final ValueNotifier<ProductElasticity?> selectedElasticity;
   final ValueNotifier<ProductFit?> selectedFit;
   final ValueNotifier<List<ClothingStyle>?> selectedStyles;
@@ -42,7 +42,7 @@ class ProductFormData {
     return CreateProductParams(
       storeId: storeId,
       name: nameController.text,
-      categoryId: selectedCategoryId.value ?? '',
+      categoryIds: selectedCategoryIds.value.toList(),
       price: double.tryParse(priceController.text) ?? 0.0,
       image: selectedImage.value!,
       purchaseLink: purchaseLinkController.text.isNotEmpty
@@ -68,7 +68,7 @@ class ProductFormData {
     return Product(
       storeId: storeId,
       name: nameController.text,
-      categoryId: selectedCategoryId.value ?? '',
+      categoryIds: selectedCategoryIds.value.toList(),
       price: double.tryParse(priceController.text) ?? 0.0,
       purchaseLink: purchaseLinkController.text,
       material: materialController.text,
@@ -97,7 +97,9 @@ ProductFormData useProductForm({final Product? initialProduct}) {
   final materialController = useTextEditingController(text: initialProduct?.material);
 
   final selectedImage = useState<File?>(null);
-  final selectedCategoryId = useValueNotifier<String?>(initialProduct?.categoryId);
+  final selectedCategoryIds = useValueNotifier<Set<String>>(
+    initialProduct?.categoryIds.toSet() ?? {},
+  );
   final selectedElasticity = useValueNotifier<ProductElasticity?>(
     initialProduct?.elasticity,
   );
@@ -111,7 +113,7 @@ ProductFormData useProductForm({final Product? initialProduct}) {
     purchaseLinkController: purchaseLinkController,
     materialController: materialController,
     selectedImage: selectedImage,
-    selectedCategoryId: selectedCategoryId,
+    selectedCategoryIds: selectedCategoryIds,
     selectedElasticity: selectedElasticity,
     selectedFit: selectedFit,
     selectedStyles: selectedStyles,

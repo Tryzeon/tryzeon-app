@@ -97,9 +97,9 @@ class AppValidators {
     return null;
   }
 
-  static String? validateSelectedCategory(final String? value) {
+  static String? validateSelectedCategories(final Set<String>? value) {
     if (value == null || value.isEmpty) {
-      return '請選擇一種商品類型';
+      return '請選擇至少一種商品類型';
     }
     return null;
   }
