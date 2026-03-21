@@ -23,14 +23,14 @@ class ShopRemoteDataSource {
   }) async {
     // 查詢主頁推薦列表所需欄位（詳細資訊由 getProduct 取得）
     dynamic query = _supabaseClient.from(_productsTable).select('''
-          id, store_id, name, category_id, price, image_path, created_at,
+          id, store_id, name, category_ids, price, image_path, created_at,
           product_variants(*),
           store_profiles!products_store_id_fkey(id, name, address)
         ''');
 
     // 類型過濾
     if (categories != null && categories.isNotEmpty) {
-      query = query.inFilter('category_id', categories.toList());
+      query = query.overlaps('category_ids', categories.toList());
     }
 
     // 店家過濾

@@ -29,19 +29,20 @@ class ProductHeader extends StatelessWidget {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  // Product Category
-                  if (product.categoryId.isNotEmpty)
-                    Container(
+                  // Product Categories
+                  ...product.categoryIds.map(
+                    (final categoryId) => Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
                         color: colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
-                        categoryIdToName[product.categoryId] ?? product.categoryId,
+                        categoryIdToName[categoryId] ?? categoryId,
                         style: textTheme.labelMedium,
                       ),
                     ),
+                  ),
 
                   // Product Styles
                   if (product.styles != null && product.styles!.isNotEmpty)
