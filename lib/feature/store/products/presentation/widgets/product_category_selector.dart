@@ -23,17 +23,18 @@ class ProductCategorySelector extends HookWidget {
     final selectedIdsNotifier = useListenable(selectedCategoryIds);
     final selectedIds = selectedIdsNotifier.value;
 
-    // Flatten tree into a map for quick access
+    // Flatten tree into a map for quick access with parent path
     final categoryMap = useMemoized(() {
       final map = <String, String>{};
-      void visit(final List<CategoryTreeNode> nodes) {
+      void visit(final List<CategoryTreeNode> nodes, final List<String> parentPath) {
         for (final node in nodes) {
-          map[node.category.id] = node.category.name;
-          visit(node.children);
+          final currentPath = [...parentPath, node.category.name];
+          map[node.category.id] = currentPath.join(' - ');
+          visit(node.children, currentPath);
         }
       }
 
-      visit(categoryTree);
+      visit(categoryTree, []);
       return map;
     }, [categoryTree]);
 
