@@ -20,7 +20,7 @@ class ProductBasicInfoEditor extends StatelessWidget {
     required this.priceController,
     required this.purchaseLinkController,
     required this.materialController,
-    required this.selectedCategoryId,
+    required this.selectedCategoryIds,
     required this.selectedElasticity,
     required this.selectedFit,
     required this.selectedStyles,
@@ -32,7 +32,7 @@ class ProductBasicInfoEditor extends StatelessWidget {
   final TextEditingController priceController;
   final TextEditingController purchaseLinkController;
   final TextEditingController materialController;
-  final ValueNotifier<String?> selectedCategoryId;
+  final ValueNotifier<Set<String>> selectedCategoryIds;
   final ValueNotifier<ProductElasticity?> selectedElasticity;
   final ValueNotifier<ProductFit?> selectedFit;
   final ValueNotifier<List<ClothingStyle>?> selectedStyles;
@@ -101,19 +101,19 @@ class ProductBasicInfoEditor extends StatelessWidget {
               const SizedBox(height: 12),
               productCategoryTreeAsync.when(
                 data: (final categoryTree) {
-                  return FormField<String?>(
-                    initialValue: selectedCategoryId.value,
-                    validator: AppValidators.validateSelectedCategory,
+                  return FormField<Set<String>>(
+                    initialValue: selectedCategoryIds.value,
+                    validator: AppValidators.validateSelectedCategories,
                     builder: (final state) {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           ProductCategorySelector(
                             categoryTree: categoryTree,
-                            selectedCategoryId: selectedCategoryId,
-                            onChanged: (final newId) {
-                              selectedCategoryId.value = newId;
-                              state.didChange(newId);
+                            selectedCategoryIds: selectedCategoryIds,
+                            onChanged: (final newIds) {
+                              selectedCategoryIds.value = newIds;
+                              state.didChange(newIds);
                             },
                           ),
                           if (state.hasError)

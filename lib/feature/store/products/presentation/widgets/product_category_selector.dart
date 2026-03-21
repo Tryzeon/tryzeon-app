@@ -7,21 +7,21 @@ class ProductCategorySelector extends HookWidget {
   const ProductCategorySelector({
     super.key,
     required this.categoryTree,
-    required this.selectedCategoryId,
+    required this.selectedCategoryIds,
     this.onChanged,
   });
 
   final List<CategoryTreeNode> categoryTree;
-  final ValueNotifier<String?> selectedCategoryId;
-  final ValueChanged<String?>? onChanged;
+  final ValueNotifier<Set<String>> selectedCategoryIds;
+  final ValueChanged<Set<String>>? onChanged;
 
   @override
   Widget build(final BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    final selectedIdNotifier = useListenable(selectedCategoryId);
-    final selectedId = selectedIdNotifier.value;
+    final selectedIdsNotifier = useListenable(selectedCategoryIds);
+    final selectedIds = selectedIdsNotifier.value;
 
     // Flatten tree into a map for quick access
     final categoryMap = useMemoized(() {
@@ -37,19 +37,6 @@ class ProductCategorySelector extends HookWidget {
       return map;
     }, [categoryTree]);
 
-    final allCategories = useMemoized(() {
-      final list = <ProductCategory>[];
-      void visit(final List<CategoryTreeNode> nodes) {
-        for (final node in nodes) {
-          list.add(node.category);
-          visit(node.children);
-        }
-      }
-
-      visit(categoryTree);
-      return list;
-    }, [categoryTree]);
-
     String getCategoryNameById(final String id) {
       return categoryMap[id] ?? id;
     }
@@ -62,13 +49,12 @@ class ProductCategorySelector extends HookWidget {
         useRootNavigator: true,
         builder: (final context) => _HierarchicalSelectionSheet(
           categoryTree: categoryTree,
-          allCategories: allCategories,
-          selectedId: selectedId,
-          onSelectionChanged: (final id) {
+          selectedIds: selectedIds,
+          onSelectionChanged: (final ids) {
             if (onChanged != null) {
-              onChanged!(id);
+              onChanged!(ids);
             } else {
-              selectedCategoryId.value = id;
+              selectedCategoryIds.value = ids;
             }
           },
         ),
@@ -87,21 +73,31 @@ class ProductCategorySelector extends HookWidget {
         child: Row(
           children: [
             Expanded(
-              child: selectedId == null || selectedId.isEmpty
+              child: selectedIds.isEmpty
                   ? Text(
                       '選擇商品分類',
                       style: textTheme.bodyLarge?.copyWith(
                         color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                       ),
                     )
-                  : Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      child: Text(
-                        getCategoryNameById(selectedId),
-                        style: textTheme.labelMedium?.copyWith(
-                          color: colorScheme.primary,
-                        ),
-                      ),
+                  : Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: selectedIds.map((final id) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            getCategoryNameById(id),
+                            style: textTheme.labelSmall?.copyWith(
+                              color: colorScheme.onPrimaryContainer,
+                            ),
+                          ),
+                        );
+                      }).toList(),
                     ),
             ),
             const SizedBox(width: 8),
@@ -116,32 +112,32 @@ class ProductCategorySelector extends HookWidget {
 class _HierarchicalSelectionSheet extends HookWidget {
   const _HierarchicalSelectionSheet({
     required this.categoryTree,
-    required this.allCategories,
-    required this.selectedId,
+    required this.selectedIds,
     required this.onSelectionChanged,
   });
 
   final List<CategoryTreeNode> categoryTree;
-  final List<ProductCategory> allCategories;
-  final String? selectedId;
-  final ValueChanged<String?> onSelectionChanged;
+  final Set<String> selectedIds;
+  final ValueChanged<Set<String>> onSelectionChanged;
 
   @override
   Widget build(final BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    final currentSelection = useState<String?>(selectedId);
+    final currentSelection = useState<Set<String>>(selectedIds);
     final expandedParents = useState<Set<String>>({});
     final searchController = useTextEditingController();
     useListenable(searchController);
 
     void toggleSelection(final String id) {
-      if (currentSelection.value == id) {
-        currentSelection.value = null;
+      final newSet = {...currentSelection.value};
+      if (newSet.contains(id)) {
+        newSet.remove(id);
       } else {
-        currentSelection.value = id;
+        newSet.add(id);
       }
+      currentSelection.value = newSet;
     }
 
     void toggleExpand(final String parentId) {
@@ -211,7 +207,7 @@ class _HierarchicalSelectionSheet extends HookWidget {
       final bool isExpanded = false,
       final VoidCallback? onExpand,
     }) {
-      final isSelected = currentSelection.value == category.id;
+      final isSelected = currentSelection.value.contains(category.id);
       final isSelectable = !hasChildren; // Only leaf nodes are selectable
 
       return InkWell(
@@ -221,9 +217,9 @@ class _HierarchicalSelectionSheet extends HookWidget {
         child: Container(
           padding: EdgeInsets.only(
             left: 24.0 + (level * 36.0),
-            right: 24,
-            top: 14,
-            bottom: 14,
+            right: 12,
+            top: 6,
+            bottom: 6,
           ),
           child: Row(
             children: [
@@ -231,7 +227,7 @@ class _HierarchicalSelectionSheet extends HookWidget {
                 GestureDetector(
                   onTap: onExpand,
                   child: Padding(
-                    padding: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.all(8.0),
                     child: Icon(
                       isExpanded
                           ? Icons.keyboard_arrow_down_rounded
@@ -242,7 +238,7 @@ class _HierarchicalSelectionSheet extends HookWidget {
                   ),
                 )
               else if (level > 0)
-                const SizedBox(width: 8),
+                const SizedBox(width: 8, height: 40),
               Expanded(
                 child: Text(
                   category.name,
@@ -257,10 +253,11 @@ class _HierarchicalSelectionSheet extends HookWidget {
                 ),
               ),
               if (isSelectable)
-                if (isSelected)
-                  Icon(Icons.check_circle_rounded, color: colorScheme.primary, size: 24)
-                else
-                  Icon(Icons.circle_outlined, color: colorScheme.outline, size: 24),
+                Checkbox(
+                  value: isSelected,
+                  onChanged: (_) => toggleSelection(category.id),
+                  activeColor: colorScheme.primary,
+                ),
             ],
           ),
         ),

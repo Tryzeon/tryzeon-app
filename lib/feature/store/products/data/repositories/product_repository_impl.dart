@@ -86,7 +86,7 @@ class ProductRepositoryImpl implements ProductRepository {
       final request = CreateProductRequest(
         storeId: params.storeId,
         name: params.name,
-        categoryId: params.categoryId,
+        categoryIds: params.categoryIds,
         price: params.price,
         imagePath: imagePath,
         purchaseLink: params.purchaseLink,
