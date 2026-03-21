@@ -215,32 +215,21 @@ class _StyleSelectionSheet extends HookWidget {
                             ),
                             child: Row(
                               children: [
-                                const SizedBox(width: 8),
+                                Checkbox(
+                                  value: isSelected,
+                                  onChanged: (final value) => toggleSelection(style),
+                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                                const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
                                     style.label,
                                     style: textTheme.bodyLarge?.copyWith(
-                                      color: isSelected
-                                          ? colorScheme.primary
-                                          : colorScheme.onSurface,
-                                      fontWeight: isSelected
-                                          ? FontWeight.w600
-                                          : FontWeight.normal,
+                                      color: colorScheme.onSurface,
                                     ),
                                   ),
                                 ),
-                                if (isSelected)
-                                  Icon(
-                                    Icons.check_circle_rounded,
-                                    color: colorScheme.primary,
-                                    size: 24,
-                                  )
-                                else
-                                  Icon(
-                                    Icons.circle_outlined,
-                                    color: colorScheme.outline,
-                                    size: 24,
-                                  ),
                               ],
                             ),
                           ),
