@@ -97,43 +97,58 @@ class ProductRemoteDataSource {
     await _supabaseClient.from(_productSizesTable).update(json).eq('id', size.id);
   }
 
-  Future<String> uploadProductImage({
+  Future<List<String>> uploadProductImages({
     required final String storeId,
-    required final File image,
+    required final List<File> images,
   }) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();
 
-    final imageName = p.basename(image.path);
-    final productImagePath = '$storeId/products/$imageName';
-    final mimeType = lookupMimeType(image.path);
+    final futures = images.map((final image) async {
+      final imageName = p.basename(image.path);
+      final productImagePath = '$storeId/products/$imageName';
+      final mimeType = lookupMimeType(image.path);
 
-    final bytes = await image.readAsBytes();
-    await _supabaseClient.storage
-        .from(_productImagesBucket)
-        .uploadBinary(
-          productImagePath,
-          bytes,
-          fileOptions: FileOptions(contentType: mimeType),
-        );
+      final bytes = await image.readAsBytes();
+      await _supabaseClient.storage
+          .from(_productImagesBucket)
+          .uploadBinary(
+            productImagePath,
+            bytes,
+            fileOptions: FileOptions(contentType: mimeType),
+          );
 
-    return productImagePath;
+      return productImagePath;
+    });
+
+    return Future.wait(futures);
   }
 
-  Future<void> deleteProductImage(final String imagePath) async {
-    if (imagePath.isEmpty) return;
-    await _supabaseClient.storage.from(_productImagesBucket).remove([imagePath]);
+  Future<void> deleteProductImages(final List<String> imagePaths) async {
+    if (imagePaths.isEmpty) return;
+    await _supabaseClient.storage.from(_productImagesBucket).remove(imagePaths);
   }
 
-  String _getProductImageUrl(final String imagePath) {
-    return _supabaseClient.storage.from(_productImagesBucket).getPublicUrl(imagePath);
+  List<String> _getProductImageUrls(final List<String> imagePaths) {
+    return imagePaths
+        .map(
+          (final path) =>
+              _supabaseClient.storage.from(_productImagesBucket).getPublicUrl(path),
+        )
+        .toList();
   }
 
   Map<String, dynamic> _withProductImageUrl(final Map<String, dynamic> json) {
     final map = Map<String, dynamic>.from(json);
-    final imagePath = map['image_path'] as String?;
-    if (imagePath != null && imagePath.isNotEmpty) {
-      map['image_url'] = _getProductImageUrl(imagePath);
+
+    // Fallback to array for mapping correctly
+    final rawPaths = map['image_paths'];
+    final imagePaths = rawPaths != null ? List<String>.from(rawPaths) : <String>[];
+
+    if (imagePaths.isNotEmpty) {
+      map['image_urls'] = _getProductImageUrls(imagePaths);
+    } else {
+      map['image_urls'] = <String>[];
     }
     return map;
   }

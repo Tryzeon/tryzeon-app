@@ -20,7 +20,7 @@ abstract class ProductRepository {
     required final List<CreateProductSizeParams> sizesToAdd,
     required final List<ProductSize> sizesToUpdate,
     required final List<String> sizeIdsToDelete,
-    final File? newImage,
+    final List<File>? newImages,
   });
 
   Future<Result<void, Failure>> deleteProduct(final Product product);
