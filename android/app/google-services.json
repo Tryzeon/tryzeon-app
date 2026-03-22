@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "924030382971",
+    "project_id": "tryzeon-app",
+    "storage_bucket": "tryzeon-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:924030382971:android:7898865fd25c64ebff83de",
+        "android_client_info": {
+          "package_name": "com.tryzeon.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDrSODDuxAY2IepF5ify3oCdJqdzgKGGko"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
