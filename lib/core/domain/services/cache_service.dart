@@ -11,6 +11,9 @@ abstract class CacheService {
   /// 刪除指定的緩存檔案 (圖片專用)
   Future<void> deleteImage(final String filePath);
 
+  /// 批量刪除指定的緩存檔案 (圖片專用)
+  Future<void> deleteImages(final List<String> filePaths);
+
   /// 清空所有檔案緩存
   Future<void> clearCache();
 }
