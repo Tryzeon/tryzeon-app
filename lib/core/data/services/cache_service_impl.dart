@@ -42,6 +42,19 @@ class CacheServiceImpl implements CacheService {
   }
 
   @override
+  Future<void> deleteImages(final List<String> filePaths) async {
+    try {
+      final futures = filePaths.map(
+        (final path) => fcm.DefaultCacheManager().removeFile(path),
+      );
+      await Future.wait(futures);
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to delete images', e, stackTrace);
+      rethrow;
+    }
+  }
+
+  @override
   Future<void> clearCache() async {
     try {
       await fcm.DefaultCacheManager().emptyCache();
