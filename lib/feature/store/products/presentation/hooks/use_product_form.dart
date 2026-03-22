@@ -13,7 +13,7 @@ class ProductFormData {
     required this.priceController,
     required this.purchaseLinkController,
     required this.materialController,
-    required this.selectedImage,
+    required this.selectedImages,
     required this.selectedCategoryIds,
     required this.selectedElasticity,
     required this.selectedFit,
@@ -25,7 +25,7 @@ class ProductFormData {
   final TextEditingController priceController;
   final TextEditingController purchaseLinkController;
   final TextEditingController materialController;
-  final ValueNotifier<File?> selectedImage;
+  final ValueNotifier<List<File>> selectedImages;
   final ValueNotifier<Set<String>> selectedCategoryIds;
   final ValueNotifier<ProductElasticity?> selectedElasticity;
   final ValueNotifier<ProductFit?> selectedFit;
@@ -44,7 +44,7 @@ class ProductFormData {
       name: nameController.text,
       categoryIds: selectedCategoryIds.value.toList(),
       price: double.tryParse(priceController.text) ?? 0.0,
-      image: selectedImage.value!,
+      images: selectedImages.value,
       purchaseLink: purchaseLinkController.text.isNotEmpty
           ? purchaseLinkController.text
           : null,
@@ -59,8 +59,8 @@ class ProductFormData {
   Product toProduct({
     required final String id,
     required final String storeId,
-    required final String imagePath,
-    required final String imageUrl,
+    required final List<String> imagePaths,
+    required final List<String> imageUrls,
     required final List<ProductSize>? sizes,
     final DateTime? createdAt,
     final DateTime? updatedAt,
@@ -75,8 +75,8 @@ class ProductFormData {
       elasticity: selectedElasticity.value,
       fit: selectedFit.value,
       styles: selectedStyles.value,
-      imagePath: imagePath,
-      imageUrl: imageUrl,
+      imagePaths: imagePaths,
+      imageUrls: imageUrls,
       id: id,
       sizes: sizes,
       createdAt: createdAt,
@@ -96,7 +96,7 @@ ProductFormData useProductForm({final Product? initialProduct}) {
   );
   final materialController = useTextEditingController(text: initialProduct?.material);
 
-  final selectedImage = useState<File?>(null);
+  final selectedImages = useState<List<File>>([]);
   final selectedCategoryIds = useValueNotifier<Set<String>>(
     initialProduct?.categoryIds.toSet() ?? {},
   );
@@ -112,7 +112,7 @@ ProductFormData useProductForm({final Product? initialProduct}) {
     priceController: priceController,
     purchaseLinkController: purchaseLinkController,
     materialController: materialController,
-    selectedImage: selectedImage,
+    selectedImages: selectedImages,
     selectedCategoryIds: selectedCategoryIds,
     selectedElasticity: selectedElasticity,
     selectedFit: selectedFit,

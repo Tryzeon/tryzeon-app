@@ -108,8 +108,9 @@ class AppValidators {
     final Object? value, {
     required final bool isCreateMode,
   }) {
-    if (isCreateMode && value == null) {
-      return '請選擇商品圖片';
+    if (isCreateMode) {
+      if (value == null) return '請選擇商品圖片';
+      if (value is List && value.isEmpty) return '請選擇至少一張商品圖片';
     }
     return null;
   }
