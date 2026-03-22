@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -30,6 +31,7 @@ Raw<GoRouter> appRouter(final Ref ref) {
   final router = GoRouter(
     initialLocation: '/auth/login',
     refreshListenable: refreshListenable,
+    observers: [FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance)],
     redirect: (final context, final state) async {
       final isLoggedIn = supabase.auth.currentSession != null;
       final path = state.matchedLocation;
