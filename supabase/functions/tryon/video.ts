@@ -9,12 +9,9 @@ function buildVideoPrompt(transitionPrompt?: string): string {
   }
 
   let prompt = "The person is wearing the new outfit and showing the fit of the clothing.";
-
-  if (transitionPrompt) {
-    prompt += ` Camera and transition style: ${transitionPrompt}.`;
-  }
-
+  prompt += ` Camera and transition style: ${transitionPrompt}.`;
   prompt += " Natural movement, professional fashion video style.";
+
   return prompt;
 }
 
