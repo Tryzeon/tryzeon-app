@@ -19,8 +19,8 @@ class ProductFormLayout extends StatelessWidget {
     required this.onPickImage,
     required this.productCategoryTreeAsync,
     required this.onRetryCategories,
-    this.existingImageUrl,
-    this.existingImagePath,
+    this.existingImageUrls,
+    this.existingImagePaths,
     this.onDelete,
     super.key,
   });
@@ -30,11 +30,11 @@ class ProductFormLayout extends StatelessWidget {
   final ProductSizeManager sizeManager;
   final bool isLoading;
   final VoidCallback onSubmit;
-  final Future<File?> Function() onPickImage;
+  final Future<List<File>?> Function() onPickImage;
   final dynamic productCategoryTreeAsync;
   final VoidCallback onRetryCategories;
-  final String? existingImageUrl;
-  final String? existingImagePath;
+  final List<String>? existingImageUrls;
+  final List<String>? existingImagePaths;
   final VoidCallback? onDelete;
 
   @override
@@ -61,8 +61,8 @@ class ProductFormLayout extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
-            FormField<File>(
-              initialValue: formData.selectedImage.value,
+            FormField<List<File>>(
+              initialValue: formData.selectedImages.value,
               validator: (final value) => AppValidators.validateProductImage(
                 value,
                 isCreateMode: mode == ProductFormMode.create,
@@ -72,9 +72,9 @@ class ProductFormLayout extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     ProductImageEditor(
-                      selectedImage: formData.selectedImage.value,
-                      existingImageUrl: existingImageUrl,
-                      existingImagePath: existingImagePath,
+                      selectedImages: formData.selectedImages.value,
+                      existingImageUrls: existingImageUrls,
+                      existingImagePaths: existingImagePaths,
                       onPickImage: () async {
                         final file = await onPickImage();
                         if (file != null) {

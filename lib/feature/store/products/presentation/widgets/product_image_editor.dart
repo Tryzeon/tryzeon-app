@@ -6,15 +6,16 @@ import 'package:flutter/material.dart';
 class ProductImageEditor extends StatelessWidget {
   const ProductImageEditor({
     super.key,
-    this.selectedImage,
-    this.existingImageUrl,
-    this.existingImagePath,
+    required this.selectedImages,
     required this.onPickImage,
+    required this.onRemoveImage,
+    this.existingImageUrls,
+    this.existingImagePaths,
   });
 
-  final File? selectedImage;
-  final String? existingImageUrl;
-  final String? existingImagePath;
+  final List<File> selectedImages;
+  final List<String>? existingImageUrls;
+  final List<String>? existingImagePaths;
   final VoidCallback onPickImage;
 
   @override
