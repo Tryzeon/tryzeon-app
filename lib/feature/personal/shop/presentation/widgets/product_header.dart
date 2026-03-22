@@ -17,7 +17,7 @@ class ProductHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Product Image with Zoom
-        ProductImageViewer(imageUrl: product.imageUrl, imagePath: product.imagePath),
+        ProductImageViewer(imageUrls: product.imageUrls, imagePaths: product.imagePaths),
 
         Padding(
           padding: const EdgeInsets.all(20.0),

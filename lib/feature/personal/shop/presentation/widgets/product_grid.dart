@@ -31,8 +31,8 @@ class ProductGrid extends HookConsumerWidget {
       name: 'Loading Product Name',
       categoryIds: ['Category'],
       price: 8888,
-      imagePath: 'skeleton_path',
-      imageUrl: '',
+      imagePaths: ['skeleton_path'],
+      imageUrls: [],
     ),
     ShopProduct(
       id: 'skeleton_2',
@@ -40,8 +40,8 @@ class ProductGrid extends HookConsumerWidget {
       name: 'Loading Product Name',
       categoryIds: ['Category'],
       price: 8888,
-      imagePath: 'skeleton_path',
-      imageUrl: '',
+      imagePaths: ['skeleton_path'],
+      imageUrls: [],
     ),
     ShopProduct(
       id: 'skeleton_3',
@@ -49,8 +49,8 @@ class ProductGrid extends HookConsumerWidget {
       name: 'Loading Product Name',
       categoryIds: ['Category'],
       price: 8888,
-      imagePath: 'skeleton_path',
-      imageUrl: '',
+      imagePaths: ['skeleton_path'],
+      imageUrls: [],
     ),
     ShopProduct(
       id: 'skeleton_4',
@@ -58,8 +58,8 @@ class ProductGrid extends HookConsumerWidget {
       name: 'Loading Product Name',
       categoryIds: ['Category'],
       price: 8888,
-      imagePath: 'skeleton_path',
-      imageUrl: '',
+      imagePaths: ['skeleton_path'],
+      imageUrls: [],
     ),
   ];
 

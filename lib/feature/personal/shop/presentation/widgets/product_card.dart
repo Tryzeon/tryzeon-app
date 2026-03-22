@@ -81,7 +81,10 @@ class ProductCard extends HookConsumerWidget {
       if (!context.mounted) return;
 
       final personalEntry = PersonalEntryScope.of(context);
-      await personalEntry?.tryOnFromStorage(product.imagePath, mode: mode);
+      await personalEntry?.tryOnFromStorage(
+        product.imagePaths.isNotEmpty ? product.imagePaths.first : '',
+        mode: mode,
+      );
     }
 
     Widget buildTryonButton() {
@@ -128,8 +131,12 @@ class ProductCard extends HookConsumerWidget {
                         topRight: Radius.circular(12),
                       ),
                       child: CachedNetworkImage(
-                        imageUrl: product.imageUrl,
-                        cacheKey: product.imagePath,
+                        imageUrl: product.imageUrls.isNotEmpty
+                            ? product.imageUrls.first
+                            : '',
+                        cacheKey: product.imagePaths.isNotEmpty
+                            ? product.imagePaths.first
+                            : null,
                         fit: BoxFit.cover,
                         width: double.infinity,
                         placeholder: (final context, final url) => Center(
