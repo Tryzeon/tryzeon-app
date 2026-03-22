@@ -74,21 +74,23 @@ class ProductRepositoryImpl implements ProductRepository {
   @override
   Future<Result<void, Failure>> createProduct(final CreateProductParams params) async {
     try {
-      final imagePath = await _remoteDataSource.uploadProductImage(
+      final imagePaths = await _remoteDataSource.uploadProductImages(
         storeId: params.storeId,
-        image: params.image,
+        images: params.images,
       );
 
       // Save to local cache
-      final bytes = await params.image.readAsBytes();
-      await _localDataSource.saveProductImage(bytes, imagePath);
+      for (int i = 0; i < params.images.length; i++) {
+        final bytes = await params.images[i].readAsBytes();
+        await _localDataSource.saveProductImage(bytes, imagePaths[i]);
+      }
 
       final request = CreateProductRequest(
         storeId: params.storeId,
         name: params.name,
         categoryIds: params.categoryIds,
         price: params.price,
-        imagePath: imagePath,
+        imagePaths: imagePaths,
         purchaseLink: params.purchaseLink,
         material: params.material,
         elasticity: params.elasticity?.value,
@@ -136,27 +138,32 @@ class ProductRepositoryImpl implements ProductRepository {
     required final List<CreateProductSizeParams> sizesToAdd,
     required final List<ProductSize> sizesToUpdate,
     required final List<String> sizeIdsToDelete,
-    final File? newImage,
+    final List<File>? newImages,
   }) async {
     try {
       Product finalTarget = target;
-      if (newImage != null) {
-        final newImagePath = await _remoteDataSource.uploadProductImage(
+      if (newImages != null && newImages.isNotEmpty) {
+        final newImagePaths = await _remoteDataSource.uploadProductImages(
           storeId: target.storeId,
-          image: newImage,
+          images: newImages,
         );
-        finalTarget = target.copyWith(imagePath: newImagePath);
+
+        finalTarget = target.copyWith(
+          imagePaths: [...target.imagePaths, ...newImagePaths],
+        );
 
         // Save to local cache
-        final bytes = await newImage.readAsBytes();
-        await _localDataSource.saveProductImage(bytes, newImagePath);
+        for (int i = 0; i < newImages.length; i++) {
+          final bytes = await newImages[i].readAsBytes();
+          await _localDataSource.saveProductImage(bytes, newImagePaths[i]);
+        }
       }
 
       final productChanged = original != finalTarget;
       final sizesChanged =
           sizesToAdd.isNotEmpty || sizesToUpdate.isNotEmpty || sizeIdsToDelete.isNotEmpty;
 
-      if (!productChanged && !sizesChanged && newImage == null) {
+      if (!productChanged && !sizesChanged && (newImages == null || newImages.isEmpty)) {
         return const Ok(null);
       }
 
@@ -165,10 +172,7 @@ class ProductRepositoryImpl implements ProductRepository {
         await _remoteDataSource.updateProduct(targetModel);
       }
 
-      if (newImage != null) {
-        _remoteDataSource.deleteProductImage(original.imagePath).ignore();
-        _localDataSource.deleteProductImage(original.imagePath).ignore();
-      }
+      // TODO: delete old images
 
       if (sizesChanged) {
         // Delete removed sizes
@@ -218,9 +222,9 @@ class ProductRepositoryImpl implements ProductRepository {
       await _remoteDataSource.deleteProduct(product.id);
       await _remoteDataSource.deleteProductSizes(product.id);
 
-      if (product.imagePath.isNotEmpty) {
-        _remoteDataSource.deleteProductImage(product.imagePath).ignore();
-        _localDataSource.deleteProductImage(product.imagePath).ignore();
+      if (product.imagePaths.isNotEmpty) {
+        _remoteDataSource.deleteProductImages(product.imagePaths).ignore();
+        _localDataSource.deleteProductImages(product.imagePaths).ignore();
       }
 
       final currentCache =

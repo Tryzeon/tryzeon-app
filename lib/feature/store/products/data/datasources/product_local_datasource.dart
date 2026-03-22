@@ -62,7 +62,7 @@ class ProductLocalDataSource {
     await _cacheService.saveImage(bytes, path);
   }
 
-  Future<void> deleteProductImage(final String path) async {
-    await _cacheService.deleteImage(path);
+  Future<void> deleteProductImages(final List<String> paths) async {
+    await _cacheService.deleteImages(paths);
   }
 }

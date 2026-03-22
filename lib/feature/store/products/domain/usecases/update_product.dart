@@ -14,13 +14,13 @@ class UpdateProduct {
     required final List<CreateProductSizeParams> sizesToAdd,
     required final List<ProductSize> sizesToUpdate,
     required final List<String> sizeIdsToDelete,
-    final File? newImage,
+    final List<File>? newImages,
   }) => _repository.updateProduct(
     original: original,
     target: target,
     sizesToAdd: sizesToAdd,
     sizesToUpdate: sizesToUpdate,
     sizeIdsToDelete: sizeIdsToDelete,
-    newImage: newImage,
+    newImages: newImages,
   );
 }
