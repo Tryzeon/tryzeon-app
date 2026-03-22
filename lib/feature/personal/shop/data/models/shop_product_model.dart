@@ -11,8 +11,8 @@ class ShopProductModel {
     required this.name,
     required this.categoryIds,
     required this.price,
-    required this.imagePath,
-    required this.imageUrl,
+    required this.imagePaths,
+    required this.imageUrls,
     required this.id,
     this.purchaseLink,
     this.material,
@@ -32,9 +32,9 @@ class ShopProductModel {
   final String name;
   final List<String> categoryIds;
   final double price;
-  final String imagePath;
+  final List<String> imagePaths;
   @JsonKey(includeToJson: false)
-  final String imageUrl;
+  final List<String> imageUrls;
   final String id;
   final String? purchaseLink;
   final String? material;

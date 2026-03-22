@@ -23,7 +23,7 @@ class ShopRemoteDataSource {
   }) async {
     // 查詢主頁推薦列表所需欄位（詳細資訊由 getProduct 取得）
     dynamic query = _supabaseClient.from(_productsTable).select('''
-          id, store_id, name, category_ids, price, image_path, created_at,
+          id, store_id, name, category_ids, price, image_paths, created_at,
           product_variants(*),
           store_profiles!products_store_id_fkey(id, name, address)
         ''');
@@ -144,8 +144,12 @@ class ShopRemoteDataSource {
     return _withStoreLogoUrl(response);
   }
 
-  String _getProductImageUrl(final String imagePath) {
-    return _supabaseClient.storage.from(_productBucket).getPublicUrl(imagePath);
+  List<String> _getProductImageUrls(final List<String> imagePaths) {
+    return imagePaths
+        .map(
+          (final path) => _supabaseClient.storage.from(_productBucket).getPublicUrl(path),
+        )
+        .toList();
   }
 
   String _getStoreLogoUrl(final String logoPath) {
@@ -154,9 +158,18 @@ class ShopRemoteDataSource {
 
   Map<String, dynamic> _withProductImageUrl(final Map<String, dynamic> json) {
     final map = Map<String, dynamic>.from(json);
-    final imagePath = map['image_path'] as String?;
-    if (imagePath != null && imagePath.isNotEmpty) {
-      map['image_url'] = _getProductImageUrl(imagePath);
+
+    // Fallback to array for mapping correctly
+    final rawPaths = map['image_paths'];
+    final imagePaths = rawPaths != null ? List<String>.from(rawPaths) : <String>[];
+
+    // We must ensure the field exists for JSON deserialization
+    map['image_paths'] = imagePaths;
+
+    if (imagePaths.isNotEmpty) {
+      map['image_urls'] = _getProductImageUrls(imagePaths);
+    } else {
+      map['image_urls'] = <String>[];
     }
     return map;
   }
