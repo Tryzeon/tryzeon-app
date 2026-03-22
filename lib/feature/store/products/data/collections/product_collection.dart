@@ -15,8 +15,8 @@ class ProductCollection {
   late String name;
   late List<String> categoryIds;
   late double price;
-  late String imagePath;
-  late String imageUrl;
+  late List<String> imagePaths;
+  late List<String> imageUrls;
   String? purchaseLink;
   String? material;
 
