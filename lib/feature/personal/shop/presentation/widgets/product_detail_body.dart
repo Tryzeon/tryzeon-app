@@ -29,8 +29,8 @@ class ProductDetailBody extends HookConsumerWidget {
     name: 'Loading Product Name here that is long',
     categoryIds: ['Category 1'],
     price: 8888.0,
-    imagePath: 'skeleton_path',
-    imageUrl: '',
+    imagePaths: ['skeleton_path'],
+    imageUrls: [],
     material: 'Loading Material Description',
   );
 

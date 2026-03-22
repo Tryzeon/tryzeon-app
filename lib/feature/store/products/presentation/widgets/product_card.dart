@@ -46,8 +46,10 @@ class StoreProductCard extends HookConsumerWidget {
                 child: ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
                   child: CachedNetworkImage(
-                    imageUrl: product.imageUrl,
-                    cacheKey: product.imagePath,
+                    imageUrl: product.imageUrls.isNotEmpty ? product.imageUrls.first : '',
+                    cacheKey: product.imagePaths.isNotEmpty
+                        ? product.imagePaths.first
+                        : null,
                     fit: BoxFit.cover,
                     width: double.infinity,
                     placeholder: (final context, final url) =>

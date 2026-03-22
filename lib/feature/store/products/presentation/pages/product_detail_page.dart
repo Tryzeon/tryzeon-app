@@ -68,8 +68,8 @@ class ProductDetailPage extends HookConsumerWidget {
       final targetProduct = formData.toProduct(
         id: product.id,
         storeId: product.storeId,
-        imagePath: product.imagePath,
-        imageUrl: product.imageUrl,
+        imagePaths: product.imagePaths,
+        imageUrls: product.imageUrls,
         sizes: product.sizes,
       );
 
@@ -80,7 +80,7 @@ class ProductDetailPage extends HookConsumerWidget {
         sizesToAdd: deltas.sizesToAdd,
         sizesToUpdate: deltas.sizesToUpdate,
         sizeIdsToDelete: deltas.sizeIdsToDelete,
-        newImage: formData.selectedImage.value,
+        newImages: formData.selectedImages.value,
       );
 
       if (!context.mounted) return;
@@ -109,10 +109,10 @@ class ProductDetailPage extends HookConsumerWidget {
       onDelete: deleteProduct,
       productCategoryTreeAsync: productCategoryTreeAsync,
       onRetryCategories: () => ref.refresh(productCategoriesProvider),
-      existingImageUrl: product.imageUrl,
-      existingImagePath: product.imagePath,
+      existingImageUrls: product.imageUrls,
+      existingImagePaths: product.imagePaths,
       onPickImage: () async {
-        return ImagePickerHelper.pickImage(context);
+        return ImagePickerHelper.pickImages(context);
       },
     );
   }
