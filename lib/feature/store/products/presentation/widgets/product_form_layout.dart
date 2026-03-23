@@ -76,10 +76,24 @@ class ProductFormLayout extends StatelessWidget {
                       existingImageUrls: existingImageUrls,
                       existingImagePaths: existingImagePaths,
                       onPickImage: () async {
-                        final file = await onPickImage();
-                        if (file != null) {
-                          formData.selectedImage.value = file;
-                          state.didChange(file);
+                        final files = await onPickImage();
+                        if (files != null && files.isNotEmpty) {
+                          final currentImages = formData.selectedImages.value;
+                          final newImages = [...currentImages, ...files];
+                          formData.selectedImages.value = newImages;
+                          state.didChange(newImages);
+                        }
+                      },
+                      onRemoveImage: (final index, final isExisting) {
+                        if (isExisting) {
+                          // Handle existing image removal if needed (maybe notify parent)
+                        } else {
+                          final currentImages = List<File>.from(
+                            formData.selectedImages.value,
+                          );
+                          currentImages.removeAt(index);
+                          formData.selectedImages.value = currentImages;
+                          state.didChange(currentImages);
                         }
                       },
                     ),
