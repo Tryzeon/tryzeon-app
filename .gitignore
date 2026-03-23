@@ -23,7 +23,7 @@ migrate_working_dir/
 .claude
 .agent
 .agents
-docs/plans
+# docs/plans
 
 # Flutter/Dart/Pub related
 **/doc/api/
