@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:tryzeon/core/utils/validators.dart';
+import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
 import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_form.dart';
 import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_size_manager.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_basic_info_editor.dart';
@@ -19,8 +20,6 @@ class ProductFormLayout extends StatelessWidget {
     required this.onPickImage,
     required this.productCategoryTreeAsync,
     required this.onRetryCategories,
-    this.existingImageUrls,
-    this.existingImagePaths,
     this.onDelete,
     super.key,
   });
@@ -33,8 +32,6 @@ class ProductFormLayout extends StatelessWidget {
   final Future<List<File>?> Function() onPickImage;
   final dynamic productCategoryTreeAsync;
   final VoidCallback onRetryCategories;
-  final List<String>? existingImageUrls;
-  final List<String>? existingImagePaths;
   final VoidCallback? onDelete;
 
   @override
@@ -61,8 +58,8 @@ class ProductFormLayout extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
-            FormField<List<File>>(
-              initialValue: formData.selectedImages.value,
+            FormField<List<ImageItem>>(
+              initialValue: formData.images.value,
               validator: (final value) => AppValidators.validateProductImage(
                 value,
                 isCreateMode: mode == ProductFormMode.create,
@@ -72,28 +69,20 @@ class ProductFormLayout extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     ProductImageEditor(
-                      selectedImages: formData.selectedImages.value,
-                      existingImageUrls: existingImageUrls,
-                      existingImagePaths: existingImagePaths,
+                      images: formData.images.value,
+                      onImagesChanged: (final updated) {
+                        formData.images.value = updated;
+                        state.didChange(updated);
+                      },
                       onPickImage: () async {
                         final files = await onPickImage();
                         if (files != null && files.isNotEmpty) {
-                          final currentImages = formData.selectedImages.value;
-                          final newImages = [...currentImages, ...files];
-                          formData.selectedImages.value = newImages;
-                          state.didChange(newImages);
-                        }
-                      },
-                      onRemoveImage: (final index, final isExisting) {
-                        if (isExisting) {
-                          // Handle existing image removal if needed (maybe notify parent)
-                        } else {
-                          final currentImages = List<File>.from(
-                            formData.selectedImages.value,
-                          );
-                          currentImages.removeAt(index);
-                          formData.selectedImages.value = currentImages;
-                          state.didChange(currentImages);
+                          final newItems = files
+                              .map((final f) => ImageItem.newImage(file: f))
+                              .toList();
+                          final updated = [...formData.images.value, ...newItems];
+                          formData.images.value = updated;
+                          state.didChange(updated);
                         }
                       },
                     ),
