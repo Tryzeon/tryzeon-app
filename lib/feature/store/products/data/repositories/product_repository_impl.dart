@@ -5,6 +5,7 @@ import 'package:tryzeon/core/shared/measurements/data/mappers/measurements_mappr
 import 'package:tryzeon/core/shared/measurements/data/models/measurements_model.dart';
 import 'package:tryzeon/core/shared/measurements/entities/measurements.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:tryzeon/feature/store/products/data/datasources/product_local_datasource.dart';
 import 'package:tryzeon/feature/store/products/data/datasources/product_remote_datasource.dart';
@@ -13,6 +14,8 @@ import 'package:tryzeon/feature/store/products/data/models/create_product_size_r
 import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/domain/repositories/product_repository.dart';
+import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
+import 'package:tryzeon/feature/store/products/domain/value_objects/product_attributes.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/product_sort_condition.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -134,46 +137,104 @@ class ProductRepositoryImpl implements ProductRepository {
   @override
   Future<Result<void, Failure>> updateProduct({
     required final Product original,
-    required final Product target,
+    required final List<ImageItem> finalImageOrder,
     required final List<CreateProductSizeParams> sizesToAdd,
     required final List<ProductSize> sizesToUpdate,
     required final List<String> sizeIdsToDelete,
-    final List<File>? newImages,
+    required final String name,
+    required final List<String> categoryIds,
+    required final double price,
+    final String? purchaseLink,
+    final String? material,
+    final ProductElasticity? elasticity,
+    final ProductFit? fit,
+    final List<ClothingStyle>? styles,
   }) async {
     try {
-      Product finalTarget = target;
-      if (newImages != null && newImages.isNotEmpty) {
-        final newImagePaths = await _remoteDataSource.uploadProductImages(
-          storeId: target.storeId,
-          images: newImages,
-        );
+      // 1. Separate existing paths and new files from final order
+      final existingPaths = <String>[];
+      final newFiles = <File>[];
+      final newFileIndices = <int>[]; // Track positions of new files
 
-        finalTarget = target.copyWith(
-          imagePaths: [...target.imagePaths, ...newImagePaths],
-        );
-
-        // Save to local cache
-        for (int i = 0; i < newImages.length; i++) {
-          final bytes = await newImages[i].readAsBytes();
-          await _localDataSource.saveProductImage(bytes, newImagePaths[i]);
+      for (int i = 0; i < finalImageOrder.length; i++) {
+        final item = finalImageOrder[i];
+        switch (item) {
+          case ExistingImageItem(:final path):
+            existingPaths.add(path);
+          case NewImageItem(:final file):
+            newFiles.add(file);
+            newFileIndices.add(i);
         }
       }
 
-      final productChanged = original != finalTarget;
+      // 2. Upload new images if any
+      List<String> uploadedPaths = [];
+      if (newFiles.isNotEmpty) {
+        uploadedPaths = await _remoteDataSource.uploadProductImages(
+          storeId: original.storeId,
+          images: newFiles,
+        );
+
+        // Save to local cache
+        for (int i = 0; i < newFiles.length; i++) {
+          final bytes = await newFiles[i].readAsBytes();
+          await _localDataSource.saveProductImage(bytes, uploadedPaths[i]);
+        }
+      }
+
+      // 3. Build final image paths in correct order
+      final finalImagePaths = <String>[];
+      int existingIndex = 0;
+      int newIndex = 0;
+
+      for (final item in finalImageOrder) {
+        switch (item) {
+          case ExistingImageItem():
+            finalImagePaths.add(existingPaths[existingIndex++]);
+          case NewImageItem():
+            finalImagePaths.add(uploadedPaths[newIndex++]);
+        }
+      }
+
+      // 4. Compute removed images via diff
+      final removedPaths = original.imagePaths
+          .where((final p) => !finalImagePaths.contains(p))
+          .toList();
+
+      // 5. Build target product
+      final targetProduct = original.copyWith(
+        name: name,
+        categoryIds: categoryIds,
+        price: price,
+        purchaseLink: purchaseLink,
+        material: material,
+        elasticity: elasticity,
+        fit: fit,
+        styles: styles,
+        imagePaths: finalImagePaths,
+      );
+
+      final productChanged = original != targetProduct;
       final sizesChanged =
           sizesToAdd.isNotEmpty || sizesToUpdate.isNotEmpty || sizeIdsToDelete.isNotEmpty;
 
-      if (!productChanged && !sizesChanged && (newImages == null || newImages.isEmpty)) {
+      if (!productChanged && !sizesChanged) {
         return const Ok(null);
       }
 
+      // 6. Update product in DB
       if (productChanged) {
-        final targetModel = _mappr.convert<Product, ProductModel>(finalTarget);
+        final targetModel = _mappr.convert<Product, ProductModel>(targetProduct);
         await _remoteDataSource.updateProduct(targetModel);
       }
 
-      // TODO: delete old images
+      // 7. Delete removed images (fire-and-forget)
+      if (removedPaths.isNotEmpty) {
+        _remoteDataSource.deleteProductImages(removedPaths).ignore();
+        _localDataSource.deleteProductImages(removedPaths).ignore();
+      }
 
+      // 8. Handle size changes
       if (sizesChanged) {
         // Delete removed sizes
         for (final sizeId in sizeIdsToDelete) {
@@ -201,6 +262,7 @@ class ProductRepositoryImpl implements ProductRepository {
         }
       }
 
+      // 9. Update local cache
       final model = await _remoteDataSource.getProduct(original.id);
 
       final currentCache =

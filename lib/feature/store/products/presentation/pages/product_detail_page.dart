@@ -65,22 +65,25 @@ class ProductDetailPage extends HookConsumerWidget {
 
       final deltas = sizeManager.calculateDeltas(product.id, product.sizes);
 
-      final targetProduct = formData.toProduct(
-        id: product.id,
-        storeId: product.storeId,
-        imagePaths: product.imagePaths,
-        imageUrls: product.imageUrls,
-        sizes: product.sizes,
-      );
-
       final updateProductUseCase = ref.read(updateProductUseCaseProvider);
       final result = await updateProductUseCase(
         original: product,
-        target: targetProduct,
+        finalImageOrder: formData.images.value,
         sizesToAdd: deltas.sizesToAdd,
         sizesToUpdate: deltas.sizesToUpdate,
         sizeIdsToDelete: deltas.sizeIdsToDelete,
-        newImages: formData.selectedImages.value,
+        name: formData.nameController.text,
+        categoryIds: formData.selectedCategoryIds.value.toList(),
+        price: double.tryParse(formData.priceController.text) ?? 0.0,
+        purchaseLink: formData.purchaseLinkController.text.isNotEmpty
+            ? formData.purchaseLinkController.text
+            : null,
+        material: formData.materialController.text.isNotEmpty
+            ? formData.materialController.text
+            : null,
+        elasticity: formData.selectedElasticity.value,
+        fit: formData.selectedFit.value,
+        styles: formData.selectedStyles.value,
       );
 
       if (!context.mounted) return;
@@ -109,8 +112,6 @@ class ProductDetailPage extends HookConsumerWidget {
       onDelete: deleteProduct,
       productCategoryTreeAsync: productCategoryTreeAsync,
       onRetryCategories: () => ref.refresh(productCategoriesProvider),
-      existingImageUrls: product.imageUrls,
-      existingImagePaths: product.imagePaths,
       onPickImage: () async {
         return ImagePickerHelper.pickImages(context);
       },

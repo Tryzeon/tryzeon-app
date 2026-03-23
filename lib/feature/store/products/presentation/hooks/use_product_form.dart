@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
+import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/product_attributes.dart';
 
 class ProductFormData {
@@ -13,7 +14,7 @@ class ProductFormData {
     required this.priceController,
     required this.purchaseLinkController,
     required this.materialController,
-    required this.selectedImages,
+    required this.images,
     required this.selectedCategoryIds,
     required this.selectedElasticity,
     required this.selectedFit,
@@ -25,7 +26,7 @@ class ProductFormData {
   final TextEditingController priceController;
   final TextEditingController purchaseLinkController;
   final TextEditingController materialController;
-  final ValueNotifier<List<File>> selectedImages;
+  final ValueNotifier<List<ImageItem>> images;
   final ValueNotifier<Set<String>> selectedCategoryIds;
   final ValueNotifier<ProductElasticity?> selectedElasticity;
   final ValueNotifier<ProductFit?> selectedFit;
@@ -34,6 +35,14 @@ class ProductFormData {
   bool validate(final BuildContext context) {
     return formKey.currentState?.validate() ?? false;
   }
+
+  /// Extract only new images (files pending upload)
+  List<File> get newImageFiles =>
+      images.value.whereType<NewImageItem>().map((final e) => e.file).toList();
+
+  /// Extract kept existing image paths in current order
+  List<String> get keptExistingPaths =>
+      images.value.whereType<ExistingImageItem>().map((final e) => e.path).toList();
 
   CreateProductParams toCreateProductParams({
     required final String storeId,
@@ -44,7 +53,7 @@ class ProductFormData {
       name: nameController.text,
       categoryIds: selectedCategoryIds.value.toList(),
       price: double.tryParse(priceController.text) ?? 0.0,
-      images: selectedImages.value,
+      images: newImageFiles,
       purchaseLink: purchaseLinkController.text.isNotEmpty
           ? purchaseLinkController.text
           : null,
@@ -96,7 +105,18 @@ ProductFormData useProductForm({final Product? initialProduct}) {
   );
   final materialController = useTextEditingController(text: initialProduct?.material);
 
-  final selectedImages = useState<List<File>>([]);
+  final initialImages = useMemoized(() {
+    if (initialProduct == null) return <ImageItem>[];
+    final paths = initialProduct.imagePaths;
+    final urls = initialProduct.imageUrls;
+    return List.generate(
+      paths.length,
+      (final i) => ImageItem.existing(path: paths[i], url: urls[i]),
+    );
+  });
+
+  final images = useState<List<ImageItem>>(initialImages);
+
   final selectedCategoryIds = useValueNotifier<Set<String>>(
     initialProduct?.categoryIds.toSet() ?? {},
   );
@@ -112,7 +132,7 @@ ProductFormData useProductForm({final Product? initialProduct}) {
     priceController: priceController,
     purchaseLinkController: purchaseLinkController,
     materialController: materialController,
-    selectedImages: selectedImages,
+    images: images,
     selectedCategoryIds: selectedCategoryIds,
     selectedElasticity: selectedElasticity,
     selectedFit: selectedFit,
