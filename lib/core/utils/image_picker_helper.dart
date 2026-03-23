@@ -63,100 +63,141 @@ class ImagePickerHelper {
       },
     );
 
-    if (source != null) {
-      // User selected gallery or camera
-      try {
-        final XFile? pickedFile = await _picker.pickImage(
-          source: source,
-          maxWidth: maxWidth,
-          maxHeight: maxHeight,
-          imageQuality: imageQuality,
+    if (source == null) return null;
+
+    try {
+      final XFile? pickedFile = await _picker.pickImage(source: source);
+      if (pickedFile == null) return null;
+
+      String sourcePath = pickedFile.path;
+
+      if (enableCrop) {
+        final croppedFile = await ImageCropper().cropImage(
+          sourcePath: sourcePath,
+          uiSettings: [
+            AndroidUiSettings(
+              toolbarTitle: '編輯圖片',
+              toolbarColor: primaryColor,
+              toolbarWidgetColor: Colors.white,
+              activeControlsWidgetColor: primaryColor,
+              initAspectRatio: CropAspectRatioPreset.original,
+              lockAspectRatio: false,
+              cropStyle: cropStyle,
+              aspectRatioPresets:
+                  aspectRatioPresets ??
+                  [
+                    CropAspectRatioPreset.original,
+                    CropAspectRatioPreset.square,
+                    CropAspectRatioPreset.ratio3x2,
+                    CropAspectRatioPreset.ratio4x3,
+                    CropAspectRatioPreset.ratio16x9,
+                  ],
+            ),
+            IOSUiSettings(
+              title: '編輯圖片',
+              cropStyle: cropStyle,
+              aspectRatioPresets:
+                  aspectRatioPresets ??
+                  [
+                    CropAspectRatioPreset.original,
+                    CropAspectRatioPreset.square,
+                    CropAspectRatioPreset.ratio3x2,
+                    CropAspectRatioPreset.ratio4x3,
+                    CropAspectRatioPreset.ratio16x9,
+                  ],
+            ),
+          ],
         );
 
-        if (pickedFile != null) {
-          String sourcePath = pickedFile.path;
+        if (croppedFile == null) return null;
+        sourcePath = croppedFile.path;
+      }
 
-          if (enableCrop) {
-            final croppedFile = await ImageCropper().cropImage(
-              sourcePath: sourcePath,
-              uiSettings: [
-                AndroidUiSettings(
-                  toolbarTitle: '編輯圖片',
-                  toolbarColor: primaryColor,
-                  toolbarWidgetColor: Colors.white,
-                  activeControlsWidgetColor: primaryColor,
-                  initAspectRatio: CropAspectRatioPreset.original,
-                  lockAspectRatio: false,
-                  cropStyle: cropStyle,
-                  aspectRatioPresets:
-                      aspectRatioPresets ??
-                      [
-                        CropAspectRatioPreset.original,
-                        CropAspectRatioPreset.square,
-                        CropAspectRatioPreset.ratio3x2,
-                        CropAspectRatioPreset.ratio4x3,
-                        CropAspectRatioPreset.ratio16x9,
-                      ],
-                ),
-                IOSUiSettings(
-                  title: '編輯圖片',
-                  cropStyle: cropStyle,
-                  aspectRatioPresets:
-                      aspectRatioPresets ??
-                      [
-                        CropAspectRatioPreset.original,
-                        CropAspectRatioPreset.square,
-                        CropAspectRatioPreset.ratio3x2,
-                        CropAspectRatioPreset.ratio4x3,
-                        CropAspectRatioPreset.ratio16x9,
-                      ],
-                ),
-              ],
-            );
+      // Generate timestamp based filename
+      final String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+      final String newFileName = '$timestamp.jpg';
 
-            if (croppedFile != null) {
-              sourcePath = croppedFile.path;
-            } else {
-              // User cancelled cropping
-              return null;
-            }
-          }
+      // Get temp dir
+      final Directory directory = await getTemporaryDirectory();
+      final String newPath = '${directory.path}/$newFileName';
 
-          // Generate timestamp based filename
-          final String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-          final String newFileName = '$timestamp.jpg';
+      // Compress and convert to JPG
+      final XFile? compressedFile = await FlutterImageCompress.compressAndGetFile(
+        sourcePath,
+        newPath,
+        quality: imageQuality,
+        format: CompressFormat.jpeg,
+        minWidth: maxWidth.toInt(),
+        minHeight: maxHeight.toInt(),
+      );
 
-          // Get temp dir
-          final Directory directory = await getTemporaryDirectory();
-          final String newPath = '${directory.path}/$newFileName';
-
-          // Compress and convert to JPG
-          final XFile? compressedFile = await FlutterImageCompress.compressAndGetFile(
-            sourcePath,
-            newPath,
-            quality: imageQuality,
-            format: CompressFormat.jpeg,
-            minWidth: maxWidth.toInt(),
-            minHeight: maxHeight.toInt(),
-          );
-
-          if (compressedFile != null) {
-            return File(compressedFile.path);
-          }
-        }
-      } catch (e, stackTrace) {
-        AppLogger.error('Pick image failed', e, stackTrace);
-        if (context.mounted) {
-          TopNotification.show(
-            context,
-            message: '選擇圖片失敗，請稍後再試',
-            type: NotificationType.error,
-          );
-        }
+      if (compressedFile == null) return null;
+      return File(compressedFile.path);
+    } catch (e, stackTrace) {
+      AppLogger.error('Pick image failed', e, stackTrace);
+      if (context.mounted) {
+        TopNotification.show(
+          context,
+          message: '選擇圖片失敗，請稍後再試',
+          type: NotificationType.error,
+        );
       }
     }
 
-    // User cancelled or no image selected
     return null;
+  }
+
+  static Future<List<File>?> pickImages(
+    final BuildContext context, {
+    final int maxImages = 3,
+    final double maxWidth = 1080,
+    final double maxHeight = 1920,
+    final int imageQuality = 85,
+  }) async {
+    try {
+      final List<XFile> pickedFiles = await _picker.pickMultiImage();
+
+      if (pickedFiles.isEmpty) return null;
+
+      final List<XFile> limitedFiles = pickedFiles.length > maxImages
+          ? pickedFiles.sublist(0, maxImages)
+          : pickedFiles;
+
+      final List<File> processedFiles = [];
+
+      for (final pickedFile in limitedFiles) {
+        final String sourcePath = pickedFile.path;
+        final String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+        final String newFileName = '${timestamp}_${processedFiles.length}.jpg';
+        final Directory directory = await getTemporaryDirectory();
+        final String newPath = '${directory.path}/$newFileName';
+
+        final XFile? compressedFile = await FlutterImageCompress.compressAndGetFile(
+          sourcePath,
+          newPath,
+          quality: imageQuality,
+          format: CompressFormat.jpeg,
+          minWidth: maxWidth.toInt(),
+          minHeight: maxHeight.toInt(),
+        );
+
+        if (compressedFile != null) {
+          processedFiles.add(File(compressedFile.path));
+        }
+      }
+
+      if (processedFiles.isEmpty) return null;
+      return processedFiles;
+    } catch (e, stackTrace) {
+      AppLogger.error('Pick images failed', e, stackTrace);
+      if (context.mounted) {
+        TopNotification.show(
+          context,
+          message: '選擇圖片失敗，請稍後再試',
+          type: NotificationType.error,
+        );
+      }
+      return null;
+    }
   }
 }
