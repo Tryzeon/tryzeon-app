@@ -11,7 +11,7 @@ class UpdateProduct {
   final ProductRepository _repository;
 
   Future<Result<void, Failure>> call({
-    required final Product original,
+    required final String productId,
     required final List<ImageItem> finalImageOrder,
     required final List<CreateProductSizeParams> sizesToAdd,
     required final List<ProductSize> sizesToUpdate,
@@ -24,19 +24,28 @@ class UpdateProduct {
     final ProductElasticity? elasticity,
     final ProductFit? fit,
     final List<ClothingStyle>? styles,
-  }) => _repository.updateProduct(
-    original: original,
-    finalImageOrder: finalImageOrder,
-    sizesToAdd: sizesToAdd,
-    sizesToUpdate: sizesToUpdate,
-    sizeIdsToDelete: sizeIdsToDelete,
-    name: name,
-    categoryIds: categoryIds,
-    price: price,
-    purchaseLink: purchaseLink,
-    material: material,
-    elasticity: elasticity,
-    fit: fit,
-    styles: styles,
-  );
+  }) async {
+    final originalResult = await _repository.getProductById(productId);
+
+    if (originalResult.isFailure) {
+      return Err(originalResult.getError()!);
+    }
+    final original = originalResult.get()!;
+
+    return _repository.updateProduct(
+      original: original,
+      finalImageOrder: finalImageOrder,
+      sizesToAdd: sizesToAdd,
+      sizesToUpdate: sizesToUpdate,
+      sizeIdsToDelete: sizeIdsToDelete,
+      name: name,
+      categoryIds: categoryIds,
+      price: price,
+      purchaseLink: purchaseLink,
+      material: material,
+      elasticity: elasticity,
+      fit: fit,
+      styles: styles,
+    );
+  }
 }

@@ -15,6 +15,8 @@ abstract class ProductRepository {
 
   Future<Result<void, Failure>> createProduct(final CreateProductParams params);
 
+  Future<Result<Product, Failure>> getProductById(final String productId);
+
   Future<Result<void, Failure>> updateProduct({
     required final Product original,
     required final List<ImageItem> finalImageOrder,
