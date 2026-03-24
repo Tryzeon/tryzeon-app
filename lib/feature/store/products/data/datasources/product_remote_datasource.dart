@@ -144,6 +144,7 @@ class ProductRemoteDataSource {
     // Fallback to array for mapping correctly
     final rawPaths = map['image_paths'];
     final imagePaths = rawPaths != null ? List<String>.from(rawPaths) : <String>[];
+    map['image_paths'] = imagePaths;
 
     if (imagePaths.isNotEmpty) {
       map['image_urls'] = _getProductImageUrls(imagePaths);
