@@ -75,3 +75,6 @@ app.*.map.json
 # Worktrees
 .worktrees/
 
+
+# Git worktrees
+.worktrees/
