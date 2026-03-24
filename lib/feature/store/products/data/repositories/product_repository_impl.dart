@@ -154,7 +154,6 @@ class ProductRepositoryImpl implements ProductRepository {
       // 1. Separate existing paths and new files from final order
       final existingPaths = <String>[];
       final newFiles = <File>[];
-      final newFileIndices = <int>[]; // Track positions of new files
 
       for (int i = 0; i < finalImageOrder.length; i++) {
         final item = finalImageOrder[i];
@@ -163,7 +162,6 @@ class ProductRepositoryImpl implements ProductRepository {
             existingPaths.add(path);
           case NewImageItem(:final file):
             newFiles.add(file);
-            newFileIndices.add(i);
         }
       }
 
