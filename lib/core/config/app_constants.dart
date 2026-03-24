@@ -74,4 +74,5 @@ class AppConstants {
   static const Duration staleDurationProductCategories = Duration(hours: 24);
   static const Duration staleDurationUserProfile = Duration(days: 7);
   static const Duration staleDurationStoreProfile = Duration(days: 7);
+  static const Duration staleDurationShopProduct = Duration(hours: 1);
 }
