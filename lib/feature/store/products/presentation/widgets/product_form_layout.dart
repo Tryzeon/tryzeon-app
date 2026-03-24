@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
 import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_form.dart';
@@ -76,7 +77,8 @@ class ProductFormLayout extends StatelessWidget {
                       },
                       onPickImage: () async {
                         final currentCount = formData.images.value.length;
-                        final remainingCount = 3 - currentCount; // maxImages = 3
+                        final remainingCount =
+                            AppConstants.maxProductImages - currentCount;
                         if (remainingCount <= 0) return;
 
                         final files = await onPickImage(remainingCount);
