@@ -14,6 +14,22 @@ class ProductLocalDataSource {
   final CacheService _cacheService;
   static const _mappr = StoreMappr();
 
+  Future<ProductModel?> getProductById(final String productId) async {
+    final isar = await _isarService.db;
+    final collection = await isar.productCollections.getByProductId(productId);
+    if (collection == null) return null;
+    return _mappr.convert<ProductCollection, ProductModel>(collection);
+  }
+
+  Future<void> saveProduct(final ProductModel model) async {
+    final isar = await _isarService.db;
+    final collection = _mappr.convert<ProductModel, ProductCollection>(model);
+
+    await isar.writeTxn(() async {
+      await isar.productCollections.putByProductId(collection);
+    });
+  }
+
   Future<List<ProductModel>?> getProducts({required final SortCondition sort}) async {
     final isar = await _isarService.db;
 
