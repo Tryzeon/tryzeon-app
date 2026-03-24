@@ -140,7 +140,6 @@ class _StoreProfileForm extends HookConsumerWidget {
 
       final updateUseCase = ref.read(updateStoreProfileUseCaseProvider);
       final result = await updateUseCase(
-        original: profile,
         target: targetProfile,
         logoFile: newLogoImage.value,
       );

@@ -9,12 +9,24 @@ class UpdateStoreProfile {
   final StoreProfileRepository _repository;
 
   Future<Result<void, Failure>> call({
-    required final StoreProfile original,
     required final StoreProfile target,
     final File? logoFile,
-  }) => _repository.updateStoreProfile(
-    original: original,
-    target: target,
-    logoFile: logoFile,
-  );
+  }) async {
+    final originalResult = await _repository.getStoreProfile();
+
+    if (originalResult.isFailure) {
+      return Err(originalResult.getError()!);
+    }
+
+    final original = originalResult.get();
+    if (original == null) {
+      return const Err(ServerFailure('Store profile not found'));
+    }
+
+    return _repository.updateStoreProfile(
+      original: original,
+      target: target,
+      logoFile: logoFile,
+    );
+  }
 }
