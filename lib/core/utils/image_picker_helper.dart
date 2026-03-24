@@ -155,7 +155,22 @@ class ImagePickerHelper {
     final int imageQuality = 85,
   }) async {
     try {
-      final List<XFile> pickedFiles = await _picker.pickMultiImage();
+      if (maxImages <= 0) return null;
+
+      // The pickMultiImage method enforces a limit >= 2.
+      // If we only need 1 image, fallback to pickImage single selection.
+      if (maxImages == 1) {
+        final File? singleFile = await pickImage(
+          context,
+          maxWidth: maxWidth,
+          maxHeight: maxHeight,
+          imageQuality: imageQuality,
+          enableCrop: false,
+        );
+        return singleFile != null ? [singleFile] : null;
+      }
+
+      final List<XFile> pickedFiles = await _picker.pickMultiImage(limit: maxImages);
 
       if (pickedFiles.isEmpty) return null;
 
