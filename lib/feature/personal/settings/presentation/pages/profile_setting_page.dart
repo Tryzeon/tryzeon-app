@@ -159,7 +159,7 @@ class _PersonalProfileForm extends HookConsumerWidget {
       );
 
       final updateUseCase = ref.read(updateUserProfileUseCaseProvider);
-      final result = await updateUseCase(original: profile, target: targetProfile);
+      final result = await updateUseCase(target: targetProfile);
 
       if (!context.mounted) return;
 
