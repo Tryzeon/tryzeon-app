@@ -6,6 +6,7 @@ import 'package:tryzeon/core/modules/location/domain/entities/user_location.dart
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/ad_local_datasource.dart';
+import 'package:tryzeon/feature/personal/shop/data/datasources/shop_local_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/repositories/ad_repository_impl.dart';
 import 'package:tryzeon/feature/personal/shop/data/repositories/product_analytics_repository_impl.dart';
@@ -35,6 +36,11 @@ ShopRemoteDataSource shopRemoteDataSource(final Ref ref) {
 }
 
 @riverpod
+ShopLocalDataSource shopLocalDataSource(final Ref ref) {
+  return ShopLocalDataSource(ref.watch(isarServiceProvider));
+}
+
+@riverpod
 AdLocalDataSource adLocalDataSource(final Ref ref) {
   return AdLocalDataSource();
 }
@@ -44,7 +50,8 @@ AdLocalDataSource adLocalDataSource(final Ref ref) {
 @riverpod
 ProductRepository productRepository(final Ref ref) {
   final remote = ref.watch(shopRemoteDataSourceProvider);
-  return ProductRepositoryImpl(remoteDataSource: remote);
+  final local = ref.watch(shopLocalDataSourceProvider);
+  return ProductRepositoryImpl(remoteDataSource: remote, localDataSource: local);
 }
 
 @riverpod
