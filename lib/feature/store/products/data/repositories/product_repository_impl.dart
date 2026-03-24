@@ -137,7 +137,26 @@ class ProductRepositoryImpl implements ProductRepository {
   @override
   Future<Result<Product, Failure>> getProductById(final String productId) async {
     try {
+      // 1. Try Local Cache
+      try {
+        final cachedProduct = await _localDataSource.getProductById(productId);
+        if (cachedProduct != null) {
+          return Ok(_mappr.convert<ProductModel, Product>(cachedProduct));
+        }
+      } catch (e, stackTrace) {
+        AppLogger.warning('Local cache read failed', e, stackTrace);
+      }
+
+      // 2. Try Remote
       final model = await _remoteDataSource.getProduct(productId);
+
+      // 3. Update Cache
+      try {
+        await _localDataSource.saveProduct(model);
+      } catch (e, stackTrace) {
+        AppLogger.warning('Failed to save product to cache', e, stackTrace);
+      }
+
       return Ok(_mappr.convert<ProductModel, Product>(model));
     } catch (e, stackTrace) {
       AppLogger.error('Failed to get product by ID', e, stackTrace);
