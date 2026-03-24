@@ -13,6 +13,8 @@ abstract class ProductRepository {
     final bool forceRefresh = false,
   });
 
+  Future<Result<Product, Failure>> getProduct(final String id);
+
   Future<Result<void, Failure>> createProduct(final CreateProductParams params);
 
   Future<Result<void, Failure>> updateProduct({

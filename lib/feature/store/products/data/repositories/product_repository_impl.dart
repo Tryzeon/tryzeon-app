@@ -75,6 +75,18 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
+  Future<Result<Product, Failure>> getProduct(final String id) async {
+    try {
+      final remoteProduct = await _remoteDataSource.getProduct(id);
+      final product = _mappr.convert<ProductModel, Product>(remoteProduct);
+      return Ok(product);
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to load product', e, stackTrace);
+      return Err(mapExceptionToFailure(e));
+    }
+  }
+
+  @override
   Future<Result<void, Failure>> createProduct(final CreateProductParams params) async {
     try {
       final imagePaths = await _remoteDataSource.uploadProductImages(
