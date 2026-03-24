@@ -42,6 +42,9 @@ devtools_options.yaml
 *.freezed.dart
 *.isar
 *.auto_mappr.dart
+# Allow obfuscated env generated file — no plaintext secrets, safe to commit
+# New worktrees/clones can build without needing .env or build_runner
+!lib/core/config/env.g.dart
 
 # Symbolication related
 app.*.symbols
