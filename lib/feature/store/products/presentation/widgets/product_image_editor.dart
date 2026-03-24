@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
 
 class ProductImageEditor extends StatelessWidget {
@@ -8,7 +9,7 @@ class ProductImageEditor extends StatelessWidget {
     required this.images,
     required this.onImagesChanged,
     required this.onPickImage,
-    this.maxImages = 3,
+    this.maxImages = AppConstants.maxProductImages,
   });
 
   final List<ImageItem> images;

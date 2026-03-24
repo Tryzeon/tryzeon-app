@@ -46,6 +46,7 @@ class AppConstants {
   static const Duration errorToastDuration = Duration(seconds: 10);
 
   // Logic
+  static const int maxProductImages = 3;
   static const int otpResendCountdownSeconds = 60;
   static const int otpCodeLength = 6;
   static const double productVisibilityThreshold = 0.5;
