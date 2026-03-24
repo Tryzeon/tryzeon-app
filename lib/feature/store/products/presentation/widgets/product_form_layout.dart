@@ -29,7 +29,7 @@ class ProductFormLayout extends StatelessWidget {
   final ProductSizeManager sizeManager;
   final bool isLoading;
   final VoidCallback onSubmit;
-  final Future<List<File>?> Function() onPickImage;
+  final Future<List<File>?> Function(int remainingCount) onPickImage;
   final dynamic productCategoryTreeAsync;
   final VoidCallback onRetryCategories;
   final VoidCallback? onDelete;
@@ -75,7 +75,11 @@ class ProductFormLayout extends StatelessWidget {
                         state.didChange(updated);
                       },
                       onPickImage: () async {
-                        final files = await onPickImage();
+                        final currentCount = formData.images.value.length;
+                        final remainingCount = 3 - currentCount; // maxImages = 3
+                        if (remainingCount <= 0) return;
+
+                        final files = await onPickImage(remainingCount);
                         if (files != null && files.isNotEmpty) {
                           final newItems = files
                               .map((final f) => ImageItem.newImage(file: f))
