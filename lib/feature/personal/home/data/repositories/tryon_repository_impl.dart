@@ -5,6 +5,7 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/home/data/datasources/tryon_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
+import 'package:tryzeon/feature/personal/home/domain/entities/tryon_params.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/home/domain/repositories/tryon_repository.dart';
 import 'package:typed_result/typed_result.dart';
@@ -16,30 +17,14 @@ class TryOnRepositoryImpl implements TryOnRepository {
   final TryonRemoteDataSource _remoteDataSource;
 
   @override
-  Future<Result<TryonResult, Failure>> tryon({
-    final String? avatarBase64,
-    final String? avatarPath,
-    final String? clothesBase64,
-    final String? clothesPath,
-    required final TryOnMode mode,
-    final String? scenePrompt,
-    final String? transitionPrompt,
-  }) async {
+  Future<Result<TryonResult, Failure>> tryon(final TryOnParams params) async {
     try {
-      final data = await _remoteDataSource.tryon(
-        avatarBase64: avatarBase64,
-        avatarPath: avatarPath,
-        clothesBase64: clothesBase64,
-        clothesPath: clothesPath,
-        mode: mode,
-        scenePrompt: scenePrompt,
-        transitionPrompt: transitionPrompt,
-      );
+      final data = await _remoteDataSource.tryon(params);
 
       String? videoPath;
 
       // If video mode, save base64 video to local file
-      if (mode == TryOnMode.video && data['video'] != null) {
+      if (params.mode == TryOnMode.video && data['video'] != null) {
         final videoBase64 = data['video'] as String;
         final videoBytes = base64Decode(videoBase64);
 
@@ -57,7 +42,7 @@ class TryOnRepositoryImpl implements TryOnRepository {
         TryonResult(
           imageBase64: data['image'] as String?,
           videoPath: videoPath,
-          mode: mode,
+          mode: params.mode,
         ),
       );
     } catch (e, stackTrace) {

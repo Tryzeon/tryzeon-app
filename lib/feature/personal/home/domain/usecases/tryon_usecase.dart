@@ -1,5 +1,5 @@
 import 'package:tryzeon/core/error/failures.dart';
-import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
+import 'package:tryzeon/feature/personal/home/domain/entities/tryon_params.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/home/domain/repositories/tryon_repository.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
@@ -16,37 +16,19 @@ class TryonUseCase {
   final TryOnRepository _tryOnRepository;
 
   /// Performs virtual try-on.
-  /// If [customAvatarBase64] is not provided, automatically fetches current user's avatarPath.
+  /// If [params.avatarBase64] is not provided, automatically fetches current user's avatarPath.
   /// This encapsulates the business logic: "use custom avatar if provided, otherwise use current user avatar"
-  Future<Result<TryonResult, Failure>> call({
-    final String? customAvatarBase64,
-    final String? clothesBase64,
-    final String? clothesPath,
-    required final TryOnMode mode,
-    final String? scenePrompt,
-    final String? transitionPrompt,
-  }) async {
-    // Business Logic: If no custom avatar provided, fetch current user's avatar path
-    String? avatarPathToUse;
-    if (customAvatarBase64 == null) {
-      final profileResult = await _userProfileRepository.getUserProfile();
+  Future<Result<TryonResult, Failure>> call(final TryOnParams params) async {
+    String? avatarPath = params.avatarPath;
 
-      switch (profileResult) {
-        case Err(:final error):
-          return Err(error);
-        case Ok(:final value):
-          avatarPathToUse = value.avatarPath;
+    if (params.avatarBase64 == null) {
+      final profileResult = await _userProfileRepository.getUserProfile();
+      if (profileResult.isFailure) {
+        return Err(profileResult.getError()!);
       }
+      avatarPath = profileResult.get()!.avatarPath;
     }
 
-    return _tryOnRepository.tryon(
-      avatarBase64: customAvatarBase64,
-      avatarPath: avatarPathToUse,
-      clothesBase64: clothesBase64,
-      clothesPath: clothesPath,
-      mode: mode,
-      scenePrompt: scenePrompt,
-      transitionPrompt: transitionPrompt,
-    );
+    return _tryOnRepository.tryon(params.copyWith(avatarPath: avatarPath));
   }
 }

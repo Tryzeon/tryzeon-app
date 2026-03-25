@@ -17,6 +17,7 @@ import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/core/utils/image_watermark_helper.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
+import 'package:tryzeon/feature/personal/home/domain/entities/tryon_params.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_action_button.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_gallery.dart';
@@ -146,12 +147,14 @@ class HomePage extends HookConsumerWidget {
 
       final tryonUseCase = ref.read(tryonUseCaseProvider);
       final result = await tryonUseCase(
-        customAvatarBase64: customAvatarBase64,
-        clothesBase64: clothesBase64,
-        clothesPath: clothesPath,
-        mode: mode,
-        scenePrompt: scenePrompt,
-        transitionPrompt: transitionPrompt,
+        TryOnParams(
+          avatarBase64: customAvatarBase64,
+          clothesBase64: clothesBase64,
+          clothesPath: clothesPath,
+          mode: mode,
+          scenePrompt: scenePrompt,
+          transitionPrompt: transitionPrompt,
+        ),
       );
 
       if (!context.mounted) return;

@@ -1,33 +1,25 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
-import '../../domain/entities/tryon_mode.dart';
+import '../../domain/entities/tryon_params.dart';
 
 class TryonRemoteDataSource {
   TryonRemoteDataSource(this._supabase);
   final SupabaseClient _supabase;
 
-  Future<Map<String, dynamic>> tryon({
-    final String? avatarBase64,
-    final String? avatarPath,
-    final String? clothesBase64,
-    final String? clothesPath,
-    required final TryOnMode mode,
-    final String? scenePrompt,
-    final String? transitionPrompt,
-  }) async {
+  Future<Map<String, dynamic>> tryon(final TryOnParams params) async {
     final Map<String, dynamic> body = {};
-    body['avatarBase64'] = avatarBase64;
-    body['avatarPath'] = avatarPath;
-    body['clothesBase64'] = clothesBase64;
-    body['clothesPath'] = clothesPath;
+    body['avatarBase64'] = params.avatarBase64;
+    body['avatarPath'] = params.avatarPath;
+    body['clothesBase64'] = params.clothesBase64;
+    body['clothesPath'] = params.clothesPath;
 
-    body[AppConstants.paramMode] = mode.name;
+    body[AppConstants.paramMode] = params.mode.name;
 
-    if (scenePrompt != null && scenePrompt.isNotEmpty) {
-      body[AppConstants.paramScenePrompt] = scenePrompt;
+    if (params.scenePrompt != null && params.scenePrompt!.isNotEmpty) {
+      body[AppConstants.paramScenePrompt] = params.scenePrompt;
     }
-    if (transitionPrompt != null && transitionPrompt.isNotEmpty) {
-      body[AppConstants.paramTransitionPrompt] = transitionPrompt;
+    if (params.transitionPrompt != null && params.transitionPrompt!.isNotEmpty) {
+      body[AppConstants.paramTransitionPrompt] = params.transitionPrompt;
     }
 
     final response = await _supabase.functions.invoke(
