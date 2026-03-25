@@ -9,6 +9,7 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_category.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -43,9 +44,11 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
 
       final uploadWardrobeItemUseCase = ref.read(uploadWardrobeItemUseCaseProvider);
       final result = await uploadWardrobeItemUseCase(
-        image: image,
-        category: selectedCategory.value!,
-        tags: selectedTags.value,
+        CreateWardrobeItemParams(
+          image: image,
+          category: selectedCategory.value!,
+          tags: selectedTags.value,
+        ),
       );
 
       if (!context.mounted) return;

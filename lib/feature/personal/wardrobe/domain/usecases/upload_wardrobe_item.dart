@@ -1,9 +1,8 @@
-import 'dart:io';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/personal/subscription/domain/usecases/get_subscription.dart';
 import 'package:tryzeon/feature/personal/subscription/domain/usecases/get_subscription_plans.dart';
 import 'package:typed_result/typed_result.dart';
-import '../entities/wardrobe_category.dart';
+import '../entities/wardrobe_item.dart';
 import '../repositories/wardrobe_repository.dart';
 import 'get_wardrobe_items.dart';
 
@@ -20,11 +19,7 @@ class UploadWardrobeItem {
   final GetSubscriptionPlans getSubscriptionPlansUseCase;
   final GetWardrobeItems getWardrobeItemsUseCase;
 
-  Future<Result<void, Failure>> call({
-    required final File image,
-    required final WardrobeCategory category,
-    final List<String> tags = const [],
-  }) async {
+  Future<Result<void, Failure>> call(final CreateWardrobeItemParams params) async {
     final subscriptionResult = await getSubscriptionUseCase();
     if (subscriptionResult.isFailure) {
       return Err(subscriptionResult.getError()!);
@@ -53,10 +48,6 @@ class UploadWardrobeItem {
       return const Err(ValidationFailure());
     }
 
-    return wardrobeRepository.uploadWardrobeItem(
-      image: image,
-      category: category,
-      tags: tags,
-    );
+    return wardrobeRepository.uploadWardrobeItem(params);
   }
 }

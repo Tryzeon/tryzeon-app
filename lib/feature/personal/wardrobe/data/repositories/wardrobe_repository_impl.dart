@@ -6,7 +6,6 @@ import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:typed_result/typed_result.dart';
 
-import '../../domain/entities/wardrobe_category.dart';
 import '../../domain/entities/wardrobe_item.dart';
 import '../../domain/repositories/wardrobe_repository.dart';
 import '../datasources/wardrobe_local_datasource.dart';
@@ -68,15 +67,13 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
   }
 
   @override
-  Future<Result<void, Failure>> uploadWardrobeItem({
-    required final File image,
-    required final WardrobeCategory category,
-    final List<String> tags = const [],
-  }) async {
+  Future<Result<void, Failure>> uploadWardrobeItem(
+    final CreateWardrobeItemParams params,
+  ) async {
     try {
-      final categoryString = category.value;
-      final imageName = p.basename(image.path);
-      final bytes = await image.readAsBytes();
+      final categoryString = params.category.value;
+      final imageName = p.basename(params.image.path);
+      final bytes = await params.image.readAsBytes();
 
       // 1. Upload Image first
       final imagePath = await _remoteDataSource.uploadImage(
@@ -90,8 +87,8 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
       // 2. Create Request DTO
       final request = CreateWardrobeItemRequest(
         imagePath: imagePath,
-        category: category,
-        tags: tags,
+        category: params.category,
+        tags: params.tags,
       );
 
       final newItem = await _remoteDataSource.createWardrobeItem(request);
