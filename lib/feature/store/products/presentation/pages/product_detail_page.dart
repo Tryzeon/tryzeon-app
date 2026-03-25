@@ -67,23 +67,25 @@ class ProductDetailPage extends HookConsumerWidget {
 
       final updateProductUseCase = ref.read(updateProductUseCaseProvider);
       final result = await updateProductUseCase(
-        productId: product.id,
-        finalImageOrder: formData.images.value,
-        sizesToAdd: deltas.sizesToAdd,
-        sizesToUpdate: deltas.sizesToUpdate,
-        sizeIdsToDelete: deltas.sizeIdsToDelete,
-        name: formData.nameController.text,
-        categoryIds: formData.selectedCategoryIds.value.toList(),
-        price: double.tryParse(formData.priceController.text) ?? 0.0,
-        purchaseLink: formData.purchaseLinkController.text.isNotEmpty
-            ? formData.purchaseLinkController.text
-            : null,
-        material: formData.materialController.text.isNotEmpty
-            ? formData.materialController.text
-            : null,
-        elasticity: formData.selectedElasticity.value,
-        fit: formData.selectedFit.value,
-        styles: formData.selectedStyles.value,
+        UpdateProductParams(
+          productId: product.id,
+          finalImageOrder: formData.images.value,
+          sizesToAdd: deltas.sizesToAdd,
+          sizesToUpdate: deltas.sizesToUpdate,
+          sizeIdsToDelete: deltas.sizeIdsToDelete,
+          name: formData.nameController.text,
+          categoryIds: formData.selectedCategoryIds.value.toList(),
+          price: double.tryParse(formData.priceController.text) ?? 0.0,
+          purchaseLink: formData.purchaseLinkController.text.isNotEmpty
+              ? formData.purchaseLinkController.text
+              : null,
+          material: formData.materialController.text.isNotEmpty
+              ? formData.materialController.text
+              : null,
+          elasticity: formData.selectedElasticity.value,
+          fit: formData.selectedFit.value,
+          styles: formData.selectedStyles.value,
+        ),
       );
 
       if (!context.mounted) return;

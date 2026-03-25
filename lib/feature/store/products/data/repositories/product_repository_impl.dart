@@ -5,7 +5,6 @@ import 'package:tryzeon/core/shared/measurements/data/mappers/measurements_mappr
 import 'package:tryzeon/core/shared/measurements/data/models/measurements_model.dart';
 import 'package:tryzeon/core/shared/measurements/entities/measurements.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
-import 'package:tryzeon/feature/personal/profile/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:tryzeon/feature/store/products/data/datasources/product_local_datasource.dart';
 import 'package:tryzeon/feature/store/products/data/datasources/product_remote_datasource.dart';
@@ -15,7 +14,6 @@ import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/domain/repositories/product_repository.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
-import 'package:tryzeon/feature/store/products/domain/value_objects/product_attributes.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/product_sort_condition.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -167,26 +165,15 @@ class ProductRepositoryImpl implements ProductRepository {
   @override
   Future<Result<void, Failure>> updateProduct({
     required final Product original,
-    required final List<ImageItem> finalImageOrder,
-    required final List<CreateProductSizeParams> sizesToAdd,
-    required final List<ProductSize> sizesToUpdate,
-    required final List<String> sizeIdsToDelete,
-    required final String name,
-    required final List<String> categoryIds,
-    required final double price,
-    final String? purchaseLink,
-    final String? material,
-    final ProductElasticity? elasticity,
-    final ProductFit? fit,
-    final List<ClothingStyle>? styles,
+    required final UpdateProductParams params,
   }) async {
     try {
       // 1. Separate existing paths and new files from final order
       final existingPaths = <String>[];
       final newFiles = <File>[];
 
-      for (int i = 0; i < finalImageOrder.length; i++) {
-        final item = finalImageOrder[i];
+      for (int i = 0; i < params.finalImageOrder.length; i++) {
+        final item = params.finalImageOrder[i];
         switch (item) {
           case ExistingImageItem(:final path):
             existingPaths.add(path);
@@ -215,7 +202,7 @@ class ProductRepositoryImpl implements ProductRepository {
       int existingIndex = 0;
       int newIndex = 0;
 
-      for (final item in finalImageOrder) {
+      for (final item in params.finalImageOrder) {
         switch (item) {
           case ExistingImageItem():
             finalImagePaths.add(existingPaths[existingIndex++]);
@@ -231,20 +218,22 @@ class ProductRepositoryImpl implements ProductRepository {
 
       // 5. Build target product
       final targetProduct = original.copyWith(
-        name: name,
-        categoryIds: categoryIds,
-        price: price,
-        purchaseLink: purchaseLink,
-        material: material,
-        elasticity: elasticity,
-        fit: fit,
-        styles: styles,
+        name: params.name,
+        categoryIds: params.categoryIds,
+        price: params.price,
+        purchaseLink: params.purchaseLink,
+        material: params.material,
+        elasticity: params.elasticity,
+        fit: params.fit,
+        styles: params.styles,
         imagePaths: finalImagePaths,
       );
 
       final productChanged = original != targetProduct;
       final sizesChanged =
-          sizesToAdd.isNotEmpty || sizesToUpdate.isNotEmpty || sizeIdsToDelete.isNotEmpty;
+          params.sizesToAdd.isNotEmpty ||
+          params.sizesToUpdate.isNotEmpty ||
+          params.sizeIdsToDelete.isNotEmpty;
 
       if (!productChanged && !sizesChanged) {
         return const Ok(null);
@@ -265,12 +254,12 @@ class ProductRepositoryImpl implements ProductRepository {
       // 8. Handle size changes
       if (sizesChanged) {
         // Delete removed sizes
-        for (final sizeId in sizeIdsToDelete) {
+        for (final sizeId in params.sizeIdsToDelete) {
           await _remoteDataSource.deleteProductSize(sizeId);
         }
 
         // Add new sizes
-        for (final sizeParams in sizesToAdd) {
+        for (final sizeParams in params.sizesToAdd) {
           final sizeRequest = CreateProductSizeRequest(
             productId: original.id,
             name: sizeParams.name,
@@ -284,7 +273,7 @@ class ProductRepositoryImpl implements ProductRepository {
         }
 
         // Update existing sizes
-        for (final size in sizesToUpdate) {
+        for (final size in params.sizesToUpdate) {
           final sizeModel = _mappr.convert<ProductSize, ProductSizeModel>(size);
           await _remoteDataSource.updateProductSize(sizeModel);
         }
