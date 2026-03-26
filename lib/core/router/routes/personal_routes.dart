@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:tryzeon/core/modules/revenue_cat/presentation/pages/paywall_page.dart';
 import 'package:tryzeon/core/router/shells/personal_shell.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/pages/chat_page.dart';
 import 'package:tryzeon/feature/personal/home/presentation/pages/home_page.dart';
@@ -94,5 +95,9 @@ final personalFullScreenRoutes = [
   GoRoute(
     path: '/personal/onboarding',
     builder: (final context, final state) => const PersonalOnboardingPage(),
+  ),
+  GoRoute(
+    path: '/personal/paywall',
+    builder: (final context, final state) => const PaywallPage(),
   ),
 ];
