@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
@@ -11,6 +12,15 @@ class PaywallPage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
+    final hasPopped = useState(false);
+
+    void safePop() {
+      if (!hasPopped.value && context.mounted) {
+        hasPopped.value = true;
+        context.pop();
+      }
+    }
+
     return Scaffold(
       body: SafeArea(
         child: PaywallView(
@@ -22,9 +32,7 @@ class PaywallPage extends HookConsumerWidget {
               message: '訂閱成功，感謝您的支持！',
               type: NotificationType.success,
             );
-            if (context.mounted) {
-              context.pop();
-            }
+            safePop();
           },
           onRestoreCompleted: (final customerInfo) {
             AppLogger.info('Restore completed');
@@ -34,9 +42,7 @@ class PaywallPage extends HookConsumerWidget {
               message: '購買紀錄已恢復！',
               type: NotificationType.success,
             );
-            if (context.mounted) {
-              context.pop();
-            }
+            safePop();
           },
           onPurchaseError: (final error) {
             AppLogger.error('Purchase failed', error.message);
@@ -55,9 +61,7 @@ class PaywallPage extends HookConsumerWidget {
             );
           },
           onDismiss: () {
-            if (context.mounted) {
-              context.pop();
-            }
+            safePop();
           },
         ),
       ),
