@@ -1,0 +1,11 @@
+import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/modules/revenue_cat/domain/repositories/revenue_cat_repository.dart';
+import 'package:typed_result/typed_result.dart';
+
+class LogOutRevenueCat {
+  const LogOutRevenueCat(this._repository);
+
+  final RevenueCatRepository _repository;
+
+  Future<Result<void, Failure>> call() => _repository.logOut();
+}
