@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/env.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
@@ -46,6 +47,21 @@ Future<void> main() async {
     anonKey: Env.supabaseAnonKey,
     authOptions: const FlutterAuthClientOptions(authFlowType: AuthFlowType.pkce),
   );
+
+  // RevenueCat SDK initialization
+  if (kDebugMode) {
+    await Purchases.setLogLevel(LogLevel.debug);
+  }
+
+  final purchasesConfig = PurchasesConfiguration(Env.revenueCatApiKey);
+  await Purchases.configure(purchasesConfig);
+
+  // Log user identity – RevenueCat will use an anonymous ID until login
+  // After user logs in (Supabase auth), call Purchases.logIn(userId) to link
+  final currentUser = Supabase.instance.client.auth.currentUser;
+  if (currentUser != null) {
+    await Purchases.logIn(currentUser.id);
+  }
 
   runApp(const ProviderScope(retry: customRetry, child: Tryzeon()));
 }
