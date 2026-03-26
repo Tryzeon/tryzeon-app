@@ -6,6 +6,7 @@ import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
 import 'package:tryzeon/core/modules/revenue_cat/di/revenue_cat_providers.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_capabilities_provider.dart';
 
 class PaywallPage extends HookConsumerWidget {
   const PaywallPage({super.key});
@@ -26,7 +27,8 @@ class PaywallPage extends HookConsumerWidget {
         child: PaywallView(
           onPurchaseCompleted: (final customerInfo, final storeTransaction) {
             AppLogger.info('Purchase completed: ${storeTransaction.productIdentifier}');
-            ref.invalidate(proEntitlementProvider);
+            ref.invalidate(appSubscriptionEntitlementProvider);
+            ref.invalidate(subscriptionCapabilitiesProvider);
             TopNotification.show(
               context,
               message: '訂閱成功，感謝您的支持！',
@@ -36,7 +38,8 @@ class PaywallPage extends HookConsumerWidget {
           },
           onRestoreCompleted: (final customerInfo) {
             AppLogger.info('Restore completed');
-            ref.invalidate(proEntitlementProvider);
+            ref.invalidate(appSubscriptionEntitlementProvider);
+            ref.invalidate(subscriptionCapabilitiesProvider);
             TopNotification.show(
               context,
               message: '購買紀錄已恢復！',

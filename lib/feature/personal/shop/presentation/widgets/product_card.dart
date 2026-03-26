@@ -13,7 +13,7 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/fit_status.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/tryon_mode_sheet.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
-import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_provider.dart';
+import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_capabilities_provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 class ProductCard extends HookConsumerWidget {
@@ -29,8 +29,8 @@ class ProductCard extends HookConsumerWidget {
 
     final hasLoggedView = useState(false);
 
-    final subscription = ref.watch(subscriptionProvider).value;
-    final isMax = subscription?.isMax ?? false;
+    final capabilities = ref.watch(subscriptionCapabilitiesProvider).value;
+    final hasVideoAccess = capabilities?.hasVideoAccess ?? false;
 
     void onVisibilityChanged(final VisibilityInfo info) {
       // Skip analytics for skeleton products
@@ -157,7 +157,7 @@ class ProductCard extends HookConsumerWidget {
                           onTap: () {
                             TryOnModeSheet.show(
                               context: context,
-                              hasVideoAccess: isMax,
+                              hasVideoAccess: hasVideoAccess,
                               onModeSelected: (final mode) => handleTryon(mode: mode),
                             );
                           },
