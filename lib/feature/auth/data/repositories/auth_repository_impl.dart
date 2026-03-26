@@ -70,7 +70,7 @@ class AuthRepositoryImpl implements AuthRepository {
       await _localDataSource.setLastLoginType(userType.value);
 
       // Log in to RevenueCat
-      final currentUser = Supabase.instance.client.auth.currentUser;
+      final currentUser = _remoteDataSource.getCurrentUser();
       if (currentUser != null) {
         await _logInRevenueCat(currentUser.id);
       }
@@ -176,6 +176,12 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       await _remoteDataSource.verifyEmailOTP(email: email, token: token);
       await _localDataSource.setLastLoginType(userType.value);
+
+      final currentUser = _remoteDataSource.getCurrentUser();
+      if (currentUser != null) {
+        await _logInRevenueCat(currentUser.id);
+      }
+
       return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('Email OTP verification failed', e, stackTrace);
