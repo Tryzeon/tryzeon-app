@@ -51,6 +51,10 @@ class AppConstants {
   static const int otpCodeLength = 6;
   static const double productVisibilityThreshold = 0.5;
 
+  // RevenueCat
+  static const String entitlementProId = 'Tryzeon Pro';
+  static const String productMonthlyId = 'monthly';
+
   // Subscription Plan IDs
   static const String planFree = 'free';
   static const String planPro = 'pro';
