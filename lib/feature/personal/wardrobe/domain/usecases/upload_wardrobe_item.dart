@@ -1,6 +1,5 @@
 import 'package:tryzeon/core/error/failures.dart';
-import 'package:tryzeon/feature/personal/subscription/domain/usecases/get_subscription.dart';
-import 'package:tryzeon/feature/personal/subscription/domain/usecases/get_subscription_plans.dart';
+import 'package:tryzeon/feature/personal/subscription/domain/usecases/get_subscription_capabilities.dart';
 import 'package:typed_result/typed_result.dart';
 import '../entities/wardrobe_item.dart';
 import '../repositories/wardrobe_repository.dart';
@@ -9,34 +8,20 @@ import 'get_wardrobe_items.dart';
 class UploadWardrobeItem {
   UploadWardrobeItem({
     required this.wardrobeRepository,
-    required this.getSubscriptionUseCase,
-    required this.getSubscriptionPlansUseCase,
+    required this.getSubscriptionCapabilitiesUseCase,
     required this.getWardrobeItemsUseCase,
   });
 
   final WardrobeRepository wardrobeRepository;
-  final GetSubscription getSubscriptionUseCase;
-  final GetSubscriptionPlans getSubscriptionPlansUseCase;
+  final GetSubscriptionCapabilities getSubscriptionCapabilitiesUseCase;
   final GetWardrobeItems getWardrobeItemsUseCase;
 
   Future<Result<void, Failure>> call(final CreateWardrobeItemParams params) async {
-    final subscriptionResult = await getSubscriptionUseCase();
-    if (subscriptionResult.isFailure) {
-      return Err(subscriptionResult.getError()!);
+    final capabilitiesResult = await getSubscriptionCapabilitiesUseCase();
+    if (capabilitiesResult.isFailure) {
+      return Err(capabilitiesResult.getError()!);
     }
-    final subscription = subscriptionResult.get()!;
-
-    final plansResult = await getSubscriptionPlansUseCase();
-    if (plansResult.isFailure) {
-      return Err(plansResult.getError()!);
-    }
-    final plans = plansResult.get()!;
-    final currentPlanInfoList = plans
-        .where((final p) => p.id == subscription.plan)
-        .toList();
-    if (currentPlanInfoList.isEmpty) {
-      return const Err(UnknownFailure());
-    }
+    final capabilities = capabilitiesResult.get()!;
 
     final wardrobeItemsResult = await getWardrobeItemsUseCase();
     if (wardrobeItemsResult.isFailure) {
@@ -44,7 +29,7 @@ class UploadWardrobeItem {
     }
     final wardrobeItems = wardrobeItemsResult.get()!;
 
-    if (wardrobeItems.length >= currentPlanInfoList.first.wardrobeLimit) {
+    if (wardrobeItems.length >= capabilities.wardrobeLimit) {
       return const Err(ValidationFailure());
     }
 

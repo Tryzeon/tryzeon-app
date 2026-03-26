@@ -5,19 +5,9 @@ import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
 import 'package:tryzeon/core/modules/revenue_cat/di/revenue_cat_providers.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_capabilities_provider.dart';
 
 class RevenueCatUiUtils {
-  /// Presents the Paywall Page if the user does NOT have an active Pro entitlement.
-  static Future<void> presentPaywallIfNeeded(
-    final BuildContext context,
-    final WidgetRef ref,
-  ) async {
-    final isPro = await ref.read(isProActiveProvider.future);
-    if (!isPro && context.mounted) {
-      context.push('/personal/paywall');
-    }
-  }
-
   /// Always presents the Paywall Page regardless of current entitlement.
   static void presentPaywall(final BuildContext context) {
     context.push('/personal/paywall');
@@ -33,7 +23,8 @@ class RevenueCatUiUtils {
 
       // After returning from Customer Center, refresh the entitlement status
       // in case the user upgraded, downgraded, or canceled.
-      ref.invalidate(proEntitlementProvider);
+      ref.invalidate(appSubscriptionEntitlementProvider);
+      ref.invalidate(subscriptionCapabilitiesProvider);
     } catch (e, stackTrace) {
       AppLogger.error('Customer Center failed to open', e, stackTrace);
       if (context.mounted) {
