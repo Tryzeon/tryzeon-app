@@ -11,7 +11,7 @@ class SubscriptionPage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final isProAsync = ref.watch(isProActiveProvider);
+    final entitlementAsync = ref.watch(appSubscriptionEntitlementProvider);
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -23,13 +23,14 @@ class SubscriptionPage extends HookConsumerWidget {
         centerTitle: true,
       ),
       body: SafeArea(
-        child: isProAsync.when(
+        child: entitlementAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (final error, final stack) => ErrorView(
             message: (error as Failure).displayMessage(context),
-            onRetry: () => ref.refresh(isProActiveProvider),
+            onRetry: () => ref.refresh(appSubscriptionEntitlementProvider),
           ),
-          data: (final isPro) {
+          data: (final entitlement) {
+            final isPaidPlan = entitlement.hasActiveSubscription;
             return Padding(
               padding: const EdgeInsets.all(24),
               child: Column(
@@ -37,13 +38,15 @@ class SubscriptionPage extends HookConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    isPro ? Icons.star : Icons.star_border,
+                    isPaidPlan ? Icons.star : Icons.star_border,
                     size: 64,
-                    color: isPro ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                    color: isPaidPlan
+                        ? colorScheme.primary
+                        : colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    isPro ? '您目前是 Tryzeon Pro 會員' : '您目前是免費用戶',
+                    isPaidPlan ? '您目前是 Tryzeon Pro 會員' : '您目前是免費用戶',
                     style: TextStyle(
                       color: colorScheme.onSurface,
                       fontSize: 24,
@@ -53,12 +56,14 @@ class SubscriptionPage extends HookConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    isPro ? '感謝您的支持，您已解鎖所有完整功能！' : '升級為 Tryzeon Pro 會員即可解鎖更多試穿額度與專屬功能。',
+                    isPaidPlan
+                        ? '感謝您的支持，您已解鎖所有完整功能！'
+                        : '升級為 Tryzeon Pro 會員即可解鎖更多試穿額度與專屬功能。',
                     style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 16),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 48),
-                  if (isPro)
+                  if (isPaidPlan)
                     FilledButton.icon(
                       onPressed: () =>
                           RevenueCatUiUtils.presentCustomerCenter(context, ref),

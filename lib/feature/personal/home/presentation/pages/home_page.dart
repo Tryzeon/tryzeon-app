@@ -27,7 +27,7 @@ import 'package:tryzeon/feature/personal/home/providers/home_providers.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry_scope.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
-import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_provider.dart';
+import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_capabilities_provider.dart';
 import 'package:typed_result/typed_result.dart';
 
 class HomePageController {
@@ -236,8 +236,8 @@ class HomePage extends HookConsumerWidget {
       final originalBytes = base64Decode(result.imageBase64!);
       Uint8List imageToSave = originalBytes;
 
-      final subscription = await ref.read(subscriptionProvider.future);
-      if (subscription.requiresWatermark) {
+      final capabilities = await ref.read(subscriptionCapabilitiesProvider.future);
+      if (capabilities.requiresWatermark) {
         imageToSave = await ImageWatermarkHelper.addWatermark(originalBytes);
       }
 
