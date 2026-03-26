@@ -4,6 +4,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/domain/services/cache_service.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/analytics/data/services/analytics_event_queue_service.dart';
+import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/log_in_revenue_cat.dart';
+import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/log_out_revenue_cat.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/data/datasources/auth_local_datasource.dart';
 import 'package:tryzeon/feature/auth/data/datasources/auth_remote_datasource.dart';
@@ -17,14 +19,20 @@ class AuthRepositoryImpl implements AuthRepository {
     required final AuthLocalDataSource localDataSource,
     required final CacheService cacheService,
     required final AnalyticsEventQueueService analyticsEventQueueService,
+    required final LogInRevenueCat logInRevenueCat,
+    required final LogOutRevenueCat logOutRevenueCat,
   }) : _remoteDataSource = remoteDataSource,
        _localDataSource = localDataSource,
        _cacheService = cacheService,
-       _analyticsEventQueueService = analyticsEventQueueService;
+       _analyticsEventQueueService = analyticsEventQueueService,
+       _logInRevenueCat = logInRevenueCat,
+       _logOutRevenueCat = logOutRevenueCat;
   final AuthRemoteDataSource _remoteDataSource;
   final AuthLocalDataSource _localDataSource;
   final CacheService _cacheService;
   final AnalyticsEventQueueService _analyticsEventQueueService;
+  final LogInRevenueCat _logInRevenueCat;
+  final LogOutRevenueCat _logOutRevenueCat;
 
   @override
   Future<Result<void, Failure>> signInWithProvider({
@@ -60,6 +68,12 @@ class AuthRepositoryImpl implements AuthRepository {
 
       // Store login type preference
       await _localDataSource.setLastLoginType(userType.value);
+
+      // Log in to RevenueCat
+      final currentUser = Supabase.instance.client.auth.currentUser;
+      if (currentUser != null) {
+        await _logInRevenueCat(currentUser.id);
+      }
 
       return const Ok(null);
     } catch (e, stackTrace) {
@@ -97,6 +111,13 @@ class AuthRepositoryImpl implements AuthRepository {
         await _localDataSource.clearAll();
       } catch (e, stackTrace) {
         AppLogger.error('Failed to clear login type (ignored)', e, stackTrace);
+      }
+
+      // Log out of RevenueCat
+      try {
+        await _logOutRevenueCat();
+      } catch (e, stackTrace) {
+        AppLogger.error('RevenueCat logout failed (ignored)', e, stackTrace);
       }
 
       return const Ok(null);
@@ -197,6 +218,17 @@ class AuthRepositoryImpl implements AuthRepository {
         await _localDataSource.clearAll();
       } catch (e, stackTrace) {
         AppLogger.error('Failed to clear local data (ignored)', e, stackTrace);
+      }
+
+      // Log out of RevenueCat
+      try {
+        await _logOutRevenueCat();
+      } catch (e, stackTrace) {
+        AppLogger.error(
+          'RevenueCat logout failed on account deletion (ignored)',
+          e,
+          stackTrace,
+        );
       }
 
       return const Ok(null);
