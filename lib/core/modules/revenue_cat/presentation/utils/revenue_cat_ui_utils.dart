@@ -8,7 +8,10 @@ import 'package:tryzeon/core/utils/app_logger.dart';
 
 class RevenueCatUiUtils {
   /// Presents the Paywall Page if the user does NOT have an active Pro entitlement.
-  static Future<void> presentPaywallIfNeeded(final BuildContext context, final WidgetRef ref) async {
+  static Future<void> presentPaywallIfNeeded(
+    final BuildContext context,
+    final WidgetRef ref,
+  ) async {
     final isPro = await ref.read(isProActiveProvider.future);
     if (!isPro && context.mounted) {
       context.push('/personal/paywall');
@@ -21,10 +24,13 @@ class RevenueCatUiUtils {
   }
 
   /// Presents the RevenueCat Customer Center for the user to manage their subscription.
-  static Future<void> presentCustomerCenter(final BuildContext context, final WidgetRef ref) async {
+  static Future<void> presentCustomerCenter(
+    final BuildContext context,
+    final WidgetRef ref,
+  ) async {
     try {
       await RevenueCatUI.presentCustomerCenter();
-      
+
       // After returning from Customer Center, refresh the entitlement status
       // in case the user upgraded, downgraded, or canceled.
       ref.invalidate(proEntitlementProvider);
