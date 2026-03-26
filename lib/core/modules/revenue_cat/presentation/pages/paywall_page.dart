@@ -1,0 +1,66 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
+import 'package:tryzeon/core/modules/revenue_cat/di/revenue_cat_providers.dart';
+import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
+
+class PaywallPage extends HookConsumerWidget {
+  const PaywallPage({super.key});
+
+  @override
+  Widget build(final BuildContext context, final WidgetRef ref) {
+    return Scaffold(
+      body: SafeArea(
+        child: PaywallView(
+          onPurchaseCompleted: (final customerInfo, final storeTransaction) {
+            AppLogger.info('Purchase completed: ${storeTransaction.productIdentifier}');
+            ref.invalidate(proEntitlementProvider);
+            TopNotification.show(
+              context,
+              message: '訂閱成功，感謝您的支持！',
+              type: NotificationType.success,
+            );
+            if (context.mounted) {
+              context.pop();
+            }
+          },
+          onRestoreCompleted: (final customerInfo) {
+            AppLogger.info('Restore completed');
+            ref.invalidate(proEntitlementProvider);
+            TopNotification.show(
+              context,
+              message: '購買紀錄已恢復！',
+              type: NotificationType.success,
+            );
+            if (context.mounted) {
+              context.pop();
+            }
+          },
+          onPurchaseError: (final error) {
+            AppLogger.error('Purchase failed', error.message);
+            TopNotification.show(
+              context,
+              message: '購買失敗：${error.message}',
+              type: NotificationType.error,
+            );
+          },
+          onRestoreError: (final error) {
+            AppLogger.error('Restore failed', error.message);
+            TopNotification.show(
+              context,
+              message: '恢復購買失敗：${error.message}',
+              type: NotificationType.error,
+            );
+          },
+          onDismiss: () {
+            if (context.mounted) {
+              context.pop();
+            }
+          },
+        ),
+      ),
+    );
+  }
+}
