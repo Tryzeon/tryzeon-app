@@ -1,8 +1,8 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/modules/revenue_cat/data/repositories/revenue_cat_repository_impl.dart';
-import 'package:tryzeon/core/modules/revenue_cat/domain/entities/customer_entitlement.dart';
+import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/repositories/revenue_cat_repository.dart';
-import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/get_pro_entitlement.dart';
+import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/get_app_subscription_entitlement.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/log_in_revenue_cat.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/log_out_revenue_cat.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/restore_purchases.dart';
@@ -20,8 +20,8 @@ RevenueCatRepository revenueCatRepository(final Ref ref) {
 // ── Use Case Providers ───────────────────────────────────────────────────────
 
 @riverpod
-GetProEntitlement getProEntitlementUseCase(final Ref ref) {
-  return GetProEntitlement(ref.watch(revenueCatRepositoryProvider));
+GetAppSubscriptionEntitlement getAppSubscriptionEntitlementUseCase(final Ref ref) {
+  return GetAppSubscriptionEntitlement(ref.watch(revenueCatRepositoryProvider));
 }
 
 @riverpod
@@ -39,13 +39,9 @@ RestorePurchases restorePurchasesUseCase(final Ref ref) {
   return RestorePurchases(ref.watch(revenueCatRepositoryProvider));
 }
 
-// ── Data Providers ───────────────────────────────────────────────────────────
-
-/// Watches the current Pro entitlement status.
-/// Invalidate after a purchase / restore to refresh.
 @riverpod
-Future<CustomerEntitlement> proEntitlement(final Ref ref) async {
-  final useCase = ref.watch(getProEntitlementUseCaseProvider);
+Future<AppSubscriptionEntitlement> appSubscriptionEntitlement(final Ref ref) async {
+  final useCase = ref.watch(getAppSubscriptionEntitlementUseCaseProvider);
   final result = await useCase();
 
   if (result.isFailure) {
@@ -53,11 +49,4 @@ Future<CustomerEntitlement> proEntitlement(final Ref ref) async {
   }
 
   return result.get()!;
-}
-
-/// Convenience: true if the user has an active Tryzeon Pro entitlement.
-@riverpod
-Future<bool> isProActive(final Ref ref) async {
-  final entitlement = await ref.watch(proEntitlementProvider.future);
-  return entitlement.isProActive;
 }
