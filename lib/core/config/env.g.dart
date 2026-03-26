@@ -207,9 +207,7 @@ final class _Env {
       _envieddatasupabaseAnonKey.length,
       (int i) => i,
       growable: false,
-    ).map(
-      (int i) => _envieddatasupabaseAnonKey[i] ^ _enviedkeysupabaseAnonKey[i],
-    ),
+    ).map((int i) => _envieddatasupabaseAnonKey[i] ^ _enviedkeysupabaseAnonKey[i]),
   );
 
   static const List<int> _enviedkeyrevenueCatApiKey = <int>[
@@ -287,8 +285,6 @@ final class _Env {
       _envieddatarevenueCatApiKey.length,
       (int i) => i,
       growable: false,
-    ).map(
-      (int i) => _envieddatarevenueCatApiKey[i] ^ _enviedkeyrevenueCatApiKey[i],
-    ),
+    ).map((int i) => _envieddatarevenueCatApiKey[i] ^ _enviedkeyrevenueCatApiKey[i]),
   );
 }
