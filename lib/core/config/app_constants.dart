@@ -52,8 +52,7 @@ class AppConstants {
   static const double productVisibilityThreshold = 0.5;
 
   // RevenueCat
-  static const String entitlementProId = 'Tryzeon Pro';
-  static const String productMonthlyId = 'monthly';
+  static const String entitlementProId = 'pro';
 
   // Subscription Plan IDs
   static const String planFree = 'free';
