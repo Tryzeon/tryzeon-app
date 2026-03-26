@@ -85,18 +85,6 @@ Future<void> refreshWardrobeItems(final WidgetRef ref) async {
   }
 }
 
-/// Wardrobe capacity information combining subscription plan limits with
-/// current wardrobe item count.
-typedef WardrobeCapacity = ({int current, int limit});
-
-@riverpod
-Future<WardrobeCapacity> wardrobeCapacity(final Ref ref) async {
-  final capabilities = await ref.watch(subscriptionCapabilitiesProvider.future);
-  final items = await ref.watch(wardrobeItemsProvider.future);
-
-  return (current: items.length, limit: capabilities.wardrobeLimit);
-}
-
 @riverpod
 Future<File> wardrobeItemImage(final Ref ref, final String imagePath) async {
   final getWardrobeItemImageUseCase = ref.watch(getWardrobeItemImageUseCaseProvider);

@@ -8,6 +8,7 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_category.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
@@ -96,12 +97,13 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
     }
 
     Widget buildCapacityIndicator() {
-      final capacityAsync = ref.watch(wardrobeCapacityProvider);
+      final capabilitiesAsync = ref.watch(subscriptionCapabilitiesProvider);
+      final itemsAsync = ref.watch(wardrobeItemsProvider);
 
-      return capacityAsync.when(
-        data: (final capacity) {
-          final current = capacity.current;
-          final limit = capacity.limit;
+      return switch ((capabilitiesAsync, itemsAsync)) {
+        (AsyncData(value: final capabilities), AsyncData(value: final items)) => () {
+          final limit = capabilities.wardrobeLimit;
+          final current = items.length;
           final percentage = current / limit;
 
           return Padding(
@@ -142,10 +144,9 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
               ],
             ),
           );
-        },
-        loading: () => const SizedBox.shrink(),
-        error: (final _, final _) => const SizedBox.shrink(),
-      );
+        }(),
+        _ => const SizedBox.shrink(),
+      };
     }
 
     Widget buildImagePreview() {
