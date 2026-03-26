@@ -13,7 +13,6 @@ class AppConstants {
   static const String tableProducts = 'products';
   static const String tableProductVariants = 'product_variants';
   static const String tableProductCategories = 'product_categories';
-  static const String tableSubscriptions = 'subscriptions';
   static const String tableSubscriptionPlans = 'subscription_plans';
   static const String tableWardrobeItems = 'wardrobe_items';
   static const String tableAnalyticsEvents = 'analytics_events';
@@ -32,7 +31,6 @@ class AppConstants {
   static const String functionTryon = 'tryon';
   static const String functionDeleteAccount = 'delete-account';
   static const String functionLogAnalyticsEvents = 'log_analytics_events';
-  static const String functionUpdateSubscription = 'update-subscription';
 
   // Assets
   static const String defaultProfileImage = 'assets/images/profile/default.png';
@@ -52,13 +50,11 @@ class AppConstants {
   static const double productVisibilityThreshold = 0.5;
 
   // RevenueCat
+  static const String freePlanId = 'free';
   static const String entitlementProId = 'pro';
+  static const String entitlementMaxId = 'max';
 
   // Subscription Plan IDs
-  static const String planFree = 'free';
-  static const String planPro = 'pro';
-  static const String planMax = 'max';
-
   // TryOn Params
   static const String paramMode = 'mode';
   static const String modePhoto = 'photo';
@@ -72,8 +68,6 @@ class AppConstants {
   static const String keyVideoTransitionPrompt = 'video_transition_prompt';
 
   // Stale Durations
-  static const Duration staleDurationSubscription = Duration(minutes: 10);
-  static const Duration staleDurationSubscriptionPlans = Duration(hours: 24);
   static const Duration staleDurationProductCategories = Duration(hours: 24);
   static const Duration staleDurationUserProfile = Duration(days: 7);
   static const Duration staleDurationStoreProfile = Duration(days: 7);

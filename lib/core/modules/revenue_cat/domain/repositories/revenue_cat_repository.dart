@@ -1,10 +1,10 @@
 import 'package:tryzeon/core/error/failures.dart';
-import 'package:tryzeon/core/modules/revenue_cat/domain/entities/customer_entitlement.dart';
+import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:typed_result/typed_result.dart';
 
 abstract interface class RevenueCatRepository {
-  /// Returns the current Pro entitlement status for the logged-in user.
-  Future<Result<CustomerEntitlement, Failure>> getProEntitlement();
+  /// Returns the current RevenueCat entitlement state for the logged-in user.
+  Future<Result<AppSubscriptionEntitlement, Failure>> getAppSubscriptionEntitlement();
 
   /// Logs in the given [userId] to RevenueCat (call after Supabase sign-in).
   Future<Result<void, Failure>> logIn(final String userId);
@@ -13,5 +13,5 @@ abstract interface class RevenueCatRepository {
   Future<Result<void, Failure>> logOut();
 
   /// Restores previous purchases.
-  Future<Result<CustomerEntitlement, Failure>> restorePurchases();
+  Future<Result<AppSubscriptionEntitlement, Failure>> restorePurchases();
 }
