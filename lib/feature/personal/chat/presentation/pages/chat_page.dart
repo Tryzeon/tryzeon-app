@@ -324,32 +324,22 @@ class ChatPage extends HookConsumerWidget {
         child: SafeArea(
           child: Column(
             children: [
-              // 自訂 AppBar
+              // 頂部標題欄
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: colorScheme.surface,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
+                padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
                     Container(
-                      width: 40,
-                      height: 40,
+                      width: 48,
+                      height: 48,
                       decoration: BoxDecoration(
                         color: colorScheme.primary,
-                        shape: BoxShape.circle,
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
                         Icons.psychology_outlined,
                         color: colorScheme.onPrimary,
-                        size: 22,
+                        size: 24,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -357,7 +347,7 @@ class ChatPage extends HookConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('穿搭顧問', style: textTheme.headlineSmall),
+                          Text('穿搭顧問', style: textTheme.headlineMedium),
                           Text('AI 時尚助手', style: textTheme.bodySmall),
                         ],
                       ),

@@ -33,14 +33,31 @@ class MyPage extends HookConsumerWidget {
             SliverToBoxAdapter(
               child: SafeArea(
                 bottom: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
                   child: Row(
                     children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.person_outline_rounded,
+                          color: colorScheme.onPrimary,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
                       Expanded(
-                        child: Text(
-                          '我的',
-                          style: Theme.of(context).textTheme.headlineSmall,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('帳號中心', style: Theme.of(context).textTheme.headlineMedium),
+                            Text('管理個人帳戶', style: Theme.of(context).textTheme.bodySmall),
+                          ],
                         ),
                       ),
                       IconButton(

@@ -310,22 +310,33 @@ class PersonalPage extends HookConsumerWidget {
             left: 0,
             right: 0,
             child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
+              bottom: false,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                child: Row(
                   children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.checkroom_rounded,
-                          color: colorScheme.onSurface,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Text('我的衣櫃', style: textTheme.titleLarge),
-                      ],
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.checkroom_rounded,
+                        color: colorScheme.onPrimary,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('我的衣櫃', style: textTheme.headlineMedium),
+                          Text('管理您的衣服', style: textTheme.bodySmall),
+                        ],
+                      ),
                     ),
                   ],
                 ),
