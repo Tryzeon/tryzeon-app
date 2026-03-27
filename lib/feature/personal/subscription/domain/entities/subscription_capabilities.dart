@@ -1,16 +1,12 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class SubscriptionCapabilities extends Equatable {
-  const SubscriptionCapabilities({
-    required this.requiresWatermark,
-    required this.hasVideoAccess,
-    required this.wardrobeLimit,
-  });
+part 'subscription_capabilities.freezed.dart';
 
-  final bool requiresWatermark;
-  final bool hasVideoAccess;
-  final int wardrobeLimit;
-
-  @override
-  List<Object?> get props => [requiresWatermark, hasVideoAccess, wardrobeLimit];
+@freezed
+sealed class SubscriptionCapabilities with _$SubscriptionCapabilities {
+  const factory SubscriptionCapabilities({
+    required bool requiresWatermark,
+    required bool hasVideoAccess,
+    required int wardrobeLimit,
+  }) = _SubscriptionCapabilities;
 }
