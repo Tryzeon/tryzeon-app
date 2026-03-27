@@ -72,7 +72,12 @@ class AuthRepositoryImpl implements AuthRepository {
       // Log in to RevenueCat
       final currentUser = _remoteDataSource.getCurrentUser();
       if (currentUser != null) {
-        await _logInRevenueCat(currentUser.id);
+        final revenueCatResult = await _logInRevenueCat(currentUser.id);
+        if (revenueCatResult.isFailure) {
+          final failure = revenueCatResult.getError()!;
+          AppLogger.error('RevenueCat login failed', failure, StackTrace.current);
+          return Err(failure);
+        }
       }
 
       return const Ok(null);
@@ -114,10 +119,14 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       // Log out of RevenueCat
-      try {
-        await _logOutRevenueCat();
-      } catch (e, stackTrace) {
-        AppLogger.error('RevenueCat logout failed (ignored)', e, stackTrace);
+      final revenueCatResult = await _logOutRevenueCat();
+      if (revenueCatResult.isFailure) {
+        final failure = revenueCatResult.getError()!;
+        AppLogger.error(
+          'RevenueCat logout failed (ignored)',
+          failure,
+          StackTrace.current,
+        );
       }
 
       return const Ok(null);
@@ -179,7 +188,12 @@ class AuthRepositoryImpl implements AuthRepository {
 
       final currentUser = _remoteDataSource.getCurrentUser();
       if (currentUser != null) {
-        await _logInRevenueCat(currentUser.id);
+        final revenueCatResult = await _logInRevenueCat(currentUser.id);
+        if (revenueCatResult.isFailure) {
+          final failure = revenueCatResult.getError()!;
+          AppLogger.error('RevenueCat login failed', failure, StackTrace.current);
+          return Err(failure);
+        }
       }
 
       return const Ok(null);
@@ -227,13 +241,13 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       // Log out of RevenueCat
-      try {
-        await _logOutRevenueCat();
-      } catch (e, stackTrace) {
+      final revenueCatResult = await _logOutRevenueCat();
+      if (revenueCatResult.isFailure) {
+        final failure = revenueCatResult.getError()!;
         AppLogger.error(
           'RevenueCat logout failed on account deletion (ignored)',
-          e,
-          stackTrace,
+          failure,
+          StackTrace.current,
         );
       }
 
