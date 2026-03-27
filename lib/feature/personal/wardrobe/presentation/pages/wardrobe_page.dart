@@ -5,7 +5,6 @@ import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
@@ -305,7 +304,7 @@ class PersonalPage extends HookConsumerWidget {
             ),
           ),
 
-          // 3. Header Layer (Title & Settings)
+          // 3. Header Layer
           Positioned(
             top: 0,
             left: 0,
@@ -313,38 +312,20 @@ class PersonalPage extends HookConsumerWidget {
             child: SafeArea(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Title
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
+                    Row(
                       children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.checkroom_rounded,
-                              color: colorScheme.onSurface,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Text('我的衣櫃', style: textTheme.titleLarge),
-                          ],
+                        Icon(
+                          Icons.checkroom_rounded,
+                          color: colorScheme.onSurface,
+                          size: 20,
                         ),
+                        const SizedBox(width: 8),
+                        Text('我的衣櫃', style: textTheme.titleLarge),
                       ],
-                    ),
-
-                    // Settings Button
-                    buildGlassElement(
-                      padding: const EdgeInsets.all(12),
-                      borderRadius: 30,
-                      onTap: () => context.push('/personal/settings'),
-                      child: Icon(
-                        Icons.settings_rounded,
-                        color: colorScheme.onSurface,
-                        size: 20,
-                      ),
                     ),
                   ],
                 ),
