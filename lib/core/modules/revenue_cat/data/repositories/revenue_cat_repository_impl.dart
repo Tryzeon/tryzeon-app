@@ -49,17 +49,38 @@ class RevenueCatRepositoryImpl implements RevenueCatRepository {
 
   AppSubscriptionEntitlement _mapToEntitlement(final CustomerInfo customerInfo) {
     final activeEntitlements = customerInfo.entitlements.active;
-    final isProActive = activeEntitlements.containsKey(AppConstants.entitlementProId);
-    final isMaxActive = activeEntitlements.containsKey(AppConstants.entitlementMaxId);
-    final proEntitlement = activeEntitlements[AppConstants.entitlementProId];
-    final maxEntitlement = activeEntitlements[AppConstants.entitlementMaxId];
-    final primaryEntitlement = maxEntitlement ?? proEntitlement;
+    final tier = _resolveTier(activeEntitlements);
+    final primaryEntitlement = _getEntitlementForTier(activeEntitlements, tier);
 
     return AppSubscriptionEntitlement(
-      isProActive: isProActive,
-      isMaxActive: isMaxActive,
+      tier: tier,
       expirationDate: primaryEntitlement?.expirationDate,
       productIdentifier: primaryEntitlement?.productIdentifier,
     );
+  }
+
+  AppSubscriptionTier _resolveTier(
+    final Map<String, EntitlementInfo> activeEntitlements,
+  ) {
+    if (activeEntitlements.containsKey(AppConstants.entitlementMaxId)) {
+      return AppSubscriptionTier.max;
+    }
+
+    if (activeEntitlements.containsKey(AppConstants.entitlementProId)) {
+      return AppSubscriptionTier.pro;
+    }
+
+    return AppSubscriptionTier.free;
+  }
+
+  EntitlementInfo? _getEntitlementForTier(
+    final Map<String, EntitlementInfo> activeEntitlements,
+    final AppSubscriptionTier tier,
+  ) {
+    return switch (tier) {
+      AppSubscriptionTier.max => activeEntitlements[AppConstants.entitlementMaxId],
+      AppSubscriptionTier.pro => activeEntitlements[AppConstants.entitlementProId],
+      AppSubscriptionTier.free => null,
+    };
   }
 }

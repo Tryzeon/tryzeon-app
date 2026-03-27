@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/modules/revenue_cat/di/revenue_cat_providers.dart';
+import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/core/modules/revenue_cat/presentation/utils/revenue_cat_ui_utils.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 
@@ -29,7 +30,19 @@ class SubscriptionPage extends HookConsumerWidget {
             onRetry: () => ref.refresh(appSubscriptionEntitlementProvider),
           ),
           data: (final entitlement) {
+            final tier = entitlement.tier;
             final isPaidPlan = entitlement.hasActiveSubscription;
+            final membershipTitle = switch (tier) {
+              AppSubscriptionTier.max => '您目前是 Tryzeon Max 會員',
+              AppSubscriptionTier.pro => '您目前是 Tryzeon Pro 會員',
+              AppSubscriptionTier.free => '您目前是免費用戶',
+            };
+            final membershipDescription = switch (tier) {
+              AppSubscriptionTier.max => '感謝您的支持，您目前已開通 Tryzeon 最高等級方案。',
+              AppSubscriptionTier.pro => '感謝您的支持，您已解鎖 Tryzeon Pro 專屬功能。',
+              AppSubscriptionTier.free =>
+                '升級為 Tryzeon Pro 或 Tryzeon Max 會員即可解鎖更多試穿額度與專屬功能。',
+            };
             return Padding(
               padding: const EdgeInsets.all(24),
               child: Column(
@@ -45,7 +58,7 @@ class SubscriptionPage extends HookConsumerWidget {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    isPaidPlan ? '您目前是 Tryzeon Pro 會員' : '您目前是免費用戶',
+                    membershipTitle,
                     style: TextStyle(
                       color: colorScheme.onSurface,
                       fontSize: 24,
@@ -55,9 +68,7 @@ class SubscriptionPage extends HookConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    isPaidPlan
-                        ? '感謝您的支持，您已解鎖所有完整功能！'
-                        : '升級為 Tryzeon Pro 會員即可解鎖更多試穿額度與專屬功能。',
+                    membershipDescription,
                     style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 16),
                     textAlign: TextAlign.center,
                   ),
