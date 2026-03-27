@@ -41,15 +41,11 @@ class SubscriptionCapabilitiesRepositoryImpl
   }
 
   String _resolveCapabilityPlanId(final AppSubscriptionEntitlement entitlement) {
-    if (entitlement.isMaxActive) {
-      return AppConstants.entitlementMaxId;
-    }
-
-    if (entitlement.isProActive) {
-      return AppConstants.entitlementProId;
-    }
-
-    return AppConstants.freePlanId;
+    return switch (entitlement.tier) {
+      AppSubscriptionTier.max => AppConstants.entitlementMaxId,
+      AppSubscriptionTier.pro => AppConstants.entitlementProId,
+      AppSubscriptionTier.free => AppConstants.freePlanId,
+    };
   }
 
   SubscriptionCapabilities _toCapabilities(
