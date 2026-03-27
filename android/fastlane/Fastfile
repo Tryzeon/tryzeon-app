@@ -39,6 +39,22 @@ def next_play_store_version_code!(json_key_data)
   (version_codes.max || 0) + 1
 end
 
+def internal_release_version_name!(json_key_data)
+  release_names = google_play_track_release_names(
+    package_name: "com.tryzeon.app",
+    track: "internal",
+    json_key_data: json_key_data
+  ).compact.map(&:strip).reject(&:empty?).uniq
+
+  UI.user_error!("No release found in the internal track. Upload a beta build before promoting a release.") if release_names.empty?
+
+  if release_names.length > 1
+    UI.user_error!("Multiple internal releases found: #{release_names.join(', ')}. Keep only one candidate in the internal track before promoting.")
+  end
+
+  release_names.first
+end
+
 platform :android do
   desc "Submit a new build to the Play Store internal testing track"
   lane :beta do
@@ -63,6 +79,11 @@ platform :android do
   desc "Promote a tagged release to Google Play"
   lane :release do
     version_name = release_version_from_tag!
+    internal_version_name = internal_release_version_name!(ENV["PLAYSTORE_SERVICE_ACCOUNT_JSON"])
+
+    if internal_version_name != version_name
+      UI.user_error!("Tagged version #{version_name} does not match the internal track release #{internal_version_name}. Upload the correct beta build before promoting.")
+    end
 
     UI.message("---------------------------------------------------------")
     UI.message("🚀 Promoting internal release for Version: #{version_name}")
