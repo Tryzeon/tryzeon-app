@@ -8,6 +8,21 @@ import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/home/presentation/pages/home_page.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry_scope.dart';
 
+class PersonalTabDestination {
+  const PersonalTabDestination({required this.label, required this.icon});
+
+  final String label;
+  final IconData icon;
+}
+
+const personalTabDestinations = [
+  PersonalTabDestination(label: '首頁', icon: Icons.home_outlined),
+  PersonalTabDestination(label: '試衣間', icon: Icons.shopping_cart_outlined),
+  PersonalTabDestination(label: '聊天', icon: Icons.chat_outlined),
+  PersonalTabDestination(label: '衣櫃', icon: Icons.checkroom_outlined),
+  PersonalTabDestination(label: '我的', icon: Icons.person_outline),
+];
+
 class PersonalShell extends HookConsumerWidget {
   const PersonalShell({super.key, required this.navigationShell});
 
@@ -52,43 +67,43 @@ class PersonalShell extends HookConsumerWidget {
             selectedIndex: navigationShell.currentIndex,
             onTap: onItemTapped,
             useNativeBottomBar: true,
-            items: [
-              AdaptiveNavigationDestination(
-                icon: PlatformInfo.isIOS26OrHigher()
-                    ? 'house'
-                    : PlatformInfo.isIOS
-                    ? CupertinoIcons.house
-                    : Icons.home_outlined,
-                label: '首頁',
-              ),
-              AdaptiveNavigationDestination(
-                icon: PlatformInfo.isIOS26OrHigher()
-                    ? 'cart'
-                    : PlatformInfo.isIOS
-                    ? CupertinoIcons.cart
-                    : Icons.shopping_cart_outlined,
-                label: '試衣間',
-              ),
-              AdaptiveNavigationDestination(
-                icon: PlatformInfo.isIOS26OrHigher()
-                    ? 'message'
-                    : PlatformInfo.isIOS
-                    ? CupertinoIcons.chat_bubble
-                    : Icons.chat_outlined,
-                label: '聊天',
-              ),
-              AdaptiveNavigationDestination(
-                icon: PlatformInfo.isIOS26OrHigher()
-                    ? 'person'
-                    : PlatformInfo.isIOS
-                    ? CupertinoIcons.person
-                    : Icons.person_outline,
-                label: '個人',
-              ),
-            ],
+            items: personalTabDestinations
+                .map(
+                  (final destination) => AdaptiveNavigationDestination(
+                    icon: _adaptiveIcon(destination),
+                    label: destination.label,
+                  ),
+                )
+                .toList(),
           ),
         ),
       ),
     );
   }
+}
+
+Object _adaptiveIcon(final PersonalTabDestination destination) {
+  if (PlatformInfo.isIOS26OrHigher()) {
+    return switch (destination.label) {
+      '首頁' => 'house',
+      '試衣間' => 'cart',
+      '聊天' => 'message',
+      '衣櫃' => 'hanger',
+      '我的' => 'person',
+      _ => 'circle',
+    };
+  }
+
+  if (PlatformInfo.isIOS) {
+    return switch (destination.label) {
+      '首頁' => CupertinoIcons.house,
+      '試衣間' => CupertinoIcons.cart,
+      '聊天' => CupertinoIcons.chat_bubble,
+      '衣櫃' => CupertinoIcons.collections,
+      '我的' => CupertinoIcons.person,
+      _ => CupertinoIcons.circle,
+    };
+  }
+
+  return destination.icon;
 }

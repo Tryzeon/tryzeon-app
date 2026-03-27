@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/router/shells/personal_shell.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/pages/chat_page.dart';
 import 'package:tryzeon/feature/personal/home/presentation/pages/home_page.dart';
@@ -20,7 +21,7 @@ final personalShellRoute = StatefulShellRoute.indexedStack(
     StatefulShellBranch(
       routes: [
         GoRoute(
-          path: '/personal/home',
+          path: AppRoutes.personalHome,
           builder: (final context, final state) => const HomePage(),
         ),
       ],
@@ -29,7 +30,7 @@ final personalShellRoute = StatefulShellRoute.indexedStack(
     StatefulShellBranch(
       routes: [
         GoRoute(
-          path: '/personal/shop',
+          path: AppRoutes.personalShop,
           builder: (final context, final state) => const ShopPage(),
           routes: [
             GoRoute(
@@ -54,7 +55,7 @@ final personalShellRoute = StatefulShellRoute.indexedStack(
     StatefulShellBranch(
       routes: [
         GoRoute(
-          path: '/personal/chat',
+          path: AppRoutes.personalChat,
           builder: (final context, final state) => const ChatPage(),
         ),
       ],
@@ -63,8 +64,17 @@ final personalShellRoute = StatefulShellRoute.indexedStack(
     StatefulShellBranch(
       routes: [
         GoRoute(
-          path: '/personal/wardrobe',
+          path: AppRoutes.personalWardrobe,
           builder: (final context, final state) => const PersonalPage(),
+        ),
+      ],
+    ),
+    // Branch 4: My
+    StatefulShellBranch(
+      routes: [
+        GoRoute(
+          path: AppRoutes.personalMy,
+          builder: (final context, final state) => const PersonalSettingsPage(),
         ),
       ],
     ),
@@ -74,7 +84,7 @@ final personalShellRoute = StatefulShellRoute.indexedStack(
 // Full-screen routes (no bottom nav)
 final personalFullScreenRoutes = [
   GoRoute(
-    path: '/personal/settings',
+    path: AppRoutes.personalSettings,
     builder: (final context, final state) => const PersonalSettingsPage(),
     routes: [
       GoRoute(
@@ -92,7 +102,7 @@ final personalFullScreenRoutes = [
     ],
   ),
   GoRoute(
-    path: '/personal/onboarding',
+    path: AppRoutes.personalOnboarding,
     builder: (final context, final state) => const PersonalOnboardingPage(),
   ),
 ];
