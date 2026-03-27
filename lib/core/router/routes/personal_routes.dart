@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/router/shells/personal_shell.dart';
+import 'package:tryzeon/feature/personal/account/presentation/pages/my_page.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/pages/chat_page.dart';
 import 'package:tryzeon/feature/personal/home/presentation/pages/home_page.dart';
 import 'package:tryzeon/feature/personal/onboarding/presentation/pages/personal_onboarding_page.dart';
@@ -74,7 +75,7 @@ final personalShellRoute = StatefulShellRoute.indexedStack(
       routes: [
         GoRoute(
           path: AppRoutes.personalMy,
-          builder: (final context, final state) => const PersonalSettingsPage(),
+          builder: (final context, final state) => const MyPage(),
         ),
       ],
     ),
