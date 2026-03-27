@@ -1,8 +1,26 @@
+require "shellwords"
+
 default_platform(:android)
+
+def release_version_from_tag!
+  tag_name = ENV["GITHUB_REF_NAME"]
+
+  if tag_name.to_s.empty?
+    tag_name = Actions.sh("git tag --points-at HEAD", log: false).split("\n").find do |tag|
+      tag.match?(/^v\d+\.\d+\.\d+$/)
+    end
+  end
+
+  match = tag_name.to_s.match(/^v(\d+\.\d+\.\d+)$/)
+  return match[1] if match
+
+  UI.user_error!("Missing release tag. Expected a tag like v1.2.3 on the current commit.")
+end
 
 platform :android do
   desc "Submit a new build to Play Store closed test track"
   lane :beta do
+    version_name = release_version_from_tag!
     version_codes = google_play_track_version_codes(
       package_name: "com.tryzeon.app",
       track: "alpha",
@@ -12,11 +30,11 @@ platform :android do
     version_code = (version_codes.max || 0) + 1
 
     UI.message("---------------------------------------------------------")
-    UI.message("🚀 Building Version Code: #{version_code}")
+    UI.message("🚀 Building Version: #{version_name}+#{version_code}")
     UI.message("---------------------------------------------------------")
 
     Dir.chdir("../") do
-      sh("flutter build appbundle --release --build-number=#{version_code}")
+      sh("flutter build appbundle --release --build-name=#{version_name.shellescape} --build-number=#{version_code}")
     end
 
     upload_to_play_store(
@@ -28,6 +46,7 @@ platform :android do
 
   desc "Deploy a new version to the Google Play"
   lane :deploy do
+    version_name = release_version_from_tag!
     version_codes = google_play_track_version_codes(
       package_name: "com.tryzeon.app",
       track: "production",
@@ -37,11 +56,11 @@ platform :android do
     version_code = (version_codes.max || 0) + 1
 
     UI.message("---------------------------------------------------------")
-    UI.message("🚀 Building Version Code: #{version_code}")
+    UI.message("🚀 Building Version: #{version_name}+#{version_code}")
     UI.message("---------------------------------------------------------")
 
     Dir.chdir("../") do
-      sh("flutter build appbundle --release --build-number=#{version_code}")
+      sh("flutter build appbundle --release --build-name=#{version_name.shellescape} --build-number=#{version_code}")
     end
 
     upload_to_play_store(

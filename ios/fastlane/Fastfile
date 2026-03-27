@@ -13,6 +13,21 @@
 # Uncomment the line if you want fastlane to automatically update itself
 # update_fastlane
 
+def release_version_from_tag!
+  tag_name = ENV["GITHUB_REF_NAME"]
+
+  if tag_name.to_s.empty?
+    tag_name = Actions.sh("git tag --points-at HEAD", log: false).split("\n").find do |tag|
+      tag.match?(/^v\d+\.\d+\.\d+$/)
+    end
+  end
+
+  match = tag_name.to_s.match(/^v(\d+\.\d+\.\d+)$/)
+  return match[1] if match
+
+  UI.user_error!("Missing release tag. Expected a tag like v1.2.3 on the current commit.")
+end
+
 default_platform(:ios)
 
 platform :ios do
@@ -28,21 +43,19 @@ platform :ios do
 
     sync_code_signing(type: "appstore")
 
-    increment_build_number(
-      build_number: app_store_build_number(
-        api_key: api_key,
-        live: false,
-      ) + 1
-    )
+    version_number = release_version_from_tag!
+    build_number = app_store_build_number(
+      api_key: api_key,
+      live: false,
+    ) + 1
 
-    version_number = get_version_number(xcodeproj: "Runner.xcodeproj")
-    build_number = get_build_number(xcodeproj: "Runner.xcodeproj")
     UI.message("---------------------------------------------------------")
     UI.message("🚀 Building Version: #{version_number}+#{build_number}")
     UI.message("---------------------------------------------------------")
 
     build_app(
-      export_method: "app-store"
+      export_method: "app-store",
+      xcargs: "FLUTTER_BUILD_NAME=#{version_number} FLUTTER_BUILD_NUMBER=#{build_number}"
     )
     
     upload_to_testflight(
