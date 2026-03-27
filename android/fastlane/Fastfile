@@ -17,17 +17,33 @@ def release_version_from_tag!
   UI.user_error!("Missing release tag. Expected a tag like v1.2.3 on the current commit.")
 end
 
-platform :android do
-  desc "Submit a new build to Play Store closed test track"
-  lane :beta do
-    version_name = release_version_from_tag!
-    version_codes = google_play_track_version_codes(
+def beta_version_name!
+  version_name = ENV["RELEASE_VERSION"].to_s.strip
+  return version_name if version_name.match?(/^\d+\.\d+\.\d+$/)
+
+  UI.user_error!("Missing RELEASE_VERSION. Expected a semantic version like 1.2.3 for beta builds.")
+end
+
+def next_play_store_version_code!(json_key_data)
+  tracks = %w[internal alpha beta production]
+  version_codes = tracks.flat_map do |track|
+    google_play_track_version_codes(
       package_name: "com.tryzeon.app",
-      track: "alpha",
-      json_key_data: ENV["PLAYSTORE_SERVICE_ACCOUNT_JSON"]
+      track: track,
+      json_key_data: json_key_data
     )
-    
-    version_code = (version_codes.max || 0) + 1
+  rescue StandardError
+    []
+  end
+
+  (version_codes.max || 0) + 1
+end
+
+platform :android do
+  desc "Submit a new build to the Play Store internal testing track"
+  lane :beta do
+    version_name = beta_version_name!
+    version_code = next_play_store_version_code!(ENV["PLAYSTORE_SERVICE_ACCOUNT_JSON"])
 
     UI.message("---------------------------------------------------------")
     UI.message("🚀 Building Version: #{version_name}+#{version_code}")
@@ -38,34 +54,29 @@ platform :android do
     end
 
     upload_to_play_store(
-      track: 'alpha',
+      track: 'internal',
       aab: "../build/app/outputs/bundle/release/app-release.aab",
       json_key_data: ENV["PLAYSTORE_SERVICE_ACCOUNT_JSON"]
     )
   end
 
-  desc "Deploy a new version to the Google Play"
-  lane :deploy do
+  desc "Promote a tagged release to Google Play"
+  lane :release do
     version_name = release_version_from_tag!
-    version_codes = google_play_track_version_codes(
-      package_name: "com.tryzeon.app",
-      track: "production",
-      json_key_data: ENV["PLAYSTORE_SERVICE_ACCOUNT_JSON"]
-    )
-    
-    version_code = (version_codes.max || 0) + 1
 
     UI.message("---------------------------------------------------------")
-    UI.message("🚀 Building Version: #{version_name}+#{version_code}")
+    UI.message("🚀 Promoting internal release for Version: #{version_name}")
     UI.message("---------------------------------------------------------")
-
-    Dir.chdir("../") do
-      sh("flutter build appbundle --release --build-name=#{version_name.shellescape} --build-number=#{version_code}")
-    end
 
     upload_to_play_store(
-      track: 'production',
-      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      track: 'internal',
+      track_promote_to: 'production',
+      release_status: 'completed',
+      skip_upload_aab: true,
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
       json_key_data: ENV["PLAYSTORE_SERVICE_ACCOUNT_JSON"]
     )
   end

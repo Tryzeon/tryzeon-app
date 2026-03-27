@@ -28,6 +28,25 @@ def release_version_from_tag!
   UI.user_error!("Missing release tag. Expected a tag like v1.2.3 on the current commit.")
 end
 
+def beta_version_number!
+  version_number = ENV["RELEASE_VERSION"].to_s.strip
+  return version_number if version_number.match?(/^\d+\.\d+\.\d+$/)
+
+  UI.user_error!("Missing RELEASE_VERSION. Expected a semantic version like 1.2.3 for beta builds.")
+end
+
+def latest_testflight_build_number!(api_key, version_number)
+  latest_build_number = app_store_build_number(
+    api_key: api_key,
+    live: false,
+    version: version_number
+  )
+
+  return latest_build_number.to_s if latest_build_number.to_i > 0
+
+  UI.user_error!("No TestFlight build found for version #{version_number}. Upload a beta build before promoting a release.")
+end
+
 default_platform(:ios)
 
 platform :ios do
@@ -43,7 +62,7 @@ platform :ios do
 
     sync_code_signing(type: "appstore")
 
-    version_number = release_version_from_tag!
+    version_number = beta_version_number!
     build_number = app_store_build_number(
       api_key: api_key,
       live: false,
@@ -61,6 +80,33 @@ platform :ios do
     upload_to_testflight(
       api_key: api_key,
       skip_waiting_for_build_processing: true
+    )
+  end
+
+  desc "Build and upload a tagged release to App Store"
+  lane :release do
+    api_key = app_store_connect_api_key(
+      key_id: ENV['APP_STORE_CONNECT_API_KEY_KEY_ID'],
+      issuer_id: ENV['APP_STORE_CONNECT_API_KEY_ISSUER_ID'],
+      key_content: ENV['APP_STORE_CONNECT_API_KEY_KEY_CONTENT'],
+    )
+
+    version_number = release_version_from_tag!
+    build_number = latest_testflight_build_number!(api_key, version_number)
+
+    UI.message("---------------------------------------------------------")
+    UI.message("🚀 Releasing existing TestFlight build: #{version_number}+#{build_number}")
+    UI.message("---------------------------------------------------------")
+
+    upload_to_app_store(
+      api_key: api_key,
+      app_version: version_number,
+      build_number: build_number,
+      skip_binary_upload: true,
+      skip_metadata: true,
+      skip_screenshots: true,
+      submit_for_review: true,
+      automatic_release: true
     )
   end
 end
