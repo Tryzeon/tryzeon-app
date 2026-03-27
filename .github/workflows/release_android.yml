@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - 'v*'
-  workflow_dispatch:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -19,33 +18,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      # ───── Java ─────
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-
-      # ───── Gradle cache (read-only, reuses CI cache from main) ─────
-      - name: Restore Gradle cache
-        uses: actions/cache/restore@v5
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('android/build.gradle.kts', 'android/app/build.gradle.kts', 'android/settings.gradle.kts', 'android/gradle/wrapper/gradle-wrapper.properties', 'pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      # ───── Flutter ─────
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.41.4'
-          channel: 'stable'
-          cache: true
-
-      # ───── Ruby / Fastlane ─────
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -57,30 +29,9 @@ jobs:
           cd android
           bundle install
 
-      # ───── Build & deploy ─────
-      - name: Create .env file
-        run: |
-          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" > .env
-          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
-
-      - name: Get Flutter dependencies
-        run: flutter pub get
-
-      - name: Run build_runner
-        run: dart run build_runner build --delete-conflicting-outputs
-
-      - name: Configure Keystore
-        run: |
-          echo "${{ secrets.PLAYSTORE_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
-          echo "storePassword=${{ secrets.PLAYSTORE_KEYSTORE_PASSWORD }}" > android/key.properties
-          echo "keyPassword=${{ secrets.PLAYSTORE_KEY_PASSWORD }}" >> android/key.properties
-          echo "keyAlias=${{ secrets.PLAYSTORE_KEY_ALIAS }}" >> android/key.properties
-          echo "storeFile=upload-keystore.jks" >> android/key.properties
-
-
       - name: Deploy to Play Store
         run: |
           cd android
-          bundle exec fastlane beta
+          bundle exec fastlane release
         env:
           PLAYSTORE_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAYSTORE_SERVICE_ACCOUNT_JSON }}
