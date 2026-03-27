@@ -8,7 +8,6 @@ import 'package:tryzeon/core/presentation/widgets/settings_section.dart';
 import 'package:tryzeon/core/presentation/widgets/settings_sliver_app_bar.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/presentation/widgets/version_info.dart';
-import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/settings/presentation/providers/personal_settings_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -90,10 +89,8 @@ class PersonalSettingsPage extends HookConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
                 child: Column(
                   children: [
-                    const _ProfileHeader(),
-                    const SizedBox(height: 32),
                     SettingsSection(
-                      title: '帳號設定',
+                      title: '偏好與支援',
                       children: [
                         SettingsListTile(
                           icon: Icons.tune_rounded,
@@ -102,19 +99,6 @@ class PersonalSettingsPage extends HookConsumerWidget {
                           onTap: () => context.push('/personal/settings/preferences'),
                           color: colorScheme.primary,
                         ),
-                        SettingsListTile(
-                          icon: Icons.card_membership_rounded,
-                          title: '訂閱方案',
-                          subtitle: '升級您的帳號',
-                          onTap: () => context.push('/personal/settings/subscription'),
-                          color: colorScheme.primary,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    SettingsSection(
-                      title: '其他',
-                      children: [
                         SettingsListTile(
                           icon: Icons.store_outlined,
                           title: '切換到店家帳號',
@@ -171,135 +155,6 @@ class PersonalSettingsPage extends HookConsumerWidget {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ProfileHeader extends HookConsumerWidget {
-  const _ProfileHeader();
-
-  @override
-  Widget build(final BuildContext context, final WidgetRef ref) {
-    final profileAsync = ref.watch(userProfileProvider);
-    final avatarFileAsync = ref.watch(avatarFileProvider);
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return InkWell(
-      onTap: () => context.push('/personal/settings/profile'),
-      borderRadius: BorderRadius.circular(24),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 15,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 70,
-              height: 70,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: colorScheme.surface,
-                boxShadow: [
-                  BoxShadow(
-                    color: colorScheme.primary.withValues(alpha: 0.15),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-                border: Border.all(color: colorScheme.surface, width: 3),
-              ),
-              child: ClipOval(
-                child: profileAsync.when(
-                  data: (final profile) {
-                    if (profile == null) {
-                      return Icon(Icons.person, size: 36, color: colorScheme.primary);
-                    }
-                    return avatarFileAsync.when(
-                      data: (final file) {
-                        if (file != null) {
-                          return Image.file(
-                            file,
-                            fit: BoxFit.cover,
-                            width: 70,
-                            height: 70,
-                          );
-                        }
-                        return _buildPlaceholder(colorScheme, profile.name);
-                      },
-                      loading: () => const Center(child: CircularProgressIndicator()),
-                      error: (final _, final _) =>
-                          _buildPlaceholder(colorScheme, profile.name),
-                    );
-                  },
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (final _, final _) =>
-                      Icon(Icons.person, size: 36, color: colorScheme.primary),
-                ),
-              ),
-            ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  profileAsync.maybeWhen(
-                    data: (final profile) {
-                      if (profile == null) return const SizedBox.shrink();
-                      final email = profile.email;
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(profile.name, style: theme.textTheme.titleLarge),
-                          if (email != null && email.isNotEmpty) ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              email,
-                              style: theme.textTheme.bodyMedium,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ],
-                      );
-                    },
-                    orElse: () => const SizedBox.shrink(),
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: colorScheme.outlineVariant,
-              size: 16,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlaceholder(final ColorScheme colorScheme, final String name) {
-    return Container(
-      color: colorScheme.primary.withValues(alpha: 0.1),
-      alignment: Alignment.center,
-      child: Text(
-        name.isNotEmpty ? name[0].toUpperCase() : '?',
-        style: TextStyle(
-          color: colorScheme.primary,
-          fontSize: 28,
-          fontWeight: FontWeight.bold,
         ),
       ),
     );
