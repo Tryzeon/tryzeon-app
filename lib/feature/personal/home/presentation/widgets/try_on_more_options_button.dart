@@ -19,8 +19,6 @@ class TryOnMoreOptionsButton extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Positioned(
       top: 0,
       right: 0,
@@ -34,7 +32,7 @@ class TryOnMoreOptionsButton extends StatelessWidget {
               child: Container(
                 width: 36,
                 height: 36,
-                color: colorScheme.onSurface.withValues(alpha: 0.1),
+                color: Colors.black.withValues(alpha: 0.3),
                 child: IconButton(
                   iconSize: 20,
                   padding: EdgeInsets.zero,
@@ -93,7 +91,7 @@ class TryOnMoreOptionsButton extends StatelessWidget {
                       ),
                     );
                   },
-                  icon: Icon(Icons.more_vert_rounded, color: colorScheme.onSurface),
+                  icon: const Icon(Icons.more_vert_rounded, color: Colors.white),
                 ),
               ),
             ),
