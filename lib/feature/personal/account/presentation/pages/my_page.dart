@@ -55,7 +55,10 @@ class MyPage extends HookConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('帳號中心', style: Theme.of(context).textTheme.headlineMedium),
+                            Text(
+                              '帳號中心',
+                              style: Theme.of(context).textTheme.headlineMedium,
+                            ),
                             Text('管理個人帳戶', style: Theme.of(context).textTheme.bodySmall),
                           ],
                         ),
