@@ -153,13 +153,12 @@ class ProductBasicInfoEditor extends StatelessWidget {
                 children: [
                   Icon(Icons.style_rounded, color: colorScheme.primary, size: 20),
                   const SizedBox(width: 8),
-                  Text('風格標籤', style: textTheme.bodyMedium),
+                  Text('風格標籤 (選填)', style: textTheme.bodyMedium),
                 ],
               ),
               const SizedBox(height: 12),
               FormField<List<ClothingStyle>?>(
                 initialValue: selectedStyles.value,
-                validator: AppValidators.validateProductStyles,
                 builder: (final state) {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

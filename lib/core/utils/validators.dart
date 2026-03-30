@@ -114,11 +114,4 @@ class AppValidators {
     }
     return null;
   }
-
-  static String? validateProductStyles(final List<dynamic>? value) {
-    if (value == null || value.isEmpty) {
-      return '請選擇至少一個風格標籤';
-    }
-    return null;
-  }
 }
