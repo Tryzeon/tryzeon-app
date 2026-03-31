@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry_scope.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_status.dart';
@@ -111,7 +112,7 @@ class ProductCard extends HookConsumerWidget {
 
     return GestureDetector(
       onTap: () {
-        context.push('/personal/shop/product/${product.id}');
+        context.push(AppRoutes.personalShopProductPath(product.id));
       },
       child: VisibilityDetector(
         key: Key('product-card-${product.id}'),

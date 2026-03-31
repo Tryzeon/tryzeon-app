@@ -1,3 +1,5 @@
+import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
+
 abstract final class AppRoutes {
   // Auth
   static const String login = '/auth/login';
@@ -20,7 +22,7 @@ abstract final class AppRoutes {
   static const String personalSettings = '/personal/settings';
   static const String personalSettingsProfile = '/personal/settings/profile';
   static const String personalSettingsPreferences = '/personal/settings/preferences';
-  static const String personalSubscription = '/personal/subscription';
+  static const String personalSubscription = '/personal/settings/subscription';
 
   // Store (tabs)
   static const String storeHome = '/store/home';
@@ -35,4 +37,17 @@ abstract final class AppRoutes {
   // Deep link content routes (top-level, redirect to feature routes)
   static const String deepLinkProduct = '/product/:productId';
   static const String deepLinkStore = '/store/:storeId';
+
+  static String homeForUserType(final UserType userType) {
+    return userType == UserType.store ? storeHome : personalHome;
+  }
+
+  static String personalShopProductPath(final String productId) =>
+      '/personal/shop/product/$productId';
+
+  static String personalShopStorePath(final String storeId) =>
+      '/personal/shop/store/$storeId';
+
+  static String storeProductDetailPath(final String productId) =>
+      '/store/products/$productId';
 }

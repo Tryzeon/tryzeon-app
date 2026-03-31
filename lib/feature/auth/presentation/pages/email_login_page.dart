@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/presentation/widgets/login_scaffold.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
@@ -118,7 +119,7 @@ class EmailLoginPage extends HookConsumerWidget {
 
         if (result.isSuccess) {
           // Navigate to respective home page
-          context.go(userType == UserType.personal ? '/personal/home' : '/store/home');
+          context.go(AppRoutes.homeForUserType(userType));
         } else {
           TopNotification.show(
             context,
