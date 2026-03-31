@@ -44,7 +44,7 @@ dependencies:
   skeletonizer: ^2.1.2
   toastification: ^3.0.3
   visibility_detector: ^0.4.0+2
-  image_cropper: ^11.0.0
+  image_cropper: ^12.1.1
   freezed_annotation: ^3.0.0
   json_annotation: ^4.9.0
   auto_mappr_annotation: ^2.3.0
