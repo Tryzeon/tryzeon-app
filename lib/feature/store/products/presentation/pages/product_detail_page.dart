@@ -25,10 +25,7 @@ class ProductDetailPage extends HookConsumerWidget {
     final product = productAsync.hasValue ? productAsync.requireValue : null;
 
     if (product != null) {
-      return _ProductDetailContentPage(
-        key: ValueKey(product.id),
-        product: product
-      );
+      return _ProductDetailContentPage(key: ValueKey(product.id), product: product);
     }
 
     return _ProductDetailFallbackPage(
@@ -71,10 +68,7 @@ class _ProductDetailLoadingView extends StatelessWidget {
 }
 
 class _ProductDetailContentPage extends HookConsumerWidget {
-  const _ProductDetailContentPage({
-    super.key,
-    required this.product
-  });
+  const _ProductDetailContentPage({super.key, required this.product});
 
   final Product product;
 
