@@ -116,7 +116,7 @@ Future<List<ShopProduct>> shopProducts(final Ref ref, final ShopFilter filter) a
 }
 
 @riverpod
-Future<ShopProduct> shopProduct(final Ref ref, final String productId) async {
+Future<ShopProduct> shopProductById(final Ref ref, final String productId) async {
   final getUseCase = ref.watch(getShopProductProvider);
   final result = await getUseCase(productId);
   if (result.isFailure) {

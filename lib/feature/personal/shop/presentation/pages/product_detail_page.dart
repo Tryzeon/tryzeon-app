@@ -14,7 +14,7 @@ class ProductDetailPage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final productAsync = ref.watch(shopProductProvider(productId));
+    final productAsync = ref.watch(shopProductByIdProvider(productId));
     final product = productAsync.hasValue ? productAsync.value : null;
     final hasPurchaseLink =
         product != null &&
@@ -62,7 +62,7 @@ class ProductDetailPage extends HookConsumerWidget {
       ),
       body: ProductDetailBody(
         productAsync: productAsync,
-        onRetry: () => ref.refresh(shopProductProvider(productId).future),
+        onRetry: () => ref.refresh(shopProductByIdProvider(productId).future),
       ),
     );
   }
