@@ -2,6 +2,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/router/auth_refresh_listenable.dart';
 import 'package:tryzeon/core/router/routes/auth_routes.dart';
 import 'package:tryzeon/core/router/routes/deep_link_routes.dart';
@@ -29,7 +30,7 @@ Raw<GoRouter> appRouter(final Ref ref) {
   ref.onDispose(refreshListenable.dispose);
 
   final router = GoRouter(
-    initialLocation: '/auth/login',
+    initialLocation: AppRoutes.login,
     refreshListenable: refreshListenable,
     observers: [FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance)],
     redirect: (final context, final state) async {
@@ -38,7 +39,7 @@ Raw<GoRouter> appRouter(final Ref ref) {
       final isAuthPath = path.startsWith('/auth');
 
       // 1. 未登入 → 導向登入頁
-      if (!isLoggedIn) return isAuthPath ? null : '/auth/login';
+      if (!isLoggedIn) return isAuthPath ? null : AppRoutes.login;
 
       // 2. 已登入但仍處於登入頁 → 導向首頁
       if (isAuthPath) return _resolveHomePath(ref);
@@ -46,20 +47,13 @@ Raw<GoRouter> appRouter(final Ref ref) {
       // 3. 商家 Onboarding 攔截 (排除 Deep Link 與 Onboarding 頁面本身)
       //    使用 ref.read 取得最新的 store profile 狀態
       final storeProfileAsync = ref.read(storeProfileProvider);
-
-      if (path == '/store/onboarding' && storeProfileAsync.asData?.value != null) {
-        return '/store/home';
-      }
-
-      if (_needsStoreOnboarding(path, storeProfileAsync)) {
-        return '/store/onboarding';
-      }
+      final storeRedirect = _handleStoreOnboardingRedirect(path, storeProfileAsync);
+      if (storeRedirect != null) return storeRedirect;
 
       // 4. 個人 Onboarding 攔截
       final userProfileAsync = ref.read(userProfileProvider);
-      if (_needsPersonalOnboarding(path, userProfileAsync)) {
-        return '/personal/onboarding';
-      }
+      final personalRedirect = _handlePersonalOnboardingRedirect(path, userProfileAsync);
+      if (personalRedirect != null) return personalRedirect;
 
       return null;
     },
@@ -92,32 +86,37 @@ Future<String> _resolveHomePath(final Ref ref) async {
   final getLoginType = ref.read(getLastLoginTypeUseCaseProvider);
   final result = await getLoginType();
   final userType = result.get();
-  return userType == UserType.store ? '/store/home' : '/personal/home';
+  return AppRoutes.homeForUserType(userType ?? UserType.personal);
 }
 
-/// 判斷目前商家路徑是否需要被 Onboarding 攔截。
-bool _needsStoreOnboarding(
+String? _handleStoreOnboardingRedirect(
   final String path,
   final AsyncValue<dynamic> storeProfileAsync,
 ) {
-  if (!path.startsWith('/store')) return false;
-  if (path.startsWith('/store/onboarding')) return false;
-  if (_storeDeepLinkPattern.hasMatch(path)) return false;
+  if (!path.startsWith('/store')) return null;
+  if (_storeDeepLinkPattern.hasMatch(path)) return null;
+  if (storeProfileAsync.isLoading || storeProfileAsync.hasError) return null;
 
   final hasProfile = storeProfileAsync.asData?.value != null;
-  return !hasProfile && !storeProfileAsync.isLoading;
+  if (path == AppRoutes.storeOnboarding) {
+    return hasProfile ? AppRoutes.storeHome : null;
+  }
+
+  return hasProfile ? null : AppRoutes.storeOnboarding;
 }
 
-/// 判斷目前個人路徑是否需要被 Onboarding 攔截。
-bool _needsPersonalOnboarding(
+String? _handlePersonalOnboardingRedirect(
   final String path,
   final AsyncValue<dynamic> userProfileAsync,
 ) {
-  if (!path.startsWith('/personal')) return false;
-  if (path.startsWith('/personal/onboarding')) return false;
+  if (!path.startsWith('/personal')) return null;
+  if (userProfileAsync.isLoading || userProfileAsync.hasError) return null;
 
   final profile = userProfileAsync.asData?.value;
   final isOnboarded = profile?.isOnboarded ?? false;
+  if (path == AppRoutes.personalOnboarding) {
+    return isOnboarded ? AppRoutes.personalHome : null;
+  }
 
-  return !isOnboarded && !userProfileAsync.isLoading;
+  return isOnboarded ? null : AppRoutes.personalOnboarding;
 }
