@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/video_prompt_customize_sheet.dart';
 
@@ -247,7 +248,7 @@ class _ModeCard extends StatelessWidget {
                   child: FilledButton.icon(
                     onPressed: () {
                       Navigator.pop(context);
-                      context.push('/personal/settings/subscription');
+                      context.push(AppRoutes.personalSubscription);
                     },
                     icon: const Icon(Icons.auto_awesome, size: 16),
                     label: const Text('升級至 Max 方案解鎖'),

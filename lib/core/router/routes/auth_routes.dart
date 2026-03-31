@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/presentation/pages/email_login_page.dart';
 import 'package:tryzeon/feature/auth/presentation/pages/login_page.dart';
@@ -6,7 +7,7 @@ import 'package:tryzeon/feature/auth/presentation/pages/personal_login_page.dart
 import 'package:tryzeon/feature/auth/presentation/pages/store_login_page.dart';
 
 final authRoutes = GoRoute(
-  path: '/auth/login',
+  path: AppRoutes.login,
   builder: (final context, final state) => const LoginPage(),
   routes: [
     GoRoute(

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_overlay.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/settings/presentation/providers/personal_settings_controller.dart';
 
@@ -64,7 +65,7 @@ class MyPage extends HookConsumerWidget {
                         ),
                       ),
                       IconButton(
-                        onPressed: () => context.push('/personal/settings'),
+                        onPressed: () => context.push(AppRoutes.personalSettings),
                         style: IconButton.styleFrom(
                           backgroundColor: colorScheme.surfaceContainerLowest,
                           foregroundColor: colorScheme.onSurface,
@@ -92,14 +93,14 @@ class MyPage extends HookConsumerWidget {
                           icon: Icons.person_outline_rounded,
                           title: '編輯個人資料',
                           subtitle: '更新頭像、名稱與個人資訊',
-                          onTap: () => context.push('/personal/settings/profile'),
+                          onTap: () => context.push(AppRoutes.personalSettingsProfile),
                           color: colorScheme.primary,
                         ),
                         _MyActionTile(
                           icon: Icons.workspace_premium_outlined,
                           title: '訂閱方案',
                           subtitle: '查看目前方案與升級選項',
-                          onTap: () => context.push('/personal/settings/subscription'),
+                          onTap: () => context.push(AppRoutes.personalSubscription),
                           color: colorScheme.primary,
                         ),
                       ],

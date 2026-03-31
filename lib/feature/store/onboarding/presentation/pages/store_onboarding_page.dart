@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
@@ -43,7 +44,7 @@ class StoreOnboardingPage extends HookConsumerWidget {
         await setLoginTypeUseCase(UserType.personal);
 
         if (context.mounted) {
-          context.go('/personal/home');
+          context.go(AppRoutes.personalHome);
         }
       }
     }

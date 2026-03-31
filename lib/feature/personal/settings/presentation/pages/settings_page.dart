@@ -8,6 +8,7 @@ import 'package:tryzeon/core/presentation/widgets/settings_section.dart';
 import 'package:tryzeon/core/presentation/widgets/settings_sliver_app_bar.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/presentation/widgets/version_info.dart';
+import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/feature/personal/settings/presentation/providers/personal_settings_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -57,7 +58,7 @@ class PersonalSettingsPage extends HookConsumerWidget {
       await controller.switchToStore();
       if (!context.mounted) return;
 
-      context.go('/store/home');
+      context.go(AppRoutes.storeHome);
     }
 
     Future<void> handleDeleteAccount() async {
@@ -96,7 +97,8 @@ class PersonalSettingsPage extends HookConsumerWidget {
                           icon: Icons.tune_rounded,
                           title: '偏好設定',
                           subtitle: '管理您的個人偏好',
-                          onTap: () => context.push('/personal/settings/preferences'),
+                          onTap: () =>
+                              context.push(AppRoutes.personalSettingsPreferences),
                           color: colorScheme.primary,
                         ),
                         SettingsListTile(

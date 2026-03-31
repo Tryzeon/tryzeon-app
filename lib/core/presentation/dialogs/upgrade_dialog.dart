@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tryzeon/core/router/app_routes.dart';
 
 class UpgradeDialog {
   static void show(
@@ -17,7 +18,7 @@ class UpgradeDialog {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx); // Close the dialog
-              context.push('/personal/settings/subscription');
+              context.push(AppRoutes.personalSubscription);
             },
             child: const Text('前往訂閱'),
           ),

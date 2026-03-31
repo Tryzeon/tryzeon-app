@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 
 class StoreHomeHeader extends StatelessWidget {
@@ -49,7 +50,7 @@ class StoreHomeHeader extends StatelessWidget {
             child: IconButton(
               icon: Icon(Icons.settings_rounded, color: colorScheme.primary),
               onPressed: () {
-                context.push('/store/settings');
+                context.push(AppRoutes.storeSettings);
               },
             ),
           ),

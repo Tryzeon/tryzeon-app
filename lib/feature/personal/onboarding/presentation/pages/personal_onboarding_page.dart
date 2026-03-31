@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/feature/personal/onboarding/presentation/widgets/age_range_step.dart';
 import 'package:tryzeon/feature/personal/onboarding/presentation/widgets/gender_selection_step.dart';
 import 'package:tryzeon/feature/personal/onboarding/presentation/widgets/style_preference_step.dart';
@@ -141,7 +142,7 @@ class PersonalOnboardingPage extends HookConsumerWidget {
           type: NotificationType.error,
         );
       case Ok():
-        context.go('/personal/home');
+        context.go(AppRoutes.personalHome);
     }
   }
 }

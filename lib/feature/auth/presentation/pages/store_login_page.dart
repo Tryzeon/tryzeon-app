@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/presentation/widgets/login_scaffold.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
@@ -46,7 +47,7 @@ class StoreLoginPage extends HookConsumerWidget {
       isLoading.value = false;
 
       if (result.isSuccess) {
-        context.go('/store/home');
+        context.go(AppRoutes.storeHome);
       } else {
         final failure = result.getError()!;
         if (failure is UserCanceledFailure) return;
@@ -253,7 +254,7 @@ class StoreLoginPage extends HookConsumerWidget {
                     color: Colors.transparent,
                     child: InkWell(
                       onTap: () {
-                        context.push('/auth/login/email', extra: UserType.store);
+                        context.push(AppRoutes.emailLogin, extra: UserType.store);
                       },
                       borderRadius: BorderRadius.circular(20),
                       child: const Padding(

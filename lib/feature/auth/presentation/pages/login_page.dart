@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:tryzeon/core/presentation/widgets/version_info.dart';
+import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/feature/auth/presentation/widgets/login_scaffold.dart';
 // Import AppTheme to access static colors if needed, or just use Theme.of(context)
 
@@ -18,11 +19,11 @@ class LoginPage extends HookConsumerWidget {
     const secondaryColor = Color(0xFFE11D48); // Rose 600 (Store accent)
 
     void navigateToPersonalLogin() {
-      context.push('/auth/login/personal');
+      context.push(AppRoutes.personalLogin);
     }
 
     void navigateToStoreLogin() {
-      context.push('/auth/login/store');
+      context.push(AppRoutes.storeLogin);
     }
 
     return CustomizeScaffold(

@@ -9,6 +9,7 @@ import 'package:tryzeon/core/presentation/widgets/settings_section.dart';
 import 'package:tryzeon/core/presentation/widgets/settings_sliver_app_bar.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/presentation/widgets/version_info.dart';
+import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
 import 'package:tryzeon/feature/store/settings/presentation/providers/store_settings_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -47,7 +48,7 @@ class StoreSettingsPage extends HookConsumerWidget {
 
       if (!context.mounted) return;
 
-      context.go('/personal/home');
+      context.go(AppRoutes.personalHome);
     }
 
     Future<void> handleSignOut() async {
@@ -168,7 +169,7 @@ class _StoreProfileHeader extends HookConsumerWidget {
     final colorScheme = theme.colorScheme;
 
     return InkWell(
-      onTap: () => context.push('/store/settings/profile'),
+      onTap: () => context.push(AppRoutes.storeSettingsProfile),
       borderRadius: BorderRadius.circular(24),
       child: Container(
         padding: const EdgeInsets.all(20),

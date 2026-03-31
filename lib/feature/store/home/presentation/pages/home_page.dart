@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
 import 'package:tryzeon/feature/store/home/presentation/widgets/month_filter_widget.dart';
 import 'package:tryzeon/feature/store/home/presentation/widgets/store_home_header.dart';
@@ -73,7 +74,7 @@ class StoreHomePage extends HookConsumerWidget {
           shape: const CircleBorder(),
           child: InkWell(
             onTap: () {
-              context.push('/store/products/add');
+              context.push(AppRoutes.storeProductAdd);
             },
             customBorder: const CircleBorder(),
             child: SizedBox(
