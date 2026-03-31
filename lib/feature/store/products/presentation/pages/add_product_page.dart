@@ -66,17 +66,20 @@ class AddProductPage extends HookConsumerWidget {
       }
     }
 
-    return ProductFormLayout(
-      mode: ProductFormMode.create,
-      formData: formData,
-      sizeManager: sizeManager,
-      isLoading: isLoading.value,
-      onSubmit: addProduct,
-      productCategoryTreeAsync: productCategoryTreeAsync,
-      onRetryCategories: () => ref.refresh(productCategoriesProvider),
-      onPickImage: (final remainingCount) async {
-        return ImagePickerHelper.pickImages(context, maxImages: remainingCount);
-      },
+    return Scaffold(
+      appBar: AppBar(title: const Text('新增商品')),
+      body: ProductFormLayout(
+        mode: ProductFormMode.create,
+        formData: formData,
+        sizeManager: sizeManager,
+        isLoading: isLoading.value,
+        onSubmit: addProduct,
+        productCategoryTreeAsync: productCategoryTreeAsync,
+        onRetryCategories: () => ref.refresh(productCategoriesProvider),
+        onPickImage: (final remainingCount) async {
+          return ImagePickerHelper.pickImages(context, maxImages: remainingCount);
+        },
+      ),
     );
   }
 }

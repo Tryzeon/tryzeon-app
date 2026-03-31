@@ -88,6 +88,18 @@ Future<List<Product>> products(final Ref ref) async {
   return result.get()!;
 }
 
+@riverpod
+Future<Product> productById(final Ref ref, final String productId) async {
+  final repository = ref.watch(productRepositoryProvider);
+  final result = await repository.getProductById(productId);
+
+  if (result.isFailure) {
+    throw result.getError()!;
+  }
+
+  return result.get()!;
+}
+
 /// 強制刷新商品列表
 /// 注意：此函數會吞掉 refresh 時的異常，確保 ErrorView 的 onRetry 能正常運作
 Future<void> refreshProducts(final WidgetRef ref) async {

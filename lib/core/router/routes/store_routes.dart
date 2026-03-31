@@ -1,8 +1,8 @@
 import 'package:go_router/go_router.dart';
+import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/router/shells/store_shell.dart';
 import 'package:tryzeon/feature/store/home/presentation/pages/home_page.dart';
 import 'package:tryzeon/feature/store/onboarding/presentation/pages/store_onboarding_page.dart';
-import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/presentation/pages/add_product_page.dart';
 import 'package:tryzeon/feature/store/products/presentation/pages/product_detail_page.dart';
 import 'package:tryzeon/feature/store/settings/presentation/pages/profile_setting_page.dart';
@@ -16,7 +16,7 @@ final storeShellRoute = StatefulShellRoute.indexedStack(
     StatefulShellBranch(
       routes: [
         GoRoute(
-          path: '/store/home',
+          path: AppRoutes.storeHome,
           builder: (final context, final state) => const StoreHomePage(),
         ),
       ],
@@ -27,11 +27,11 @@ final storeShellRoute = StatefulShellRoute.indexedStack(
 // Full-screen routes (no shell)
 final storeFullScreenRoutes = [
   GoRoute(
-    path: '/store/onboarding',
+    path: AppRoutes.storeOnboarding,
     builder: (final context, final state) => const StoreOnboardingPage(),
   ),
   GoRoute(
-    path: '/store/settings',
+    path: AppRoutes.storeSettings,
     builder: (final context, final state) => const StoreSettingsPage(),
     routes: [
       GoRoute(
@@ -41,14 +41,14 @@ final storeFullScreenRoutes = [
     ],
   ),
   GoRoute(
-    path: '/store/products/add',
+    path: AppRoutes.storeProductAdd,
     builder: (final context, final state) => const AddProductPage(),
   ),
   GoRoute(
-    path: '/store/products/:id',
+    path: AppRoutes.storeProductDetail,
     builder: (final context, final state) {
-      final product = state.extra! as Product;
-      return ProductDetailPage(product: product);
+      final productId = state.pathParameters['id']!;
+      return ProductDetailPage(productId: productId);
     },
   ),
 ];

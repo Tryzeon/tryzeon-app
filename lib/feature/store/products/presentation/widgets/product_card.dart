@@ -31,7 +31,7 @@ class StoreProductCard extends HookConsumerWidget {
 
     return GestureDetector(
       onTap: () {
-        context.push(AppRoutes.storeProductDetailPath(product.id), extra: product);
+        context.push(AppRoutes.storeProductDetailPath(product.id));
       },
       child: Card(
         elevation: 2,
