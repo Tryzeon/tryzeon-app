@@ -1,7 +1,7 @@
 PODS:
   - adaptive_platform_ui (0.1.0):
     - Flutter
-  - app_links (6.4.1):
+  - app_links (7.0.0):
     - Flutter
   - AppAuth (2.0.0):
     - AppAuth/Core (= 2.0.0)
@@ -26,14 +26,14 @@ PODS:
   - Firebase/Crashlytics (12.9.0):
     - Firebase/CoreOnly
     - FirebaseCrashlytics (~> 12.9.0)
-  - firebase_analytics (12.1.3):
+  - firebase_analytics (12.2.0):
     - firebase_core
     - FirebaseAnalytics (= 12.9.0)
     - Flutter
-  - firebase_core (4.5.0):
+  - firebase_core (4.6.0):
     - Firebase/CoreOnly (= 12.9.0)
     - Flutter
-  - firebase_crashlytics (5.0.8):
+  - firebase_crashlytics (5.1.0):
     - Firebase/Crashlytics (= 12.9.0)
     - firebase_core
     - Flutter
@@ -96,8 +96,9 @@ PODS:
     - Mantle
     - SDWebImage
     - SDWebImageWebPCoder
-  - flutter_secure_storage (6.0.0):
+  - flutter_secure_storage_darwin (10.0.0):
     - Flutter
+    - FlutterMacOS
   - gal (1.0.0):
     - Flutter
     - FlutterMacOS
@@ -181,9 +182,9 @@ PODS:
   - GTMSessionFetcher/Core (3.5.0)
   - GTMSessionFetcher/Full (3.5.0):
     - GTMSessionFetcher/Core
-  - image_cropper (0.0.4):
+  - image_cropper (0.0.5):
     - Flutter
-    - TOCropViewController (~> 2.8.0)
+    - TOCropViewController (~> 3.1.1)
   - image_picker_ios (0.0.1):
     - Flutter
   - isar_community_flutter_libs (1.0.0):
@@ -229,7 +230,7 @@ PODS:
   - sqflite_darwin (0.0.4):
     - Flutter
     - FlutterMacOS
-  - TOCropViewController (2.8.0)
+  - TOCropViewController (3.1.1)
   - url_launcher_ios (0.0.1):
     - Flutter
   - video_player_avfoundation (0.0.1):
@@ -245,7 +246,7 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_facebook_auth (from `.symlinks/plugins/flutter_facebook_auth/ios`)
   - flutter_image_compress_common (from `.symlinks/plugins/flutter_image_compress_common/ios`)
-  - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
+  - flutter_secure_storage_darwin (from `.symlinks/plugins/flutter_secure_storage_darwin/darwin`)
   - gal (from `.symlinks/plugins/gal/darwin`)
   - geocoding_ios (from `.symlinks/plugins/geocoding_ios/ios`)
   - geolocator_apple (from `.symlinks/plugins/geolocator_apple/darwin`)
@@ -311,8 +312,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_facebook_auth/ios"
   flutter_image_compress_common:
     :path: ".symlinks/plugins/flutter_image_compress_common/ios"
-  flutter_secure_storage:
-    :path: ".symlinks/plugins/flutter_secure_storage/ios"
+  flutter_secure_storage_darwin:
+    :path: ".symlinks/plugins/flutter_secure_storage_darwin/darwin"
   gal:
     :path: ".symlinks/plugins/gal/darwin"
   geocoding_ios:
@@ -344,7 +345,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   adaptive_platform_ui: f54f620666d1797636f9ef06f49137ef2cc13611
-  app_links: 3dbc685f76b1693c66a6d9dd1e9ab6f73d97dc0a
+  app_links: a754cbec3c255bd4bbb4d236ecc06f28cd9a7ce8
   AppAuth: 1c1a8afa7e12f2ec3a294d9882dfa5ab7d3cb063
   AppCheckCore: cc8fd0a3a230ddd401f326489c99990b013f0c4f
   FBAEMKit: 56a4f5a9607957b547b6458b17a98c5bb2736367
@@ -352,9 +353,9 @@ SPEC CHECKSUMS:
   FBSDKCoreKit_Basics: eb530cd6a79030dbb11df460aafb2767bcad9028
   FBSDKLoginKit: 6a70798793e499335a98fab1a758d7da34af196e
   Firebase: 065f2bb395062046623036d8e6dc857bc2521d56
-  firebase_analytics: 6903a46192a92993abde88152a14ce1df1c0de2f
-  firebase_core: afac1aac13c931e0401c7e74ed1276112030efab
-  firebase_crashlytics: a316d8dddba772359d93dc38d303ed964579b7a6
+  firebase_analytics: 8288e2480a2b2a5eb2cc3c474e4a4327e8dc520b
+  firebase_core: 8e6f58412ca227827c366b92e7cee047a2148c60
+  firebase_crashlytics: c399f9682c474beb06a89c11dfab04db537f3cd2
   FirebaseAnalytics: cd7d01d352f3c237c9a0e31552c257cd0b0c0352
   FirebaseCore: 428912f751178b06bef0a1793effeb4a5e09a9b8
   FirebaseCoreExtension: e911052d59cd0da237a45d706fc0f81654f035c1
@@ -366,7 +367,7 @@ SPEC CHECKSUMS:
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_facebook_auth: fa3b69b1df0831d2178fe87a05ee2d7d0156db70
   flutter_image_compress_common: 1697a328fd72bfb335507c6bca1a65fa5ad87df1
-  flutter_secure_storage: 1ed9476fba7e7a782b22888f956cce43e2c62f13
+  flutter_secure_storage_darwin: acdb3f316ed05a3e68f856e0353b133eec373a23
   gal: baecd024ebfd13c441269ca7404792a7152fde89
   geocoding_ios: 33776c9ebb98d037b5e025bb0e7537f6dd19646e
   geolocator_apple: ab36aa0e8b7d7a2d7639b3b4e48308394e8cef5e
@@ -378,7 +379,7 @@ SPEC CHECKSUMS:
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
   GTMAppAuth: 217a876b249c3c585a54fd6f73e6b58c4f5c4238
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
-  image_cropper: 64567491beea6cd1bc4b11948e2babb590de5826
+  image_cropper: e405d3e44183f8e8edbec2e49b01ff9c819c7ac8
   image_picker_ios: e0ece4aa2a75771a7de3fa735d26d90817041326
   isar_community_flutter_libs: bede843185a61a05ff364a05c9b23209523f7e0d
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
@@ -393,7 +394,7 @@ SPEC CHECKSUMS:
   shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
   sign_in_with_apple: c5dcc141574c8c54d5ac99dd2163c0c72ad22418
   sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
-  TOCropViewController: 797deaf39c90e6e9ddd848d88817f6b9a8a09888
+  TOCropViewController: 9002a9b12d8104d7478cdc306d80f0efea7fe2c5
   url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
   video_player_avfoundation: dd410b52df6d2466a42d28550e33e4146928280a
 
