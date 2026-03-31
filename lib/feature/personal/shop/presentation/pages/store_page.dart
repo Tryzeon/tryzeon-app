@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:share_plus/share_plus.dart' as share_plus;
 import 'package:tryzeon/core/config/app_constants.dart';
-import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
@@ -179,7 +178,7 @@ class StorePage extends HookConsumerWidget {
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (final error, final stack) => ErrorView(
-          message: (error as Failure).displayMessage(context),
+          message: error.displayMessage(context),
           onRetry: () => ref.refresh(storeInfoProvider(storeId)),
         ),
       ),

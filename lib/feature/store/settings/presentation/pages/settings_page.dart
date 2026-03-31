@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_overlay.dart';
 import 'package:tryzeon/core/presentation/widgets/settings_list_tile.dart';
 import 'package:tryzeon/core/presentation/widgets/settings_section.dart';
@@ -28,7 +29,7 @@ class StoreSettingsPage extends HookConsumerWidget {
       if (next is AsyncError) {
         TopNotification.show(
           context,
-          message: (next.error as dynamic).displayMessage(context),
+          message: next.error.displayMessage(context),
           type: NotificationType.error,
         );
       }

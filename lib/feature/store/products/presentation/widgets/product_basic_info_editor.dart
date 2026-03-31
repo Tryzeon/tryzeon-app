@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/utils/validators.dart';
@@ -138,7 +137,7 @@ class ProductBasicInfoEditor extends StatelessWidget {
                   ),
                 ),
                 error: (final error, final stack) => ErrorView(
-                  message: (error as Failure).displayMessage(context),
+                  message: error.displayMessage(context),
                   onRetry: onRetryCategories,
                   isCompact: true,
                 ),

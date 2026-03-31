@@ -362,7 +362,7 @@ class HomePage extends HookConsumerWidget {
                   loading: () => const Center(child: CircularProgressIndicator()),
                   error: (final error, final stack) => Center(
                     child: ErrorView(
-                      message: (error as Failure).displayMessage(context),
+                      message: error.displayMessage(context),
                       onRetry: () => ref.refresh(userProfileProvider),
                     ),
                   ),

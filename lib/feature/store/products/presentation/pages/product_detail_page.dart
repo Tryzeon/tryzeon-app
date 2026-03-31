@@ -56,10 +56,7 @@ class _ProductDetailFallbackPage extends StatelessWidget {
       appBar: AppBar(title: const Text('商品詳情')),
       body: isLoading
           ? const _ProductDetailLoadingView()
-          : ErrorView(
-              message: (error as dynamic).displayMessage(context),
-              onRetry: onRetry,
-            ),
+          : ErrorView(message: error.displayMessage(context), onRetry: onRetry),
     );
   }
 }

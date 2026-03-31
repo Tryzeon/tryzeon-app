@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
@@ -18,7 +17,7 @@ class StoreEntry extends HookConsumerWidget {
       if (next is AsyncError) {
         TopNotification.show(
           context,
-          message: (next.error! as Failure).displayMessage(context),
+          message: next.error.displayMessage(context),
           type: NotificationType.error,
         );
       }

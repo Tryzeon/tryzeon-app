@@ -27,3 +27,19 @@ extension FailureMessage on Failure {
     };
   }
 }
+
+extension ErrorDisplayMessage on Object? {
+  String displayMessage(final BuildContext context) {
+    final error = this;
+
+    if (error is Failure) {
+      return error.displayMessage(context);
+    }
+
+    if (error is String && error.isNotEmpty) {
+      return error;
+    }
+
+    return const UnknownFailure().displayMessage(context);
+  }
+}

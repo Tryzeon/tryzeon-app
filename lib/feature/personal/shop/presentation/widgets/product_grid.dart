@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
@@ -147,7 +146,7 @@ class ProductGrid extends HookConsumerWidget {
 
     // Priority 3: Show error when failed without data
     return ErrorView(
-      message: (productsAsync.error! as Failure).displayMessage(context),
+      message: productsAsync.error.displayMessage(context),
       onRetry: onRetry,
     );
   }
