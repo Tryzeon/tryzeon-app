@@ -23,6 +23,7 @@ abstract final class AppRoutes {
   static const String personalSettingsProfile = '/personal/settings/profile';
   static const String personalSettingsPreferences = '/personal/settings/preferences';
   static const String personalSubscription = '/personal/settings/subscription';
+  static const String personalPaywall = '/personal/paywall';
 
   // Store (tabs)
   static const String storeHome = '/store/home';
