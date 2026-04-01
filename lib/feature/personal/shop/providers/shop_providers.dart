@@ -37,7 +37,10 @@ ShopRemoteDataSource shopRemoteDataSource(final Ref ref) {
 
 @riverpod
 ShopLocalDataSource shopLocalDataSource(final Ref ref) {
-  return ShopLocalDataSource(ref.watch(isarServiceProvider));
+  return ShopLocalDataSource(
+    ref.watch(isarServiceProvider),
+    ref.watch(cacheEntryLocalDataSourceProvider),
+  );
 }
 
 @riverpod

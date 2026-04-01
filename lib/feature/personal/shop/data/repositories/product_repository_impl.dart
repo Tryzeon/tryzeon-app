@@ -1,3 +1,4 @@
+import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/location/domain/entities/user_location.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
@@ -66,8 +67,12 @@ class ProductRepositoryImpl implements ProductRepository {
       // 1. Try Local Cache
       try {
         final cachedModel = await _localDataSource.getProductById(productId);
-        if (cachedModel != null) {
-          return Ok(_mappr.convert<ShopProductModel, ShopProduct>(cachedModel));
+        switch (cachedModel) {
+          case CacheHit<ShopProductModel>(:final data):
+            return Ok(_mappr.convert<ShopProductModel, ShopProduct>(data));
+          case CacheEmpty<ShopProductModel>():
+          case CacheMiss<ShopProductModel>():
+            break;
         }
       } catch (e, stackTrace) {
         AppLogger.warning('Shop local cache read failed', e, stackTrace);
