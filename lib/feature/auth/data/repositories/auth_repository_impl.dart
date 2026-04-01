@@ -74,9 +74,11 @@ class AuthRepositoryImpl implements AuthRepository {
       if (currentUser != null) {
         final revenueCatResult = await _logInRevenueCat(currentUser.id);
         if (revenueCatResult.isFailure) {
-          final failure = revenueCatResult.getError()!;
-          AppLogger.error('RevenueCat login failed', failure, StackTrace.current);
-          return Err(failure);
+          AppLogger.error(
+            'RevenueCat login failed (ignored)',
+            revenueCatResult.getError()!,
+            StackTrace.current,
+          );
         }
       }
 
@@ -190,9 +192,11 @@ class AuthRepositoryImpl implements AuthRepository {
       if (currentUser != null) {
         final revenueCatResult = await _logInRevenueCat(currentUser.id);
         if (revenueCatResult.isFailure) {
-          final failure = revenueCatResult.getError()!;
-          AppLogger.error('RevenueCat login failed', failure, StackTrace.current);
-          return Err(failure);
+          AppLogger.error(
+            'RevenueCat login failed (ignored)',
+            revenueCatResult.getError()!,
+            StackTrace.current,
+          );
         }
       }
 
