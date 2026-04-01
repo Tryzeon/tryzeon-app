@@ -29,8 +29,11 @@ class ProductCard extends HookConsumerWidget {
 
     final hasLoggedView = useState(false);
 
-    final capabilities = ref.watch(subscriptionCapabilitiesProvider).value;
-    final hasVideoAccess = capabilities?.hasVideoAccess ?? false;
+    final capabilitiesAsync = ref.watch(subscriptionCapabilitiesProvider);
+    final hasVideoAccess = capabilitiesAsync.maybeWhen(
+      data: (final capabilities) => capabilities.hasVideoAccess,
+      orElse: () => false,
+    );
 
     void onVisibilityChanged(final VisibilityInfo info) {
       // Skip analytics for skeleton products
