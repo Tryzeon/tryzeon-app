@@ -23,7 +23,12 @@ StoreProfileRemoteDataSource storeProfileRemoteDataSource(final Ref ref) {
 StoreProfileLocalDataSource storeProfileLocalDataSource(final Ref ref) {
   final isarService = ref.watch(isarServiceProvider);
   final cacheService = ref.watch(cacheServiceProvider);
-  return StoreProfileLocalDataSource(isarService, cacheService);
+  final cacheEntryLocalDataSource = ref.watch(cacheEntryLocalDataSourceProvider);
+  return StoreProfileLocalDataSource(
+    isarService,
+    cacheService,
+    cacheEntryLocalDataSource,
+  );
 }
 
 @riverpod

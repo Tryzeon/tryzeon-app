@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
@@ -30,11 +31,14 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
       if (!forceRefresh) {
         try {
           final cachedProfile = await _localDataSource.getStoreProfile();
-          if (cachedProfile != null) {
-            final profile = _mappr.convert<StoreProfileModel, StoreProfile>(
-              cachedProfile,
-            );
-            return Ok(profile);
+          switch (cachedProfile) {
+            case CacheHit<StoreProfileModel>(:final data):
+              final profile = _mappr.convert<StoreProfileModel, StoreProfile>(data);
+              return Ok(profile);
+            case CacheEmpty<StoreProfileModel>():
+              return const Ok(null);
+            case CacheMiss<StoreProfileModel>():
+              break;
           }
         } catch (e, stackTrace) {
           AppLogger.warning(
@@ -47,7 +51,14 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
 
       // 2. Fetch from API
       final remoteProfile = await _remoteDataSource.getStoreProfile();
-      if (remoteProfile == null) return const Ok(null);
+      if (remoteProfile == null) {
+        try {
+          await _localDataSource.markStoreProfileAbsent();
+        } catch (e, stackTrace) {
+          AppLogger.warning('Failed to mark store profile cache empty', e, stackTrace);
+        }
+        return const Ok(null);
+      }
 
       // 3. Update Cache
       try {

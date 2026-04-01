@@ -2,33 +2,41 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:isar_community/isar.dart';
-import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
+import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/domain/services/cache_service.dart';
 import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:tryzeon/feature/store/profile/data/collections/store_profile_collection.dart';
 import 'package:tryzeon/feature/store/profile/data/models/store_profile_model.dart';
 
 class StoreProfileLocalDataSource {
-  StoreProfileLocalDataSource(this._isarService, this._cacheService);
+  StoreProfileLocalDataSource(
+    this._isarService,
+    this._cacheService,
+    this._cacheEntryLocalDataSource,
+  );
 
   final IsarService _isarService;
   final CacheService _cacheService;
+  final CacheEntryLocalDataSource _cacheEntryLocalDataSource;
   static const _mappr = StoreMappr();
+  static const cacheKey = 'store_profile';
 
-  Future<StoreProfileModel?> getStoreProfile() async {
+  Future<CacheLookup<StoreProfileModel>> getStoreProfile() async {
     final isar = await _isarService.db;
-    final collection = await isar.storeProfileCollections.where().findFirst();
-    if (collection == null) return null;
+    final cacheStatus = await _cacheEntryLocalDataSource.getEntryStatus(cacheKey);
+    if (cacheStatus == null) return const CacheMiss();
 
-    if (collection.lastUpdated == null ||
-        DateTime.now().difference(collection.lastUpdated!) >
-            AppConstants.staleDurationStoreProfile) {
-      return null;
+    if (cacheStatus == CacheEntryStatus.empty) {
+      return const CacheEmpty();
     }
 
+    final collection = await isar.storeProfileCollections.where().findFirst();
+    if (collection == null) return const CacheMiss();
+
     final model = _mappr.convert<StoreProfileCollection, StoreProfileModel>(collection);
-    return model;
+    return CacheHit(model);
   }
 
   Future<void> saveStoreProfile(final StoreProfileModel profile) async {
@@ -38,9 +46,17 @@ class StoreProfileLocalDataSource {
       final collection = _mappr.convert<StoreProfileModel, StoreProfileCollection>(
         profile,
       );
-      collection.lastUpdated = DateTime.now();
       await isar.storeProfileCollections.put(collection);
     });
+    await _cacheEntryLocalDataSource.markHasData(cacheKey);
+  }
+
+  Future<void> markStoreProfileAbsent() async {
+    final isar = await _isarService.db;
+    await isar.writeTxn(() async {
+      await isar.storeProfileCollections.clear();
+    });
+    await _cacheEntryLocalDataSource.markEmpty(cacheKey);
   }
 
   Future<File?> getLogo(final String path) {
