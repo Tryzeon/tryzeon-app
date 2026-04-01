@@ -108,7 +108,7 @@ final personalFullScreenRoutes = [
     builder: (final context, final state) => const PersonalOnboardingPage(),
   ),
   GoRoute(
-    path: '/personal/paywall',
+    path: AppRoutes.personalPaywall,
     builder: (final context, final state) => const PaywallPage(),
   ),
 ];
