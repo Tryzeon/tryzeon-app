@@ -24,8 +24,6 @@ class ShopProductCollection {
   DateTime? createdAt;
   DateTime? updatedAt;
 
-  DateTime? lastUpdated;
-
   // 關聯的店鋪資訊 (必填，不可為 null)
   late ShopStoreInfoEmbedded storeInfo;
 }

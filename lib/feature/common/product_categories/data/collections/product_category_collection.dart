@@ -17,6 +17,4 @@ class ProductCategoryCollection {
   String? imagePath;
 
   String? imageUrl;
-
-  DateTime? lastUpdated;
 }

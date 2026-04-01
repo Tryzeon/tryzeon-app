@@ -20,6 +20,4 @@ class UserProfileCollection {
   String? ageRange;
   List<String>? stylePreferences;
   late bool isOnboarded;
-
-  DateTime? lastUpdated;
 }

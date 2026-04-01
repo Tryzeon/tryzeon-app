@@ -19,5 +19,4 @@ class StoreProfileCollection {
   DateTime? createdAt;
 
   DateTime? updatedAt;
-  DateTime? lastUpdated;
 }
