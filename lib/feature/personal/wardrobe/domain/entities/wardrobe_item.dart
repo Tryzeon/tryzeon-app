@@ -22,6 +22,8 @@ sealed class WardrobeItem with _$WardrobeItem {
     required final String id,
     required final String imagePath,
     required final WardrobeCategory category,
+    required final DateTime createdAt,
+    required final DateTime updatedAt,
     @Default([]) final List<String> tags,
   }) = _WardrobeItem;
 }

@@ -8,8 +8,8 @@ class WardrobeItemModel {
     required this.id,
     required this.imagePath,
     required this.category,
-    this.createdAt,
-    this.updatedAt,
+    required this.createdAt,
+    required this.updatedAt,
     this.tags = const [],
   });
 
@@ -20,8 +20,8 @@ class WardrobeItemModel {
   final String imagePath;
   final String category;
   final List<String> tags;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
   Map<String, dynamic> toJson() => _$WardrobeItemModelToJson(this);
 }
