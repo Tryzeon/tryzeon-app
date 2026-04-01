@@ -21,7 +21,8 @@ ProductCategoryRemoteDataSource productCategoryRemoteDataSource(final Ref ref) {
 @riverpod
 ProductCategoryLocalDataSource productCategoryLocalDataSource(final Ref ref) {
   final isarService = ref.watch(isarServiceProvider);
-  return ProductCategoryLocalDataSource(isarService);
+  final cacheEntryLocalDataSource = ref.watch(cacheEntryLocalDataSourceProvider);
+  return ProductCategoryLocalDataSource(isarService, cacheEntryLocalDataSource);
 }
 
 @riverpod

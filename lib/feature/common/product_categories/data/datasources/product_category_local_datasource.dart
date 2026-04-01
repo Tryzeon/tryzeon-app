@@ -1,42 +1,45 @@
 import 'package:isar_community/isar.dart';
-import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
+import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/feature/common/product_categories/data/collections/product_category_collection.dart';
 import 'package:tryzeon/feature/common/product_categories/data/mappers/product_category_mappr.dart';
 import 'package:tryzeon/feature/common/product_categories/data/models/product_category_model.dart';
 
 class ProductCategoryLocalDataSource {
-  ProductCategoryLocalDataSource(this._isarService);
+  ProductCategoryLocalDataSource(this._isarService, this._cacheEntryLocalDataSource);
   final IsarService _isarService;
+  final CacheEntryLocalDataSource _cacheEntryLocalDataSource;
   static const _mappr = ProductCategoryMappr();
+  static const cacheKey = 'product_categories';
 
-  Future<List<ProductCategoryModel>?> getProductCategories() async {
+  Future<CacheLookup<List<ProductCategoryModel>>> getProductCategories() async {
     final isar = await _isarService.db;
-    final collections = await isar.productCategoryCollections.where().findAll();
-    if (collections.isEmpty) return null;
+    final cacheStatus = await _cacheEntryLocalDataSource.getEntryStatus(cacheKey);
+    if (cacheStatus == null) return const CacheMiss();
 
-    if (collections.first.lastUpdated == null ||
-        DateTime.now().difference(collections.first.lastUpdated!) >
-            AppConstants.staleDurationProductCategories) {
-      return null;
+    if (cacheStatus == CacheEntryStatus.empty) {
+      return const CacheEmpty();
     }
+
+    final collections = await isar.productCategoryCollections.where().findAll();
+    if (collections.isEmpty) return const CacheMiss();
 
     final models = _mappr.convertList<ProductCategoryCollection, ProductCategoryModel>(
       collections,
     );
-    return models;
+    return CacheHit(models);
   }
 
   Future<void> saveProductCategories(final List<ProductCategoryModel> categories) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
       await isar.productCategoryCollections.clear();
-      final now = DateTime.now();
       final collections = _mappr
           .convertList<ProductCategoryModel, ProductCategoryCollection>(categories)
-          .map((final e) => e..lastUpdated = now)
           .toList();
       await isar.productCategoryCollections.putAll(collections);
     });
+    await _cacheEntryLocalDataSource.markListState(cacheKey, isEmpty: categories.isEmpty);
   }
 }

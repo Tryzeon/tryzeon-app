@@ -1,3 +1,4 @@
+import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/product_categories/data/datasources/product_category_local_datasource.dart';
@@ -23,10 +24,13 @@ class ProductCategoryRepositoryImpl implements ProductCategoryRepository {
       if (!forceRefresh) {
         try {
           final cachedCategories = await _localDataSource.getProductCategories();
-          if (cachedCategories != null) {
-            return Ok(
-              _mappr.convertList<ProductCategoryModel, ProductCategory>(cachedCategories),
-            );
+          switch (cachedCategories) {
+            case CacheHit<List<ProductCategoryModel>>(:final data):
+              return Ok(_mappr.convertList<ProductCategoryModel, ProductCategory>(data));
+            case CacheEmpty<List<ProductCategoryModel>>():
+              return const Ok([]);
+            case CacheMiss<List<ProductCategoryModel>>():
+              break;
           }
         } catch (e, stackTrace) {
           AppLogger.warning(
