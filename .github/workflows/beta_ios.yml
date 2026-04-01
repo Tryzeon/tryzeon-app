@@ -52,6 +52,7 @@ jobs:
         run: |
           echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" > .env
           echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
+          echo "REVENUE_CAT_API_KEY=${{ secrets.REVENUE_CAT_API_KEY }}" >> .env
 
       - name: Get Flutter dependencies
         run: flutter pub get
