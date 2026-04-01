@@ -22,12 +22,19 @@ class ProductLocalDataSource {
   final CacheEntryLocalDataSource _cacheEntryLocalDataSource;
   static const _mappr = StoreMappr();
   static String cacheKeyForStore(final String storeId) => 'store_products:$storeId';
+  static String cacheKeyForProduct(final String productId) => 'store_product:$productId';
 
-  Future<ProductModel?> getProductById(final String productId) async {
+  Future<CacheLookup<ProductModel>> getProductById(final String productId) async {
     final isar = await _isarService.db;
+    final cacheStatus = await _cacheEntryLocalDataSource.getEntryStatus(
+      cacheKeyForProduct(productId),
+    );
+    if (cacheStatus == null) return const CacheMiss();
+
     final collection = await isar.productCollections.getByProductId(productId);
-    if (collection == null) return null;
-    return _mappr.convert<ProductCollection, ProductModel>(collection);
+    if (collection == null) return const CacheMiss();
+
+    return CacheHit(_mappr.convert<ProductCollection, ProductModel>(collection));
   }
 
   Future<void> saveProduct(final ProductModel model) async {
@@ -37,8 +44,11 @@ class ProductLocalDataSource {
     await isar.writeTxn(() async {
       await isar.productCollections.putByProductId(collection);
     });
-    final cacheKey = cacheKeyForStore(model.storeId);
-    await _cacheEntryLocalDataSource.markListState(cacheKey, isEmpty: false);
+    await _cacheEntryLocalDataSource.markListState(
+      cacheKeyForStore(model.storeId),
+      isEmpty: false,
+    );
+    await _cacheEntryLocalDataSource.markHasData(cacheKeyForProduct(model.id));
   }
 
   Future<CacheLookup<List<ProductModel>>> getProducts({
@@ -108,9 +118,8 @@ class ProductLocalDataSource {
         .filter()
         .storeIdEqualTo(storeId)
         .count();
-    final cacheKey = cacheKeyForStore(storeId);
     await _cacheEntryLocalDataSource.markListState(
-      cacheKey,
+      cacheKeyForStore(storeId),
       isEmpty: remainingCount == 0,
     );
   }

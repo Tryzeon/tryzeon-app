@@ -144,8 +144,12 @@ class ProductRepositoryImpl implements ProductRepository {
       // 1. Try Local Cache
       try {
         final cachedProduct = await _localDataSource.getProductById(productId);
-        if (cachedProduct != null) {
-          return Ok(_mappr.convert<ProductModel, Product>(cachedProduct));
+        switch (cachedProduct) {
+          case CacheHit<ProductModel>(:final data):
+            return Ok(_mappr.convert<ProductModel, Product>(data));
+          case CacheEmpty<ProductModel>():
+          case CacheMiss<ProductModel>():
+            break;
         }
       } catch (e, stackTrace) {
         AppLogger.warning('Local cache read failed', e, stackTrace);
