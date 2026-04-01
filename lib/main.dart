@@ -49,18 +49,23 @@ Future<void> main() async {
   );
 
   // RevenueCat SDK initialization
-  if (kDebugMode) {
-    await Purchases.setLogLevel(LogLevel.debug);
-  }
+  try {
+    if (kDebugMode) {
+      await Purchases.setLogLevel(LogLevel.debug);
+    }
 
-  final purchasesConfig = PurchasesConfiguration(Env.revenueCatApiKey);
-  await Purchases.configure(purchasesConfig);
+    final purchasesConfig = PurchasesConfiguration(Env.revenueCatApiKey);
+    await Purchases.configure(purchasesConfig);
 
-  // Log user identity – RevenueCat will use an anonymous ID until login
-  // After user logs in (Supabase auth), call Purchases.logIn(userId) to link
-  final currentUser = Supabase.instance.client.auth.currentUser;
-  if (currentUser != null) {
-    await Purchases.logIn(currentUser.id);
+    // Log user identity – RevenueCat will use an anonymous ID until login
+    // After user logs in (Supabase auth), call Purchases.logIn(userId) to link
+    final currentUser = Supabase.instance.client.auth.currentUser;
+    if (currentUser != null) {
+      await Purchases.logIn(currentUser.id);
+    }
+  } catch (e, stack) {
+    debugPrint('[RevenueCat] Initialization failed: $e');
+    await FirebaseCrashlytics.instance.recordError(e, stack, fatal: false);
   }
 
   runApp(const ProviderScope(retry: customRetry, child: Tryzeon()));
