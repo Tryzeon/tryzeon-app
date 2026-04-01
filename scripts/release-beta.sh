@@ -51,6 +51,22 @@ case "$platform" in
     ;;
 esac
 
+# Confirmation prompt
+echo "Are you sure you want to release version $version?"
+if [[ "$run_ios" == true && "$run_android" == true ]]; then
+  echo "Platform: iOS and Android"
+elif [[ "$run_ios" == true ]]; then
+  echo "Platform: iOS"
+elif [[ "$run_android" == true ]]; then
+  echo "Platform: Android"
+fi
+read -p "Continue? (y/N): " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+  echo "Release cancelled"
+  exit 0
+fi
+
 if [[ "$run_ios" == true ]]; then
   gh workflow run beta_ios.yml -f version="$version"
   echo "Triggered iOS beta workflow for version $version"
