@@ -16,7 +16,7 @@ class StoreProfileCollection {
   String? logoUrl;
 
   @Index()
-  DateTime? createdAt;
+  late DateTime createdAt;
 
-  DateTime? updatedAt;
+  late DateTime updatedAt;
 }

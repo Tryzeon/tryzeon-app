@@ -8,6 +8,8 @@ sealed class StoreProfile with _$StoreProfile {
     required final String id,
     required final String ownerId,
     required final String name,
+    required final DateTime createdAt,
+    required final DateTime updatedAt,
     final String? address,
     final String? logoPath,
     final String? logoUrl,

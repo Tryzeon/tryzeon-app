@@ -8,11 +8,11 @@ class StoreProfileModel {
     required this.id,
     required this.ownerId,
     required this.name,
+    required this.createdAt,
+    required this.updatedAt,
     this.address,
     this.logoPath,
     this.logoUrl,
-    this.createdAt,
-    this.updatedAt,
   });
 
   factory StoreProfileModel.fromJson(final Map<String, dynamic> json) =>
@@ -21,11 +21,11 @@ class StoreProfileModel {
   final String id;
   final String ownerId;
   final String name;
+  final DateTime createdAt;
+  final DateTime updatedAt;
   final String? address;
   final String? logoPath;
   final String? logoUrl;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
 
   Map<String, dynamic> toJson() => _$StoreProfileModelToJson(this);
 }
