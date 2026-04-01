@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
@@ -33,11 +34,15 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
       if (!forceRefresh) {
         try {
           final cachedItems = await _localDataSource.getWardrobeItems();
-          if (cachedItems != null) {
-            final items = _mappr.convertList<WardrobeItemModel, WardrobeItem>(
-              cachedItems,
-            );
-            return Ok(items);
+          switch (cachedItems) {
+            case CacheHit<List<WardrobeItemModel>>(:final data):
+              final items = _mappr.convertList<WardrobeItemModel, WardrobeItem>(data);
+              return Ok(items);
+            case CacheEmpty<List<WardrobeItemModel>>():
+              return const Ok([]);
+            case CacheMiss<List<WardrobeItemModel>>():
+            case _:
+              break;
           }
         } catch (e, stackTrace) {
           AppLogger.warning(

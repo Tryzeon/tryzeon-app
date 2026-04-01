@@ -26,7 +26,8 @@ ProductRemoteDataSource productRemoteDataSource(final Ref ref) {
 ProductLocalDataSource productLocalDataSource(final Ref ref) {
   final isarService = ref.watch(isarServiceProvider);
   final cacheService = ref.watch(cacheServiceProvider);
-  return ProductLocalDataSource(isarService, cacheService);
+  final cacheEntryLocalDataSource = ref.watch(cacheEntryLocalDataSourceProvider);
+  return ProductLocalDataSource(isarService, cacheService, cacheEntryLocalDataSource);
 }
 
 @riverpod

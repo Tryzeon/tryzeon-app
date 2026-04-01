@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/shared/measurements/data/mappers/measurements_mappr.dart';
 import 'package:tryzeon/core/shared/measurements/data/models/measurements_model.dart';
@@ -38,9 +39,18 @@ class ProductRepositoryImpl implements ProductRepository {
       // 1. Try Local Cache
       if (!forceRefresh) {
         try {
-          final cachedProducts = await _localDataSource.getProducts(sort: sort);
-          if (cachedProducts != null) {
-            return Ok(_mappr.convertList<ProductModel, Product>(cachedProducts));
+          final cachedProducts = await _localDataSource.getProducts(
+            storeId: storeId,
+            sort: sort,
+          );
+          switch (cachedProducts) {
+            case CacheHit<List<ProductModel>>(:final data):
+              return Ok(_mappr.convertList<ProductModel, Product>(data));
+            case CacheEmpty<List<ProductModel>>():
+              return const Ok([]);
+            case CacheMiss<List<ProductModel>>():
+            case _:
+              break;
           }
         } catch (e, stackTrace) {
           AppLogger.warning(
@@ -59,7 +69,7 @@ class ProductRepositoryImpl implements ProductRepository {
 
       // 3. Update Cache
       try {
-        await _localDataSource.saveProducts(remoteProducts);
+        await _localDataSource.saveProducts(storeId, remoteProducts);
       } catch (e, stackTrace) {
         AppLogger.warning('Failed to save products to cache', e, stackTrace);
       }
@@ -120,10 +130,7 @@ class ProductRepositoryImpl implements ProductRepository {
       }
 
       final model = await _remoteDataSource.getProduct(productId);
-
-      final currentCache =
-          await _localDataSource.getProducts(sort: SortCondition.defaultSort) ?? [];
-      await _localDataSource.saveProducts([model, ...currentCache]);
+      await _localDataSource.saveProduct(model);
 
       return const Ok(null);
     } catch (e, stackTrace) {
@@ -281,12 +288,7 @@ class ProductRepositoryImpl implements ProductRepository {
 
       // 9. Update local cache
       final model = await _remoteDataSource.getProduct(original.id);
-
-      final currentCache =
-          await _localDataSource.getProducts(sort: SortCondition.defaultSort) ?? [];
-      await _localDataSource.saveProducts(
-        currentCache.map((final p) => p.id == model.id ? model : p).toList(),
-      );
+      await _localDataSource.saveProduct(model);
 
       return const Ok(null);
     } catch (e, stackTrace) {
@@ -306,10 +308,9 @@ class ProductRepositoryImpl implements ProductRepository {
         _localDataSource.deleteProductImages(product.imagePaths).ignore();
       }
 
-      final currentCache =
-          await _localDataSource.getProducts(sort: SortCondition.defaultSort) ?? [];
-      await _localDataSource.saveProducts(
-        currentCache.where((final p) => p.id != product.id).toList(),
+      await _localDataSource.deleteProduct(
+        storeId: product.storeId,
+        productId: product.id,
       );
 
       return const Ok(null);

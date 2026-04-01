@@ -27,7 +27,8 @@ WardrobeRemoteDataSource wardrobeRemoteDataSource(final Ref ref) {
 WardrobeLocalDataSource wardrobeLocalDataSource(final Ref ref) {
   final isarService = ref.watch(isarServiceProvider);
   final cacheService = ref.watch(cacheServiceProvider);
-  return WardrobeLocalDataSource(isarService, cacheService);
+  final cacheEntryLocalDataSource = ref.watch(cacheEntryLocalDataSourceProvider);
+  return WardrobeLocalDataSource(isarService, cacheService, cacheEntryLocalDataSource);
 }
 
 @riverpod

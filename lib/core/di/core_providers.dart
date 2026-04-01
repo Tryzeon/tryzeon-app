@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/data/services/cache_service_impl.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/services/cache_service.dart';
@@ -50,4 +51,10 @@ CacheService cacheService(final Ref ref) {
 @Riverpod(keepAlive: true)
 IsarService isarService(final Ref ref) {
   return IsarService();
+}
+
+/// Cache Entry Local DataSource Provider
+@Riverpod(keepAlive: true)
+CacheEntryLocalDataSource cacheEntryLocalDataSource(final Ref ref) {
+  return CacheEntryLocalDataSource(ref.watch(isarServiceProvider));
 }
