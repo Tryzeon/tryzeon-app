@@ -75,8 +75,8 @@ class ProductLocalDataSource {
       final result = switch (sort.field) {
         SortField.name => a.name.compareTo(b.name),
         SortField.price => a.price.compareTo(b.price),
-        SortField.createdAt => _compareNullableDateTime(a.createdAt, b.createdAt),
-        SortField.updatedAt => _compareNullableDateTime(a.updatedAt, b.updatedAt),
+        SortField.createdAt => a.createdAt.compareTo(b.createdAt),
+        SortField.updatedAt => a.updatedAt.compareTo(b.updatedAt),
       };
       return sort.ascending ? result : -result;
     });
@@ -130,12 +130,5 @@ class ProductLocalDataSource {
 
   Future<void> deleteProductImages(final List<String> paths) async {
     await _cacheService.deleteImages(paths);
-  }
-
-  int _compareNullableDateTime(final DateTime? a, final DateTime? b) {
-    if (a == null && b == null) return 0;
-    if (a == null) return -1;
-    if (b == null) return 1;
-    return a.compareTo(b);
   }
 }

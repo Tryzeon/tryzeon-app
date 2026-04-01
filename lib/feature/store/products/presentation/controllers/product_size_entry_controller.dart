@@ -5,6 +5,8 @@ import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 class ProductSizeEntryController {
   ProductSizeEntryController({
     this.id,
+    this.createdAt,
+    this.updatedAt,
     final String name = '',
     final Measurements? measurements,
   }) : nameController = TextEditingController(text: name) {
@@ -23,12 +25,16 @@ class ProductSizeEntryController {
   factory ProductSizeEntryController.fromProductSize(final ProductSize size) {
     return ProductSizeEntryController(
       id: size.id,
+      createdAt: size.createdAt,
+      updatedAt: size.updatedAt,
       name: size.name,
       measurements: size.measurements,
     );
   }
 
   final String? id;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
   final TextEditingController nameController;
   final Map<MeasurementType, TextEditingController> measurementControllers = {};
   final Map<MeasurementType, TextEditingController> offsetControllers = {};
@@ -80,6 +86,8 @@ class ProductSizeEntryController {
       productId: productId,
       name: nameController.text,
       measurements: _buildMeasurements(isCun: isCun),
+      createdAt: createdAt!,
+      updatedAt: updatedAt!,
     );
   }
 

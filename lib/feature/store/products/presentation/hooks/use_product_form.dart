@@ -71,8 +71,8 @@ class ProductFormData {
     required final List<String> imagePaths,
     required final List<String> imageUrls,
     required final List<ProductSize>? sizes,
-    final DateTime? createdAt,
-    final DateTime? updatedAt,
+    required final DateTime createdAt,
+    required final DateTime updatedAt,
   }) {
     return Product(
       storeId: storeId,

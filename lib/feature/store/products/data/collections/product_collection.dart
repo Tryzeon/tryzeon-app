@@ -25,8 +25,8 @@ class ProductCollection {
 
   List<String>? styles;
 
-  DateTime? createdAt;
-  DateTime? updatedAt;
+  late DateTime createdAt;
+  late DateTime updatedAt;
 
   List<ProductSizeCollection>? sizes;
 }
@@ -38,6 +38,6 @@ class ProductSizeCollection {
   late String name;
 
   MeasurementsCollection? measurements;
-  DateTime? createdAt;
-  DateTime? updatedAt;
+  late DateTime createdAt;
+  late DateTime updatedAt;
 }

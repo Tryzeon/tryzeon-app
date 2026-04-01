@@ -9,9 +9,9 @@ class ProductSizeModel {
     required this.id,
     required this.productId,
     required this.name,
+    required this.createdAt,
+    required this.updatedAt,
     this.measurements,
-    this.createdAt,
-    this.updatedAt,
   });
 
   factory ProductSizeModel.fromJson(final Map<String, dynamic> json) =>
@@ -21,8 +21,8 @@ class ProductSizeModel {
   final String productId;
   final String name;
   final MeasurementsModel? measurements;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
   Map<String, dynamic> toJson() => _$ProductSizeModelToJson(this);
 }
@@ -37,8 +37,8 @@ class ProductModel {
     required this.imagePaths,
     required this.imageUrls,
     required this.id,
-    this.createdAt,
-    this.updatedAt,
+    required this.createdAt,
+    required this.updatedAt,
     this.purchaseLink,
     this.material,
     this.elasticity,
@@ -65,8 +65,8 @@ class ProductModel {
   final List<String>? styles;
   @JsonKey(name: 'product_variants', includeToJson: false)
   final List<ProductSizeModel>? sizes;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
   Map<String, dynamic> toJson() => _$ProductModelToJson(this);
 }

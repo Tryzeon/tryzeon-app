@@ -59,8 +59,8 @@ sealed class ProductSize with _$ProductSize {
     required final String productId,
     required final String name,
     final Measurements? measurements,
-    final DateTime? createdAt,
-    final DateTime? updatedAt,
+    required final DateTime createdAt,
+    required final DateTime updatedAt,
   }) = _ProductSize;
 }
 
@@ -80,7 +80,7 @@ sealed class Product with _$Product {
     final ProductFit? fit,
     final List<ClothingStyle>? styles,
     final List<ProductSize>? sizes,
-    final DateTime? createdAt,
-    final DateTime? updatedAt,
+    required final DateTime createdAt,
+    required final DateTime updatedAt,
   }) = _Product;
 }
