@@ -1,3 +1,4 @@
+import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/store/analytics/data/datasources/product_analytics_local_datasource.dart';
@@ -42,15 +43,22 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
           year,
           month,
         );
-        if (cached != null) {
-          return Ok(
-            cached
-                .map(
-                  (final m) => _mappr
-                      .convert<ProductAnalyticsSummaryModel, ProductAnalyticsSummary>(m),
-                )
-                .toList(),
-          );
+        switch (cached) {
+          case CacheHit<List<ProductAnalyticsSummaryModel>>(:final data):
+            return Ok(
+              data
+                  .map(
+                    (final m) => _mappr
+                        .convert<ProductAnalyticsSummaryModel, ProductAnalyticsSummary>(
+                          m,
+                        ),
+                  )
+                  .toList(),
+            );
+          case CacheEmpty<List<ProductAnalyticsSummaryModel>>():
+            return const Ok([]);
+          case CacheMiss<List<ProductAnalyticsSummaryModel>>():
+            break;
         }
       }
 
@@ -61,7 +69,16 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
       );
 
       if (isPastMonth) {
-        await _localDataSource.saveProductAnalyticsSummaries(remoteModels);
+        if (remoteModels.isEmpty) {
+          await _localDataSource.markProductAnalyticsSummariesEmpty(storeId, year, month);
+        } else {
+          await _localDataSource.saveProductAnalyticsSummaries(
+            storeId,
+            year,
+            month,
+            remoteModels,
+          );
+        }
       }
 
       return Ok(
