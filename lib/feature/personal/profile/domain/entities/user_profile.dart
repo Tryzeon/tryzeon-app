@@ -11,6 +11,8 @@ sealed class UserProfile with _$UserProfile {
   const factory UserProfile({
     required final String userId,
     required final String name,
+    required final DateTime createdAt,
+    required final DateTime updatedAt,
     final Measurements? measurements,
     final String? avatarPath,
     final String? email,

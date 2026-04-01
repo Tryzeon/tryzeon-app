@@ -8,6 +8,8 @@ class UserProfileModel {
   const UserProfileModel({
     required this.userId,
     required this.name,
+    required this.createdAt,
+    required this.updatedAt,
     this.email,
     this.measurements,
     this.avatarPath,
@@ -22,6 +24,8 @@ class UserProfileModel {
 
   final String userId;
   final String name;
+  final DateTime createdAt;
+  final DateTime updatedAt;
   final String? email;
   final MeasurementsModel? measurements;
   final String? avatarPath;

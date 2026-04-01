@@ -11,6 +11,8 @@ class UserProfileCollection {
   late String userId;
 
   late String name;
+  late DateTime createdAt;
+  late DateTime updatedAt;
   String? email;
   String? avatarPath;
 
