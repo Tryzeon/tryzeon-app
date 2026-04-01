@@ -20,7 +20,9 @@ SubscriptionCapabilitiesRemoteDataSource subscriptionCapabilitiesRemoteDataSourc
 @riverpod
 SubscriptionCapabilitiesRepository subscriptionCapabilitiesRepository(final Ref ref) {
   return SubscriptionCapabilitiesRepositoryImpl(
-    revenueCatRepository: ref.watch(revenueCatRepositoryProvider),
+    getAppSubscriptionEntitlementUseCase: ref.watch(
+      getAppSubscriptionEntitlementUseCaseProvider,
+    ),
     remoteDataSource: ref.watch(subscriptionCapabilitiesRemoteDataSourceProvider),
   );
 }

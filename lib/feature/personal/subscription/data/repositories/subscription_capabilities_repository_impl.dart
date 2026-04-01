@@ -1,7 +1,7 @@
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
-import 'package:tryzeon/core/modules/revenue_cat/domain/repositories/revenue_cat_repository.dart';
+import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/get_app_subscription_entitlement.dart';
 import 'package:tryzeon/feature/personal/subscription/data/datasources/subscription_capabilities_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/subscription/data/models/subscription_plan_model.dart';
 import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription_capabilities.dart';
@@ -11,18 +11,18 @@ import 'package:typed_result/typed_result.dart';
 class SubscriptionCapabilitiesRepositoryImpl
     implements SubscriptionCapabilitiesRepository {
   SubscriptionCapabilitiesRepositoryImpl({
-    required final RevenueCatRepository revenueCatRepository,
+    required final GetAppSubscriptionEntitlement getAppSubscriptionEntitlementUseCase,
     required final SubscriptionCapabilitiesRemoteDataSource remoteDataSource,
-  }) : _revenueCatRepository = revenueCatRepository,
+  }) : _getAppSubscriptionEntitlementUseCase = getAppSubscriptionEntitlementUseCase,
        _remoteDataSource = remoteDataSource;
 
-  final RevenueCatRepository _revenueCatRepository;
+  final GetAppSubscriptionEntitlement _getAppSubscriptionEntitlementUseCase;
   final SubscriptionCapabilitiesRemoteDataSource _remoteDataSource;
 
   @override
   Future<Result<SubscriptionCapabilities, Failure>>
   getCurrentSubscriptionCapabilities() async {
-    final entitlementResult = await _revenueCatRepository.getAppSubscriptionEntitlement();
+    final entitlementResult = await _getAppSubscriptionEntitlementUseCase();
     if (entitlementResult.isFailure) {
       return Err(entitlementResult.getError()!);
     }

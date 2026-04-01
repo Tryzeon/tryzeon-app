@@ -8,7 +8,19 @@ class GetAppSubscriptionEntitlement {
 
   final RevenueCatRepository _repository;
 
-  Future<Result<AppSubscriptionEntitlement, Failure>> call() {
-    return _repository.getAppSubscriptionEntitlement();
+  Future<Result<AppSubscriptionEntitlement, Failure>> call() async {
+    final result = await _repository.getAppSubscriptionEntitlement();
+
+    if (result.isFailure) {
+      return const Ok(
+        AppSubscriptionEntitlement(
+          tier: AppSubscriptionTier.free,
+          expirationDate: null,
+          productIdentifier: null,
+        ),
+      );
+    }
+
+    return result;
   }
 }
