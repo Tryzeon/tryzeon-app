@@ -3,6 +3,7 @@ import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/repositories/revenue_cat_repository.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:typed_result/typed_result.dart';
 
 class RevenueCatRepositoryImpl implements RevenueCatRepository {
@@ -12,7 +13,8 @@ class RevenueCatRepositoryImpl implements RevenueCatRepository {
     try {
       final customerInfo = await Purchases.getCustomerInfo();
       return Ok(_mapToEntitlement(customerInfo));
-    } catch (e) {
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to get RevenueCat subscription entitlement', e, stackTrace);
       return Err(UnknownFailure(e.toString()));
     }
   }
@@ -22,7 +24,8 @@ class RevenueCatRepositoryImpl implements RevenueCatRepository {
     try {
       await Purchases.logIn(userId);
       return const Ok(null);
-    } catch (e) {
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to log in to RevenueCat for user $userId', e, stackTrace);
       return Err(UnknownFailure(e.toString()));
     }
   }
@@ -32,7 +35,8 @@ class RevenueCatRepositoryImpl implements RevenueCatRepository {
     try {
       await Purchases.logOut();
       return const Ok(null);
-    } catch (e) {
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to log out from RevenueCat', e, stackTrace);
       return Err(UnknownFailure(e.toString()));
     }
   }
@@ -42,7 +46,8 @@ class RevenueCatRepositoryImpl implements RevenueCatRepository {
     try {
       final customerInfo = await Purchases.restorePurchases();
       return Ok(_mapToEntitlement(customerInfo));
-    } catch (e) {
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to restore RevenueCat purchases', e, stackTrace);
       return Err(UnknownFailure(e.toString()));
     }
   }
