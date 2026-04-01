@@ -49,7 +49,6 @@ class ProductRepositoryImpl implements ProductRepository {
             case CacheEmpty<List<ProductModel>>():
               return const Ok([]);
             case CacheMiss<List<ProductModel>>():
-            case _:
               break;
           }
         } catch (e, stackTrace) {

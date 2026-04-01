@@ -41,7 +41,6 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
             case CacheEmpty<List<WardrobeItemModel>>():
               return const Ok([]);
             case CacheMiss<List<WardrobeItemModel>>():
-            case _:
               break;
           }
         } catch (e, stackTrace) {
