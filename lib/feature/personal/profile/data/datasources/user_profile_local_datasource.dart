@@ -2,32 +2,36 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:isar_community/isar.dart';
-import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
+import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/domain/services/cache_service.dart';
 import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/profile/data/collections/user_profile_collection.dart';
 import 'package:tryzeon/feature/personal/profile/data/models/user_profile_model.dart';
 
 class UserProfileLocalDataSource {
-  UserProfileLocalDataSource(this._isarService, this._cacheService);
+  UserProfileLocalDataSource(
+    this._isarService,
+    this._cacheService,
+    this._cacheEntryLocalDataSource,
+  );
   final IsarService _isarService;
   final CacheService _cacheService;
+  final CacheEntryLocalDataSource _cacheEntryLocalDataSource;
   static const _mappr = PersonalMappr();
+  static const cacheKey = 'user_profile';
 
-  Future<UserProfileModel?> getUserProfile() async {
+  Future<CacheLookup<UserProfileModel>> getUserProfile() async {
     final isar = await _isarService.db;
-    final collection = await isar.userProfileCollections.where().findFirst();
-    if (collection == null) return null;
+    final cacheStatus = await _cacheEntryLocalDataSource.getEntryStatus(cacheKey);
+    if (cacheStatus == null) return const CacheMiss();
 
-    if (collection.lastUpdated == null ||
-        DateTime.now().difference(collection.lastUpdated!) >
-            AppConstants.staleDurationUserProfile) {
-      return null;
-    }
+    final collection = await isar.userProfileCollections.where().findFirst();
+    if (collection == null) return const CacheMiss();
 
     final model = _mappr.convert<UserProfileCollection, UserProfileModel>(collection);
-    return model;
+    return CacheHit(model);
   }
 
   Future<void> saveUserProfile(final UserProfileModel profile) async {
@@ -35,9 +39,9 @@ class UserProfileLocalDataSource {
     await isar.writeTxn(() async {
       await isar.userProfileCollections.clear();
       final collection = _mappr.convert<UserProfileModel, UserProfileCollection>(profile);
-      collection.lastUpdated = DateTime.now();
       await isar.userProfileCollections.put(collection);
     });
+    await _cacheEntryLocalDataSource.markHasData(cacheKey);
   }
 
   Future<File?> getAvatar(final String path) {

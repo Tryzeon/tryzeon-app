@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
@@ -30,9 +31,13 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       if (!forceRefresh) {
         try {
           final cachedProfile = await _localDataSource.getUserProfile();
-          if (cachedProfile != null) {
-            final profile = _mappr.convert<UserProfileModel, UserProfile>(cachedProfile);
-            return Ok(profile);
+          switch (cachedProfile) {
+            case CacheHit<UserProfileModel>(:final data):
+              final profile = _mappr.convert<UserProfileModel, UserProfile>(data);
+              return Ok(profile);
+            case CacheMiss<UserProfileModel>():
+            case _:
+              break;
           }
         } catch (e, stackTrace) {
           AppLogger.warning(
