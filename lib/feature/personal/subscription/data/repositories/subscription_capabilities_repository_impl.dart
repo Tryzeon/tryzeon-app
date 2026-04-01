@@ -44,7 +44,7 @@ class SubscriptionCapabilitiesRepositoryImpl
     return switch (entitlement.tier) {
       AppSubscriptionTier.max => AppConstants.entitlementMaxId,
       AppSubscriptionTier.pro => AppConstants.entitlementProId,
-      AppSubscriptionTier.free => AppConstants.freePlanId,
+      AppSubscriptionTier.free => AppConstants.entitlementFreeId,
     };
   }
 

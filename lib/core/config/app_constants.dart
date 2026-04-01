@@ -50,11 +50,10 @@ class AppConstants {
   static const double productVisibilityThreshold = 0.5;
 
   // RevenueCat
-  static const String freePlanId = 'free';
+  static const String entitlementFreeId = 'free';
   static const String entitlementProId = 'pro';
   static const String entitlementMaxId = 'max';
 
-  // Subscription Plan IDs
   // TryOn Params
   static const String paramMode = 'mode';
   static const String modePhoto = 'photo';
