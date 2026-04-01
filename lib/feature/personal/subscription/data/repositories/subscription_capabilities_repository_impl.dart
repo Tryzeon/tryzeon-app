@@ -2,6 +2,7 @@ import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/get_app_subscription_entitlement.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/subscription/data/datasources/subscription_capabilities_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/subscription/data/models/subscription_plan_model.dart';
 import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription_capabilities.dart';
@@ -33,7 +34,12 @@ class SubscriptionCapabilitiesRepositoryImpl
     try {
       final planInfo = await _remoteDataSource.getPlanCapabilities(capabilityPlanId);
       return Ok(_toCapabilities(entitlement, planInfo));
-    } catch (e) {
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Failed to load subscription capabilities for $capabilityPlanId',
+        e,
+        stackTrace,
+      );
       return Err(
         ServerFailure('Failed to load subscription capabilities for $capabilityPlanId'),
       );
