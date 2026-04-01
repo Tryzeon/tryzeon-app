@@ -22,7 +22,7 @@ sealed class ShopProduct with _$ShopProduct {
     final ProductFit? fit,
     final List<ClothingStyle>? styles,
     final List<ProductSize>? sizes,
-    final DateTime? createdAt,
-    final DateTime? updatedAt,
+    required final DateTime createdAt,
+    required final DateTime updatedAt,
   }) = _ShopProduct;
 }

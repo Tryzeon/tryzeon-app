@@ -18,9 +18,9 @@ class ProductDetailBody extends HookConsumerWidget {
   final VoidCallback onRetry;
 
   /// Skeleton data for loading state
-  static const _skeletonProduct = ShopProduct(
+  static final _skeletonProduct = ShopProduct(
     id: 'skeleton_product',
-    storeInfo: ShopStoreInfo(
+    storeInfo: const ShopStoreInfo(
       id: 'skeleton_store',
       name: 'Loading Store Name',
       address: 'Loading Store Address',
@@ -30,6 +30,8 @@ class ProductDetailBody extends HookConsumerWidget {
     price: 8888.0,
     imagePaths: ['skeleton_path'],
     imageUrls: [],
+    createdAt: DateTime(2000),
+    updatedAt: DateTime(2000),
     material: 'Loading Material Description',
   );
 
@@ -45,7 +47,7 @@ class ProductDetailBody extends HookConsumerWidget {
 
     // Priority 2: Show skeleton when loading without data
     if (productAsync.isLoading) {
-      return const Skeletonizer(
+      return Skeletonizer(
         enabled: true,
         child: _ProductDetailContent(product: _skeletonProduct),
       );

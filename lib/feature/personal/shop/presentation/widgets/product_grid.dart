@@ -23,42 +23,50 @@ class ProductGrid extends HookConsumerWidget {
   final VoidCallback onRetry;
 
   /// Skeleton data for loading state
-  static const _skeletonProducts = [
+  static final _skeletonProducts = [
     ShopProduct(
       id: 'skeleton_1',
-      storeInfo: ShopStoreInfo(id: 'skeleton_store', name: 'Loading Store'),
+      storeInfo: const ShopStoreInfo(id: 'skeleton_store', name: 'Loading Store'),
       name: 'Loading Product Name',
       categoryIds: ['Category'],
       price: 8888,
       imagePaths: ['skeleton_path'],
       imageUrls: [],
+      createdAt: DateTime(2000),
+      updatedAt: DateTime(2000),
     ),
     ShopProduct(
       id: 'skeleton_2',
-      storeInfo: ShopStoreInfo(id: 'skeleton_store', name: 'Loading Store'),
+      storeInfo: const ShopStoreInfo(id: 'skeleton_store', name: 'Loading Store'),
       name: 'Loading Product Name',
       categoryIds: ['Category'],
       price: 8888,
       imagePaths: ['skeleton_path'],
       imageUrls: [],
+      createdAt: DateTime(2000),
+      updatedAt: DateTime(2000),
     ),
     ShopProduct(
       id: 'skeleton_3',
-      storeInfo: ShopStoreInfo(id: 'skeleton_store', name: 'Loading Store'),
+      storeInfo: const ShopStoreInfo(id: 'skeleton_store', name: 'Loading Store'),
       name: 'Loading Product Name',
       categoryIds: ['Category'],
       price: 8888,
       imagePaths: ['skeleton_path'],
       imageUrls: [],
+      createdAt: DateTime(2000),
+      updatedAt: DateTime(2000),
     ),
     ShopProduct(
       id: 'skeleton_4',
-      storeInfo: ShopStoreInfo(id: 'skeleton_store', name: 'Loading Store'),
+      storeInfo: const ShopStoreInfo(id: 'skeleton_store', name: 'Loading Store'),
       name: 'Loading Product Name',
       categoryIds: ['Category'],
       price: 8888,
       imagePaths: ['skeleton_path'],
       imageUrls: [],
+      createdAt: DateTime(2000),
+      updatedAt: DateTime(2000),
     ),
   ];
 

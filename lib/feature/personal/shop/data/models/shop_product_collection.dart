@@ -21,8 +21,8 @@ class ShopProductCollection {
   String? fit;
   List<String>? styles;
 
-  DateTime? createdAt;
-  DateTime? updatedAt;
+  late DateTime createdAt;
+  late DateTime updatedAt;
 
   // 關聯的店鋪資訊 (必填，不可為 null)
   late ShopStoreInfoEmbedded storeInfo;

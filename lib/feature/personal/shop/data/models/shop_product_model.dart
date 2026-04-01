@@ -14,14 +14,14 @@ class ShopProductModel {
     required this.imagePaths,
     required this.imageUrls,
     required this.id,
+    required this.createdAt,
+    required this.updatedAt,
     this.purchaseLink,
     this.material,
     this.elasticity,
     this.fit,
     this.styles,
     this.sizes,
-    this.createdAt,
-    this.updatedAt,
   });
 
   factory ShopProductModel.fromJson(final Map<String, dynamic> json) =>
@@ -43,8 +43,8 @@ class ShopProductModel {
   final List<String>? styles;
   @JsonKey(name: 'product_variants', includeToJson: false)
   final List<ProductSizeModel>? sizes;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
   Map<String, dynamic> toJson() => _$ShopProductModelToJson(this);
 }
