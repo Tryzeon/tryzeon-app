@@ -8,10 +8,18 @@ class CacheEntryLocalDataSource {
 
   final IsarService _isarService;
 
-  Future<CacheEntryStatus?> getEntryStatus(final String cacheKey) async {
+  Future<CacheEntryStatus?> getEntryStatus(
+    final String cacheKey, {
+    final Duration? staleDuration,
+  }) async {
     final isar = await _isarService.db;
     final entry = await isar.cacheEntryCollections.getByCacheKey(cacheKey);
     if (entry == null) return null;
+
+    if (staleDuration != null) {
+      final age = DateTime.now().difference(entry.fetchedAt);
+      if (age > staleDuration) return null;
+    }
 
     return CacheEntryStatus.values.byName(entry.status);
   }

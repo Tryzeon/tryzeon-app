@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:isar_community/isar.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
@@ -25,7 +26,10 @@ class StoreProfileLocalDataSource {
 
   Future<CacheLookup<StoreProfileModel>> getStoreProfile() async {
     final isar = await _isarService.db;
-    final cacheStatus = await _cacheEntryLocalDataSource.getEntryStatus(cacheKey);
+    final cacheStatus = await _cacheEntryLocalDataSource.getEntryStatus(
+      cacheKey,
+      staleDuration: AppConstants.staleDurationStoreProfile,
+    );
     if (cacheStatus == null) return const CacheMiss();
 
     if (cacheStatus == CacheEntryStatus.empty) {

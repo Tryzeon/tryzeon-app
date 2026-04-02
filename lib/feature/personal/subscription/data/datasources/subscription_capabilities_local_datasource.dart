@@ -1,3 +1,4 @@
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
@@ -24,6 +25,7 @@ class SubscriptionCapabilitiesLocalDataSource {
   ) async {
     final cacheStatus = await _cacheEntryLocalDataSource.getEntryStatus(
       _planCacheKey(planId),
+      staleDuration: AppConstants.staleDurationSubscriptionPlan,
     );
     if (cacheStatus == null) return const CacheMiss();
     if (cacheStatus == CacheEntryStatus.empty) return const CacheEmpty();
