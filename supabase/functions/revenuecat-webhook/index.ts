@@ -5,6 +5,10 @@ import { getAdminClient } from "../_shared/supabase.ts";
 
 const WEBHOOK_SECRET = Deno.env.get("REVENUECAT_WEBHOOK_SECRET");
 
+if (!WEBHOOK_SECRET) {
+  throw new Error("REVENUECAT_WEBHOOK_SECRET is not configured");
+}
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 interface RevenueCatEvent {
@@ -61,17 +65,15 @@ function resolveEntitlementToPlanId(entitlementIds?: string[] | null): string {
 Deno.serve(async (req) => {
   try {
     // 1. Verify Authorization header
-    if (WEBHOOK_SECRET) {
-      const authHeader = req.headers.get("Authorization");
-      const expectedHeader = `Bearer ${WEBHOOK_SECRET}`;
+    const authHeader = req.headers.get("Authorization");
+    const expectedHeader = `Bearer ${WEBHOOK_SECRET}`;
 
-      if (!authHeader || authHeader !== expectedHeader) {
-        console.warn("Unauthorized webhook attempt");
-        return new Response(
-          JSON.stringify({ error: "Unauthorized" }),
-          { status: 401, headers: { "Content-Type": "application/json" } }
-        );
-      }
+    if (!authHeader || authHeader !== expectedHeader) {
+      console.warn("Unauthorized webhook attempt");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     // 2. Parse event payload
