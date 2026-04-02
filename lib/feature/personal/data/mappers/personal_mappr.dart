@@ -14,6 +14,8 @@ import '../../shop/data/models/shop_product_model.dart';
 import '../../shop/data/models/shop_store_info_model.dart';
 import '../../shop/domain/entities/shop_product.dart';
 import '../../shop/domain/entities/shop_store_info.dart';
+import '../../subscription/data/collections/subscription_plan_collection.dart';
+import '../../subscription/data/models/subscription_plan_model.dart';
 import '../../wardrobe/data/collections/wardrobe_item_collection.dart';
 import '../../wardrobe/data/models/wardrobe_item_model.dart';
 import '../../wardrobe/domain/entities/wardrobe_category.dart';
@@ -21,7 +23,7 @@ import '../../wardrobe/domain/entities/wardrobe_item.dart';
 import 'personal_mappr.auto_mappr.dart';
 
 /// AutoMappr configuration for Personal feature
-/// Handles UserProfile, WardrobeItem, Subscription, ShopProduct, ShopStoreInfo mappings
+/// Handles UserProfile, WardrobeItem, SubscriptionPlan, ShopProduct, ShopStoreInfo mappings
 /// Note: ProductSize mappings are defined here directly for ShopProduct.sizes dependency
 /// Note: Measurements mappings are included via MeasurementsMappr (for ProductSize.measurements)
 @AutoMappr(
@@ -77,6 +79,14 @@ import 'personal_mappr.auto_mappr.dart';
 
     // ProductSize mappings (needed for ShopProduct.sizes)
     MapType<ProductSizeModel, ProductSize>(),
+
+    // SubscriptionPlan mappings (Model ↔ Collection for local cache)
+    MapType<SubscriptionPlanModel, SubscriptionPlanCollection>(
+      fields: [Field('planId', from: 'id')],
+    ),
+    MapType<SubscriptionPlanCollection, SubscriptionPlanModel>(
+      fields: [Field('id', from: 'planId')],
+    ),
   ],
   includes: [
     MeasurementsMappr(), // ProductSize.measurements depends on Measurements mapping

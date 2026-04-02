@@ -1,6 +1,8 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/modules/revenue_cat/di/revenue_cat_providers.dart';
+import 'package:tryzeon/feature/personal/subscription/data/datasources/subscription_capabilities_local_datasource.dart';
 import 'package:tryzeon/feature/personal/subscription/data/datasources/subscription_capabilities_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/subscription/data/repositories/subscription_capabilities_repository_impl.dart';
 import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription_capabilities.dart';
@@ -18,12 +20,23 @@ SubscriptionCapabilitiesRemoteDataSource subscriptionCapabilitiesRemoteDataSourc
 }
 
 @riverpod
+SubscriptionCapabilitiesLocalDataSource subscriptionCapabilitiesLocalDataSource(
+  final Ref ref,
+) {
+  return SubscriptionCapabilitiesLocalDataSource(
+    ref.watch(isarServiceProvider),
+    ref.watch(cacheEntryLocalDataSourceProvider),
+  );
+}
+
+@riverpod
 SubscriptionCapabilitiesRepository subscriptionCapabilitiesRepository(final Ref ref) {
   return SubscriptionCapabilitiesRepositoryImpl(
     getAppSubscriptionEntitlementUseCase: ref.watch(
       getAppSubscriptionEntitlementUseCaseProvider,
     ),
     remoteDataSource: ref.watch(subscriptionCapabilitiesRemoteDataSourceProvider),
+    localDataSource: ref.watch(subscriptionCapabilitiesLocalDataSourceProvider),
   );
 }
 

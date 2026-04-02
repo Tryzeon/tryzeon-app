@@ -1,8 +1,10 @@
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/get_app_subscription_entitlement.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/personal/subscription/data/datasources/subscription_capabilities_local_datasource.dart';
 import 'package:tryzeon/feature/personal/subscription/data/datasources/subscription_capabilities_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/subscription/data/models/subscription_plan_model.dart';
 import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription_capabilities.dart';
@@ -14,11 +16,14 @@ class SubscriptionCapabilitiesRepositoryImpl
   SubscriptionCapabilitiesRepositoryImpl({
     required final GetAppSubscriptionEntitlement getAppSubscriptionEntitlementUseCase,
     required final SubscriptionCapabilitiesRemoteDataSource remoteDataSource,
+    required final SubscriptionCapabilitiesLocalDataSource localDataSource,
   }) : _getAppSubscriptionEntitlementUseCase = getAppSubscriptionEntitlementUseCase,
-       _remoteDataSource = remoteDataSource;
+       _remoteDataSource = remoteDataSource,
+       _localDataSource = localDataSource;
 
   final GetAppSubscriptionEntitlement _getAppSubscriptionEntitlementUseCase;
   final SubscriptionCapabilitiesRemoteDataSource _remoteDataSource;
+  final SubscriptionCapabilitiesLocalDataSource _localDataSource;
 
   @override
   Future<Result<SubscriptionCapabilities, Failure>>
@@ -32,7 +37,38 @@ class SubscriptionCapabilitiesRepositoryImpl
     final capabilityPlanId = _resolveCapabilityPlanId(entitlement);
 
     try {
+      // 1. Try local cache
+      try {
+        final cached = await _localDataSource.getPlanCapabilities(capabilityPlanId);
+        switch (cached) {
+          case CacheHit<SubscriptionPlanModel>(:final data):
+            return Ok(_toCapabilities(entitlement, data));
+          case CacheEmpty<SubscriptionPlanModel>():
+          case CacheMiss<SubscriptionPlanModel>():
+            break;
+        }
+      } catch (e, stackTrace) {
+        AppLogger.warning(
+          'Local subscription plan cache read failed, falling back to remote',
+          e,
+          stackTrace,
+        );
+      }
+
+      // 2. Fetch from remote
       final planInfo = await _remoteDataSource.getPlanCapabilities(capabilityPlanId);
+
+      // 3. Persist to local cache
+      try {
+        await _localDataSource.savePlanCapabilities(planInfo);
+      } catch (e, stackTrace) {
+        AppLogger.warning(
+          'Failed to save subscription plan capabilities to cache',
+          e,
+          stackTrace,
+        );
+      }
+
       return Ok(_toCapabilities(entitlement, planInfo));
     } catch (e, stackTrace) {
       AppLogger.error(
