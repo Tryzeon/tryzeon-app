@@ -88,7 +88,8 @@ Map<String, ProductAnalyticsSummary> productAnalyticsMap(final Ref ref) {
 /// Force refresh analytics data
 Future<void> refreshAnalytics(final WidgetRef ref) async {
   try {
-    final _ = await ref.refresh(productAnalyticsSummariesProvider.future);
+    ref.invalidate(productAnalyticsSummariesProvider);
+    await ref.read(productAnalyticsSummariesProvider.future);
   } catch (_) {
     // Let UI show ErrorView or stale data
   }

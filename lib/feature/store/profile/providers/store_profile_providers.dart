@@ -67,7 +67,8 @@ Future<void> refreshStoreProfile(final WidgetRef ref) async {
   final getStoreProfileUseCase = ref.read(getStoreProfileUseCaseProvider);
   await getStoreProfileUseCase(forceRefresh: true);
   try {
-    await Future.wait([ref.refresh(storeProfileProvider.future)]);
+    ref.invalidate(storeProfileProvider);
+    await ref.read(storeProfileProvider.future);
   } catch (_) {
     // Provider 刷新失敗時（例如網絡錯誤），忽略異常
     // Provider 會自動進入 error 狀態，UI 會顯示 ErrorView 或舊資料

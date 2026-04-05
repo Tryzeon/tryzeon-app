@@ -109,7 +109,8 @@ Future<void> refreshProducts(final WidgetRef ref) async {
 
   await getProductsUseCase(sort: sort, forceRefresh: true);
   try {
-    final _ = await ref.refresh(productsProvider.future);
+    ref.invalidate(productsProvider);
+    await ref.read(productsProvider.future);
   } catch (_) {
     // Provider 刷新失敗時，忽略異常，讓 UI 顯示 ErrorView 或舊資料
   }
