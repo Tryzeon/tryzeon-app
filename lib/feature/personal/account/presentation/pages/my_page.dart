@@ -5,6 +5,7 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_overlay.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
+import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/settings/presentation/providers/personal_settings_controller.dart';
 
@@ -91,13 +92,6 @@ class MyPage extends HookConsumerWidget {
                     _MyActionGroup(
                       children: [
                         _MyActionTile(
-                          icon: Icons.person_outline_rounded,
-                          title: '編輯個人資料',
-                          subtitle: '更新頭像、名稱與個人資訊',
-                          onTap: () => context.push(AppRoutes.personalSettingsProfile),
-                          color: colorScheme.primary,
-                        ),
-                        _MyActionTile(
                           icon: Icons.workspace_premium_outlined,
                           title: '訂閱方案',
                           subtitle: '查看目前方案與升級選項',
@@ -127,106 +121,117 @@ class _MyProfileHeader extends HookConsumerWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: colorScheme.surface,
-              border: Border.all(color: colorScheme.surface, width: 3),
+    return InkWell(
+      onTap: () => context.push(AppRoutes.personalSettingsProfile),
+      borderRadius: BorderRadius.circular(24),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
-            child: ClipOval(
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: colorScheme.surface,
+                border: Border.all(color: colorScheme.surface, width: 3),
+              ),
+              child: ClipOval(
+                child: profileAsync.when(
+                  data: (final profile) {
+                    if (profile == null) {
+                      return Icon(Icons.person, size: 36, color: colorScheme.primary);
+                    }
+                    return avatarFileAsync.when(
+                      data: (final file) {
+                        if (file != null) {
+                          return Image.file(
+                            file,
+                            fit: BoxFit.cover,
+                            width: 72,
+                            height: 72,
+                          );
+                        }
+                        return _ProfileAvatarPlaceholder(name: profile.name);
+                      },
+                      loading: () => const Center(child: CircularProgressIndicator()),
+                      error: (final _, final _) =>
+                          _ProfileAvatarPlaceholder(name: profile.name),
+                    );
+                  },
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (final _, final _) =>
+                      Icon(Icons.person, size: 36, color: colorScheme.primary),
+                ),
+              ),
+            ),
+            const SizedBox(width: 18),
+            Expanded(
               child: profileAsync.when(
                 data: (final profile) {
                   if (profile == null) {
-                    return Icon(Icons.person, size: 36, color: colorScheme.primary);
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('尚未建立個人資料', style: theme.textTheme.titleMedium),
+                        const SizedBox(height: 4),
+                        Text('前往編輯個人資料完成設定', style: theme.textTheme.bodyMedium),
+                      ],
+                    );
                   }
-                  return avatarFileAsync.when(
-                    data: (final file) {
-                      if (file != null) {
-                        return Image.file(file, fit: BoxFit.cover, width: 72, height: 72);
-                      }
-                      return _ProfileAvatarPlaceholder(name: profile.name);
-                    },
-                    loading: () => const Center(child: CircularProgressIndicator()),
-                    error: (final _, final _) =>
-                        _ProfileAvatarPlaceholder(name: profile.name),
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (final _, final _) =>
-                    Icon(Icons.person, size: 36, color: colorScheme.primary),
-              ),
-            ),
-          ),
-          const SizedBox(width: 18),
-          Expanded(
-            child: profileAsync.when(
-              data: (final profile) {
-                if (profile == null) {
+
+                  final user = ref.watch(currentUserProvider);
+                  final email = user?.email ?? user?.userMetadata?['email'] as String?;
+
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('尚未建立個人資料', style: theme.textTheme.titleMedium),
-                      const SizedBox(height: 4),
-                      Text('前往編輯個人資料完成設定', style: theme.textTheme.bodyMedium),
+                      Text(profile.name, style: theme.textTheme.titleLarge),
+                      if (email != null && email.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          email,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ],
                   );
-                }
-
-                return Column(
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (final _, final _) => Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(profile.name, style: theme.textTheme.titleLarge),
-                    if (profile.email?.isNotEmpty ?? false) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        profile.email!,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                    const SizedBox(height: 8),
-                    Text(
-                      '管理你的個人資料、訂閱與帳號設定',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
+                    Text('載入個人資料失敗', style: theme.textTheme.titleMedium),
+                    const SizedBox(height: 4),
+                    Text('請稍後再試', style: theme.textTheme.bodyMedium),
                   ],
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (final _, final _) => Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('載入個人資料失敗', style: theme.textTheme.titleMedium),
-                  const SizedBox(height: 4),
-                  Text('請稍後再試', style: theme.textTheme.bodyMedium),
-                ],
+                ),
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 8),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: colorScheme.outlineVariant,
+              size: 16,
+            ),
+          ],
+        ),
       ),
     );
   }

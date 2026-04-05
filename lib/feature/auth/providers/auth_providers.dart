@@ -33,6 +33,12 @@ bool isAuthenticated(final Ref ref) {
   return Supabase.instance.client.auth.currentSession != null;
 }
 
+@riverpod
+User? currentUser(final Ref ref) {
+  ref.watch(authStateProvider);
+  return Supabase.instance.client.auth.currentUser;
+}
+
 // Data Source Providers
 @riverpod
 AuthRemoteDataSource authRemoteDataSource(final Ref ref) {
