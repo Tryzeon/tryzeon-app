@@ -88,10 +88,7 @@ class HomePage extends HookConsumerWidget {
       if (!context.mounted) return;
 
       if (result.isSuccess) {
-        await Future.wait([
-          ref.refresh(userProfileProvider.future),
-          ref.refresh(avatarFileProvider.future),
-        ]);
+        ref.invalidate(userProfileProvider);
       } else {
         TopNotification.show(
           context,
