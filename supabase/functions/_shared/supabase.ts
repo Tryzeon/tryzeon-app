@@ -3,10 +3,6 @@ import { createClient, SupabaseClient, User } from "jsr:@supabase/supabase-js@2"
 export const CONFIG = {
     SUPABASE_URL: Deno.env.get("SUPABASE_URL")!,
     SUPABASE_SERVICE_ROLE_KEY: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    GEMINI_API_KEY: Deno.env.get("GEMINI_API_KEY")!,
-    GEMINI_CHAT_MODEL: Deno.env.get("GEMINI_CHAT_MODEL"),
-    TRYON_MODEL: Deno.env.get("TRYON_MODEL"),
-    VIDEO_MODEL: Deno.env.get("VIDEO_MODEL"),
 }
 
 /**
