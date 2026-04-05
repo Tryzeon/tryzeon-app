@@ -1,3 +1,4 @@
+// default model: veo-3.1-fast-generate-preview
 import { CONFIG } from "../_shared/supabase.ts";
 
 const DEFAULT_VIDEO_PROMPT =
