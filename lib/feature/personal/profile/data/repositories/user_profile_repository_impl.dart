@@ -35,8 +35,8 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
             case CacheHit<UserProfileModel>(:final data):
               final profile = _mappr.convert<UserProfileModel, UserProfile>(data);
               return Ok(profile);
+            case CacheEmpty<UserProfileModel>():
             case CacheMiss<UserProfileModel>():
-            case _:
               break;
           }
         } catch (e, stackTrace) {

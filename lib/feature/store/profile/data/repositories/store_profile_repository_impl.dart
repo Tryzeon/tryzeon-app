@@ -36,7 +36,6 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
               final profile = _mappr.convert<StoreProfileModel, StoreProfile>(data);
               return Ok(profile);
             case CacheEmpty<StoreProfileModel>():
-              return const Ok(null);
             case CacheMiss<StoreProfileModel>():
               break;
           }
