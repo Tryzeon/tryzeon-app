@@ -8,8 +8,8 @@ sealed class TryOnParams with _$TryOnParams {
   const factory TryOnParams({
     final String? avatarBase64,
     final String? avatarPath,
-    final String? clothesBase64,
-    final String? clothesPath,
+    final List<String>? clothesBase64s,
+    final List<String>? clothesPaths,
     required final TryOnMode mode,
     final String? scenePrompt,
     final String? transitionPrompt,

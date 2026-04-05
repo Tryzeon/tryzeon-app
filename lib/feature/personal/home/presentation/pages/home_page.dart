@@ -31,7 +31,7 @@ import 'package:tryzeon/feature/personal/subscription/presentation/providers/sub
 import 'package:typed_result/typed_result.dart';
 
 class HomePageController {
-  Future<void> Function(String clothesPath, {TryOnMode mode})? tryOnFromStorage;
+  Future<void> Function(List<String> clothesPaths, {TryOnMode mode})? tryOnFromStorage;
 
   void dispose() {
     tryOnFromStorage = null;
@@ -101,8 +101,8 @@ class HomePage extends HookConsumerWidget {
     }
 
     Future<void> performTryOn({
-      final String? clothesBase64,
-      final String? clothesPath,
+      final List<String>? clothesBase64s,
+      final List<String>? clothesPaths,
       final TryOnMode mode = TryOnMode.photo,
     }) async {
       // 0. Check if avatar is uploaded
@@ -150,8 +150,8 @@ class HomePage extends HookConsumerWidget {
         TryOnParams(
           avatarBase64: customAvatarBase64,
           avatarPath: defaultAvatarPath,
-          clothesBase64: clothesBase64,
-          clothesPath: clothesPath,
+          clothesBase64s: clothesBase64s,
+          clothesPaths: clothesPaths,
           mode: mode,
           scenePrompt: scenePrompt,
           transitionPrompt: transitionPrompt,
@@ -203,14 +203,14 @@ class HomePage extends HookConsumerWidget {
 
       final clothesBytes = await clothesImage.readAsBytes();
       final clothesBase64 = base64Encode(clothesBytes);
-      performTryOn(clothesBase64: clothesBase64, mode: TryOnMode.photo);
+      performTryOn(clothesBase64s: [clothesBase64], mode: TryOnMode.photo);
     }
 
     Future<void> tryOnFromStorage(
-      final String clothesPath, {
+      final List<String> clothesPaths, {
       final TryOnMode mode = TryOnMode.photo,
     }) async {
-      performTryOn(clothesPath: clothesPath, mode: mode);
+      performTryOn(clothesPaths: clothesPaths, mode: mode);
     }
 
     Future<void> downloadVideo(final TryonResult result) async {

@@ -12,7 +12,7 @@ class PersonalEntryScope extends InheritedWidget {
     required super.child,
   });
 
-  final Future<void> Function(String clothesPath, {TryOnMode mode}) tryOnFromStorage;
+  final Future<void> Function(List<String> clothesPaths, {TryOnMode mode}) tryOnFromStorage;
   final HomePageController homePageController;
 
   static PersonalEntryScope? of(final BuildContext context) {

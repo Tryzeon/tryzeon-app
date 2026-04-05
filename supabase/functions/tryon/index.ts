@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
-    const { avatarBase64, avatarPath, clothesBase64, clothesPath, mode = "photo", scenePrompt, transitionPrompt } = body;
+    const { avatarBase64, avatarPath, clothesBase64s, clothesPaths, mode = "photo", scenePrompt, transitionPrompt } = body;
 
     if (!avatarPath && !avatarBase64) {
       return new Response(
@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
         { status: 400, headers: { "Content-Type": "application/json" } },
       );
     }
-    if (!clothesPath && !clothesBase64) {
+    if ((!clothesBase64s || clothesBase64s.length === 0) && (!clothesPaths || clothesPaths.length === 0)) {
       return new Response(
         JSON.stringify({ error: "Missing required fields", code: "VALIDATION_ERROR" }),
         { status: 400, headers: { "Content-Type": "application/json" } },
@@ -63,9 +63,17 @@ Deno.serve(async (req) => {
     };
 
     const avatarImage = avatarBase64 ? avatarBase64 : await fetchImageBase64(avatarPath!);
-    const clothesImage = clothesBase64 ? clothesBase64 : await fetchImageBase64(clothesPath!);
+    let clothesImages: string[] = [];
 
-    const tryonImageBase64 = await generateTryonImage(avatarImage, clothesImage, scenePrompt);
+    if (clothesBase64s && clothesBase64s.length > 0) {
+      clothesImages = clothesBase64s.slice(0, 3);
+    } else if (clothesPaths && clothesPaths.length > 0) {
+      // Limit to 3 images to avoid confusing the AI and save tokens
+      const pathsToFetch = clothesPaths.slice(0, 3);
+      clothesImages = await Promise.all(pathsToFetch.map((p: string) => fetchImageBase64(p)));
+    }
+
+    const tryonImageBase64 = await generateTryonImage(avatarImage, clothesImages, scenePrompt);
 
     if (!tryonImageBase64) {
       return new Response(

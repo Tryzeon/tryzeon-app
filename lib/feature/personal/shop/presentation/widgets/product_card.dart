@@ -86,7 +86,7 @@ class ProductCard extends HookConsumerWidget {
 
       final personalEntry = PersonalEntryScope.of(context);
       await personalEntry?.tryOnFromStorage(
-        product.imagePaths.isNotEmpty ? product.imagePaths.first : '',
+        product.imagePaths,
         mode: mode,
       );
     }

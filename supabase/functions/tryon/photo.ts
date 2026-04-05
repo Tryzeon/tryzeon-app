@@ -10,14 +10,14 @@ CORE TASK: Remove the original clothing completely and replace it with the new g
 
 You must NEVER alter the person's face, body, hair, or pose. You must NEVER invent garment details that aren't in the reference image. You must NEVER leave remnants of the original clothing visible.`;
 
-function buildTaskPrompt(scenePrompt?: string): string {
+function buildTaskPrompt(clothesCount: number, scenePrompt?: string): string {
   let prompt =
-    `You will receive two images after this message:
+    `You will receive ${clothesCount + 1} images after this message:
 1) FIRST image: the PERSON photo — this is the target person. Keep them exactly as-is.
-2) SECOND image: the GARMENT photo — this is the clothing to transfer. Copy its design exactly.
+2) ALL SUBSEQUENT IMAGES: multiple REFERENCE photos of the EXACT SAME GARMENT from different angles. Use them ALL together to understand the garment's 3D structure, front/back designs, and patterns. Copy its design exactly.
 
 GOAL
-Create a photorealistic photo of the person from the first image wearing the garment from the second image.
+Create a photorealistic photo of the person from the first image wearing the garment from the reference images.
 
 HARD INVARIANTS — DO NOT CHANGE THESE
 - Person's face, expression, hair (color, length, style), skin tone, age, and body shape must be identical to the first image.
@@ -25,7 +25,7 @@ HARD INVARIANTS — DO NOT CHANGE THESE
 - Do not add, remove, or alter tattoos, jewelry, accessories, hands, or fingers.
 - Do not change the background from the first image${scenePrompt ? " (unless overridden by SCENE CONTEXT below)" : ""}.
 
-GARMENT TRANSFER — MUST MATCH THE SECOND IMAGE EXACTLY
+GARMENT TRANSFER — MUST MATCH THE REFERENCE IMAGES EXACTLY
 - Copy the garment precisely: silhouette, neckline shape, sleeve length, hem length, seams, stitching, closures (buttons/zippers), pockets, and any logos or text.
 - Preserve print/pattern scale, placement, and color exactly — do not simplify or genericize.
 - Maintain material properties: sheen, thickness, texture, translucency.
@@ -46,8 +46,8 @@ EXAMPLE SCENARIOS
 - The key is: treat uncovered areas as if the person is wearing ONLY the new garment, nothing else.
 
 SOURCE IMAGE ISOLATION
-- Treat the second image as a product reference ONLY.
-- Ignore any model, mannequin, body, background, props, or lighting visible in the garment photo.
+- Treat the garment reference images as product references ONLY.
+- Ignore any model, mannequin, body, background, props, or lighting visible in the garment photos.
 - Extract and transfer ONLY the garment itself.
 
 LIGHTING & REALISM
@@ -88,7 +88,7 @@ function detectMimeType(base64Data: string): string {
  */
 export async function generateTryonImage(
   avatarImage: string,
-  clothesImage: string,
+  clothesImages: string[],
   scenePrompt?: string,
 ): Promise<string | null> {
   const genAI = new GoogleGenerativeAI(CONFIG.GEMINI_API_KEY);
@@ -103,8 +103,9 @@ export async function generateTryonImage(
     },
   });
 
-  const taskPrompt = buildTaskPrompt(scenePrompt);
-  const result = await model.generateContent([
+  const taskPrompt = buildTaskPrompt(clothesImages.length, scenePrompt);
+  
+  const parts: any[] = [
     { text: taskPrompt },
     {
       inlineData: {
@@ -112,13 +113,18 @@ export async function generateTryonImage(
         mimeType: detectMimeType(avatarImage),
       },
     },
-    {
+  ];
+
+  for (const img of clothesImages) {
+    parts.push({
       inlineData: {
-        data: clothesImage,
-        mimeType: detectMimeType(clothesImage),
+        data: img,
+        mimeType: detectMimeType(img),
       },
-    },
-  ]);
+    });
+  }
+
+  const result = await model.generateContent(parts);
 
   const candidates = result.response.candidates ?? [];
 

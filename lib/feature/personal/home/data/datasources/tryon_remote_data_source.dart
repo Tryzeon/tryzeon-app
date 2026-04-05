@@ -10,8 +10,14 @@ class TryonRemoteDataSource {
     final Map<String, dynamic> body = {};
     body['avatarBase64'] = params.avatarBase64;
     body['avatarPath'] = params.avatarPath;
-    body['clothesBase64'] = params.clothesBase64;
-    body['clothesPath'] = params.clothesPath;
+
+    if (params.clothesBase64s != null && params.clothesBase64s!.isNotEmpty) {
+      body['clothesBase64s'] = params.clothesBase64s;
+    }
+
+    if (params.clothesPaths != null && params.clothesPaths!.isNotEmpty) {
+      body['clothesPaths'] = params.clothesPaths;
+    }
 
     body[AppConstants.paramMode] = params.mode.name;
 
