@@ -86,7 +86,7 @@ class StoreProfileSettingsPage extends HookConsumerWidget {
                   ),
                   error: (final error, final stack) => ErrorView(
                     message: error.displayMessage(context),
-                    onRetry: () => ref.refresh(storeProfileProvider),
+                    onRetry: () => refreshStoreProfile(ref),
                   ),
                 ),
               ),

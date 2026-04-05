@@ -79,7 +79,8 @@ Future<void> refreshWardrobeItems(final WidgetRef ref) async {
   final getWardrobeItemsUseCase = ref.read(getWardrobeItemsUseCaseProvider);
   await getWardrobeItemsUseCase(forceRefresh: true);
   try {
-    final _ = await ref.refresh(wardrobeItemsProvider.future);
+    ref.invalidate(wardrobeItemsProvider);
+    await ref.read(wardrobeItemsProvider.future);
   } catch (_) {
     // Provider 刷新失敗時，忽略異常，讓 UI 顯示 ErrorView 或舊資料
   }

@@ -360,7 +360,7 @@ class HomePage extends HookConsumerWidget {
                   error: (final error, final stack) => Center(
                     child: ErrorView(
                       message: error.displayMessage(context),
-                      onRetry: () => ref.refresh(userProfileProvider),
+                      onRetry: () => refreshUserProfile(ref),
                     ),
                   ),
                   data: (final avatarFile) => TryOnGallery(

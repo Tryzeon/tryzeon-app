@@ -75,7 +75,7 @@ class AddProductPage extends HookConsumerWidget {
         isLoading: isLoading.value,
         onSubmit: addProduct,
         productCategoryTreeAsync: productCategoryTreeAsync,
-        onRetryCategories: () => ref.refresh(productCategoriesProvider),
+        onRetryCategories: () => refreshProductCategories(ref),
         onPickImage: (final remainingCount) async {
           return ImagePickerHelper.pickImages(context, maxImages: remainingCount);
         },

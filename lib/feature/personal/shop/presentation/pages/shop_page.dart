@@ -312,7 +312,7 @@ class ShopPage extends HookConsumerWidget {
                               ProductGrid(
                                 productsAsync: productsAsync,
                                 userProfile: userProfile,
-                                onRetry: () => ref.refresh(shopProductsProvider(filter)),
+                                onRetry: () => refreshShopProducts(ref, filter),
                               ),
 
                               const SizedBox(height: 120), // 預留底部空白，避免被導覽列遮擋或增加滾動空間
