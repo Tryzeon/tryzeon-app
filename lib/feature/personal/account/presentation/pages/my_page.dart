@@ -116,10 +116,93 @@ class _MyProfileHeader extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final profileAsync = ref.watch(userProfileProvider);
-    final avatarFileAsync = ref.watch(avatarFileProvider);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    // 取得資料狀態
+    final profileAsync = ref.watch(userProfileProvider);
+    final avatarFileAsync = ref.watch(avatarFileProvider);
+    final user = ref.watch(currentUserProvider);
+
+    // 解析資料內容
+    final profile = profileAsync.value;
+    final avatarFile = avatarFileAsync.value;
+    final email = user?.email ?? user?.userMetadata?['email'] as String?;
+
+    // 網路狀態判定
+    final isProfileLoading = profileAsync.isLoading && !profileAsync.hasValue;
+    final isAvatarLoading = avatarFileAsync.isLoading && !avatarFileAsync.hasValue;
+    final hasProfileError = profileAsync.hasError;
+
+    // UI Helper: 頭像區域
+    Widget buildAvatar() {
+      if (isProfileLoading) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      if (hasProfileError || profile == null) {
+        return Icon(Icons.person, size: 36, color: colorScheme.primary);
+      }
+      if (isAvatarLoading) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      if (avatarFile != null) {
+        return Image.file(
+          avatarFile,
+          fit: BoxFit.cover,
+          width: 72,
+          height: 72,
+        );
+      }
+      return Container(
+        color: colorScheme.surfaceContainerHighest,
+        child: Icon(Icons.person, size: 36, color: colorScheme.onSurfaceVariant),
+      );
+    }
+
+    // UI Helper: 基本資訊區域
+    Widget buildInfo() {
+      if (isProfileLoading) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      if (hasProfileError) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('載入個人資料失敗', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 4),
+            Text('請稍後再試', style: theme.textTheme.bodyMedium),
+          ],
+        );
+      }
+      if (profile == null) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('尚未建立個人資料', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 4),
+            Text('前往編輯個人資料完成設定', style: theme.textTheme.bodyMedium),
+          ],
+        );
+      }
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(profile.name, style: theme.textTheme.titleLarge),
+          if (email != null && email.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              email,
+              style: theme.textTheme.bodyMedium,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ],
+      );
+    }
 
     return InkWell(
       onTap: () => context.push(AppRoutes.personalSettingsProfile),
@@ -148,82 +231,10 @@ class _MyProfileHeader extends HookConsumerWidget {
                 color: colorScheme.surface,
                 border: Border.all(color: colorScheme.surface, width: 3),
               ),
-              child: ClipOval(
-                child: profileAsync.when(
-                  data: (final profile) {
-                    if (profile == null) {
-                      return Icon(Icons.person, size: 36, color: colorScheme.primary);
-                    }
-                    return avatarFileAsync.when(
-                      data: (final file) {
-                        if (file != null) {
-                          return Image.file(
-                            file,
-                            fit: BoxFit.cover,
-                            width: 72,
-                            height: 72,
-                          );
-                        }
-                        return _ProfileAvatarPlaceholder(name: profile.name);
-                      },
-                      loading: () => const Center(child: CircularProgressIndicator()),
-                      error: (final _, final _) =>
-                          _ProfileAvatarPlaceholder(name: profile.name),
-                    );
-                  },
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (final _, final _) =>
-                      Icon(Icons.person, size: 36, color: colorScheme.primary),
-                ),
-              ),
+              child: ClipOval(child: buildAvatar()),
             ),
             const SizedBox(width: 18),
-            Expanded(
-              child: profileAsync.when(
-                data: (final profile) {
-                  if (profile == null) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('尚未建立個人資料', style: theme.textTheme.titleMedium),
-                        const SizedBox(height: 4),
-                        Text('前往編輯個人資料完成設定', style: theme.textTheme.bodyMedium),
-                      ],
-                    );
-                  }
-
-                  final user = ref.watch(currentUserProvider);
-                  final email = user?.email ?? user?.userMetadata?['email'] as String?;
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(profile.name, style: theme.textTheme.titleLarge),
-                      if (email != null && email.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          email,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ],
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (final _, final _) => Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('載入個人資料失敗', style: theme.textTheme.titleMedium),
-                    const SizedBox(height: 4),
-                    Text('請稍後再試', style: theme.textTheme.bodyMedium),
-                  ],
-                ),
-              ),
-            ),
+            Expanded(child: buildInfo()),
             const SizedBox(width: 8),
             Icon(
               Icons.arrow_forward_ios_rounded,
@@ -237,29 +248,7 @@ class _MyProfileHeader extends HookConsumerWidget {
   }
 }
 
-class _ProfileAvatarPlaceholder extends StatelessWidget {
-  const _ProfileAvatarPlaceholder({required this.name});
 
-  final String name;
-
-  @override
-  Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      color: colorScheme.primary.withValues(alpha: 0.1),
-      alignment: Alignment.center,
-      child: Text(
-        name.isNotEmpty ? name[0].toUpperCase() : '?',
-        style: TextStyle(
-          color: colorScheme.primary,
-          fontSize: 28,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-}
 
 class _MySectionHeader extends StatelessWidget {
   const _MySectionHeader({required this.title});
