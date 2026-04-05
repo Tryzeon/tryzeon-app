@@ -38,7 +38,7 @@ async function startVideoGeneration(
   };
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${CONFIG.GEMINI_VIDEO_MODEL}:predictLongRunning`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${CONFIG.VIDEO_MODEL}:predictLongRunning`,
     {
       method: "POST",
       headers: {
