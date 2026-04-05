@@ -148,8 +148,6 @@ Future<ShopStoreInfo> storeInfo(final Ref ref, final String storeId) async {
   return result.get()!;
 }
 
-
-
 /// 強制刷新商品列表
 Future<void> refreshShopProducts(final WidgetRef ref, final ShopFilter filter) async {
   try {

@@ -146,12 +146,7 @@ class _MyProfileHeader extends HookConsumerWidget {
         return const Center(child: CircularProgressIndicator());
       }
       if (avatarFile != null) {
-        return Image.file(
-          avatarFile,
-          fit: BoxFit.cover,
-          width: 72,
-          height: 72,
-        );
+        return Image.file(avatarFile, fit: BoxFit.cover, width: 72, height: 72);
       }
       return Container(
         color: colorScheme.surfaceContainerHighest,
@@ -247,8 +242,6 @@ class _MyProfileHeader extends HookConsumerWidget {
     );
   }
 }
-
-
 
 class _MySectionHeader extends StatelessWidget {
   const _MySectionHeader({required this.title});

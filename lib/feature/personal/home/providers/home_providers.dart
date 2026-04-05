@@ -4,7 +4,6 @@ import 'package:tryzeon/feature/personal/home/data/datasources/tryon_remote_data
 import 'package:tryzeon/feature/personal/home/data/repositories/tryon_repository_impl.dart';
 import 'package:tryzeon/feature/personal/home/domain/repositories/tryon_repository.dart';
 import 'package:tryzeon/feature/personal/home/domain/usecases/tryon_usecase.dart';
-import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 
 part 'home_providers.g.dart';
 
@@ -25,10 +24,6 @@ TryOnRepository tryOnRepository(final Ref ref) {
 // Use Case Providers
 @riverpod
 TryonUseCase tryonUseCase(final Ref ref) {
-  final userProfileRepository = ref.watch(userProfileRepositoryProvider);
   final tryOnRepository = ref.watch(tryOnRepositoryProvider);
-  return TryonUseCase(
-    userProfileRepository: userProfileRepository,
-    tryOnRepository: tryOnRepository,
-  );
+  return TryonUseCase(tryOnRepository: tryOnRepository);
 }

@@ -2,6 +2,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/store/products/data/datasources/product_local_datasource.dart';
 import 'package:tryzeon/feature/store/products/data/datasources/product_remote_datasource.dart';
 import 'package:tryzeon/feature/store/products/data/repositories/product_repository_impl.dart';
@@ -12,6 +13,7 @@ import 'package:tryzeon/feature/store/products/domain/usecases/delete_product.da
 import 'package:tryzeon/feature/store/products/domain/usecases/get_products.dart';
 import 'package:tryzeon/feature/store/products/domain/usecases/update_product.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/product_sort_condition.dart';
+import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -40,10 +42,7 @@ ProductRepository productRepository(final Ref ref) {
 
 @riverpod
 GetProducts getProductsUseCase(final Ref ref) {
-  return GetProducts(
-    storeProfileRepository: ref.watch(storeProfileRepositoryProvider),
-    productRepository: ref.watch(productRepositoryProvider),
-  );
+  return GetProducts(productRepository: ref.watch(productRepositoryProvider));
 }
 
 @riverpod
@@ -78,10 +77,15 @@ class ProductSortCondition extends _$ProductSortCondition {
 
 @riverpod
 Future<List<Product>> products(final Ref ref) async {
+  final profile = await ref.watch(storeProfileProvider.future);
+  if (profile == null || profile.id.isEmpty) {
+    throw const UnknownFailure('Store profile not found');
+  }
+
   final sort = ref.watch(productSortConditionProvider);
   final getProductsUseCase = ref.watch(getProductsUseCaseProvider);
 
-  final result = await getProductsUseCase(sort: sort);
+  final result = await getProductsUseCase(storeId: profile.id, sort: sort);
 
   if (result.isFailure) {
     throw result.getError()!;
@@ -104,11 +108,23 @@ Future<Product> productById(final Ref ref, final String productId) async {
 /// 強制刷新商品列表
 /// 注意：此函數會吞掉 refresh 時的異常，確保 ErrorView 的 onRetry 能正常運作
 Future<void> refreshProducts(final WidgetRef ref) async {
+  StoreProfile? profile;
+  try {
+    if (ref.read(storeProfileProvider).hasError) {
+      ref.invalidate(storeProfileProvider);
+    }
+    profile = await ref.read(storeProfileProvider.future);
+  } catch (_) {
+    return;
+  }
+
+  if (profile == null) return;
+
   final sort = ref.read(productSortConditionProvider);
   final getProductsUseCase = ref.read(getProductsUseCaseProvider);
 
-  await getProductsUseCase(sort: sort, forceRefresh: true);
   try {
+    await getProductsUseCase(storeId: profile.id, sort: sort, forceRefresh: true);
     ref.invalidate(productsProvider);
     await ref.read(productsProvider.future);
   } catch (_) {

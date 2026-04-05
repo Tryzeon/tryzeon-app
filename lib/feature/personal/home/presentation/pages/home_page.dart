@@ -143,9 +143,13 @@ class HomePage extends HookConsumerWidget {
       }
 
       final tryonUseCase = ref.read(tryonUseCaseProvider);
+      final profile = await ref.read(userProfileProvider.future);
+      final String? defaultAvatarPath = profile?.avatarPath;
+
       final result = await tryonUseCase(
         TryOnParams(
           avatarBase64: customAvatarBase64,
+          avatarPath: defaultAvatarPath,
           clothesBase64: clothesBase64,
           clothesPath: clothesPath,
           mode: mode,

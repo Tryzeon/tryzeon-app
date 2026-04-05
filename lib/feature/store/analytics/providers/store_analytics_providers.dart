@@ -55,18 +55,22 @@ ProductAnalyticsRepository productAnalyticsRepository(final Ref ref) {
 // --- Use Case ---
 @riverpod
 GetProductAnalyticsSummaries getProductAnalyticsSummaries(final Ref ref) {
-  return GetProductAnalyticsSummaries(
-    ref.watch(productAnalyticsRepositoryProvider),
-    ref.watch(storeProfileRepositoryProvider),
-  );
+  return GetProductAnalyticsSummaries(ref.watch(productAnalyticsRepositoryProvider));
 }
 
 // --- Feature Provider: per-product summaries ---
 @riverpod
 Future<List<ProductAnalyticsSummary>> productAnalyticsSummaries(final Ref ref) async {
+  final profile = await ref.watch(storeProfileProvider.future);
+  if (profile == null) return [];
+
   final filter = ref.watch(storeAnalyticsFilterProvider);
   final useCase = ref.watch(getProductAnalyticsSummariesProvider);
-  final result = await useCase(year: filter?.year, month: filter?.month);
+  final result = await useCase(
+    storeId: profile.id,
+    year: filter?.year,
+    month: filter?.month,
+  );
 
   if (result.isFailure) {
     throw result.getError()!;
@@ -88,6 +92,9 @@ Map<String, ProductAnalyticsSummary> productAnalyticsMap(final Ref ref) {
 /// Force refresh analytics data
 Future<void> refreshAnalytics(final WidgetRef ref) async {
   try {
+    final profile = await ref.read(storeProfileProvider.future);
+    if (profile == null) return;
+
     ref.invalidate(productAnalyticsSummariesProvider);
     await ref.read(productAnalyticsSummariesProvider.future);
   } catch (_) {
