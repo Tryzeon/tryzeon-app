@@ -81,10 +81,9 @@ Future<void> refreshUserProfile(final WidgetRef ref) async {
   final getUserProfileUseCase = ref.read(getUserProfileUseCaseProvider);
   await getUserProfileUseCase(forceRefresh: true);
   try {
-    await Future.wait([
-      ref.refresh(userProfileProvider.future),
-      ref.refresh(avatarFileProvider.future),
-    ]);
+    ref.invalidate(userProfileProvider);
+    await ref.read(userProfileProvider.future);
+    await ref.read(avatarFileProvider.future);
   } catch (_) {
     // Provider 刷新失敗時（例如網絡錯誤），忽略異常
     // Provider 會自動進入 error 狀態，UI 會顯示 ErrorView 或舊資料
