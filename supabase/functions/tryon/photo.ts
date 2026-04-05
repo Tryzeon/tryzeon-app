@@ -1,5 +1,5 @@
-import { GoogleGenerativeAI } from "npm:@google/generative-ai";
-import { CONFIG } from "../_shared/supabase.ts";
+// default model: gemini-2.5-flash-image
+import { getAIClient, VERTEX_CONFIG } from "../_shared/vertex-ai.ts";
 
 const SYSTEM_INSTRUCTION =
   `You are a virtual try-on system. Your ONLY job is to dress the person in a new garment while preserving their identity exactly. 
@@ -83,7 +83,7 @@ function detectMimeType(base64Data: string): string {
 }
 
 /**
- * Generate a try-on image using Gemini.
+ * Generate a try-on image using Vertex AI Gemini image generation.
  * Returns the base64-encoded image or null if generation failed.
  */
 export async function generateTryonImage(
@@ -91,21 +91,10 @@ export async function generateTryonImage(
   clothesImages: string[],
   scenePrompt?: string,
 ): Promise<string | null> {
-  const genAI = new GoogleGenerativeAI(CONFIG.GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({
-    model: CONFIG.GEMINI_TRYON_MODEL,
-    systemInstruction: SYSTEM_INSTRUCTION,
-    generationConfig: {
-      responseModalities: ["TEXT", "IMAGE"],
-      imageConfig: {
-        aspectRatio: "9:16",
-      },
-    },
-  });
-
   const taskPrompt = buildTaskPrompt(clothesImages.length, scenePrompt);
-  
-  const parts: any[] = [
+  const ai = getAIClient();
+
+  const parts = [
     { text: taskPrompt },
     {
       inlineData: {
@@ -124,13 +113,23 @@ export async function generateTryonImage(
     });
   }
 
-  const result = await model.generateContent(parts);
+  const result = await ai.models.generateContent({
+    model: VERTEX_CONFIG.TRYON_MODEL!,
+    contents: parts,
+    config: {
+      systemInstruction: SYSTEM_INSTRUCTION,
+      responseModalities: ["IMAGE"],
+      imageConfig: {
+        aspectRatio: "9:16",
+      },
+    },
+  });
 
-  const candidates = result.response.candidates ?? [];
+  const candidates = result.candidates ?? [];
 
   for (const c of candidates) {
-    for (const p of c.content.parts ?? []) {
-      if (p.inlineData?.mimeType?.startsWith("image/")) {
+    for (const p of c.content?.parts ?? []) {
+      if (p.inlineData?.mimeType?.startsWith("image/") && p.inlineData.data) {
         return p.inlineData.data;
       }
     }
