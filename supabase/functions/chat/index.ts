@@ -1,8 +1,8 @@
-// current model: gemini-2.5-flash
+// default model: gemini-2.5-flash
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { GoogleGenerativeAI } from "npm:@google/generative-ai";
-import { CONFIG, getAuthenticatedUserClient, getAdminClient } from "../_shared/supabase.ts";
+import { getAuthenticatedUserClient, getAdminClient } from "../_shared/supabase.ts";
 import { QuotaManager } from "../_shared/quota.ts";
+import { getAIClient, VERTEX_CONFIG } from "../_shared/vertex-ai.ts";
 
 Deno.serve(async (req) => {
   let quotaManager: QuotaManager | undefined;
@@ -43,13 +43,13 @@ Deno.serve(async (req) => {
     }
 
     // Process LLM Request
-    const genAI = new GoogleGenerativeAI(CONFIG.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: CONFIG.GEMINI_CHAT_MODEL });
-
     const prompt = `請根據以下穿搭需求，提供具體的服裝搭配建議，包括上衣、下身、鞋子和配件的推薦，簡短一點即可，但要分段說明。\n${userRequirement}`;
 
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    const result = await getAIClient().models.generateContent({
+      model: VERTEX_CONFIG.CHAT_MODEL!,
+      contents: prompt,
+    });
+    const text = result.text ?? "";
 
     // Return Success Response
     return new Response(JSON.stringify({ text }), {

@@ -1,6 +1,7 @@
 import { GoogleGenAI } from "npm:@google/genai";
 
 export const VERTEX_CONFIG = {
+  CHAT_MODEL: Deno.env.get("CHAT_MODEL"),
   TRYON_MODEL: Deno.env.get("TRYON_MODEL"),
   VIDEO_MODEL: Deno.env.get("VIDEO_MODEL"),
 };
