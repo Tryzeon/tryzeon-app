@@ -62,6 +62,30 @@ class PersonalSettingsPage extends HookConsumerWidget {
       context.go(AppRoutes.storeHome);
     }
 
+    Future<void> handleContactUs() async {
+      final result = await showOkCancelAlertDialog(
+        context: context,
+        title: '聯絡我們',
+        message: '即將前往 Tryzeon 官方 Instagram，是否繼續？',
+        okLabel: '前往 Instagram',
+        cancelLabel: '取消',
+      );
+      if (result != OkCancelResult.ok) return;
+
+      final url = Uri.parse('https://www.instagram.com/tryzeon/');
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+        return;
+      }
+
+      if (!context.mounted) return;
+      TopNotification.show(
+        context,
+        message: '目前無法開啟 Instagram 連結',
+        type: NotificationType.error,
+      );
+    }
+
     Future<void> handleDeleteAccount() async {
       final dialogResult = await showOkCancelAlertDialog(
         context: context,
@@ -113,12 +137,7 @@ class PersonalSettingsPage extends HookConsumerWidget {
                           icon: Icons.contact_support_outlined,
                           title: '聯絡我們',
                           subtitle: '前往官方 Instagram',
-                          onTap: () async {
-                            final url = Uri.parse('https://www.instagram.com/tryzeon/');
-                            if (await canLaunchUrl(url)) {
-                              await launchUrl(url, mode: LaunchMode.externalApplication);
-                            }
-                          },
+                          onTap: handleContactUs,
                           color: colorScheme.primary,
                         ),
                       ],
