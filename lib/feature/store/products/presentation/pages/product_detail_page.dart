@@ -122,7 +122,8 @@ class _ProductDetailContentPage extends HookConsumerWidget {
 
       final updateProductUseCase = ref.read(updateProductUseCaseProvider);
       final result = await updateProductUseCase(
-        UpdateProductParams(
+        original: product,
+        params: UpdateProductParams(
           productId: product.id,
           finalImageOrder: formData.images.value,
           sizesToAdd: deltas.sizesToAdd,

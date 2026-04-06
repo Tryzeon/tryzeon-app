@@ -7,14 +7,10 @@ class UpdateProduct {
   UpdateProduct(this._repository);
   final ProductRepository _repository;
 
-  Future<Result<void, Failure>> call(final UpdateProductParams params) async {
-    final originalResult = await _repository.getProductById(params.productId);
-
-    if (originalResult.isFailure) {
-      return Err(originalResult.getError()!);
-    }
-    final original = originalResult.get()!;
-
+  Future<Result<void, Failure>> call({
+    required final Product original,
+    required final UpdateProductParams params,
+  }) {
     return _repository.updateProduct(original: original, params: params);
   }
 }

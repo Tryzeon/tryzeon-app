@@ -71,8 +71,15 @@ class OnboardingNotifier extends _$OnboardingNotifier {
 
     state = state.copyWith(isSubmitting: true);
 
+    final original = await ref.read(userProfileProvider.future);
+    if (original == null) {
+      state = state.copyWith(isSubmitting: false);
+      return const Err(AuthFailure('找不到使用者資料'));
+    }
+
     final useCase = ref.read(completeOnboardingUseCaseProvider);
     final result = await useCase(
+      original: original,
       gender: state.gender!,
       ageRange: state.ageRange!,
       stylePreferences: state.stylePreferences.isEmpty ? null : state.stylePreferences,

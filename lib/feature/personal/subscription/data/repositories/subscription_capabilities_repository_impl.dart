@@ -2,7 +2,7 @@ import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
-import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/get_app_subscription_entitlement.dart';
+import 'package:tryzeon/core/modules/revenue_cat/domain/repositories/revenue_cat_repository.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/subscription/data/datasources/subscription_capabilities_local_datasource.dart';
 import 'package:tryzeon/feature/personal/subscription/data/datasources/subscription_capabilities_remote_datasource.dart';
@@ -14,21 +14,21 @@ import 'package:typed_result/typed_result.dart';
 class SubscriptionCapabilitiesRepositoryImpl
     implements SubscriptionCapabilitiesRepository {
   SubscriptionCapabilitiesRepositoryImpl({
-    required final GetAppSubscriptionEntitlement getAppSubscriptionEntitlementUseCase,
+    required final RevenueCatRepository revenueCatRepository,
     required final SubscriptionCapabilitiesRemoteDataSource remoteDataSource,
     required final SubscriptionCapabilitiesLocalDataSource localDataSource,
-  }) : _getAppSubscriptionEntitlementUseCase = getAppSubscriptionEntitlementUseCase,
+  }) : _revenueCatRepository = revenueCatRepository,
        _remoteDataSource = remoteDataSource,
        _localDataSource = localDataSource;
 
-  final GetAppSubscriptionEntitlement _getAppSubscriptionEntitlementUseCase;
+  final RevenueCatRepository _revenueCatRepository;
   final SubscriptionCapabilitiesRemoteDataSource _remoteDataSource;
   final SubscriptionCapabilitiesLocalDataSource _localDataSource;
 
   @override
   Future<Result<SubscriptionCapabilities, Failure>>
   getCurrentSubscriptionCapabilities() async {
-    final entitlementResult = await _getAppSubscriptionEntitlementUseCase();
+    final entitlementResult = await _revenueCatRepository.getAppSubscriptionEntitlement();
     if (entitlementResult.isFailure) {
       return Err(entitlementResult.getError()!);
     }

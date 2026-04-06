@@ -32,9 +32,7 @@ SubscriptionCapabilitiesLocalDataSource subscriptionCapabilitiesLocalDataSource(
 @riverpod
 SubscriptionCapabilitiesRepository subscriptionCapabilitiesRepository(final Ref ref) {
   return SubscriptionCapabilitiesRepositoryImpl(
-    getAppSubscriptionEntitlementUseCase: ref.watch(
-      getAppSubscriptionEntitlementUseCaseProvider,
-    ),
+    revenueCatRepository: ref.watch(revenueCatRepositoryProvider),
     remoteDataSource: ref.watch(subscriptionCapabilitiesRemoteDataSourceProvider),
     localDataSource: ref.watch(subscriptionCapabilitiesLocalDataSourceProvider),
   );
