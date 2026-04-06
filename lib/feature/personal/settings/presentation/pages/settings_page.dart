@@ -108,7 +108,6 @@ class PersonalSettingsPage extends HookConsumerWidget {
                           subtitle: '管理您的商店',
                           onTap: switchToStore,
                           color: colorScheme.primary,
-                          hideChevron: true,
                         ),
                         SettingsListTile(
                           icon: Icons.contact_support_outlined,

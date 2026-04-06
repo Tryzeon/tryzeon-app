@@ -104,7 +104,6 @@ class StoreSettingsPage extends HookConsumerWidget {
                           subtitle: '切換回個人版本',
                           onTap: switchToPersonal,
                           color: colorScheme.primary,
-                          hideChevron: true,
                         ),
                         SettingsListTile(
                           icon: Icons.contact_support_outlined,
