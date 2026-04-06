@@ -43,13 +43,17 @@ class UploadWardrobeItemDialog extends HookConsumerWidget {
     Future<void> handleUpload() async {
       isUploading.value = true;
 
+      final capabilities = await ref.read(subscriptionCapabilitiesProvider.future);
+      final items = await ref.read(wardrobeItemsProvider.future);
       final uploadWardrobeItemUseCase = ref.read(uploadWardrobeItemUseCaseProvider);
       final result = await uploadWardrobeItemUseCase(
-        CreateWardrobeItemParams(
+        params: CreateWardrobeItemParams(
           image: image,
           category: selectedCategory.value!,
           tags: selectedTags.value,
         ),
+        currentItemCount: items.length,
+        wardrobeLimit: capabilities.wardrobeLimit,
       );
 
       if (!context.mounted) return;

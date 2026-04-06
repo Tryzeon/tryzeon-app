@@ -11,17 +11,10 @@ class UpdateUserProfile {
   final UserProfileRepository _repository;
 
   Future<Result<void, Failure>> call({
+    required final UserProfile original,
     required final UserProfile target,
     final File? avatarFile,
-  }) async {
-    final originalResult = await _repository.getUserProfile();
-
-    if (originalResult.isFailure) {
-      return Err(originalResult.getError()!);
-    }
-
-    final original = originalResult.get()!;
-
+  }) {
     return _repository.updateUserProfile(
       original: original,
       target: target,

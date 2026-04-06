@@ -3,7 +3,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
-import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_local_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/repositories/wardrobe_repository_impl.dart';
@@ -45,13 +44,7 @@ GetWardrobeItems getWardrobeItemsUseCase(final Ref ref) {
 
 @riverpod
 UploadWardrobeItem uploadWardrobeItemUseCase(final Ref ref) {
-  return UploadWardrobeItem(
-    wardrobeRepository: ref.watch(wardrobeRepositoryProvider),
-    getSubscriptionCapabilitiesUseCase: ref.watch(
-      getSubscriptionCapabilitiesUseCaseProvider,
-    ),
-    getWardrobeItemsUseCase: ref.watch(getWardrobeItemsUseCaseProvider),
-  );
+  return UploadWardrobeItem(ref.watch(wardrobeRepositoryProvider));
 }
 
 @riverpod
