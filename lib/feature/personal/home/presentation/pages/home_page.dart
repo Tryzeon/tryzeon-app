@@ -3,11 +3,13 @@ import 'dart:io';
 
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gal/gal.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
@@ -215,11 +217,26 @@ class HomePage extends HookConsumerWidget {
     }
 
     Future<void> downloadVideo(final TryonResult result) async {
-      if (result.videoPath == null) {
-        throw Exception('Video path is null');
+      if (result.videoUrl == null) {
+        throw Exception('Video URL is missing');
       }
 
-      await Gal.putVideo(result.videoPath!);
+      // 1. Download to temp file
+      final tempDir = await getTemporaryDirectory();
+      final tempPath =
+          '${tempDir.path}/tryon_${DateTime.now().millisecondsSinceEpoch}.mp4';
+
+      final dio = Dio();
+      await dio.download(result.videoUrl!, tempPath);
+
+      // 2. Save to gallery
+      await Gal.putVideo(tempPath);
+
+      // 3. Clean up temp file
+      final file = File(tempPath);
+      if (await file.exists()) {
+        await file.delete();
+      }
 
       if (context.mounted) {
         TopNotification.show(

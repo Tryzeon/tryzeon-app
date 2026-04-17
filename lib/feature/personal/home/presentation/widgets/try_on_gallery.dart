@@ -58,7 +58,7 @@ class TryOnGallery extends HookWidget {
           }
 
           if (result.mode == TryOnMode.video) {
-            return _VideoPlayerItem(videoPath: result.videoPath!);
+            return _VideoPlayerItem(videoUrl: result.videoUrl!);
           }
 
           if (result.mode == TryOnMode.photo) {
@@ -130,8 +130,8 @@ class _ImageItem extends HookWidget {
 }
 
 class _VideoPlayerItem extends HookWidget {
-  const _VideoPlayerItem({required this.videoPath});
-  final String videoPath;
+  const _VideoPlayerItem({required this.videoUrl});
+  final String videoUrl;
 
   @override
   Widget build(final BuildContext context) {
@@ -139,7 +139,8 @@ class _VideoPlayerItem extends HookWidget {
     final isPlaying = useState<bool>(true);
 
     useEffect(() {
-      final controller = VideoPlayerController.file(File(videoPath));
+      final controller = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
+
       controller.initialize().then((_) {
         controllerState.value = controller;
         controller.play(); // 自動播放
@@ -155,7 +156,7 @@ class _VideoPlayerItem extends HookWidget {
       return () {
         controllerState.value?.dispose();
       };
-    }, [videoPath]);
+    }, [videoUrl]);
 
     if (controllerState.value != null && controllerState.value!.value.isInitialized) {
       return Stack(

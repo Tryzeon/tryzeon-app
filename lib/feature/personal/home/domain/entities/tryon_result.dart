@@ -7,7 +7,7 @@ part 'tryon_result.freezed.dart';
 sealed class TryonResult with _$TryonResult {
   const factory TryonResult({
     final String? imageBase64,
-    final String? videoPath,
+    final String? videoUrl,
     @Default(TryOnMode.photo) final TryOnMode mode,
   }) = _TryonResult;
 }
