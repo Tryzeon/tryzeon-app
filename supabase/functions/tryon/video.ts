@@ -154,7 +154,7 @@ async function pollForCompletion(operationName: string, userId: string): Promise
     
     const videoBuffer = bytes.buffer;
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const fileName = `${userId}/${timestamp}_${crypto.randomUUID()}.mp4`;
+    const fileName = `${userId}/${timestamp}.mp4`;
     
     const videoUrl = await uploadVideoToR2(videoBuffer, fileName);
     return videoUrl;
