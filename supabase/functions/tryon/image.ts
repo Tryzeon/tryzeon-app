@@ -1,8 +1,7 @@
-// default model: gemini-2.5-flash-image
-import { getAIClient, VERTEX_CONFIG } from "../_shared/vertex-ai.ts";
-
 const SYSTEM_INSTRUCTION =
   `You are a virtual try-on system. Your ONLY job is to dress the person in a new garment while preserving their identity exactly. 
+
+CRITICAL: ALL generated images MUST be in PORTRAIT orientation with 9:16 aspect ratio (vertical format, taller than wide). NEVER generate square or landscape images.
 
 CORE TASK: Remove the original clothing completely and replace it with the new garment. Think of this as a two-step process:
 1. REMOVE: Completely erase all traces of the original clothing
@@ -56,7 +55,8 @@ LIGHTING & REALISM
 - Soft diffused lighting, natural skin rendering, no artifacts, no warping, no halos, no double edges.
 
 OUTPUT
-- Return ONE image. Portrait 9:16 composition.
+- Return ONE image in PORTRAIT orientation with 9:16 aspect ratio (vertical/portrait format, NOT square or landscape).
+- The image MUST be taller than it is wide (portrait orientation).
 - Sharp garment detail, accurate color reproduction, fashion photography quality.`;
 
   if (scenePrompt) {
@@ -83,7 +83,7 @@ function detectMimeType(base64Data: string): string {
 }
 
 /**
- * Generate a try-on image using Vertex AI Gemini image generation.
+ * Generate a try-on image using Vertex AI Gemini image generation via REST API.
  * Returns the base64-encoded image or null if generation failed.
  */
 export async function generateTryonImage(
@@ -92,48 +92,95 @@ export async function generateTryonImage(
   scenePrompt?: string,
 ): Promise<string | null> {
   const taskPrompt = buildTaskPrompt(clothesImages.length, scenePrompt);
-  const ai = getAIClient();
+  
+  const project = Deno.env.get("GOOGLE_CLOUD_PROJECT");
+  const location = Deno.env.get("GOOGLE_CLOUD_LOCATION") || "us-central1";
+  const model = Deno.env.get("TRYON_MODEL") || "gemini-2.5-flash-image";
+  const apiKey = Deno.env.get("VERTEX_API_KEY");
 
-  const parts = [
+  if (!project || !apiKey) {
+    throw new Error("GOOGLE_CLOUD_PROJECT and VERTEX_API_KEY environment variables are required");
+  }
+
+  const cleanAvatarBase64 = avatarImage.replace(/^data:image\/[a-z]+;base64,/, '');
+  
+  const parts: any[] = [
     { text: taskPrompt },
     {
       inlineData: {
-        data: avatarImage,
-        mimeType: detectMimeType(avatarImage),
+        mimeType: detectMimeType(cleanAvatarBase64),
+        data: cleanAvatarBase64,
       },
     },
   ];
 
   for (const img of clothesImages) {
+    const cleanImg = img.replace(/^data:image\/[a-z]+;base64,/, '');
     parts.push({
       inlineData: {
-        data: img,
-        mimeType: detectMimeType(img),
+        mimeType: detectMimeType(cleanImg),
+        data: cleanImg,
       },
     });
   }
 
-  const result = await ai.models.generateContent({
-    model: VERTEX_CONFIG.TRYON_MODEL!,
-    contents: parts,
-    config: {
-      systemInstruction: SYSTEM_INSTRUCTION,
+  const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${project}/locations/${location}/publishers/google/models/${model}:generateContent`;
+
+  const requestBody = {
+    contents: [{
+      role: "user",
+      parts: parts,
+    }],
+    systemInstruction: {
+      role: "system",
+      parts: [{
+        text: SYSTEM_INSTRUCTION,
+      }],
+    },
+    generationConfig: {
       responseModalities: ["IMAGE"],
+      temperature: 1.0,
+      topP: 0.95,
       imageConfig: {
         aspectRatio: "9:16",
       },
     },
-  });
+  };
 
-  const candidates = result.candidates ?? [];
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": apiKey,
+      },
+      body: JSON.stringify(requestBody),
+    });
 
-  for (const c of candidates) {
-    for (const p of c.content?.parts ?? []) {
-      if (p.inlineData?.mimeType?.startsWith("image/") && p.inlineData.data) {
-        return p.inlineData.data;
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Failed to generate image. Status:", response.status);
+      console.error("Error response:", errorText);
+      throw new Error(`Failed to generate image: ${response.statusText} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    
+    const candidates = data.candidates ?? [];
+    
+    for (const candidate of candidates) {
+      const parts = candidate.content?.parts ?? [];
+      for (const part of parts) {
+        if (part.inlineData?.mimeType?.startsWith("image/") && part.inlineData.data) {
+          return part.inlineData.data;
+        }
       }
     }
-  }
 
-  return null;
+    console.error("No image data in response:", JSON.stringify(data));
+    return null;
+  } catch (error) {
+    console.error("Error generating try-on image:", error);
+    throw error;
+  }
 }

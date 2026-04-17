@@ -1,5 +1,3 @@
-// default model: veo-3.1-fast-generate-preview
-import { VERTEX_CONFIG } from "../_shared/vertex-ai.ts";
 import { uploadVideoToR2 } from "../_shared/r2.ts";
 
 const DEFAULT_VIDEO_PROMPT =
@@ -17,7 +15,14 @@ function buildVideoPrompt(transitionPrompt?: string): string {
   return prompt;
 }
 
-const MAX_POLL_ATTEMPTS = 25; 
+function detectMimeType(base64Data: string): string {
+  const header = atob(base64Data.slice(0, 16));
+  if (header.startsWith("\x89PNG")) return "image/png";
+  if (header.startsWith("\xFF\xD8\xFF")) return "image/jpeg";
+  return "image/png";
+}
+
+const MAX_POLL_ATTEMPTS = 60;
 const POLL_INTERVAL_MS = 2000;
 
 async function startVideoGeneration(
@@ -25,81 +30,92 @@ async function startVideoGeneration(
   transitionPrompt?: string,
 ): Promise<string> {
   const prompt = buildVideoPrompt(transitionPrompt);
+  
+  const project = Deno.env.get("GOOGLE_CLOUD_PROJECT");
+  const location = Deno.env.get("GOOGLE_CLOUD_LOCATION") || "us-central1";
+  const model = Deno.env.get("VIDEO_MODEL");
+  const apiKey = Deno.env.get("VERTEX_API_KEY");
+
+  if (!project || !apiKey) {
+    throw new Error("GOOGLE_CLOUD_PROJECT and VERTEX_API_KEY environment variables are required");
+  }
+
+  const cleanBase64 = tryonImageBase64.replace(/^data:image\/[a-z]+;base64,/, '');
+  const mimeType = detectMimeType(cleanBase64);
+
+  const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${project}/locations/${location}/publishers/google/models/${model}:predictLongRunning`;
+
   const requestBody = {
     instances: [{
-      prompt,
+      prompt: prompt,
       image: {
-        bytesBase64Encoded: tryonImageBase64,
-        mimeType: "image/png",
+        bytesBase64Encoded: cleanBase64,
+        mimeType: mimeType,
       },
     }],
     parameters: {
       aspectRatio: "9:16",
-      durationSeconds: 8,
+      sampleCount: 1,
     },
   };
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${VERTEX_CONFIG.VIDEO_MODEL}:predictLongRunning`,
-    {
-      method: "POST",
-      headers: {
-        "x-goog-api-key": VERTEX_CONFIG.API_KEY!,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestBody),
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": apiKey,
     },
-  );
+    body: JSON.stringify(requestBody),
+  });
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error("Failed to start video generation. Status:", response.status, "Body:", errorText);
+    console.error("Failed to start video generation. Status:", response.status);
+    console.error("Error response:", errorText);
     throw new Error(`Failed to start video generation: ${response.statusText} - ${errorText}`);
   }
 
   const data = await response.json();
+  
   if (!data.name) {
-    console.error("No operation name returned:", data);
-    throw new Error("Invalid response from video API");
+    throw new Error("Invalid response from Vertex AI - no operation name");
   }
 
   return data.name;
 }
 
-async function downloadVideo(videoUri: string): Promise<string> {
-  const videoResponse = await fetch(videoUri, {
-    headers: { "x-goog-api-key": VERTEX_CONFIG.API_KEY! },
-  });
+async function pollForCompletion(operationName: string): Promise<string> {
+  const project = Deno.env.get("GOOGLE_CLOUD_PROJECT");
+  const location = Deno.env.get("GOOGLE_CLOUD_LOCATION") || "us-central1";
+  const model = Deno.env.get("VIDEO_MODEL");
+  const apiKey = Deno.env.get("VERTEX_API_KEY");
 
-  if (!videoResponse.ok) {
-    console.error("Failed to download video. Status:", videoResponse.status);
-    throw new Error("Failed to download video");
+  if (!project || !apiKey) {
+    throw new Error("GOOGLE_CLOUD_PROJECT and VERTEX_API_KEY environment variables are required");
   }
 
-  const videoBuffer = await videoResponse.arrayBuffer();
+  const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${project}/locations/${location}/publishers/google/models/${model}:fetchPredictOperation`;
 
-  // Generate a unique filename using crypto.randomUUID()
-  const fileName = `videos/${crypto.randomUUID()}.mp4`;
-
-  // Upload to R2 and get signed URL
-  const videoUrl = await uploadVideoToR2(videoBuffer, fileName);
-  return videoUrl;
-}
-
-async function pollForCompletion(operationName: string): Promise<string> {
   let attempts = 0;
 
   while (attempts < MAX_POLL_ATTEMPTS) {
     await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
     attempts++;
 
-    const pollResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/${operationName}`,
-      { headers: { "x-goog-api-key": VERTEX_CONFIG.API_KEY! } },
-    );
+    const requestBody = {
+      operationName: operationName,
+    };
+
+    const pollResponse = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": apiKey,
+      },
+      body: JSON.stringify(requestBody),
+    });
 
     if (!pollResponse.ok) {
-      console.error("Failed to poll operation. Status:", pollResponse.status);
       continue;
     }
 
@@ -108,20 +124,42 @@ async function pollForCompletion(operationName: string): Promise<string> {
     if (!pollData.done) continue;
 
     if (pollData.error) {
-      console.error("Video generation failed:", pollData.error);
-      throw new Error("Video generation failed");
+      throw new Error(`Video generation failed: ${pollData.error.message || JSON.stringify(pollData.error)}`);
     }
 
-    const videoUri = pollData.response?.generateVideoResponse?.generatedSamples?.[0]?.video?.uri;
-    if (!videoUri) {
-      console.error("No video URL in completed response:", pollData);
-      throw new Error("No video URL in response");
+    const response = pollData.response;
+    const videos = response?.videos;
+
+    if (!videos || videos.length === 0) {
+      throw new Error("Video generation failed - no video data returned");
     }
 
-    return downloadVideo(videoUri);
+    const video = videos[0];
+
+    if (video.gcsUri) {
+      throw new Error("GCS storage not supported - please configure storageUri parameter or use inline response");
+    }
+
+    const videoBase64 = video.bytesBase64Encoded;
+
+    if (!videoBase64) {
+      throw new Error("Video generation failed - no video bytes returned");
+    }
+
+    const binaryString = atob(videoBase64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    
+    const videoBuffer = bytes.buffer;
+    const fileName = `videos/${crypto.randomUUID()}.mp4`;
+    
+    const videoUrl = await uploadVideoToR2(videoBuffer, fileName);
+    return videoUrl;
   }
 
-  throw new Error("Video generation timeout - polling limit reached");
+  throw new Error(`Video generation timeout - polling limit reached (${MAX_POLL_ATTEMPTS * POLL_INTERVAL_MS / 1000} seconds)`);
 }
 
 export async function generateTryonVideo(
