@@ -1,5 +1,6 @@
 // default model: veo-3.1-fast-generate-preview
-import { CONFIG } from "../_shared/supabase.ts";
+import { VERTEX_CONFIG } from "../_shared/vertex-ai.ts";
+import { uploadVideoToR2 } from "../_shared/r2.ts";
 
 const DEFAULT_VIDEO_PROMPT =
   "The person is wearing the new outfit and turning slightly to show the fit of the clothing. Natural movement, professional fashion video style.";
@@ -16,7 +17,7 @@ function buildVideoPrompt(transitionPrompt?: string): string {
   return prompt;
 }
 
-const MAX_POLL_ATTEMPTS = 60;
+const MAX_POLL_ATTEMPTS = 25; 
 const POLL_INTERVAL_MS = 2000;
 
 async function startVideoGeneration(
@@ -39,11 +40,11 @@ async function startVideoGeneration(
   };
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${CONFIG.VIDEO_MODEL}:predictLongRunning`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${VERTEX_CONFIG.VIDEO_MODEL}:predictLongRunning`,
     {
       method: "POST",
       headers: {
-        "x-goog-api-key": CONFIG.GEMINI_API_KEY,
+        "x-goog-api-key": VERTEX_CONFIG.API_KEY!,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(requestBody),
@@ -51,8 +52,9 @@ async function startVideoGeneration(
   );
 
   if (!response.ok) {
-    console.error("Failed to start video generation:", await response.text());
-    throw new Error("Failed to start video generation");
+    const errorText = await response.text();
+    console.error("Failed to start video generation. Status:", response.status, "Body:", errorText);
+    throw new Error(`Failed to start video generation: ${response.statusText} - ${errorText}`);
   }
 
   const data = await response.json();
@@ -66,16 +68,22 @@ async function startVideoGeneration(
 
 async function downloadVideo(videoUri: string): Promise<string> {
   const videoResponse = await fetch(videoUri, {
-    headers: { "x-goog-api-key": CONFIG.GEMINI_API_KEY },
+    headers: { "x-goog-api-key": VERTEX_CONFIG.API_KEY! },
   });
 
   if (!videoResponse.ok) {
-    console.error("Failed to download video:", await videoResponse.text());
+    console.error("Failed to download video. Status:", videoResponse.status);
     throw new Error("Failed to download video");
   }
 
   const videoBuffer = await videoResponse.arrayBuffer();
-  return btoa(Array.from(new Uint8Array(videoBuffer), (b) => String.fromCharCode(b)).join(""));
+
+  // Generate a unique filename using crypto.randomUUID()
+  const fileName = `videos/${crypto.randomUUID()}.mp4`;
+
+  // Upload to R2 and get signed URL
+  const videoUrl = await uploadVideoToR2(videoBuffer, fileName);
+  return videoUrl;
 }
 
 async function pollForCompletion(operationName: string): Promise<string> {
@@ -87,11 +95,11 @@ async function pollForCompletion(operationName: string): Promise<string> {
 
     const pollResponse = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/${operationName}`,
-      { headers: { "x-goog-api-key": CONFIG.GEMINI_API_KEY } },
+      { headers: { "x-goog-api-key": VERTEX_CONFIG.API_KEY! } },
     );
 
     if (!pollResponse.ok) {
-      console.error("Failed to poll operation:", await pollResponse.text());
+      console.error("Failed to poll operation. Status:", pollResponse.status);
       continue;
     }
 
@@ -113,7 +121,7 @@ async function pollForCompletion(operationName: string): Promise<string> {
     return downloadVideo(videoUri);
   }
 
-  throw new Error("Video generation timeout");
+  throw new Error("Video generation timeout - polling limit reached");
 }
 
 export async function generateTryonVideo(

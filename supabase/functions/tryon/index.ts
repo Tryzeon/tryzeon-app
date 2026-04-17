@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getAuthenticatedUserClient, getAdminClient } from "../_shared/supabase.ts";
 import { QuotaManager, FeatureName } from "../_shared/quota.ts";
+import { fetchImageAsBase64 } from "../_shared/image-utils.ts";
 import { generateTryonImage } from "./photo.ts";
 import { generateTryonVideo } from "./video.ts";
 Deno.serve(async (req) => {
@@ -48,21 +49,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const fetchImageBase64 = async (path: string) => {
-      let bucket: string;
-      if (path.includes("wardrobe")) bucket = "wardrobe-images";
-      else if (path.includes("product")) bucket = "product-images";
-      else if (path.includes("avatar")) bucket = "user-avatars";
-      else throw new Error(`Cannot determine bucket from path: ${path}`);
-
-      const { data, error } = await userClient!.storage.from(bucket).download(path);
-      if (error) throw new Error(`Failed to download image from ${bucket}/${path}: ${error.message}`);
-
-      const buf = new Uint8Array(await data!.arrayBuffer());
-      return btoa(Array.from(buf, (b) => String.fromCharCode(b)).join(""));
-    };
-
-    const avatarImage = avatarBase64 ? avatarBase64 : await fetchImageBase64(avatarPath!);
+    const avatarImage = avatarBase64 ? avatarBase64 : await fetchImageAsBase64(userClient!, avatarPath!);
     let clothesImages: string[] = [];
 
     if (clothesBase64s && clothesBase64s.length > 0) {
@@ -70,7 +57,7 @@ Deno.serve(async (req) => {
     } else if (clothesPaths && clothesPaths.length > 0) {
       // Limit to 3 images to avoid confusing the AI and save tokens
       const pathsToFetch = clothesPaths.slice(0, 3);
-      clothesImages = await Promise.all(pathsToFetch.map((p: string) => fetchImageBase64(p)));
+      clothesImages = await Promise.all(pathsToFetch.map((p: string) => fetchImageAsBase64(userClient!, p)));
     }
 
     const tryonImageBase64 = await generateTryonImage(avatarImage, clothesImages, scenePrompt);
@@ -83,9 +70,9 @@ Deno.serve(async (req) => {
     }
 
     if (mode === "video") {
-      const videoBase64 = await generateTryonVideo(tryonImageBase64, transitionPrompt);
+      const videoUrl = await generateTryonVideo(tryonImageBase64, transitionPrompt);
       return new Response(
-        JSON.stringify({ video: videoBase64 }),
+        JSON.stringify({ videoUrl: videoUrl }),
         { headers: { "Content-Type": "application/json" } },
       );
     }
