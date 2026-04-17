@@ -85,10 +85,7 @@ class ProductCard extends HookConsumerWidget {
       if (!context.mounted) return;
 
       final personalEntry = PersonalEntryScope.of(context);
-      await personalEntry?.tryOnFromStorage(
-        product.imagePaths,
-        mode: mode,
-      );
+      await personalEntry?.tryOnFromStorage(product.imagePaths, mode: mode);
     }
 
     Widget buildTryonButton() {
