@@ -84,7 +84,7 @@ async function startVideoGeneration(
   return data.name;
 }
 
-async function pollForCompletion(operationName: string): Promise<string> {
+async function pollForCompletion(operationName: string, userId: string): Promise<string> {
   const project = Deno.env.get("GOOGLE_CLOUD_PROJECT");
   const location = Deno.env.get("GOOGLE_CLOUD_LOCATION") || "us-central1";
   const model = Deno.env.get("VIDEO_MODEL");
@@ -153,7 +153,8 @@ async function pollForCompletion(operationName: string): Promise<string> {
     }
     
     const videoBuffer = bytes.buffer;
-    const fileName = `videos/${crypto.randomUUID()}.mp4`;
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const fileName = `${userId}/${timestamp}_${crypto.randomUUID()}.mp4`;
     
     const videoUrl = await uploadVideoToR2(videoBuffer, fileName);
     return videoUrl;
@@ -164,8 +165,9 @@ async function pollForCompletion(operationName: string): Promise<string> {
 
 export async function generateTryonVideo(
   tryonImageBase64: string,
+  userId: string,
   transitionPrompt?: string,
 ): Promise<string> {
   const operationName = await startVideoGeneration(tryonImageBase64, transitionPrompt);
-  return pollForCompletion(operationName);
+  return pollForCompletion(operationName, userId);
 }

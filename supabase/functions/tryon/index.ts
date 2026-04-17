@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
     }
 
     if (mode === "video") {
-      const videoUrl = await generateTryonVideo(tryonImageBase64, transitionPrompt);
+      const videoUrl = await generateTryonVideo(tryonImageBase64, user!.id, transitionPrompt);
       return new Response(
         JSON.stringify({ videoUrl: videoUrl }),
         { headers: { "Content-Type": "application/json" } },
