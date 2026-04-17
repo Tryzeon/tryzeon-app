@@ -2,7 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getAuthenticatedUserClient, getAdminClient } from "../_shared/supabase.ts";
 import { QuotaManager, FeatureName } from "../_shared/quota.ts";
 import { fetchImageAsBase64 } from "../_shared/image-utils.ts";
-import { generateTryonImage } from "./photo.ts";
+import { generateTryonImage } from "./image.ts";
 import { generateTryonVideo } from "./video.ts";
 Deno.serve(async (req) => {
   let quotaManager: QuotaManager | undefined;
@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
-    const { avatarBase64, avatarPath, clothesBase64s, clothesPaths, mode = "photo", scenePrompt, transitionPrompt } = body;
+    const { avatarBase64, avatarPath, clothesBase64s, clothesPaths, mode = "image", scenePrompt, transitionPrompt } = body;
 
     if (!avatarPath && !avatarBase64) {
       return new Response(

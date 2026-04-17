@@ -60,7 +60,7 @@ class ProductCard extends HookConsumerWidget {
       }
     }
 
-    Future<void> handleTryon({final TryOnMode mode = TryOnMode.photo}) async {
+    Future<void> handleTryon({final TryOnMode mode = TryOnMode.image}) async {
       // 記錄虛擬試穿點擊次數 (非同步執行，不阻塞 UI)
       ref
           .read(incrementTryonCountProvider)

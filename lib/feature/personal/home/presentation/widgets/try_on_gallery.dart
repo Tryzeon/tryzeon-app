@@ -61,7 +61,7 @@ class TryOnGallery extends HookWidget {
             return _VideoPlayerItem(videoUrl: result.videoUrl!);
           }
 
-          if (result.mode == TryOnMode.photo) {
+          if (result.mode == TryOnMode.image) {
             return _ImageItem(imageBase64: result.imageBase64);
           }
 

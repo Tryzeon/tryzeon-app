@@ -106,7 +106,7 @@ class HomePage extends HookConsumerWidget {
     Future<void> performTryOn({
       final List<String>? clothesBase64s,
       final List<String>? clothesPaths,
-      final TryOnMode mode = TryOnMode.photo,
+      final TryOnMode mode = TryOnMode.image,
     }) async {
       // 0. Check if avatar is uploaded
       final avatarFile = ref.read(avatarFileProvider).value;
@@ -206,12 +206,12 @@ class HomePage extends HookConsumerWidget {
 
       final clothesBytes = await clothesImage.readAsBytes();
       final clothesBase64 = base64Encode(clothesBytes);
-      performTryOn(clothesBase64s: [clothesBase64], mode: TryOnMode.photo);
+      performTryOn(clothesBase64s: [clothesBase64], mode: TryOnMode.image);
     }
 
     Future<void> tryOnFromStorage(
       final List<String> clothesPaths, {
-      final TryOnMode mode = TryOnMode.photo,
+      final TryOnMode mode = TryOnMode.image,
     }) async {
       performTryOn(clothesPaths: clothesPaths, mode: mode);
     }

@@ -8,6 +8,6 @@ sealed class TryonResult with _$TryonResult {
   const factory TryonResult({
     final String? imageBase64,
     final String? videoUrl,
-    @Default(TryOnMode.photo) final TryOnMode mode,
+    @Default(TryOnMode.image) final TryOnMode mode,
   }) = _TryonResult;
 }

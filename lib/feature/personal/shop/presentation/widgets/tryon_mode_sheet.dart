@@ -75,16 +75,16 @@ class TryOnModeSheet extends StatelessWidget {
                 ),
               ),
 
-              // ③ Photo Try-On Card
+              // ③ Image Try-On Card
               _ModeCard(
                 icon: Icons.photo_outlined,
-                title: '照片試穿',
+                title: '圖片試穿',
                 subtitle: '讓 AI 幫你穿上這件衣服',
                 isLocked: false,
                 isNew: false,
                 onTap: () {
                   Navigator.pop(context);
-                  onModeSelected(TryOnMode.photo);
+                  onModeSelected(TryOnMode.image);
                 },
                 colorScheme: colorScheme,
                 textTheme: textTheme,

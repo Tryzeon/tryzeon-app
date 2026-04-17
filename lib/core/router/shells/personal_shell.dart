@@ -38,7 +38,7 @@ class PersonalShell extends HookConsumerWidget {
 
     Future<void> tryOnFromStorage(
       final List<String> clothesPaths, {
-      final TryOnMode mode = TryOnMode.photo,
+      final TryOnMode mode = TryOnMode.image,
     }) async {
       navigationShell.goBranch(0);
       if (homePageController.tryOnFromStorage != null) {
