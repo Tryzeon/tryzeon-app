@@ -5,20 +5,20 @@ import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
  * Infers the bucket name from the path.
  */
 export async function fetchImageAsBase64(supabase: SupabaseClient, path: string): Promise<string> {
-  let bucket: string;
-  
-  // Robust bucket detection
-  if (path.includes("wardrobe/")) {
-    bucket = "wardrobe-images";
-  } else if (path.includes("product/")) {
-    bucket = "product-images";
-  } else if (path.includes("avatar/")) {
-    bucket = "user-avatars";
-  } else {
-    // Fallback or explicit check if path is just the filename and we know where it comes from
-    // In this app, paths usually include the folder name
-    throw new Error(`Cannot determine bucket from path: ${path}. Path must include folder name (wardrobe, product, or avatar).`);
+  const folderToBucketMap: Record<string, string> = {
+    "wardrobe": "wardrobe-images",
+    "products": "product-images",
+    "avatar": "user-avatars",
+  };
+
+  const segments = path.split('/');
+  const folder = segments.find(segment => folderToBucketMap.hasOwnProperty(segment));
+
+  if (!folder) {
+    throw new Error(`Invalid path structure: ${path}. No valid folder segment found. Expected one of: ${Object.keys(folderToBucketMap).join(", ")}`);
   }
+
+  const bucket = folderToBucketMap[folder];
 
   const { data, error } = await supabase.storage.from(bucket).download(path);
   
