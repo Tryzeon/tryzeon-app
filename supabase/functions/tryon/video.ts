@@ -23,7 +23,7 @@ function detectMimeType(base64Data: string): string {
 }
 
 const MAX_POLL_ATTEMPTS = 60;
-const POLL_INTERVAL_MS = 2000;
+const POLL_INTERVAL_MS = 5000;
 
 async function startVideoGeneration(
   tryonImageBase64: string,
