@@ -1,24 +1,26 @@
 import { S3Client, PutObjectCommand, GetObjectCommand } from "npm:@aws-sdk/client-s3";
 import { getSignedUrl } from "npm:@aws-sdk/s3-request-presigner";
 
-// Ensure required environment variables exist
-const requiredVars = [
-  "R2_ACCESS_KEY_ID",
-  "R2_SECRET_ACCESS_KEY",
-  "R2_ENDPOINT",
-  "R2_VIDEOS_BUCKET_NAME",
-];
-
-for (const envVar of requiredVars) {
-  if (!Deno.env.get(envVar)) {
-    throw new Error(`Missing required environment variable: ${envVar}`);
-  }
-}
-
 let _r2Client: S3Client | null = null;
+
+const validateR2Env = () => {
+  const requiredVars = [
+    "R2_ACCESS_KEY_ID",
+    "R2_SECRET_ACCESS_KEY",
+    "R2_ENDPOINT",
+    "R2_VIDEOS_BUCKET_NAME",
+  ];
+
+  for (const envVar of requiredVars) {
+    if (!Deno.env.get(envVar)) {
+      throw new Error(`Missing required environment variable: ${envVar}`);
+    }
+  }
+};
 
 export const getR2Client = () => {
   if (!_r2Client) {
+    validateR2Env();
     _r2Client = new S3Client({
       region: "auto",
       endpoint: Deno.env.get("R2_ENDPOINT")!,
