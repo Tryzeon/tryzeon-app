@@ -1,4 +1,5 @@
 import 'package:isar_community/isar.dart';
+import 'package:tryzeon/core/shared/measurements/collections/measurements_collection.dart';
 
 part 'shop_product_collection.g.dart';
 
@@ -21,11 +22,23 @@ class ShopProductCollection {
   String? fit;
   List<String>? styles;
 
+  List<ProductSizeEmbedded>? sizes;
+
   late DateTime createdAt;
   late DateTime updatedAt;
 
   // 關聯的店鋪資訊 (必填，不可為 null)
   late ShopStoreInfoEmbedded storeInfo;
+}
+
+@embedded
+class ProductSizeEmbedded {
+  late String sizeId;
+  late String productId;
+  late String name;
+  MeasurementsCollection? measurements;
+  late DateTime createdAt;
+  late DateTime updatedAt;
 }
 
 @embedded

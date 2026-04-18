@@ -2,9 +2,12 @@ import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
+import 'package:tryzeon/core/shared/measurements/collections/measurements_collection.dart';
+import 'package:tryzeon/core/shared/measurements/data/models/measurements_model.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_product_collection.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_product_model.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_store_info_model.dart';
+import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
 
 class ShopLocalDataSource {
   ShopLocalDataSource(this._isarService, this._cacheEntryLocalDataSource);
@@ -24,6 +27,36 @@ class ShopLocalDataSource {
         ..address = model.storeInfo.address
         ..logoUrl = model.storeInfo.logoUrl;
 
+      List<ProductSizeEmbedded>? sizes;
+      if (model.sizes != null) {
+        sizes = model.sizes!.map((final size) {
+          final sizeEmbedded = ProductSizeEmbedded()
+            ..sizeId = size.id
+            ..productId = size.productId
+            ..name = size.name
+            ..createdAt = size.createdAt
+            ..updatedAt = size.updatedAt;
+
+          if (size.measurements != null) {
+            sizeEmbedded.measurements = MeasurementsCollection()
+              ..height = size.measurements!.height
+              ..chest = size.measurements!.chest
+              ..waist = size.measurements!.waist
+              ..hips = size.measurements!.hips
+              ..shoulder = size.measurements!.shoulder
+              ..sleeve = size.measurements!.sleeve
+              ..heightOffset = size.measurements!.heightOffset
+              ..chestOffset = size.measurements!.chestOffset
+              ..waistOffset = size.measurements!.waistOffset
+              ..hipsOffset = size.measurements!.hipsOffset
+              ..shoulderOffset = size.measurements!.shoulderOffset
+              ..sleeveOffset = size.measurements!.sleeveOffset;
+          }
+
+          return sizeEmbedded;
+        }).toList();
+      }
+
       return ShopProductCollection()
         ..productId = model.id
         ..name = model.name
@@ -36,6 +69,7 @@ class ShopLocalDataSource {
         ..elasticity = model.elasticity
         ..fit = model.fit
         ..styles = model.styles
+        ..sizes = sizes 
         ..createdAt = model.createdAt
         ..updatedAt = model.updatedAt
         ..storeInfo = storeInfo;
@@ -73,6 +107,39 @@ class ShopLocalDataSource {
       logoUrl: collection.storeInfo.logoUrl,
     );
 
+    List<ProductSizeModel>? sizes;
+    if (collection.sizes != null) {
+      sizes = collection.sizes!.map((final sizeEmbedded) {
+        MeasurementsModel? measurements;
+        if (sizeEmbedded.measurements != null) {
+          final m = sizeEmbedded.measurements!;
+          measurements = MeasurementsModel(
+            height: m.height,
+            chest: m.chest,
+            waist: m.waist,
+            hips: m.hips,
+            shoulder: m.shoulder,
+            sleeve: m.sleeve,
+            heightOffset: m.heightOffset,
+            chestOffset: m.chestOffset,
+            waistOffset: m.waistOffset,
+            hipsOffset: m.hipsOffset,
+            shoulderOffset: m.shoulderOffset,
+            sleeveOffset: m.sleeveOffset,
+          );
+        }
+
+        return ProductSizeModel(
+          id: sizeEmbedded.sizeId,
+          productId: sizeEmbedded.productId,
+          name: sizeEmbedded.name,
+          measurements: measurements,
+          createdAt: sizeEmbedded.createdAt,
+          updatedAt: sizeEmbedded.updatedAt,
+        );
+      }).toList();
+    }
+
     return CacheHit(
       ShopProductModel(
         storeInfo: storeInfoModel,
@@ -89,7 +156,7 @@ class ShopLocalDataSource {
         elasticity: collection.elasticity,
         fit: collection.fit,
         styles: collection.styles,
-        sizes: null,
+        sizes: sizes,
       ),
     );
   }
