@@ -36,8 +36,8 @@ async function startVideoGeneration(
   const model = Deno.env.get("VIDEO_MODEL");
   const apiKey = Deno.env.get("VERTEX_API_KEY");
 
-  if (!project || !apiKey) {
-    throw new Error("GOOGLE_CLOUD_PROJECT and VERTEX_API_KEY environment variables are required");
+  if (!project || !apiKey || !model) {
+    throw new Error("GOOGLE_CLOUD_PROJECT, VIDEO_MODEL, and VERTEX_API_KEY environment variables are required");
   }
 
   const cleanBase64 = tryonImageBase64.replace(/^data:image\/[a-z]+;base64,/, '');
@@ -90,8 +90,8 @@ async function pollForCompletion(operationName: string, userId: string): Promise
   const model = Deno.env.get("VIDEO_MODEL");
   const apiKey = Deno.env.get("VERTEX_API_KEY");
 
-  if (!project || !apiKey) {
-    throw new Error("GOOGLE_CLOUD_PROJECT and VERTEX_API_KEY environment variables are required");
+  if (!project || !apiKey || !model) {
+    throw new Error("GOOGLE_CLOUD_PROJECT, VIDEO_MODEL, and VERTEX_API_KEY environment variables are required");
   }
 
   const endpoint = `https://${location}-aiplatform.googleapis.com/v1/projects/${project}/locations/${location}/publishers/google/models/${model}:fetchPredictOperation`;
