@@ -14,6 +14,7 @@ enum ProductElasticity {
 enum ProductFit {
   slim('slim'),
   regular('regular'),
+  plusSize('plus_size'),
   oversize('oversize');
 
   const ProductFit(this.value);

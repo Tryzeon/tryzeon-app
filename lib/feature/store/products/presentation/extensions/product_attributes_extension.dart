@@ -15,6 +15,7 @@ extension ProductFitX on ProductFit {
   String get label => switch (this) {
     ProductFit.slim => '合身',
     ProductFit.regular => '常規',
+    ProductFit.plusSize => '大尺碼',
     ProductFit.oversize => 'Oversize',
   };
 }
