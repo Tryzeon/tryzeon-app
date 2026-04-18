@@ -51,7 +51,7 @@ export async function uploadVideoToR2(buffer: ArrayBuffer, fileName: string): Pr
     Key: fileName,
   });
 
-  // Generate a presigned URL valid for 1 hour (3600 seconds)
-  const signedUrl = await getSignedUrl(s3Client, getCommand, { expiresIn: 3600 });
+  // Generate a presigned URL valid for 7 days (604800 seconds)
+  const signedUrl = await getSignedUrl(s3Client, getCommand, { expiresIn: 604800 });
   return signedUrl;
 }
