@@ -226,24 +226,26 @@ class HomePage extends HookConsumerWidget {
       final tempPath =
           '${tempDir.path}/tryon_${DateTime.now().millisecondsSinceEpoch}.mp4';
 
-      final dio = Dio();
-      await dio.download(result.videoUrl!, tempPath);
+      try {
+        final dio = Dio();
+        await dio.download(result.videoUrl!, tempPath);
 
-      // 2. Save to gallery
-      await Gal.putVideo(tempPath);
+        // 2. Save to gallery
+        await Gal.putVideo(tempPath);
 
-      // 3. Clean up temp file
-      final file = File(tempPath);
-      if (await file.exists()) {
-        await file.delete();
-      }
-
-      if (context.mounted) {
-        TopNotification.show(
-          context,
-          message: '影片已儲存到相簿',
-          type: NotificationType.success,
-        );
+        if (context.mounted) {
+          TopNotification.show(
+            context,
+            message: '影片已儲存到相簿',
+            type: NotificationType.success,
+          );
+        }
+      } finally {
+        // 3. Clean up temp file
+        final file = File(tempPath);
+        if (await file.exists()) {
+          await file.delete();
+        }
       }
     }
 
