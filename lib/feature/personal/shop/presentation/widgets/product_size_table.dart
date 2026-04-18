@@ -43,7 +43,7 @@ class ProductSizeTable extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        Text('* 此尺寸數據為手工測量，可能存在些許誤差', style: textTheme.bodySmall),
+        Text('* 此尺寸數據可能存在些許誤差', style: textTheme.bodySmall),
       ],
     );
   }
