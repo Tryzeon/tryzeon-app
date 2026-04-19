@@ -105,8 +105,8 @@ class ProductFormLayout extends StatelessWidget {
           const SizedBox(height: 24),
           ProductSizeListEditor(
             entries: sizeManager.sizeEntries,
-            isCun: sizeManager.isCun,
-            onUnitChanged: sizeManager.toggleUnit,
+            selectedUnit: sizeManager.selectedUnit,
+            onUnitChanged: sizeManager.changeUnit,
             onAdd: sizeManager.addSize,
             onRemove: sizeManager.removeSize,
           ),

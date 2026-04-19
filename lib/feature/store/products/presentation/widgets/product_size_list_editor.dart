@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:tryzeon/core/shared/measurements/entities/measurement_unit.dart';
 import 'package:tryzeon/core/shared/measurements/presentation/mappers/measurement_type_ui_mapper.dart';
 import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/store/products/presentation/controllers/product_size_entry_controller.dart';
@@ -8,15 +9,15 @@ class ProductSizeListEditor extends StatelessWidget {
   const ProductSizeListEditor({
     super.key,
     required this.entries,
-    required this.isCun,
+    required this.selectedUnit,
     required this.onUnitChanged,
     required this.onAdd,
     required this.onRemove,
   });
 
   final List<ProductSizeEntryController> entries;
-  final bool isCun;
-  final ValueChanged<bool> onUnitChanged;
+  final MeasurementUnit selectedUnit;
+  final ValueChanged<MeasurementUnit> onUnitChanged;
   final VoidCallback onAdd;
   final ValueChanged<int> onRemove;
 
@@ -64,67 +65,42 @@ class ProductSizeListEditor extends StatelessWidget {
               ),
               Row(
                 children: [
-                  // Unit Toggle
+                  // Unit Selector
                   Container(
                     height: 32,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
                       color: colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: colorScheme.outline.withValues(alpha: 0.2),
+                      ),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Semantics(
-                          button: true,
-                          selected: !isCun,
-                          label: '切換為公分',
-                          child: InkWell(
-                            onTap: () => onUnitChanged(false),
-                            borderRadius: BorderRadius.circular(8),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: !isCun ? colorScheme.primary : null,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                '公分',
-                                style: textTheme.labelSmall?.copyWith(
-                                  color: !isCun
-                                      ? colorScheme.onPrimary
-                                      : colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ),
-                          ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<MeasurementUnit>(
+                        value: selectedUnit,
+                        isDense: true,
+                        icon: Icon(
+                          Icons.arrow_drop_down,
+                          size: 20,
+                          color: colorScheme.onSurfaceVariant,
                         ),
-                        Semantics(
-                          button: true,
-                          selected: isCun,
-                          label: '切換為寸',
-                          child: InkWell(
-                            onTap: () => onUnitChanged(true),
-                            borderRadius: BorderRadius.circular(8),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: isCun ? colorScheme.primary : null,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                '寸',
-                                style: textTheme.labelSmall?.copyWith(
-                                  color: isCun
-                                      ? colorScheme.onPrimary
-                                      : colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ),
-                          ),
+                        style: textTheme.labelMedium?.copyWith(
+                          color: colorScheme.onSurface,
                         ),
-                      ],
+                        borderRadius: BorderRadius.circular(8),
+                        items: MeasurementUnit.values.map((final unit) {
+                          return DropdownMenuItem<MeasurementUnit>(
+                            value: unit,
+                            child: Text(unit.label),
+                          );
+                        }).toList(),
+                        onChanged: (final MeasurementUnit? newValue) {
+                          if (newValue != null) {
+                            onUnitChanged(newValue);
+                          }
+                        },
+                      ),
                     ),
                   ),
 
@@ -277,8 +253,8 @@ class ProductSizeListEditor extends StatelessWidget {
                           final valueController = entry.measurementControllers[type]!;
                           final offsetController = entry.offsetControllers[type]!;
 
-                          // Dynamic Label
-                          final label = isCun ? '${type.label}(寸)' : '${type.label}(公分)';
+                          // Dynamic Label based on selected unit
+                          final label = '${type.label}(${selectedUnit.symbol})';
 
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 12),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:tryzeon/core/shared/measurements/entities/measurement_unit.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/presentation/controllers/product_size_entry_controller.dart';
 
@@ -18,21 +19,21 @@ class ProductSizeDeltas {
 class ProductSizeManager {
   ProductSizeManager({
     required this.sizeEntries,
-    required this.isCun,
+    required this.selectedUnit,
     required this.addSize,
     required this.removeSize,
-    required this.toggleUnit,
+    required this.changeUnit,
   });
 
   final List<ProductSizeEntryController> sizeEntries;
-  final bool isCun;
+  final MeasurementUnit selectedUnit;
   final VoidCallback addSize;
   final void Function(int index) removeSize;
-  final void Function(bool toCun) toggleUnit;
+  final void Function(MeasurementUnit unit) changeUnit;
 
   List<CreateProductSizeParams> toCreateProductSizeParams() {
     return sizeEntries
-        .map((final entry) => entry.toCreateProductSizeParams(isCun: isCun))
+        .map((final entry) => entry.toCreateProductSizeParams(unit: selectedUnit))
         .toList();
   }
 
@@ -47,7 +48,7 @@ class ProductSizeManager {
 
     for (final entry in sizeEntries) {
       if (entry.id == null) {
-        sizesToAdd.add(entry.toCreateProductSizeParams(isCun: isCun));
+        sizesToAdd.add(entry.toCreateProductSizeParams(unit: selectedUnit));
       } else {
         targetSizeIds.add(entry.id!);
 
@@ -56,7 +57,7 @@ class ProductSizeManager {
             .firstOrNull;
 
         if (originalSize != null) {
-          final updatedSize = entry.toProductSize(productId, isCun: isCun);
+          final updatedSize = entry.toProductSize(productId, unit: selectedUnit);
 
           if (originalSize != updatedSize) {
             sizesToUpdate.add(updatedSize);
@@ -77,7 +78,7 @@ class ProductSizeManager {
 
 ProductSizeManager useProductSizeManager({final List<ProductSize>? initialSizes}) {
   final sizeEntries = useState<List<ProductSizeEntryController>>([]);
-  final isCun = useState(false);
+  final selectedUnit = useState(MeasurementUnit.centimeter);
 
   // Initialize size entries from existing product
   useEffect(() {
@@ -107,18 +108,20 @@ ProductSizeManager useProductSizeManager({final List<ProductSize>? initialSizes}
     sizeEntries.value = newList;
   }
 
-  void toggleUnit(final bool toCun) {
-    isCun.value = toCun;
+  void changeUnit(final MeasurementUnit newUnit) {
+    final oldUnit = selectedUnit.value;
+    selectedUnit.value = newUnit;
+
     for (final entry in sizeEntries.value) {
-      entry.convertValues(toCun: toCun);
+      entry.convertValues(fromUnit: oldUnit, toUnit: newUnit);
     }
   }
 
   return ProductSizeManager(
     sizeEntries: sizeEntries.value,
-    isCun: isCun.value,
+    selectedUnit: selectedUnit.value,
     addSize: addSize,
     removeSize: removeSize,
-    toggleUnit: toggleUnit,
+    changeUnit: changeUnit,
   );
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tryzeon/core/shared/measurements/entities/measurement_unit.dart';
 import 'package:tryzeon/core/shared/measurements/entities/measurements.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 
@@ -39,23 +40,19 @@ class ProductSizeEntryController {
   final Map<MeasurementType, TextEditingController> measurementControllers = {};
   final Map<MeasurementType, TextEditingController> offsetControllers = {};
 
-  static const double _cunToCmFactor = 3.03; // 1 Cun = 3.03 CM
-
-  double? _parseAndConvert(final String? text, final double multiplier) {
+  double? _parseAndConvert(final String? text, final MeasurementUnit unit) {
     if (text == null || text.isEmpty) return null;
     final value = double.tryParse(text);
     if (value == null) return null;
-    return double.parse((value * multiplier).toStringAsFixed(1));
+    return double.parse((value * unit.toCmFactor).toStringAsFixed(1));
   }
 
-  Measurements _buildMeasurements({required final bool isCun}) {
-    final multiplier = isCun ? _cunToCmFactor : 1.0;
-
+  Measurements _buildMeasurements({required final MeasurementUnit unit}) {
     double? getValue(final MeasurementType type) =>
-        _parseAndConvert(measurementControllers[type]?.text, multiplier);
+        _parseAndConvert(measurementControllers[type]?.text, unit);
 
     double? getOffset(final MeasurementType type) =>
-        _parseAndConvert(offsetControllers[type]?.text.trim(), multiplier);
+        _parseAndConvert(offsetControllers[type]?.text.trim(), unit);
 
     return Measurements(
       height: getValue(MeasurementType.height),
@@ -73,26 +70,36 @@ class ProductSizeEntryController {
     );
   }
 
-  CreateProductSizeParams toCreateProductSizeParams({required final bool isCun}) {
+  CreateProductSizeParams toCreateProductSizeParams({
+    required final MeasurementUnit unit,
+  }) {
     return CreateProductSizeParams(
       name: nameController.text,
-      measurements: _buildMeasurements(isCun: isCun),
+      measurements: _buildMeasurements(unit: unit),
     );
   }
 
-  ProductSize toProductSize(final String productId, {required final bool isCun}) {
+  ProductSize toProductSize(
+    final String productId, {
+    required final MeasurementUnit unit,
+  }) {
     return ProductSize(
       id: id!,
       productId: productId,
       name: nameController.text,
-      measurements: _buildMeasurements(isCun: isCun),
+      measurements: _buildMeasurements(unit: unit),
       createdAt: createdAt!,
       updatedAt: updatedAt!,
     );
   }
 
-  void convertValues({required final bool toCun}) {
-    final factor = toCun ? 1 / _cunToCmFactor : _cunToCmFactor;
+  void convertValues({
+    required final MeasurementUnit fromUnit,
+    required final MeasurementUnit toUnit,
+  }) {
+    if (fromUnit == toUnit) return;
+
+    final factor = fromUnit.toCmFactor / toUnit.toCmFactor;
 
     void convert(final TextEditingController controller) {
       final value = double.tryParse(controller.text);
