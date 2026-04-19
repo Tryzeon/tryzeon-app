@@ -69,7 +69,7 @@ class ShopLocalDataSource {
         ..elasticity = model.elasticity
         ..fit = model.fit
         ..styles = model.styles
-        ..sizes = sizes 
+        ..sizes = sizes
         ..createdAt = model.createdAt
         ..updatedAt = model.updatedAt
         ..storeInfo = storeInfo;
