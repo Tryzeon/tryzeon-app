@@ -1,8 +1,6 @@
 enum Gender {
   female('female'),
-  male('male'),
-  nonBinary('non_binary'),
-  undisclosed('undisclosed');
+  male('male');
 
   const Gender(this.value);
   final String value;
@@ -10,8 +8,6 @@ enum Gender {
   String get label => switch (this) {
     Gender.female => '女性',
     Gender.male => '男性',
-    Gender.nonBinary => '非二元',
-    Gender.undisclosed => '不願透露',
   };
 
   static Gender? tryFromString(final String value) =>
