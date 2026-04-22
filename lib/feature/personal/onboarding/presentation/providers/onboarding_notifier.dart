@@ -2,7 +2,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/personal/onboarding/providers/personal_onboarding_providers.dart';
-import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
@@ -16,7 +15,7 @@ sealed class OnboardingState with _$OnboardingState {
   const factory OnboardingState({
     @Default(0) final int currentStep,
     final Gender? gender,
-    final AgeRange? ageRange,
+    final int? age,
     @Default([]) final List<ClothingStyle> stylePreferences,
     @Default(false) final bool isSubmitting,
   }) = _OnboardingState;
@@ -31,8 +30,8 @@ class OnboardingNotifier extends _$OnboardingNotifier {
     state = state.copyWith(gender: gender);
   }
 
-  void setAgeRange(final AgeRange ageRange) {
-    state = state.copyWith(ageRange: ageRange);
+  void setAge(final int age) {
+    state = state.copyWith(age: age);
   }
 
   void toggleStylePreference(final ClothingStyle style) {
@@ -59,7 +58,7 @@ class OnboardingNotifier extends _$OnboardingNotifier {
 
   bool get canProceed => switch (state.currentStep) {
     0 => state.gender != null,
-    1 => state.ageRange != null,
+    1 => state.age != null,
     2 => true, // Style is skippable
     _ => false,
   };
@@ -77,7 +76,7 @@ class OnboardingNotifier extends _$OnboardingNotifier {
     final result = await useCase(
       original: original,
       gender: state.gender,
-      ageRange: state.ageRange,
+      age: state.age,
       stylePreferences: state.stylePreferences.isEmpty ? null : state.stylePreferences,
     );
 

@@ -1,5 +1,4 @@
 import 'package:tryzeon/core/error/failures.dart';
-import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
@@ -14,12 +13,12 @@ class CompleteOnboarding {
   Future<Result<void, Failure>> call({
     required final UserProfile original,
     final Gender? gender,
-    final AgeRange? ageRange,
+    final int? age,
     final List<ClothingStyle>? stylePreferences,
   }) async {
     final target = original.copyWith(
       gender: gender,
-      ageRange: ageRange,
+      age: age,
       stylePreferences: stylePreferences,
       isOnboarded: true,
     );

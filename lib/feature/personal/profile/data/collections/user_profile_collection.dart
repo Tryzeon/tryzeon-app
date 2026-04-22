@@ -19,7 +19,7 @@ class UserProfileCollection {
   MeasurementsCollection? measurements;
 
   String? gender;
-  String? ageRange;
+  int? age;
   List<String>? stylePreferences;
   late bool isOnboarded;
 }

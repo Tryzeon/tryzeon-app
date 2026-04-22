@@ -1,6 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/core/shared/measurements/entities/measurements.dart';
-import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 
@@ -17,7 +16,7 @@ sealed class UserProfile with _$UserProfile {
     final String? avatarPath,
     final String? email,
     final Gender? gender,
-    final AgeRange? ageRange,
+    final int? age,
     final List<ClothingStyle>? stylePreferences,
     @Default(false) final bool isOnboarded,
   }) = _UserProfile;

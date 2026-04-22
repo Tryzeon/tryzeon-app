@@ -14,7 +14,7 @@ class UserProfileModel {
     this.measurements,
     this.avatarPath,
     this.gender,
-    this.ageRange,
+    this.age,
     this.stylePreferences,
     this.isOnboarded = false,
   });
@@ -30,7 +30,7 @@ class UserProfileModel {
   final MeasurementsModel? measurements;
   final String? avatarPath;
   final String? gender;
-  final String? ageRange;
+  final int? age;
   final List<String>? stylePreferences;
   @JsonKey(defaultValue: false)
   final bool isOnboarded;
