@@ -65,10 +65,6 @@ class OnboardingNotifier extends _$OnboardingNotifier {
   };
 
   Future<Result<void, Failure>> completeOnboarding() async {
-    if (state.gender == null || state.ageRange == null) {
-      return const Err(ValidationFailure('請完成所有必填步驟'));
-    }
-
     state = state.copyWith(isSubmitting: true);
 
     final original = await ref.read(userProfileProvider.future);
@@ -80,8 +76,8 @@ class OnboardingNotifier extends _$OnboardingNotifier {
     final useCase = ref.read(completeOnboardingUseCaseProvider);
     final result = await useCase(
       original: original,
-      gender: state.gender!,
-      ageRange: state.ageRange!,
+      gender: state.gender,
+      ageRange: state.ageRange,
       stylePreferences: state.stylePreferences.isEmpty ? null : state.stylePreferences,
     );
 

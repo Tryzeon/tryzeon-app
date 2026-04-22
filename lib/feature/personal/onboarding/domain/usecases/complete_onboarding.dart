@@ -13,8 +13,8 @@ class CompleteOnboarding {
 
   Future<Result<void, Failure>> call({
     required final UserProfile original,
-    required final Gender gender,
-    required final AgeRange ageRange,
+    final Gender? gender,
+    final AgeRange? ageRange,
     final List<ClothingStyle>? stylePreferences,
   }) async {
     final target = original.copyWith(

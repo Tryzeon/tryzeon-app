@@ -47,11 +47,9 @@ class PersonalOnboardingPage extends HookConsumerWidget {
             : null,
         automaticallyImplyLeading: false,
         actions: [
-          if (currentStep == _totalSteps - 1)
+          if (currentStep < _totalSteps - 1)
             TextButton(
-              onPressed: onboardingState.isSubmitting
-                  ? null
-                  : () => _handleComplete(context, notifier),
+              onPressed: notifier.nextStep,
               child: const Text('略過'),
             ),
         ],
