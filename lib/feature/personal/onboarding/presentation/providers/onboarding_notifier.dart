@@ -50,6 +50,17 @@ class OnboardingNotifier extends _$OnboardingNotifier {
     }
   }
 
+  void skipStep() {
+    state = switch (state.currentStep) {
+      0 => state.copyWith(gender: null),
+      1 => state.copyWith(age: null),
+      2 => state.copyWith(stylePreferences: []),
+      _ => state,
+    };
+    
+    nextStep();
+  }
+
   void previousStep() {
     if (state.currentStep > 0) {
       state = state.copyWith(currentStep: state.currentStep - 1);

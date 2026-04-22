@@ -49,7 +49,7 @@ class PersonalOnboardingPage extends HookConsumerWidget {
         actions: [
           if (currentStep < _totalSteps - 1)
             TextButton(
-              onPressed: notifier.nextStep,
+              onPressed: notifier.skipStep,
               child: const Text('略過'),
             ),
         ],
