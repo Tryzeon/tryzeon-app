@@ -18,9 +18,7 @@ class AgeStep extends HookConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final notifier = ref.read(onboardingProvider.notifier);
 
-    final controller = useFixedExtentScrollController(
-      initialItem: _defaultAge - _minAge,
-    );
+    final controller = useFixedExtentScrollController(initialItem: _defaultAge - _minAge);
 
     useEffect(() {
       Future.microtask(() => notifier.setAge(_defaultAge));
@@ -56,10 +54,7 @@ class AgeStep extends HookConsumerWidget {
                     children: List.generate(
                       _maxAge - _minAge + 1,
                       (final i) => Center(
-                        child: Text(
-                          '${_minAge + i}',
-                          style: textTheme.headlineSmall,
-                        ),
+                        child: Text('${_minAge + i}', style: textTheme.headlineSmall),
                       ),
                     ),
                   ),

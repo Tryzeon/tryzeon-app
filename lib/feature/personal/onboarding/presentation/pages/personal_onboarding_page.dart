@@ -48,10 +48,7 @@ class PersonalOnboardingPage extends HookConsumerWidget {
         automaticallyImplyLeading: false,
         actions: [
           if (currentStep < _totalSteps - 1)
-            TextButton(
-              onPressed: notifier.skipStep,
-              child: const Text('略過'),
-            ),
+            TextButton(onPressed: notifier.skipStep, child: const Text('略過')),
         ],
       ),
       body: Column(
@@ -61,11 +58,7 @@ class PersonalOnboardingPage extends HookConsumerWidget {
             child: PageView(
               controller: pageController,
               physics: const NeverScrollableScrollPhysics(),
-              children: const [
-                GenderSelectionStep(),
-                AgeStep(),
-                StylePreferenceStep(),
-              ],
+              children: const [GenderSelectionStep(), AgeStep(), StylePreferenceStep()],
             ),
           ),
 

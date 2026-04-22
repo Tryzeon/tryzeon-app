@@ -57,7 +57,7 @@ class OnboardingNotifier extends _$OnboardingNotifier {
       2 => state.copyWith(stylePreferences: []),
       _ => state,
     };
-    
+
     nextStep();
   }
 
