@@ -60,7 +60,7 @@ class ProductSizeListEditor extends StatelessWidget {
                 children: [
                   Icon(Icons.straighten_rounded, color: colorScheme.primary, size: 20),
                   const SizedBox(width: 8),
-                  Text('尺寸列表', style: textTheme.bodyMedium),
+                  Text('尺寸列表 (選填)', style: textTheme.bodyMedium),
                 ],
               ),
               Row(

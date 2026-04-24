@@ -219,7 +219,7 @@ class ProductBasicInfoEditor extends StatelessWidget {
             controller: purchaseLinkController,
             style: textTheme.bodyLarge,
             decoration: InputDecoration(
-              labelText: '導購連結',
+              labelText: '導購連結 (選填)',
               hintText: 'https://...',
               labelStyle: textTheme.bodyMedium,
               prefixIcon: Icon(Icons.link_rounded, color: colorScheme.primary),
@@ -246,7 +246,7 @@ class ProductBasicInfoEditor extends StatelessWidget {
             controller: materialController,
             style: textTheme.bodyLarge,
             decoration: InputDecoration(
-              labelText: '材質描述',
+              labelText: '材質描述 (選填)',
               hintText: '例如: 100% 棉',
               labelStyle: textTheme.bodyMedium,
               prefixIcon: Icon(Icons.texture, color: colorScheme.primary),
@@ -273,7 +273,7 @@ class ProductBasicInfoEditor extends StatelessWidget {
                 child: DropdownButtonFormField<ProductElasticity>(
                   initialValue: selectedElasticity.value,
                   decoration: InputDecoration(
-                    labelText: '彈性',
+                    labelText: '彈性 (選填)',
                     labelStyle: textTheme.bodyMedium,
                     prefixIcon: Icon(Icons.waves, color: colorScheme.primary),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -301,7 +301,7 @@ class ProductBasicInfoEditor extends StatelessWidget {
                 child: DropdownButtonFormField<ProductFit>(
                   initialValue: selectedFit.value,
                   decoration: InputDecoration(
-                    labelText: '版型',
+                    labelText: '版型 (選填)',
                     labelStyle: textTheme.bodyMedium,
                     prefixIcon: Icon(Icons.accessibility_new, color: colorScheme.primary),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
