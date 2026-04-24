@@ -19,3 +19,12 @@ extension ProductFitX on ProductFit {
     ProductFit.oversize => 'Oversize',
   };
 }
+
+/// UI display label extension for [ProductThickness] in Presentation Layer.
+extension ProductThicknessX on ProductThickness {
+  String get label => switch (this) {
+    ProductThickness.low => '薄',
+    ProductThickness.medium => '中',
+    ProductThickness.high => '厚',
+  };
+}

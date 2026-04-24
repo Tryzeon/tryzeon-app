@@ -23,3 +23,15 @@ enum ProductFit {
   static ProductFit? tryFromString(final String? value) =>
       ProductFit.values.where((final e) => e.value == value).firstOrNull;
 }
+
+enum ProductThickness {
+  low('low'),
+  medium('medium'),
+  high('high');
+
+  const ProductThickness(this.value);
+  final String value;
+
+  static ProductThickness? tryFromString(final String? value) =>
+      ProductThickness.values.where((final e) => e.value == value).firstOrNull;
+}
