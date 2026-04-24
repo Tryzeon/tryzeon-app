@@ -22,6 +22,7 @@ class ProductCollection {
 
   String? elasticity;
   String? fit;
+  String? thickness;
 
   List<String>? styles;
 

@@ -16,6 +16,7 @@ class CreateProductRequest {
     this.material,
     this.elasticity,
     this.fit,
+    this.thickness,
     this.styles,
   });
 
@@ -28,6 +29,7 @@ class CreateProductRequest {
   final String? material;
   final String? elasticity;
   final String? fit;
+  final String? thickness;
   final List<String>? styles;
 
   Map<String, dynamic> toJson() => _$CreateProductRequestToJson(this);
