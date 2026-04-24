@@ -18,6 +18,7 @@ class ProductFormData {
     required this.selectedCategoryIds,
     required this.selectedElasticity,
     required this.selectedFit,
+    required this.selectedThickness,
     required this.selectedStyles,
   });
 
@@ -30,6 +31,7 @@ class ProductFormData {
   final ValueNotifier<Set<String>> selectedCategoryIds;
   final ValueNotifier<ProductElasticity?> selectedElasticity;
   final ValueNotifier<ProductFit?> selectedFit;
+  final ValueNotifier<ProductThickness?> selectedThickness;
   final ValueNotifier<List<ClothingStyle>?> selectedStyles;
 
   bool validate(final BuildContext context) {
@@ -60,6 +62,7 @@ class ProductFormData {
       material: materialController.text.isNotEmpty ? materialController.text : null,
       elasticity: selectedElasticity.value,
       fit: selectedFit.value,
+      thickness: selectedThickness.value,
       styles: selectedStyles.value,
       sizes: sizes,
     );
@@ -83,6 +86,7 @@ class ProductFormData {
       material: materialController.text,
       elasticity: selectedElasticity.value,
       fit: selectedFit.value,
+      thickness: selectedThickness.value,
       styles: selectedStyles.value,
       imagePaths: imagePaths,
       imageUrls: imageUrls,
@@ -124,6 +128,9 @@ ProductFormData useProductForm({final Product? initialProduct}) {
     initialProduct?.elasticity,
   );
   final selectedFit = useValueNotifier<ProductFit?>(initialProduct?.fit);
+  final selectedThickness = useValueNotifier<ProductThickness?>(
+    initialProduct?.thickness,
+  );
   final selectedStyles = useValueNotifier<List<ClothingStyle>?>(initialProduct?.styles);
 
   return ProductFormData(
@@ -136,6 +143,7 @@ ProductFormData useProductForm({final Product? initialProduct}) {
     selectedCategoryIds: selectedCategoryIds,
     selectedElasticity: selectedElasticity,
     selectedFit: selectedFit,
+    selectedThickness: selectedThickness,
     selectedStyles: selectedStyles,
   );
 }
