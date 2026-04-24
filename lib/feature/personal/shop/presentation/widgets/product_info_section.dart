@@ -38,6 +38,16 @@ class ProductInfoSection extends StatelessWidget {
           const SizedBox(height: 8),
         ],
 
+        if (product.thickness != null) ...[
+          Row(
+            children: [
+              SizedBox(width: 60, child: Text('厚薄度', style: textTheme.bodyMedium)),
+              Text(product.thickness!.label, style: textTheme.bodyMedium),
+            ],
+          ),
+          const SizedBox(height: 8),
+        ],
+
         if (product.fit != null) ...[
           Row(
             children: [
