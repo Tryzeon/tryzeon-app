@@ -22,6 +22,7 @@ class ProductBasicInfoEditor extends StatelessWidget {
     required this.selectedCategoryIds,
     required this.selectedElasticity,
     required this.selectedFit,
+    required this.selectedThickness,
     required this.selectedStyles,
     required this.productCategoryTreeAsync,
     required this.onRetryCategories,
@@ -34,6 +35,7 @@ class ProductBasicInfoEditor extends StatelessWidget {
   final ValueNotifier<Set<String>> selectedCategoryIds;
   final ValueNotifier<ProductElasticity?> selectedElasticity;
   final ValueNotifier<ProductFit?> selectedFit;
+  final ValueNotifier<ProductThickness?> selectedThickness;
   final ValueNotifier<List<ClothingStyle>?> selectedStyles;
 
   final AsyncValue<List<CategoryTreeNode>> productCategoryTreeAsync;
@@ -323,6 +325,32 @@ class ProductBasicInfoEditor extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 12),
+          DropdownButtonFormField<ProductThickness>(
+            initialValue: selectedThickness.value,
+            decoration: InputDecoration(
+              labelText: '厚薄度 (選填)',
+              labelStyle: textTheme.bodyMedium,
+              prefixIcon: Icon(Icons.layers_outlined, color: colorScheme.primary),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              filled: true,
+              fillColor: colorScheme.surfaceContainer,
+            ),
+            isExpanded: true,
+            items: ProductThickness.values.map((final t) {
+              return DropdownMenuItem(
+                value: t,
+                child: Text(
+                  t.label,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.bodyLarge,
+                ),
+              );
+            }).toList(),
+            onChanged: (final value) {
+              selectedThickness.value = value;
+            },
           ),
         ],
       ),
