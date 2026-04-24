@@ -105,6 +105,7 @@ class ProductRepositoryImpl implements ProductRepository {
         material: params.material,
         elasticity: params.elasticity?.value,
         fit: params.fit?.value,
+        thickness: params.thickness?.value,
         styles: params.styles?.map((final e) => e.value).toList(),
       );
 
@@ -235,6 +236,7 @@ class ProductRepositoryImpl implements ProductRepository {
         material: params.material,
         elasticity: params.elasticity,
         fit: params.fit,
+        thickness: params.thickness,
         styles: params.styles,
         imagePaths: finalImagePaths,
       );
