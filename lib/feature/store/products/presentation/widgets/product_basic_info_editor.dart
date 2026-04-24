@@ -147,6 +147,33 @@ class ProductBasicInfoEditor extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
+          TextFormField(
+            controller: priceController,
+            style: textTheme.bodyLarge,
+            decoration: InputDecoration(
+              labelText: '價格',
+              labelStyle: textTheme.bodyMedium,
+              prefixIcon: Icon(Icons.attach_money_rounded, color: colorScheme.primary),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: colorScheme.primary, width: 2),
+              ),
+              filled: true,
+              fillColor: colorScheme.surfaceContainer,
+            ),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
+            validator: AppValidators.validatePrice,
+          ),
+          const SizedBox(height: 16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -186,33 +213,6 @@ class ProductBasicInfoEditor extends StatelessWidget {
                 },
               ),
             ],
-          ),
-          const SizedBox(height: 16),
-          TextFormField(
-            controller: priceController,
-            style: textTheme.bodyLarge,
-            decoration: InputDecoration(
-              labelText: '價格',
-              labelStyle: textTheme.bodyMedium,
-              prefixIcon: Icon(Icons.attach_money_rounded, color: colorScheme.primary),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: colorScheme.primary, width: 2),
-              ),
-              filled: true,
-              fillColor: colorScheme.surfaceContainer,
-            ),
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
-            validator: AppValidators.validatePrice,
           ),
           const SizedBox(height: 12),
           TextFormField(
