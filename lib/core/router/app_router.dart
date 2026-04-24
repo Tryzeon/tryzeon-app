@@ -12,6 +12,7 @@ import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
+import 'package:tryzeon/main.dart';
 import 'package:typed_result/typed_result.dart';
 
 part 'app_router.g.dart';
@@ -30,6 +31,7 @@ Raw<GoRouter> appRouter(final Ref ref) {
   ref.onDispose(refreshListenable.dispose);
 
   final router = GoRouter(
+    navigatorKey: navigatorKey,
     initialLocation: AppRoutes.login,
     refreshListenable: refreshListenable,
     observers: [FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance)],

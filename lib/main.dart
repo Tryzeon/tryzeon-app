@@ -12,9 +12,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/env.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/presentation/widgets/app_upgrade_alert.dart';
 import 'package:tryzeon/core/router/app_router.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:upgrader/upgrader.dart';
 import 'firebase_options.dart';
+
+// Global navigator key for upgrader dialog
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Duration? customRetry(final int retryCount, final Object error) {
   if (retryCount >= 3) return null;
@@ -83,12 +88,18 @@ class Tryzeon extends HookConsumerWidget {
       }
     });
 
+    final upgrader = useMemoized(
+      () => Upgrader(durationUntilAlertAgain: const Duration(days: 3)),
+    );
+
     final router = ref.watch(appRouterProvider);
 
     return MaterialApp.router(
       title: 'TryZeon',
       theme: AppTheme.lightTheme,
       routerConfig: router,
+      builder: (final context, final child) =>
+          AppUpgradeAlert(upgrader: upgrader, navigatorKey: navigatorKey, child: child),
     );
   }
 }
