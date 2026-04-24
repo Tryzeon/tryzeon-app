@@ -20,6 +20,7 @@ sealed class ShopProduct with _$ShopProduct {
     final String? material,
     final ProductElasticity? elasticity,
     final ProductFit? fit,
+    final ProductThickness? thickness,
     final List<ClothingStyle>? styles,
     final List<ProductSize>? sizes,
     required final DateTime createdAt,

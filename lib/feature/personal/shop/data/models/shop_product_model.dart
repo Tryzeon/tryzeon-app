@@ -20,6 +20,7 @@ class ShopProductModel {
     this.material,
     this.elasticity,
     this.fit,
+    this.thickness,
     this.styles,
     this.sizes,
   });
@@ -40,6 +41,7 @@ class ShopProductModel {
   final String? material;
   final String? elasticity;
   final String? fit;
+  final String? thickness;
   final List<String>? styles;
   @JsonKey(name: 'product_variants', includeToJson: false)
   final List<ProductSizeModel>? sizes;
