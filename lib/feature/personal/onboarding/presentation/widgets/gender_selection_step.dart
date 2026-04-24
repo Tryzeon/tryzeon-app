@@ -21,7 +21,7 @@ class GenderSelectionStep extends HookConsumerWidget {
           const SizedBox(height: 10),
           Text('你的性別', style: textTheme.headlineMedium),
           const SizedBox(height: 8),
-          Text('選擇一個選項', style: textTheme.bodyMedium),
+          Text('優先推薦符合你性別的款式', style: textTheme.bodyMedium),
           const SizedBox(height: 24),
           ...Gender.values.map(
             (final gender) => RadioListTile<Gender>(

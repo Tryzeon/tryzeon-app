@@ -33,7 +33,7 @@ class AgeStep extends HookConsumerWidget {
           const SizedBox(height: 10),
           Text('你的年齡', style: textTheme.headlineMedium),
           const SizedBox(height: 8),
-          Text('請選擇你的年齡', style: textTheme.bodyMedium),
+          Text('您的年齡不會公開顯示', style: textTheme.bodyMedium),
           const SizedBox(height: 32),
           Center(
             child: Row(
