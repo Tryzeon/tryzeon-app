@@ -140,6 +140,7 @@ class _ProductDetailContentPage extends HookConsumerWidget {
               : null,
           elasticity: formData.selectedElasticity.value,
           fit: formData.selectedFit.value,
+          thickness: formData.selectedThickness.value,
           styles: formData.selectedStyles.value,
         ),
       );

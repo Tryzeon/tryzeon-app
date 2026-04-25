@@ -68,6 +68,7 @@ class ShopLocalDataSource {
         ..material = model.material
         ..elasticity = model.elasticity
         ..fit = model.fit
+        ..thickness = model.thickness
         ..styles = model.styles
         ..sizes = sizes
         ..createdAt = model.createdAt
@@ -155,6 +156,7 @@ class ShopLocalDataSource {
         material: collection.material,
         elasticity: collection.elasticity,
         fit: collection.fit,
+        thickness: collection.thickness,
         styles: collection.styles,
         sizes: sizes,
       ),

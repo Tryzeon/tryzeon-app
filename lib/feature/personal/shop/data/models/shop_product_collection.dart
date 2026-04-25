@@ -20,6 +20,7 @@ class ShopProductCollection {
   String? material;
   String? elasticity;
   String? fit;
+  String? thickness;
   List<String>? styles;
 
   List<ProductSizeEmbedded>? sizes;
