@@ -18,6 +18,7 @@ class CreateProductRequest {
     this.fit,
     this.thickness,
     this.styles,
+    this.seasons,
   });
 
   final String storeId;
@@ -31,6 +32,7 @@ class CreateProductRequest {
   final String? fit;
   final String? thickness;
   final List<String>? styles;
+  final List<String>? seasons;
 
   Map<String, dynamic> toJson() => _$CreateProductRequestToJson(this);
 }

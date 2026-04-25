@@ -25,6 +25,7 @@ class ProductCollection {
   String? thickness;
 
   List<String>? styles;
+  List<String>? seasons;
 
   late DateTime createdAt;
   late DateTime updatedAt;

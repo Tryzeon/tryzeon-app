@@ -22,6 +22,7 @@ class ShopProductCollection {
   String? fit;
   String? thickness;
   List<String>? styles;
+  List<String>? seasons;
 
   List<ProductSizeEmbedded>? sizes;
 

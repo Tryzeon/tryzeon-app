@@ -22,6 +22,7 @@ class ShopProductModel {
     this.fit,
     this.thickness,
     this.styles,
+    this.seasons,
     this.sizes,
   });
 
@@ -43,6 +44,7 @@ class ShopProductModel {
   final String? fit;
   final String? thickness;
   final List<String>? styles;
+  final List<String>? seasons;
   @JsonKey(name: 'product_variants', includeToJson: false)
   final List<ProductSizeModel>? sizes;
   final DateTime createdAt;
