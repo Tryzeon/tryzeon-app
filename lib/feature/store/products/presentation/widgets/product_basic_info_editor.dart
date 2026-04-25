@@ -331,129 +331,113 @@ class ProductBasicInfoEditor extends StatelessWidget {
             },
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: DropdownButtonFormField<ProductElasticity>(
-                  initialValue: selectedElasticity.value,
-                  decoration: InputDecoration(
-                    labelText: '彈性 (選填)',
-                    labelStyle: textTheme.bodyMedium,
-                    prefixIcon: Icon(Icons.waves, color: colorScheme.primary),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    filled: true,
-                    fillColor: colorScheme.surfaceContainer,
-                  ),
-                  isExpanded: true,
-                  items: ProductElasticity.values.map((final e) {
-                    return DropdownMenuItem(
-                      value: e,
-                      child: Text(
-                        e.label,
-                        overflow: TextOverflow.ellipsis,
-                        style: textTheme.bodyLarge,
+          DropdownButtonFormField<ProductElasticity>(
+            initialValue: selectedElasticity.value,
+            decoration: InputDecoration(
+              labelText: '彈性 (選填)',
+              labelStyle: textTheme.bodyMedium,
+              prefixIcon: Icon(Icons.waves, color: colorScheme.primary),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              filled: true,
+              fillColor: colorScheme.surfaceContainer,
+            ),
+            isExpanded: true,
+            items: ProductElasticity.values.map((final e) {
+              return DropdownMenuItem(
+                value: e,
+                child: Text(
+                  e.label,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.bodyLarge,
+                ),
+              );
+            }).toList(),
+            onChanged: (final value) {
+              selectedElasticity.value = value;
+            },
+          ),
+          const SizedBox(height: 12),
+          ValueListenableBuilder<String?>(
+            valueListenable: selectedFitPreset,
+            builder: (final context, final fitPreset, final _) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  DropdownButtonFormField<String>(
+                    initialValue: fitPreset,
+                    decoration: InputDecoration(
+                      labelText: '版型 (選填)',
+                      labelStyle: textTheme.bodyMedium,
+                      prefixIcon: Icon(
+                        Icons.accessibility_new,
+                        color: colorScheme.primary,
                       ),
-                    );
-                  }).toList(),
-                  onChanged: (final value) {
-                    selectedElasticity.value = value;
-                  },
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: ValueListenableBuilder<String?>(
-                  valueListenable: selectedFitPreset,
-                  builder: (final context, final fitPreset, final _) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        DropdownButtonFormField<String>(
-                          initialValue: fitPreset,
-                          decoration: InputDecoration(
-                            labelText: '版型 (選填)',
-                            labelStyle: textTheme.bodyMedium,
-                            prefixIcon: Icon(
-                              Icons.accessibility_new,
-                              color: colorScheme.primary,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            filled: true,
-                            fillColor: colorScheme.surfaceContainer,
-                          ),
-                          isExpanded: true,
-                          items: [
-                            ...kFitPresets.map(
-                              (final preset) => DropdownMenuItem(
-                                value: preset,
-                                child: Text(
-                                  preset,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: textTheme.bodyLarge,
-                                ),
-                              ),
-                            ),
-                            DropdownMenuItem(
-                              value: kOtherSentinel,
-                              child: Text(
-                                '其他 (自行輸入)',
-                                overflow: TextOverflow.ellipsis,
-                                style: textTheme.bodyLarge,
-                              ),
-                            ),
-                          ],
-                          onChanged: (final value) {
-                            selectedFitPreset.value = value;
-                            if (value != kOtherSentinel) {
-                              fitOtherController.clear();
-                            }
-                          },
-                        ),
-                        if (fitPreset == kOtherSentinel) ...[
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: fitOtherController,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      filled: true,
+                      fillColor: colorScheme.surfaceContainer,
+                    ),
+                    isExpanded: true,
+                    items: [
+                      ...kFitPresets.map(
+                        (final preset) => DropdownMenuItem(
+                          value: preset,
+                          child: Text(
+                            preset,
+                            overflow: TextOverflow.ellipsis,
                             style: textTheme.bodyLarge,
-                            decoration: InputDecoration(
-                              labelText: '請輸入版型',
-                              hintText: '不規則剪裁…',
-                              labelStyle: textTheme.bodyMedium,
-                              prefixIcon: Icon(
-                                Icons.edit_outlined,
-                                color: colorScheme.primary,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: colorScheme.outline.withValues(alpha: 0.3),
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: colorScheme.outline.withValues(alpha: 0.3),
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: colorScheme.primary,
-                                  width: 2,
-                                ),
-                              ),
-                              filled: true,
-                              fillColor: colorScheme.surfaceContainer,
-                            ),
                           ),
-                        ],
-                      ],
-                    );
-                  },
-                ),
-              ),
-            ],
+                        ),
+                      ),
+                      DropdownMenuItem(
+                        value: kOtherSentinel,
+                        child: Text(
+                          '其他 (自行輸入)',
+                          overflow: TextOverflow.ellipsis,
+                          style: textTheme.bodyLarge,
+                        ),
+                      ),
+                    ],
+                    onChanged: (final value) {
+                      selectedFitPreset.value = value;
+                      if (value != kOtherSentinel) {
+                        fitOtherController.clear();
+                      }
+                    },
+                  ),
+                  if (fitPreset == kOtherSentinel) ...[
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: fitOtherController,
+                      style: textTheme.bodyLarge,
+                      decoration: InputDecoration(
+                        labelText: '請輸入版型',
+                        hintText: '不規則剪裁…',
+                        labelStyle: textTheme.bodyMedium,
+                        prefixIcon: Icon(Icons.edit_outlined, color: colorScheme.primary),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: colorScheme.outline.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: colorScheme.outline.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                        ),
+                        filled: true,
+                        fillColor: colorScheme.surfaceContainer,
+                      ),
+                    ),
+                  ],
+                ],
+              );
+            },
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<ProductThickness>(

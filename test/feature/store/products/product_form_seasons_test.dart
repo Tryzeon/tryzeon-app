@@ -53,6 +53,7 @@ void main() {
     expect(product.seasons, seasons);
     expect(editorSource, contains('ProductSeasonSelector('));
     expect(editorSource, contains("Text('季節 (選填)'"));
+    expect(editorSource, isNot(contains('const SizedBox(width: 16),')));
     expect(layoutSource, contains('selectedSeasons: formData.selectedSeasons,'));
     expect(detailSource, contains('seasons: formData.selectedSeasons.value,'));
   });
