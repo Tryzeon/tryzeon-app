@@ -10,6 +10,7 @@ import 'package:tryzeon/feature/store/products/domain/value_objects/product_attr
 
 import 'package:tryzeon/feature/store/products/presentation/extensions/product_attributes_extension.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_category_selector.dart';
+import 'package:tryzeon/feature/store/products/presentation/widgets/product_season_selector.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_style_selector.dart';
 
 class ProductBasicInfoEditor extends StatelessWidget {
@@ -24,6 +25,7 @@ class ProductBasicInfoEditor extends StatelessWidget {
     required this.selectedFit,
     required this.selectedThickness,
     required this.selectedStyles,
+    required this.selectedSeasons,
     required this.productCategoryTreeAsync,
     required this.onRetryCategories,
   });
@@ -37,6 +39,7 @@ class ProductBasicInfoEditor extends StatelessWidget {
   final ValueNotifier<ProductFit?> selectedFit;
   final ValueNotifier<ProductThickness?> selectedThickness;
   final ValueNotifier<List<ClothingStyle>?> selectedStyles;
+  final ValueNotifier<List<ProductSeason>?> selectedSeasons;
 
   final AsyncValue<List<CategoryTreeNode>> productCategoryTreeAsync;
   final VoidCallback onRetryCategories;
@@ -351,6 +354,26 @@ class ProductBasicInfoEditor extends StatelessWidget {
             onChanged: (final value) {
               selectedThickness.value = value;
             },
+          ),
+          const SizedBox(height: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.wb_sunny_outlined, color: colorScheme.primary, size: 20),
+                  const SizedBox(width: 8),
+                  Text('季節 (選填)', style: textTheme.bodyMedium),
+                ],
+              ),
+              const SizedBox(height: 12),
+              ProductSeasonSelector(
+                selectedSeasons: selectedSeasons,
+                onChanged: (final newSeasons) {
+                  selectedSeasons.value = newSeasons;
+                },
+              ),
+            ],
           ),
         ],
       ),

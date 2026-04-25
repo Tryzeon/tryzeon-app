@@ -20,6 +20,7 @@ class ProductFormData {
     required this.selectedFit,
     required this.selectedThickness,
     required this.selectedStyles,
+    required this.selectedSeasons,
   });
 
   final GlobalKey<FormState> formKey;
@@ -33,6 +34,7 @@ class ProductFormData {
   final ValueNotifier<ProductFit?> selectedFit;
   final ValueNotifier<ProductThickness?> selectedThickness;
   final ValueNotifier<List<ClothingStyle>?> selectedStyles;
+  final ValueNotifier<List<ProductSeason>?> selectedSeasons;
 
   bool validate(final BuildContext context) {
     return formKey.currentState?.validate() ?? false;
@@ -64,6 +66,7 @@ class ProductFormData {
       fit: selectedFit.value,
       thickness: selectedThickness.value,
       styles: selectedStyles.value,
+      seasons: selectedSeasons.value,
       sizes: sizes,
     );
   }
@@ -88,6 +91,7 @@ class ProductFormData {
       fit: selectedFit.value,
       thickness: selectedThickness.value,
       styles: selectedStyles.value,
+      seasons: selectedSeasons.value,
       imagePaths: imagePaths,
       imageUrls: imageUrls,
       id: id,
@@ -132,6 +136,7 @@ ProductFormData useProductForm({final Product? initialProduct}) {
     initialProduct?.thickness,
   );
   final selectedStyles = useValueNotifier<List<ClothingStyle>?>(initialProduct?.styles);
+  final selectedSeasons = useValueNotifier<List<ProductSeason>?>(initialProduct?.seasons);
 
   return ProductFormData(
     formKey: formKey,
@@ -145,5 +150,6 @@ ProductFormData useProductForm({final Product? initialProduct}) {
     selectedFit: selectedFit,
     selectedThickness: selectedThickness,
     selectedStyles: selectedStyles,
+    selectedSeasons: selectedSeasons,
   );
 }
