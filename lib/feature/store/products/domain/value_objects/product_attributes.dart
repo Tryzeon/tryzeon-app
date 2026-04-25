@@ -11,19 +11,6 @@ enum ProductElasticity {
       ProductElasticity.values.where((final e) => e.value == value).firstOrNull;
 }
 
-enum ProductFit {
-  slim('slim'),
-  regular('regular'),
-  plusSize('plus_size'),
-  oversize('oversize');
-
-  const ProductFit(this.value);
-  final String value;
-
-  static ProductFit? tryFromString(final String? value) =>
-      ProductFit.values.where((final e) => e.value == value).firstOrNull;
-}
-
 enum ProductThickness {
   low('low'),
   medium('medium'),

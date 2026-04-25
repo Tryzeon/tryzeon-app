@@ -27,7 +27,6 @@ import 'store_mappr.auto_mappr.dart';
     MapType<ProductModel, Product>(
       fields: [
         Field('elasticity', custom: StoreMapprHelper.stringToElasticity),
-        Field('fit', custom: StoreMapprHelper.stringToFit),
         Field('thickness', custom: StoreMapprHelper.stringToThickness),
         Field('styles', custom: StoreMapprHelper.stringsToStyles),
         Field('seasons', custom: StoreMapprHelper.stringsToSeasons),
@@ -36,7 +35,6 @@ import 'store_mappr.auto_mappr.dart';
     MapType<Product, ProductModel>(
       fields: [
         Field('elasticity', custom: StoreMapprHelper.elasticityToString),
-        Field('fit', custom: StoreMapprHelper.fitToString),
         Field('thickness', custom: StoreMapprHelper.thicknessToString),
         Field('styles', custom: StoreMapprHelper.stylesToStrings),
         Field('seasons', custom: StoreMapprHelper.seasonsToStrings),
@@ -73,9 +71,6 @@ class StoreMapprHelper {
   static ProductElasticity? stringToElasticity(final ProductModel source) =>
       ProductElasticity.tryFromString(source.elasticity);
 
-  static ProductFit? stringToFit(final ProductModel source) =>
-      ProductFit.tryFromString(source.fit);
-
   static ProductThickness? stringToThickness(final ProductModel source) =>
       ProductThickness.tryFromString(source.thickness);
 
@@ -87,8 +82,6 @@ class StoreMapprHelper {
 
   // Enum to String conversions
   static String? elasticityToString(final Product source) => source.elasticity?.value;
-
-  static String? fitToString(final Product source) => source.fit?.value;
 
   static String? thicknessToString(final Product source) => source.thickness?.value;
 

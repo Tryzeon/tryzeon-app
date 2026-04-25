@@ -48,11 +48,11 @@ class ProductInfoSection extends StatelessWidget {
           const SizedBox(height: 8),
         ],
 
-        if (product.fit != null) ...[
+        if (product.fit != null && product.fit!.isNotEmpty) ...[
           Row(
             children: [
               SizedBox(width: 60, child: Text('版型', style: textTheme.bodyMedium)),
-              Text(product.fit!.label, style: textTheme.bodyMedium),
+              Text(product.fit!, style: textTheme.bodyMedium),
             ],
           ),
         ],
