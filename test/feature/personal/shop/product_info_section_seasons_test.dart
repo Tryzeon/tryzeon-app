@@ -39,4 +39,53 @@ void main() {
       contains('(product.seasons != null && product.seasons!.isNotEmpty)'),
     );
   });
+
+  testWidgets('shows stored fit strings directly', (final tester) async {
+    final presetFitProduct = ShopProduct(
+      storeInfo: const ShopStoreInfo(id: 'store-1', name: 'Fit Shop'),
+      name: 'Regular Shirt',
+      categoryIds: const ['tops'],
+      price: 980,
+      imagePaths: const ['path-1'],
+      imageUrls: const ['url-1'],
+      id: 'product-1',
+      fit: '常規',
+      createdAt: DateTime(2026, 4, 25),
+      updatedAt: DateTime(2026, 4, 25),
+    );
+    final customFitProduct = ShopProduct(
+      storeInfo: const ShopStoreInfo(id: 'store-1', name: 'Fit Shop'),
+      name: 'Custom Shirt',
+      categoryIds: const ['tops'],
+      price: 1080,
+      imagePaths: const ['path-2'],
+      imageUrls: const ['url-2'],
+      id: 'product-2',
+      fit: 'Boxy',
+      createdAt: DateTime(2026, 4, 25),
+      updatedAt: DateTime(2026, 4, 25),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Column(
+            children: [
+              ProductInfoSection(product: presetFitProduct),
+              ProductInfoSection(product: customFitProduct),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    final infoSectionSource = File(
+      'lib/feature/personal/shop/presentation/widgets/product_info_section.dart',
+    ).readAsStringSync();
+
+    expect(find.text('版型'), findsNWidgets(2));
+    expect(find.text('常規'), findsOneWidget);
+    expect(find.text('Boxy'), findsOneWidget);
+    expect(infoSectionSource, isNot(contains('fitDisplayLabel(')));
+  });
 }
