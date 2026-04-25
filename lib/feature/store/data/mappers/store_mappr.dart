@@ -30,6 +30,7 @@ import 'store_mappr.auto_mappr.dart';
         Field('fit', custom: StoreMapprHelper.stringToFit),
         Field('thickness', custom: StoreMapprHelper.stringToThickness),
         Field('styles', custom: StoreMapprHelper.stringsToStyles),
+        Field('seasons', custom: StoreMapprHelper.stringsToSeasons),
       ],
     ),
     MapType<Product, ProductModel>(
@@ -38,6 +39,7 @@ import 'store_mappr.auto_mappr.dart';
         Field('fit', custom: StoreMapprHelper.fitToString),
         Field('thickness', custom: StoreMapprHelper.thicknessToString),
         Field('styles', custom: StoreMapprHelper.stylesToStrings),
+        Field('seasons', custom: StoreMapprHelper.seasonsToStrings),
       ],
     ),
 
@@ -80,6 +82,9 @@ class StoreMapprHelper {
   static List<ClothingStyle>? stringsToStyles(final ProductModel source) =>
       source.styles?.map(ClothingStyle.tryFromString).whereType<ClothingStyle>().toList();
 
+  static List<ProductSeason>? stringsToSeasons(final ProductModel source) =>
+      source.seasons?.map(ProductSeason.tryFromString).whereType<ProductSeason>().toList();
+
   // Enum to String conversions
   static String? elasticityToString(final Product source) => source.elasticity?.value;
 
@@ -89,4 +94,7 @@ class StoreMapprHelper {
 
   static List<String>? stylesToStrings(final Product source) =>
       source.styles?.map((final e) => e.value).toList();
+
+  static List<String>? seasonsToStrings(final Product source) =>
+      source.seasons?.map((final e) => e.value).toList();
 }

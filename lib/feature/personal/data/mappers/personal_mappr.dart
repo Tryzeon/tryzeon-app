@@ -68,6 +68,7 @@ import 'personal_mappr.auto_mappr.dart';
         Field('elasticity', custom: ShopProductMapprHelper.elasticityFromString),
         Field('fit', custom: ShopProductMapprHelper.fitFromString),
         Field('thickness', custom: ShopProductMapprHelper.thicknessFromString),
+        Field('seasons', custom: ShopProductMapprHelper.seasonsFromStrings),
         Field('styles', custom: ShopProductMapprHelper.stylesFromProductModelStrings),
       ],
     ),
@@ -110,6 +111,9 @@ class ShopProductMapprHelper {
 
   static ProductThickness? thicknessFromString(final ShopProductModel source) =>
       ProductThickness.tryFromString(source.thickness);
+
+  static List<ProductSeason>? seasonsFromStrings(final ShopProductModel source) =>
+      source.seasons?.map(ProductSeason.tryFromString).whereType<ProductSeason>().toList();
 
   static List<ClothingStyle>? stylesFromProductModelStrings(
     final ShopProductModel source,
