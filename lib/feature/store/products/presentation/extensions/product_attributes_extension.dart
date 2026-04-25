@@ -1,5 +1,22 @@
 import '../../domain/value_objects/product_attributes.dart';
 
+const String kOtherSentinel = '__other__';
+
+const List<String> kFitPresets = ['合身', '常規', '大尺碼', 'oversize'];
+
+const List<String> kMaterialPresets = [
+  '棉',
+  '麻',
+  '羊毛',
+  '蠶絲',
+  '聚酯纖維',
+  '尼龍',
+  '嫘縈',
+  '天絲',
+  '萊卡',
+  '混紡',
+];
+
 /// UI display label extension for [ProductElasticity] in Presentation Layer.
 extension ProductElasticityX on ProductElasticity {
   String get label => switch (this) {

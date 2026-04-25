@@ -135,11 +135,9 @@ class _ProductDetailContentPage extends HookConsumerWidget {
           purchaseLink: formData.purchaseLinkController.text.isNotEmpty
               ? formData.purchaseLinkController.text
               : null,
-          material: formData.materialController.text.isNotEmpty
-              ? formData.materialController.text
-              : null,
+          material: formData.effectiveMaterial,
           elasticity: formData.selectedElasticity.value,
-          fit: formData.selectedFit.value,
+          fit: formData.effectiveFit,
           thickness: formData.selectedThickness.value,
           styles: formData.selectedStyles.value,
           seasons: formData.selectedSeasons.value,

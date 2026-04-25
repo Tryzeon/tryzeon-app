@@ -19,10 +19,12 @@ class ProductBasicInfoEditor extends StatelessWidget {
     required this.nameController,
     required this.priceController,
     required this.purchaseLinkController,
-    required this.materialController,
+    required this.selectedMaterialPreset,
+    required this.materialOtherController,
+    required this.selectedFitPreset,
+    required this.fitOtherController,
     required this.selectedCategoryIds,
     required this.selectedElasticity,
-    required this.selectedFit,
     required this.selectedThickness,
     required this.selectedStyles,
     required this.selectedSeasons,
@@ -33,10 +35,12 @@ class ProductBasicInfoEditor extends StatelessWidget {
   final TextEditingController nameController;
   final TextEditingController priceController;
   final TextEditingController purchaseLinkController;
-  final TextEditingController materialController;
+  final ValueNotifier<String?> selectedMaterialPreset;
+  final TextEditingController materialOtherController;
+  final ValueNotifier<String?> selectedFitPreset;
+  final TextEditingController fitOtherController;
   final ValueNotifier<Set<String>> selectedCategoryIds;
   final ValueNotifier<ProductElasticity?> selectedElasticity;
-  final ValueNotifier<ProductFit?> selectedFit;
   final ValueNotifier<ProductThickness?> selectedThickness;
   final ValueNotifier<List<ClothingStyle>?> selectedStyles;
   final ValueNotifier<List<ProductSeason>?> selectedSeasons;
@@ -245,29 +249,86 @@ class ProductBasicInfoEditor extends StatelessWidget {
             validator: AppValidators.validateUrl,
           ),
           const SizedBox(height: 12),
-          TextFormField(
-            controller: materialController,
-            style: textTheme.bodyLarge,
-            decoration: InputDecoration(
-              labelText: '材質描述 (選填)',
-              hintText: '例如: 100% 棉',
-              labelStyle: textTheme.bodyMedium,
-              prefixIcon: Icon(Icons.texture, color: colorScheme.primary),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: colorScheme.primary, width: 2),
-              ),
-              filled: true,
-              fillColor: colorScheme.surfaceContainer,
-            ),
+          ValueListenableBuilder<String?>(
+            valueListenable: selectedMaterialPreset,
+            builder: (final context, final materialPreset, final _) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  DropdownButtonFormField<String>(
+                    initialValue: materialPreset,
+                    decoration: InputDecoration(
+                      labelText: '材質 (選填)',
+                      labelStyle: textTheme.bodyMedium,
+                      prefixIcon: Icon(Icons.texture, color: colorScheme.primary),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: colorScheme.outline.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                      ),
+                      filled: true,
+                      fillColor: colorScheme.surfaceContainer,
+                    ),
+                    isExpanded: true,
+                    items: [
+                      ...kMaterialPresets.map(
+                        (final label) => DropdownMenuItem(
+                          value: label,
+                          child: Text(label, style: textTheme.bodyLarge),
+                        ),
+                      ),
+                      DropdownMenuItem(
+                        value: kOtherSentinel,
+                        child: Text('其他 (自行輸入)', style: textTheme.bodyLarge),
+                      ),
+                    ],
+                    onChanged: (final value) {
+                      selectedMaterialPreset.value = value;
+                      if (value != kOtherSentinel) {
+                        materialOtherController.clear();
+                      }
+                    },
+                  ),
+                  if (materialPreset == kOtherSentinel) ...[
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: materialOtherController,
+                      style: textTheme.bodyLarge,
+                      decoration: InputDecoration(
+                        labelText: '請輸入材質',
+                        hintText: '塑膠、再生纖維…',
+                        labelStyle: textTheme.bodyMedium,
+                        prefixIcon: Icon(Icons.edit_outlined, color: colorScheme.primary),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: colorScheme.outline.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: colorScheme.outline.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                        ),
+                        filled: true,
+                        fillColor: colorScheme.surfaceContainer,
+                      ),
+                    ),
+                  ],
+                ],
+              );
+            },
           ),
           const SizedBox(height: 16),
           Row(
@@ -301,29 +362,94 @@ class ProductBasicInfoEditor extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: DropdownButtonFormField<ProductFit>(
-                  initialValue: selectedFit.value,
-                  decoration: InputDecoration(
-                    labelText: '版型 (選填)',
-                    labelStyle: textTheme.bodyMedium,
-                    prefixIcon: Icon(Icons.accessibility_new, color: colorScheme.primary),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    filled: true,
-                    fillColor: colorScheme.surfaceContainer,
-                  ),
-                  isExpanded: true,
-                  items: ProductFit.values.map((final f) {
-                    return DropdownMenuItem(
-                      value: f,
-                      child: Text(
-                        f.label,
-                        overflow: TextOverflow.ellipsis,
-                        style: textTheme.bodyLarge,
-                      ),
+                child: ValueListenableBuilder<String?>(
+                  valueListenable: selectedFitPreset,
+                  builder: (final context, final fitPreset, final _) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        DropdownButtonFormField<String>(
+                          initialValue: fitPreset,
+                          decoration: InputDecoration(
+                            labelText: '版型 (選填)',
+                            labelStyle: textTheme.bodyMedium,
+                            prefixIcon: Icon(
+                              Icons.accessibility_new,
+                              color: colorScheme.primary,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            filled: true,
+                            fillColor: colorScheme.surfaceContainer,
+                          ),
+                          isExpanded: true,
+                          items: [
+                            ...kFitPresets.map(
+                              (final preset) => DropdownMenuItem(
+                                value: preset,
+                                child: Text(
+                                  preset,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: textTheme.bodyLarge,
+                                ),
+                              ),
+                            ),
+                            DropdownMenuItem(
+                              value: kOtherSentinel,
+                              child: Text(
+                                '其他 (自行輸入)',
+                                overflow: TextOverflow.ellipsis,
+                                style: textTheme.bodyLarge,
+                              ),
+                            ),
+                          ],
+                          onChanged: (final value) {
+                            selectedFitPreset.value = value;
+                            if (value != kOtherSentinel) {
+                              fitOtherController.clear();
+                            }
+                          },
+                        ),
+                        if (fitPreset == kOtherSentinel) ...[
+                          const SizedBox(height: 8),
+                          TextFormField(
+                            controller: fitOtherController,
+                            style: textTheme.bodyLarge,
+                            decoration: InputDecoration(
+                              labelText: '請輸入版型',
+                              hintText: '不規則剪裁…',
+                              labelStyle: textTheme.bodyMedium,
+                              prefixIcon: Icon(
+                                Icons.edit_outlined,
+                                color: colorScheme.primary,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: colorScheme.outline.withValues(alpha: 0.3),
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: colorScheme.outline.withValues(alpha: 0.3),
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(
+                                  color: colorScheme.primary,
+                                  width: 2,
+                                ),
+                              ),
+                              filled: true,
+                              fillColor: colorScheme.surfaceContainer,
+                            ),
+                          ),
+                        ],
+                      ],
                     );
-                  }).toList(),
-                  onChanged: (final value) {
-                    selectedFit.value = value;
                   },
                 ),
               ),
