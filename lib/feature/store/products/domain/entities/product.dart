@@ -30,6 +30,7 @@ sealed class CreateProductParams with _$CreateProductParams {
     final ProductFit? fit,
     final ProductThickness? thickness,
     final List<ClothingStyle>? styles,
+    final List<ProductSeason>? seasons,
     final List<CreateProductSizeParams>? sizes,
   }) = _CreateProductParams;
 }
@@ -51,6 +52,7 @@ sealed class UpdateProductParams with _$UpdateProductParams {
     final ProductFit? fit,
     final ProductThickness? thickness,
     final List<ClothingStyle>? styles,
+    final List<ProductSeason>? seasons,
   }) = _UpdateProductParams;
 }
 
@@ -82,6 +84,7 @@ sealed class Product with _$Product {
     final ProductFit? fit,
     final ProductThickness? thickness,
     final List<ClothingStyle>? styles,
+    final List<ProductSeason>? seasons,
     final List<ProductSize>? sizes,
     required final DateTime createdAt,
     required final DateTime updatedAt,

@@ -22,6 +22,7 @@ sealed class ShopProduct with _$ShopProduct {
     final ProductFit? fit,
     final ProductThickness? thickness,
     final List<ClothingStyle>? styles,
+    final List<ProductSeason>? seasons,
     final List<ProductSize>? sizes,
     required final DateTime createdAt,
     required final DateTime updatedAt,
