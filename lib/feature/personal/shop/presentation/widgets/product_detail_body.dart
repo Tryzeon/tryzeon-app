@@ -98,7 +98,8 @@ class _ProductDetailContent extends HookConsumerWidget {
                 if (product.elasticity != null ||
                     product.fit != null ||
                     product.thickness != null ||
-                    product.material != null) ...[
+                    product.material != null ||
+                    (product.seasons != null && product.seasons!.isNotEmpty)) ...[
                   ProductInfoSection(product: product),
                   const SizedBox(height: 32),
                 ],

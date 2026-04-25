@@ -56,6 +56,21 @@ class ProductInfoSection extends StatelessWidget {
             ],
           ),
         ],
+
+        if (product.seasons != null && product.seasons!.isNotEmpty) ...[
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(width: 60, child: Text('季節', style: textTheme.bodyMedium)),
+              Expanded(
+                child: Text(
+                  product.seasons!.map((final s) => s.label).join('、'),
+                  style: textTheme.bodyMedium,
+                ),
+              ),
+            ],
+          ),
+        ],
       ],
     );
   }
