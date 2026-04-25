@@ -28,3 +28,13 @@ extension ProductThicknessX on ProductThickness {
     ProductThickness.high => '厚',
   };
 }
+
+/// UI display label extension for [ProductSeason] in Presentation Layer.
+extension ProductSeasonX on ProductSeason {
+  String get label => switch (this) {
+    ProductSeason.spring => '春',
+    ProductSeason.summer => '夏',
+    ProductSeason.autumn => '秋',
+    ProductSeason.winter => '冬',
+  };
+}

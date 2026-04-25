@@ -35,3 +35,16 @@ enum ProductThickness {
   static ProductThickness? tryFromString(final String? value) =>
       ProductThickness.values.where((final e) => e.value == value).firstOrNull;
 }
+
+enum ProductSeason {
+  spring('spring'),
+  summer('summer'),
+  autumn('autumn'),
+  winter('winter');
+
+  const ProductSeason(this.value);
+  final String value;
+
+  static ProductSeason? tryFromString(final String? value) =>
+      ProductSeason.values.where((final e) => e.value == value).firstOrNull;
+}
