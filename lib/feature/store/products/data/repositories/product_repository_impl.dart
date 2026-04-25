@@ -107,6 +107,7 @@ class ProductRepositoryImpl implements ProductRepository {
         fit: params.fit?.value,
         thickness: params.thickness?.value,
         styles: params.styles?.map((final e) => e.value).toList(),
+        seasons: params.seasons?.map((final e) => e.value).toList(),
       );
 
       final productId = await _remoteDataSource.insertProduct(request);
@@ -238,6 +239,7 @@ class ProductRepositoryImpl implements ProductRepository {
         fit: params.fit,
         thickness: params.thickness,
         styles: params.styles,
+        seasons: params.seasons,
         imagePaths: finalImagePaths,
       );
 

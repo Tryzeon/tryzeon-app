@@ -70,6 +70,7 @@ class ShopLocalDataSource {
         ..fit = model.fit
         ..thickness = model.thickness
         ..styles = model.styles
+        ..seasons = model.seasons
         ..sizes = sizes
         ..createdAt = model.createdAt
         ..updatedAt = model.updatedAt
@@ -158,6 +159,7 @@ class ShopLocalDataSource {
         fit: collection.fit,
         thickness: collection.thickness,
         styles: collection.styles,
+        seasons: collection.seasons,
         sizes: sizes,
       ),
     );

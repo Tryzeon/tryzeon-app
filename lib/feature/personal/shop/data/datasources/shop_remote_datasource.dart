@@ -24,7 +24,7 @@ class ShopRemoteDataSource {
     // 查詢主頁推薦列表所需欄位（詳細資訊由 getProduct 取得）
     dynamic query = _supabaseClient.from(_productsTable).select('''
           id, store_id, name, category_ids, price, image_paths, created_at, updated_at,
-          purchase_link, material, elasticity, fit, thickness, styles,
+          purchase_link, material, elasticity, fit, thickness, styles, seasons,
           product_variants(*),
           store_profiles!products_store_id_fkey(id, name, address)
         ''');
