@@ -16,7 +16,7 @@ void main() {
 
     expect(
       repository,
-      contains("seasons: params.seasons?.map((final e) => e.value).toList(),"),
+      contains('seasons: params.seasons?.map((final e) => e.value).toList(),'),
     );
     expect(repository, contains('seasons: params.seasons,'));
     expect(shopRemote, contains('styles, seasons,'));

@@ -9,9 +9,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        home: Scaffold(
-          body: ProductSeasonSelector(selectedSeasons: selectedSeasons),
-        ),
+        home: Scaffold(body: ProductSeasonSelector(selectedSeasons: selectedSeasons)),
       ),
     );
 

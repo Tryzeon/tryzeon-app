@@ -108,8 +108,11 @@ class ShopProductMapprHelper {
   static ProductThickness? thicknessFromString(final ShopProductModel source) =>
       ProductThickness.tryFromString(source.thickness);
 
-  static List<ProductSeason>? seasonsFromStrings(final ShopProductModel source) =>
-      source.seasons?.map(ProductSeason.tryFromString).whereType<ProductSeason>().toList();
+  static List<ProductSeason>? seasonsFromStrings(final ShopProductModel source) => source
+      .seasons
+      ?.map(ProductSeason.tryFromString)
+      .whereType<ProductSeason>()
+      .toList();
 
   static List<ClothingStyle>? stylesFromProductModelStrings(
     final ShopProductModel source,

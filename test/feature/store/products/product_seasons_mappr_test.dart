@@ -47,17 +47,13 @@ void main() {
       updatedAt: timestamp,
     );
 
-    expect(
-      StoreMapprHelper.stringsToSeasons(productModel),
-      [ProductSeason.spring, ProductSeason.winter],
-    );
-    expect(
-      StoreMapprHelper.seasonsToStrings(product),
-      ['spring', 'winter'],
-    );
-    expect(
-      ShopProductMapprHelper.seasonsFromStrings(shopProductModel),
-      [ProductSeason.summer],
-    );
+    expect(StoreMapprHelper.stringsToSeasons(productModel), [
+      ProductSeason.spring,
+      ProductSeason.winter,
+    ]);
+    expect(StoreMapprHelper.seasonsToStrings(product), ['spring', 'winter']);
+    expect(ShopProductMapprHelper.seasonsFromStrings(shopProductModel), [
+      ProductSeason.summer,
+    ]);
   });
 }

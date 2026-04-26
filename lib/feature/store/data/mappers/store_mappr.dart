@@ -77,8 +77,11 @@ class StoreMapprHelper {
   static List<ClothingStyle>? stringsToStyles(final ProductModel source) =>
       source.styles?.map(ClothingStyle.tryFromString).whereType<ClothingStyle>().toList();
 
-  static List<ProductSeason>? stringsToSeasons(final ProductModel source) =>
-      source.seasons?.map(ProductSeason.tryFromString).whereType<ProductSeason>().toList();
+  static List<ProductSeason>? stringsToSeasons(final ProductModel source) => source
+      .seasons
+      ?.map(ProductSeason.tryFromString)
+      .whereType<ProductSeason>()
+      .toList();
 
   // Enum to String conversions
   static String? elasticityToString(final Product source) => source.elasticity?.value;

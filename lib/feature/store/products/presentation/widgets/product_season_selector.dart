@@ -4,11 +4,7 @@ import 'package:tryzeon/feature/store/products/domain/value_objects/product_attr
 import 'package:tryzeon/feature/store/products/presentation/extensions/product_attributes_extension.dart';
 
 class ProductSeasonSelector extends HookWidget {
-  const ProductSeasonSelector({
-    super.key,
-    required this.selectedSeasons,
-    this.onChanged,
-  });
+  const ProductSeasonSelector({super.key, required this.selectedSeasons, this.onChanged});
 
   final ValueNotifier<List<ProductSeason>?> selectedSeasons;
   final ValueChanged<List<ProductSeason>?>? onChanged;
