@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/home/presentation/pages/home_page.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry_scope.dart';
@@ -46,7 +47,23 @@ class PersonalShell extends HookConsumerWidget {
       }
     }
 
+    final lastTabTapTime = useState<DateTime?>(null);
+
     void onItemTapped(final int index) {
+      const doubleTapThreshold = Duration(milliseconds: 400);
+      final lastTabIndex = personalTabDestinations.length - 1;
+
+      if (index == lastTabIndex) {
+        final now = DateTime.now();
+        final last = lastTabTapTime.value;
+        if (last != null && now.difference(last) < doubleTapThreshold) {
+          lastTabTapTime.value = null;
+          context.go(AppRoutes.storeHome);
+          return;
+        }
+        lastTabTapTime.value = now;
+      }
+
       navigationShell.goBranch(
         index,
         initialLocation: index == navigationShell.currentIndex,
