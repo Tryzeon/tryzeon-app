@@ -113,7 +113,7 @@ class HomePage extends HookConsumerWidget {
       if (avatarFile == null) {
         TopNotification.show(
           context,
-          message: '請先上傳您的照片才能進行虛擬試穿',
+          message: '請先上傳個人照片才能開始試穿呦！',
           type: NotificationType.warning,
         );
         return;
