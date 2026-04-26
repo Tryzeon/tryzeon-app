@@ -13,6 +13,7 @@ import 'package:tryzeon/feature/store/products/domain/usecases/delete_product.da
 import 'package:tryzeon/feature/store/products/domain/usecases/get_products.dart';
 import 'package:tryzeon/feature/store/products/domain/usecases/update_product.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/product_sort_condition.dart';
+import 'package:tryzeon/feature/store/products/presentation/state/product_query_state.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
 import 'package:typed_result/typed_result.dart';
@@ -60,21 +61,24 @@ DeleteProduct deleteProductUseCase(final Ref ref) {
   return DeleteProduct(ref.watch(productRepositoryProvider));
 }
 
-/// Provider for product sort condition
+/// Manages the combined search, filter, and sort state for store products.
 @riverpod
-class ProductSortCondition extends _$ProductSortCondition {
+class ProductQuery extends _$ProductQuery {
   @override
-  SortCondition build() {
-    return SortCondition.defaultSort;
+  ProductQueryState build() => const ProductQueryState();
+
+  void updateSearch(final String query) {
+    state = state.copyWith(searchQuery: query);
   }
 
-  SortCondition get condition => state;
-
-  set condition(final SortCondition newCondition) {
-    state = newCondition;
+  void updateSort(final SortCondition sort) {
+    state = state.copyWith(sort: sort);
   }
+
+  void reset() => state = const ProductQueryState();
 }
 
+/// Fetches all products for the store with a stable default sort.
 @riverpod
 Future<List<Product>> products(final Ref ref) async {
   final profile = await ref.watch(storeProfileProvider.future);
@@ -82,15 +86,24 @@ Future<List<Product>> products(final Ref ref) async {
     throw const UnknownFailure('Store profile not found');
   }
 
-  final sort = ref.watch(productSortConditionProvider);
   final getProductsUseCase = ref.watch(getProductsUseCaseProvider);
-
-  final result = await getProductsUseCase(storeId: profile.id, sort: sort);
+  final result = await getProductsUseCase(
+    storeId: profile.id,
+    sort: SortCondition.defaultSort,
+  );
 
   if (result.isFailure) {
     throw result.getError()!;
   }
   return result.get()!;
+}
+
+/// Applies search and sort entirely in memory.
+@riverpod
+Future<List<Product>> filteredProducts(final Ref ref) async {
+  final products = await ref.watch(productsProvider.future);
+  final query = ref.watch(productQueryProvider);
+  return filterAndSortProducts(products, query);
 }
 
 @riverpod
@@ -120,11 +133,14 @@ Future<void> refreshProducts(final WidgetRef ref) async {
 
   if (profile == null) return;
 
-  final sort = ref.read(productSortConditionProvider);
   final getProductsUseCase = ref.read(getProductsUseCaseProvider);
 
   try {
-    await getProductsUseCase(storeId: profile.id, sort: sort, forceRefresh: true);
+    await getProductsUseCase(
+      storeId: profile.id,
+      sort: SortCondition.defaultSort,
+      forceRefresh: true,
+    );
     ref.invalidate(productsProvider);
     await ref.read(productsProvider.future);
   } catch (_) {
