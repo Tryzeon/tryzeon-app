@@ -204,7 +204,12 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.xl, AppSpacing.lg, AppSpacing.lg),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          AppSpacing.xl,
+          AppSpacing.lg,
+          AppSpacing.lg,
+        ),
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
           child: isOtpSent.value

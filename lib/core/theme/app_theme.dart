@@ -52,11 +52,9 @@ class AppRadius {
   static const double pill = 100; // tags / filter chips
 
   static const BorderRadius cardAll = BorderRadius.all(Radius.circular(card));
-  static const BorderRadius buttonAll =
-      BorderRadius.all(Radius.circular(button));
+  static const BorderRadius buttonAll = BorderRadius.all(Radius.circular(button));
   static const BorderRadius inputAll = BorderRadius.all(Radius.circular(input));
-  static const BorderRadius dialogAll =
-      BorderRadius.all(Radius.circular(dialog));
+  static const BorderRadius dialogAll = BorderRadius.all(Radius.circular(dialog));
   static const BorderRadius sheetTop = BorderRadius.only(
     topLeft: Radius.circular(sheet),
     topRight: Radius.circular(sheet),
@@ -113,9 +111,7 @@ class AppTheme {
     );
 
     // Shared button style helpers
-    const buttonShape = RoundedRectangleBorder(
-      borderRadius: AppRadius.buttonAll,
-    );
+    const buttonShape = RoundedRectangleBorder(borderRadius: AppRadius.buttonAll);
     const buttonPadding = EdgeInsets.symmetric(
       horizontal: AppSpacing.lg,
       vertical: AppSpacing.sm + 4, // 12px vertical

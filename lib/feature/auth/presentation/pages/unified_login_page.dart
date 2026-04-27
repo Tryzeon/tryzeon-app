@@ -121,9 +121,9 @@ class UnifiedLoginPage extends HookConsumerWidget {
                         const SizedBox(height: AppSpacing.md),
                         Text(
                           'Tryzeon',
-                          style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                            color: AppColors.onSurface,
-                          ),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.displayMedium?.copyWith(color: AppColors.onSurface),
                         ),
                       ],
                     ),
