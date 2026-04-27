@@ -14,8 +14,8 @@ import 'package:tryzeon/feature/auth/presentation/widgets/identity_segmented_con
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
-class UnifiedLoginPage extends HookConsumerWidget {
-  const UnifiedLoginPage({super.key});
+class LoginPage extends HookConsumerWidget {
+  const LoginPage({super.key});
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
