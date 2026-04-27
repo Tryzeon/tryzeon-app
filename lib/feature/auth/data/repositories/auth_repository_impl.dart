@@ -40,6 +40,9 @@ class AuthRepositoryImpl implements AuthRepository {
     required final UserType userType,
   }) async {
     try {
+      // Store login type preference before auth state changes fire.
+      await _localDataSource.setLastLoginType(userType.value);
+
       // Map provider string to OAuthProvider
       final OAuthProvider oauthProvider;
       switch (provider.toLowerCase()) {
@@ -65,9 +68,6 @@ class AuthRepositoryImpl implements AuthRepository {
       } else {
         await _remoteDataSource.signInWithOAuthProvider(oauthProvider);
       }
-
-      // Store login type preference
-      await _localDataSource.setLastLoginType(userType.value);
 
       // Log in to RevenueCat
       final currentUser = _remoteDataSource.getCurrentUser();
@@ -185,8 +185,9 @@ class AuthRepositoryImpl implements AuthRepository {
     required final UserType userType,
   }) async {
     try {
-      await _remoteDataSource.verifyEmailOTP(email: email, token: token);
       await _localDataSource.setLastLoginType(userType.value);
+
+      await _remoteDataSource.verifyEmailOTP(email: email, token: token);
 
       final currentUser = _remoteDataSource.getCurrentUser();
       if (currentUser != null) {

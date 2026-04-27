@@ -38,7 +38,7 @@ Raw<GoRouter> appRouter(final Ref ref) {
     redirect: (final context, final state) async {
       final isLoggedIn = supabase.auth.currentSession != null;
       final path = state.matchedLocation;
-      final isAuthPath = path.startsWith('/auth');
+      final isAuthPath = path == AppRoutes.login;
 
       // 1. 未登入 → 導向登入頁
       if (!isLoggedIn) return isAuthPath ? null : AppRoutes.login;
