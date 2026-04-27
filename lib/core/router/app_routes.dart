@@ -12,7 +12,7 @@ abstract final class AppRoutes {
   static const String personalShopStore = '/personal/shop/store/:storeId';
   static const String personalChat = '/personal/chat';
   static const String personalWardrobe = '/personal/wardrobe';
-  static const String personalMy = '/personal/my';
+  static const String personalAccount = '/personal/account';
 
   // Personal (full screen, outside shell)
   static const String personalOnboarding = '/personal/onboarding';

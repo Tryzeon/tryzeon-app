@@ -9,8 +9,8 @@ import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/settings/presentation/providers/personal_settings_controller.dart';
 
-class MyPage extends HookConsumerWidget {
-  const MyPage({super.key});
+class AccountPage extends HookConsumerWidget {
+  const AccountPage({super.key});
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
