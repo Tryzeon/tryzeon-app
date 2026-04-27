@@ -137,15 +137,11 @@ class UnifiedLoginPage extends HookConsumerWidget {
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   Center(
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      child: Text(
-                        userType.value == UserType.personal ? '開啟您的虛擬試衣間' : '開始您的商店管理之旅',
-                        key: ValueKey(userType.value),
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                        ),
-                      ),
+                    child: Text(
+                      userType.value == UserType.personal ? '開啟您的虛擬試衣間' : '開始您的商店管理之旅',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyLarge?.copyWith(color: AppColors.onSurfaceVariant),
                     ),
                   ),
                   const Spacer(),
