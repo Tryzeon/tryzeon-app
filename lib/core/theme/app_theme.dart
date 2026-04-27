@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+// ─── Color Tokens ────────────────────────────────────────────────────────────
+
 /// Extended color tokens not covered by Material 3 ColorScheme.
 /// Access via `AppColors.primaryLight`, etc.
 class AppColors {
@@ -20,6 +22,49 @@ class AppColors {
   static const Color onSurfaceVariant = Color(0xFF9E9E9E);
   static const Color onPrimary = Color(0xFFFFFFFF);
 }
+
+// ─── Spacing Tokens ───────────────────────────────────────────────────────────
+
+/// 8px-grid spacing tokens. Use `AppSpacing.md` instead of magic numbers.
+class AppSpacing {
+  AppSpacing._();
+
+  static const double xs = 4;
+  static const double sm = 8;
+  static const double md = 16;
+  static const double lg = 24;
+  static const double xl = 32;
+  static const double xxl = 48;
+}
+
+// ─── Border Radius Tokens ─────────────────────────────────────────────────────
+
+/// Unified border radius constants. Use `AppRadius.card`, etc.
+class AppRadius {
+  AppRadius._();
+
+  static const double card = 12;
+  static const double button = 8;
+  static const double input = 10;
+  static const double dialog = 16;
+  static const double sheet = 20; // top corners of bottom sheets
+  static const double icon = 10;
+  static const double pill = 100; // tags / filter chips
+
+  static const BorderRadius cardAll = BorderRadius.all(Radius.circular(card));
+  static const BorderRadius buttonAll =
+      BorderRadius.all(Radius.circular(button));
+  static const BorderRadius inputAll = BorderRadius.all(Radius.circular(input));
+  static const BorderRadius dialogAll =
+      BorderRadius.all(Radius.circular(dialog));
+  static const BorderRadius sheetTop = BorderRadius.only(
+    topLeft: Radius.circular(sheet),
+    topRight: Radius.circular(sheet),
+  );
+  static const BorderRadius pillAll = BorderRadius.all(Radius.circular(pill));
+}
+
+// ─── Theme ────────────────────────────────────────────────────────────────────
 
 class AppTheme {
   AppTheme._();
@@ -67,20 +112,162 @@ class AppTheme {
       inversePrimary: AppColors.primaryLight,
     );
 
+    // Shared button style helpers
+    const buttonShape = RoundedRectangleBorder(
+      borderRadius: AppRadius.buttonAll,
+    );
+    const buttonPadding = EdgeInsets.symmetric(
+      horizontal: AppSpacing.lg,
+      vertical: AppSpacing.sm + 4, // 12px vertical
+    );
+
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: AppColors.background,
+      shadowColor: Colors.black.withValues(alpha: 0.08),
       visualDensity: VisualDensity.standard,
 
-      // Divider
+      // ── Divider ──────────────────────────────────────────────────────────
       dividerTheme: const DividerThemeData(
         color: AppColors.outline,
         thickness: 1,
         space: 1,
       ),
 
-      // Typography
+      // ── Card ─────────────────────────────────────────────────────────────
+      // Spec: radius 12px, 1px outline border, no shadow
+      cardTheme: const CardThemeData(
+        color: AppColors.surface,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppRadius.cardAll,
+          side: BorderSide(color: AppColors.outline),
+        ),
+        margin: EdgeInsets.zero,
+      ),
+
+      // ── Buttons ──────────────────────────────────────────────────────────
+      // Primary: filled Terracotta, white label, radius 8px
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: AppColors.onPrimary,
+          shape: buttonShape,
+          padding: buttonPadding,
+          textStyle: GoogleFonts.outfit(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.2,
+          ),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: AppColors.onPrimary,
+          elevation: 0,
+          shadowColor: Colors.transparent,
+          shape: buttonShape,
+          padding: buttonPadding,
+          textStyle: GoogleFonts.outfit(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.2,
+          ),
+        ),
+      ),
+      // Secondary: transparent bg, charcoal border + text, radius 8px
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.onSurface,
+          side: const BorderSide(color: AppColors.onSurface, width: 1.5),
+          shape: buttonShape,
+          padding: buttonPadding,
+          textStyle: GoogleFonts.outfit(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.2,
+          ),
+        ),
+      ),
+      // Ghost/Tonal: primaryContainer bg, Terracotta text, radius 8px
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          backgroundColor: AppColors.primaryContainer,
+          foregroundColor: AppColors.primary,
+          shape: buttonShape,
+          padding: buttonPadding,
+          textStyle: GoogleFonts.outfit(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.2,
+          ),
+        ),
+      ),
+
+      // ── Input ────────────────────────────────────────────────────────────
+      // Spec: outlined style, 1.5px border, radius 10px, focus → onSurface
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.surface,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm + 4, // 12px
+        ),
+        border: const OutlineInputBorder(
+          borderRadius: AppRadius.inputAll,
+          borderSide: BorderSide(color: AppColors.outline, width: 1.5),
+        ),
+        enabledBorder: const OutlineInputBorder(
+          borderRadius: AppRadius.inputAll,
+          borderSide: BorderSide(color: AppColors.outline, width: 1.5),
+        ),
+        focusedBorder: const OutlineInputBorder(
+          borderRadius: AppRadius.inputAll,
+          borderSide: BorderSide(color: AppColors.onSurface, width: 1.5),
+        ),
+        errorBorder: const OutlineInputBorder(
+          borderRadius: AppRadius.inputAll,
+          borderSide: BorderSide(color: Color(0xFFB00020), width: 1.5),
+        ),
+        focusedErrorBorder: const OutlineInputBorder(
+          borderRadius: AppRadius.inputAll,
+          borderSide: BorderSide(color: Color(0xFFB00020), width: 1.5),
+        ),
+        hintStyle: GoogleFonts.notoSansTc(
+          fontSize: 13,
+          color: AppColors.onSurfaceVariant,
+        ),
+      ),
+
+      // ── Bottom Navigation Bar ─────────────────────────────────────────────
+      // Spec: white bg, top border 1px outline, Terracotta active, no pill
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: AppColors.background,
+        indicatorColor: Colors.transparent, // disable M3 pill indicator
+        shadowColor: Colors.transparent,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        labelTextStyle: WidgetStateProperty.resolveWith((final states) {
+          final active = states.contains(WidgetState.selected);
+          return GoogleFonts.outfit(
+            fontSize: 9,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.5,
+            color: active ? AppColors.primary : AppColors.onSurfaceVariant,
+          );
+        }),
+        iconTheme: WidgetStateProperty.resolveWith((final states) {
+          final active = states.contains(WidgetState.selected);
+          return IconThemeData(
+            color: active ? AppColors.primary : AppColors.onSurfaceVariant,
+            size: 24,
+          );
+        }),
+      ),
+
+      // ── Typography ───────────────────────────────────────────────────────
       textTheme: TextTheme(
         // Display — Playfair Display (editorial headings)
         displayLarge: GoogleFonts.playfairDisplay(
