@@ -26,6 +26,7 @@ migrate_working_dir/
 docs/plans
 docs/superpowers
 .sisyphus/plans
+.superpowers
 
 # Flutter/Dart/Pub related
 **/doc/api/
