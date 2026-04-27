@@ -49,8 +49,8 @@ class UnifiedLoginPage extends HookConsumerWidget {
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.onSurface,
           side: const BorderSide(color: AppColors.outline, width: 1),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: const RoundedRectangleBorder(borderRadius: AppRadius.buttonAll),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
           elevation: 0,
         ),
         child: Row(
@@ -78,8 +78,8 @@ class UnifiedLoginPage extends HookConsumerWidget {
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.onSurface,
           side: const BorderSide(color: AppColors.outline, width: 1),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: const RoundedRectangleBorder(borderRadius: AppRadius.buttonAll),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
           elevation: 0,
         ),
         child: Row(
@@ -105,11 +105,11 @@ class UnifiedLoginPage extends HookConsumerWidget {
         children: [
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 48),
+                  const SizedBox(height: AppSpacing.xxl),
                   Center(
                     child: Column(
                       children: [
@@ -118,26 +118,24 @@ class UnifiedLoginPage extends HookConsumerWidget {
                           size: 48,
                           color: AppColors.primary,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AppSpacing.md),
                         Text(
                           'Tryzeon',
                           style: Theme.of(context).textTheme.displayMedium?.copyWith(
                             color: AppColors.onSurface,
-                            fontSize: 36,
-                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: AppSpacing.xxl),
                   Center(
                     child: IdentitySegmentedControl(
                       selectedType: userType.value,
                       onChanged: (final type) => userType.value = type,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.lg),
                   Center(
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
@@ -152,19 +150,19 @@ class UnifiedLoginPage extends HookConsumerWidget {
                   ),
                   const Spacer(),
                   buildSocialButton('Apple', () => handleSocialLogin('Apple')),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.md),
                   buildSocialButton('Google', () => handleSocialLogin('Google')),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.lg),
                   Row(
                     children: [
                       const Expanded(
                         child: Divider(color: AppColors.outline, thickness: 1),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                         child: Text(
                           '或',
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: AppColors.onSurfaceVariant,
                           ),
                         ),
@@ -174,9 +172,9 @@ class UnifiedLoginPage extends HookConsumerWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.lg),
                   buildEmailButton(),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: AppSpacing.xxl),
                 ],
               ),
             ),

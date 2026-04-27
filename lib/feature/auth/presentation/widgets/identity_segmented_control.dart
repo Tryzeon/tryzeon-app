@@ -15,10 +15,10 @@ class IdentitySegmentedControl extends StatelessWidget {
   @override
   Widget build(final BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.all(AppSpacing.xs),
+      decoration: const BoxDecoration(
         color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(100),
+        borderRadius: AppRadius.pillAll,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -52,10 +52,10 @@ class IdentitySegmentedControl extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.background : Colors.transparent,
-          borderRadius: BorderRadius.circular(100),
+          borderRadius: AppRadius.pillAll,
           boxShadow: isSelected
               ? [
                   BoxShadow(
@@ -68,10 +68,10 @@ class IdentitySegmentedControl extends StatelessWidget {
         ),
         child: Text(
           title,
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
             color: isSelected ? AppColors.onSurface : AppColors.onSurfaceVariant,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-            letterSpacing: 1.0,
+            letterSpacing: 0.8,
           ),
         ),
       ),
