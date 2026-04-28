@@ -21,6 +21,11 @@ class AppColors {
   static const Color onSurface = Color(0xFF1A1A1A);
   static const Color onSurfaceVariant = Color(0xFF9E9E9E);
   static const Color onPrimary = Color(0xFFFFFFFF);
+
+  static const Color error = Color(0xFFB00020);
+  static const Color onError = Color(0xFFFFFFFF);
+  static const Color errorContainer = Color(0xFFFFDAD6);
+  static const Color onErrorContainer = Color(0xFF410002);
 }
 
 // ─── Spacing Tokens ───────────────────────────────────────────────────────────
@@ -86,10 +91,10 @@ class AppTheme {
       tertiaryContainer: AppColors.surfaceVariant,
       onTertiaryContainer: AppColors.onSurface,
       // Error
-      error: Color(0xFFB00020),
-      onError: AppColors.onPrimary,
-      errorContainer: Color(0xFFFFDAD6),
-      onErrorContainer: Color(0xFF410002),
+      error: AppColors.error,
+      onError: AppColors.onError,
+      errorContainer: AppColors.errorContainer,
+      onErrorContainer: AppColors.onErrorContainer,
       // Surface
       surface: AppColors.background,
       onSurface: AppColors.onSurface,
@@ -147,8 +152,8 @@ class AppTheme {
       // Primary: filled Terracotta, white label, radius 8px
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.onPrimary,
+          backgroundColor: colorScheme.primary,
+          foregroundColor: colorScheme.onPrimary,
           shape: buttonShape,
           padding: buttonPadding,
           textStyle: GoogleFonts.outfit(
@@ -160,8 +165,8 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.onPrimary,
+          backgroundColor: colorScheme.primary,
+          foregroundColor: colorScheme.onPrimary,
           elevation: 0,
           shadowColor: Colors.transparent,
           shape: buttonShape,
@@ -176,8 +181,8 @@ class AppTheme {
       // Secondary: transparent bg, charcoal border + text, radius 8px
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.onSurface,
-          side: const BorderSide(color: AppColors.onSurface, width: 1.5),
+          foregroundColor: colorScheme.onSurface,
+          side: BorderSide(color: colorScheme.onSurface, width: 1.5),
           shape: buttonShape,
           padding: buttonPadding,
           textStyle: GoogleFonts.outfit(
@@ -190,8 +195,8 @@ class AppTheme {
       // Ghost/Tonal: primaryContainer bg, Terracotta text, radius 8px
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          backgroundColor: AppColors.primaryContainer,
-          foregroundColor: AppColors.primary,
+          backgroundColor: colorScheme.primaryContainer,
+          foregroundColor: colorScheme.primary,
           shape: buttonShape,
           padding: buttonPadding,
           textStyle: GoogleFonts.outfit(
@@ -223,13 +228,13 @@ class AppTheme {
           borderRadius: AppRadius.inputAll,
           borderSide: BorderSide(color: AppColors.onSurface, width: 1.5),
         ),
-        errorBorder: const OutlineInputBorder(
+        errorBorder: OutlineInputBorder(
           borderRadius: AppRadius.inputAll,
-          borderSide: BorderSide(color: Color(0xFFB00020), width: 1.5),
+          borderSide: BorderSide(color: colorScheme.error, width: 1.5),
         ),
-        focusedErrorBorder: const OutlineInputBorder(
+        focusedErrorBorder: OutlineInputBorder(
           borderRadius: AppRadius.inputAll,
-          borderSide: BorderSide(color: Color(0xFFB00020), width: 1.5),
+          borderSide: BorderSide(color: colorScheme.error, width: 1.5),
         ),
         hintStyle: GoogleFonts.notoSansTc(
           fontSize: 13,
@@ -269,85 +274,72 @@ class AppTheme {
         displayLarge: GoogleFonts.playfairDisplay(
           fontSize: 48,
           fontWeight: FontWeight.w400,
-          color: AppColors.onSurface,
         ),
         displayMedium: GoogleFonts.playfairDisplay(
           fontSize: 36,
           fontWeight: FontWeight.w400,
-          color: AppColors.onSurface,
         ),
         displaySmall: GoogleFonts.playfairDisplay(
           fontSize: 28,
           fontWeight: FontWeight.w400,
           fontStyle: FontStyle.italic,
-          color: AppColors.onSurface,
         ),
         // Headline — Outfit (section / card titles)
         headlineLarge: GoogleFonts.outfit(
           fontSize: 22,
           fontWeight: FontWeight.w600,
-          color: AppColors.onSurface,
         ),
         headlineMedium: GoogleFonts.outfit(
           fontSize: 18,
           fontWeight: FontWeight.w600,
-          color: AppColors.onSurface,
         ),
         headlineSmall: GoogleFonts.outfit(
           fontSize: 16,
           fontWeight: FontWeight.w600,
-          color: AppColors.onSurface,
         ),
         // Title — Outfit
         titleLarge: GoogleFonts.outfit(
           fontSize: 20,
           fontWeight: FontWeight.w600,
-          color: AppColors.onSurface,
         ),
         titleMedium: GoogleFonts.outfit(
           fontSize: 16,
           fontWeight: FontWeight.w500,
-          color: AppColors.onSurface,
         ),
         titleSmall: GoogleFonts.outfit(
           fontSize: 14,
           fontWeight: FontWeight.w500,
-          color: AppColors.onSurface,
         ),
         // Body — Noto Sans TC (Chinese-compatible)
         bodyLarge: GoogleFonts.notoSansTc(
           fontSize: 15,
           fontWeight: FontWeight.w400,
-          color: AppColors.onSurface,
         ),
         bodyMedium: GoogleFonts.notoSansTc(
           fontSize: 13,
           fontWeight: FontWeight.w400,
-          color: AppColors.onSurfaceVariant,
+          color: colorScheme.onSurfaceVariant,
         ),
         bodySmall: GoogleFonts.notoSansTc(
           fontSize: 11,
           fontWeight: FontWeight.w400,
-          color: AppColors.onSurfaceVariant,
+          color: colorScheme.onSurfaceVariant,
         ),
         // Label — Outfit Uppercase (buttons, badges, nav)
         labelLarge: GoogleFonts.outfit(
           fontSize: 12,
           fontWeight: FontWeight.w700,
           letterSpacing: 1.2,
-          color: AppColors.onSurface,
         ),
         labelMedium: GoogleFonts.outfit(
           fontSize: 10,
           fontWeight: FontWeight.w700,
           letterSpacing: 1.5,
-          color: AppColors.onSurface,
         ),
         labelSmall: GoogleFonts.outfit(
           fontSize: 9,
           fontWeight: FontWeight.w700,
           letterSpacing: 1.5,
-          color: AppColors.onSurface,
         ),
       ),
     );
