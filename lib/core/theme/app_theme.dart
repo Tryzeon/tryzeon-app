@@ -34,12 +34,52 @@ class AppColors {
 class AppSpacing {
   AppSpacing._();
 
+  static const double xxs = 2;
   static const double xs = 4;
   static const double sm = 8;
+  static const double smMd = 12; // between sm and md
   static const double md = 16;
+  static const double mdLg = 20; // between md and lg
   static const double lg = 24;
   static const double xl = 32;
   static const double xxl = 48;
+}
+
+// ─── Opacity Tokens ──────────────────────────────────────────────────────────
+
+/// Standardised opacity levels for overlays, scrim, and disabled states.
+/// Use `Colors.black.withValues(alpha: AppOpacity.overlay)` instead of magic numbers.
+class AppOpacity {
+  AppOpacity._();
+
+  static const double subtle  = 0.03; // hover tint, zebra row
+  static const double light   = 0.05; // card tint
+  static const double medium  = 0.08; // shadow, divider tint
+  static const double strong  = 0.3;  // disabled state
+  static const double overlay = 0.6;  // image scrim / modal backdrop
+}
+
+// ─── Duration Tokens ──────────────────────────────────────────────────────────
+
+/// Standard animation durations. Use `AppDuration.standard` instead of
+/// `Duration(milliseconds: 200)` to keep motion timing consistent.
+class AppDuration {
+  AppDuration._();
+
+  static const Duration quick    = Duration(milliseconds: 100);
+  static const Duration standard = Duration(milliseconds: 200);
+  static const Duration slow     = Duration(milliseconds: 300);
+}
+
+// ─── Curve Tokens ───────────────────────────────────────────────────────────────
+
+/// Standard easing curves. Pair with `AppDuration` for consistent motion.
+class AppCurves {
+  AppCurves._();
+
+  static const Curve standard = Curves.easeInOut; // most transitions
+  static const Curve enter    = Curves.easeOut;   // elements entering screen
+  static const Curve exit     = Curves.easeIn;    // elements leaving screen
 }
 
 // ─── Border Radius Tokens ─────────────────────────────────────────────────────
@@ -240,6 +280,41 @@ class AppTheme {
           fontSize: 13,
           color: AppColors.onSurfaceVariant,
         ),
+      ),
+
+      // ── Bottom Sheet ──────────────────────────────────────────────────────
+      // Spec: white bg, top radius 20px, no elevation
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: AppColors.background,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.sheetTop),
+      ),
+
+      // ── Dialog ───────────────────────────────────────────────────────────
+      // Spec: white bg, radius 16px, no elevation shadow
+      dialogTheme: const DialogThemeData(
+        backgroundColor: AppColors.background,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.dialogAll),
+        titleTextStyle: null, // inherits from textTheme.titleLarge
+      ),
+
+      // ── Chip ─────────────────────────────────────────────────────────────
+      // Spec: pill shape, outline border, no elevation
+      chipTheme: const ChipThemeData(
+        backgroundColor: AppColors.background,
+        selectedColor: AppColors.primaryContainer,
+        side: BorderSide(color: AppColors.outline),
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.pillAll),
+        elevation: 0,
+        pressElevation: 0,
+        padding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xs,
+        ),
+        labelStyle: TextStyle(fontSize: 12),
       ),
 
       // ── Bottom Navigation Bar ─────────────────────────────────────────────
