@@ -14,10 +14,12 @@ class IdentitySegmentedControl extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.xs),
-      decoration: const BoxDecoration(
-        color: AppColors.surfaceVariant,
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainer,
         borderRadius: AppRadius.pillAll,
       ),
       child: Row(
@@ -25,12 +27,14 @@ class IdentitySegmentedControl extends StatelessWidget {
         children: [
           _buildPill(
             context: context,
+            colorScheme: colorScheme,
             title: '個人專屬',
             isSelected: selectedType == UserType.personal,
             onTap: () => onChanged(UserType.personal),
           ),
           _buildPill(
             context: context,
+            colorScheme: colorScheme,
             title: '品牌店家',
             isSelected: selectedType == UserType.store,
             onTap: () => onChanged(UserType.store),
@@ -42,6 +46,7 @@ class IdentitySegmentedControl extends StatelessWidget {
 
   Widget _buildPill({
     required final BuildContext context,
+    required final ColorScheme colorScheme,
     required final String title,
     required final bool isSelected,
     required final VoidCallback onTap,
@@ -54,12 +59,12 @@ class IdentitySegmentedControl extends StatelessWidget {
         curve: Curves.easeOut,
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.background : Colors.transparent,
+          color: isSelected ? colorScheme.surface : Colors.transparent,
           borderRadius: AppRadius.pillAll,
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppColors.onSurface.withValues(alpha: 0.06),
+                    color: colorScheme.onSurface.withValues(alpha: 0.06),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -69,7 +74,7 @@ class IdentitySegmentedControl extends StatelessWidget {
         child: Text(
           title,
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: isSelected ? AppColors.onSurface : AppColors.onSurfaceVariant,
+            color: isSelected ? colorScheme.onSurface : colorScheme.onSurfaceVariant,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
             letterSpacing: 0.8,
           ),

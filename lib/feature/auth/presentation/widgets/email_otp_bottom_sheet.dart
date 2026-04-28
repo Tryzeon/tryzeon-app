@@ -19,10 +19,11 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
   final UserType userType;
 
   static Future<void> show(final BuildContext context, final UserType userType) {
+    final colorScheme = Theme.of(context).colorScheme;
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.surface,
       shape: const RoundedRectangleBorder(borderRadius: AppRadius.sheetTop),
       builder: (final context) => Padding(
         padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
@@ -33,6 +34,7 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
     final emailController = useTextEditingController();
     final tokenController = useTextEditingController();
     final isLoading = useState(false);
@@ -142,29 +144,29 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
         onFieldSubmitted: onSubmitted,
         style: Theme.of(
           context,
-        ).textTheme.bodyLarge?.copyWith(color: AppColors.onSurface),
+        ).textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: Theme.of(
             context,
-          ).textTheme.bodyLarge?.copyWith(color: AppColors.onSurfaceVariant),
+          ).textTheme.bodyLarge?.copyWith(color: colorScheme.onSurfaceVariant),
           filled: true,
-          fillColor: AppColors.surface,
+          fillColor: colorScheme.surfaceContainerLow,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
             vertical: AppSpacing.md,
           ),
-          border: const OutlineInputBorder(
+          border: OutlineInputBorder(
             borderRadius: AppRadius.inputAll,
-            borderSide: BorderSide(color: AppColors.outline, width: 1.5),
+            borderSide: BorderSide(color: colorScheme.outline, width: 1.5),
           ),
-          enabledBorder: const OutlineInputBorder(
+          enabledBorder: OutlineInputBorder(
             borderRadius: AppRadius.inputAll,
-            borderSide: BorderSide(color: AppColors.outline, width: 1.5),
+            borderSide: BorderSide(color: colorScheme.outline, width: 1.5),
           ),
-          focusedBorder: const OutlineInputBorder(
+          focusedBorder: OutlineInputBorder(
             borderRadius: AppRadius.inputAll,
-            borderSide: BorderSide(color: AppColors.onSurface, width: 1.5),
+            borderSide: BorderSide(color: colorScheme.onSurface, width: 1.5),
           ),
         ),
       );
@@ -176,25 +178,25 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
         child: ElevatedButton(
           onPressed: isLoading.value ? null : onTap,
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: AppColors.onPrimary,
+            backgroundColor: colorScheme.primary,
+            foregroundColor: colorScheme.onPrimary,
             elevation: 0,
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
             shape: const RoundedRectangleBorder(borderRadius: AppRadius.buttonAll),
           ),
           child: isLoading.value
-              ? const SizedBox(
+              ? SizedBox(
                   height: 20,
                   width: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: AppColors.onPrimary,
+                    color: colorScheme.onPrimary,
                   ),
                 )
               : Text(
                   text,
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: AppColors.onPrimary,
+                    color: colorScheme.onPrimary,
                     letterSpacing: 1.0,
                   ),
                 ),
@@ -222,14 +224,14 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
                       '輸入驗證碼',
                       style: Theme.of(
                         context,
-                      ).textTheme.headlineLarge?.copyWith(color: AppColors.onSurface),
+                      ).textTheme.headlineLarge?.copyWith(color: colorScheme.onSurface),
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
                       '已發送至 ${emailController.text}',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyLarge?.copyWith(color: AppColors.onSurfaceVariant),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     buildInput(
@@ -254,8 +256,8 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
                               : '重新發送驗證碼',
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: (resendCountdown.value > 0 || isLoading.value)
-                                ? AppColors.onSurfaceVariant
-                                : AppColors.primary,
+                                ? colorScheme.onSurfaceVariant
+                                : colorScheme.primary,
                           ),
                         ),
                       ),
@@ -271,14 +273,14 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
                       '使用 Email 登入',
                       style: Theme.of(
                         context,
-                      ).textTheme.headlineLarge?.copyWith(color: AppColors.onSurface),
+                      ).textTheme.headlineLarge?.copyWith(color: colorScheme.onSurface),
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
                       '我們將發送驗證碼至您的信箱',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyLarge?.copyWith(color: AppColors.onSurfaceVariant),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     buildInput(

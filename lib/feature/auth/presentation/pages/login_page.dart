@@ -19,6 +19,7 @@ class LoginPage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
     final userType = useState(UserType.personal);
     final isLoading = useState(false);
 
@@ -47,8 +48,8 @@ class LoginPage extends HookConsumerWidget {
       return OutlinedButton(
         onPressed: isLoading.value ? null : onTap,
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.onSurface,
-          side: const BorderSide(color: AppColors.outline, width: 1),
+          foregroundColor: colorScheme.onSurface,
+          side: BorderSide(color: colorScheme.outline, width: 1),
           shape: const RoundedRectangleBorder(borderRadius: AppRadius.buttonAll),
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
           elevation: 0,
@@ -61,7 +62,7 @@ class LoginPage extends HookConsumerWidget {
             Text(
               '使用 $provider 繼續',
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: AppColors.onSurface,
+                color: colorScheme.onSurface,
                 letterSpacing: 1.0,
               ),
             ),
@@ -76,8 +77,8 @@ class LoginPage extends HookConsumerWidget {
             ? null
             : () => EmailOtpBottomSheet.show(context, userType.value),
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.onSurface,
-          side: const BorderSide(color: AppColors.outline, width: 1),
+          foregroundColor: colorScheme.onSurface,
+          side: BorderSide(color: colorScheme.outline, width: 1),
           shape: const RoundedRectangleBorder(borderRadius: AppRadius.buttonAll),
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
           elevation: 0,
@@ -85,12 +86,12 @@ class LoginPage extends HookConsumerWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.email_outlined, size: 20, color: AppColors.onSurface),
+            Icon(Icons.email_outlined, size: 20, color: colorScheme.onSurface),
             const SizedBox(width: 12),
             Text(
               '使用 Email 繼續',
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: AppColors.onSurface,
+                color: colorScheme.onSurface,
                 letterSpacing: 1.0,
               ),
             ),
@@ -100,7 +101,7 @@ class LoginPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.surface,
       body: Stack(
         children: [
           SafeArea(
@@ -113,17 +114,17 @@ class LoginPage extends HookConsumerWidget {
                   Center(
                     child: Column(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.checkroom_rounded,
                           size: 48,
-                          color: AppColors.primary,
+                          color: colorScheme.primary,
                         ),
                         const SizedBox(height: AppSpacing.md),
                         Text(
                           'Tryzeon',
-                          style: Theme.of(
-                            context,
-                          ).textTheme.displayMedium?.copyWith(color: AppColors.onSurface),
+                          style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                            color: colorScheme.onSurface,
+                          ),
                         ),
                       ],
                     ),
@@ -139,9 +140,9 @@ class LoginPage extends HookConsumerWidget {
                   Center(
                     child: Text(
                       userType.value == UserType.personal ? '開啟您的虛擬試衣間' : '開始您的商店管理之旅',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyLarge?.copyWith(color: AppColors.onSurfaceVariant),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                   const Spacer(),
@@ -151,21 +152,17 @@ class LoginPage extends HookConsumerWidget {
                   const SizedBox(height: AppSpacing.lg),
                   Row(
                     children: [
-                      const Expanded(
-                        child: Divider(color: AppColors.outline, thickness: 1),
-                      ),
+                      Expanded(child: Divider(color: colorScheme.outline, thickness: 1)),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                         child: Text(
                           '或',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.onSurfaceVariant,
+                            color: colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ),
-                      const Expanded(
-                        child: Divider(color: AppColors.outline, thickness: 1),
-                      ),
+                      Expanded(child: Divider(color: colorScheme.outline, thickness: 1)),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.lg),
@@ -177,10 +174,8 @@ class LoginPage extends HookConsumerWidget {
           ),
           if (isLoading.value)
             Container(
-              color: AppColors.background.withValues(alpha: 0.8),
-              child: const Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
-              ),
+              color: colorScheme.surface.withValues(alpha: 0.8),
+              child: Center(child: CircularProgressIndicator(color: colorScheme.primary)),
             ),
         ],
       ),
