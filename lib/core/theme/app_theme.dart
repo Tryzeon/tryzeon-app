@@ -52,11 +52,11 @@ class AppSpacing {
 class AppOpacity {
   AppOpacity._();
 
-  static const double subtle  = 0.03; // hover tint, zebra row
-  static const double light   = 0.05; // card tint
-  static const double medium  = 0.08; // shadow, divider tint
-  static const double strong  = 0.3;  // disabled state
-  static const double overlay = 0.6;  // image scrim / modal backdrop
+  static const double subtle = 0.03; // hover tint, zebra row
+  static const double light = 0.05; // card tint
+  static const double medium = 0.08; // shadow, divider tint
+  static const double strong = 0.3; // disabled state
+  static const double overlay = 0.6; // image scrim / modal backdrop
 }
 
 // ─── Duration Tokens ──────────────────────────────────────────────────────────
@@ -66,9 +66,9 @@ class AppOpacity {
 class AppDuration {
   AppDuration._();
 
-  static const Duration quick    = Duration(milliseconds: 100);
+  static const Duration quick = Duration(milliseconds: 100);
   static const Duration standard = Duration(milliseconds: 200);
-  static const Duration slow     = Duration(milliseconds: 300);
+  static const Duration slow = Duration(milliseconds: 300);
 }
 
 // ─── Curve Tokens ───────────────────────────────────────────────────────────────
@@ -78,8 +78,8 @@ class AppCurves {
   AppCurves._();
 
   static const Curve standard = Curves.easeInOut; // most transitions
-  static const Curve enter    = Curves.easeOut;   // elements entering screen
-  static const Curve exit     = Curves.easeIn;    // elements leaving screen
+  static const Curve enter = Curves.easeOut; // elements entering screen
+  static const Curve exit = Curves.easeIn; // elements leaving screen
 }
 
 // ─── Border Radius Tokens ─────────────────────────────────────────────────────
@@ -120,13 +120,13 @@ class AppTheme {
       onPrimary: AppColors.onPrimary,
       primaryContainer: AppColors.primaryContainer,
       onPrimaryContainer: AppColors.primaryDark,
-      // Secondary — neutral (reuse surface tones)
-      secondary: AppColors.onSurfaceVariant,
+      // Secondary — neutral charcoal (onSurface as bg → white text, contrast ~14:1)
+      secondary: AppColors.onSurface,
       onSecondary: AppColors.onPrimary,
       secondaryContainer: AppColors.surfaceVariant,
       onSecondaryContainer: AppColors.onSurface,
-      // Tertiary — unused, safe neutral
-      tertiary: AppColors.onSurfaceVariant,
+      // Tertiary — same as secondary (unused slot, safe fallback)
+      tertiary: AppColors.onSurface,
       onTertiary: AppColors.onPrimary,
       tertiaryContainer: AppColors.surfaceVariant,
       onTertiaryContainer: AppColors.onSurface,
@@ -232,11 +232,11 @@ class AppTheme {
           ),
         ),
       ),
-      // Ghost/Tonal: primaryContainer bg, Terracotta text, radius 8px
+      // Ghost/Tonal: primaryContainer bg, dark Terracotta text, radius 8px (contrast ~3.9:1)
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           backgroundColor: colorScheme.primaryContainer,
-          foregroundColor: colorScheme.primary,
+          foregroundColor: AppColors.primaryDark,
           shape: buttonShape,
           padding: buttonPadding,
           textStyle: GoogleFonts.outfit(
@@ -310,11 +310,8 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: AppRadius.pillAll),
         elevation: 0,
         pressElevation: 0,
-        padding: EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.xs,
-        ),
-        labelStyle: TextStyle(fontSize: 12),
+        padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
+        labelStyle: TextStyle(fontSize: 12, color: AppColors.onSurface),
       ),
 
       // ── Bottom Navigation Bar ─────────────────────────────────────────────
@@ -360,36 +357,15 @@ class AppTheme {
           fontStyle: FontStyle.italic,
         ),
         // Headline — Outfit (section / card titles)
-        headlineLarge: GoogleFonts.outfit(
-          fontSize: 22,
-          fontWeight: FontWeight.w600,
-        ),
-        headlineMedium: GoogleFonts.outfit(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-        ),
-        headlineSmall: GoogleFonts.outfit(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
+        headlineLarge: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w600),
+        headlineMedium: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w600),
+        headlineSmall: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600),
         // Title — Outfit
-        titleLarge: GoogleFonts.outfit(
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-        ),
-        titleMedium: GoogleFonts.outfit(
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-        ),
-        titleSmall: GoogleFonts.outfit(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
+        titleLarge: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w600),
+        titleMedium: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w500),
+        titleSmall: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w500),
         // Body — Noto Sans TC (Chinese-compatible)
-        bodyLarge: GoogleFonts.notoSansTc(
-          fontSize: 15,
-          fontWeight: FontWeight.w400,
-        ),
+        bodyLarge: GoogleFonts.notoSansTc(fontSize: 15, fontWeight: FontWeight.w400),
         bodyMedium: GoogleFonts.notoSansTc(
           fontSize: 13,
           fontWeight: FontWeight.w400,
