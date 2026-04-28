@@ -26,6 +26,11 @@ class AppColors {
   static const Color onError = Color(0xFFFFFFFF);
   static const Color errorContainer = Color(0xFFFFDAD6);
   static const Color onErrorContainer = Color(0xFF410002);
+
+  static const Color warning = Color(0xFFFFC107);
+  static const Color onWarning = Color(0xFF1A1A1A);
+  static const Color success = Color(0xFF4CAF50);
+  static const Color onSuccess = Color(0xFFFFFFFF);
 }
 
 // ─── Spacing Tokens ───────────────────────────────────────────────────────────
