@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 
 class TryOnIndicator extends StatelessWidget {
   const TryOnIndicator({
@@ -15,13 +16,18 @@ class TryOnIndicator extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.only(bottom: AppSpacing.mdLg),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
         decoration: BoxDecoration(
-          color: colorScheme.surface.withValues(alpha: 0.3),
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(color: colorScheme.onSurface.withValues(alpha: 0.1)),
+          color: colorScheme.surface.withValues(alpha: AppOpacity.strong),
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+          border: Border.all(
+            color: colorScheme.onSurface.withValues(alpha: AppOpacity.medium),
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -29,13 +35,12 @@ class TryOnIndicator extends StatelessWidget {
             if (currentTryonIndex == -1)
               Text(
                 '原圖',
-                style: TextStyle(
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
                   color: colorScheme.onSurface,
-                  fontWeight: FontWeight.bold,
                   shadows: [
                     Shadow(
                       blurRadius: 4.0,
-                      color: colorScheme.surface.withValues(alpha: 0.45),
+                      color: colorScheme.surface.withValues(alpha: AppOpacity.overlay),
                       offset: const Offset(0, 2),
                     ),
                   ],
@@ -47,15 +52,16 @@ class TryOnIndicator extends StatelessWidget {
                 children: List.generate(tryonImagesCount, (final index) {
                   final isSelected = currentTryonIndex == index;
                   return AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: isSelected ? 12 : 8,
-                    height: 8,
+                    duration: AppDuration.slow,
+                    curve: AppCurves.standard,
+                    margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                    width: isSelected ? AppSpacing.smMd : AppSpacing.sm,
+                    height: AppSpacing.sm,
                     decoration: BoxDecoration(
                       color: isSelected
                           ? colorScheme.onSurface
-                          : colorScheme.onSurface.withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(4),
+                          : colorScheme.onSurface.withValues(alpha: AppOpacity.overlay),
+                      borderRadius: BorderRadius.circular(AppRadius.pill),
                     ),
                   );
                 }),

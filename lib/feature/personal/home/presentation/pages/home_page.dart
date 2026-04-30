@@ -15,6 +15,7 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/core/utils/image_watermark_helper.dart';
@@ -63,8 +64,8 @@ class HomePage extends HookConsumerWidget {
         if (pageController.page?.round() != targetPage) {
           pageController.animateToPage(
             targetPage,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
+            duration: AppDuration.slow,
+            curve: AppCurves.standard,
           );
         }
       }
@@ -406,13 +407,11 @@ class HomePage extends HookConsumerWidget {
               left: 0,
               child: SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.all(30.0),
+                  padding: const EdgeInsets.all(AppSpacing.xl),
                   child: Text(
                     'Tryzeon',
                     style: textTheme.displayLarge?.copyWith(
                       color: colorScheme.onPrimary,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -1.0,
                       shadows: [
                         Shadow(
                           blurRadius: 10.0,
@@ -464,9 +463,9 @@ class HomePage extends HookConsumerWidget {
             Positioned(
               bottom:
                   MediaQuery.of(context).padding.bottom +
-                  30 +
+                  AppSpacing.xl +
                   (PlatformInfo.isIOS26OrHigher() ? 50 : 0),
-              right: 20,
+              right: AppSpacing.mdLg,
               child: TryOnActionButton(
                 onTap: tryOnFromLocal,
                 isDisabled: avatarAsync.isLoading,
