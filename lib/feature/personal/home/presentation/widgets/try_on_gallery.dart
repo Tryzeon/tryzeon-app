@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_result.dart';
 import 'package:video_player/video_player.dart';
@@ -106,19 +107,20 @@ class _ImageItem extends HookWidget {
           Align(
             alignment: const Alignment(0, 0.5),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppRadius.sheet),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  color: colorScheme.surface.withValues(alpha: 0.3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ),
+                  color: colorScheme.surface.withValues(alpha: AppOpacity.strong),
                   child: Text(
                     '點擊上傳照片',
-                    style: TextStyle(
-                      color: colorScheme.onSurface,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleSmall?.copyWith(color: colorScheme.onSurface),
                   ),
                 ),
               ),
@@ -135,6 +137,7 @@ class _VideoPlayerItem extends HookWidget {
 
   @override
   Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final controllerState = useState<VideoPlayerController?>(null);
     final isPlaying = useState<bool>(true);
 
@@ -175,12 +178,12 @@ class _VideoPlayerItem extends HookWidget {
           if (!isPlaying.value)
             Center(
               child: Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.6),
+                  color: colorScheme.scrim.withValues(alpha: AppOpacity.overlay),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.play_arrow, color: Colors.white, size: 40),
+                child: Icon(Icons.play_arrow, color: colorScheme.surface, size: 40),
               ),
             ),
           GestureDetector(

@@ -1,5 +1,7 @@
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 
 class TryOnMoreOptionsButton extends StatelessWidget {
   const TryOnMoreOptionsButton({
@@ -19,20 +21,22 @@ class TryOnMoreOptionsButton extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Positioned(
       top: 0,
       right: 0,
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.only(top: 35, right: 20),
+          padding: const EdgeInsets.only(top: AppSpacing.xl, right: AppSpacing.mdLg),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(AppRadius.sheet),
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
               child: Container(
                 width: 36,
                 height: 36,
-                color: Colors.black.withValues(alpha: 0.3),
+                color: colorScheme.scrim.withValues(alpha: AppOpacity.strong),
                 child: IconButton(
                   iconSize: 20,
                   padding: EdgeInsets.zero,
@@ -45,7 +49,7 @@ class TryOnMoreOptionsButton extends StatelessWidget {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const SizedBox(height: 16),
+                            const SizedBox(height: AppSpacing.md),
                             ListTile(
                               leading: const Icon(Icons.download_rounded),
                               title: const Text('下載'),
@@ -85,13 +89,13 @@ class TryOnMoreOptionsButton extends StatelessWidget {
                                 onDelete();
                               },
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: AppSpacing.md),
                           ],
                         ),
                       ),
                     );
                   },
-                  icon: const Icon(Icons.more_vert_rounded, color: Colors.white),
+                  icon: Icon(Icons.more_vert_rounded, color: colorScheme.onPrimary),
                 ),
               ),
             ),
