@@ -13,62 +13,30 @@ class TryOnIndicator extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    // Hide indicator when viewing the original avatar (index -1)
+    if (currentTryonIndex == -1) {
+      return const SizedBox.shrink();
+    }
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.mdLg),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm,
-        ),
-        decoration: BoxDecoration(
-          color: colorScheme.surface.withValues(alpha: AppOpacity.strong),
-          borderRadius: BorderRadius.circular(AppRadius.pill),
-          border: Border.all(
-            color: colorScheme.onSurface.withValues(alpha: AppOpacity.medium),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(tryonImagesCount, (final index) {
+        final isSelected = currentTryonIndex == index;
+        return AnimatedContainer(
+          duration: AppDuration.slow,
+          curve: AppCurves.standard,
+          margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
+          width: isSelected ? 20.0 : 12.0,
+          height: 2.0,
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+            boxShadow: const [
+              BoxShadow(color: Colors.black26, blurRadius: 4.0, offset: Offset(0, 1)),
+            ],
           ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (currentTryonIndex == -1)
-              Text(
-                '原圖',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: colorScheme.onSurface,
-                  shadows: [
-                    Shadow(
-                      blurRadius: 4.0,
-                      color: colorScheme.surface.withValues(alpha: AppOpacity.overlay),
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-              )
-            else
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: List.generate(tryonImagesCount, (final index) {
-                  final isSelected = currentTryonIndex == index;
-                  return AnimatedContainer(
-                    duration: AppDuration.slow,
-                    curve: AppCurves.standard,
-                    margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-                    width: isSelected ? AppSpacing.smMd : AppSpacing.sm,
-                    height: AppSpacing.sm,
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? colorScheme.onSurface
-                          : colorScheme.onSurface.withValues(alpha: AppOpacity.overlay),
-                      borderRadius: BorderRadius.circular(AppRadius.pill),
-                    ),
-                  );
-                }),
-              ),
-          ],
-        ),
-      ),
+        );
+      }),
     );
   }
 }
