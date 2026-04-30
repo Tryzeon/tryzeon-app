@@ -116,7 +116,7 @@ class ChatPage extends HookConsumerWidget {
       currentQuestionIndex.value++;
       scrollToBottom();
 
-      Future.delayed(AppDuration.quick, () {
+      Future.delayed(AppDuration.slow, () {
         if (context.mounted) {
           askNextQuestion();
         }
@@ -207,9 +207,6 @@ class ChatPage extends HookConsumerWidget {
             ChatProgressBar(
               currentQuestionIndex: currentQuestionIndex.value,
               totalQuestions: QAConfig.questions.length,
-              isVisible:
-                  isWaitingForAnswer.value &&
-                  currentQuestionIndex.value < QAConfig.questions.length,
             ),
             Expanded(
               child: GestureDetector(

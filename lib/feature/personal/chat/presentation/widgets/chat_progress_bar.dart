@@ -6,19 +6,17 @@ class ChatProgressBar extends StatelessWidget {
     super.key,
     required this.currentQuestionIndex,
     required this.totalQuestions,
-    this.isVisible = true,
   });
 
   final int currentQuestionIndex;
   final int totalQuestions;
-  final bool isVisible;
 
   @override
   Widget build(final BuildContext context) {
-    if (!isVisible) return const SizedBox.shrink();
-
     final theme = Theme.of(context);
-    final progress = totalQuestions > 0 ? currentQuestionIndex / totalQuestions : 0.0;
+    final progress = totalQuestions > 0
+        ? (currentQuestionIndex / totalQuestions).clamp(0.0, 1.0)
+        : 0.0;
 
     return LayoutBuilder(
       builder: (final context, final constraints) {
@@ -31,6 +29,7 @@ class ChatProgressBar extends StatelessWidget {
             duration: AppDuration.standard,
             curve: AppCurves.enter,
             width: constraints.maxWidth * progress,
+            height: double.infinity,
             decoration: BoxDecoration(
               color: theme.colorScheme.primary,
               borderRadius: const BorderRadius.horizontal(
