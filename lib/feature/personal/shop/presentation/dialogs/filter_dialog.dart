@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 
 const double kMaxPrice = 3000;
 
@@ -14,8 +15,8 @@ class FilterDialog {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       useRootNavigator: true,
+      showDragHandle: true,
       builder: (final BuildContext context) {
         return _FilterDialogContent(
           minPrice: minPrice,
@@ -63,47 +64,22 @@ class _FilterDialogContent extends HookConsumerWidget {
 
     return Container(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
-      ),
       child: SafeArea(
         bottom: true,
         top: false,
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 標題
-              Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: colorScheme.primary,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      Icons.tune_rounded,
-                      color: colorScheme.onPrimary,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text('篩選條件', style: textTheme.titleLarge),
-                ],
-              ),
-              const SizedBox(height: 24),
+              Text('篩選條件', style: textTheme.titleLarge),
+              const SizedBox(height: AppSpacing.lg),
 
               // 價格範圍
               Text('價格範圍', style: textTheme.titleMedium),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -119,91 +95,34 @@ class _FilterDialogContent extends HookConsumerWidget {
                   ),
                 ],
               ),
-              SliderTheme(
-                data: SliderTheme.of(context).copyWith(
-                  activeTrackColor: colorScheme.primary,
-                  inactiveTrackColor: colorScheme.primary.withValues(alpha: 0.2),
-                  thumbColor: colorScheme.primary,
-                  overlayColor: colorScheme.primary.withValues(alpha: 0.2),
-                  trackHeight: 4,
-                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
-                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
-                ),
-                child: RangeSlider(
-                  values: priceRange.value,
-                  min: 0,
-                  max: kMaxPrice,
-                  divisions: 100,
-                  onChanged: (final RangeValues values) {
-                    priceRange.value = values;
-                    currentMinPrice.value = values.start.round();
-                    currentMaxPrice.value = values.end >= kMaxPrice
-                        ? null
-                        : values.end.round();
-                  },
-                ),
+              RangeSlider(
+                values: priceRange.value,
+                min: 0,
+                max: kMaxPrice,
+                divisions: 100,
+                onChanged: (final RangeValues values) {
+                  priceRange.value = values;
+                  currentMinPrice.value = values.start.round();
+                  currentMaxPrice.value = values.end >= kMaxPrice
+                      ? null
+                      : values.end.round();
+                },
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.lg),
 
               // 按鈕
               Row(
                 children: [
                   Expanded(
-                    child: Container(
-                      height: 48,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: colorScheme.primary, width: 2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: resetFilters,
-                          borderRadius: BorderRadius.circular(12),
-                          child: Center(
-                            child: Text(
-                              '清除',
-                              style: textTheme.titleSmall?.copyWith(
-                                color: colorScheme.primary,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                    child: OutlinedButton(
+                      onPressed: resetFilters,
+                      child: const Text('清除'),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: AppSpacing.md),
                   Expanded(
-                    child: Container(
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: colorScheme.primary.withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: applyFilters,
-                          borderRadius: BorderRadius.circular(12),
-                          child: Center(
-                            child: Text(
-                              '套用',
-                              style: textTheme.titleSmall?.copyWith(
-                                color: colorScheme.onPrimary,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                    child: FilledButton(onPressed: applyFilters, child: const Text('套用')),
                   ),
                 ],
               ),

@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/main/personal_entry_scope.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_status.dart';
@@ -52,11 +53,11 @@ class ProductCard extends HookConsumerWidget {
     Color getFitColor(final FitStatus status) {
       switch (status) {
         case FitStatus.perfect:
-          return Colors.green;
+          return AppColors.success;
         case FitStatus.good:
-          return Colors.amber;
+          return AppColors.warning;
         case FitStatus.poor:
-          return Colors.red;
+          return AppColors.error;
       }
     }
 
@@ -94,13 +95,13 @@ class ProductCard extends HookConsumerWidget {
           : getFitColor(fitStatus!);
 
       return Container(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(AppSpacing.sm),
         decoration: BoxDecoration(
           color: buttonColor,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: AppRadius.pillAll,
           boxShadow: [
             BoxShadow(
-              color: buttonColor.withValues(alpha: 0.4),
+              color: Colors.black.withValues(alpha: AppOpacity.medium),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -118,34 +119,28 @@ class ProductCard extends HookConsumerWidget {
         key: Key('product-card-${product.id}'),
         onVisibilityChanged: onVisibilityChanged,
         child: Card(
-          elevation: 2,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: const RoundedRectangleBorder(borderRadius: AppRadius.cardAll),
+          clipBehavior: Clip.antiAlias,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Stack(
                   children: [
-                    ClipRRect(
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(12),
-                        topRight: Radius.circular(12),
+                    CachedNetworkImage(
+                      imageUrl: product.imageUrls.isNotEmpty
+                          ? product.imageUrls.first
+                          : '',
+                      cacheKey: product.imagePaths.isNotEmpty
+                          ? product.imagePaths.first
+                          : null,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      placeholder: (final context, final url) => Center(
+                        child: CircularProgressIndicator(color: colorScheme.primary),
                       ),
-                      child: CachedNetworkImage(
-                        imageUrl: product.imageUrls.isNotEmpty
-                            ? product.imageUrls.first
-                            : '',
-                        cacheKey: product.imagePaths.isNotEmpty
-                            ? product.imagePaths.first
-                            : null,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        placeholder: (final context, final url) => Center(
-                          child: CircularProgressIndicator(color: colorScheme.primary),
-                        ),
-                        errorWidget: (final context, final url, final error) =>
-                            const Center(child: Icon(Icons.error_outline)),
-                      ),
+                      errorWidget: (final context, final url, final error) =>
+                          const Center(child: Icon(Icons.error_outline)),
                     ),
                     // Try-on button with fit color at bottom right
                     Positioned(
@@ -161,7 +156,7 @@ class ProductCard extends HookConsumerWidget {
                               onModeSelected: (final mode) => handleTryon(mode: mode),
                             );
                           },
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: AppRadius.pillAll,
                           child: Skeleton.ignore(child: buildTryonButton()),
                         ),
                       ),
@@ -170,7 +165,7 @@ class ProductCard extends HookConsumerWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.all(AppSpacing.smMd),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -180,11 +175,16 @@ class ProductCard extends HookConsumerWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
-                    Text('\$${product.price}', style: textTheme.labelLarge),
+                    const SizedBox(height: AppSpacing.xs),
                     Text(
-                      product.storeInfo.name,
-                      style: textTheme.bodySmall,
+                      '\$${product.price}',
+                      style: textTheme.titleSmall?.copyWith(color: colorScheme.primary),
+                    ),
+                    Text(
+                      product.storeInfo.name.toUpperCase(),
+                      style: textTheme.labelSmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),

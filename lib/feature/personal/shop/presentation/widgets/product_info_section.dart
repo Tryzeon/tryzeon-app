@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/store/products/presentation/extensions/product_attributes_extension.dart';
 
@@ -11,66 +12,40 @@ class ProductInfoSection extends StatelessWidget {
   Widget build(final BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
+    // Shared style for label and value — use default text color
+    final textStyle = textTheme.bodyMedium;
+
+    Widget buildInfoRow(final String label, final String value) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(width: 72, child: Text(label, style: textStyle)),
+            Expanded(child: Text(value, style: textStyle)),
+          ],
+        ),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('產品資訊', style: textTheme.titleMedium),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.smMd),
 
-        if (product.material != null && product.material!.isNotEmpty) ...[
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(width: 60, child: Text('材質', style: textTheme.bodyMedium)),
-              Expanded(child: Text(product.material!, style: textTheme.bodyMedium)),
-            ],
-          ),
-          const SizedBox(height: 8),
-        ],
+        if (product.material != null && product.material!.isNotEmpty)
+          buildInfoRow('材質', product.material!),
 
-        if (product.elasticity != null) ...[
-          Row(
-            children: [
-              SizedBox(width: 60, child: Text('彈性', style: textTheme.bodyMedium)),
-              Text(product.elasticity!.label, style: textTheme.bodyMedium),
-            ],
-          ),
-          const SizedBox(height: 8),
-        ],
+        if (product.elasticity != null) buildInfoRow('彈性', product.elasticity!.label),
 
-        if (product.thickness != null) ...[
-          Row(
-            children: [
-              SizedBox(width: 60, child: Text('厚薄度', style: textTheme.bodyMedium)),
-              Text(product.thickness!.label, style: textTheme.bodyMedium),
-            ],
-          ),
-          const SizedBox(height: 8),
-        ],
+        if (product.thickness != null) buildInfoRow('厚薄度', product.thickness!.label),
 
-        if (product.fit != null && product.fit!.isNotEmpty) ...[
-          Row(
-            children: [
-              SizedBox(width: 60, child: Text('版型', style: textTheme.bodyMedium)),
-              Text(product.fit!, style: textTheme.bodyMedium),
-            ],
-          ),
-        ],
+        if (product.fit != null && product.fit!.isNotEmpty)
+          buildInfoRow('版型', product.fit!),
 
-        if (product.seasons != null && product.seasons!.isNotEmpty) ...[
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(width: 60, child: Text('季節', style: textTheme.bodyMedium)),
-              Expanded(
-                child: Text(
-                  product.seasons!.map((final s) => s.label).join('、'),
-                  style: textTheme.bodyMedium,
-                ),
-              ),
-            ],
-          ),
-        ],
+        if (product.seasons != null && product.seasons!.isNotEmpty)
+          buildInfoRow('季節', product.seasons!.map((final s) => s.label).join('、')),
       ],
     );
   }

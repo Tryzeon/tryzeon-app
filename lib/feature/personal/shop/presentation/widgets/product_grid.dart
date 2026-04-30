@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
@@ -83,7 +84,7 @@ class ProductGrid extends HookConsumerWidget {
       if (products.isEmpty) {
         return Center(
           child: Padding(
-            padding: const EdgeInsets.all(48.0),
+            padding: const EdgeInsets.all(AppSpacing.xxl),
             child: Column(
               children: [
                 Icon(
@@ -91,8 +92,13 @@ class ProductGrid extends HookConsumerWidget {
                   size: 64,
                   color: colorScheme.outlineVariant,
                 ),
-                const SizedBox(height: 16),
-                Text('目前沒有商品符合搜尋條件', style: textTheme.bodyMedium),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  '目前沒有商品符合搜尋條件',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
           ),
@@ -100,15 +106,15 @@ class ProductGrid extends HookConsumerWidget {
       }
 
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
         child: GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: products.length,
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
+            mainAxisSpacing: AppSpacing.md,
+            crossAxisSpacing: AppSpacing.md,
             childAspectRatio: 0.7,
           ),
           itemBuilder: (final context, final index) {
@@ -128,15 +134,15 @@ class ProductGrid extends HookConsumerWidget {
       return Skeletonizer(
         enabled: true,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           child: GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: _skeletonProducts.length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
+              mainAxisSpacing: AppSpacing.md,
+              crossAxisSpacing: AppSpacing.md,
               childAspectRatio: 0.7,
             ),
             itemBuilder: (final context, final index) {

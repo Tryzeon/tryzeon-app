@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 
 class AdBanner extends HookConsumerWidget {
   const AdBanner({super.key, required this.adsAsync});
@@ -35,36 +36,64 @@ class AdBanner extends HookConsumerWidget {
 
           pageController.animateToPage(
             targetPage,
-            duration: const Duration(milliseconds: 500),
+            duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
           );
         });
         return timer.cancel;
       }, [adImages]);
 
-      return SizedBox(
-        height: 180,
-        child: PageView.builder(
-          controller: pageController,
-          itemCount: adImages.length,
-          itemBuilder: (final context, final index) {
-            return GestureDetector(
-              onTap: () {
-                // TODO: 點擊廣告導向詳情頁或外部連結
+      final currentPage = useState(0);
+
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            height: 160,
+            child: PageView.builder(
+              controller: pageController,
+              onPageChanged: (final index) => currentPage.value = index,
+              itemCount: adImages.length,
+              itemBuilder: (final context, final index) {
+                return GestureDetector(
+                  onTap: () {
+                    // TODO: 點擊廣告導向詳情頁或外部連結
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                    decoration: BoxDecoration(
+                      borderRadius: AppRadius.cardAll,
+                      image: DecorationImage(
+                        image: AssetImage(adImages[index]),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                );
               },
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  image: DecorationImage(
-                    image: AssetImage(adImages[index]),
-                    fit: BoxFit.cover,
+            ),
+          ),
+          if (adImages.length > 1) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                adImages.length,
+                (final index) => Container(
+                  margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                  width: AppSpacing.sm,
+                  height: AppSpacing.sm,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: currentPage.value == index
+                        ? colorScheme.primary
+                        : colorScheme.outline,
                   ),
                 ),
               ),
-            );
-          },
-        ),
+            ),
+          ],
+        ],
       );
     }
 
@@ -74,10 +103,10 @@ class AdBanner extends HookConsumerWidget {
         enabled: true,
         child: Skeleton.leaf(
           child: Container(
-            height: 180,
-            margin: const EdgeInsets.symmetric(horizontal: 16),
+            height: 160,
+            margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppRadius.cardAll,
               color: colorScheme.surfaceContainer,
             ),
           ),

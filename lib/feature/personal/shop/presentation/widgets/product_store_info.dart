@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 
 class ProductStoreInfo extends StatelessWidget {
@@ -18,16 +19,16 @@ class ProductStoreInfo extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('店家資訊', style: textTheme.titleMedium),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.smMd),
         Material(
           color: Colors.transparent,
           child: InkWell(
             onTap: () {
               context.push(AppRoutes.personalShopStorePath(storeInfo.id));
             },
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppRadius.cardAll,
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(AppSpacing.sm),
               child: Row(
                 children: [
                   // Store Logo
@@ -41,14 +42,14 @@ class ProductStoreInfo extends StatelessWidget {
                         ? Icon(Icons.store, color: colorScheme.primary)
                         : null,
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: AppSpacing.smMd),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(storeInfo.name, style: textTheme.titleSmall),
                         if (storeInfo.address != null) ...[
-                          const SizedBox(height: 4),
+                          const SizedBox(height: AppSpacing.xs),
                           Text(storeInfo.address!, style: textTheme.bodyMedium),
                         ],
                       ],
