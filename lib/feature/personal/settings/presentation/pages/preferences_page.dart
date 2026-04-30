@@ -3,6 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
 
 class PreferencesPage extends HookConsumerWidget {
@@ -62,31 +63,20 @@ class PreferencesPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
             // AppBar
             Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: colorScheme.surface,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
+              padding: const EdgeInsets.all(AppSpacing.md),
               child: Row(
                 children: [
                   Container(
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: colorScheme.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
+                      color: colorScheme.primaryContainer,
+                      borderRadius: AppRadius.cardAll,
                     ),
                     child: IconButton(
                       icon: Icon(
@@ -98,7 +88,7 @@ class PreferencesPage extends HookConsumerWidget {
                       padding: EdgeInsets.zero,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: AppSpacing.md),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -113,7 +103,7 @@ class PreferencesPage extends HookConsumerWidget {
             ),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AppSpacing.md),
                 children: [
                   _buildSectionCard(
                     context: context,
@@ -123,18 +113,9 @@ class PreferencesPage extends HookConsumerWidget {
                         data: (final value) => SwitchListTile.adaptive(
                           value: value,
                           onChanged: handleRecommendNearbyShopsToggle,
-                          title: Text(
-                            '推薦附近店家',
-                            style: textTheme.bodyLarge?.copyWith(
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                          title: Text('推薦附近店家', style: textTheme.titleSmall),
                           subtitle: Text('根據您的位置推薦附近的優質店家', style: textTheme.bodyMedium),
-                          activeTrackColor: colorScheme.primary,
                           contentPadding: EdgeInsets.zero,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
                         ),
                         loading: () =>
                             const Center(child: CircularProgressIndicator.adaptive()),
@@ -156,29 +137,19 @@ class PreferencesPage extends HookConsumerWidget {
     required final String title,
     required final List<Widget> children,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: textTheme.titleMedium),
-          const SizedBox(height: 16),
-          ...children,
-        ],
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: textTheme.titleMedium),
+            const SizedBox(height: AppSpacing.md),
+            ...children,
+          ],
+        ),
       ),
     );
   }

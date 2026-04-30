@@ -5,6 +5,7 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_overlay.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/settings/presentation/providers/personal_settings_controller.dart';
@@ -14,7 +15,8 @@ class AccountPage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final state = ref.watch(personalSettingsControllerProvider);
 
     ref.listen(personalSettingsControllerProvider, (final previous, final next) {
@@ -30,48 +32,40 @@ class AccountPage extends HookConsumerWidget {
     return LoadingOverlay(
       isLoading: state.isLoading,
       child: Scaffold(
-        backgroundColor: colorScheme.surface,
         body: CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
               child: SafeArea(
                 bottom: false,
-                child: Container(
-                  padding: const EdgeInsets.all(16),
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.md),
                   child: Row(
                     children: [
                       Container(
-                        width: 48,
-                        height: 48,
+                        width: AppSpacing.xxl,
+                        height: AppSpacing.xxl,
                         decoration: BoxDecoration(
                           color: colorScheme.primary,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppRadius.icon),
                         ),
                         child: Icon(
                           Icons.person_outline_rounded,
                           color: colorScheme.onPrimary,
-                          size: 24,
+                          size: AppSpacing.lg,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: AppSpacing.md),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              '帳號中心',
-                              style: Theme.of(context).textTheme.headlineMedium,
-                            ),
-                            Text('管理個人帳戶', style: Theme.of(context).textTheme.bodySmall),
+                            Text('帳號中心', style: theme.textTheme.headlineMedium),
+                            Text('管理個人帳戶', style: theme.textTheme.bodySmall),
                           ],
                         ),
                       ),
                       IconButton(
                         onPressed: () => context.push(AppRoutes.personalSettings),
-                        style: IconButton.styleFrom(
-                          backgroundColor: colorScheme.surfaceContainerLowest,
-                          foregroundColor: colorScheme.onSurface,
-                        ),
                         icon: const Icon(Icons.settings_outlined),
                         tooltip: '設定',
                       ),
@@ -82,21 +76,66 @@ class AccountPage extends HookConsumerWidget {
             ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg,
+                  AppSpacing.md,
+                  AppSpacing.lg,
+                  AppSpacing.xl,
+                ),
                 child: Column(
                   children: [
                     const _MyProfileHeader(),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: AppSpacing.lg),
                     const _MySectionHeader(title: '帳號中心'),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.md),
                     _MyActionGroup(
                       children: [
-                        _MyActionTile(
-                          icon: Icons.workspace_premium_outlined,
-                          title: '訂閱方案',
-                          subtitle: '查看目前方案與升級選項',
+                        ListTile(
+                          onTap: () =>
+                              context.push(AppRoutes.personalSettingsBodyMeasurements),
+                          leading: Container(
+                            width: AppSpacing.xxl,
+                            height: AppSpacing.xxl,
+                            decoration: BoxDecoration(
+                              color: colorScheme.primaryContainer,
+                              borderRadius: BorderRadius.circular(AppRadius.icon),
+                            ),
+                            child: Icon(
+                              Icons.straighten_rounded,
+                              color: colorScheme.primary,
+                              size: AppSpacing.lg,
+                            ),
+                          ),
+                          title: const Text('身形資料'),
+                          subtitle: const Text('管理您的身形量測數據'),
+                          trailing: Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            color: colorScheme.onSurfaceVariant,
+                            size: AppSpacing.md,
+                          ),
+                        ),
+                        ListTile(
                           onTap: () => context.push(AppRoutes.personalSubscription),
-                          color: colorScheme.primary,
+                          leading: Container(
+                            width: AppSpacing.xxl,
+                            height: AppSpacing.xxl,
+                            decoration: BoxDecoration(
+                              color: colorScheme.primaryContainer,
+                              borderRadius: BorderRadius.circular(AppRadius.icon),
+                            ),
+                            child: Icon(
+                              Icons.workspace_premium_outlined,
+                              color: colorScheme.primary,
+                              size: AppSpacing.lg,
+                            ),
+                          ),
+                          title: const Text('訂閱方案'),
+                          subtitle: const Text('查看目前方案與升級選項'),
+                          trailing: Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            color: colorScheme.onSurfaceVariant,
+                            size: AppSpacing.md,
+                          ),
                         ),
                       ],
                     ),
@@ -140,17 +179,26 @@ class _MyProfileHeader extends HookConsumerWidget {
         return const Center(child: CircularProgressIndicator());
       }
       if (hasProfileError || profile == null) {
-        return Icon(Icons.person, size: 36, color: colorScheme.primary);
+        return Icon(Icons.person, size: AppSpacing.xl, color: colorScheme.primary);
       }
       if (isAvatarLoading) {
         return const Center(child: CircularProgressIndicator());
       }
       if (avatarFile != null) {
-        return Image.file(avatarFile, fit: BoxFit.cover, width: 72, height: 72);
+        return Image.file(
+          avatarFile,
+          fit: BoxFit.cover,
+          width: AppSpacing.xxl,
+          height: AppSpacing.xxl,
+        );
       }
       return Container(
-        color: colorScheme.surfaceContainerHighest,
-        child: Icon(Icons.person, size: 36, color: colorScheme.onSurfaceVariant),
+        color: colorScheme.surfaceContainer,
+        child: Icon(
+          Icons.person,
+          size: AppSpacing.xl,
+          color: colorScheme.onSurfaceVariant,
+        ),
       );
     }
 
@@ -165,7 +213,7 @@ class _MyProfileHeader extends HookConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text('載入個人資料失敗', style: theme.textTheme.titleMedium),
-            const SizedBox(height: 4),
+            const SizedBox(height: AppSpacing.xs),
             Text('請稍後再試', style: theme.textTheme.bodyMedium),
           ],
         );
@@ -174,11 +222,7 @@ class _MyProfileHeader extends HookConsumerWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('尚未建立個人資料', style: theme.textTheme.titleMedium),
-            const SizedBox(height: 4),
-            Text('前往編輯個人資料完成設定', style: theme.textTheme.bodyMedium),
-          ],
+          children: [Text('尚未建立個人資料', style: theme.textTheme.titleMedium)],
         );
       }
       return Column(
@@ -187,7 +231,7 @@ class _MyProfileHeader extends HookConsumerWidget {
         children: [
           Text(profile.name, style: theme.textTheme.titleLarge),
           if (email != null && email.isNotEmpty) ...[
-            const SizedBox(height: 4),
+            const SizedBox(height: AppSpacing.xs),
             Text(
               email,
               style: theme.textTheme.bodyMedium,
@@ -199,43 +243,23 @@ class _MyProfileHeader extends HookConsumerWidget {
       );
     }
 
-    return InkWell(
-      onTap: () => context.push(AppRoutes.personalSettingsProfile),
-      borderRadius: BorderRadius.circular(24),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Row(
           children: [
             Container(
-              width: 72,
-              height: 72,
+              width: AppSpacing.xxl,
+              height: AppSpacing.xxl,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: colorScheme.surface,
-                border: Border.all(color: colorScheme.surface, width: 3),
+                color: colorScheme.surfaceContainer,
               ),
               child: ClipOval(child: buildAvatar()),
             ),
-            const SizedBox(width: 18),
+            const SizedBox(width: AppSpacing.md),
             Expanded(child: buildInfo()),
-            const SizedBox(width: 8),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: colorScheme.outlineVariant,
-              size: 16,
-            ),
           ],
         ),
       ),
@@ -255,13 +279,10 @@ class _MySectionHeader extends StatelessWidget {
     return Align(
       alignment: Alignment.centerLeft,
       child: Padding(
-        padding: const EdgeInsets.only(left: 8),
+        padding: const EdgeInsets.only(left: AppSpacing.sm),
         child: Text(
           title,
-          style: theme.textTheme.titleSmall?.copyWith(
-            color: theme.colorScheme.primary,
-            letterSpacing: 0.4,
-          ),
+          style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.primary),
         ),
       ),
     );
@@ -275,106 +296,14 @@ class _MyActionGroup extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+    return Card(
+      clipBehavior: Clip.antiAlias,
       child: Column(
         children: children.asMap().entries.map((final entry) {
           final index = entry.key;
           final child = entry.value;
-          return Column(
-            children: [
-              if (index > 0)
-                Divider(
-                  height: 1,
-                  indent: 68,
-                  endIndent: 20,
-                  color: colorScheme.outlineVariant.withValues(alpha: 0.45),
-                ),
-              child,
-            ],
-          );
+          return Column(children: [if (index > 0) const Divider(), child]);
         }).toList(),
-      ),
-    );
-  }
-}
-
-class _MyActionTile extends StatelessWidget {
-  const _MyActionTile({
-    required this.icon,
-    required this.title,
-    required this.onTap,
-    required this.color,
-    this.subtitle,
-  });
-
-  final IconData icon;
-  final String title;
-  final String? subtitle;
-  final VoidCallback onTap;
-  final Color color;
-
-  @override
-  Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(24),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Icon(icon, color: color, size: 22),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: theme.textTheme.bodyLarge),
-                    if (subtitle != null) ...[
-                      const SizedBox(height: 3),
-                      Text(
-                        subtitle!,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                color: colorScheme.outlineVariant,
-                size: 16,
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

@@ -11,6 +11,8 @@ import 'package:tryzeon/feature/personal/profile/data/repositories/user_profile_
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/get_user_profile.dart';
+import 'package:tryzeon/feature/personal/profile/domain/usecases/update_user_avatar.dart';
+import 'package:tryzeon/feature/personal/profile/domain/usecases/update_user_body_measurements.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/update_user_profile.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -40,6 +42,16 @@ UserProfileRepository userProfileRepository(final Ref ref) {
 @riverpod
 GetUserProfile getUserProfileUseCase(final Ref ref) {
   return GetUserProfile(ref.watch(userProfileRepositoryProvider));
+}
+
+@riverpod
+UpdateUserAvatar updateUserAvatarUseCase(final Ref ref) {
+  return UpdateUserAvatar(ref.watch(userProfileRepositoryProvider));
+}
+
+@riverpod
+UpdateUserBodyMeasurements updateUserBodyMeasurementsUseCase(final Ref ref) {
+  return UpdateUserBodyMeasurements(ref.watch(userProfileRepositoryProvider));
 }
 
 @riverpod

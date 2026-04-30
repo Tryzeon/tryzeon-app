@@ -6,8 +6,9 @@ import 'package:tryzeon/feature/personal/account/presentation/pages/account_page
 import 'package:tryzeon/feature/personal/chat/presentation/pages/chat_page.dart';
 import 'package:tryzeon/feature/personal/home/presentation/pages/home_page.dart';
 import 'package:tryzeon/feature/personal/onboarding/presentation/pages/personal_onboarding_page.dart';
+import 'package:tryzeon/feature/personal/settings/presentation/pages/body_measurements_settings_page.dart';
 import 'package:tryzeon/feature/personal/settings/presentation/pages/preferences_page.dart';
-import 'package:tryzeon/feature/personal/settings/presentation/pages/profile_setting_page.dart';
+import 'package:tryzeon/feature/personal/settings/presentation/pages/profile_settings_page.dart';
 import 'package:tryzeon/feature/personal/settings/presentation/pages/settings_page.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/pages/product_detail_page.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/pages/shop_page.dart';
@@ -102,6 +103,10 @@ final personalFullScreenRoutes = [
       GoRoute(
         path: 'profile',
         builder: (final context, final state) => const PersonalProfileSettingsPage(),
+      ),
+      GoRoute(
+        path: 'body-measurements',
+        builder: (final context, final state) => const BodyMeasurementsSettingsPage(),
       ),
       GoRoute(
         path: 'preferences',

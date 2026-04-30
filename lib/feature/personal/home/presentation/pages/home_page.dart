@@ -75,10 +75,9 @@ class HomePage extends HookConsumerWidget {
         final profile = await ref.read(userProfileProvider.future);
         if (profile == null) return;
 
-        final result = await ref.read(updateUserProfileUseCaseProvider)(
-          original: profile,
-          target: profile,
+        final result = await ref.read(updateUserAvatarUseCaseProvider)(
           avatarFile: imageFile,
+          previousAvatarPath: profile.avatarPath,
         );
 
         if (!context.mounted) return;

@@ -10,6 +10,7 @@ import 'package:tryzeon/core/presentation/widgets/settings_sliver_app_bar.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/presentation/widgets/version_info.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/settings/presentation/providers/personal_settings_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -106,18 +107,27 @@ class PersonalSettingsPage extends HookConsumerWidget {
     return LoadingOverlay(
       isLoading: isLoading,
       child: Scaffold(
-        backgroundColor: colorScheme.surface,
         body: CustomScrollView(
           slivers: [
             const SettingsSliverAppBar(title: '設定'),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg,
+                  vertical: AppSpacing.lg,
+                ),
                 child: Column(
                   children: [
                     SettingsSection(
-                      title: '偏好與支援',
+                      title: '個人設定',
                       children: [
+                        SettingsListTile(
+                          icon: Icons.person_outline_rounded,
+                          title: '個人資料',
+                          subtitle: '管理您的姓名與個人資訊',
+                          onTap: () => context.push(AppRoutes.personalSettingsProfile),
+                          color: colorScheme.primary,
+                        ),
                         SettingsListTile(
                           icon: Icons.tune_rounded,
                           title: '偏好設定',
@@ -126,6 +136,12 @@ class PersonalSettingsPage extends HookConsumerWidget {
                               context.push(AppRoutes.personalSettingsPreferences),
                           color: colorScheme.primary,
                         ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    SettingsSection(
+                      title: '支援',
+                      children: [
                         SettingsListTile(
                           icon: Icons.store_outlined,
                           title: '切換到店家帳號',
@@ -142,7 +158,7 @@ class PersonalSettingsPage extends HookConsumerWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: AppSpacing.lg),
                     SettingsSection(
                       title: '危險區域',
                       children: [
@@ -164,13 +180,13 @@ class PersonalSettingsPage extends HookConsumerWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 48),
+                    const SizedBox(height: AppSpacing.xxl),
                     VersionInfo(
                       versionProvider: (final ref) => ref
                           .read(personalSettingsControllerProvider.notifier)
                           .getAppVersion(),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: AppSpacing.lg),
                   ],
                 ),
               ),
