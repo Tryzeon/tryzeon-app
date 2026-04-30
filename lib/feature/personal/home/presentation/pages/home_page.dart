@@ -54,7 +54,6 @@ class HomePage extends HookConsumerWidget {
     final newAvatarFile = useState<File?>(null);
     final pageController = usePageController(initialPage: 0);
 
-    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     // Sync PageController with currentTryonIndex changes (from logic)
@@ -364,6 +363,11 @@ class HomePage extends HookConsumerWidget {
       return null;
     }, [activeController]);
 
+    final bottomOffset =
+        MediaQuery.paddingOf(context).bottom +
+        AppSpacing.lg +
+        (PlatformInfo.isIOS26OrHigher() ? 50 : 0);
+
     return Scaffold(
       extendBody: true,
       extendBodyBehindAppBar: true,
@@ -373,7 +377,7 @@ class HomePage extends HookConsumerWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // 1. Background Image Layer - wrapped in scrollable for RefreshIndicator
+            // 1. Background Image Layer — wrapped in scrollable for RefreshIndicator
             SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               child: SizedBox(
@@ -401,71 +405,51 @@ class HomePage extends HookConsumerWidget {
               ),
             ),
 
-            // 2. Top Left Title Layer (Tryzeon)
+            // 2. Top Left — Tryzeon Logo (Playfair Display italic)
             Positioned(
-              top: 0,
-              left: 0,
-              child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.xl),
-                  child: Text(
-                    'Tryzeon',
-                    style: textTheme.displayLarge?.copyWith(
-                      color: colorScheme.onPrimary,
-                      shadows: [
-                        Shadow(
-                          blurRadius: 10.0,
-                          color: colorScheme.primary.withValues(alpha: 0.5),
-                          offset: const Offset(2, 2),
-                        ),
-                      ],
-                    ),
-                  ),
+              top: MediaQuery.paddingOf(context).top + AppSpacing.lg,
+              left: AppSpacing.lg,
+              child: Text(
+                'Tryzeon',
+                style: textTheme.displaySmall?.copyWith(
+                  color: Colors.white,
+                  shadows: const [
+                    Shadow(blurRadius: 10.0, color: Colors.black38, offset: Offset(2, 2)),
+                  ],
                 ),
               ),
             ),
 
-            // 3. Top Right Controls
+            // 3. Top Right — More Options (white ⋮ with shadow)
             if (currentTryonIndex.value >= 0 &&
                 !loadingIndices.value.contains(currentTryonIndex.value))
-              TryOnMoreOptionsButton(
-                currentTryonIndex: currentTryonIndex.value,
-                customAvatarIndex: customAvatarIndex.value,
-                onDownload: downloadCurrentMedia,
-                onToggleAvatar: toggleAvatar,
-                onDelete: deleteCurrentTryon,
+              Positioned(
+                top: MediaQuery.paddingOf(context).top + AppSpacing.lg,
+                right: AppSpacing.lg,
+                child: TryOnMoreOptionsButton(
+                  currentTryonIndex: currentTryonIndex.value,
+                  customAvatarIndex: customAvatarIndex.value,
+                  onDownload: downloadCurrentMedia,
+                  onToggleAvatar: toggleAvatar,
+                  onDelete: deleteCurrentTryon,
+                ),
               ),
 
-            // 4. Bottom Layer (Navigation & Action) - Aware of Floating Nav Bar
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Navigation Buttons (Left/Center aligned or just floating)
-                  if (tryonImages.value.isNotEmpty)
-                    TryOnIndicator(
-                      currentTryonIndex: currentTryonIndex.value,
-                      tryonImagesCount: tryonImages.value.length,
-                    ),
-
-                  // Spacing for where the actual bottom bar would be
-                  SizedBox(
-                    height: MediaQuery.of(context).padding.bottom + 80,
-                  ), // Approx floating bar height
-                ],
+            // 4. Bottom Left — Indicator (white floating lines)
+            if (tryonImages.value.isNotEmpty)
+              Positioned(
+                bottom: bottomOffset + AppSpacing.lg,
+                left: AppSpacing.xxl,
+                child: TryOnIndicator(
+                  currentTryonIndex: currentTryonIndex.value,
+                  tryonImagesCount: tryonImages.value.length,
+                ),
               ),
-            ),
 
-            // 5. Try On Button
+            // 5. Bottom Right — Try On Button (dark glassmorphism pill)
             Positioned(
-              bottom:
-                  MediaQuery.of(context).padding.bottom +
-                  AppSpacing.xl +
-                  (PlatformInfo.isIOS26OrHigher() ? 50 : 0),
-              right: AppSpacing.mdLg,
+              bottom: bottomOffset,
+              right: AppSpacing.lg,
               child: TryOnActionButton(
                 onTap: tryOnFromLocal,
                 isDisabled: avatarAsync.isLoading,

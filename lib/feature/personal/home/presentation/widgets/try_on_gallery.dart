@@ -1,11 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
-import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_result.dart';
 import 'package:video_player/video_player.dart';
@@ -34,40 +32,119 @@ class TryOnGallery extends HookWidget {
   Widget build(final BuildContext context) {
     return GestureDetector(
       onTap: currentTryonIndex == -1 ? onUploadTap : null,
-      child: PageView.builder(
-        controller: pageController,
-        onPageChanged: onPageChanged,
-        itemCount: tryonResults.length + 1,
-        itemBuilder: (final context, final index) {
-          if (index == 0) {
-            // Original Avatar
-            final ImageProvider imageProvider = avatarFile != null
-                ? FileImage(avatarFile!)
-                : const AssetImage(AppConstants.defaultProfileImage);
-            final showUploadOverlay = avatarFile == null;
-            return _ImageItem(
-              imageProvider: imageProvider,
-              showUploadOverlay: showUploadOverlay,
-            );
-          }
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          PageView.builder(
+            controller: pageController,
+            onPageChanged: onPageChanged,
+            itemCount: tryonResults.length + 1,
+            itemBuilder: (final context, final index) {
+              if (index == 0) {
+                // Original Avatar
+                final ImageProvider imageProvider = avatarFile != null
+                    ? FileImage(avatarFile!)
+                    : const AssetImage(AppConstants.defaultProfileImage);
+                final showUploadOverlay = avatarFile == null;
+                return _ImageItem(
+                  imageProvider: imageProvider,
+                  showUploadOverlay: showUploadOverlay,
+                );
+              }
 
-          final result = tryonResults[index - 1];
-          final isLoading = loadingIndices.contains(index - 1);
+              final result = tryonResults[index - 1];
+              final isLoading = loadingIndices.contains(index - 1);
 
-          if (isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+              if (isLoading) {
+                return const _SkeletonItem();
+              }
 
-          if (result.mode == TryOnMode.video) {
-            return _VideoPlayerItem(videoUrl: result.videoUrl!);
-          }
+              if (result.mode == TryOnMode.video) {
+                return _VideoPlayerItem(videoUrl: result.videoUrl!);
+              }
 
-          if (result.mode == TryOnMode.image) {
-            return _ImageItem(imageBase64: result.imageBase64);
-          }
+              if (result.mode == TryOnMode.image) {
+                return _ImageItem(imageBase64: result.imageBase64);
+              }
 
-          return const Center(child: Text('Invalid TryOn Result'));
-        },
+              return const Center(child: Text('Invalid TryOn Result'));
+            },
+          ),
+          // Top Dark Gradient — ensures white logo/icons are legible
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            height: 200,
+            child: IgnorePointer(
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.black26, Colors.transparent],
+                    stops: [0.0, 1.0],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // Bottom Dark Gradient — ensures white indicator/button are legible
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 250,
+            child: IgnorePointer(
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [Colors.black38, Colors.transparent],
+                    stops: [0.0, 1.0],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SkeletonItem extends HookWidget {
+  const _SkeletonItem();
+
+  @override
+  Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    final animationController = useAnimationController(
+      duration: const Duration(milliseconds: 1500),
+    );
+
+    useEffect(() {
+      animationController.repeat(reverse: true);
+      return null;
+    }, const []);
+
+    final opacity = useAnimation(
+      Tween<double>(
+        begin: 0.6,
+        end: 0.85,
+      ).animate(CurvedAnimation(parent: animationController, curve: Curves.easeInOut)),
+    );
+
+    return Container(
+      color: colorScheme.onSurface.withValues(alpha: opacity),
+      child: Center(
+        child: Icon(
+          Icons.auto_awesome,
+          color: colorScheme.surface.withValues(alpha: 0.3),
+          size: 48,
+        ),
       ),
     );
   }
@@ -86,7 +163,7 @@ class _ImageItem extends HookWidget {
 
   @override
   Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     final finalImageProvider = useMemoized(() {
       if (imageProvider != null) {
@@ -99,34 +176,46 @@ class _ImageItem extends HookWidget {
       throw Exception('Either imageBase64 or imageProvider must be provided');
     }, [imageBase64, imageProvider]);
 
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        Image(image: finalImageProvider, fit: BoxFit.cover, gaplessPlayback: true),
-        if (showUploadOverlay)
-          Align(
-            alignment: const Alignment(0, 0.5),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(AppRadius.sheet),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
-                  ),
-                  color: colorScheme.surface.withValues(alpha: AppOpacity.strong),
-                  child: Text(
-                    '點擊上傳照片',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.titleSmall?.copyWith(color: colorScheme.onSurface),
-                  ),
+    return Container(
+      decoration: BoxDecoration(
+        image: DecorationImage(image: finalImageProvider, fit: BoxFit.cover),
+      ),
+      child: showUploadOverlay
+          ? Container(
+              color: Colors.black.withValues(alpha: 0.32),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 68,
+                      height: 68,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.75),
+                          width: 1.2,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.upload_rounded,
+                        size: 30,
+                        color: Colors.white.withValues(alpha: 0.9),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      'UPLOAD PHOTO',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.8),
+                        letterSpacing: 2.0,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ),
-      ],
+            )
+          : null,
     );
   }
 }
@@ -135,75 +224,66 @@ class _VideoPlayerItem extends HookWidget {
   const _VideoPlayerItem({required this.videoUrl});
   final String videoUrl;
 
+  Widget _buildVideoFill(final VideoPlayerController controller) {
+    return LayoutBuilder(
+      builder: (final context, final constraints) {
+        final screenHeight = constraints.maxHeight;
+        final scaledWidth = screenHeight * controller.value.aspectRatio;
+        return ClipRect(
+          child: OverflowBox(
+            maxWidth: double.infinity,
+            maxHeight: screenHeight,
+            child: SizedBox(
+              width: scaledWidth,
+              height: screenHeight,
+              child: VideoPlayer(controller),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final controllerState = useState<VideoPlayerController?>(null);
-    final isPlaying = useState<bool>(true);
+    final controller = useMemoized(
+      () => VideoPlayerController.networkUrl(Uri.parse(videoUrl)),
+      [videoUrl],
+    );
+    final isInitialized = useState(false);
+    final showPlayIcon = useState(false);
 
     useEffect(() {
-      final controller = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
-
       controller.initialize().then((_) {
-        controllerState.value = controller;
-        controller.play(); // 自動播放
-        controller.setLooping(true); // 循環播放
-
-        // 監聽播放狀態變化
-        void listener() {
-          isPlaying.value = controller.value.isPlaying;
-        }
-
-        controller.addListener(listener);
+        isInitialized.value = true;
+        controller.setLooping(true);
+        controller.play();
       });
-      return () {
-        controllerState.value?.dispose();
-      };
-    }, [videoUrl]);
+      return controller.dispose;
+    }, [controller]);
 
-    if (controllerState.value != null && controllerState.value!.value.isInitialized) {
-      return Stack(
-        fit: StackFit.expand,
-        children: [
-          ClipRect(
-            child: FittedBox(
-              fit: BoxFit.cover,
-              child: SizedBox(
-                width: controllerState.value!.value.size.width,
-                height: controllerState.value!.value.size.height,
-                child: VideoPlayer(controllerState.value!),
-              ),
-            ),
-          ),
-          if (!isPlaying.value)
-            Center(
-              child: Container(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                decoration: BoxDecoration(
-                  color: colorScheme.scrim.withValues(alpha: AppOpacity.overlay),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.play_arrow, color: colorScheme.surface, size: 40),
-              ),
-            ),
-          GestureDetector(
-            onTap: () {
-              if (controllerState.value!.value.isPlaying) {
-                controllerState.value!.pause();
-              } else {
-                controllerState.value!.play();
-              }
-            },
-            child: Container(
-              color: Colors.transparent,
-              width: double.infinity,
-              height: double.infinity,
-            ),
-          ),
-        ],
-      );
-    } else {
-      return const Center(child: CircularProgressIndicator());
+    if (!isInitialized.value) {
+      return const Center(child: CircularProgressIndicator(color: Colors.white54));
     }
+
+    return GestureDetector(
+      onTap: () {
+        if (controller.value.isPlaying) {
+          controller.pause();
+          showPlayIcon.value = true;
+        } else {
+          controller.play();
+          showPlayIcon.value = false;
+        }
+      },
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          _buildVideoFill(controller),
+          if (showPlayIcon.value)
+            const Icon(Icons.play_arrow_rounded, color: Colors.white70, size: 64),
+        ],
+      ),
+    );
   }
 }
