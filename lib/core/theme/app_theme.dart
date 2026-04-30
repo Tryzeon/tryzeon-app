@@ -371,16 +371,8 @@ class AppTheme {
         titleSmall: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w500),
         // Body — Noto Sans TC (Chinese-compatible)
         bodyLarge: GoogleFonts.notoSansTc(fontSize: 15, fontWeight: FontWeight.w400),
-        bodyMedium: GoogleFonts.notoSansTc(
-          fontSize: 13,
-          fontWeight: FontWeight.w400,
-          color: colorScheme.onSurfaceVariant,
-        ),
-        bodySmall: GoogleFonts.notoSansTc(
-          fontSize: 11,
-          fontWeight: FontWeight.w400,
-          color: colorScheme.onSurfaceVariant,
-        ),
+        bodyMedium: GoogleFonts.notoSansTc(fontSize: 13, fontWeight: FontWeight.w400),
+        bodySmall: GoogleFonts.notoSansTc(fontSize: 11, fontWeight: FontWeight.w400),
         // Label — Outfit Uppercase (buttons, badges, nav)
         labelLarge: GoogleFonts.outfit(
           fontSize: 12,
