@@ -14,17 +14,16 @@ class ChatHeader extends StatelessWidget {
         color: theme.colorScheme.surface,
         border: Border(bottom: BorderSide(color: theme.colorScheme.outline)),
       ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          child: Row(
-            children: [
-              const SizedBox(width: AppSpacing.xl),
-              Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Center(
+              child: IgnorePointer(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -44,26 +43,20 @@ class ChatHeader extends StatelessWidget {
                   ],
                 ),
               ),
-              Container(
-                width: AppSpacing.xl,
-                height: AppSpacing.xl,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(AppRadius.icon),
-                  border: Border.all(color: theme.colorScheme.outline),
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                icon: Icon(
+                  Icons.refresh_rounded,
+                  size: AppSpacing.lg,
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
-                child: IconButton(
-                  icon: Icon(
-                    Icons.refresh_rounded,
-                    size: AppSpacing.md,
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                  onPressed: onRefresh,
-                  padding: EdgeInsets.zero,
-                ),
+                onPressed: onRefresh,
+                padding: EdgeInsets.zero,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
