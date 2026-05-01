@@ -6,6 +6,7 @@ part 'tryon_params.freezed.dart';
 @freezed
 sealed class TryOnParams with _$TryOnParams {
   const factory TryOnParams({
+    required final String requestId,
     final String? avatarBase64,
     final String? avatarPath,
     final List<String>? clothesBase64s,

@@ -19,6 +19,7 @@ class TryOnRepositoryImpl implements TryOnRepository {
 
       return Ok(
         TryonResult(
+          id: params.requestId,
           imageBase64: data['image'] as String?,
           videoUrl: data['videoUrl'] as String?,
           mode: params.mode,
