@@ -32,8 +32,7 @@ class ChatPage extends HookConsumerWidget {
     final scrollController = useScrollController();
     final currentQuestionIndex = useState(0);
     final answers = useState<Map<String, String>>({});
-    final isWaitingForAnswer = useState(true);
-    final isLoadingRecommendation = useState(false);
+    final isLoading = useState(false);
 
     void scrollToBottom() {
       Future.delayed(AppDuration.slow, () {
@@ -50,7 +49,7 @@ class ChatPage extends HookConsumerWidget {
     Future<void> getLLMRecommendation() async {
       if (!context.mounted) return;
 
-      isLoadingRecommendation.value = true;
+      isLoading.value = true;
       scrollToBottom();
 
       // 使用 Use Case 獲取 LLM 建議
@@ -59,7 +58,7 @@ class ChatPage extends HookConsumerWidget {
 
       if (!context.mounted) return;
 
-      isLoadingRecommendation.value = false;
+      isLoading.value = false;
 
       if (result.isSuccess) {
         // Add LLM response
@@ -89,7 +88,6 @@ class ChatPage extends HookConsumerWidget {
     }
 
     void showSummary() {
-      isWaitingForAnswer.value = false;
       getLLMRecommendation();
     }
 
@@ -100,7 +98,7 @@ class ChatPage extends HookConsumerWidget {
           ...messages.value,
           ChatMessage(text: question.text, isUser: false, questionId: question.id),
         ];
-        isWaitingForAnswer.value = true;
+        isLoading.value = false;
         scrollToBottom();
       } else {
         showSummary();
@@ -108,11 +106,11 @@ class ChatPage extends HookConsumerWidget {
     }
 
     void handleAnswer(final String answer, final String questionId) {
-      if (!isWaitingForAnswer.value) return;
+      if (isLoading.value) return;
 
       messages.value = [...messages.value, ChatMessage(text: answer, isUser: true)];
       answers.value = {...answers.value, questionId: answer};
-      isWaitingForAnswer.value = false;
+      isLoading.value = true;
       currentQuestionIndex.value++;
       scrollToBottom();
 
@@ -124,25 +122,24 @@ class ChatPage extends HookConsumerWidget {
     }
 
     void sendMessage(final String text) {
-      if (text.trim().isEmpty || !isWaitingForAnswer.value) return;
+      final trimmedText = text.trim();
+      if (trimmedText.isEmpty || isLoading.value) return;
 
       final currentQuestion = currentQuestionIndex.value < QAConfig.questions.length
           ? QAConfig.questions[currentQuestionIndex.value]
           : null;
 
       if (currentQuestion != null) {
-        handleAnswer(text, currentQuestion.id);
+        handleAnswer(trimmedText, currentQuestion.id);
+        controller.clear();
       }
-
-      controller.clear();
     }
 
     void resetChat() {
       messages.value = [];
       currentQuestionIndex.value = 0;
       answers.value = {};
-      isWaitingForAnswer.value = true;
-      isLoadingRecommendation.value = false;
+      isLoading.value = false;
 
       messages.value = [const ChatMessage(text: '你好，今天想怎麼穿呢？', isUser: false)];
       askNextQuestion();
@@ -163,10 +160,9 @@ class ChatPage extends HookConsumerWidget {
         ? QAConfig.questions[currentQuestionIndex.value]
         : null;
 
-    final List<String> currentReplies =
-        (isWaitingForAnswer.value && currentQuestion != null)
-        ? currentQuestion.quickReplies
-        : [];
+    final inputEnabled = currentQuestion != null && !isLoading.value;
+
+    final List<String> currentQuickReplies = inputEnabled ? currentQuestion.quickReplies : [];
 
     final isIOS26 = PlatformInfo.isIOS26OrHigher();
 
@@ -214,20 +210,19 @@ class ChatPage extends HookConsumerWidget {
                 child: ListView.builder(
                   controller: scrollController,
                   padding: const EdgeInsets.all(AppSpacing.md),
-                  itemCount:
-                      messages.value.length + (isLoadingRecommendation.value ? 1 : 0),
+                  itemCount: messages.value.length + (isLoading.value ? 1 : 0),
                   itemBuilder: (final context, final index) {
-                    if (index == messages.value.length) {
-                      return const ChatSkeletonBubble();
+                    if (index < messages.value.length) {
+                      return ChatBubble(message: messages.value[index]);
                     }
-                    return ChatBubble(message: messages.value[index]);
+                    return const ChatSkeletonBubble();
                   },
                 ),
               ),
             ),
-            if (currentReplies.isNotEmpty)
+            if (currentQuickReplies.isNotEmpty)
               ChatQuickReplyRow(
-                replies: currentReplies,
+                replies: currentQuickReplies,
                 onReply: (final reply) {
                   if (currentQuestion != null) {
                     handleAnswer(reply, currentQuestion.id);
@@ -236,7 +231,7 @@ class ChatPage extends HookConsumerWidget {
               ),
             ChatInputBar(
               controller: controller,
-              isLoading: isLoadingRecommendation.value,
+              enabled: inputEnabled,
               onSend: () => sendMessage(controller.text),
             ),
             SizedBox(height: bottomSpacing),

@@ -5,12 +5,12 @@ class ChatInputBar extends StatelessWidget {
   const ChatInputBar({
     super.key,
     required this.controller,
-    required this.isLoading,
+    required this.enabled,
     required this.onSend,
   });
 
   final TextEditingController controller;
-  final bool isLoading;
+  final bool enabled;
   final VoidCallback onSend;
 
   @override
@@ -35,15 +35,11 @@ class ChatInputBar extends StatelessWidget {
               ),
               child: TextField(
                 controller: controller,
-                enabled: !isLoading,
+                enabled: enabled,
                 maxLines: 1,
                 textInputAction: TextInputAction.send,
                 keyboardType: TextInputType.text,
-                onSubmitted: (_) {
-                  if (!isLoading && controller.text.trim().isNotEmpty) {
-                    onSend();
-                  }
-                },
+                onSubmitted: (_) => onSend(),
                 style: theme.textTheme.bodyLarge,
                 decoration: const InputDecoration(
                   hintText: '請輸入您的回答...',
@@ -66,7 +62,7 @@ class ChatInputBar extends StatelessWidget {
                 final hasText = controller.text.trim().isNotEmpty;
                 return IconButton.filled(
                   icon: const Icon(Icons.send_rounded, size: AppSpacing.lg),
-                  onPressed: (!isLoading && hasText) ? onSend : null,
+                  onPressed: (enabled && hasText) ? onSend : null,
                   style: IconButton.styleFrom(
                     backgroundColor: theme.colorScheme.primary,
                     foregroundColor: theme.colorScheme.onPrimary,
