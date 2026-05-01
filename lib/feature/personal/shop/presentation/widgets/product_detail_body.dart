@@ -114,7 +114,9 @@ class _ProductDetailContent extends HookConsumerWidget {
             ),
           ),
 
-          const SizedBox(height: AppSpacing.xl),
+          SizedBox(
+            height: MediaQuery.of(context).padding.bottom + AppSpacing.bottomNavBarHeight,
+          ),
         ],
       ),
     );
