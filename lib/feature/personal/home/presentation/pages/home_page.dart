@@ -50,7 +50,7 @@ class HomePage extends HookConsumerWidget {
     final tryonImages = useState<List<TryonResult>>([]);
     final currentTryonIndex = useState(-1);
     final customAvatarIndex = useState<int?>(null);
-    final newAvatarFile = useState<File?>(null);
+    final isUploadingAvatar = useState(false);
     final pageController = usePageController(initialPage: 0);
 
     final theme = Theme.of(context);
@@ -76,32 +76,46 @@ class HomePage extends HookConsumerWidget {
       final File? imageFile = await ImagePickerHelper.pickImage(context);
       if (imageFile == null) return;
 
-      // Optimistic update
-      newAvatarFile.value = imageFile;
+      isUploadingAvatar.value = true;
 
-      // Upload
-      final profile = await ref.read(userProfileProvider.future);
-      if (profile == null) return;
+      try {
+        // Upload
+        final profile = await ref.read(userProfileProvider.future);
+        if (profile == null) return;
 
-      final result = await ref.read(updateUserProfileUseCaseProvider)(
-        original: profile,
-        target: profile,
-        avatarFile: imageFile,
-      );
-
-      if (!context.mounted) return;
-
-      if (result.isSuccess) {
-        ref.invalidate(userProfileProvider);
-      } else {
-        TopNotification.show(
-          context,
-          message: result.getError()!.displayMessage(context),
-          type: NotificationType.error,
+        final result = await ref.read(updateUserProfileUseCaseProvider)(
+          original: profile,
+          target: profile,
+          avatarFile: imageFile,
         );
-      }
 
-      newAvatarFile.value = null;
+        if (!context.mounted) return;
+
+        if (result.isSuccess) {
+          ref.invalidate(userProfileProvider);
+          ref.invalidate(avatarFileProvider);
+          await ref.read(avatarFileProvider.future);
+        } else {
+          TopNotification.show(
+            context,
+            message: result.getError()!.displayMessage(context),
+            type: NotificationType.error,
+          );
+        }
+      } catch (e, stackTrace) {
+        AppLogger.error('Failed to upload avatar', e, stackTrace);
+        if (context.mounted) {
+          TopNotification.show(
+            context,
+            message: '上傳照片失敗，請稍後再試',
+            type: NotificationType.error,
+          );
+        }
+      } finally {
+        if (context.mounted) {
+          isUploadingAvatar.value = false;
+        }
+      }
     }
 
     Future<void> performTryOn({
@@ -414,7 +428,8 @@ class HomePage extends HookConsumerWidget {
                     onUploadTap: uploadAvatar,
                     tryonResults: tryonImages.value,
                     currentTryonIndex: currentTryonIndex.value,
-                    avatarFile: newAvatarFile.value ?? avatarFile,
+                    avatarFile: avatarFile,
+                    isUploadingAvatar: isUploadingAvatar.value,
                   ),
                 ),
               ),
@@ -467,13 +482,14 @@ class HomePage extends HookConsumerWidget {
             // 5. Bottom Right — Try On Button (dark glassmorphism pill)
             avatarAsync.maybeWhen(
               data: (final avatarFile) {
-                final hasAvatar = newAvatarFile.value != null || avatarFile != null;
+                final hasAvatar = avatarFile != null;
                 return Positioned(
                   bottom: bottomOffset,
                   right: AppSpacing.lg,
                   child: HomePrimaryActionButton(
                     label: hasAvatar ? '虛擬試穿' : '上傳照片',
                     icon: hasAvatar ? Icons.auto_awesome_rounded : Icons.upload_rounded,
+                    isDisabled: isUploadingAvatar.value,
                     onTap: hasAvatar ? tryOnFromLocal : uploadAvatar,
                   ),
                 );

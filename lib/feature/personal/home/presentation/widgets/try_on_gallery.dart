@@ -18,6 +18,7 @@ class TryOnGallery extends HookWidget {
     required this.tryonResults,
     required this.currentTryonIndex,
     required this.avatarFile,
+    required this.isUploadingAvatar,
   });
 
   final PageController pageController;
@@ -26,6 +27,7 @@ class TryOnGallery extends HookWidget {
   final List<TryonResult> tryonResults;
   final int currentTryonIndex;
   final File? avatarFile;
+  final bool isUploadingAvatar;
 
   @override
   Widget build(final BuildContext context) {
@@ -46,10 +48,9 @@ class TryOnGallery extends HookWidget {
                 final ImageProvider imageProvider = avatarFile != null
                     ? FileImage(avatarFile!)
                     : const AssetImage(AppConstants.defaultProfileImage);
-                final showUploadOverlay = avatarFile == null;
                 return _ImageItem(
                   imageProvider: imageProvider,
-                  showUploadOverlay: showUploadOverlay,
+                  showLoadingOverlay: isUploadingAvatar,
                 );
               }
 
@@ -160,18 +161,17 @@ class _ImageItem extends HookWidget {
   const _ImageItem({
     this.imageBase64,
     this.imageProvider,
-    this.showUploadOverlay = false,
+    this.showLoadingOverlay = false,
   });
 
   final String? imageBase64;
   final ImageProvider? imageProvider;
-  final bool showUploadOverlay;
+  final bool showLoadingOverlay;
 
   @override
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
 
     final finalImageProvider = useMemoized(() {
       if (imageProvider != null) {
@@ -184,49 +184,25 @@ class _ImageItem extends HookWidget {
       throw Exception('Either imageBase64 or imageProvider must be provided');
     }, [imageBase64, imageProvider]);
 
-    return Container(
-      decoration: BoxDecoration(
-        image: DecorationImage(image: finalImageProvider, fit: BoxFit.cover),
-      ),
-      child: showUploadOverlay
-          ? Container(
-              color: colorScheme.scrim.withValues(alpha: AppOpacity.strong),
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 68,
-                      height: 68,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: colorScheme.onPrimary.withValues(
-                            alpha: AppOpacity.overlay,
-                          ),
-                          width: 1.2,
-                        ),
-                      ),
-                      child: Icon(
-                        Icons.upload_rounded,
-                        size: 30,
-                        color: colorScheme.onPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    Text(
-                      'UPLOAD PHOTO',
-                      style: textTheme.labelMedium?.copyWith(
-                        color: colorScheme.onPrimary.withValues(
-                          alpha: AppOpacity.overlay,
-                        ),
-                      ),
-                    ),
-                  ],
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Image(image: finalImageProvider, fit: BoxFit.cover, gaplessPlayback: true),
+        if (showLoadingOverlay)
+          ColoredBox(
+            color: colorScheme.scrim.withValues(alpha: AppOpacity.overlay),
+            child: Center(
+              child: SizedBox(
+                width: 44,
+                height: 44,
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  color: colorScheme.onPrimary,
                 ),
               ),
-            )
-          : null,
+            ),
+          ),
+      ],
     );
   }
 }
