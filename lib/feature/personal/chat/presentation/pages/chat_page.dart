@@ -17,7 +17,7 @@ import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_header.d
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_input_bar.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_progress_bar.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_quick_reply_row.dart';
-import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_skeleton_bubble.dart';
+import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_thinking_bubble.dart';
 import 'package:tryzeon/feature/personal/chat/providers/chat_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -162,7 +162,9 @@ class ChatPage extends HookConsumerWidget {
 
     final inputEnabled = currentQuestion != null && !isLoading.value;
 
-    final List<String> currentQuickReplies = inputEnabled ? currentQuestion.quickReplies : [];
+    final List<String> currentQuickReplies = inputEnabled
+        ? currentQuestion.quickReplies
+        : [];
 
     final isIOS26 = PlatformInfo.isIOS26OrHigher();
 
@@ -215,7 +217,7 @@ class ChatPage extends HookConsumerWidget {
                     if (index < messages.value.length) {
                       return ChatBubble(message: messages.value[index]);
                     }
-                    return const ChatSkeletonBubble();
+                    return const ChatThinkingBubble();
                   },
                 ),
               ),
