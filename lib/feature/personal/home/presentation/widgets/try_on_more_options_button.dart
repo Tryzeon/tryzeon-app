@@ -38,11 +38,11 @@ class TryOnMoreOptionsButton extends StatelessWidget {
         showModalBottomSheet(
           context: context,
           useRootNavigator: true,
+          showDragHandle: true,
           builder: (final context) => SafeArea(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SizedBox(height: AppSpacing.md),
                 ListTile(
                   leading: const Icon(Icons.download_rounded),
                   title: const Text('下載'),

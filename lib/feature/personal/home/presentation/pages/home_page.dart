@@ -368,6 +368,11 @@ class HomePage extends HookConsumerWidget {
         AppSpacing.lg +
         (PlatformInfo.isIOS26OrHigher() ? 50 : 0);
 
+    final showMoreOptions =
+        currentTryonIndex.value >= 0 &&
+        !loadingIndices.value.contains(currentTryonIndex.value);
+    final showIndicator = currentTryonIndex.value >= 0;
+
     return Scaffold(
       extendBody: true,
       extendBodyBehindAppBar: true,
@@ -407,8 +412,8 @@ class HomePage extends HookConsumerWidget {
 
             // 2. Top Left — Tryzeon Logo (Playfair Display italic)
             Positioned(
-              top: MediaQuery.paddingOf(context).top + AppSpacing.lg,
-              left: AppSpacing.lg,
+              top: MediaQuery.paddingOf(context).top + AppSpacing.xs,
+              left: AppSpacing.xl,
               child: Text(
                 'Tryzeon',
                 style: textTheme.displaySmall?.copyWith(
@@ -421,8 +426,7 @@ class HomePage extends HookConsumerWidget {
             ),
 
             // 3. Top Right — More Options (white ⋮ with shadow)
-            if (currentTryonIndex.value >= 0 &&
-                !loadingIndices.value.contains(currentTryonIndex.value))
+            if (showMoreOptions)
               Positioned(
                 top: MediaQuery.paddingOf(context).top + AppSpacing.lg,
                 right: AppSpacing.lg,
@@ -436,7 +440,7 @@ class HomePage extends HookConsumerWidget {
               ),
 
             // 4. Bottom Left — Indicator (white floating lines)
-            if (tryonImages.value.isNotEmpty)
+            if (showIndicator)
               Positioned(
                 bottom: bottomOffset + AppSpacing.lg,
                 left: AppSpacing.xxl,

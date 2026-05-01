@@ -13,11 +13,6 @@ class TryOnIndicator extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
-    // Hide indicator when viewing the original avatar (index -1)
-    if (currentTryonIndex == -1) {
-      return const SizedBox.shrink();
-    }
-
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(tryonImagesCount, (final index) {
