@@ -15,7 +15,6 @@ class TryOnGallery extends HookWidget {
     required this.onPageChanged,
     required this.onUploadTap,
     required this.tryonResults,
-    required this.loadingIndices,
     required this.currentTryonIndex,
     required this.avatarFile,
   });
@@ -24,7 +23,6 @@ class TryOnGallery extends HookWidget {
   final ValueChanged<int> onPageChanged;
   final VoidCallback onUploadTap;
   final List<TryonResult> tryonResults;
-  final Set<int> loadingIndices;
   final int currentTryonIndex;
   final File? avatarFile;
 
@@ -53,9 +51,8 @@ class TryOnGallery extends HookWidget {
               }
 
               final result = tryonResults[index - 1];
-              final isLoading = loadingIndices.contains(index - 1);
 
-              if (isLoading) {
+              if (result.isLoading) {
                 return const _SkeletonItem();
               }
 

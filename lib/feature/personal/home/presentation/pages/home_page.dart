@@ -48,7 +48,6 @@ class HomePage extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final avatarAsync = ref.watch(avatarFileProvider);
     final tryonImages = useState<List<TryonResult>>([]);
-    final loadingIndices = useState<Set<int>>({});
     final currentTryonIndex = useState(-1);
     final customAvatarIndex = useState<int?>(null);
     final newAvatarFile = useState<File?>(null);
@@ -130,11 +129,11 @@ class HomePage extends HookConsumerWidget {
       }
 
       // 2. Optimistic Update (Add Loading Placeholder)
-      final newIndex = tryonImages.value.length;
-      final placeholderResult = TryonResult(mode: mode);
+      final requestId = UniqueKey().toString();
+      final placeholderResult = TryonResult(id: requestId, mode: mode, isLoading: true);
+      final placeholderIndex = tryonImages.value.length;
       tryonImages.value = [...tryonImages.value, placeholderResult];
-      loadingIndices.value = {...loadingIndices.value, newIndex};
-      currentTryonIndex.value = newIndex;
+      currentTryonIndex.value = placeholderIndex;
 
       // 3. API Call
       String? scenePrompt;
@@ -151,6 +150,7 @@ class HomePage extends HookConsumerWidget {
 
       final result = await tryonUseCase(
         TryOnParams(
+          requestId: requestId,
           avatarBase64: customAvatarBase64,
           avatarPath: defaultAvatarPath,
           clothesBase64s: clothesBase64s,
@@ -165,9 +165,14 @@ class HomePage extends HookConsumerWidget {
 
       // 4. Handle Result
       if (result.isSuccess) {
-        final tryonResult = result.get()!;
-        tryonImages.value = [...tryonImages.value]..[newIndex] = tryonResult;
-        loadingIndices.value = {...loadingIndices.value}..remove(newIndex);
+        final resultIndex = tryonImages.value.indexWhere(
+          (final result) => result.id == requestId,
+        );
+        if (resultIndex == -1) return;
+
+        final tryonResult = result.get()!.copyWith(isLoading: false);
+        tryonImages.value = [...tryonImages.value]..[resultIndex] = tryonResult;
+        currentTryonIndex.value = resultIndex;
 
         TopNotification.show(
           context,
@@ -176,8 +181,12 @@ class HomePage extends HookConsumerWidget {
         );
       } else {
         // Failure: Remove placeholder
-        tryonImages.value = [...tryonImages.value]..removeAt(newIndex);
-        loadingIndices.value = {...loadingIndices.value}..remove(newIndex);
+        final resultIndex = tryonImages.value.indexWhere(
+          (final result) => result.id == requestId,
+        );
+        if (resultIndex == -1) return;
+
+        tryonImages.value = [...tryonImages.value]..removeAt(resultIndex);
         currentTryonIndex.value = tryonImages.value.length - 1;
 
         final failure = result.getError()!;
@@ -370,7 +379,7 @@ class HomePage extends HookConsumerWidget {
 
     final showMoreOptions =
         currentTryonIndex.value >= 0 &&
-        !loadingIndices.value.contains(currentTryonIndex.value);
+        !tryonImages.value[currentTryonIndex.value].isLoading;
     final showIndicator = currentTryonIndex.value >= 0;
 
     return Scaffold(
@@ -402,7 +411,6 @@ class HomePage extends HookConsumerWidget {
                     onPageChanged: (final index) => currentTryonIndex.value = index - 1,
                     onUploadTap: uploadAvatar,
                     tryonResults: tryonImages.value,
-                    loadingIndices: loadingIndices.value,
                     currentTryonIndex: currentTryonIndex.value,
                     avatarFile: newAvatarFile.value ?? avatarFile,
                   ),
