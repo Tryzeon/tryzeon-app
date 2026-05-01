@@ -1,5 +1,6 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
@@ -10,6 +11,7 @@ import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.d
 import 'package:typed_result/typed_result.dart';
 
 import '../mappers/category_ui_mapper.dart';
+import '../widgets/wardrobe_tag_editor_sheet.dart';
 
 class WardrobeItemDetailPage extends HookConsumerWidget {
   const WardrobeItemDetailPage({super.key, required this.item});
@@ -19,8 +21,11 @@ class WardrobeItemDetailPage extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final wardrobeItem = useState(item);
 
-    final imageFileAsync = ref.watch(wardrobeItemImageProvider(item.imagePath));
+    final imageFileAsync = ref.watch(
+      wardrobeItemImageProvider(wardrobeItem.value.imagePath),
+    );
 
     Future<void> handleDelete() async {
       final confirmResult = await showOkCancelAlertDialog(
@@ -35,7 +40,7 @@ class WardrobeItemDetailPage extends HookConsumerWidget {
       if (confirmResult != OkCancelResult.ok || !context.mounted) return;
 
       final deleteWardrobeItemUseCase = ref.read(deleteWardrobeItemUseCaseProvider);
-      final result = await deleteWardrobeItemUseCase(item);
+      final result = await deleteWardrobeItemUseCase(wardrobeItem.value);
 
       if (!context.mounted) return;
 
@@ -51,8 +56,35 @@ class WardrobeItemDetailPage extends HookConsumerWidget {
       }
     }
 
+    Future<String?> handleSaveTags(final List<String> tags) async {
+      final updateWardrobeItemTagsUseCase = ref.read(
+        updateWardrobeItemTagsUseCaseProvider,
+      );
+      final result = await updateWardrobeItemTagsUseCase(
+        item: wardrobeItem.value,
+        tags: tags,
+      );
+
+      if (result.isFailure) {
+        if (!context.mounted) return '';
+        return result.getError()!.displayMessage(context);
+      }
+
+      wardrobeItem.value = result.get()!;
+      ref.invalidate(wardrobeItemsProvider);
+      return null;
+    }
+
+    Future<void> handleEditTags() async {
+      await WardrobeTagEditorSheet.show(
+        context: context,
+        initialTags: wardrobeItem.value.tags,
+        onSave: handleSaveTags,
+      );
+    }
+
     Widget buildTagChips() {
-      if (item.tags.isEmpty) {
+      if (wardrobeItem.value.tags.isEmpty) {
         return Text(
           '尚無標籤',
           style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
@@ -63,13 +95,13 @@ class WardrobeItemDetailPage extends HookConsumerWidget {
         spacing: AppSpacing.sm,
         runSpacing: AppSpacing.sm,
         crossAxisAlignment: WrapCrossAlignment.center,
-        children: item.tags.map((final tag) {
+        children: wardrobeItem.value.tags.map((final tag) {
           return Chip(label: Text('#$tag'));
         }).toList(),
       );
     }
 
-    final createdAt = item.createdAt;
+    final createdAt = wardrobeItem.value.createdAt;
     final dateStr =
         '${createdAt.year}/${createdAt.month.toString().padLeft(2, '0')}/${createdAt.day.toString().padLeft(2, '0')} 加入';
 
@@ -138,8 +170,9 @@ class WardrobeItemDetailPage extends HookConsumerWidget {
                   child: Center(
                     child: ErrorView(
                       isCompact: true,
-                      onRetry: () =>
-                          ref.refresh(wardrobeItemImageProvider(item.imagePath)),
+                      onRetry: () => ref.refresh(
+                        wardrobeItemImageProvider(wardrobeItem.value.imagePath),
+                      ),
                     ),
                   ),
                 ),
@@ -154,7 +187,7 @@ class WardrobeItemDetailPage extends HookConsumerWidget {
                 children: [
                   Row(
                     children: [
-                      Chip(label: Text(item.category.displayName)),
+                      Chip(label: Text(wardrobeItem.value.category.displayName)),
                       const Spacer(),
                       Text(
                         dateStr,
@@ -165,11 +198,22 @@ class WardrobeItemDetailPage extends HookConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: AppSpacing.xl),
-                  Text(
-                    '標籤',
-                    style: textTheme.labelLarge?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        '標籤',
+                        style: textTheme.labelLarge?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        tooltip: '編輯標籤',
+                        onPressed: handleEditTags,
+                        icon: const Icon(Icons.edit_outlined),
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ],
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   buildTagChips(),

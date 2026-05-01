@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 
@@ -43,7 +44,7 @@ class WardrobeItemCard extends ConsumerWidget {
           ),
           loading: () => Center(
             child: CircularProgressIndicator(
-              strokeWidth: 1.5,
+              strokeWidth: AppSpacing.xxs,
               color: colorScheme.primary,
             ),
           ),
