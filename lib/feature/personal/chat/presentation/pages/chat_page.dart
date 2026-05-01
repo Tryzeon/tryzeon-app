@@ -5,34 +5,26 @@ import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/core/error/failures.dart';
-import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
-import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/constants/qa_config.dart';
+import 'package:tryzeon/feature/personal/chat/presentation/providers/chat_event.dart';
+import 'package:tryzeon/feature/personal/chat/presentation/providers/chat_notifier.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_bubble.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_header.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_input_bar.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_progress_bar.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_quick_reply_row.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_thinking_bubble.dart';
-import 'package:tryzeon/feature/personal/chat/providers/chat_providers.dart';
-import 'package:typed_result/typed_result.dart';
 
-// ChatPage widget
 class ChatPage extends HookConsumerWidget {
   const ChatPage({super.key});
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final messages = useState<List<ChatMessage>>([]);
     final controller = useTextEditingController();
     final scrollController = useScrollController();
-    final currentQuestionIndex = useState(0);
-    final answers = useState<Map<String, String>>({});
-    final isLoading = useState(false);
+    final state = ref.watch(chatProvider);
 
     void scrollToBottom() {
       Future.delayed(AppDuration.slow, () {
@@ -46,121 +38,46 @@ class ChatPage extends HookConsumerWidget {
       });
     }
 
-    Future<void> getLLMRecommendation() async {
-      if (!context.mounted) return;
-
-      isLoading.value = true;
-      scrollToBottom();
-
-      // 使用 Use Case 獲取 LLM 建議
-      final getLLMRecommendation = ref.read(getLLMRecommendationUseCaseProvider);
-      final result = await getLLMRecommendation(answers.value);
-
-      if (!context.mounted) return;
-
-      isLoading.value = false;
-
-      if (result.isSuccess) {
-        // Add LLM response
-        messages.value = [
-          ...messages.value,
-          ChatMessage(text: result.get()!, isUser: false),
-        ];
-      } else {
-        // Show error message
-        final failure = result.getError()!;
-        if (failure is RateLimitFailure) {
-          UpgradeDialog.show(
-            context,
-            title: '顧問對話已達上限',
-            content: '您的今日對話次數已達上限\n升級至更高方案以獲得更多次數！',
-          );
-        } else {
-          TopNotification.show(
-            context,
-            message: failure.displayMessage(context),
-            type: NotificationType.error,
-          );
-        }
-      }
-
-      scrollToBottom();
-    }
-
-    void showSummary() {
-      getLLMRecommendation();
-    }
-
-    void askNextQuestion() {
-      if (currentQuestionIndex.value < QAConfig.questions.length) {
-        final question = QAConfig.questions[currentQuestionIndex.value];
-        messages.value = [
-          ...messages.value,
-          ChatMessage(text: question.text, isUser: false, questionId: question.id),
-        ];
-        isLoading.value = false;
-        scrollToBottom();
-      } else {
-        showSummary();
-      }
-    }
-
-    void handleAnswer(final String answer, final String questionId) {
-      if (isLoading.value) return;
-
-      messages.value = [...messages.value, ChatMessage(text: answer, isUser: true)];
-      answers.value = {...answers.value, questionId: answer};
-      isLoading.value = true;
-      currentQuestionIndex.value++;
-      scrollToBottom();
-
-      Future.delayed(AppDuration.slow, () {
-        if (context.mounted) {
-          askNextQuestion();
-        }
-      });
-    }
-
-    void sendMessage(final String text) {
-      final trimmedText = text.trim();
-      if (trimmedText.isEmpty || isLoading.value) return;
-
-      final currentQuestion = currentQuestionIndex.value < QAConfig.questions.length
-          ? QAConfig.questions[currentQuestionIndex.value]
-          : null;
-
-      if (currentQuestion != null) {
-        handleAnswer(trimmedText, currentQuestion.id);
-        controller.clear();
-      }
-    }
-
-    void resetChat() {
-      messages.value = [];
-      currentQuestionIndex.value = 0;
-      answers.value = {};
-      isLoading.value = false;
-
-      messages.value = [const ChatMessage(text: '你好，今天想怎麼穿呢？', isUser: false)];
-      askNextQuestion();
-    }
+    ref.listen(
+      chatProvider.select((final s) => s.messages.length),
+      (final _, final _) => scrollToBottom(),
+    );
+    ref.listen(chatProvider.select((final s) => s.isLoading), (final _, final isLoading) {
+      if (isLoading) scrollToBottom();
+    });
 
     useEffect(() {
-      messages.value = [const ChatMessage(text: '你好，今天想怎麼穿呢？', isUser: false)];
-      askNextQuestion();
-      return null;
-    }, []);
+      final subscription = ref.read(chatProvider.notifier).events.listen((final event) {
+        if (!context.mounted) return;
+        switch (event) {
+          case ChatRateLimited():
+            UpgradeDialog.show(
+              context,
+              title: '對話次數已達上限',
+              content: '今天的對話次數已達上限\n升級方案就能繼續聊呦！',
+            );
+        }
+      });
+      return subscription.cancel;
+    }, const []);
+
+    void sendMessage(final String text) {
+      final trimmed = text.trim();
+      if (trimmed.isEmpty) return;
+      controller.clear();
+      ref.read(chatProvider.notifier).submitAnswer(trimmed);
+    }
 
     final mediaQuery = MediaQuery.of(context);
     final keyboardHeight = mediaQuery.viewInsets.bottom;
     final isKeyboardOpen = keyboardHeight > 0;
     final safeAreaBottom = mediaQuery.viewPadding.bottom;
 
-    final currentQuestion = currentQuestionIndex.value < QAConfig.questions.length
-        ? QAConfig.questions[currentQuestionIndex.value]
+    final currentQuestion = state.currentQuestionIndex < QAConfig.questions.length
+        ? QAConfig.questions[state.currentQuestionIndex]
         : null;
 
-    final inputEnabled = currentQuestion != null && !isLoading.value;
+    final inputEnabled = currentQuestion != null && !state.isLoading;
 
     final List<String> currentQuickReplies = inputEnabled
         ? currentQuestion.quickReplies
@@ -198,12 +115,12 @@ class ChatPage extends HookConsumerWidget {
                 );
 
                 if (result == OkCancelResult.ok) {
-                  resetChat();
+                  ref.read(chatProvider.notifier).reset();
                 }
               },
             ),
             ChatProgressBar(
-              currentQuestionIndex: currentQuestionIndex.value,
+              currentQuestionIndex: state.currentQuestionIndex,
               totalQuestions: QAConfig.questions.length,
             ),
             Expanded(
@@ -212,10 +129,10 @@ class ChatPage extends HookConsumerWidget {
                 child: ListView.builder(
                   controller: scrollController,
                   padding: const EdgeInsets.all(AppSpacing.md),
-                  itemCount: messages.value.length + (isLoading.value ? 1 : 0),
+                  itemCount: state.messages.length + (state.isLoading ? 1 : 0),
                   itemBuilder: (final context, final index) {
-                    if (index < messages.value.length) {
-                      return ChatBubble(message: messages.value[index]);
+                    if (index < state.messages.length) {
+                      return ChatBubble(message: state.messages[index]);
                     }
                     return const ChatThinkingBubble();
                   },
@@ -223,14 +140,7 @@ class ChatPage extends HookConsumerWidget {
               ),
             ),
             if (currentQuickReplies.isNotEmpty)
-              ChatQuickReplyRow(
-                replies: currentQuickReplies,
-                onReply: (final reply) {
-                  if (currentQuestion != null) {
-                    handleAnswer(reply, currentQuestion.id);
-                  }
-                },
-              ),
+              ChatQuickReplyRow(replies: currentQuickReplies, onReply: sendMessage),
             ChatInputBar(
               controller: controller,
               enabled: inputEnabled,
