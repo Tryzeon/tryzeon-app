@@ -22,7 +22,7 @@ import 'package:tryzeon/core/utils/image_watermark_helper.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_params.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_result.dart';
-import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_action_button.dart';
+import 'package:tryzeon/feature/personal/home/presentation/widgets/home_primary_action_button.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_gallery.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_indicator.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_more_options_button.dart';
@@ -465,13 +465,20 @@ class HomePage extends HookConsumerWidget {
               ),
 
             // 5. Bottom Right — Try On Button (dark glassmorphism pill)
-            Positioned(
-              bottom: bottomOffset,
-              right: AppSpacing.lg,
-              child: TryOnActionButton(
-                onTap: tryOnFromLocal,
-                isDisabled: avatarAsync.isLoading,
-              ),
+            avatarAsync.maybeWhen(
+              data: (final avatarFile) {
+                final hasAvatar = newAvatarFile.value != null || avatarFile != null;
+                return Positioned(
+                  bottom: bottomOffset,
+                  right: AppSpacing.lg,
+                  child: HomePrimaryActionButton(
+                    label: hasAvatar ? '虛擬試穿' : '上傳照片',
+                    icon: hasAvatar ? Icons.auto_awesome_rounded : Icons.upload_rounded,
+                    onTap: hasAvatar ? tryOnFromLocal : uploadAvatar,
+                  ),
+                );
+              },
+              orElse: () => const SizedBox.shrink(),
             ),
           ],
         ),
