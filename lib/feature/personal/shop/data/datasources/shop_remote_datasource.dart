@@ -26,7 +26,7 @@ class ShopRemoteDataSource {
           id, store_id, name, category_ids, price, image_paths, created_at, updated_at,
           purchase_link, material, elasticity, fit, thickness, styles, seasons,
           product_variants(*),
-          store_profiles!products_store_id_fkey(id, name, address)
+          store_profiles!products_store_id_fkey(id, name, address, logo_path)
         ''');
 
     // 類型過濾
@@ -91,6 +91,9 @@ class ShopRemoteDataSource {
     // 將結果轉換為 Model
     var products = (response as List).map((final item) {
       final map = _withProductImageUrl(item);
+      if (map['store_profiles'] != null) {
+        map['store_profiles'] = _withStoreLogoUrl(map['store_profiles']);
+      }
 
       return ShopProductModel.fromJson(map);
     }).toList();
