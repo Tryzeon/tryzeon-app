@@ -52,7 +52,7 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
 
       if (result.isSuccess) {
         ref.invalidate(wardrobeItemsProvider);
-        Navigator.pop(context, true);
+        Navigator.pop(context, selectedCategory.value);
       } else {
         final failure = result.getError()!;
 

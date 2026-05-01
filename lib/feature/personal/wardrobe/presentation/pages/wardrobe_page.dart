@@ -41,7 +41,7 @@ class PersonalPage extends HookConsumerWidget {
       final File? image = await ImagePickerHelper.pickImage(context);
 
       if (image != null && context.mounted) {
-        await showModalBottomSheet<bool>(
+        final uploadedCategory = await showModalBottomSheet<WardrobeCategory>(
           context: context,
           isScrollControlled: true,
           useRootNavigator: true,
@@ -51,6 +51,12 @@ class PersonalPage extends HookConsumerWidget {
             child: UploadWardrobeItemSheet(image: image),
           ),
         );
+
+        if (uploadedCategory != null) {
+          if (selectedCategory.value != null) {
+            selectedCategory.value = uploadedCategory;
+          }
+        }
       }
     }
 
