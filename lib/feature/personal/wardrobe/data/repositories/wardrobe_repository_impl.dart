@@ -122,6 +122,25 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
   }
 
   @override
+  Future<Result<WardrobeItem, Failure>> updateWardrobeItemTags({
+    required final WardrobeItem item,
+    required final List<String> tags,
+  }) async {
+    try {
+      final updatedModel = await _remoteDataSource.updateWardrobeItemTags(
+        id: item.id,
+        tags: tags,
+      );
+      await _localDataSource.saveWardrobeItem(updatedModel);
+      final updatedItem = _mappr.convert<WardrobeItemModel, WardrobeItem>(updatedModel);
+      return Ok(updatedItem);
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to update wardrobe item tags', e, stackTrace);
+      return Err(mapExceptionToFailure(e));
+    }
+  }
+
+  @override
   Future<Result<File, Failure>> getWardrobeItemImage(final String imagePath) async {
     try {
       final cachedImage = await _localDataSource.getImage(imagePath);

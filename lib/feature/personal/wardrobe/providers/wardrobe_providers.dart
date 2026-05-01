@@ -11,6 +11,7 @@ import 'package:tryzeon/feature/personal/wardrobe/domain/repositories/wardrobe_r
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/delete_wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/get_wardrobe_item_image.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/get_wardrobe_items.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/update_wardrobe_item_tags.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/upload_wardrobe_item.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -50,6 +51,11 @@ UploadWardrobeItem uploadWardrobeItemUseCase(final Ref ref) {
 @riverpod
 DeleteWardrobeItem deleteWardrobeItemUseCase(final Ref ref) {
   return DeleteWardrobeItem(ref.watch(wardrobeRepositoryProvider));
+}
+
+@riverpod
+UpdateWardrobeItemTags updateWardrobeItemTagsUseCase(final Ref ref) {
+  return UpdateWardrobeItemTags(ref.watch(wardrobeRepositoryProvider));
 }
 
 @riverpod

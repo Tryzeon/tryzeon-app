@@ -52,6 +52,20 @@ class WardrobeRemoteDataSource {
     await _supabaseClient.from(_wardrobeItemTable).delete().eq('id', id);
   }
 
+  Future<WardrobeItemModel> updateWardrobeItemTags({
+    required final String id,
+    required final List<String> tags,
+  }) async {
+    final response = await _supabaseClient
+        .from(_wardrobeItemTable)
+        .update({'tags': tags})
+        .eq('id', id)
+        .select()
+        .single();
+
+    return WardrobeItemModel.fromJson(response);
+  }
+
   Future<String> uploadImage({
     required final String category,
     required final String fileName,
