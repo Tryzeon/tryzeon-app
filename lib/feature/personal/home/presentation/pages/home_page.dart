@@ -53,7 +53,9 @@ class HomePage extends HookConsumerWidget {
     final newAvatarFile = useState<File?>(null);
     final pageController = usePageController(initialPage: 0);
 
-    final textTheme = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     // Sync PageController with currentTryonIndex changes (from logic)
     useEffect(() {
@@ -425,9 +427,13 @@ class HomePage extends HookConsumerWidget {
               child: Text(
                 'Tryzeon',
                 style: textTheme.displaySmall?.copyWith(
-                  color: Colors.white,
-                  shadows: const [
-                    Shadow(blurRadius: 10.0, color: Colors.black38, offset: Offset(2, 2)),
+                  color: colorScheme.onPrimary,
+                  shadows: [
+                    Shadow(
+                      blurRadius: 10.0,
+                      color: colorScheme.shadow.withValues(alpha: AppOpacity.strong),
+                      offset: const Offset(2, 2),
+                    ),
                   ],
                 ),
               ),

@@ -18,7 +18,7 @@ class TryOnActionButton extends StatelessWidget {
       child: Opacity(
         opacity: isDisabled ? AppOpacity.strong : 1.0,
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppRadius.pill),
+          borderRadius: AppRadius.pillAll,
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
             child: Container(
@@ -27,9 +27,12 @@ class TryOnActionButton extends StatelessWidget {
                 vertical: AppSpacing.md,
               ),
               decoration: BoxDecoration(
-                color: colorScheme.onSurface.withValues(alpha: 0.42),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1),
-                borderRadius: BorderRadius.circular(AppRadius.pill),
+                color: colorScheme.onSurface.withValues(alpha: AppOpacity.overlay),
+                border: Border.all(
+                  color: colorScheme.onPrimary.withValues(alpha: AppOpacity.medium),
+                  width: 1,
+                ),
+                borderRadius: AppRadius.pillAll,
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -38,7 +41,7 @@ class TryOnActionButton extends StatelessWidget {
                   const SizedBox(width: AppSpacing.sm),
                   Text(
                     '虛擬試穿',
-                    style: textTheme.headlineSmall?.copyWith(color: Colors.white),
+                    style: textTheme.labelLarge?.copyWith(color: colorScheme.onPrimary),
                   ),
                 ],
               ),
