@@ -33,8 +33,8 @@ class PersonalPage extends HookConsumerWidget {
     }, []);
 
     // 4. Theme
-    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
     // 5. Actions
     Future<void> showUploadSheet() async {
@@ -46,6 +46,7 @@ class PersonalPage extends HookConsumerWidget {
           isScrollControlled: true,
           useRootNavigator: true,
           useSafeArea: true,
+          showDragHandle: true,
           builder: (final context) => Padding(
             padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
             child: UploadWardrobeItemSheet(image: image),
@@ -148,15 +149,10 @@ class PersonalPage extends HookConsumerWidget {
     final totalCount = wardrobeItemsAsync.value?.length ?? 0;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
       floatingActionButton: Padding(
         padding: EdgeInsets.only(bottom: PlatformInfo.isIOS26OrHigher() ? 50.0 : 0.0),
         child: FloatingActionButton(
           onPressed: showUploadSheet,
-          backgroundColor: colorScheme.primary,
-          foregroundColor: colorScheme.onPrimary,
-          shape: const CircleBorder(),
-          elevation: 2, // Very slight shadow as per spec "陰影盡量輕柔"
           child: const Icon(Icons.add_rounded),
         ),
       ),
@@ -245,9 +241,7 @@ class PersonalPage extends HookConsumerWidget {
                       },
                     );
                   },
-                  loading: () => Center(
-                    child: CircularProgressIndicator(color: colorScheme.primary),
-                  ),
+                  loading: () => const Center(child: CircularProgressIndicator()),
                   error: (final error, final stack) => ErrorView(
                     message: error.displayMessage(context),
                     onRetry: () => refreshWardrobeItems(ref),

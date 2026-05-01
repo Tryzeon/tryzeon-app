@@ -106,13 +106,11 @@ class WardrobeItemDetailPage extends HookConsumerWidget {
         '${createdAt.year}/${createdAt.month.toString().padLeft(2, '0')}/${createdAt.day.toString().padLeft(2, '0')} 加入';
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
             expandedHeight: MediaQuery.of(context).size.height * 0.45,
             pinned: true,
-            backgroundColor: colorScheme.surface,
             leading: Padding(
               padding: const EdgeInsets.all(AppSpacing.sm),
               child: IconButton.filled(
@@ -163,8 +161,7 @@ class WardrobeItemDetailPage extends HookConsumerWidget {
                     );
                   },
                 ),
-                loading: () =>
-                    Center(child: CircularProgressIndicator(color: colorScheme.primary)),
+                loading: () => const Center(child: CircularProgressIndicator()),
                 error: (final error, final stack) => Container(
                   color: colorScheme.surfaceContainerLow,
                   child: Center(

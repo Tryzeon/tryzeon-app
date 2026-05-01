@@ -97,8 +97,7 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
                   ),
                   Text(
                     '$current / $limit 件',
-                    style: textTheme.bodySmall?.copyWith(
-                      fontWeight: FontWeight.w600,
+                    style: textTheme.labelMedium?.copyWith(
                       color: percentage >= 0.9 ? colorScheme.error : null,
                     ),
                   ),
@@ -167,37 +166,15 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Sheet handle bar
-        Center(
-          child: Container(
-            margin: const EdgeInsets.only(top: AppSpacing.sm),
-            width: 28,
-            height: 3,
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainer, // Mapped to surfaceVariant usually
-              borderRadius: AppRadius.pillAll,
-            ),
-          ),
-        ),
         // Header
         Padding(
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.lg,
             AppSpacing.sm,
-            AppSpacing.sm,
+            AppSpacing.lg,
             AppSpacing.sm,
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('上傳衣服', style: textTheme.titleMedium),
-              IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.close_rounded, size: AppSpacing.lg),
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ],
-          ),
+          child: Text('上傳衣服', style: textTheme.titleMedium),
         ),
         // Scrollable content
         Flexible(
