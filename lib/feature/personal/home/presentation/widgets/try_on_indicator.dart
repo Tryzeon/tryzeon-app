@@ -13,6 +13,8 @@ class TryOnIndicator extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(tryonImagesCount, (final index) {
@@ -24,10 +26,16 @@ class TryOnIndicator extends StatelessWidget {
           width: isSelected ? 20.0 : 12.0,
           height: 2.0,
           decoration: BoxDecoration(
-            color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.4),
-            borderRadius: BorderRadius.circular(AppRadius.pill),
-            boxShadow: const [
-              BoxShadow(color: Colors.black26, blurRadius: 4.0, offset: Offset(0, 1)),
+            color: isSelected
+                ? colorScheme.onPrimary
+                : colorScheme.onPrimary.withValues(alpha: AppOpacity.strong),
+            borderRadius: AppRadius.pillAll,
+            boxShadow: [
+              BoxShadow(
+                color: colorScheme.shadow.withValues(alpha: AppOpacity.strong),
+                blurRadius: 4.0,
+                offset: const Offset(0, 1),
+              ),
             ],
           ),
         );

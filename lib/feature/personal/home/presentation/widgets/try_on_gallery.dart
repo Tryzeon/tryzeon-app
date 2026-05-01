@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_result.dart';
 import 'package:video_player/video_player.dart';
@@ -28,6 +29,8 @@ class TryOnGallery extends HookWidget {
 
   @override
   Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return GestureDetector(
       onTap: currentTryonIndex == -1 ? onUploadTap : null,
       child: Stack(
@@ -75,12 +78,15 @@ class TryOnGallery extends HookWidget {
             height: 200,
             child: IgnorePointer(
               child: Container(
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Colors.black26, Colors.transparent],
-                    stops: [0.0, 1.0],
+                    colors: [
+                      colorScheme.scrim.withValues(alpha: AppOpacity.strong),
+                      colorScheme.scrim.withValues(alpha: 0),
+                    ],
+                    stops: const [0.0, 1.0],
                   ),
                 ),
               ),
@@ -94,12 +100,15 @@ class TryOnGallery extends HookWidget {
             height: 250,
             child: IgnorePointer(
               child: Container(
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
-                    colors: [Colors.black38, Colors.transparent],
-                    stops: [0.0, 1.0],
+                    colors: [
+                      colorScheme.scrim.withValues(alpha: AppOpacity.strong),
+                      colorScheme.scrim.withValues(alpha: 0),
+                    ],
+                    stops: const [0.0, 1.0],
                   ),
                 ),
               ),
@@ -131,7 +140,7 @@ class _SkeletonItem extends HookWidget {
       Tween<double>(
         begin: 0.6,
         end: 0.85,
-      ).animate(CurvedAnimation(parent: animationController, curve: Curves.easeInOut)),
+      ).animate(CurvedAnimation(parent: animationController, curve: AppCurves.standard)),
     );
 
     return Container(
@@ -139,7 +148,7 @@ class _SkeletonItem extends HookWidget {
       child: Center(
         child: Icon(
           Icons.auto_awesome,
-          color: colorScheme.surface.withValues(alpha: 0.3),
+          color: colorScheme.surface.withValues(alpha: AppOpacity.strong),
           size: 48,
         ),
       ),
@@ -160,7 +169,9 @@ class _ImageItem extends HookWidget {
 
   @override
   Widget build(final BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     final finalImageProvider = useMemoized(() {
       if (imageProvider != null) {
@@ -179,7 +190,7 @@ class _ImageItem extends HookWidget {
       ),
       child: showUploadOverlay
           ? Container(
-              color: Colors.black.withValues(alpha: 0.32),
+              color: colorScheme.scrim.withValues(alpha: AppOpacity.strong),
               child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -190,22 +201,25 @@ class _ImageItem extends HookWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.75),
+                          color: colorScheme.onPrimary.withValues(
+                            alpha: AppOpacity.overlay,
+                          ),
                           width: 1.2,
                         ),
                       ),
                       child: Icon(
                         Icons.upload_rounded,
                         size: 30,
-                        color: Colors.white.withValues(alpha: 0.9),
+                        color: colorScheme.onPrimary,
                       ),
                     ),
                     const SizedBox(height: 14),
                     Text(
                       'UPLOAD PHOTO',
-                      style: textTheme.bodySmall?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.8),
-                        letterSpacing: 2.0,
+                      style: textTheme.labelMedium?.copyWith(
+                        color: colorScheme.onPrimary.withValues(
+                          alpha: AppOpacity.overlay,
+                        ),
                       ),
                     ),
                   ],
@@ -243,6 +257,7 @@ class _VideoPlayerItem extends HookWidget {
 
   @override
   Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final controller = useMemoized(
       () => VideoPlayerController.networkUrl(Uri.parse(videoUrl)),
       [videoUrl],
@@ -260,7 +275,11 @@ class _VideoPlayerItem extends HookWidget {
     }, [controller]);
 
     if (!isInitialized.value) {
-      return const Center(child: CircularProgressIndicator(color: Colors.white54));
+      return Center(
+        child: CircularProgressIndicator(
+          color: colorScheme.onPrimary.withValues(alpha: AppOpacity.overlay),
+        ),
+      );
     }
 
     return GestureDetector(
@@ -278,7 +297,11 @@ class _VideoPlayerItem extends HookWidget {
         children: [
           _buildVideoFill(controller),
           if (showPlayIcon.value)
-            const Icon(Icons.play_arrow_rounded, color: Colors.white70, size: 64),
+            Icon(
+              Icons.play_arrow_rounded,
+              color: colorScheme.onPrimary.withValues(alpha: AppOpacity.overlay),
+              size: 64,
+            ),
         ],
       ),
     );

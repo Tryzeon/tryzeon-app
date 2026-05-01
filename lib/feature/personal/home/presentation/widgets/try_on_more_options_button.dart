@@ -26,14 +26,20 @@ class TryOnMoreOptionsButton extends StatelessWidget {
     );
 
     return IconButton(
-      icon: const Icon(
+      icon: Icon(
         Icons.more_vert_rounded,
-        color: Colors.white,
+        color: colorScheme.onPrimary,
         size: 24,
-        shadows: [Shadow(color: Colors.black38, blurRadius: 8.0, offset: Offset(0, 2))],
+        shadows: [
+          Shadow(
+            color: colorScheme.shadow.withValues(alpha: AppOpacity.strong),
+            blurRadius: 8.0,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      splashColor: Colors.white.withValues(alpha: 0.1),
-      highlightColor: Colors.white.withValues(alpha: 0.1),
+      splashColor: colorScheme.onPrimary.withValues(alpha: AppOpacity.medium),
+      highlightColor: colorScheme.onPrimary.withValues(alpha: AppOpacity.medium),
       onPressed: () {
         showModalBottomSheet(
           context: context,
@@ -44,7 +50,7 @@ class TryOnMoreOptionsButton extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 ListTile(
-                  leading: const Icon(Icons.download_rounded),
+                  leading: Icon(Icons.download_rounded, color: colorScheme.onSurface),
                   title: const Text('下載'),
                   subtitle: Text('儲存到相簿', style: subtitleStyle),
                   onTap: () {
@@ -57,6 +63,7 @@ class TryOnMoreOptionsButton extends StatelessWidget {
                     customAvatarIndex == currentTryonIndex
                         ? Icons.person_off_outlined
                         : Icons.person_outline_rounded,
+                    color: colorScheme.onSurface,
                   ),
                   title: Text(
                     customAvatarIndex == currentTryonIndex ? '取消我的形象' : '設為我的形象',
@@ -73,7 +80,10 @@ class TryOnMoreOptionsButton extends StatelessWidget {
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.delete_outline_rounded),
+                  leading: Icon(
+                    Icons.delete_outline_rounded,
+                    color: colorScheme.onSurface,
+                  ),
                   title: const Text('刪除此試穿'),
                   subtitle: Text('移除這張試穿照片', style: subtitleStyle),
                   onTap: () {
