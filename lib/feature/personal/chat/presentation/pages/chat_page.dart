@@ -88,11 +88,11 @@ class ChatPage extends HookConsumerWidget {
     final bodyBottomOffset = isIOS26
         ? 0.0
         : PlatformInfo.isIOS
-        ? 50.0 + safeAreaBottom
+        ? AppSpacing.bottomNavBarHeight + safeAreaBottom
         : 80.0;
 
     final restingSpacing = isIOS26
-        ? safeAreaBottom + 50.0 + AppSpacing.sm
+        ? safeAreaBottom + AppSpacing.bottomNavBarHeight + AppSpacing.sm
         : AppSpacing.sm;
 
     final bottomSpacing = isKeyboardOpen
