@@ -2,11 +2,19 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
-class TryOnActionButton extends StatelessWidget {
-  const TryOnActionButton({super.key, required this.onTap, this.isDisabled = false});
+class HomePrimaryActionButton extends StatelessWidget {
+  const HomePrimaryActionButton({
+    super.key,
+    required this.onTap,
+    this.isDisabled = false,
+    this.label = '虛擬試穿',
+    this.icon = Icons.auto_awesome_rounded,
+  });
 
   final VoidCallback? onTap;
   final bool isDisabled;
+  final String label;
+  final IconData icon;
 
   @override
   Widget build(final BuildContext context) {
@@ -37,10 +45,10 @@ class TryOnActionButton extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.auto_awesome_rounded, size: 20, color: colorScheme.primary),
+                  Icon(icon, size: 20, color: colorScheme.primary),
                   const SizedBox(width: AppSpacing.sm),
                   Text(
-                    '虛擬試穿',
+                    label,
                     style: textTheme.labelLarge?.copyWith(color: colorScheme.onPrimary),
                   ),
                 ],
