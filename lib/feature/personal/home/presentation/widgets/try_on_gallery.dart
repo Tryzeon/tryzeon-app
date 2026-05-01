@@ -32,9 +32,10 @@ class TryOnGallery extends HookWidget {
   @override
   Widget build(final BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final canUploadAvatar = currentTryonIndex == -1 && !isUploadingAvatar;
 
     return GestureDetector(
-      onTap: currentTryonIndex == -1 ? onUploadTap : null,
+      onTap: canUploadAvatar ? onUploadTap : null,
       child: Stack(
         fit: StackFit.expand,
         children: [
