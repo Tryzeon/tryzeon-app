@@ -26,19 +26,11 @@ import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_galler
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_indicator.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_more_options_button.dart';
 import 'package:tryzeon/feature/personal/home/providers/home_providers.dart';
-import 'package:tryzeon/feature/personal/main/personal_entry_scope.dart';
+import 'package:tryzeon/feature/personal/main/tryon_coordinator.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_capabilities_provider.dart';
 import 'package:typed_result/typed_result.dart';
-
-class HomePageController {
-  Future<void> Function(List<String> clothesPaths, {TryOnMode mode})? tryOnFromStorage;
-
-  void dispose() {
-    tryOnFromStorage = null;
-  }
-}
 
 class HomePage extends HookConsumerWidget {
   const HomePage({super.key});
@@ -354,14 +346,11 @@ class HomePage extends HookConsumerWidget {
       }
     }
 
-    final activeController = PersonalEntryScope.of(context)?.homePageController;
+    final coordinator = ref.read(tryOnCoordinatorProvider);
     useEffect(() {
-      if (activeController != null) {
-        activeController.tryOnFromStorage = tryOnFromStorage;
-        return () => activeController.tryOnFromStorage = null;
-      }
-      return null;
-    }, [activeController]);
+      coordinator.bindTryOnFromStorage(tryOnFromStorage);
+      return () => coordinator.unbindTryOnFromStorage(tryOnFromStorage);
+    }, [coordinator]);
 
     return Scaffold(
       extendBody: true,

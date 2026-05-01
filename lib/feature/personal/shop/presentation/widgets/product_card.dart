@@ -9,7 +9,7 @@ import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
-import 'package:tryzeon/feature/personal/main/personal_entry_scope.dart';
+import 'package:tryzeon/feature/personal/main/tryon_coordinator.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_status.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/tryon_mode_sheet.dart';
@@ -83,10 +83,9 @@ class ProductCard extends HookConsumerWidget {
         }
       }
 
-      if (!context.mounted) return;
-
-      final personalEntry = PersonalEntryScope.of(context);
-      await personalEntry?.tryOnFromStorage(product.imagePaths, mode: mode);
+      await ref
+          .read(tryOnCoordinatorProvider)
+          .tryOnFromStorage(product.imagePaths, mode: mode);
     }
 
     Widget buildTryonButton() {

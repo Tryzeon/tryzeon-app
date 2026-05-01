@@ -7,7 +7,7 @@ import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
-import 'package:tryzeon/feature/personal/main/personal_entry_scope.dart';
+import 'package:tryzeon/feature/personal/main/tryon_coordinator.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_detail_body.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/tryon_mode_sheet.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
@@ -64,10 +64,9 @@ class ProductDetailPage extends HookConsumerWidget {
           .call(productId: product.id, storeId: product.storeInfo.id)
           .ignore();
 
-      if (!context.mounted) return;
-
-      final personalEntry = PersonalEntryScope.of(context);
-      await personalEntry?.tryOnFromStorage(product.imagePaths, mode: mode);
+      await ref
+          .read(tryOnCoordinatorProvider)
+          .tryOnFromStorage(product.imagePaths, mode: mode);
     }
 
     return Scaffold(
