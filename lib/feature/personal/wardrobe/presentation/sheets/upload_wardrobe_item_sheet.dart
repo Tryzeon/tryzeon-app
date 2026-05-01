@@ -14,7 +14,7 @@ import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
-import '../mappers/category_ui_mapper.dart';
+import '../extensions/wardrobe_category_display_extension.dart';
 
 class UploadWardrobeItemSheet extends HookConsumerWidget {
   const UploadWardrobeItemSheet({super.key, required this.image});

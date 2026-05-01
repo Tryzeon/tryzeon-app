@@ -67,7 +67,7 @@ final personalShellRoute = StatefulShellRoute.indexedStack(
       routes: [
         GoRoute(
           path: AppRoutes.personalWardrobe,
-          builder: (final context, final state) => const PersonalPage(),
+          builder: (final context, final state) => const WardrobePage(),
         ),
       ],
     ),

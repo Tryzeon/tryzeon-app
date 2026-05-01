@@ -11,12 +11,12 @@ import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_category.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 
-import '../mappers/category_ui_mapper.dart';
+import '../extensions/wardrobe_category_display_extension.dart';
 import '../sheets/upload_wardrobe_item_sheet.dart';
 import '../widgets/wardrobe_item_card.dart';
 
-class PersonalPage extends HookConsumerWidget {
-  const PersonalPage({super.key});
+class WardrobePage extends HookConsumerWidget {
+  const WardrobePage({super.key});
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
