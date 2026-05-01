@@ -34,6 +34,22 @@ final personalShellRoute = StatefulShellRoute.indexedStack(
         GoRoute(
           path: AppRoutes.personalShop,
           builder: (final context, final state) => const ShopPage(),
+          routes: [
+            GoRoute(
+              path: 'product/:id',
+              builder: (final context, final state) {
+                final productId = state.pathParameters['id']!;
+                return ProductDetailPage(productId: productId);
+              },
+            ),
+            GoRoute(
+              path: 'store/:storeId',
+              builder: (final context, final state) {
+                final storeId = state.pathParameters['storeId']!;
+                return StorePage(storeId: storeId);
+              },
+            ),
+          ],
         ),
       ],
     ),
@@ -69,20 +85,6 @@ final personalShellRoute = StatefulShellRoute.indexedStack(
 
 // Full-screen routes (no bottom nav)
 final personalFullScreenRoutes = [
-  GoRoute(
-    path: AppRoutes.personalShopProduct,
-    builder: (final context, final state) {
-      final productId = state.pathParameters['id']!;
-      return ProductDetailPage(productId: productId);
-    },
-  ),
-  GoRoute(
-    path: AppRoutes.personalShopStore,
-    builder: (final context, final state) {
-      final storeId = state.pathParameters['storeId']!;
-      return StorePage(storeId: storeId);
-    },
-  ),
   GoRoute(
     path: AppRoutes.personalSettings,
     builder: (final context, final state) => const PersonalSettingsPage(),

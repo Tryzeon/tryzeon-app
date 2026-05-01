@@ -80,7 +80,7 @@ class _ProductDetailContent extends HookConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Product Header (Image, Categories, Name, Price)
+          // Product Header (Image, Categories, Name, Price, Purchase link)
           ProductHeader(product: product, categoryIdToName: categoryIdToName),
 
           Padding(
