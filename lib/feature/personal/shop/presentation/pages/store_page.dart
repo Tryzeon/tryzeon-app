@@ -131,7 +131,7 @@ class StorePage extends HookConsumerWidget {
                                       color: colorScheme.onSurfaceVariant,
                                     ),
                                     const SizedBox(width: AppSpacing.sm),
-                                    Expanded(
+                                    Flexible(
                                       child: Text(
                                         storeInfo.address!,
                                         style: textTheme.bodyMedium,
