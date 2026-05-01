@@ -111,13 +111,10 @@ class WardrobeTagEditorSheet extends HookWidget {
                 TextButton(
                   onPressed: isSaving.value ? null : handleSave,
                   child: isSaving.value
-                      ? SizedBox(
+                      ? const SizedBox(
                           width: AppSpacing.md,
                           height: AppSpacing.md,
-                          child: CircularProgressIndicator(
-                            strokeWidth: AppSpacing.xxs,
-                            color: colorScheme.primary,
-                          ),
+                          child: CircularProgressIndicator(strokeWidth: AppSpacing.xxs),
                         )
                       : const Text('完成'),
                 ),

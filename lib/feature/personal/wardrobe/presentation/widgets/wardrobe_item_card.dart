@@ -42,12 +42,8 @@ class WardrobeItemCard extends ConsumerWidget {
               );
             },
           ),
-          loading: () => Center(
-            child: CircularProgressIndicator(
-              strokeWidth: AppSpacing.xxs,
-              color: colorScheme.primary,
-            ),
-          ),
+          loading: () =>
+              const Center(child: CircularProgressIndicator(strokeWidth: AppSpacing.xxs)),
           error: (final error, final stack) => InkWell(
             onTap: () => ref.refresh(wardrobeItemImageProvider(item.imagePath)),
             child: Container(
