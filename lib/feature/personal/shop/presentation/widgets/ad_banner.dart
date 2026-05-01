@@ -36,8 +36,8 @@ class AdBanner extends HookConsumerWidget {
 
           pageController.animateToPage(
             targetPage,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
+            duration: AppDuration.slow,
+            curve: AppCurves.standard,
           );
         });
         return timer.cancel;

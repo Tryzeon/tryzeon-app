@@ -128,7 +128,6 @@ class _ModeCard extends StatelessWidget {
   @override
   Widget build(final BuildContext context) {
     return Card(
-      color: colorScheme.surfaceContainerLow,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: isLocked ? null : onTap,

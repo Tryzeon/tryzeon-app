@@ -96,17 +96,7 @@ class ProductCard extends HookConsumerWidget {
 
       return Container(
         padding: const EdgeInsets.all(AppSpacing.sm),
-        decoration: BoxDecoration(
-          color: buttonColor,
-          borderRadius: AppRadius.pillAll,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: AppOpacity.medium),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
+        decoration: BoxDecoration(color: buttonColor, borderRadius: AppRadius.pillAll),
         child: Icon(Icons.auto_awesome, color: colorScheme.onPrimary, size: 20),
       );
     }
@@ -119,7 +109,6 @@ class ProductCard extends HookConsumerWidget {
         key: Key('product-card-${product.id}'),
         onVisibilityChanged: onVisibilityChanged,
         child: Card(
-          shape: const RoundedRectangleBorder(borderRadius: AppRadius.cardAll),
           clipBehavior: Clip.antiAlias,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -144,8 +133,8 @@ class ProductCard extends HookConsumerWidget {
                     ),
                     // Try-on button with fit color at bottom right
                     Positioned(
-                      bottom: 8,
-                      right: 8,
+                      bottom: AppSpacing.sm,
+                      right: AppSpacing.sm,
                       child: Material(
                         color: Colors.transparent,
                         child: InkWell(

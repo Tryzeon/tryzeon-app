@@ -130,7 +130,7 @@ class StorePage extends HookConsumerWidget {
                                       size: 18,
                                       color: colorScheme.onSurfaceVariant,
                                     ),
-                                    const SizedBox(width: 6),
+                                    const SizedBox(width: AppSpacing.sm),
                                     Expanded(
                                       child: Text(
                                         storeInfo.address!,
@@ -156,7 +156,7 @@ class StorePage extends HookConsumerWidget {
                       ],
                     ),
                   ),
-                  const Divider(height: 1),
+                  const Divider(),
                   Padding(
                     padding: const EdgeInsets.all(AppSpacing.md),
                     child: Row(

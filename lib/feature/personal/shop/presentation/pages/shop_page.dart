@@ -114,8 +114,6 @@ class ShopPage extends HookConsumerWidget {
       return IconButton.filledTonal(
         icon: const Icon(Icons.filter_list_rounded, size: 18),
         onPressed: handleShowFilterDialog,
-        constraints: const BoxConstraints(),
-        padding: const EdgeInsets.all(AppSpacing.sm),
       );
     }
 

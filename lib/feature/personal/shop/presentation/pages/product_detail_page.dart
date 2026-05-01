@@ -112,7 +112,7 @@ class ProductDetailPage extends HookConsumerWidget {
           ? Container(
               decoration: BoxDecoration(
                 color: colorScheme.surface,
-                border: Border(top: BorderSide(color: colorScheme.outline, width: 1)),
+                border: Border(top: Divider.createBorderSide(context)),
               ),
               child: SafeArea(
                 top: false,

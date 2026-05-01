@@ -145,7 +145,7 @@ class ProductCategoryFilter extends HookConsumerWidget {
                                                 color: colorScheme.primary,
                                                 width: 1.5,
                                               )
-                                            : const BorderSide(color: Colors.transparent),
+                                            : BorderSide.none,
                                       ),
                                       child: SizedBox(
                                         width: 56,
@@ -193,7 +193,7 @@ class ProductCategoryFilter extends HookConsumerWidget {
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(height: 6),
+                                    const SizedBox(height: AppSpacing.xs),
                                     // Label
                                     SizedBox(
                                       width: 82,
