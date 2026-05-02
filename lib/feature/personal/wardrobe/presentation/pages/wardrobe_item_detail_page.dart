@@ -66,7 +66,7 @@ class WardrobeItemDetailPage extends HookConsumerWidget {
       );
 
       if (result.isFailure) {
-        if (!context.mounted) return '';
+        if (!context.mounted) return null;
         return result.getError()!.displayMessage(context);
       }
 
