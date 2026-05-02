@@ -62,7 +62,11 @@ class TryOnGallery extends HookWidget {
               }
 
               if (result.mode == TryOnMode.video) {
-                return _VideoPlayerItem(videoUrl: result.videoUrl!);
+                final videoUrl = result.videoUrl;
+                if (videoUrl == null || videoUrl.isEmpty) {
+                  return const Center(child: Text('Video unavailable'));
+                }
+                return _VideoPlayerItem(videoUrl: videoUrl);
               }
 
               if (result.mode == TryOnMode.image) {
