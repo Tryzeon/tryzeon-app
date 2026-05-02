@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/constants/qa_config.dart';
@@ -56,7 +57,10 @@ class ChatNotifier extends _$ChatNotifier {
 
   void _appendMessage(final String text, {required final bool isUser}) {
     state = state.copyWith(
-      messages: [...state.messages, ChatMessage(text: text, isUser: isUser)],
+      messages: [
+        ...state.messages,
+        ChatMessage(text: text, isUser: isUser),
+      ],
     );
   }
 
@@ -116,6 +120,6 @@ class ChatNotifier extends _$ChatNotifier {
       return;
     }
 
-    appendBotMessage(failure.displayMessage);
+    appendBotMessage(failure?.displayMessage() ?? '發生錯誤，請稍後再試');
   }
 }
