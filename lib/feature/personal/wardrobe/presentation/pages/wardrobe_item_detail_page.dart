@@ -1,6 +1,6 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
@@ -14,18 +14,57 @@ import '../extensions/wardrobe_category_display_extension.dart';
 import '../sheets/wardrobe_tag_editor_sheet.dart';
 
 class WardrobeItemDetailPage extends HookConsumerWidget {
-  const WardrobeItemDetailPage({super.key, required this.item});
-  final WardrobeItem item;
+  const WardrobeItemDetailPage({super.key, required this.itemId});
+  final String itemId;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final wardrobeItem = useState(item);
 
-    final imageFileAsync = ref.watch(
-      wardrobeItemImageProvider(wardrobeItem.value.imagePath),
+    final wardrobeItemsAsync = ref.watch(wardrobeItemsProvider);
+
+    return wardrobeItemsAsync.when(
+      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (final error, final stack) => Scaffold(
+        appBar: AppBar(),
+        body: ErrorView(
+          message: error.displayMessage(context),
+          onRetry: () => refreshWardrobeItems(ref),
+        ),
+      ),
+      data: (final items) {
+        final item = items.where((final i) => i.id == itemId).firstOrNull;
+        if (item == null) {
+          return Scaffold(
+            appBar: AppBar(),
+            body: Center(child: Text('找不到衣物', style: textTheme.titleMedium)),
+          );
+        }
+        return _WardrobeItemDetailContent(
+          item: item,
+          colorScheme: colorScheme,
+          textTheme: textTheme,
+        );
+      },
     );
+  }
+}
+
+class _WardrobeItemDetailContent extends ConsumerWidget {
+  const _WardrobeItemDetailContent({
+    required this.item,
+    required this.colorScheme,
+    required this.textTheme,
+  });
+
+  final WardrobeItem item;
+  final ColorScheme colorScheme;
+  final TextTheme textTheme;
+
+  @override
+  Widget build(final BuildContext context, final WidgetRef ref) {
+    final imageFileAsync = ref.watch(wardrobeItemImageProvider(item.imagePath));
 
     Future<void> handleDelete() async {
       final confirmResult = await showOkCancelAlertDialog(
@@ -40,13 +79,13 @@ class WardrobeItemDetailPage extends HookConsumerWidget {
       if (confirmResult != OkCancelResult.ok || !context.mounted) return;
 
       final deleteWardrobeItemUseCase = ref.read(deleteWardrobeItemUseCaseProvider);
-      final result = await deleteWardrobeItemUseCase(wardrobeItem.value);
+      final result = await deleteWardrobeItemUseCase(item);
 
       if (!context.mounted) return;
 
       if (result.isSuccess) {
         ref.invalidate(wardrobeItemsProvider);
-        Navigator.pop(context);
+        context.pop();
       } else {
         TopNotification.show(
           context,
@@ -60,17 +99,13 @@ class WardrobeItemDetailPage extends HookConsumerWidget {
       final updateWardrobeItemTagsUseCase = ref.read(
         updateWardrobeItemTagsUseCaseProvider,
       );
-      final result = await updateWardrobeItemTagsUseCase(
-        item: wardrobeItem.value,
-        tags: tags,
-      );
+      final result = await updateWardrobeItemTagsUseCase(item: item, tags: tags);
 
       if (result.isFailure) {
         if (!context.mounted) return null;
         return result.getError()!.displayMessage(context);
       }
 
-      wardrobeItem.value = result.get()!;
       ref.invalidate(wardrobeItemsProvider);
       return null;
     }
@@ -78,13 +113,13 @@ class WardrobeItemDetailPage extends HookConsumerWidget {
     Future<void> handleEditTags() async {
       await WardrobeTagEditorSheet.show(
         context: context,
-        initialTags: wardrobeItem.value.tags,
+        initialTags: item.tags,
         onSave: handleSaveTags,
       );
     }
 
     Widget buildTagChips() {
-      if (wardrobeItem.value.tags.isEmpty) {
+      if (item.tags.isEmpty) {
         return Text(
           '尚無標籤',
           style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
@@ -95,13 +130,13 @@ class WardrobeItemDetailPage extends HookConsumerWidget {
         spacing: AppSpacing.sm,
         runSpacing: AppSpacing.sm,
         crossAxisAlignment: WrapCrossAlignment.center,
-        children: wardrobeItem.value.tags.map((final tag) {
+        children: item.tags.map((final tag) {
           return Chip(label: Text('#$tag'));
         }).toList(),
       );
     }
 
-    final createdAt = wardrobeItem.value.createdAt;
+    final createdAt = item.createdAt;
     final dateStr =
         '${createdAt.year}/${createdAt.month.toString().padLeft(2, '0')}/${createdAt.day.toString().padLeft(2, '0')} 加入';
 
@@ -120,7 +155,7 @@ class WardrobeItemDetailPage extends HookConsumerWidget {
                   ),
                   foregroundColor: colorScheme.onSurface,
                 ),
-                onPressed: () => Navigator.pop(context),
+                onPressed: context.pop,
                 icon: const Icon(Icons.arrow_back_rounded),
               ),
             ),
@@ -167,9 +202,8 @@ class WardrobeItemDetailPage extends HookConsumerWidget {
                   child: Center(
                     child: ErrorView(
                       isCompact: true,
-                      onRetry: () => ref.refresh(
-                        wardrobeItemImageProvider(wardrobeItem.value.imagePath),
-                      ),
+                      onRetry: () =>
+                          ref.refresh(wardrobeItemImageProvider(item.imagePath)),
                     ),
                   ),
                 ),
@@ -184,7 +218,7 @@ class WardrobeItemDetailPage extends HookConsumerWidget {
                 children: [
                   Row(
                     children: [
-                      Chip(label: Text(wardrobeItem.value.category.displayName)),
+                      Chip(label: Text(item.category.displayName)),
                       const Spacer(),
                       Text(
                         dateStr,
