@@ -56,6 +56,9 @@ class WardrobeRemoteDataSource {
     required final String id,
     required final List<String> tags,
   }) async {
+    final user = _supabaseClient.auth.currentUser;
+    if (user == null) throw const UnauthenticatedException();
+
     final response = await _supabaseClient
         .from(_wardrobeItemTable)
         .update({'tags': tags})
