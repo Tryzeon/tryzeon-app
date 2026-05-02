@@ -116,6 +116,6 @@ class ChatNotifier extends _$ChatNotifier {
       return;
     }
 
-    appendBotMessage('發生錯誤，請稍後再試');
+    appendBotMessage(failure.displayMessage);
   }
 }
