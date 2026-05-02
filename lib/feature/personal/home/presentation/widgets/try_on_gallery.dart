@@ -85,8 +85,8 @@ class TryOnGallery extends HookWidget {
                         Text(
                           'Image unavailable',
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ],
                     ),
