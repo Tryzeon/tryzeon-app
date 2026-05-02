@@ -49,7 +49,14 @@ class WardrobeRemoteDataSource {
   }
 
   Future<void> deleteWardrobeItem(final String id) async {
-    await _supabaseClient.from(_wardrobeItemTable).delete().eq('id', id);
+    final user = _supabaseClient.auth.currentUser;
+    if (user == null) throw const UnauthenticatedException();
+
+    await _supabaseClient
+        .from(_wardrobeItemTable)
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
   }
 
   Future<WardrobeItemModel> updateWardrobeItemTags({
@@ -63,6 +70,7 @@ class WardrobeRemoteDataSource {
         .from(_wardrobeItemTable)
         .update({'tags': tags})
         .eq('id', id)
+        .eq('user_id', user.id)
         .select()
         .single();
 
