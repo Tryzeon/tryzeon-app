@@ -48,7 +48,7 @@ class ChatNotifier extends _$ChatNotifier {
 
   void reset() {
     state = ChatState(generation: state.generation + 1);
-    _initialize();
+    WidgetsBinding.instance.addPostFrameCallback((final _) => _initialize());
   }
 
   void appendUserMessage(final String text) => _appendMessage(text, isUser: true);
@@ -68,13 +68,12 @@ class ChatNotifier extends _$ChatNotifier {
     appendUserMessage(answer);
 
     final question = QAConfig.questions[index];
+    final localGen = state.generation;
     state = state.copyWith(
       answers: {...state.answers, question.id: answer},
       currentQuestionIndex: index + 1,
       isLoading: true,
     );
-
-    final localGen = state.generation;
 
     if (state.currentQuestionIndex < QAConfig.questions.length) {
       await _appendNextQuestion(localGen);

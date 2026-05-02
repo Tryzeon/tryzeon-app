@@ -46,8 +46,9 @@ class ChatPage extends HookConsumerWidget {
       if (isLoading) scrollToBottom();
     });
 
+    final notifier = ref.watch(chatProvider.notifier);
     useEffect(() {
-      final subscription = ref.read(chatProvider.notifier).events.listen((final event) {
+      final subscription = notifier.events.listen((final event) {
         if (!context.mounted) return;
         switch (event) {
           case ChatRateLimited():
@@ -59,7 +60,7 @@ class ChatPage extends HookConsumerWidget {
         }
       });
       return subscription.cancel;
-    }, const []);
+    }, [notifier]);
 
     void sendMessage(final String text) {
       final trimmed = text.trim();
