@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
-
-import '../pages/wardrobe_item_detail_page.dart';
 
 class WardrobeItemCard extends ConsumerWidget {
   const WardrobeItemCard({super.key, required this.item});
@@ -20,11 +20,7 @@ class WardrobeItemCard extends ConsumerWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (final context) => WardrobeItemDetailPage(item: item),
-            ),
-          );
+          context.push(AppRoutes.personalWardrobeItemPath(item.id));
         },
         child: imageFileAsync.when(
           data: (final file) => Image.file(
