@@ -390,8 +390,7 @@ class HomePage extends HookConsumerWidget {
 
     final bottomOffset =
         MediaQuery.paddingOf(context).bottom +
-        AppSpacing.lg +
-        (PlatformInfo.isIOS26OrHigher() ? 50 : 0);
+        (PlatformInfo.isIOS26OrHigher() ? AppSpacing.bottomNavBarHeight : 0);
 
     final showMoreOptions =
         currentTryonIndex.value >= 0 &&
@@ -471,7 +470,7 @@ class HomePage extends HookConsumerWidget {
             // 4. Bottom Left — Indicator (white floating lines)
             if (showIndicator)
               Positioned(
-                bottom: bottomOffset + AppSpacing.lg,
+                bottom: bottomOffset + AppSpacing.xl,
                 left: AppSpacing.xxl,
                 child: TryOnIndicator(
                   currentTryonIndex: currentTryonIndex.value,
@@ -484,7 +483,7 @@ class HomePage extends HookConsumerWidget {
               data: (final avatarFile) {
                 final hasAvatar = avatarFile != null;
                 return Positioned(
-                  bottom: bottomOffset,
+                  bottom: bottomOffset + AppSpacing.lg,
                   right: AppSpacing.lg,
                   child: HomePrimaryActionButton(
                     label: hasAvatar ? '虛擬試穿' : '上傳照片',
