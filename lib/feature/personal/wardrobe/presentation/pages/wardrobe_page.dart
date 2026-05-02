@@ -150,7 +150,9 @@ class WardrobePage extends HookConsumerWidget {
 
     return Scaffold(
       floatingActionButton: Padding(
-        padding: EdgeInsets.only(bottom: PlatformInfo.isIOS26OrHigher() ? 50.0 : 0.0),
+        padding: EdgeInsets.only(
+          bottom: PlatformInfo.isIOS26OrHigher() ? AppSpacing.bottomNavBarHeight : 0.0,
+        ),
         child: FloatingActionButton(
           onPressed: showUploadSheet,
           child: const Icon(Icons.add_rounded),
@@ -224,10 +226,10 @@ class WardrobePage extends HookConsumerWidget {
                         AppSpacing.sm,
                         AppSpacing.md,
                         MediaQuery.of(context).padding.bottom +
-                            88 +
+                            90 + // FAB
                             (PlatformInfo.isIOS26OrHigher()
-                                ? 50
-                                : 0), // Bottom padding for FAB
+                                ? AppSpacing.bottomNavBarHeight
+                                : 0),
                       ),
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 3,
