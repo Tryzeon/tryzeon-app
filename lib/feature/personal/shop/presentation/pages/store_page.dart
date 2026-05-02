@@ -1,3 +1,4 @@
+import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -181,7 +182,12 @@ class StorePage extends HookConsumerWidget {
                     userProfile: userProfile,
                     onRetry: () => refreshShopProducts(ref, filter),
                   ),
-                  const SizedBox(height: AppSpacing.xl),
+                  SizedBox(
+                    height: PlatformInfo.isIOS26OrHigher()
+                        ? MediaQuery.of(context).padding.bottom +
+                              AppSpacing.bottomNavBarHeight
+                        : 0,
+                  ),
                 ],
               ),
             ),

@@ -1,3 +1,4 @@
+import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -249,7 +250,12 @@ class ShopPage extends HookConsumerWidget {
                               onRetry: () => refreshShopProducts(ref, filter),
                             ),
 
-                            const SizedBox(height: 120), // 預留底部空白，避免被導覽列遮擋或增加滾動空間
+                            SizedBox(
+                              height: PlatformInfo.isIOS26OrHigher()
+                                  ? MediaQuery.of(context).padding.bottom +
+                                        AppSpacing.bottomNavBarHeight
+                                  : 0,
+                            ),
                           ],
                         ),
                       ),
