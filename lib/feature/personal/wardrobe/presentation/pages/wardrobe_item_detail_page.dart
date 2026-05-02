@@ -25,6 +25,7 @@ class WardrobeItemDetailPage extends HookConsumerWidget {
     final wardrobeItemsAsync = ref.watch(wardrobeItemsProvider);
 
     return wardrobeItemsAsync.when(
+      skipLoadingOnReload: true,
       loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (final error, final stack) => Scaffold(
         appBar: AppBar(),
@@ -101,8 +102,9 @@ class _WardrobeItemDetailContent extends ConsumerWidget {
       );
       final result = await updateWardrobeItemTagsUseCase(item: item, tags: tags);
 
+      if (!context.mounted) return null;
+
       if (result.isFailure) {
-        if (!context.mounted) return null;
         return result.getError()!.displayMessage(context);
       }
 
