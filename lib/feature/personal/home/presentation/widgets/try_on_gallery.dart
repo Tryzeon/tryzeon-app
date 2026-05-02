@@ -70,7 +70,30 @@ class TryOnGallery extends HookWidget {
               }
 
               if (result.mode == TryOnMode.image) {
-                return _ImageItem(imageBase64: result.imageBase64);
+                final imageBase64 = result.imageBase64;
+                if (imageBase64 == null) {
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.broken_image_outlined,
+                          size: 48,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Image unavailable',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return _ImageItem(imageBase64: imageBase64);
               }
 
               return const Center(child: Text('Invalid TryOn Result'));
