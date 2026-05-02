@@ -100,6 +100,9 @@ class WardrobeRemoteDataSource {
   }
 
   Future<void> deleteImage(final String path) async {
+    final user = _supabaseClient.auth.currentUser;
+    if (user == null) throw const UnauthenticatedException();
+
     await _supabaseClient.storage.from(_bucket).remove([path]);
   }
 
