@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/product_categories/domain/entities/category_tree_node.dart';
 
 class ProductCategoryFilter extends HookConsumerWidget {
@@ -64,41 +65,28 @@ class ProductCategoryFilter extends HookConsumerWidget {
             height: 48,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
               itemCount: categoryTree.length,
-              separatorBuilder: (final context, final index) => const SizedBox(width: 8),
+              separatorBuilder: (final context, final index) =>
+                  const SizedBox(width: AppSpacing.sm),
               itemBuilder: (final context, final index) {
                 final node = categoryTree[index];
                 final isSelected = node.category.id == selectedRootId;
 
-                return GestureDetector(
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    onRootSelected(node.category.id);
+                return ChoiceChip(
+                  label: Text(node.category.name),
+                  selected: isSelected,
+                  onSelected: (final selected) {
+                    if (selected) {
+                      HapticFeedback.selectionClick();
+                      onRootSelected(node.category.id);
+                    }
                   },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    curve: Curves.easeOutCubic,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? colorScheme.primary
-                          : colorScheme.surfaceContainer,
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      node.category.name,
-                      style: textTheme.labelLarge?.copyWith(
-                        color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
-                      ),
-                    ),
-                  ),
                 );
               },
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.lg),
           // Subcategories (Squircle Cards)
           selectedRootNode == null
               ? const SizedBox(height: 120)
@@ -110,24 +98,26 @@ class ProductCategoryFilter extends HookConsumerWidget {
                       children: [
                         Padding(
                           padding: const EdgeInsets.only(
-                            left: 30,
-                            right: 0,
-                            top: 0,
-                            bottom: 5,
+                            left: AppSpacing.lg,
+                            bottom: AppSpacing.xs,
                           ),
                           child: Text(
-                            level2Node.category.name,
-                            style: textTheme.titleSmall,
+                            level2Node.category.name.toUpperCase(),
+                            style: textTheme.labelLarge?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                           ),
                         ),
                         SizedBox(
                           height: 96,
                           child: ListView.separated(
                             scrollDirection: Axis.horizontal,
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md,
+                            ),
                             itemCount: level2Node.children.length,
                             separatorBuilder: (final context, final index) =>
-                                const SizedBox(width: 2),
+                                const SizedBox(width: AppSpacing.xxs),
                             itemBuilder: (final context, final index) {
                               final level3Node = level2Node.children[index];
                               final isSelected = selectedSubcategoryIds.contains(
@@ -144,58 +134,66 @@ class ProductCategoryFilter extends HookConsumerWidget {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     // Squircle Image Container
-                                    AnimatedContainer(
-                                      duration: const Duration(milliseconds: 200),
-                                      width: 60,
-                                      height: 60,
-                                      decoration: BoxDecoration(
-                                        color: colorScheme.surfaceContainerHighest,
-                                        borderRadius: BorderRadius.circular(20),
-                                        border: isSelected
-                                            ? Border.all(
+                                    Card(
+                                      color: isSelected
+                                          ? colorScheme.primaryContainer
+                                          : colorScheme.surfaceContainerHighest,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: AppRadius.dialogAll,
+                                        side: isSelected
+                                            ? BorderSide(
                                                 color: colorScheme.primary,
-                                                width: 2.5,
+                                                width: 1.5,
                                               )
-                                            : null,
+                                            : BorderSide.none,
                                       ),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(
-                                          isSelected ? 17.5 : 20,
-                                        ),
-                                        child: (imageUrl != null && imageUrl.isNotEmpty)
-                                            ? CachedNetworkImage(
-                                                imageUrl: imageUrl,
-                                                fit: BoxFit.cover,
-                                                memCacheWidth: 180,
-                                                memCacheHeight: 180,
-                                                placeholder: (final context, final url) =>
-                                                    Center(
-                                                      child: SizedBox(
-                                                        width: 20,
-                                                        height: 20,
-                                                        child: CircularProgressIndicator(
-                                                          strokeWidth: 2.5,
-                                                          color: colorScheme.outline,
+                                      child: SizedBox(
+                                        width: 56,
+                                        height: 56,
+                                        child: ClipRRect(
+                                          borderRadius: AppRadius.dialogAll,
+                                          child: (imageUrl != null && imageUrl.isNotEmpty)
+                                              ? CachedNetworkImage(
+                                                  imageUrl: imageUrl,
+                                                  fit: BoxFit.cover,
+                                                  memCacheWidth: 180,
+                                                  memCacheHeight: 180,
+                                                  placeholder:
+                                                      (
+                                                        final context,
+                                                        final url,
+                                                      ) => Center(
+                                                        child: SizedBox(
+                                                          width: 20,
+                                                          height: 20,
+                                                          child:
+                                                              CircularProgressIndicator(
+                                                                strokeWidth: 2.5,
+                                                                color:
+                                                                    colorScheme.outline,
+                                                              ),
                                                         ),
                                                       ),
-                                                    ),
-                                                errorWidget:
-                                                    (
-                                                      final context,
-                                                      final url,
-                                                      final error,
-                                                    ) => Icon(
-                                                      Icons.image_not_supported_outlined,
-                                                      color: colorScheme.onSurfaceVariant,
-                                                    ),
-                                              )
-                                            : Icon(
-                                                Icons.image_not_supported_outlined,
-                                                color: colorScheme.onSurfaceVariant,
-                                              ),
+                                                  errorWidget:
+                                                      (
+                                                        final context,
+                                                        final url,
+                                                        final error,
+                                                      ) => Icon(
+                                                        Icons
+                                                            .image_not_supported_outlined,
+                                                        color:
+                                                            colorScheme.onSurfaceVariant,
+                                                      ),
+                                                )
+                                              : Icon(
+                                                  Icons.image_not_supported_outlined,
+                                                  color: colorScheme.onSurfaceVariant,
+                                                ),
+                                        ),
                                       ),
                                     ),
-                                    const SizedBox(height: 6),
+                                    const SizedBox(height: AppSpacing.xs),
                                     // Label
                                     SizedBox(
                                       width: 82,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/core/shared/measurements/presentation/mappers/measurement_type_ui_mapper.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 
 class ProductSizeTable extends StatelessWidget {
@@ -15,11 +16,11 @@ class ProductSizeTable extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('尺寸資訊', style: textTheme.titleMedium),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.smMd),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: DataTable(
-            columnSpacing: 24,
+            columnSpacing: AppSpacing.lg,
             columns: [
               const DataColumn(label: Text('尺寸')),
               ...MeasurementType.values.map(
@@ -29,21 +30,29 @@ class ProductSizeTable extends StatelessWidget {
             rows: sizes.map((final size) {
               return DataRow(
                 cells: [
-                  DataCell(
-                    Text(size.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  ),
+                  DataCell(Text(size.name, style: textTheme.titleSmall)),
                   ...MeasurementType.values.map((final type) {
                     final measurements = size.measurements;
                     final value = measurements?.getValue(type);
-                    return DataCell(Text(value != null ? value.toStringAsFixed(1) : '-'));
+                    return DataCell(
+                      Text(
+                        value != null ? value.toStringAsFixed(1) : '-',
+                        style: textTheme.bodyMedium,
+                      ),
+                    );
                   }),
                 ],
               );
             }).toList(),
           ),
         ),
-        const SizedBox(height: 8),
-        Text('* 此尺寸數據可能存在些許誤差', style: textTheme.bodySmall),
+        const SizedBox(height: AppSpacing.sm),
+        Text(
+          '* 此尺寸數據可能存在些許誤差',
+          style: textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
       ],
     );
   }

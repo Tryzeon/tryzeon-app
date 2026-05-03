@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/video_prompt_config.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
 
@@ -16,7 +17,7 @@ class VideoPromptCustomizeSheet extends HookConsumerWidget {
       context: context,
       useRootNavigator: true,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      showDragHandle: true,
       builder: (final context) => const VideoPromptCustomizeSheet(),
     );
   }
@@ -76,138 +77,97 @@ class VideoPromptCustomizeSheet extends HookConsumerWidget {
       );
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: SafeArea(
-        bottom: true,
-        top: false,
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            24,
-            0,
-            24,
-            MediaQuery.of(context).viewInsets.bottom + 16,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Drag Handle
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 12, bottom: 16),
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: colorScheme.outline.withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(2),
+    return SafeArea(
+      bottom: true,
+      top: false,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          0,
+          AppSpacing.lg,
+          MediaQuery.of(context).viewInsets.bottom + AppSpacing.md,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Title
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.mdLg),
+              child: Row(
+                children: [
+                  Icon(Icons.edit_note_rounded, color: colorScheme.primary, size: 24),
+                  const SizedBox(width: AppSpacing.smMd),
+                  Text('自訂影片風格', style: textTheme.titleLarge),
+                ],
+              ),
+            ),
+
+            // Scene Section
+            Text('場景 Scene', style: textTheme.titleSmall),
+            const SizedBox(height: AppSpacing.sm),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.xs,
+              children: scenePresets
+                  .map(
+                    (final preset) => ActionChip(
+                      label: Text(preset),
+                      onPressed: () => appendChip(sceneController, preset),
                     ),
-                  ),
-                ),
-              ),
+                  )
+                  .toList(),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            TextField(
+              controller: sceneController,
+              decoration: const InputDecoration(hintText: '例如：純白攝影棚'),
+              maxLines: 2,
+              minLines: 1,
+            ),
 
-              // Title
-              Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: Row(
-                  children: [
-                    Icon(Icons.edit_note_rounded, color: colorScheme.primary, size: 24),
-                    const SizedBox(width: 10),
-                    Text('自訂影片風格', style: textTheme.titleLarge),
-                  ],
-                ),
-              ),
+            const SizedBox(height: AppSpacing.mdLg),
 
-              // Scene Section
-              Text('場景 Scene', style: textTheme.titleSmall),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: scenePresets
-                    .map(
-                      (final preset) => ActionChip(
-                        label: Text(preset),
-                        onPressed: () => appendChip(sceneController, preset),
-                      ),
-                    )
-                    .toList(),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: sceneController,
-                decoration: InputDecoration(
-                  hintText: '例如：純白攝影棚',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                ),
-                maxLines: 2,
-                minLines: 1,
-              ),
-
-              const SizedBox(height: 20),
-
-              // Transition Section
-              Text('轉場 Transition', style: textTheme.titleSmall),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: transitionPresets
-                    .map(
-                      (final preset) => ActionChip(
-                        label: Text(preset),
-                        onPressed: () => appendChip(transitionController, preset),
-                      ),
-                    )
-                    .toList(),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: transitionController,
-                decoration: InputDecoration(
-                  hintText: '例如：一鏡到底',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                ),
-                maxLines: 2,
-                minLines: 1,
-              ),
-
-              const SizedBox(height: 24),
-
-              // Save Button
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: isSaving.value ? null : handleSave,
-                  style: FilledButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+            // Transition Section
+            Text('轉場 Transition', style: textTheme.titleSmall),
+            const SizedBox(height: AppSpacing.sm),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.xs,
+              children: transitionPresets
+                  .map(
+                    (final preset) => ActionChip(
+                      label: Text(preset),
+                      onPressed: () => appendChip(transitionController, preset),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  child: isSaving.value
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('儲存'),
-                ),
+                  )
+                  .toList(),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            TextField(
+              controller: transitionController,
+              decoration: const InputDecoration(hintText: '例如：一鏡到底'),
+              maxLines: 2,
+              minLines: 1,
+            ),
+
+            const SizedBox(height: AppSpacing.lg),
+
+            // Save Button
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: isSaving.value ? null : handleSave,
+                child: isSaving.value
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('儲存'),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 
 class ProductImageViewer extends HookWidget {
   const ProductImageViewer({
@@ -43,31 +44,34 @@ class ProductImageViewer extends HookWidget {
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (final context) => Scaffold(
-                        backgroundColor: Colors.black,
-                        appBar: AppBar(
-                          backgroundColor: Colors.black,
-                          iconTheme: const IconThemeData(color: Colors.white),
-                        ),
-                        body: Center(
-                          child: InteractiveViewer(
-                            child: CachedNetworkImage(
-                              imageUrl: imageUrl,
-                              cacheKey: imagePath,
-                              fit: BoxFit.contain,
-                              width: double.infinity,
-                              height: double.infinity,
-                              placeholder: (final context, final url) =>
-                                  const Center(child: CircularProgressIndicator()),
+                      builder: (final context) {
+                        final cs = Theme.of(context).colorScheme;
+                        return Scaffold(
+                          backgroundColor: cs.scrim,
+                          appBar: AppBar(
+                            backgroundColor: cs.scrim,
+                            iconTheme: IconThemeData(color: cs.onInverseSurface),
+                          ),
+                          body: Center(
+                            child: InteractiveViewer(
+                              child: CachedNetworkImage(
+                                imageUrl: imageUrl,
+                                cacheKey: imagePath,
+                                fit: BoxFit.contain,
+                                width: double.infinity,
+                                height: double.infinity,
+                                placeholder: (final context, final url) =>
+                                    const Center(child: CircularProgressIndicator()),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
+                        );
+                      },
                     ),
                   );
                 },
                 child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
+                  borderRadius: AppRadius.cardAll,
                   child: CachedNetworkImage(
                     imageUrl: imageUrl,
                     cacheKey: imagePath,
@@ -90,7 +94,7 @@ class ProductImageViewer extends HookWidget {
         ),
         if (imageUrls.length > 1)
           Positioned(
-            bottom: 16,
+            bottom: AppSpacing.md,
             left: 0,
             right: 0,
             child: Row(
@@ -98,18 +102,14 @@ class ProductImageViewer extends HookWidget {
               children: List.generate(
                 imageUrls.length,
                 (final index) => Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: 8,
-                  height: 8,
+                  margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                  width: AppSpacing.sm,
+                  height: AppSpacing.sm,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: currentPage.value == index
                         ? colorScheme.primary
-                        : Colors.white.withValues(alpha: 0.5),
-                    border: Border.all(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      width: 0.5,
-                    ),
+                        : colorScheme.outline,
                   ),
                 ),
               ),

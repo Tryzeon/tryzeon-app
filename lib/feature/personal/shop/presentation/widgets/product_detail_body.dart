@@ -1,8 +1,10 @@
+import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
@@ -79,20 +81,20 @@ class _ProductDetailContent extends HookConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Product Header (Image, Categories, Name, Price)
+          // Product Header (Image, Categories, Name, Price, Purchase link)
           ProductHeader(product: product, categoryIdToName: categoryIdToName),
 
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.mdLg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Divider(),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.mdLg),
 
                 // Store Info Section
                 ProductStoreInfo(storeInfo: product.storeInfo),
-                const SizedBox(height: 32),
+                const SizedBox(height: AppSpacing.xl),
 
                 // Product Info Section (Material, Elasticity, Fit, Thickness)
                 if (product.elasticity != null ||
@@ -101,19 +103,23 @@ class _ProductDetailContent extends HookConsumerWidget {
                     product.material != null ||
                     (product.seasons != null && product.seasons!.isNotEmpty)) ...[
                   ProductInfoSection(product: product),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: AppSpacing.xl),
                 ],
 
                 // Size Info Section
                 if (product.sizes != null && product.sizes!.isNotEmpty) ...[
                   ProductSizeTable(sizes: product.sizes!),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: AppSpacing.xl),
                 ],
               ],
             ),
           ),
 
-          const SizedBox(height: 70),
+          SizedBox(
+            height: PlatformInfo.isIOS26OrHigher()
+                ? MediaQuery.of(context).padding.bottom + AppSpacing.bottomNavBarHeight
+                : 0,
+          ),
         ],
       ),
     );

@@ -5,9 +5,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
-import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
-import 'package:tryzeon/feature/personal/home/presentation/pages/home_page.dart';
-import 'package:tryzeon/feature/personal/main/personal_entry_scope.dart';
+import 'package:tryzeon/feature/personal/main/tryon_coordinator.dart';
 
 class PersonalTabDestination {
   const PersonalTabDestination({required this.label, required this.icon});
@@ -31,21 +29,13 @@ class PersonalShell extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final homePageController = useMemoized(HomePageController.new);
+    final coordinator = ref.read(tryOnCoordinatorProvider);
 
     useEffect(() {
-      return homePageController.dispose;
-    }, [homePageController]);
-
-    Future<void> tryOnFromStorage(
-      final List<String> clothesPaths, {
-      final TryOnMode mode = TryOnMode.image,
-    }) async {
-      navigationShell.goBranch(0);
-      if (homePageController.tryOnFromStorage != null) {
-        await homePageController.tryOnFromStorage!(clothesPaths, mode: mode);
-      }
-    }
+      void navigateToHome() => navigationShell.goBranch(0);
+      coordinator.bindNavigateToHome(navigateToHome);
+      return () => coordinator.unbindNavigateToHome(navigateToHome);
+    }, [coordinator, navigationShell]);
 
     final lastTabTapTime = useState<DateTime?>(null);
 
@@ -72,27 +62,23 @@ class PersonalShell extends HookConsumerWidget {
 
     final mediaQuery = MediaQuery.of(context);
 
-    return PersonalEntryScope(
-      tryOnFromStorage: tryOnFromStorage,
-      homePageController: homePageController,
-      child: MediaQuery(
-        data: mediaQuery.copyWith(viewInsets: mediaQuery.viewInsets.copyWith(bottom: 0)),
-        child: AdaptiveScaffold(
-          minimizeBehavior: TabBarMinimizeBehavior.never,
-          body: MediaQuery(data: mediaQuery, child: navigationShell),
-          bottomNavigationBar: AdaptiveBottomNavigationBar(
-            selectedIndex: navigationShell.currentIndex,
-            onTap: onItemTapped,
-            useNativeBottomBar: true,
-            items: personalTabDestinations
-                .map(
-                  (final destination) => AdaptiveNavigationDestination(
-                    icon: _adaptiveIcon(destination),
-                    label: destination.label,
-                  ),
-                )
-                .toList(),
-          ),
+    return MediaQuery(
+      data: mediaQuery.copyWith(viewInsets: mediaQuery.viewInsets.copyWith(bottom: 0)),
+      child: AdaptiveScaffold(
+        minimizeBehavior: TabBarMinimizeBehavior.never,
+        body: MediaQuery(data: mediaQuery, child: navigationShell),
+        bottomNavigationBar: AdaptiveBottomNavigationBar(
+          selectedIndex: navigationShell.currentIndex,
+          onTap: onItemTapped,
+          useNativeBottomBar: true,
+          items: personalTabDestinations
+              .map(
+                (final destination) => AdaptiveNavigationDestination(
+                  icon: _adaptiveIcon(destination),
+                  label: destination.label,
+                ),
+              )
+              .toList(),
         ),
       ),
     );
