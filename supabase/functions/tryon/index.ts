@@ -41,10 +41,14 @@ Deno.serve(async (req) => {
     const featureName: FeatureName = mode === "video" ? "tryon_video" : "tryon";
     quotaManager = new QuotaManager(adminClient, user!.id, featureName);
 
-    const canProceed = await quotaManager.incrementQuota();
-    if (!canProceed) {
+    const { allowed, usage } = await quotaManager.incrementQuota();
+    if (!allowed) {
       return new Response(
-        JSON.stringify({ error: "Rate limit exceeded", code: "RATE_LIMIT_EXCEEDED" }),
+        JSON.stringify({
+          error: "Rate limit exceeded",
+          code: "RATE_LIMIT_EXCEEDED",
+          usage: usage,
+        }),
         { status: 429, headers: { "Content-Type": "application/json" } },
       );
     }
@@ -72,13 +76,13 @@ Deno.serve(async (req) => {
     if (mode === "video") {
       const videoUrl = await generateTryonVideo(tryonImageBase64, user!.id, transitionPrompt);
       return new Response(
-        JSON.stringify({ videoUrl: videoUrl }),
+        JSON.stringify({ videoUrl: videoUrl, usage: usage }),
         { headers: { "Content-Type": "application/json" } },
       );
     }
 
     return new Response(
-      JSON.stringify({ image: tryonImageBase64 }),
+      JSON.stringify({ image: tryonImageBase64, usage: usage }),
       { headers: { "Content-Type": "application/json" } },
     );
   } catch (err) {

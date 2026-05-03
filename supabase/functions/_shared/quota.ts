@@ -2,33 +2,48 @@ import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 
 export type FeatureName = "chat" | "tryon" | "tryon_video";
 
+export interface DailyUsageRow {
+  user_id: string;
+  usage_date: string;
+  tryon_count: number;
+  chat_count: number;
+  video_count: number;
+}
+
+export interface IncrementResult {
+  success: boolean;
+  usage: DailyUsageRow | null;
+  error?: any;
+}
+
 /**
- * Increments the feature usage count for a user.
- * Returns true if the increment was successful (within quota limits).
- * Returns false if the user has exceeded their quota.
+ * Atomically increments the feature usage count and returns the post-mutation
+ * row. The row is also returned when `success` is false (rate-limit case),
+ * so callers can sync UI even on rejection.
  */
 export async function incrementFeatureUsage(
   adminClient: SupabaseClient,
   userId: string,
   featureName: FeatureName
-): Promise<{ success: boolean; error?: any }> {
-  const { data: isAllowed, error } = await adminClient.rpc(
+): Promise<IncrementResult> {
+  const { data, error } = await adminClient.rpc(
     "increment_feature_usage",
     { p_user_id: userId, p_feature_name: featureName }
   );
 
   if (error) {
-    return { success: false, error };
+    return { success: false, usage: null, error };
   }
 
-  return { success: isAllowed };
+  // RPC returns: { allowed: boolean, usage: DailyUsageRow | null }
+  const allowed = Boolean(data?.allowed);
+  const usage = (data?.usage ?? null) as DailyUsageRow | null;
+  return { success: allowed, usage };
 }
 
 /**
  * Decrements the feature usage count for a user (rollback operation).
  * Used to compensate for failed operations after quota was already incremented.
- * Returns true if the decrement was successful.
- * Returns false if there was nothing to rollback (count was already 0).
  */
 export async function rollbackFeatureUsage(
   adminClient: SupabaseClient,
@@ -49,18 +64,20 @@ export async function rollbackFeatureUsage(
 
 /**
  * Quota manager class that tracks quota state and provides automatic rollback.
+ *
  * Usage:
- * 
- * const quotaManager = new QuotaManager(adminClient, userId, featureName);
- * const canProceed = await quotaManager.incrementQuota();
- * if (!canProceed) return rateLimitResponse;
- * 
+ * ```
+ * const qm = new QuotaManager(adminClient, userId, featureName);
+ * const { allowed, usage } = await qm.incrementQuota();
+ * if (!allowed) return rateLimitResponse(usage);
+ *
  * try {
  *   // ... do work that might fail
  * } catch (err) {
- *   await quotaManager.rollbackQuota();
+ *   await qm.rollbackQuota();
  *   throw err;
  * }
+ * ```
  */
 export class QuotaManager {
   private quotaIncremented = false;
@@ -72,12 +89,11 @@ export class QuotaManager {
   ) {}
 
   /**
-   * Increments quota and marks it as incremented for potential rollback.
-   * Returns true if quota increment was successful (user within limits).
-   * Returns false if user has exceeded quota limits.
+   * Increments quota and returns both the allow/reject flag and the
+   * post-mutation row (or current row when rejected).
    */
-  async incrementQuota(): Promise<boolean> {
-    const { success, error } = await incrementFeatureUsage(
+  async incrementQuota(): Promise<{ allowed: boolean; usage: DailyUsageRow | null }> {
+    const { success, usage, error } = await incrementFeatureUsage(
       this.adminClient,
       this.userId,
       this.featureName
@@ -91,18 +107,15 @@ export class QuotaManager {
       this.quotaIncremented = true;
     }
 
-    return success;
+    return { allowed: success, usage };
   }
 
   /**
    * Rolls back quota if it was previously incremented.
-   * Safe to call multiple times - will only rollback once.
-   * Logs errors but does not throw to avoid masking original errors.
+   * Safe to call multiple times — only rollbacks once.
    */
   async rollbackQuota(): Promise<void> {
-    if (!this.quotaIncremented) {
-      return; // Nothing to rollback
-    }
+    if (!this.quotaIncremented) return;
 
     const { success, error } = await rollbackFeatureUsage(
       this.adminClient,
@@ -121,9 +134,6 @@ export class QuotaManager {
     this.quotaIncremented = false;
   }
 
-  /**
-   * Returns whether quota was incremented and might need rollback.
-   */
   get isQuotaIncremented(): boolean {
     return this.quotaIncremented;
   }

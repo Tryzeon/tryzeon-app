@@ -17,10 +17,14 @@ Deno.serve(async (req) => {
     // Check and Increment Usage Quota via RPC
     quotaManager = new QuotaManager(adminClient, user!.id, "chat");
 
-    const canProceed = await quotaManager.incrementQuota();
-    if (!canProceed) {
+    const { allowed, usage } = await quotaManager.incrementQuota();
+    if (!allowed) {
       return new Response(
-        JSON.stringify({ error: "Rate limit exceeded", code: "RATE_LIMIT_EXCEEDED" }),
+        JSON.stringify({
+          error: "Rate limit exceeded",
+          code: "RATE_LIMIT_EXCEEDED",
+          usage: usage,
+        }),
         { status: 429, headers: { "Content-Type": "application/json" } }
       );
     }
@@ -52,7 +56,7 @@ Deno.serve(async (req) => {
     const text = result.text ?? "";
 
     // Return Success Response
-    return new Response(JSON.stringify({ text }), {
+    return new Response(JSON.stringify({ text, usage }), {
       headers: { "Content-Type": "application/json" }
     });
 
