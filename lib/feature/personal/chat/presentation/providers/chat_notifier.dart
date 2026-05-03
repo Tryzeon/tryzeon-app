@@ -103,13 +103,12 @@ class ChatNotifier extends _$ChatNotifier {
   }
 
   Future<void> _fetchRecommendation(final int localGen) async {
-    final useCase = ref.read(getLLMRecommendationUseCaseProvider);
-    final result = await useCase(state.answers);
+    final result = await ref.read(chatActionProvider.notifier).execute(state.answers);
 
     if (_isStale(localGen)) return;
 
     if (result.isSuccess) {
-      appendBotMessage(result.get()!);
+      appendBotMessage(result.get()!.text);
       return;
     }
 
