@@ -1,5 +1,5 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 
 class TryOnMoreOptionsButton extends StatelessWidget {
   const TryOnMoreOptionsButton({
@@ -19,85 +19,84 @@ class TryOnMoreOptionsButton extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
-    return Positioned(
-      top: 0,
-      right: 0,
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 35, right: 20),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                width: 36,
-                height: 36,
-                color: Colors.black.withValues(alpha: 0.3),
-                child: IconButton(
-                  iconSize: 20,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  onPressed: () {
-                    showModalBottomSheet(
-                      context: context,
-                      useRootNavigator: true,
-                      builder: (final context) => SafeArea(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const SizedBox(height: 16),
-                            ListTile(
-                              leading: const Icon(Icons.download_rounded),
-                              title: const Text('下載'),
-                              subtitle: const Text('儲存到相簿'),
-                              onTap: () {
-                                Navigator.pop(context);
-                                onDownload();
-                              },
-                            ),
-                            ListTile(
-                              leading: Icon(
-                                customAvatarIndex == currentTryonIndex
-                                    ? Icons.person_off_outlined
-                                    : Icons.person_outline_rounded,
-                              ),
-                              title: Text(
-                                customAvatarIndex == currentTryonIndex
-                                    ? '取消我的形象'
-                                    : '設為我的形象',
-                              ),
-                              subtitle: Text(
-                                customAvatarIndex == currentTryonIndex
-                                    ? '取消使用此照片作為試穿形象'
-                                    : '使用此照片作為試穿形象',
-                              ),
-                              onTap: () {
-                                Navigator.pop(context);
-                                onToggleAvatar();
-                              },
-                            ),
-                            ListTile(
-                              leading: const Icon(Icons.delete_outline_rounded),
-                              title: const Text('刪除此試穿'),
-                              subtitle: const Text('移除這張試穿照片'),
-                              onTap: () {
-                                Navigator.pop(context);
-                                onDelete();
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                          ],
-                        ),
-                      ),
-                    );
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final subtitleStyle = theme.textTheme.bodyMedium?.copyWith(
+      color: colorScheme.onSurfaceVariant,
+    );
+
+    return IconButton(
+      icon: Icon(
+        Icons.more_vert_rounded,
+        color: colorScheme.onPrimary,
+        size: 24,
+        shadows: [
+          Shadow(
+            color: colorScheme.shadow.withValues(alpha: AppOpacity.strong),
+            blurRadius: 8.0,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      splashColor: colorScheme.onPrimary.withValues(alpha: AppOpacity.medium),
+      highlightColor: colorScheme.onPrimary.withValues(alpha: AppOpacity.medium),
+      onPressed: () {
+        showModalBottomSheet(
+          context: context,
+          useRootNavigator: true,
+          showDragHandle: true,
+          builder: (final context) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: Icon(Icons.download_rounded, color: colorScheme.onSurface),
+                  title: const Text('下載'),
+                  subtitle: Text('儲存到相簿', style: subtitleStyle),
+                  onTap: () {
+                    Navigator.pop(context);
+                    onDownload();
                   },
-                  icon: const Icon(Icons.more_vert_rounded, color: Colors.white),
                 ),
-              ),
+                ListTile(
+                  leading: Icon(
+                    customAvatarIndex == currentTryonIndex
+                        ? Icons.person_off_outlined
+                        : Icons.person_outline_rounded,
+                    color: colorScheme.onSurface,
+                  ),
+                  title: Text(
+                    customAvatarIndex == currentTryonIndex ? '取消我的形象' : '設為我的形象',
+                  ),
+                  subtitle: Text(
+                    customAvatarIndex == currentTryonIndex
+                        ? '取消使用此照片作為試穿形象'
+                        : '使用此照片作為試穿形象',
+                    style: subtitleStyle,
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    onToggleAvatar();
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.delete_outline_rounded,
+                    color: colorScheme.onSurface,
+                  ),
+                  title: const Text('刪除此試穿'),
+                  subtitle: Text('移除這張試穿照片', style: subtitleStyle),
+                  onTap: () {
+                    Navigator.pop(context);
+                    onDelete();
+                  },
+                ),
+                const SizedBox(height: AppSpacing.md),
+              ],
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

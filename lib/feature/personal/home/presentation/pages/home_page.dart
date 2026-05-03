@@ -15,13 +15,14 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/core/utils/image_watermark_helper.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_params.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_result.dart';
-import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_action_button.dart';
+import 'package:tryzeon/feature/personal/home/presentation/widgets/home_primary_action_button.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_gallery.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_indicator.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_more_options_button.dart';
@@ -47,14 +48,14 @@ class HomePage extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final avatarAsync = ref.watch(avatarFileProvider);
     final tryonImages = useState<List<TryonResult>>([]);
-    final loadingIndices = useState<Set<int>>({});
     final currentTryonIndex = useState(-1);
     final customAvatarIndex = useState<int?>(null);
-    final newAvatarFile = useState<File?>(null);
+    final isUploadingAvatar = useState(false);
     final pageController = usePageController(initialPage: 0);
 
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     // Sync PageController with currentTryonIndex changes (from logic)
     useEffect(() {
@@ -63,8 +64,8 @@ class HomePage extends HookConsumerWidget {
         if (pageController.page?.round() != targetPage) {
           pageController.animateToPage(
             targetPage,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
+            duration: AppDuration.slow,
+            curve: AppCurves.standard,
           );
         }
       }
@@ -75,32 +76,46 @@ class HomePage extends HookConsumerWidget {
       final File? imageFile = await ImagePickerHelper.pickImage(context);
       if (imageFile == null) return;
 
-      // Optimistic update
-      newAvatarFile.value = imageFile;
+      isUploadingAvatar.value = true;
 
-      // Upload
-      final profile = await ref.read(userProfileProvider.future);
-      if (profile == null) return;
+      try {
+        // Upload
+        final profile = await ref.read(userProfileProvider.future);
+        if (profile == null) return;
 
-      final result = await ref.read(updateUserProfileUseCaseProvider)(
-        original: profile,
-        target: profile,
-        avatarFile: imageFile,
-      );
-
-      if (!context.mounted) return;
-
-      if (result.isSuccess) {
-        ref.invalidate(userProfileProvider);
-      } else {
-        TopNotification.show(
-          context,
-          message: result.getError()!.displayMessage(context),
-          type: NotificationType.error,
+        final result = await ref.read(updateUserProfileUseCaseProvider)(
+          original: profile,
+          target: profile,
+          avatarFile: imageFile,
         );
-      }
 
-      newAvatarFile.value = null;
+        if (!context.mounted) return;
+
+        if (result.isSuccess) {
+          ref.invalidate(userProfileProvider);
+          ref.invalidate(avatarFileProvider);
+          await ref.read(avatarFileProvider.future);
+        } else {
+          TopNotification.show(
+            context,
+            message: result.getError()!.displayMessage(context),
+            type: NotificationType.error,
+          );
+        }
+      } catch (e, stackTrace) {
+        AppLogger.error('Failed to upload avatar', e, stackTrace);
+        if (context.mounted) {
+          TopNotification.show(
+            context,
+            message: '上傳照片失敗，請稍後再試',
+            type: NotificationType.error,
+          );
+        }
+      } finally {
+        if (context.mounted) {
+          isUploadingAvatar.value = false;
+        }
+      }
     }
 
     Future<void> performTryOn({
@@ -130,11 +145,11 @@ class HomePage extends HookConsumerWidget {
       }
 
       // 2. Optimistic Update (Add Loading Placeholder)
-      final newIndex = tryonImages.value.length;
-      final placeholderResult = TryonResult(mode: mode);
+      final requestId = UniqueKey().toString();
+      final placeholderResult = TryonResult(id: requestId, mode: mode, isLoading: true);
+      final placeholderIndex = tryonImages.value.length;
       tryonImages.value = [...tryonImages.value, placeholderResult];
-      loadingIndices.value = {...loadingIndices.value, newIndex};
-      currentTryonIndex.value = newIndex;
+      currentTryonIndex.value = placeholderIndex;
 
       // 3. API Call
       String? scenePrompt;
@@ -151,6 +166,7 @@ class HomePage extends HookConsumerWidget {
 
       final result = await tryonUseCase(
         TryOnParams(
+          requestId: requestId,
           avatarBase64: customAvatarBase64,
           avatarPath: defaultAvatarPath,
           clothesBase64s: clothesBase64s,
@@ -165,9 +181,14 @@ class HomePage extends HookConsumerWidget {
 
       // 4. Handle Result
       if (result.isSuccess) {
-        final tryonResult = result.get()!;
-        tryonImages.value = [...tryonImages.value]..[newIndex] = tryonResult;
-        loadingIndices.value = {...loadingIndices.value}..remove(newIndex);
+        final resultIndex = tryonImages.value.indexWhere(
+          (final result) => result.id == requestId,
+        );
+        if (resultIndex == -1) return;
+
+        final tryonResult = result.get()!.copyWith(isLoading: false);
+        tryonImages.value = [...tryonImages.value]..[resultIndex] = tryonResult;
+        currentTryonIndex.value = resultIndex;
 
         TopNotification.show(
           context,
@@ -176,8 +197,12 @@ class HomePage extends HookConsumerWidget {
         );
       } else {
         // Failure: Remove placeholder
-        tryonImages.value = [...tryonImages.value]..removeAt(newIndex);
-        loadingIndices.value = {...loadingIndices.value}..remove(newIndex);
+        final resultIndex = tryonImages.value.indexWhere(
+          (final result) => result.id == requestId,
+        );
+        if (resultIndex == -1) return;
+
+        tryonImages.value = [...tryonImages.value]..removeAt(resultIndex);
         currentTryonIndex.value = tryonImages.value.length - 1;
 
         final failure = result.getError()!;
@@ -363,6 +388,15 @@ class HomePage extends HookConsumerWidget {
       return null;
     }, [activeController]);
 
+    final bottomOffset =
+        MediaQuery.paddingOf(context).bottom +
+        (PlatformInfo.isIOS26OrHigher() ? AppSpacing.bottomNavBarHeight : 0);
+
+    final showMoreOptions =
+        currentTryonIndex.value >= 0 &&
+        !tryonImages.value[currentTryonIndex.value].isLoading;
+    final showIndicator = currentTryonIndex.value >= 0;
+
     return Scaffold(
       extendBody: true,
       extendBodyBehindAppBar: true,
@@ -372,7 +406,7 @@ class HomePage extends HookConsumerWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // 1. Background Image Layer - wrapped in scrollable for RefreshIndicator
+            // 1. Background Image Layer — wrapped in scrollable for RefreshIndicator
             SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               child: SizedBox(
@@ -392,85 +426,74 @@ class HomePage extends HookConsumerWidget {
                     onPageChanged: (final index) => currentTryonIndex.value = index - 1,
                     onUploadTap: uploadAvatar,
                     tryonResults: tryonImages.value,
-                    loadingIndices: loadingIndices.value,
                     currentTryonIndex: currentTryonIndex.value,
-                    avatarFile: newAvatarFile.value ?? avatarFile,
+                    avatarFile: avatarFile,
+                    isUploadingAvatar: isUploadingAvatar.value,
                   ),
                 ),
               ),
             ),
 
-            // 2. Top Left Title Layer (Tryzeon)
+            // 2. Top Left — Tryzeon Logo (Playfair Display italic)
             Positioned(
-              top: 0,
-              left: 0,
-              child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(30.0),
-                  child: Text(
-                    'Tryzeon',
-                    style: textTheme.displayLarge?.copyWith(
-                      color: colorScheme.onPrimary,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -1.0,
-                      shadows: [
-                        Shadow(
-                          blurRadius: 10.0,
-                          color: colorScheme.primary.withValues(alpha: 0.5),
-                          offset: const Offset(2, 2),
-                        ),
-                      ],
+              top: MediaQuery.paddingOf(context).top + AppSpacing.xs,
+              left: AppSpacing.xl,
+              child: Text(
+                'Tryzeon',
+                style: textTheme.displaySmall?.copyWith(
+                  color: colorScheme.onPrimary,
+                  shadows: [
+                    Shadow(
+                      blurRadius: 10.0,
+                      color: colorScheme.shadow.withValues(alpha: AppOpacity.strong),
+                      offset: const Offset(2, 2),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),
 
-            // 3. Top Right Controls
-            if (currentTryonIndex.value >= 0 &&
-                !loadingIndices.value.contains(currentTryonIndex.value))
-              TryOnMoreOptionsButton(
-                currentTryonIndex: currentTryonIndex.value,
-                customAvatarIndex: customAvatarIndex.value,
-                onDownload: downloadCurrentMedia,
-                onToggleAvatar: toggleAvatar,
-                onDelete: deleteCurrentTryon,
+            // 3. Top Right — More Options (white ⋮ with shadow)
+            if (showMoreOptions)
+              Positioned(
+                top: MediaQuery.paddingOf(context).top + AppSpacing.lg,
+                right: AppSpacing.lg,
+                child: TryOnMoreOptionsButton(
+                  currentTryonIndex: currentTryonIndex.value,
+                  customAvatarIndex: customAvatarIndex.value,
+                  onDownload: downloadCurrentMedia,
+                  onToggleAvatar: toggleAvatar,
+                  onDelete: deleteCurrentTryon,
+                ),
               ),
 
-            // 4. Bottom Layer (Navigation & Action) - Aware of Floating Nav Bar
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Navigation Buttons (Left/Center aligned or just floating)
-                  if (tryonImages.value.isNotEmpty)
-                    TryOnIndicator(
-                      currentTryonIndex: currentTryonIndex.value,
-                      tryonImagesCount: tryonImages.value.length,
-                    ),
-
-                  // Spacing for where the actual bottom bar would be
-                  SizedBox(
-                    height: MediaQuery.of(context).padding.bottom + 80,
-                  ), // Approx floating bar height
-                ],
+            // 4. Bottom Left — Indicator (white floating lines)
+            if (showIndicator)
+              Positioned(
+                bottom: bottomOffset + AppSpacing.xl,
+                left: AppSpacing.xxl,
+                child: TryOnIndicator(
+                  currentTryonIndex: currentTryonIndex.value,
+                  tryonImagesCount: tryonImages.value.length,
+                ),
               ),
-            ),
 
-            // 5. Try On Button
-            Positioned(
-              bottom:
-                  MediaQuery.of(context).padding.bottom +
-                  30 +
-                  (PlatformInfo.isIOS26OrHigher() ? 50 : 0),
-              right: 20,
-              child: TryOnActionButton(
-                onTap: tryOnFromLocal,
-                isDisabled: avatarAsync.isLoading,
-              ),
+            // 5. Bottom Right — Try On Button (dark glassmorphism pill)
+            avatarAsync.maybeWhen(
+              data: (final avatarFile) {
+                final hasAvatar = avatarFile != null;
+                return Positioned(
+                  bottom: bottomOffset + AppSpacing.lg,
+                  right: AppSpacing.lg,
+                  child: HomePrimaryActionButton(
+                    label: hasAvatar ? '虛擬試穿' : '上傳照片',
+                    icon: hasAvatar ? Icons.auto_awesome_rounded : Icons.upload_rounded,
+                    isDisabled: isUploadingAvatar.value,
+                    onTap: hasAvatar ? tryOnFromLocal : uploadAvatar,
+                  ),
+                );
+              },
+              orElse: () => const SizedBox.shrink(),
             ),
           ],
         ),
