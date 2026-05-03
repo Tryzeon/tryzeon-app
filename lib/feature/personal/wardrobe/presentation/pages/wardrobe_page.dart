@@ -1,35 +1,29 @@
 import 'dart:io';
-import 'dart:ui';
 
-import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
-import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_category.dart';
-import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
-import 'package:typed_result/typed_result.dart';
 
-import '../dialogs/upload_wardrobe_item_dialog.dart';
-import '../mappers/category_ui_mapper.dart';
+import '../extensions/wardrobe_category_display_extension.dart';
+import '../sheets/upload_wardrobe_item_sheet.dart';
 import '../widgets/wardrobe_item_card.dart';
 
-class PersonalPage extends HookConsumerWidget {
-  const PersonalPage({super.key});
+class WardrobePage extends HookConsumerWidget {
+  const WardrobePage({super.key});
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     // 1. Data Providers
-
     final wardrobeItemsAsync = ref.watch(wardrobeItemsProvider);
 
     // 2. State
-    final isLoading = useState(false);
     final selectedCategory = useState<WardrobeCategory?>(null);
     final categoryScrollController = useScrollController();
 
@@ -39,97 +33,42 @@ class PersonalPage extends HookConsumerWidget {
     }, []);
 
     // 4. Theme
-    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
     // 5. Actions
-    Future<void> showDeleteDialog(final WardrobeItem item) async {
-      final confirmResult = await showOkCancelAlertDialog(
-        context: context,
-        title: '刪除衣物',
-        message: '你確定要刪除這件衣物嗎？',
-        okLabel: '刪除',
-        cancelLabel: '取消',
-        isDestructiveAction: true,
-      );
-
-      if (confirmResult != OkCancelResult.ok || !context.mounted) return;
-
-      isLoading.value = true;
-
-      final deleteWardrobeItemUseCase = ref.read(deleteWardrobeItemUseCaseProvider);
-      final result = await deleteWardrobeItemUseCase(item);
-
-      if (!context.mounted) return;
-
-      isLoading.value = false;
-
-      if (result.isSuccess) {
-        ref.invalidate(wardrobeItemsProvider);
-      } else {
-        TopNotification.show(
-          context,
-          message: result.getError()!.displayMessage(context),
-          type: NotificationType.error,
-        );
-      }
-    }
-
-    Future<void> showUploadDialog() async {
+    Future<void> showUploadSheet() async {
       final File? image = await ImagePickerHelper.pickImage(context);
 
       if (image != null && context.mounted) {
-        await showDialog<bool>(
+        final uploadedCategory = await showModalBottomSheet<WardrobeCategory>(
           context: context,
-          builder: (final context) => UploadWardrobeItemDialog(image: image),
+          isScrollControlled: true,
+          useRootNavigator: true,
+          useSafeArea: true,
+          showDragHandle: true,
+          builder: (final context) => Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            child: UploadWardrobeItemSheet(image: image),
+          ),
         );
+
+        if (uploadedCategory != null) {
+          if (selectedCategory.value != null) {
+            selectedCategory.value = uploadedCategory;
+          }
+        }
       }
     }
 
-    // 6. Widget Helpers (Glassmorphism Style)
-    Widget buildGlassElement({
-      required final Widget child,
-      final VoidCallback? onTap,
-      final EdgeInsetsGeometry padding = EdgeInsets.zero,
-      final double borderRadius = 30,
-      final Color? color,
-    }) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(borderRadius),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: onTap,
-              borderRadius: BorderRadius.circular(borderRadius),
-              child: Container(
-                padding: padding,
-                decoration: BoxDecoration(
-                  color: color ?? colorScheme.surface.withValues(alpha: 0.2),
-                  border: Border.all(
-                    color: colorScheme.onSurface.withValues(alpha: 0.1),
-                    width: 0.5,
-                  ),
-                ),
-                child: child,
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
+    // 6. Widget Helpers
     Widget buildCategoryChip(final String displayName, final bool isSelected) {
       return Padding(
-        padding: const EdgeInsets.only(right: 8.0),
-        child: buildGlassElement(
-          borderRadius: 20,
-          color: isSelected
-              ? colorScheme.onSurface.withValues(alpha: 0.8)
-              : colorScheme.surface.withValues(alpha: 0.3),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          onTap: () {
+        padding: const EdgeInsets.only(right: AppSpacing.sm),
+        child: ChoiceChip(
+          label: Text(displayName),
+          selected: isSelected,
+          onSelected: (final selected) {
             if (displayName == '全部') {
               selectedCategory.value = null;
             } else {
@@ -139,25 +78,18 @@ class PersonalPage extends HookConsumerWidget {
               selectedCategory.value = categoryEntry.key;
             }
           },
-          child: Text(
-            displayName,
-            style: textTheme.bodyMedium?.copyWith(
-              color: isSelected ? colorScheme.surface : colorScheme.onSurface,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
         ),
       );
     }
 
     Widget buildCategoryBar() {
       return Container(
-        height: 48,
-        margin: const EdgeInsets.symmetric(vertical: 12),
+        height: 40,
+        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
         child: ListView.builder(
           controller: categoryScrollController,
           scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           itemCount: wardrobeCategories.length + 1,
           itemBuilder: (final context, final index) {
             if (index == 0) {
@@ -184,22 +116,24 @@ class PersonalPage extends HookConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(AppSpacing.lg),
                       decoration: BoxDecoration(
-                        color: colorScheme.surface.withValues(alpha: 0.3),
+                        color: colorScheme.surfaceContainer,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         Icons.checkroom_rounded,
-                        size: 48,
-                        color: colorScheme.onSurface.withValues(alpha: 0.5),
+                        size: AppSpacing.xxl,
+                        color: colorScheme.primary.withValues(alpha: AppOpacity.overlay),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.md),
+                    Text('此分類沒有衣物', style: textTheme.titleMedium),
+                    const SizedBox(height: AppSpacing.xs),
                     Text(
-                      '此衣櫃沒有衣物',
-                      style: textTheme.titleMedium?.copyWith(
-                        color: colorScheme.onSurface.withValues(alpha: 0.8),
+                      '點擊右下角 + 上傳第一件衣服',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -211,155 +145,114 @@ class PersonalPage extends HookConsumerWidget {
       );
     }
 
-    Widget buildAddButton() {
-      return buildGlassElement(
-        onTap: showUploadDialog,
-        // 使用 primary color (黑色)
-        color: colorScheme.primary.withValues(alpha: 0.9),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
+    // Determine the count for the header
+    final totalCount = wardrobeItemsAsync.value?.length ?? 0;
+
+    return Scaffold(
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(
+          bottom: PlatformInfo.isIOS26OrHigher() ? AppSpacing.bottomNavBarHeight : 0.0,
+        ),
+        child: FloatingActionButton(
+          onPressed: showUploadSheet,
+          child: const Icon(Icons.add_rounded),
+        ),
+      ),
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.add_rounded, color: colorScheme.onPrimary),
-            const SizedBox(width: 8),
-            Text(
-              '新增衣服',
-              style: TextStyle(
-                color: colorScheme.onPrimary,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+            // Header Layer (Typography driven)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.lg,
+                AppSpacing.lg,
+                AppSpacing.sm,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'MY WARDROBE',
+                    style: textTheme.labelSmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text('我的衣櫃', style: textTheme.headlineMedium),
+                      const SizedBox(width: AppSpacing.sm),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.xxs),
+                        child: Text(
+                          '$totalCount 件衣物',
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // Category Bar
+            buildCategoryBar(),
+
+            // Grid Content
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () => refreshWardrobeItems(ref),
+                child: wardrobeItemsAsync.when(
+                  skipLoadingOnReload: true,
+                  skipError: true,
+                  data: (final wardrobeItems) {
+                    final filtered = selectedCategory.value == null
+                        ? wardrobeItems
+                        : wardrobeItems
+                              .where((final i) => i.category == selectedCategory.value)
+                              .toList();
+
+                    if (filtered.isEmpty) return buildEmptyState();
+
+                    return GridView.builder(
+                      padding: EdgeInsets.fromLTRB(
+                        AppSpacing.md,
+                        AppSpacing.sm,
+                        AppSpacing.md,
+                        MediaQuery.of(context).padding.bottom +
+                            90 + // FAB
+                            (PlatformInfo.isIOS26OrHigher()
+                                ? AppSpacing.bottomNavBarHeight
+                                : 0),
+                      ),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        crossAxisSpacing: AppSpacing.sm,
+                        mainAxisSpacing: AppSpacing.sm,
+                        childAspectRatio: 0.72,
+                      ),
+                      itemCount: filtered.length,
+                      itemBuilder: (final context, final index) {
+                        return WardrobeItemCard(item: filtered[index]);
+                      },
+                    );
+                  },
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (final error, final stack) => ErrorView(
+                    message: error.displayMessage(context),
+                    onRetry: () => refreshWardrobeItems(ref),
+                  ),
+                ),
               ),
             ),
           ],
         ),
-      );
-    }
-
-    return Scaffold(
-      extendBody: true,
-      extendBodyBehindAppBar: true,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // 1. Background Layer
-          Container(color: colorScheme.surface),
-
-          // 2. Main Content
-          SafeArea(
-            bottom: false,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Top Spacer for Header
-                const SizedBox(height: 80),
-
-                // Category Bar
-                buildCategoryBar(),
-
-                // Grid Content
-                Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: () => refreshWardrobeItems(ref),
-                    child: wardrobeItemsAsync.when(
-                      skipLoadingOnReload: true,
-                      skipError: true,
-                      data: (final wardrobeItems) {
-                        final filtered = selectedCategory.value == null
-                            ? wardrobeItems
-                            : wardrobeItems
-                                  .where(
-                                    (final i) => i.category == selectedCategory.value,
-                                  )
-                                  .toList();
-
-                        if (filtered.isEmpty) return buildEmptyState();
-
-                        return GridView.builder(
-                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 16,
-                            mainAxisSpacing: 16,
-                            childAspectRatio: 0.75,
-                          ),
-                          itemCount: filtered.length,
-                          itemBuilder: (final context, final index) {
-                            return WardrobeItemCard(
-                              item: filtered[index],
-                              onDelete: () => showDeleteDialog(filtered[index]),
-                            );
-                          },
-                        );
-                      },
-                      loading: () => const Center(child: CircularProgressIndicator()),
-                      error: (final error, final stack) => ErrorView(
-                        message: error.displayMessage(context),
-                        onRetry: () => refreshWardrobeItems(ref),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // 3. Header Layer
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: SafeArea(
-              bottom: false,
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.checkroom_rounded,
-                        color: colorScheme.onPrimary,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('我的衣櫃', style: textTheme.headlineMedium),
-                          Text('管理您的衣服', style: textTheme.bodySmall),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // 4. Floating Action Button
-          Positioned(
-            bottom:
-                MediaQuery.of(context).padding.bottom +
-                30 +
-                (PlatformInfo.isIOS26OrHigher() ? 50 : 0),
-            right: 24,
-            child: buildAddButton(),
-          ),
-
-          // 5. Loading Overlay
-          if (isLoading.value)
-            Container(
-              color: Colors.black.withValues(alpha: 0.5),
-              child: const Center(child: CircularProgressIndicator()),
-            ),
-        ],
       ),
     );
   }

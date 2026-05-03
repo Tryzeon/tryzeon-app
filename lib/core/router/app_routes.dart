@@ -12,6 +12,7 @@ abstract final class AppRoutes {
   static const String personalShopStore = '/personal/shop/store/:storeId';
   static const String personalChat = '/personal/chat';
   static const String personalWardrobe = '/personal/wardrobe';
+  static const String personalWardrobeItem = '/personal/wardrobe/item/:id';
   static const String personalAccount = '/personal/account';
 
   // Personal (full screen, outside shell)
@@ -45,6 +46,9 @@ abstract final class AppRoutes {
 
   static String personalShopStorePath(final String storeId) =>
       '/personal/shop/store/$storeId';
+
+  static String personalWardrobeItemPath(final String itemId) =>
+      '/personal/wardrobe/item/$itemId';
 
   static String storeProductDetailPath(final String productId) =>
       '/store/products/$productId';
