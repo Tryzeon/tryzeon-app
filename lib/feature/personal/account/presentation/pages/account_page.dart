@@ -1,22 +1,29 @@
+// lib/feature/personal/account/presentation/pages/account_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
+import 'package:tryzeon/core/modules/revenue_cat/di/revenue_cat_providers.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_overlay.dart';
+import 'package:tryzeon/core/presentation/widgets/nav_row.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
+import 'package:tryzeon/core/shared/measurements/utils/measurements_completion.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/settings/presentation/providers/personal_settings_controller.dart';
+import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_capabilities_provider.dart';
+import 'package:tryzeon/feature/personal/subscription/presentation/utils/subscription_format.dart';
+import 'package:tryzeon/feature/personal/subscription/presentation/widgets/subscription_usage_card.dart';
+import 'package:tryzeon/feature/personal/usage/presentation/providers/daily_usage_providers.dart';
 
 class AccountPage extends HookConsumerWidget {
   const AccountPage({super.key});
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
     final state = ref.watch(personalSettingsControllerProvider);
 
     ref.listen(personalSettingsControllerProvider, (final previous, final next) {
@@ -31,210 +38,140 @@ class AccountPage extends HookConsumerWidget {
 
     return LoadingOverlay(
       isLoading: state.isLoading,
-      child: Scaffold(
-        body: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: AppSpacing.xxl,
-                        height: AppSpacing.xxl,
-                        decoration: BoxDecoration(
-                          color: colorScheme.primary,
-                          borderRadius: BorderRadius.circular(AppRadius.icon),
-                        ),
-                        child: Icon(
-                          Icons.person_outline_rounded,
-                          color: colorScheme.onPrimary,
-                          size: AppSpacing.lg,
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('帳號中心', style: theme.textTheme.headlineMedium),
-                            Text('管理個人帳戶', style: theme.textTheme.bodySmall),
-                          ],
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () => context.push(AppRoutes.personalSettings),
-                        icon: const Icon(Icons.settings_outlined),
-                        tooltip: '設定',
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+      child: const Scaffold(
+        body: SafeArea(
+          bottom: false,
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _TopBar(),
+                SizedBox(height: AppSpacing.md),
+                _ProfileHeader(),
+                SizedBox(height: AppSpacing.lg),
+                Divider(),
+                _SectionLabel('訂閱方案'),
+                _SubscriptionSection(),
+                _SectionLabel('身形'),
+                _BodyMeasurementsRow(),
+                SizedBox(height: AppSpacing.xxl),
+              ],
             ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg,
-                  AppSpacing.md,
-                  AppSpacing.lg,
-                  AppSpacing.xl,
-                ),
-                child: Column(
-                  children: [
-                    const _MyProfileHeader(),
-                    const SizedBox(height: AppSpacing.lg),
-                    const _MySectionHeader(title: '帳號中心'),
-                    const SizedBox(height: AppSpacing.md),
-                    _MyActionGroup(
-                      children: [
-                        ListTile(
-                          onTap: () =>
-                              context.push(AppRoutes.personalSettingsBodyMeasurements),
-                          leading: Container(
-                            width: AppSpacing.xxl,
-                            height: AppSpacing.xxl,
-                            decoration: BoxDecoration(
-                              color: colorScheme.primaryContainer,
-                              borderRadius: BorderRadius.circular(AppRadius.icon),
-                            ),
-                            child: Icon(
-                              Icons.straighten_rounded,
-                              color: colorScheme.primary,
-                              size: AppSpacing.lg,
-                            ),
-                          ),
-                          title: const Text('身形資料'),
-                          subtitle: const Text('管理您的身形量測數據'),
-                          trailing: Icon(
-                            Icons.arrow_forward_ios_rounded,
-                            color: colorScheme.onSurfaceVariant,
-                            size: AppSpacing.md,
-                          ),
-                        ),
-                        ListTile(
-                          onTap: () => context.push(AppRoutes.personalSubscription),
-                          leading: Container(
-                            width: AppSpacing.xxl,
-                            height: AppSpacing.xxl,
-                            decoration: BoxDecoration(
-                              color: colorScheme.primaryContainer,
-                              borderRadius: BorderRadius.circular(AppRadius.icon),
-                            ),
-                            child: Icon(
-                              Icons.workspace_premium_outlined,
-                              color: colorScheme.primary,
-                              size: AppSpacing.lg,
-                            ),
-                          ),
-                          title: const Text('訂閱方案'),
-                          subtitle: const Text('查看目前方案與升級選項'),
-                          trailing: Icon(
-                            Icons.arrow_forward_ios_rounded,
-                            color: colorScheme.onSurfaceVariant,
-                            size: AppSpacing.md,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _MyProfileHeader extends HookConsumerWidget {
-  const _MyProfileHeader();
+class _TopBar extends StatelessWidget {
+  const _TopBar();
+
+  @override
+  Widget build(final BuildContext context) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    final colorScheme = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: AppSpacing.sm),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'MY ACCOUNT',
+                  style: textTheme.labelSmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text('我的帳戶', style: textTheme.headlineMedium),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.settings_outlined, color: colorScheme.onSurface),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            tooltip: '設定',
+            onPressed: () => context.push(AppRoutes.personalSettings),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileHeader extends HookConsumerWidget {
+  const _ProfileHeader();
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    // 取得資料狀態
     final profileAsync = ref.watch(userProfileProvider);
     final avatarFileAsync = ref.watch(avatarFileProvider);
     final user = ref.watch(currentUserProvider);
 
-    // 解析資料內容
     final profile = profileAsync.value;
     final avatarFile = avatarFileAsync.value;
     final email = user?.email ?? user?.userMetadata?['email'] as String?;
 
-    // 網路狀態判定
     final isProfileLoading = profileAsync.isLoading && !profileAsync.hasValue;
-    final isAvatarLoading = avatarFileAsync.isLoading && !avatarFileAsync.hasValue;
     final hasProfileError = profileAsync.hasError;
+    final isAvatarLoading = avatarFileAsync.isLoading && !avatarFileAsync.hasValue;
 
-    // UI Helper: 頭像區域
     Widget buildAvatar() {
-      if (isProfileLoading) {
-        return const Center(child: CircularProgressIndicator());
+      if (isProfileLoading || isAvatarLoading) {
+        return const SizedBox(
+          width: 18,
+          height: 18,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        );
       }
       if (hasProfileError || profile == null) {
-        return Icon(Icons.person, size: AppSpacing.xl, color: colorScheme.primary);
-      }
-      if (isAvatarLoading) {
-        return const Center(child: CircularProgressIndicator());
+        return Icon(Icons.person_outline, color: colorScheme.onSurfaceVariant);
       }
       if (avatarFile != null) {
-        return Image.file(
-          avatarFile,
-          fit: BoxFit.cover,
-          width: AppSpacing.xxl,
-          height: AppSpacing.xxl,
-        );
+        return Image.file(avatarFile, fit: BoxFit.cover);
       }
-      return Container(
-        color: colorScheme.surfaceContainer,
-        child: Icon(
-          Icons.person,
-          size: AppSpacing.xl,
-          color: colorScheme.onSurfaceVariant,
-        ),
-      );
+      return Icon(Icons.person, color: colorScheme.onSurfaceVariant);
     }
 
-    // UI Helper: 基本資訊區域
     Widget buildInfo() {
       if (isProfileLoading) {
-        return const Center(child: CircularProgressIndicator());
+        return Text(
+          '載入中…',
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
+        );
       }
       if (hasProfileError) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('載入個人資料失敗', style: theme.textTheme.titleMedium),
-            const SizedBox(height: AppSpacing.xs),
-            Text('請稍後再試', style: theme.textTheme.bodyMedium),
-          ],
-        );
+        return Text('載入個人資料失敗', style: theme.textTheme.titleMedium);
       }
       if (profile == null) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [Text('尚未建立個人資料', style: theme.textTheme.titleMedium)],
-        );
+        return Text('尚未建立個人資料', style: theme.textTheme.titleMedium);
       }
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(profile.name, style: theme.textTheme.titleLarge),
+          Text(profile.name, style: theme.textTheme.titleMedium),
           if (email != null && email.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.xs),
+            const SizedBox(height: AppSpacing.xxs),
             Text(
               email,
-              style: theme.textTheme.bodyMedium,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -243,67 +180,141 @@ class _MyProfileHeader extends HookConsumerWidget {
       );
     }
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Row(
-          children: [
-            Container(
-              width: AppSpacing.xxl,
-              height: AppSpacing.xxl,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: colorScheme.surfaceContainer,
-              ),
-              child: ClipOval(child: buildAvatar()),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(child: buildInfo()),
-          ],
+    return Row(
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: colorScheme.surfaceContainerHighest,
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Center(child: buildAvatar()),
         ),
-      ),
+        const SizedBox(width: AppSpacing.smMd),
+        Expanded(child: buildInfo()),
+        OutlinedButton(
+          onPressed: () => context.push(AppRoutes.personalSettingsProfile),
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          child: Text('編輯', style: theme.textTheme.labelSmall),
+        ),
+      ],
     );
   }
 }
 
-class _MySectionHeader extends StatelessWidget {
-  const _MySectionHeader({required this.title});
+class _SubscriptionSection extends HookConsumerWidget {
+  const _SubscriptionSection();
 
-  final String title;
+  @override
+  Widget build(final BuildContext context, final WidgetRef ref) {
+    final entitlementAsync = ref.watch(appSubscriptionEntitlementProvider);
+    final capabilitiesAsync = ref.watch(subscriptionCapabilitiesProvider);
+    final tryonUsed = ref.watch(
+      dailyUsageTodayProvider.select((final a) => a.value?.tryonCount ?? 0),
+    );
+
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    if (entitlementAsync.isLoading || capabilitiesAsync.isLoading) {
+      return Container(
+        height: 140,
+        decoration: BoxDecoration(
+          borderRadius: AppRadius.cardAll,
+          border: Border.all(color: colorScheme.outline),
+          color: colorScheme.surfaceContainerHighest,
+        ),
+      );
+    }
+
+    if (entitlementAsync.hasError || capabilitiesAsync.hasError) {
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => context.push(AppRoutes.personalSubscription),
+          borderRadius: AppRadius.cardAll,
+          child: Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              borderRadius: AppRadius.cardAll,
+              border: Border.all(color: colorScheme.outline),
+            ),
+            child: Text(
+              '無法載入訂閱資訊',
+              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+            ),
+          ),
+        ),
+      );
+    }
+
+    final entitlement = entitlementAsync.value!;
+    final capabilities = capabilitiesAsync.value!;
+
+    return SubscriptionUsageCard(
+      entitlement: entitlement,
+      formattedRenewalLine: formatRenewalLine(entitlement),
+      dailyTryOnUsed: tryonUsed,
+      dailyTryOnLimit: capabilities.dailyTryOnLimit,
+      onTap: () => context.push(AppRoutes.personalSubscription),
+    );
+  }
+}
+
+class _BodyMeasurementsRow extends HookConsumerWidget {
+  const _BodyMeasurementsRow();
+
+  @override
+  Widget build(final BuildContext context, final WidgetRef ref) {
+    final profileAsync = ref.watch(userProfileProvider);
+
+    final String? trailing;
+    if (profileAsync.isLoading && !profileAsync.hasValue) {
+      trailing = null;
+    } else {
+      final filled = countFilledMeasurements(profileAsync.value?.measurements);
+      if (filled == 0) {
+        trailing = '未填寫';
+      } else if (filled == totalMeasurementFields) {
+        trailing = '已完成';
+      } else {
+        trailing = '$filled / $totalMeasurementFields 已填寫';
+      }
+    }
+
+    return NavRow(
+      icon: Icons.straighten_outlined,
+      title: '身形資料',
+      trailingValue: trailing,
+      isFirst: true,
+      onTap: () => context.push(AppRoutes.personalSettingsBodyMeasurements),
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text);
+
+  final String text;
 
   @override
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
 
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Padding(
-        padding: const EdgeInsets.only(left: AppSpacing.sm),
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: AppSpacing.sm),
+      child: Align(
+        alignment: Alignment.centerLeft,
         child: Text(
-          title,
+          text,
           style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.primary),
         ),
-      ),
-    );
-  }
-}
-
-class _MyActionGroup extends StatelessWidget {
-  const _MyActionGroup({required this.children});
-
-  final List<Widget> children;
-
-  @override
-  Widget build(final BuildContext context) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        children: children.asMap().entries.map((final entry) {
-          final index = entry.key;
-          final child = entry.value;
-          return Column(children: [if (index > 0) const Divider(), child]);
-        }).toList(),
       ),
     );
   }
