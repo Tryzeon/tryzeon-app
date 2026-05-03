@@ -53,10 +53,10 @@ Deno.serve(async (req) => {
       model: VERTEX_CONFIG.CHAT_MODEL!,
       contents: prompt,
     });
-    const text = result.text ?? "";
+    const recommendation = result.text ?? "";
 
     // Return Success Response
-    return new Response(JSON.stringify({ text, usage }), {
+    return new Response(JSON.stringify({ recommendation, usage }), {
       headers: { "Content-Type": "application/json" }
     });
 

@@ -20,7 +20,7 @@ class ChatRepositoryImpl implements ChatRepository {
       final usageJson = data['usage'] as Map<String, dynamic>?;
       return Ok(
         ChatRecommendation(
-          text: data['text'] as String? ?? '',
+          recommendation: data['recommendation'] as String? ?? '',
           usage: usageJson == null
               ? null
               : DailyUsageModel.fromJson(usageJson).toEntity(),

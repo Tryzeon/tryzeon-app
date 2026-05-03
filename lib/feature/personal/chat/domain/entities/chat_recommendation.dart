@@ -6,7 +6,7 @@ part 'chat_recommendation.freezed.dart';
 @freezed
 sealed class ChatRecommendation with _$ChatRecommendation {
   const factory ChatRecommendation({
-    required final String text,
+    required final String recommendation,
     final DailyUsage? usage,
   }) = _ChatRecommendation;
 }

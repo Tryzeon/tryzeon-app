@@ -108,7 +108,7 @@ class ChatNotifier extends _$ChatNotifier {
     if (_isStale(localGen)) return;
 
     if (result.isSuccess) {
-      appendBotMessage(result.get()!.text);
+      appendBotMessage(result.get()!.recommendation);
       return;
     }
 
