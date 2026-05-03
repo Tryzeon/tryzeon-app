@@ -7,6 +7,7 @@ import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/shared/measurements/entities/measurements.dart';
 import 'package:tryzeon/core/shared/measurements/presentation/mappers/measurement_type_ui_mapper.dart';
+import 'package:tryzeon/core/shared/measurements/utils/measurements_completion.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
@@ -19,64 +20,21 @@ class BodyMeasurementsSettingsPage extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final profileAsync = ref.watch(userProfileProvider);
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              child: Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer,
-                      borderRadius: AppRadius.cardAll,
-                    ),
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.arrow_back_ios_rounded,
-                        color: colorScheme.primary,
-                        size: 20,
-                      ),
-                      onPressed: () => Navigator.pop(context),
-                      padding: EdgeInsets.zero,
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('編輯身形資料', style: textTheme.headlineMedium),
-                        Text('更新您的身形量測數據', style: textTheme.bodySmall),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            Expanded(
-              child: profileAsync.when(
-                data: (final profile) {
-                  if (profile == null) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  return _BodyMeasurementsForm(profile: profile);
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (final error, final stack) => ErrorView(
-                  message: error.displayMessage(context),
-                  onRetry: () => refreshUserProfile(ref),
-                ),
-              ),
-            ),
-          ],
+        child: profileAsync.when(
+          data: (final profile) {
+            if (profile == null) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            return _BodyMeasurementsForm(profile: profile);
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (final error, final stack) => ErrorView(
+            message: error.displayMessage(context),
+            onRetry: () => refreshUserProfile(ref),
+          ),
         ),
       ),
     );
@@ -101,6 +59,7 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
 
     final isLoading = useState(false);
     var hasChanges = false;
+    var filledCount = 0;
 
     for (final type in MeasurementType.values) {
       final currentValue = useValueListenable(measurementControllers[type]!).text;
@@ -111,10 +70,14 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
       if (currentDouble != originalDouble) {
         hasChanges = true;
       }
+      if (currentDouble != null) {
+        filledCount++;
+      }
     }
 
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     Future<void> updateMeasurements() async {
       if (!formKey.currentState!.validate()) return;
@@ -137,12 +100,8 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
 
       if (result.isSuccess) {
         TopNotification.show(context, message: '身形資料已更新', type: NotificationType.success);
-
+        ref.invalidate(userProfileProvider);
         if (context.mounted) Navigator.pop(context);
-
-        Future.delayed(const Duration(milliseconds: 100), () {
-          ref.invalidate(userProfileProvider);
-        });
       } else {
         TopNotification.show(
           context,
@@ -152,135 +111,160 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
       }
     }
 
-    Widget buildTextField({
-      required final TextEditingController controller,
-      required final String label,
-      required final IconData icon,
-      final TextInputType? keyboardType,
-      final List<TextInputFormatter>? inputFormatters,
-      final String? Function(String?)? validator,
-    }) {
-      return TextFormField(
-        controller: controller,
-        keyboardType: keyboardType,
-        inputFormatters: inputFormatters,
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: Icon(icon, color: colorScheme.primary),
-        ),
-        validator: validator,
-      );
-    }
-
-    Widget buildSectionCard({
-      required final IconData icon,
-      required final String title,
-      required final List<Widget> children,
-    }) {
-      return Card(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer,
-                      borderRadius: AppRadius.cardAll,
-                    ),
-                    child: Icon(icon, color: colorScheme.primary, size: 28),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Text(title, style: textTheme.titleMedium),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                '資料僅供試穿尺寸推薦，不對外顯示。',
-                style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              ...children,
-            ],
-          ),
-        ),
-      );
-    }
-
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: Form(
         key: formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: AppSpacing.sm),
-
-            buildSectionCard(
-              icon: Icons.straighten_rounded,
+            _PageHeader(
               title: '身形資料',
-              children: [
-                Wrap(
-                  spacing: AppSpacing.md,
-                  runSpacing: AppSpacing.md,
-                  children: MeasurementType.values.map((final type) {
-                    return SizedBox(
-                      width:
-                          (MediaQuery.of(context).size.width -
-                              (AppSpacing.lg * 2) -
-                              (AppSpacing.lg * 2) -
-                              AppSpacing.md) /
-                          2,
-                      child: buildTextField(
-                        controller: measurementControllers[type]!,
-                        label: type.label,
-                        icon: type.icon,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-                        ],
-                        validator: AppValidators.validateMeasurement,
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ],
+              progress: '$filledCount / $totalMeasurementFields',
             ),
-
-            const SizedBox(height: AppSpacing.xl),
-
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              '資料僅供試穿尺寸推薦，不對外顯示。',
+              style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            _MeasurementGrid(
+              types: MeasurementType.values,
+              controllers: measurementControllers,
+            ),
+            const SizedBox(height: AppSpacing.lg),
             SizedBox(
               width: double.infinity,
               child: FilledButton(
                 onPressed: isLoading.value || !hasChanges ? null : updateMeasurements,
                 child: isLoading.value
                     ? SizedBox(
-                        width: 24,
-                        height: 24,
+                        width: AppSpacing.mdLg,
+                        height: AppSpacing.mdLg,
                         child: CircularProgressIndicator(
                           color: colorScheme.onPrimary,
                           strokeWidth: 2,
                         ),
                       )
-                    : const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.save_rounded, size: 24),
-                          SizedBox(width: AppSpacing.sm),
-                          Text('儲存'),
-                        ],
-                      ),
+                    : const Text('儲存'),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PageHeader extends StatelessWidget {
+  const _PageHeader({required this.title, required this.progress});
+
+  final String title;
+  final String progress;
+
+  @override
+  Widget build(final BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: colorScheme.onSurface,
+              size: AppSpacing.mdLg,
+            ),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            onPressed: () => Navigator.of(context).maybePop(),
+            tooltip: 'Back',
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: theme.textTheme.displaySmall?.copyWith(
+                  fontStyle: FontStyle.normal,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+              child: Text(
+                progress,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           ],
         ),
-      ),
+      ],
+    );
+  }
+}
+
+class _MeasurementGrid extends StatelessWidget {
+  const _MeasurementGrid({required this.types, required this.controllers});
+
+  final List<MeasurementType> types;
+  final Map<MeasurementType, TextEditingController> controllers;
+
+  @override
+  Widget build(final BuildContext context) {
+    final rows = <Widget>[];
+    for (var i = 0; i < types.length; i += 2) {
+      final left = types[i];
+      final right = i + 1 < types.length ? types[i + 1] : null;
+
+      rows.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.md),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _MeasurementField(type: left, controller: controllers[left]!),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: right == null
+                    ? const SizedBox.shrink()
+                    : _MeasurementField(type: right, controller: controllers[right]!),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(children: rows);
+  }
+}
+
+class _MeasurementField extends StatelessWidget {
+  const _MeasurementField({required this.type, required this.controller});
+
+  final MeasurementType type;
+  final TextEditingController controller;
+
+  @override
+  Widget build(final BuildContext context) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
+      validator: AppValidators.validateMeasurement,
+      decoration: InputDecoration(labelText: type.label, suffixText: 'cm'),
     );
   }
 }

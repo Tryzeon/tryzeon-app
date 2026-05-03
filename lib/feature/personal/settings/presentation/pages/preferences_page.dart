@@ -12,8 +12,9 @@ class PreferencesPage extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final recommendNearbyShopsAsync = ref.watch(recommendNearbyShopsProvider);
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     Future<void> handleRecommendNearbyShopsToggle(
       final bool isNearbyShopsRecommendationEnabled,
@@ -64,92 +65,137 @@ class PreferencesPage extends HookConsumerWidget {
 
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: [
-            // AppBar
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              child: Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer,
-                      borderRadius: AppRadius.cardAll,
-                    ),
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.arrow_back_ios_rounded,
-                        color: colorScheme.primary,
-                        size: 20,
-                      ),
-                      onPressed: () => Navigator.pop(context),
-                      padding: EdgeInsets.zero,
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('偏好設定', style: textTheme.headlineMedium),
-                        Text('管理您的個人偏好', style: textTheme.bodySmall),
-                      ],
-                    ),
-                  ),
-                ],
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _PageHeader('偏好設定'),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                '管理你的個人偏好。',
+                style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
               ),
-            ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                children: [
-                  _buildSectionCard(
-                    context: context,
-                    title: '探索',
-                    children: [
-                      recommendNearbyShopsAsync.when(
-                        data: (final value) => SwitchListTile.adaptive(
-                          value: value,
-                          onChanged: handleRecommendNearbyShopsToggle,
-                          title: Text('推薦附近店家', style: textTheme.titleSmall),
-                          subtitle: Text('根據您的位置推薦附近的優質店家', style: textTheme.bodyMedium),
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                        loading: () =>
-                            const Center(child: CircularProgressIndicator.adaptive()),
-                        error: (final err, final stack) => Text('發生錯誤: $err'),
-                      ),
-                    ],
-                  ),
-                ],
+              const SizedBox(height: AppSpacing.lg),
+              _ToggleRow(
+                title: '推薦附近店家',
+                subtitle: '根據你的位置推薦附近的優質店家',
+                value: recommendNearbyShopsAsync.value ?? false,
+                isLoading: recommendNearbyShopsAsync.isLoading,
+                onChanged: recommendNearbyShopsAsync.isLoading
+                    ? null
+                    : handleRecommendNearbyShopsToggle,
+                isFirst: true,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildSectionCard({
-    required final BuildContext context,
-    required final String title,
-    required final List<Widget> children,
-  }) {
-    final textTheme = Theme.of(context).textTheme;
+class _PageHeader extends StatelessWidget {
+  const _PageHeader(this.title);
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: textTheme.titleMedium),
-            const SizedBox(height: AppSpacing.md),
-            ...children,
-          ],
+  final String title;
+
+  @override
+  Widget build(final BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: theme.colorScheme.onSurface,
+              size: AppSpacing.mdLg,
+            ),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            onPressed: () => Navigator.of(context).maybePop(),
+            tooltip: 'Back',
+          ),
         ),
+        const SizedBox(height: AppSpacing.md),
+        Text(
+          title,
+          style: theme.textTheme.displaySmall?.copyWith(fontStyle: FontStyle.normal),
+        ),
+      ],
+    );
+  }
+}
+
+class _ToggleRow extends StatelessWidget {
+  const _ToggleRow({
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.onChanged,
+    this.isLoading = false,
+    this.isFirst = false,
+  });
+
+  final String title;
+  final String subtitle;
+  final bool value;
+  final bool isLoading;
+  final ValueChanged<bool>? onChanged;
+  final bool isFirst;
+
+  @override
+  Widget build(final BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+    final hairline = BorderSide(color: colorScheme.outline, width: 1);
+
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(top: isFirst ? hairline : BorderSide.none, bottom: hairline),
+      ),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: textTheme.bodyLarge),
+                const SizedBox(height: AppSpacing.xxs),
+                Text(
+                  subtitle,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          if (isLoading)
+            SizedBox(
+              width: AppSpacing.mdLg,
+              height: AppSpacing.mdLg,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: colorScheme.primary,
+              ),
+            )
+          else
+            Switch.adaptive(
+              value: value,
+              onChanged: onChanged,
+              activeTrackColor: colorScheme.primary,
+              activeThumbColor: colorScheme.onPrimary,
+            ),
+        ],
       ),
     );
   }

@@ -16,63 +16,21 @@ class PersonalProfileSettingsPage extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final profileAsync = ref.watch(userProfileProvider);
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              child: Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer,
-                      borderRadius: AppRadius.cardAll,
-                    ),
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.arrow_back_ios_rounded,
-                        color: colorScheme.primary,
-                        size: 20,
-                      ),
-                      onPressed: () => Navigator.pop(context),
-                      padding: EdgeInsets.zero,
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('編輯個人資料', style: textTheme.headlineMedium),
-                        Text('更新您的個人資訊', style: textTheme.bodySmall),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: profileAsync.when(
-                data: (final profile) {
-                  if (profile == null) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  return _PersonalProfileForm(profile: profile);
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (final error, final stack) => ErrorView(
-                  message: error.displayMessage(context),
-                  onRetry: () => refreshUserProfile(ref),
-                ),
-              ),
-            ),
-          ],
+        child: profileAsync.when(
+          data: (final profile) {
+            if (profile == null) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            return _PersonalProfileForm(profile: profile);
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (final error, final stack) => ErrorView(
+            message: error.displayMessage(context),
+            onRetry: () => refreshUserProfile(ref),
+          ),
         ),
       ),
     );
@@ -91,8 +49,10 @@ class _PersonalProfileForm extends HookConsumerWidget {
     final isLoading = useState(false);
     final userName = useValueListenable(nameController).text;
     final hasChanges = userName.trim() != profile.name;
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     Future<void> updateProfile() async {
       if (!formKey.currentState!.validate()) return;
@@ -108,12 +68,8 @@ class _PersonalProfileForm extends HookConsumerWidget {
 
       if (result.isSuccess) {
         TopNotification.show(context, message: '個人資料已更新', type: NotificationType.success);
-
+        ref.invalidate(userProfileProvider);
         if (context.mounted) Navigator.pop(context);
-
-        Future.delayed(const Duration(milliseconds: 100), () {
-          ref.invalidate(userProfileProvider);
-        });
       } else {
         TopNotification.show(
           context,
@@ -124,76 +80,82 @@ class _PersonalProfileForm extends HookConsumerWidget {
     }
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: Form(
         key: formKey,
-        child: Card(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: colorScheme.primaryContainer,
-                        borderRadius: AppRadius.cardAll,
-                      ),
-                      child: Icon(
-                        Icons.person_outline_rounded,
-                        color: colorScheme.primary,
-                        size: 28,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Text('基本資料', style: textTheme.titleMedium),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                TextFormField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                    labelText: '姓名',
-                    prefixIcon: Icon(
-                      Icons.person_outline_rounded,
-                      color: colorScheme.primary,
-                    ),
-                  ),
-                  textInputAction: TextInputAction.done,
-                  validator: AppValidators.validateUserName,
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton(
-                    onPressed: isLoading.value || !hasChanges ? null : updateProfile,
-                    child: isLoading.value
-                        ? SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              color: colorScheme.onPrimary,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.save_rounded, size: 24),
-                              SizedBox(width: AppSpacing.sm),
-                              Text('儲存'),
-                            ],
-                          ),
-                  ),
-                ),
-              ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const _PageHeader('個人資料'),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              '你的名字不會被公開顯示。',
+              style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
             ),
-          ),
+            const SizedBox(height: AppSpacing.lg),
+            TextFormField(
+              controller: nameController,
+              textInputAction: TextInputAction.done,
+              validator: AppValidators.validateUserName,
+              decoration: const InputDecoration(labelText: '姓名'),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: isLoading.value || !hasChanges ? null : updateProfile,
+                child: isLoading.value
+                    ? SizedBox(
+                        width: AppSpacing.mdLg,
+                        height: AppSpacing.mdLg,
+                        child: CircularProgressIndicator(
+                          color: colorScheme.onPrimary,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text('儲存'),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+          ],
         ),
       ),
+    );
+  }
+}
+
+class _PageHeader extends StatelessWidget {
+  const _PageHeader(this.title);
+
+  final String title;
+
+  @override
+  Widget build(final BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: theme.colorScheme.onSurface,
+              size: AppSpacing.mdLg,
+            ),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            onPressed: () => Navigator.of(context).maybePop(),
+            tooltip: 'Back',
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        Text(
+          title,
+          style: theme.textTheme.displaySmall?.copyWith(fontStyle: FontStyle.normal),
+        ),
+      ],
     );
   }
 }

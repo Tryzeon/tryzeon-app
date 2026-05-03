@@ -1,16 +1,17 @@
+// lib/feature/personal/settings/presentation/pages/settings_page.dart
+
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_overlay.dart';
-import 'package:tryzeon/core/presentation/widgets/settings_list_tile.dart';
-import 'package:tryzeon/core/presentation/widgets/settings_section.dart';
-import 'package:tryzeon/core/presentation/widgets/settings_sliver_app_bar.dart';
+import 'package:tryzeon/core/presentation/widgets/nav_row.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/presentation/widgets/version_info.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/settings/presentation/providers/personal_settings_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -21,8 +22,8 @@ class PersonalSettingsPage extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final controller = ref.watch(personalSettingsControllerProvider.notifier);
+    final profile = ref.watch(userProfileProvider).value;
 
-    // Listen for global errors/state changes
     ref.listen(personalSettingsControllerProvider, (final previous, final next) {
       if (next is AsyncError) {
         TopNotification.show(
@@ -43,7 +44,6 @@ class PersonalSettingsPage extends HookConsumerWidget {
         isDestructiveAction: true,
       );
       if (result != OkCancelResult.ok) return;
-
       await controller.signOut();
     }
 
@@ -56,10 +56,8 @@ class PersonalSettingsPage extends HookConsumerWidget {
         cancelLabel: '取消',
       );
       if (result != OkCancelResult.ok) return;
-
       await controller.switchToStore();
       if (!context.mounted) return;
-
       context.go(AppRoutes.storeHome);
     }
 
@@ -78,7 +76,6 @@ class PersonalSettingsPage extends HookConsumerWidget {
         await launchUrl(url, mode: LaunchMode.externalApplication);
         return;
       }
-
       if (!context.mounted) return;
       TopNotification.show(
         context,
@@ -97,102 +94,135 @@ class PersonalSettingsPage extends HookConsumerWidget {
         isDestructiveAction: true,
       );
       if (dialogResult != OkCancelResult.ok) return;
-
       await controller.deleteAccount();
     }
 
     final state = ref.watch(personalSettingsControllerProvider);
-    final isLoading = state.isLoading;
 
     return LoadingOverlay(
-      isLoading: isLoading,
+      isLoading: state.isLoading,
       child: Scaffold(
-        body: CustomScrollView(
-          slivers: [
-            const SettingsSliverAppBar(title: '設定'),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                  vertical: AppSpacing.lg,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const _PageHeader('設定'),
+                const _SectionLabel('個人'),
+                NavRow(
+                  icon: Icons.person_outline,
+                  title: '個人資料',
+                  trailingValue: profile?.name,
+                  isFirst: true,
+                  onTap: () => context.push(AppRoutes.personalSettingsProfile),
                 ),
-                child: Column(
-                  children: [
-                    SettingsSection(
-                      title: '個人設定',
-                      children: [
-                        SettingsListTile(
-                          icon: Icons.person_outline_rounded,
-                          title: '個人資料',
-                          subtitle: '管理您的姓名與個人資訊',
-                          onTap: () => context.push(AppRoutes.personalSettingsProfile),
-                          color: colorScheme.primary,
-                        ),
-                        SettingsListTile(
-                          icon: Icons.tune_rounded,
-                          title: '偏好設定',
-                          subtitle: '管理您的個人偏好',
-                          onTap: () =>
-                              context.push(AppRoutes.personalSettingsPreferences),
-                          color: colorScheme.primary,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    SettingsSection(
-                      title: '支援',
-                      children: [
-                        SettingsListTile(
-                          icon: Icons.store_outlined,
-                          title: '切換到店家帳號',
-                          subtitle: '管理您的商店',
-                          onTap: switchToStore,
-                          color: colorScheme.primary,
-                        ),
-                        SettingsListTile(
-                          icon: Icons.contact_support_outlined,
-                          title: '聯絡我們',
-                          subtitle: '前往官方 Instagram',
-                          onTap: handleContactUs,
-                          color: colorScheme.primary,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    SettingsSection(
-                      title: '危險區域',
-                      children: [
-                        SettingsListTile(
-                          icon: Icons.logout_rounded,
-                          title: '登出',
-                          onTap: handleSignOut,
-                          color: colorScheme.error,
-                          isDestructive: true,
-                          hideChevron: true,
-                        ),
-                        SettingsListTile(
-                          icon: Icons.delete_forever_rounded,
-                          title: '刪除帳號',
-                          onTap: handleDeleteAccount,
-                          color: colorScheme.error,
-                          isDestructive: true,
-                          hideChevron: true,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.xxl),
-                    VersionInfo(
-                      versionProvider: (final ref) => ref
-                          .read(personalSettingsControllerProvider.notifier)
-                          .getAppVersion(),
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                  ],
+                NavRow(
+                  icon: Icons.tune,
+                  title: '偏好設定',
+                  onTap: () => context.push(AppRoutes.personalSettingsPreferences),
                 ),
-              ),
+                const _SectionLabel('支援'),
+                NavRow(
+                  icon: Icons.storefront_outlined,
+                  title: '切換到店家帳號',
+                  isFirst: true,
+                  onTap: switchToStore,
+                ),
+                NavRow(
+                  icon: Icons.chat_bubble_outline,
+                  title: '聯絡我們',
+                  trailingValue: 'Instagram',
+                  onTap: handleContactUs,
+                ),
+                _SectionLabel('危險區域', color: colorScheme.error),
+                NavRow(
+                  icon: Icons.logout,
+                  title: '登出',
+                  isDestructive: true,
+                  isFirst: true,
+                  showChevron: false,
+                  onTap: handleSignOut,
+                ),
+                NavRow(
+                  icon: Icons.delete_outline,
+                  title: '刪除帳號',
+                  isDestructive: true,
+                  showChevron: false,
+                  onTap: handleDeleteAccount,
+                ),
+                const SizedBox(height: AppSpacing.xxl),
+                VersionInfo(
+                  versionProvider: (final ref) => ref
+                      .read(personalSettingsControllerProvider.notifier)
+                      .getAppVersion(),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+              ],
             ),
-          ],
+          ),
         ),
+      ),
+    );
+  }
+}
+
+class _PageHeader extends StatelessWidget {
+  const _PageHeader(this.title);
+
+  final String title;
+
+  @override
+  Widget build(final BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: colorScheme.onSurface,
+              size: AppSpacing.mdLg,
+            ),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            onPressed: () => Navigator.of(context).maybePop(),
+            tooltip: 'Back',
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        Text(
+          title,
+          style: theme.textTheme.displaySmall?.copyWith(
+            fontStyle: FontStyle.normal,
+            color: colorScheme.onSurface,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text, {this.color});
+
+  final String text;
+  final Color? color;
+
+  @override
+  Widget build(final BuildContext context) {
+    final theme = Theme.of(context);
+    final resolved = color ?? theme.colorScheme.primary;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: AppSpacing.sm),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(text, style: theme.textTheme.labelLarge?.copyWith(color: resolved)),
       ),
     );
   }
