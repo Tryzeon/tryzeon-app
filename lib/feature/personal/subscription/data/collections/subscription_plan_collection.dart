@@ -14,6 +14,7 @@ class SubscriptionPlanCollection {
   late int wardrobeLimit;
   late int tryonLimit;
   late int videoLimit;
+  late int chatLimit;
   late int sortOrder;
   late bool isActive;
 }
