@@ -151,22 +151,23 @@ class HomePage extends HookConsumerWidget {
         transitionPrompt = promptConfig.transitionPrompt;
       }
 
-      final tryonUseCase = ref.read(tryonUseCaseProvider);
       final profile = await ref.read(userProfileProvider.future);
       final String? defaultAvatarPath = profile?.avatarPath;
 
-      final result = await tryonUseCase(
-        TryOnParams(
-          requestId: requestId,
-          avatarBase64: customAvatarBase64,
-          avatarPath: defaultAvatarPath,
-          clothesBase64s: clothesBase64s,
-          clothesPaths: clothesPaths,
-          mode: mode,
-          scenePrompt: scenePrompt,
-          transitionPrompt: transitionPrompt,
-        ),
-      );
+      final result = await ref
+          .read(tryonActionProvider.notifier)
+          .execute(
+            TryOnParams(
+              requestId: requestId,
+              avatarBase64: customAvatarBase64,
+              avatarPath: defaultAvatarPath,
+              clothesBase64s: clothesBase64s,
+              clothesPaths: clothesPaths,
+              mode: mode,
+              scenePrompt: scenePrompt,
+              transitionPrompt: transitionPrompt,
+            ),
+          );
 
       if (!context.mounted) return;
 
