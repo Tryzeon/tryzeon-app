@@ -24,6 +24,7 @@ import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_params.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/home_primary_action_button.dart';
+import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_avatar_badge.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_gallery.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_indicator.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_more_options_button.dart';
@@ -410,17 +411,28 @@ class HomePage extends HookConsumerWidget {
               ),
             ),
 
-            // 3. Top Right — More Options (white ⋮ with shadow)
+            // 3. Top Right — Avatar Badge + More Options (parallel)
             if (showMoreOptions)
               Positioned(
                 top: MediaQuery.paddingOf(context).top + AppSpacing.lg,
                 right: AppSpacing.lg,
-                child: TryOnMoreOptionsButton(
-                  currentTryonIndex: currentTryonIndex.value,
-                  customAvatarIndex: customAvatarIndex.value,
-                  onDownload: downloadCurrentMedia,
-                  onToggleAvatar: toggleAvatar,
-                  onDelete: deleteCurrentTryon,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    TryOnAvatarBadge(
+                      isVisible:
+                          customAvatarIndex.value == currentTryonIndex.value,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    TryOnMoreOptionsButton(
+                      currentTryonIndex: currentTryonIndex.value,
+                      customAvatarIndex: customAvatarIndex.value,
+                      onDownload: downloadCurrentMedia,
+                      onToggleAvatar: toggleAvatar,
+                      onDelete: deleteCurrentTryon,
+                    ),
+                  ],
                 ),
               ),
 
