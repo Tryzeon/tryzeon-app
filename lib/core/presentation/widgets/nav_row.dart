@@ -47,10 +47,15 @@ class NavRow extends StatelessWidget {
               const SizedBox(width: AppSpacing.smMd),
             ],
             Expanded(
-              child: Text(title, style: textTheme.bodyLarge?.copyWith(color: foreground)),
+              flex: 2,
+              child: Text(
+                title,
+                style: textTheme.bodyLarge?.copyWith(color: foreground),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
             if (trailingValue != null)
-              Flexible(
+              Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(left: AppSpacing.sm),
                   child: Text(
