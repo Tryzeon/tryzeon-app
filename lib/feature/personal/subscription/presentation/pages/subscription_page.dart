@@ -1,3 +1,5 @@
+// lib/feature/personal/subscription/presentation/pages/subscription_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
@@ -5,6 +7,12 @@ import 'package:tryzeon/core/modules/revenue_cat/di/revenue_cat_providers.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/core/modules/revenue_cat/presentation/utils/revenue_cat_ui_utils.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription_capabilities.dart';
+import 'package:tryzeon/feature/personal/subscription/presentation/providers/subscription_capabilities_provider.dart';
+import 'package:tryzeon/feature/personal/subscription/presentation/utils/subscription_format.dart';
+import 'package:tryzeon/feature/personal/usage/presentation/providers/daily_usage_providers.dart';
+import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 
 class SubscriptionPage extends HookConsumerWidget {
   const SubscriptionPage({super.key});
@@ -12,97 +20,274 @@ class SubscriptionPage extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final entitlementAsync = ref.watch(appSubscriptionEntitlementProvider);
-    final colorScheme = Theme.of(context).colorScheme;
+    final capabilitiesAsync = ref.watch(subscriptionCapabilitiesProvider);
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: const Text('訂閱方案'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
         centerTitle: true,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
       ),
       body: SafeArea(
-        child: entitlementAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (final error, final stack) => ErrorView(
-            message: error.displayMessage(context),
-            onRetry: () => ref.refresh(appSubscriptionEntitlementProvider),
-          ),
-          data: (final entitlement) {
-            final tier = entitlement.tier;
-            final isPaidPlan = entitlement.hasActiveSubscription;
-            final membershipTitle = switch (tier) {
-              AppSubscriptionTier.max => '您目前是 Tryzeon Max 會員',
-              AppSubscriptionTier.pro => '您目前是 Tryzeon Pro 會員',
-              AppSubscriptionTier.free => '您目前是免費用戶',
-            };
-            final membershipDescription = switch (tier) {
-              AppSubscriptionTier.max => '感謝您的支持，您目前已開通 Tryzeon 最高等級方案。',
-              AppSubscriptionTier.pro => '感謝您的支持，您已解鎖 Tryzeon Pro 專屬功能。',
-              AppSubscriptionTier.free =>
-                '升級為 Tryzeon Pro 或 Tryzeon Max 會員即可解鎖更多試穿額度與專屬功能。',
-            };
-            return Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    isPaidPlan ? Icons.star : Icons.star_border,
-                    size: 64,
-                    color: isPaidPlan
-                        ? colorScheme.primary
-                        : colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    membershipTitle,
-                    style: TextStyle(
-                      color: colorScheme.onSurface,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    membershipDescription,
-                    style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 16),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 48),
-                  if (isPaidPlan)
-                    FilledButton.icon(
-                      onPressed: () =>
-                          RevenueCatUiUtils.presentCustomerCenter(context, ref),
-                      icon: const Icon(Icons.manage_accounts),
-                      label: const Text('管理訂閱方案'),
-                      style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    )
-                  else
-                    FilledButton.icon(
-                      onPressed: () => RevenueCatUiUtils.presentPaywall(context),
-                      icon: const Icon(Icons.rocket_launch),
-                      label: const Text('查看升級方案'),
-                      style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            );
+        top: false,
+        child: _buildBody(context, ref, entitlementAsync, capabilitiesAsync),
+      ),
+    );
+  }
+
+  Widget _buildBody(
+    final BuildContext context,
+    final WidgetRef ref,
+    final AsyncValue<AppSubscriptionEntitlement> entitlementAsync,
+    final AsyncValue<SubscriptionCapabilities> capabilitiesAsync,
+  ) {
+    // Entitlement is structural (defines plan identity + CTA target). Without
+    // it the page cannot render. Capabilities and usage degrade per-stat
+    // inside the content. `value == null` keeps cached content during SWR.
+    final entitlement = entitlementAsync.value;
+    if (entitlement == null) {
+      if (entitlementAsync.hasError) {
+        return ErrorView(
+          message: entitlementAsync.error!.displayMessage(context),
+          onRetry: () {
+            ref.invalidate(appSubscriptionEntitlementProvider);
+            ref.invalidate(subscriptionCapabilitiesProvider);
           },
+        );
+      }
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return _SubscriptionContent(
+      entitlement: entitlement,
+      capabilities: capabilitiesAsync.value,
+    );
+  }
+}
+
+class _SubscriptionContent extends ConsumerWidget {
+  const _SubscriptionContent({required this.entitlement, this.capabilities});
+
+  final AppSubscriptionEntitlement entitlement;
+  final SubscriptionCapabilities? capabilities;
+
+  @override
+  Widget build(final BuildContext context, final WidgetRef ref) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
+    final tier = entitlement.tier;
+
+    final wardrobeUsed = ref.watch(
+      wardrobeItemsProvider.select((final v) => v.value?.length ?? 0),
+    );
+    final usage = ref.watch(dailyUsageTodayProvider).value;
+    final tryonUsed = usage?.tryonCount;
+    final chatUsed = usage?.chatCount;
+    final videoUsed = usage?.videoCount;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _SectionLabel('方案'),
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              borderRadius: AppRadius.cardAll,
+              border: Border.all(color: colorScheme.outline),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      planName(tier),
+                      style: textTheme.headlineLarge?.copyWith(
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                    const Spacer(),
+                    if (entitlement.hasActiveSubscription)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colorScheme.primaryContainer,
+                          borderRadius: AppRadius.pillAll,
+                        ),
+                        child: Text(
+                          '啟用中',
+                          style: textTheme.labelSmall?.copyWith(
+                            color: colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  formatRenewalLine(entitlement),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const _SectionLabel('目前用量'),
+          _BenefitRow(
+            title: '今日試穿',
+            trailingValue: formatUsage(
+              used: tryonUsed,
+              limit: capabilities?.dailyTryOnLimit,
+            ),
+            isFirst: true,
+          ),
+          _BenefitRow(
+            title: '今日聊天',
+            trailingValue: formatUsage(
+              used: chatUsed,
+              limit: capabilities?.dailyChatLimit,
+            ),
+          ),
+          _BenefitRow(
+            title: '今日影片',
+            trailingValue: formatUsage(
+              used: videoUsed,
+              limit: capabilities?.dailyVideoLimit,
+            ),
+          ),
+          _BenefitRow(
+            title: '衣櫃容量',
+            trailingValue: formatUsage(
+              used: wardrobeUsed,
+              limit: capabilities?.wardrobeLimit,
+            ),
+          ),
+          const _SectionLabel('方案權益'),
+          _BenefitRow(
+            title: '影片試穿',
+            trailingValue: formatBenefit(value: capabilities?.hasVideoAccess),
+            isFirst: true,
+          ),
+          _BenefitRow(
+            title: '去除浮水印',
+            trailingValue: formatBenefit(
+              value: capabilities == null ? null : !capabilities!.requiresWatermark,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          _PrimaryCta(tier: tier),
+          if (tier == AppSubscriptionTier.pro) ...[
+            const SizedBox(height: AppSpacing.sm),
+            const _UpgradeToMaxCta(),
+          ],
+          const SizedBox(height: AppSpacing.xl),
+        ],
+      ),
+    );
+  }
+}
+
+class _PrimaryCta extends ConsumerWidget {
+  const _PrimaryCta({required this.tier});
+
+  final AppSubscriptionTier tier;
+
+  @override
+  Widget build(final BuildContext context, final WidgetRef ref) {
+    final isFree = tier == AppSubscriptionTier.free;
+    final label = isFree ? '升級方案' : '管理方案';
+
+    return SizedBox(
+      width: double.infinity,
+      child: FilledButton(
+        onPressed: () {
+          if (isFree) {
+            RevenueCatUiUtils.presentPaywall(context);
+          } else {
+            RevenueCatUiUtils.presentCustomerCenter(context, ref);
+          }
+        },
+        child: Text(label),
+      ),
+    );
+  }
+}
+
+class _UpgradeToMaxCta extends StatelessWidget {
+  const _UpgradeToMaxCta();
+
+  @override
+  Widget build(final BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: () => RevenueCatUiUtils.presentPaywall(context),
+        child: const Text('升級至 Max'),
+      ),
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text);
+
+  final String text;
+
+  @override
+  Widget build(final BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: AppSpacing.sm),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          text,
+          style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.primary),
         ),
+      ),
+    );
+  }
+}
+
+class _BenefitRow extends StatelessWidget {
+  const _BenefitRow({
+    required this.title,
+    required this.trailingValue,
+    this.isFirst = false,
+  });
+
+  final String title;
+  final String trailingValue;
+  final bool isFirst;
+
+  @override
+  Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final hairline = BorderSide(color: colorScheme.outline, width: 1);
+
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(top: isFirst ? hairline : BorderSide.none, bottom: hairline),
+      ),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+      child: Row(
+        children: [
+          Expanded(child: Text(title, style: textTheme.bodyLarge)),
+          Text(
+            trailingValue,
+            style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+          ),
+        ],
       ),
     );
   }

@@ -98,6 +98,9 @@ class SubscriptionCapabilitiesRepositoryImpl
       requiresWatermark: entitlement.isFree,
       hasVideoAccess: planInfo.videoLimit > 0,
       wardrobeLimit: planInfo.wardrobeLimit,
+      dailyTryOnLimit: planInfo.tryonLimit,
+      dailyChatLimit: planInfo.chatLimit,
+      dailyVideoLimit: planInfo.videoLimit,
     );
   }
 }

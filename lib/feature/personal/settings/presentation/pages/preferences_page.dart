@@ -3,6 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
 
 class PreferencesPage extends HookConsumerWidget {
@@ -11,8 +12,9 @@ class PreferencesPage extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final recommendNearbyShopsAsync = ref.watch(recommendNearbyShopsProvider);
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     Future<void> handleRecommendNearbyShopsToggle(
       final bool isNearbyShopsRecommendationEnabled,
@@ -62,122 +64,105 @@ class PreferencesPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      appBar: AppBar(
+        title: const Text('偏好設定'),
+        centerTitle: true,
+        foregroundColor: colorScheme.onSurface,
+      ),
       body: SafeArea(
-        child: Column(
-          children: [
-            // AppBar
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: colorScheme.surface,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '管理你的個人偏好。',
+                style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
               ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: colorScheme.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.arrow_back_ios_rounded,
-                        color: colorScheme.primary,
-                        size: 20,
-                      ),
-                      onPressed: () => Navigator.pop(context),
-                      padding: EdgeInsets.zero,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('偏好設定', style: textTheme.headlineMedium),
-                        Text('管理您的個人偏好', style: textTheme.bodySmall),
-                      ],
-                    ),
-                  ),
-                ],
+              const SizedBox(height: AppSpacing.lg),
+              _ToggleRow(
+                title: '推薦附近店家',
+                subtitle: '根據你的位置推薦附近的優質店家',
+                value: recommendNearbyShopsAsync.value ?? false,
+                isLoading: recommendNearbyShopsAsync.isLoading,
+                onChanged: recommendNearbyShopsAsync.isLoading
+                    ? null
+                    : handleRecommendNearbyShopsToggle,
+                isFirst: true,
               ),
-            ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  _buildSectionCard(
-                    context: context,
-                    title: '探索',
-                    children: [
-                      recommendNearbyShopsAsync.when(
-                        data: (final value) => SwitchListTile.adaptive(
-                          value: value,
-                          onChanged: handleRecommendNearbyShopsToggle,
-                          title: Text(
-                            '推薦附近店家',
-                            style: textTheme.bodyLarge?.copyWith(
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          subtitle: Text('根據您的位置推薦附近的優質店家', style: textTheme.bodyMedium),
-                          activeTrackColor: colorScheme.primary,
-                          contentPadding: EdgeInsets.zero,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        loading: () =>
-                            const Center(child: CircularProgressIndicator.adaptive()),
-                        error: (final err, final stack) => Text('發生錯誤: $err'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildSectionCard({
-    required final BuildContext context,
-    required final String title,
-    required final List<Widget> children,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+class _ToggleRow extends StatelessWidget {
+  const _ToggleRow({
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.onChanged,
+    this.isLoading = false,
+    this.isFirst = false,
+  });
+
+  final String title;
+  final String subtitle;
+  final bool value;
+  final bool isLoading;
+  final ValueChanged<bool>? onChanged;
+  final bool isFirst;
+
+  @override
+  Widget build(final BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+    final hairline = BorderSide(color: colorScheme.outline, width: 1);
 
     return Container(
       decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
+        border: Border(top: isFirst ? hairline : BorderSide.none, bottom: hairline),
       ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(title, style: textTheme.titleMedium),
-          const SizedBox(height: 16),
-          ...children,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: textTheme.bodyLarge),
+                const SizedBox(height: AppSpacing.xxs),
+                Text(
+                  subtitle,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          if (isLoading)
+            SizedBox(
+              width: AppSpacing.mdLg,
+              height: AppSpacing.mdLg,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: colorScheme.primary,
+              ),
+            )
+          else
+            Switch.adaptive(
+              value: value,
+              onChanged: onChanged,
+              activeTrackColor: colorScheme.primary,
+              activeThumbColor: colorScheme.onPrimary,
+            ),
         ],
       ),
     );

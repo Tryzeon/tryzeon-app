@@ -8,5 +8,8 @@ sealed class SubscriptionCapabilities with _$SubscriptionCapabilities {
     required final bool requiresWatermark,
     required final bool hasVideoAccess,
     required final int wardrobeLimit,
+    required final int dailyTryOnLimit,
+    required final int dailyChatLimit,
+    required final int dailyVideoLimit,
   }) = _SubscriptionCapabilities;
 }

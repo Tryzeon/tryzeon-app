@@ -1,7 +1,9 @@
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/chat/data/datasources/chat_remote_data_source.dart';
+import 'package:tryzeon/feature/personal/chat/domain/entities/chat_recommendation.dart';
 import 'package:tryzeon/feature/personal/chat/domain/repositories/chat_repository.dart';
+import 'package:tryzeon/feature/personal/usage/data/models/daily_usage_model.dart';
 import 'package:typed_result/typed_result.dart';
 
 class ChatRepositoryImpl implements ChatRepository {
@@ -10,12 +12,20 @@ class ChatRepositoryImpl implements ChatRepository {
   final ChatRemoteDataSource _remoteDataSource;
 
   @override
-  Future<Result<String, Failure>> getLLMRecommendation(
+  Future<Result<ChatRecommendation, Failure>> getLLMRecommendation(
     final Map<String, String> answers,
   ) async {
     try {
-      final recommendation = await _remoteDataSource.getLLMRecommendation(answers);
-      return Ok(recommendation);
+      final data = await _remoteDataSource.getLLMRecommendation(answers);
+      final usageJson = data['usage'] as Map<String, dynamic>?;
+      return Ok(
+        ChatRecommendation(
+          recommendation: data['recommendation'] as String? ?? '',
+          usage: usageJson == null
+              ? null
+              : DailyUsageModel.fromJson(usageJson).toEntity(),
+        ),
+      );
     } catch (e, stackTrace) {
       AppLogger.error('Failed to get outfit suggestions', e, stackTrace);
       return Err(mapExceptionToFailure(e));

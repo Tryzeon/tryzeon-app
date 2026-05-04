@@ -85,7 +85,6 @@ class OnboardingNotifier extends _$OnboardingNotifier {
 
     final useCase = ref.read(completeOnboardingUseCaseProvider);
     final result = await useCase(
-      original: original,
       gender: state.gender,
       age: state.age,
       stylePreferences: state.stylePreferences.isEmpty ? null : state.stylePreferences,

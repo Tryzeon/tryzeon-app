@@ -6,7 +6,11 @@ class ChatRemoteDataSource {
 
   final SupabaseClient _supabase;
 
-  Future<String> getLLMRecommendation(final Map<String, String> answers) async {
+  /// Returns the raw chat function response. Repository parses the body
+  /// into a domain entity (text + optional usage snapshot).
+  Future<Map<String, dynamic>> getLLMRecommendation(
+    final Map<String, String> answers,
+  ) async {
     final userRequirement =
         '''
 - 時間：${answers['when'] ?? ''}
@@ -21,6 +25,6 @@ class ChatRemoteDataSource {
       AppConstants.functionChat,
       body: {'userRequirement': userRequirement},
     );
-    return response.data['text'] as String;
+    return response.data as Map<String, dynamic>;
   }
 }

@@ -1,0 +1,242 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/extensions/failure_extension.dart';
+import 'package:tryzeon/core/presentation/widgets/error_view.dart';
+import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/core/shared/measurements/entities/measurements.dart';
+import 'package:tryzeon/core/shared/measurements/presentation/mappers/measurement_type_ui_mapper.dart';
+import 'package:tryzeon/core/shared/measurements/utils/measurements_completion.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/core/utils/validators.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
+import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
+import 'package:typed_result/typed_result.dart';
+
+class BodyMeasurementsSettingsPage extends HookConsumerWidget {
+  const BodyMeasurementsSettingsPage({super.key});
+
+  @override
+  Widget build(final BuildContext context, final WidgetRef ref) {
+    final profileAsync = ref.watch(userProfileProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('身形資料'),
+        centerTitle: true,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
+      ),
+      body: SafeArea(
+        top: false,
+        child: profileAsync.when(
+          data: (final profile) {
+            if (profile == null) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            return _BodyMeasurementsForm(profile: profile);
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (final error, final stack) => ErrorView(
+            message: error.displayMessage(context),
+            onRetry: () => refreshUserProfile(ref),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BodyMeasurementsForm extends HookConsumerWidget {
+  const _BodyMeasurementsForm({required this.profile});
+
+  final UserProfile profile;
+
+  @override
+  Widget build(final BuildContext context, final WidgetRef ref) {
+    final formKey = useMemoized(GlobalKey<FormState>.new);
+
+    final measurementControllers = <MeasurementType, TextEditingController>{};
+    for (final type in MeasurementType.values) {
+      measurementControllers[type] = useTextEditingController(
+        text: profile.measurements?[type]?.toString() ?? '',
+      );
+    }
+
+    final isLoading = useState(false);
+    var hasChanges = false;
+    var filledCount = 0;
+
+    for (final type in MeasurementType.values) {
+      final currentValue = useValueListenable(measurementControllers[type]!).text;
+      final originalValue = profile.measurements?[type]?.toString() ?? '';
+      final currentDouble = double.tryParse(currentValue);
+      final originalDouble = double.tryParse(originalValue);
+
+      if (currentDouble != originalDouble) {
+        hasChanges = true;
+      }
+      if (currentDouble != null) {
+        filledCount++;
+      }
+    }
+
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
+    Future<void> updateMeasurements() async {
+      if (!formKey.currentState!.validate()) return;
+
+      isLoading.value = true;
+
+      final measurementsJson = <String, dynamic>{
+        for (final entry in measurementControllers.entries)
+          entry.key.value: double.tryParse(entry.value.text),
+      };
+
+      final Measurements newMeasurements = Measurements.fromJson(measurementsJson);
+
+      final updateUseCase = ref.read(updateUserBodyMeasurementsUseCaseProvider);
+      final result = await updateUseCase(measurements: newMeasurements);
+
+      if (!context.mounted) return;
+
+      isLoading.value = false;
+
+      if (result.isSuccess) {
+        TopNotification.show(context, message: '身形資料已更新', type: NotificationType.success);
+        ref.invalidate(userProfileProvider);
+        if (context.mounted) context.pop();
+      } else {
+        TopNotification.show(
+          context,
+          message: result.getError()!.displayMessage(context),
+          type: NotificationType.error,
+        );
+      }
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      child: Form(
+        key: formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Text(
+                    '資料僅供試穿尺寸推薦，不對外顯示。',
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: AppSpacing.xxs,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer,
+                    borderRadius: AppRadius.pillAll,
+                  ),
+                  child: Text(
+                    '$filledCount / $totalMeasurementFields',
+                    style: textTheme.labelSmall?.copyWith(
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            _MeasurementGrid(
+              types: MeasurementType.values,
+              controllers: measurementControllers,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: isLoading.value || !hasChanges ? null : updateMeasurements,
+                child: isLoading.value
+                    ? SizedBox(
+                        width: AppSpacing.mdLg,
+                        height: AppSpacing.mdLg,
+                        child: CircularProgressIndicator(
+                          color: colorScheme.onPrimary,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text('儲存'),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MeasurementGrid extends StatelessWidget {
+  const _MeasurementGrid({required this.types, required this.controllers});
+
+  final List<MeasurementType> types;
+  final Map<MeasurementType, TextEditingController> controllers;
+
+  @override
+  Widget build(final BuildContext context) {
+    final rows = <Widget>[];
+    for (var i = 0; i < types.length; i += 2) {
+      final left = types[i];
+      final right = i + 1 < types.length ? types[i + 1] : null;
+
+      rows.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.md),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _MeasurementField(type: left, controller: controllers[left]!),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: right == null
+                    ? const SizedBox.shrink()
+                    : _MeasurementField(type: right, controller: controllers[right]!),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(children: rows);
+  }
+}
+
+class _MeasurementField extends StatelessWidget {
+  const _MeasurementField({required this.type, required this.controller});
+
+  final MeasurementType type;
+  final TextEditingController controller;
+
+  @override
+  Widget build(final BuildContext context) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
+      validator: AppValidators.validateMeasurement,
+      decoration: InputDecoration(labelText: type.label, suffixText: 'cm'),
+    );
+  }
+}

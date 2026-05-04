@@ -4,6 +4,7 @@ import 'package:tryzeon/feature/personal/home/data/datasources/tryon_remote_data
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_params.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/home/domain/repositories/tryon_repository.dart';
+import 'package:tryzeon/feature/personal/usage/data/models/daily_usage_model.dart';
 import 'package:typed_result/typed_result.dart';
 
 class TryOnRepositoryImpl implements TryOnRepository {
@@ -16,13 +17,16 @@ class TryOnRepositoryImpl implements TryOnRepository {
   Future<Result<TryonResult, Failure>> tryon(final TryOnParams params) async {
     try {
       final data = await _remoteDataSource.tryon(params);
-
+      final usageJson = data['usage'] as Map<String, dynamic>?;
       return Ok(
         TryonResult(
           id: params.requestId,
           imageBase64: data['image'] as String?,
           videoUrl: data['videoUrl'] as String?,
           mode: params.mode,
+          usage: usageJson == null
+              ? null
+              : DailyUsageModel.fromJson(usageJson).toEntity(),
         ),
       );
     } catch (e, stackTrace) {

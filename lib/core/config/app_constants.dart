@@ -54,9 +54,6 @@ class AppConstants {
   static const String entitlementProId = 'pro';
   static const String entitlementMaxId = 'max';
 
-  // Default Subscription Capabilities (fallback when service unavailable)
-  static const int defaultWardrobeLimit = 20;
-
   // TryOn Params
   static const String paramMode = 'mode';
   static const String modeImage = 'image';
