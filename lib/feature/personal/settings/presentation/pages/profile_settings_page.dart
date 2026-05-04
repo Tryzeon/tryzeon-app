@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
@@ -75,7 +76,7 @@ class _PersonalProfileForm extends HookConsumerWidget {
       if (result.isSuccess) {
         TopNotification.show(context, message: '個人資料已更新', type: NotificationType.success);
         ref.invalidate(userProfileProvider);
-        if (context.mounted) Navigator.pop(context);
+        if (context.mounted) context.pop();
       } else {
         TopNotification.show(
           context,
