@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 
 class ErrorView extends HookConsumerWidget {
   const ErrorView({super.key, this.onRetry, this.isCompact = false, this.message});
@@ -15,52 +16,43 @@ class ErrorView extends HookConsumerWidget {
 
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(isCompact ? 16.0 : 32.0),
+        padding: EdgeInsets.all(isCompact ? AppSpacing.md : AppSpacing.xl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: isCompact ? MainAxisSize.min : MainAxisSize.max,
           children: [
             Container(
-              padding: EdgeInsets.all(isCompact ? 12 : 20),
+              padding: EdgeInsets.all(isCompact ? AppSpacing.smMd : AppSpacing.mdLg),
               decoration: BoxDecoration(
-                color: colorScheme.errorContainer.withValues(alpha: 0.1),
+                color: colorScheme.errorContainer.withValues(alpha: AppOpacity.medium),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.error_outline_rounded,
-                size: isCompact ? 32 : 48,
+                size: isCompact ? AppSpacing.xl : AppSpacing.xxl,
                 color: colorScheme.error,
               ),
             ),
-            if (!isCompact) const SizedBox(height: 24),
+            if (!isCompact) const SizedBox(height: AppSpacing.lg),
             Text(
               '很抱歉發生錯誤，我們正在努力搶修',
               style: (isCompact ? textTheme.titleSmall : textTheme.titleMedium),
               textAlign: TextAlign.center,
             ),
             if (message != null && !isCompact) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Text(message!, style: textTheme.bodyMedium, textAlign: TextAlign.center),
             ],
             if (onRetry != null) ...[
-              SizedBox(height: isCompact ? 10 : 24),
-              ElevatedButton.icon(
+              SizedBox(height: isCompact ? AppSpacing.sm : AppSpacing.lg),
+              FilledButton.icon(
                 onPressed: onRetry,
-                style: ElevatedButton.styleFrom(
+                style: FilledButton.styleFrom(
                   backgroundColor: colorScheme.error,
                   foregroundColor: colorScheme.onError,
-                  elevation: 0,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isCompact ? 12 : 24,
-                    vertical: isCompact ? 4 : 12,
-                  ),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 icon: const Icon(Icons.refresh_rounded, size: 20),
-                label: Text(
-                  '點我重試',
-                  style: textTheme.labelLarge?.copyWith(color: colorScheme.onError),
-                ),
+                label: const Text('點我重試'),
               ),
             ],
           ],
