@@ -43,19 +43,26 @@ class AccountPage extends HookConsumerWidget {
         body: SafeArea(
           bottom: false,
           child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _TopBar(),
-                SizedBox(height: AppSpacing.md),
-                _ProfileHeader(),
-                SizedBox(height: AppSpacing.lg),
-                Divider(),
-                _SectionLabel('訂閱方案'),
-                _SubscriptionSection(),
-                _SectionLabel('身形'),
-                _BodyMeasurementsRow(),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: AppSpacing.md),
+                      _ProfileHeader(),
+                      SizedBox(height: AppSpacing.lg),
+                      Divider(),
+                      _SectionLabel('訂閱方案'),
+                      _SubscriptionSection(),
+                      _SectionLabel('身形'),
+                      _BodyMeasurementsRow(),
+                    ],
+                  ),
+                ),
                 SizedBox(height: AppSpacing.xxl),
               ],
             ),
@@ -76,12 +83,17 @@ class _TopBar extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: AppSpacing.sm),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Expanded(
-            child: Column(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.sm,
+      ),
+      child: SizedBox(
+        width: double.infinity,
+        child: Stack(
+          children: [
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -95,15 +107,19 @@ class _TopBar extends StatelessWidget {
                 Text('我的帳戶', style: textTheme.headlineMedium),
               ],
             ),
-          ),
-          IconButton(
-            icon: Icon(Icons.settings_outlined, color: colorScheme.onSurface),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            tooltip: '設定',
-            onPressed: () => context.push(AppRoutes.personalSettings),
-          ),
-        ],
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: IconButton(
+                icon: Icon(Icons.settings_outlined, color: colorScheme.onSurface),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                tooltip: '設定',
+                onPressed: () => context.push(AppRoutes.personalSettings),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
