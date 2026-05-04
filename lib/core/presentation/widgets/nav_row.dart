@@ -50,11 +50,15 @@ class NavRow extends StatelessWidget {
               child: Text(title, style: textTheme.bodyLarge?.copyWith(color: foreground)),
             ),
             if (trailingValue != null)
-              Padding(
-                padding: const EdgeInsets.only(left: AppSpacing.sm),
-                child: Text(
-                  trailingValue!,
-                  style: textTheme.bodyMedium?.copyWith(color: muted),
+              Flexible(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: AppSpacing.sm),
+                  child: Text(
+                    trailingValue!,
+                    style: textTheme.bodyMedium?.copyWith(color: muted),
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.end,
+                  ),
                 ),
               ),
             if (showChevron) ...[
