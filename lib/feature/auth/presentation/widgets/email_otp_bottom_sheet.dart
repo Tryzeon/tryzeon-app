@@ -52,7 +52,7 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
         }
       });
       return timer.cancel;
-    }, [resendCountdown.value > 0]);
+    }, [resendCountdown.value]);
 
     Future<void> handleSendEmailOtp({final bool isResend = false}) async {
       if (!isResend && !(emailFormKey.currentState?.validate() ?? false)) {
