@@ -160,80 +160,75 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
           AppSpacing.lg,
           AppSpacing.lg,
         ),
-        child: AnimatedSwitcher(
-          duration: AppDuration.slow,
-          child: isOtpSent.value
-              ? Form(
-                  key: otpFormKey,
-                  child: Column(
-                    key: const ValueKey('otp'),
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('輸入驗證碼', style: textTheme.headlineLarge),
-                      const SizedBox(height: AppSpacing.sm),
-                      Text(
-                        '已發送至 ${emailController.text}',
-                        style: textTheme.bodyLarge?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
+        child: isOtpSent.value
+            ? Form(
+                key: otpFormKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('輸入驗證碼', style: textTheme.headlineLarge),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      '已發送至 ${emailController.text}',
+                      style: textTheme.bodyLarge?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    buildInput(
+                      controller: tokenController,
+                      hint: '6位數驗證碼',
+                      isNumber: true,
+                      validator: AppValidators.validateOtp,
+                      onSubmitted: (_) => handleVerifyEmailOtp(),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    buildButton('驗證並登入', handleVerifyEmailOtp),
+                    const SizedBox(height: AppSpacing.md),
+                    Center(
+                      child: TextButton(
+                        onPressed: (resendCountdown.value > 0 || isLoading.value)
+                            ? null
+                            : () => handleSendEmailOtp(isResend: true),
+                        child: Text(
+                          isLoading.value && resendCountdown.value <= 0
+                              ? '重新發送中...'
+                              : resendCountdown.value > 0
+                              ? '重新發送 (${resendCountdown.value}s)'
+                              : '重新發送驗證碼',
                         ),
                       ),
-                      const SizedBox(height: AppSpacing.lg),
-                      buildInput(
-                        controller: tokenController,
-                        hint: '6位數驗證碼',
-                        isNumber: true,
-                        validator: AppValidators.validateOtp,
-                        onSubmitted: (_) => handleVerifyEmailOtp(),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      buildButton('驗證並登入', handleVerifyEmailOtp),
-                      const SizedBox(height: AppSpacing.md),
-                      Center(
-                        child: TextButton(
-                          onPressed: (resendCountdown.value > 0 || isLoading.value)
-                              ? null
-                              : () => handleSendEmailOtp(isResend: true),
-                          child: Text(
-                            isLoading.value && resendCountdown.value <= 0
-                                ? '重新發送中...'
-                                : resendCountdown.value > 0
-                                ? '重新發送 (${resendCountdown.value}s)'
-                                : '重新發送驗證碼',
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              : Form(
-                  key: emailFormKey,
-                  child: Column(
-                    key: const ValueKey('email'),
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('使用 Email 登入', style: textTheme.headlineLarge),
-                      const SizedBox(height: AppSpacing.sm),
-                      Text(
-                        '我們將發送驗證碼至您的信箱',
-                        style: textTheme.bodyLarge?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      buildInput(
-                        controller: emailController,
-                        hint: 'name@example.com',
-                        validator: AppValidators.validateEmail,
-                        onSubmitted: (_) => handleSendEmailOtp(),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      buildButton('發送驗證碼', handleSendEmailOtp),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-        ),
+              )
+            : Form(
+                key: emailFormKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('使用 Email 登入', style: textTheme.headlineLarge),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      '我們將發送驗證碼至您的信箱',
+                      style: textTheme.bodyLarge?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    buildInput(
+                      controller: emailController,
+                      hint: 'name@example.com',
+                      validator: AppValidators.validateEmail,
+                      onSubmitted: (_) => handleSendEmailOtp(),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    buildButton('發送驗證碼', handleSendEmailOtp),
+                  ],
+                ),
+              ),
       ),
     );
   }
