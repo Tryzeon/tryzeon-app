@@ -143,8 +143,12 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       await _localDataSource.saveUserProfile(updatedProfile);
 
       if (previousAvatarPath != null && previousAvatarPath.isNotEmpty) {
-        _remoteDataSource.deleteAvatar(previousAvatarPath);
-        _localDataSource.deleteAvatar(previousAvatarPath);
+        try {
+          await _remoteDataSource.deleteAvatar(previousAvatarPath);
+          await _localDataSource.deleteAvatar(previousAvatarPath);
+        } catch (e, stackTrace) {
+          AppLogger.warning('Failed to delete previous avatar', e, stackTrace);
+        }
       }
 
       return const Ok(null);
