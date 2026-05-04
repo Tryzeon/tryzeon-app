@@ -5,7 +5,7 @@ import 'package:tryzeon/feature/store/home/presentation/pages/home_page.dart';
 import 'package:tryzeon/feature/store/onboarding/presentation/pages/store_onboarding_page.dart';
 import 'package:tryzeon/feature/store/products/presentation/pages/add_product_page.dart';
 import 'package:tryzeon/feature/store/products/presentation/pages/product_detail_page.dart';
-import 'package:tryzeon/feature/store/settings/presentation/pages/profile_setting_page.dart';
+import 'package:tryzeon/feature/store/settings/presentation/pages/profile_settings_page.dart';
 import 'package:tryzeon/feature/store/settings/presentation/pages/settings_page.dart';
 
 final storeShellRoute = StatefulShellRoute.indexedStack(

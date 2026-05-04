@@ -1,0 +1,246 @@
+import 'dart:io';
+
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:tryzeon/core/extensions/failure_extension.dart';
+import 'package:tryzeon/core/presentation/widgets/error_view.dart';
+import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/core/utils/image_picker_helper.dart';
+import 'package:tryzeon/core/utils/validators.dart';
+import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
+import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
+import 'package:typed_result/typed_result.dart';
+
+class StoreProfileSettingsPage extends HookConsumerWidget {
+  const StoreProfileSettingsPage({super.key});
+
+  @override
+  Widget build(final BuildContext context, final WidgetRef ref) {
+    final profileAsync = ref.watch(storeProfileProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('店家資料'),
+        centerTitle: true,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
+      ),
+      body: SafeArea(
+        top: false,
+        child: profileAsync.when(
+          data: (final profile) {
+            if (profile == null) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            return _StoreProfileForm(profile: profile);
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (final error, final stack) => ErrorView(
+            message: error.displayMessage(context),
+            onRetry: () => refreshStoreProfile(ref),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StoreProfileForm extends HookConsumerWidget {
+  const _StoreProfileForm({required this.profile});
+
+  final StoreProfile profile;
+
+  @override
+  Widget build(final BuildContext context, final WidgetRef ref) {
+    final formKey = useMemoized(GlobalKey<FormState>.new);
+    final newLogoImage = useState<File?>(null);
+    final isLoading = useState(false);
+
+    final storeNameController = useTextEditingController(text: profile.name);
+    final storeAddressController = useTextEditingController(text: profile.address);
+
+    final storeName = useValueListenable(storeNameController).text;
+    final storeAddress = useValueListenable(storeAddressController).text;
+    final newLogo = newLogoImage.value;
+
+    final hasChanges =
+        storeName.trim() != profile.name ||
+        storeAddress.trim() != profile.address ||
+        newLogo != null;
+
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
+    Future<void> updateProfile() async {
+      if (!formKey.currentState!.validate()) return;
+
+      isLoading.value = true;
+
+      final targetProfile = profile.copyWith(
+        name: storeNameController.text.trim(),
+        address: storeAddressController.text.trim(),
+      );
+
+      final updateUseCase = ref.read(updateStoreProfileUseCaseProvider);
+      final result = await updateUseCase(
+        original: profile,
+        target: targetProfile,
+        logoFile: newLogoImage.value,
+      );
+
+      if (!context.mounted) return;
+
+      isLoading.value = false;
+
+      if (result.isSuccess) {
+        TopNotification.show(context, message: '店家資訊已更新', type: NotificationType.success);
+        ref.invalidate(storeProfileProvider);
+        if (context.mounted) context.pop();
+      } else {
+        TopNotification.show(
+          context,
+          message: result.getError()!.displayMessage(context),
+          type: NotificationType.error,
+        );
+      }
+    }
+
+    Future<void> updateLogo() async {
+      final File? image = await ImagePickerHelper.pickImage(
+        context,
+        enableCrop: true,
+        cropStyle: CropStyle.circle,
+        aspectRatioPresets: [CropAspectRatioPreset.square],
+      );
+      if (image == null) return;
+
+      newLogoImage.value = image;
+    }
+
+    Widget buildLogoPreview() {
+      const size = 96.0;
+
+      if (newLogoImage.value != null) {
+        return ClipOval(
+          child: Image.file(
+            newLogoImage.value!,
+            width: size,
+            height: size,
+            fit: BoxFit.cover,
+          ),
+        );
+      }
+
+      final logoUrl = profile.logoUrl;
+      if (logoUrl == null || logoUrl.isEmpty) {
+        return Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: colorScheme.surfaceContainerHighest,
+          ),
+          child: Icon(
+            Icons.storefront_outlined,
+            size: AppSpacing.xl,
+            color: colorScheme.onSurfaceVariant,
+          ),
+        );
+      }
+
+      return ClipOval(
+        child: CachedNetworkImage(
+          imageUrl: logoUrl,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          placeholder: (final context, final url) => Container(
+            width: size,
+            height: size,
+            color: colorScheme.surfaceContainerHighest,
+            child: const Center(
+              child: SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          ),
+          errorWidget: (final context, final url, final error) => Container(
+            width: size,
+            height: size,
+            color: colorScheme.surfaceContainerHighest,
+            child: Icon(
+              Icons.storefront_outlined,
+              size: AppSpacing.xl,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      child: Form(
+        key: formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: AppSpacing.lg),
+            Center(
+              child: Column(
+                children: [
+                  GestureDetector(onTap: updateLogo, child: buildLogoPreview()),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    '點擊更換店家 Logo',
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            TextFormField(
+              controller: storeNameController,
+              textInputAction: TextInputAction.next,
+              validator: AppValidators.validateStoreName,
+              decoration: const InputDecoration(labelText: '店家名稱'),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            TextFormField(
+              controller: storeAddressController,
+              textInputAction: TextInputAction.done,
+              decoration: const InputDecoration(labelText: '店家地址'),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: isLoading.value || !hasChanges ? null : updateProfile,
+                child: isLoading.value
+                    ? SizedBox(
+                        width: AppSpacing.mdLg,
+                        height: AppSpacing.mdLg,
+                        child: CircularProgressIndicator(
+                          color: colorScheme.onPrimary,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text('儲存'),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+          ],
+        ),
+      ),
+    );
+  }
+}
