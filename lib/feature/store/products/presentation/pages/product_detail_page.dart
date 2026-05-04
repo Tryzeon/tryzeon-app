@@ -1,6 +1,7 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
@@ -102,7 +103,7 @@ class _ProductDetailContentPage extends HookConsumerWidget {
 
       if (result.isSuccess) {
         ref.invalidate(productsProvider);
-        Navigator.pop(context, true);
+        context.pop(true);
       } else {
         TopNotification.show(
           context,
@@ -148,7 +149,7 @@ class _ProductDetailContentPage extends HookConsumerWidget {
 
       if (result.isSuccess) {
         ref.invalidate(productsProvider);
-        Navigator.pop(context, true);
+        context.pop(true);
       } else {
         TopNotification.show(
           context,
