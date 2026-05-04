@@ -36,13 +36,6 @@ class AppConstants {
   static const String defaultProfileImage = 'assets/images/profile/default.png';
   static const String tryOnSkeleton = 'assets/images/tryon/skeleton.svg';
 
-  // Timeouts & Durations
-  static const Duration defaultAnimationDuration = Duration(milliseconds: 300);
-  static const Duration shortAnimationDuration = Duration(milliseconds: 200);
-  static const Duration longAnimationDuration = Duration(milliseconds: 500);
-  static const Duration toastDuration = Duration(seconds: 3);
-  static const Duration errorToastDuration = Duration(seconds: 10);
-
   // Logic
   static const int maxProductImages = 3;
   static const int otpResendCountdownSeconds = 60;
