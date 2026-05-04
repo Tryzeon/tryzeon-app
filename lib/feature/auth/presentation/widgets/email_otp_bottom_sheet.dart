@@ -170,10 +170,7 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        '輸入驗證碼',
-                        style: textTheme.headlineLarge,
-                      ),
+                      Text('輸入驗證碼', style: textTheme.headlineLarge),
                       const SizedBox(height: AppSpacing.sm),
                       Text(
                         '已發送至 ${emailController.text}',
@@ -216,10 +213,7 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        '使用 Email 登入',
-                        style: textTheme.headlineLarge,
-                      ),
+                      Text('使用 Email 登入', style: textTheme.headlineLarge),
                       const SizedBox(height: AppSpacing.sm),
                       Text(
                         '我們將發送驗證碼至您的信箱',

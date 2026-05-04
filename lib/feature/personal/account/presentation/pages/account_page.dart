@@ -29,10 +29,7 @@ class AccountPage extends HookConsumerWidget {
 
     ref.listen(personalSettingsControllerProvider, (final previous, final next) {
       if (next is AsyncError) {
-        TopNotification.show(
-          context,
-          message: next.error.displayMessage(context),
-        );
+        TopNotification.show(context, message: next.error.displayMessage(context));
       }
     });
 

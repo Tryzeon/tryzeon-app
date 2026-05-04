@@ -25,10 +25,7 @@ class StoreSettingsPage extends HookConsumerWidget {
 
     ref.listen(storeSettingsControllerProvider, (final previous, final next) {
       if (next is AsyncError) {
-        TopNotification.show(
-          context,
-          message: next.error.displayMessage(context),
-        );
+        TopNotification.show(context, message: next.error.displayMessage(context));
       }
     });
 
@@ -80,10 +77,7 @@ class StoreSettingsPage extends HookConsumerWidget {
       }
 
       if (!context.mounted) return;
-      TopNotification.show(
-        context,
-        message: '目前無法開啟 Instagram 連結',
-      );
+      TopNotification.show(context, message: '目前無法開啟 Instagram 連結');
     }
 
     Future<void> handleDeleteAccount() async {
@@ -154,9 +148,8 @@ class StoreSettingsPage extends HookConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.xxl),
                 VersionInfo(
-                  versionProvider: (final ref) => ref
-                      .read(storeSettingsControllerProvider.notifier)
-                      .getAppVersion(),
+                  versionProvider: (final ref) =>
+                      ref.read(storeSettingsControllerProvider.notifier).getAppVersion(),
                 ),
                 const SizedBox(height: AppSpacing.lg),
               ],

@@ -146,9 +146,7 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
                   ),
                   child: Text(
                     '$filledCount / $totalMeasurementFields',
-                    style: textTheme.labelSmall?.copyWith(
-                      color: colorScheme.primary,
-                    ),
+                    style: textTheme.labelSmall?.copyWith(color: colorScheme.primary),
                   ),
                 ),
               ],

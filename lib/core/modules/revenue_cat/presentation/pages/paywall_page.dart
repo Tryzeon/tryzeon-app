@@ -39,17 +39,11 @@ class PaywallPage extends HookConsumerWidget {
           },
           onPurchaseError: (final error) {
             AppLogger.error('Purchase failed', error.message);
-            TopNotification.show(
-              context,
-              message: '購買失敗：${error.message}',
-            );
+            TopNotification.show(context, message: '購買失敗：${error.message}');
           },
           onRestoreError: (final error) {
             AppLogger.error('Restore failed', error.message);
-            TopNotification.show(
-              context,
-              message: '恢復購買失敗：${error.message}',
-            );
+            TopNotification.show(context, message: '恢復購買失敗：${error.message}');
           },
           onDismiss: () {
             safePop();

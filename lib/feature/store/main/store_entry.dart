@@ -15,10 +15,7 @@ class StoreEntry extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     ref.listen(storeProfileProvider, (final previous, final next) {
       if (next is AsyncError) {
-        TopNotification.show(
-          context,
-          message: next.error.displayMessage(context),
-        );
+        TopNotification.show(context, message: next.error.displayMessage(context));
       }
     });
 

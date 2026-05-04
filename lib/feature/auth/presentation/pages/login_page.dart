@@ -36,10 +36,7 @@ class LoginPage extends HookConsumerWidget {
       } else {
         final failure = result.getError()!;
         if (failure is UserCanceledFailure) return;
-        TopNotification.show(
-          context,
-          message: failure.displayMessage(context),
-        );
+        TopNotification.show(context, message: failure.displayMessage(context));
       }
     }
 

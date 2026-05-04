@@ -127,10 +127,7 @@ class PersonalOnboardingPage extends HookConsumerWidget {
 
     switch (result) {
       case Err(:final error):
-        TopNotification.show(
-          context,
-          message: error.displayMessage(context),
-        );
+        TopNotification.show(context, message: error.displayMessage(context));
       case Ok():
         context.go(AppRoutes.personalHome);
     }

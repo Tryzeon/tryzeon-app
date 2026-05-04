@@ -29,10 +29,7 @@ class RevenueCatUiUtils {
     } catch (e, stackTrace) {
       AppLogger.error('Customer Center failed to open', e, stackTrace);
       if (context.mounted) {
-        TopNotification.show(
-          context,
-          message: '無法開啟訂閱管理中心',
-        );
+        TopNotification.show(context, message: '無法開啟訂閱管理中心');
       }
     }
   }

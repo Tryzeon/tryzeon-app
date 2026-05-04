@@ -63,10 +63,7 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
             content: '您的衣櫃容量已達上限\n升級至更高方案以獲得更多儲存空間！',
           );
         } else {
-          TopNotification.show(
-            context,
-            message: failure.displayMessage(context),
-          );
+          TopNotification.show(context, message: failure.displayMessage(context));
         }
       }
     }

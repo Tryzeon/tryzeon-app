@@ -136,10 +136,7 @@ class ImagePickerHelper {
     } catch (e, stackTrace) {
       AppLogger.error('Pick image failed', e, stackTrace);
       if (context.mounted) {
-        TopNotification.show(
-          context,
-          message: '選擇圖片失敗，請稍後再試',
-        );
+        TopNotification.show(context, message: '選擇圖片失敗，請稍後再試');
       }
     }
 
@@ -205,10 +202,7 @@ class ImagePickerHelper {
     } catch (e, stackTrace) {
       AppLogger.error('Pick images failed', e, stackTrace);
       if (context.mounted) {
-        TopNotification.show(
-          context,
-          message: '選擇圖片失敗，請稍後再試',
-        );
+        TopNotification.show(context, message: '選擇圖片失敗，請稍後再試');
       }
       return null;
     }

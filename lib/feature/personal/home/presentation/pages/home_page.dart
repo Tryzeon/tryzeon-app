@@ -97,10 +97,7 @@ class HomePage extends HookConsumerWidget {
       } catch (e, stackTrace) {
         AppLogger.error('Failed to upload avatar', e, stackTrace);
         if (context.mounted) {
-          TopNotification.show(
-            context,
-            message: '上傳照片失敗，請稍後再試',
-          );
+          TopNotification.show(context, message: '上傳照片失敗，請稍後再試');
         }
       } finally {
         if (context.mounted) {
@@ -117,10 +114,7 @@ class HomePage extends HookConsumerWidget {
       // 0. Check if avatar is uploaded
       final avatarFile = ref.read(avatarFileProvider).value;
       if (avatarFile == null) {
-        TopNotification.show(
-          context,
-          message: '請先上傳個人照片才能開始試穿呦！',
-        );
+        TopNotification.show(context, message: '請先上傳個人照片才能開始試穿呦！');
         return;
       }
 
@@ -203,10 +197,7 @@ class HomePage extends HookConsumerWidget {
                 : '您的今日試穿次數已達上限\n升級至更高方案以獲得更多次數！',
           );
         } else {
-          TopNotification.show(
-            context,
-            message: failure.displayMessage(context),
-          );
+          TopNotification.show(context, message: failure.displayMessage(context));
         }
       }
     }
@@ -291,10 +282,7 @@ class HomePage extends HookConsumerWidget {
       } catch (e, stackTrace) {
         AppLogger.error('Failed to save media', e, stackTrace);
         if (context.mounted) {
-          TopNotification.show(
-            context,
-            message: '儲存失敗，請檢查儲存權限',
-          );
+          TopNotification.show(context, message: '儲存失敗，請檢查儲存權限');
         }
       }
     }
@@ -421,8 +409,7 @@ class HomePage extends HookConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     TryOnAvatarBadge(
-                      isVisible:
-                          customAvatarIndex.value == currentTryonIndex.value,
+                      isVisible: customAvatarIndex.value == currentTryonIndex.value,
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     TryOnMoreOptionsButton(

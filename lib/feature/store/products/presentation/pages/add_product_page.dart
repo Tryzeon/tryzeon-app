@@ -32,10 +32,7 @@ class AddProductPage extends HookConsumerWidget {
       if (!context.mounted) return;
 
       if (storeProfile == null) {
-        TopNotification.show(
-          context,
-          message: '無法獲取店家資訊，請重新登入',
-        );
+        TopNotification.show(context, message: '無法獲取店家資訊，請重新登入');
         isLoading.value = false;
         return;
       }

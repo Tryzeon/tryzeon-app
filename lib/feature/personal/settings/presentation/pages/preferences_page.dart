@@ -26,10 +26,7 @@ class PreferencesPage extends HookConsumerWidget {
         if (!context.mounted) return;
 
         if (permission == LocationPermission.denied) {
-          TopNotification.show(
-            context,
-            message: '需要開啟定位權限才能使用此功能',
-          );
+          TopNotification.show(context, message: '需要開啟定位權限才能使用此功能');
           return;
         }
 

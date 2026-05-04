@@ -11,18 +11,15 @@ class TryOnAvatarBadge extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return AnimatedScale(
       scale: isVisible ? 1.0 : 0.0,
       duration: AppDuration.standard,
       curve: AppCurves.emphasized,
-      child: const CircleAvatar(
+      child: CircleAvatar(
         radius: 16,
-        backgroundColor: AppColors.primary,
-        child: Icon(
-          Icons.star_rounded,
-          color: AppColors.onPrimary,
-          size: 20,
-        ),
+        backgroundColor: colorScheme.primary,
+        child: Icon(Icons.star_rounded, color: colorScheme.onPrimary, size: 20),
       ),
     );
   }
