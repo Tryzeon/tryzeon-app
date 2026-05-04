@@ -101,7 +101,7 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
       if (context.mounted) {
         isLoading.value = false;
         if (result.isSuccess) {
-          context.pop();
+          Navigator.of(context).pop();
           context.go(AppRoutes.homeForUserType(userType));
         } else {
           TopNotification.show(
