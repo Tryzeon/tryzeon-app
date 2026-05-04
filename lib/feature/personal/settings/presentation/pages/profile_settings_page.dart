@@ -18,7 +18,13 @@ class PersonalProfileSettingsPage extends HookConsumerWidget {
     final profileAsync = ref.watch(userProfileProvider);
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('個人資料'),
+        centerTitle: true,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
+      ),
       body: SafeArea(
+        top: false,
         child: profileAsync.when(
           data: (final profile) {
             if (profile == null) {
@@ -86,8 +92,6 @@ class _PersonalProfileForm extends HookConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const _PageHeader('個人資料'),
-            const SizedBox(height: AppSpacing.sm),
             Text(
               '你的名字不會被公開顯示。',
               style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
@@ -120,42 +124,6 @@ class _PersonalProfileForm extends HookConsumerWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _PageHeader extends StatelessWidget {
-  const _PageHeader(this.title);
-
-  final String title;
-
-  @override
-  Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: IconButton(
-            icon: Icon(
-              Icons.arrow_back_ios_new_rounded,
-              color: theme.colorScheme.onSurface,
-              size: AppSpacing.mdLg,
-            ),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            onPressed: () => Navigator.of(context).maybePop(),
-            tooltip: 'Back',
-          ),
-        ),
-        const SizedBox(height: AppSpacing.md),
-        Text(
-          title,
-          style: theme.textTheme.displaySmall?.copyWith(fontStyle: FontStyle.normal),
-        ),
-      ],
     );
   }
 }

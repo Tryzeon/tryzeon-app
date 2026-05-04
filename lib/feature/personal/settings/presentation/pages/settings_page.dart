@@ -102,13 +102,18 @@ class PersonalSettingsPage extends HookConsumerWidget {
     return LoadingOverlay(
       isLoading: state.isLoading,
       child: Scaffold(
+        appBar: AppBar(
+          title: const Text('設定'),
+          centerTitle: true,
+          foregroundColor: colorScheme.onSurface,
+        ),
         body: SafeArea(
+          top: false,
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const _PageHeader('設定'),
                 const _SectionLabel('個人'),
                 NavRow(
                   icon: Icons.person_outline,
@@ -163,46 +168,6 @@ class PersonalSettingsPage extends HookConsumerWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _PageHeader extends StatelessWidget {
-  const _PageHeader(this.title);
-
-  final String title;
-
-  @override
-  Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: IconButton(
-            icon: Icon(
-              Icons.arrow_back_ios_new_rounded,
-              color: colorScheme.onSurface,
-              size: AppSpacing.mdLg,
-            ),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            onPressed: () => Navigator.of(context).maybePop(),
-            tooltip: 'Back',
-          ),
-        ),
-        const SizedBox(height: AppSpacing.md),
-        Text(
-          title,
-          style: theme.textTheme.displaySmall?.copyWith(
-            fontStyle: FontStyle.normal,
-            color: colorScheme.onSurface,
-          ),
-        ),
-      ],
     );
   }
 }

@@ -23,7 +23,13 @@ class SubscriptionPage extends HookConsumerWidget {
     final capabilitiesAsync = ref.watch(subscriptionCapabilitiesProvider);
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('訂閱方案'),
+        centerTitle: true,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
+      ),
       body: SafeArea(
+        top: false,
         child: _buildBody(context, ref, entitlementAsync, capabilitiesAsync),
       ),
     );
@@ -86,7 +92,6 @@ class _SubscriptionContent extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _PageHeader('訂閱方案'),
           const _SectionLabel('方案'),
           Container(
             padding: const EdgeInsets.all(AppSpacing.md),
@@ -227,46 +232,6 @@ class _UpgradeToMaxCta extends StatelessWidget {
         onPressed: () => RevenueCatUiUtils.presentPaywall(context),
         child: const Text('升級至 Max'),
       ),
-    );
-  }
-}
-
-class _PageHeader extends StatelessWidget {
-  const _PageHeader(this.title);
-
-  final String title;
-
-  @override
-  Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: IconButton(
-            icon: Icon(
-              Icons.arrow_back_ios_new_rounded,
-              color: colorScheme.onSurface,
-              size: AppSpacing.mdLg,
-            ),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            onPressed: () => Navigator.of(context).maybePop(),
-            tooltip: 'Back',
-          ),
-        ),
-        const SizedBox(height: AppSpacing.md),
-        Text(
-          title,
-          style: theme.textTheme.displaySmall?.copyWith(
-            fontStyle: FontStyle.normal,
-            color: colorScheme.onSurface,
-          ),
-        ),
-      ],
     );
   }
 }

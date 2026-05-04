@@ -64,14 +64,18 @@ class PreferencesPage extends HookConsumerWidget {
     }
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('偏好設定'),
+        centerTitle: true,
+        foregroundColor: colorScheme.onSurface,
+      ),
       body: SafeArea(
+        top: false,
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _PageHeader('偏好設定'),
-              const SizedBox(height: AppSpacing.sm),
               Text(
                 '管理你的個人偏好。',
                 style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
@@ -91,42 +95,6 @@ class PreferencesPage extends HookConsumerWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _PageHeader extends StatelessWidget {
-  const _PageHeader(this.title);
-
-  final String title;
-
-  @override
-  Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: IconButton(
-            icon: Icon(
-              Icons.arrow_back_ios_new_rounded,
-              color: theme.colorScheme.onSurface,
-              size: AppSpacing.mdLg,
-            ),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            onPressed: () => Navigator.of(context).maybePop(),
-            tooltip: 'Back',
-          ),
-        ),
-        const SizedBox(height: AppSpacing.md),
-        Text(
-          title,
-          style: theme.textTheme.displaySmall?.copyWith(fontStyle: FontStyle.normal),
-        ),
-      ],
     );
   }
 }

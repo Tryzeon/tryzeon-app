@@ -22,7 +22,13 @@ class BodyMeasurementsSettingsPage extends HookConsumerWidget {
     final profileAsync = ref.watch(userProfileProvider);
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('身形資料'),
+        centerTitle: true,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
+      ),
       body: SafeArea(
+        top: false,
         child: profileAsync.when(
           data: (final profile) {
             if (profile == null) {
@@ -118,14 +124,35 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _PageHeader(
-              title: '身形資料',
-              progress: '$filledCount / $totalMeasurementFields',
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              '資料僅供試穿尺寸推薦，不對外顯示。',
-              style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Text(
+                    '資料僅供試穿尺寸推薦，不對外顯示。',
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: AppSpacing.xxs,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer,
+                    borderRadius: AppRadius.pillAll,
+                  ),
+                  child: Text(
+                    '$filledCount / $totalMeasurementFields',
+                    style: textTheme.labelSmall?.copyWith(
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: AppSpacing.lg),
             _MeasurementGrid(
@@ -153,62 +180,6 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _PageHeader extends StatelessWidget {
-  const _PageHeader({required this.title, required this.progress});
-
-  final String title;
-  final String progress;
-
-  @override
-  Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: IconButton(
-            icon: Icon(
-              Icons.arrow_back_ios_new_rounded,
-              color: colorScheme.onSurface,
-              size: AppSpacing.mdLg,
-            ),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            onPressed: () => Navigator.of(context).maybePop(),
-            tooltip: 'Back',
-          ),
-        ),
-        const SizedBox(height: AppSpacing.md),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(
-              child: Text(
-                title,
-                style: theme.textTheme.displaySmall?.copyWith(
-                  fontStyle: FontStyle.normal,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-              child: Text(
-                progress,
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
     );
   }
 }
