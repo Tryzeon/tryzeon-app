@@ -19,8 +19,8 @@ class SubscriptionUsageCard extends StatelessWidget {
 
   final AppSubscriptionEntitlement entitlement;
   final String? formattedRenewalLine;
-  final int dailyTryOnUsed;
-  final int dailyTryOnLimit;
+  final int? dailyTryOnUsed;
+  final int? dailyTryOnLimit;
   final VoidCallback onTap;
 
   @override
@@ -111,8 +111,8 @@ class _UsageStat extends StatelessWidget {
   const _UsageStat({required this.label, required this.used, required this.limit});
 
   final String label;
-  final int used;
-  final int limit; // -1 → unlimited; 0 → not available for this tier
+  final int? used;
+  final int? limit;
 
   @override
   Widget build(final BuildContext context) {
@@ -120,31 +120,21 @@ class _UsageStat extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    final isUnlimited = limit < 0;
-    final isLocked = limit == 0;
-    final progress = isUnlimited || isLocked ? 0.0 : (used / limit).clamp(0.0, 1.0);
+    final canShowProgress = limit != null && used != null;
+    final progress = canShowProgress ? (used! / limit!).clamp(0.0, 1.0) : 0.0;
 
-    final Widget valueText;
-    if (isLocked) {
-      valueText = Text(
-        '未開通',
-        style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurfaceVariant),
-      );
-    } else {
-      final limitText = isUnlimited ? '∞' : limit.toString();
-      valueText = RichText(
-        text: TextSpan(
-          style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
-          children: [
-            TextSpan(text: '$used'),
-            TextSpan(
-              text: ' / $limitText',
-              style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-            ),
-          ],
-        ),
-      );
-    }
+    final Widget valueText = RichText(
+      text: TextSpan(
+        style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
+        children: [
+          TextSpan(text: used?.toString() ?? '—'),
+          TextSpan(
+            text: ' / ${limit?.toString() ?? '—'}',
+            style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+          ),
+        ],
+      ),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -162,7 +152,9 @@ class _UsageStat extends StatelessWidget {
             value: progress,
             minHeight: 2,
             backgroundColor: colorScheme.surfaceContainerHighest,
-            valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+            valueColor: AlwaysStoppedAnimation<Color>(
+              canShowProgress ? colorScheme.primary : colorScheme.surfaceContainerHighest,
+            ),
           ),
         ),
       ],

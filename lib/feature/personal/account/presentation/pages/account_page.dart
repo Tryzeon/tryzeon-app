@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/modules/revenue_cat/di/revenue_cat_providers.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_overlay.dart';
@@ -215,54 +216,110 @@ class _SubscriptionSection extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final entitlementAsync = ref.watch(appSubscriptionEntitlementProvider);
     final capabilitiesAsync = ref.watch(subscriptionCapabilitiesProvider);
-    final tryonUsed = ref.watch(
-      dailyUsageTodayProvider.select((final a) => a.value?.tryonCount ?? 0),
-    );
+    final usageAsync = ref.watch(dailyUsageTodayProvider);
 
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    if (entitlementAsync.isLoading || capabilitiesAsync.isLoading) {
-      return Container(
-        height: 140,
-        decoration: BoxDecoration(
-          borderRadius: AppRadius.cardAll,
-          border: Border.all(color: colorScheme.outline),
-          color: colorScheme.surfaceContainerHighest,
-        ),
-      );
+    void openSubscription() => context.push(AppRoutes.personalSubscription);
+    // Entitlement is structural (defines plan identity); without it the card
+    // has no meaning. Capabilities and usage degrade per-stat inside the card.
+    final entitlement = entitlementAsync.value;
+    if (entitlement == null) {
+      return entitlementAsync.hasError
+          ? _SubscriptionErrorCard(onTap: openSubscription)
+          : const _SubscriptionSkeletonCard();
     }
-
-    if (entitlementAsync.hasError || capabilitiesAsync.hasError) {
-      return Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => context.push(AppRoutes.personalSubscription),
-          borderRadius: AppRadius.cardAll,
-          child: Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              borderRadius: AppRadius.cardAll,
-              border: Border.all(color: colorScheme.outline),
-            ),
-            child: Text(
-              '無法載入訂閱資訊',
-              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
-            ),
-          ),
-        ),
-      );
-    }
-
-    final entitlement = entitlementAsync.value!;
-    final capabilities = capabilitiesAsync.value!;
 
     return SubscriptionUsageCard(
       entitlement: entitlement,
       formattedRenewalLine: formatRenewalLine(entitlement),
-      dailyTryOnUsed: tryonUsed,
-      dailyTryOnLimit: capabilities.dailyTryOnLimit,
-      onTap: () => context.push(AppRoutes.personalSubscription),
+      dailyTryOnUsed: usageAsync.value?.tryonCount,
+      dailyTryOnLimit: capabilitiesAsync.value?.dailyTryOnLimit,
+      onTap: openSubscription,
+    );
+  }
+}
+
+/// Layout-only skeleton matching [SubscriptionUsageCard]'s structure so the
+/// real card swaps in without a height jump. Skeletonizer shimmers over the
+/// placeholder text — the strings themselves are arbitrary.
+class _SubscriptionSkeletonCard extends StatelessWidget {
+  const _SubscriptionSkeletonCard();
+
+  @override
+  Widget build(final BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
+    return Skeletonizer(
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          borderRadius: AppRadius.cardAll,
+          border: Border.all(color: colorScheme.outline),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Plan', style: textTheme.headlineLarge),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              'Renewing on YYYY-MM-DD',
+              style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text('0 / 00', style: textTheme.titleMedium),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              '今日試穿',
+              style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Container(height: 2, color: colorScheme.surfaceContainerHighest),
+            const SizedBox(height: AppSpacing.md),
+            const Divider(),
+            const SizedBox(height: AppSpacing.smMd),
+            Center(
+              child: Text(
+                '查看訂閱詳情',
+                style: textTheme.labelMedium?.copyWith(color: colorScheme.primary),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SubscriptionErrorCard extends StatelessWidget {
+  const _SubscriptionErrorCard({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(final BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.cardAll,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.cardAll,
+            border: Border.all(color: colorScheme.outline),
+          ),
+          child: Text(
+            '很抱歉，無法載入訂閱資訊，請稍後再試！',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
