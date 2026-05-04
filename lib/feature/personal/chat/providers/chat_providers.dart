@@ -6,6 +6,7 @@ import 'package:tryzeon/feature/personal/chat/data/repositories/chat_repository_
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_recommendation.dart';
 import 'package:tryzeon/feature/personal/chat/domain/repositories/chat_repository.dart';
 import 'package:tryzeon/feature/personal/chat/domain/usecases/get_llm_recommendation.dart';
+import 'package:tryzeon/feature/personal/usage/data/models/daily_usage_model.dart';
 import 'package:tryzeon/feature/personal/usage/presentation/providers/daily_usage_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -57,6 +58,12 @@ class ChatAction extends _$ChatAction {
     if (result.isSuccess) {
       final usage = result.get()!.usage;
       if (usage != null) {
+        ref.read(dailyUsageTodayProvider.notifier).updateFromResponse(usage);
+      }
+    } else {
+      final failure = result.getError();
+      if (failure is RateLimitFailure && failure.usagePayload != null) {
+        final usage = DailyUsageModel.fromJson(failure.usagePayload!).toEntity();
         ref.read(dailyUsageTodayProvider.notifier).updateFromResponse(usage);
       }
     }

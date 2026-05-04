@@ -7,6 +7,7 @@ import 'package:tryzeon/feature/personal/home/domain/entities/tryon_params.dart'
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/home/domain/repositories/tryon_repository.dart';
 import 'package:tryzeon/feature/personal/home/domain/usecases/tryon_usecase.dart';
+import 'package:tryzeon/feature/personal/usage/data/models/daily_usage_model.dart';
 import 'package:tryzeon/feature/personal/usage/presentation/providers/daily_usage_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -56,6 +57,12 @@ class TryonAction extends _$TryonAction {
     if (result.isSuccess) {
       final usage = result.get()!.usage;
       if (usage != null) {
+        ref.read(dailyUsageTodayProvider.notifier).updateFromResponse(usage);
+      }
+    } else {
+      final failure = result.getError();
+      if (failure is RateLimitFailure && failure.usagePayload != null) {
+        final usage = DailyUsageModel.fromJson(failure.usagePayload!).toEntity();
         ref.read(dailyUsageTodayProvider.notifier).updateFromResponse(usage);
       }
     }

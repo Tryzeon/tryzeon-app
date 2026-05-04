@@ -34,7 +34,15 @@ class ValidationFailure extends Failure {
 }
 
 class RateLimitFailure extends Failure {
-  const RateLimitFailure([super.message]);
+  const RateLimitFailure({final String? message, this.usagePayload})
+      : super(message);
+
+  /// Raw `usage` snapshot from the edge function's 429 body, if present.
+  /// Repositories populate this; orchestrators parse it into a `DailyUsage`.
+  final Map<String, dynamic>? usagePayload;
+
+  @override
+  List<Object?> get props => [message, usagePayload];
 }
 
 class UserCanceledFailure extends Failure {
@@ -56,7 +64,11 @@ Failure mapExceptionToFailure(final Object e) {
 
   if (e is FunctionException) {
     if (e.status == 429) {
-      return const RateLimitFailure();
+      final details = e.details;
+      final usage = details is Map<String, dynamic>
+          ? details['usage'] as Map<String, dynamic>?
+          : null;
+      return RateLimitFailure(usagePayload: usage);
     } else if (e.status == 422) {
       return const ServerFailure('AI 無法辨識圖片，請換一張試試');
     }
