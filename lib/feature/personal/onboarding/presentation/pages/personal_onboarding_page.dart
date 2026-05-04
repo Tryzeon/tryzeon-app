@@ -130,7 +130,6 @@ class PersonalOnboardingPage extends HookConsumerWidget {
         TopNotification.show(
           context,
           message: error.displayMessage(context),
-          type: NotificationType.error,
         );
       case Ok():
         context.go(AppRoutes.personalHome);

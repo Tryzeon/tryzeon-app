@@ -90,7 +90,6 @@ class HomePage extends HookConsumerWidget {
           TopNotification.show(
             context,
             message: result.getError()!.displayMessage(context),
-            type: NotificationType.error,
           );
         }
       } catch (e, stackTrace) {
@@ -99,7 +98,6 @@ class HomePage extends HookConsumerWidget {
           TopNotification.show(
             context,
             message: '上傳照片失敗，請稍後再試',
-            type: NotificationType.error,
           );
         }
       } finally {
@@ -120,7 +118,6 @@ class HomePage extends HookConsumerWidget {
         TopNotification.show(
           context,
           message: '請先上傳個人照片才能開始試穿呦！',
-          type: NotificationType.warning,
         );
         return;
       }
@@ -182,11 +179,7 @@ class HomePage extends HookConsumerWidget {
         tryonImages.value = [...tryonImages.value]..[resultIndex] = tryonResult;
         currentTryonIndex.value = resultIndex;
 
-        TopNotification.show(
-          context,
-          message: mode == TryOnMode.video ? '影片生成成功！' : '試穿成功！',
-          type: NotificationType.success,
-        );
+        HapticFeedback.heavyImpact();
       } else {
         // Failure: Remove placeholder
         final resultIndex = tryonImages.value.indexWhere(
@@ -211,7 +204,6 @@ class HomePage extends HookConsumerWidget {
           TopNotification.show(
             context,
             message: failure.displayMessage(context),
-            type: NotificationType.error,
           );
         }
       }
@@ -308,7 +300,6 @@ class HomePage extends HookConsumerWidget {
           TopNotification.show(
             context,
             message: '儲存失敗，請檢查儲存權限',
-            type: NotificationType.error,
           );
         }
       }
@@ -321,14 +312,6 @@ class HomePage extends HookConsumerWidget {
         customAvatarIndex.value = null;
       } else {
         customAvatarIndex.value = currentTryonIndex.value;
-      }
-
-      if (context.mounted) {
-        TopNotification.show(
-          context,
-          message: isCurrentlySet ? '已取消試穿形象' : '已設定為試穿形象',
-          type: NotificationType.success,
-        );
       }
     }
 
@@ -359,14 +342,6 @@ class HomePage extends HookConsumerWidget {
           currentTryonIndex.value = -1;
         } else if (currentTryonIndex.value >= tryonImages.value.length) {
           currentTryonIndex.value = tryonImages.value.length - 1;
-        }
-
-        if (context.mounted) {
-          TopNotification.show(
-            context,
-            message: '已刪除試穿照片',
-            type: NotificationType.success,
-          );
         }
       }
     }

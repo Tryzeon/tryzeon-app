@@ -98,14 +98,12 @@ class _StoreProfileForm extends HookConsumerWidget {
       isLoading.value = false;
 
       if (result.isSuccess) {
-        TopNotification.show(context, message: '店家資訊已更新', type: NotificationType.success);
         ref.invalidate(storeProfileProvider);
         if (context.mounted) context.pop();
       } else {
         TopNotification.show(
           context,
           message: result.getError()!.displayMessage(context),
-          type: NotificationType.error,
         );
       }
     }

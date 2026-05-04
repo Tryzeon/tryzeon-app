@@ -66,7 +66,6 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
           TopNotification.show(
             context,
             message: failure.displayMessage(context),
-            type: NotificationType.error,
           );
         }
       }

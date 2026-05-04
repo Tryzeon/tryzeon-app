@@ -29,22 +29,12 @@ class PaywallPage extends HookConsumerWidget {
             AppLogger.info('Purchase completed: ${storeTransaction.productIdentifier}');
             ref.invalidate(appSubscriptionEntitlementProvider);
             ref.invalidate(subscriptionCapabilitiesProvider);
-            TopNotification.show(
-              context,
-              message: '訂閱成功，感謝您的支持！',
-              type: NotificationType.success,
-            );
             safePop();
           },
           onRestoreCompleted: (final customerInfo) {
             AppLogger.info('Restore completed');
             ref.invalidate(appSubscriptionEntitlementProvider);
             ref.invalidate(subscriptionCapabilitiesProvider);
-            TopNotification.show(
-              context,
-              message: '購買紀錄已恢復！',
-              type: NotificationType.success,
-            );
             safePop();
           },
           onPurchaseError: (final error) {
@@ -52,7 +42,6 @@ class PaywallPage extends HookConsumerWidget {
             TopNotification.show(
               context,
               message: '購買失敗：${error.message}',
-              type: NotificationType.error,
             );
           },
           onRestoreError: (final error) {
@@ -60,7 +49,6 @@ class PaywallPage extends HookConsumerWidget {
             TopNotification.show(
               context,
               message: '恢復購買失敗：${error.message}',
-              type: NotificationType.error,
             );
           },
           onDismiss: () {

@@ -43,7 +43,7 @@ class StorePage extends HookConsumerWidget {
       );
       if (!await canLaunchUrl(uri)) {
         if (!context.mounted) return;
-        TopNotification.show(context, message: '無法開啟地圖', type: NotificationType.error);
+        TopNotification.show(context, message: '無法開啟地圖');
         return;
       }
       await launchUrl(uri, mode: LaunchMode.externalApplication);

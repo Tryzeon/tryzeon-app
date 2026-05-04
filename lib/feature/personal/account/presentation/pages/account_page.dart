@@ -32,7 +32,6 @@ class AccountPage extends HookConsumerWidget {
         TopNotification.show(
           context,
           message: next.error.displayMessage(context),
-          type: NotificationType.error,
         );
       }
     });

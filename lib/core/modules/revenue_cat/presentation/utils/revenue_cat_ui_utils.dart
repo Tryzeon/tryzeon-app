@@ -32,7 +32,6 @@ class RevenueCatUiUtils {
         TopNotification.show(
           context,
           message: '無法開啟訂閱管理中心',
-          type: NotificationType.error,
         );
       }
     }

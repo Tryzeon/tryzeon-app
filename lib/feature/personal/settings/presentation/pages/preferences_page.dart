@@ -29,7 +29,6 @@ class PreferencesPage extends HookConsumerWidget {
           TopNotification.show(
             context,
             message: '需要開啟定位權限才能使用此功能',
-            type: NotificationType.warning,
           );
           return;
         }

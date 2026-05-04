@@ -139,7 +139,6 @@ class ImagePickerHelper {
         TopNotification.show(
           context,
           message: '選擇圖片失敗，請稍後再試',
-          type: NotificationType.error,
         );
       }
     }
@@ -209,7 +208,6 @@ class ImagePickerHelper {
         TopNotification.show(
           context,
           message: '選擇圖片失敗，請稍後再試',
-          type: NotificationType.error,
         );
       }
       return null;

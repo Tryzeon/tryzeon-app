@@ -28,7 +28,6 @@ class StoreSettingsPage extends HookConsumerWidget {
         TopNotification.show(
           context,
           message: next.error.displayMessage(context),
-          type: NotificationType.error,
         );
       }
     });
@@ -84,7 +83,6 @@ class StoreSettingsPage extends HookConsumerWidget {
       TopNotification.show(
         context,
         message: '目前無法開啟 Instagram 連結',
-        type: NotificationType.error,
       );
     }
 

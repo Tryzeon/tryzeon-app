@@ -18,7 +18,7 @@ Future<void> launchProductPurchase(
   final Uri url = Uri.parse(product.purchaseLink!);
   if (!await canLaunchUrl(url)) {
     if (!context.mounted) return;
-    TopNotification.show(context, message: '無法開啟購買連結', type: NotificationType.error);
+    TopNotification.show(context, message: '無法開啟購買連結');
     return;
   }
 

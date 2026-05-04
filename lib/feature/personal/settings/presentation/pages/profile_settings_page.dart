@@ -74,14 +74,12 @@ class _PersonalProfileForm extends HookConsumerWidget {
       isLoading.value = false;
 
       if (result.isSuccess) {
-        TopNotification.show(context, message: '個人資料已更新', type: NotificationType.success);
         ref.invalidate(userProfileProvider);
         if (context.mounted) context.pop();
       } else {
         TopNotification.show(
           context,
           message: result.getError()!.displayMessage(context),
-          type: NotificationType.error,
         );
       }
     }

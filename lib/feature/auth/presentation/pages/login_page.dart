@@ -39,7 +39,6 @@ class LoginPage extends HookConsumerWidget {
         TopNotification.show(
           context,
           message: failure.displayMessage(context),
-          type: NotificationType.error,
         );
       }
     }

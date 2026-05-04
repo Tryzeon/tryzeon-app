@@ -26,7 +26,7 @@ class StoreOnboardingPage extends HookConsumerWidget {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
         if (!context.mounted) return;
-        TopNotification.show(context, message: '無法開啟表單連結', type: NotificationType.error);
+        TopNotification.show(context, message: '無法開啟表單連結');
       }
     }
 

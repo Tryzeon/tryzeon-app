@@ -91,7 +91,6 @@ class _WardrobeItemDetailContent extends ConsumerWidget {
         TopNotification.show(
           context,
           message: result.getError()!.displayMessage(context),
-          type: NotificationType.error,
         );
       }
     }

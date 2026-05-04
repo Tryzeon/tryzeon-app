@@ -29,7 +29,6 @@ class PersonalSettingsPage extends HookConsumerWidget {
         TopNotification.show(
           context,
           message: next.error.displayMessage(context),
-          type: NotificationType.error,
         );
       }
     });
@@ -72,16 +71,7 @@ class PersonalSettingsPage extends HookConsumerWidget {
       if (result != OkCancelResult.ok) return;
 
       final url = Uri.parse('https://www.instagram.com/tryzeon/');
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url, mode: LaunchMode.externalApplication);
-        return;
-      }
-      if (!context.mounted) return;
-      TopNotification.show(
-        context,
-        message: '目前無法開啟 Instagram 連結',
-        type: NotificationType.error,
-      );
+      launchUrl(url, mode: LaunchMode.externalApplication);
     }
 
     Future<void> handleDeleteAccount() async {

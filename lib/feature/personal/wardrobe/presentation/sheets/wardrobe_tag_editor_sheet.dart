@@ -68,7 +68,7 @@ class WardrobeTagEditorSheet extends HookWidget {
         return;
       }
 
-      TopNotification.show(context, message: errorMessage, type: NotificationType.error);
+      TopNotification.show(context, message: errorMessage);
     }
 
     Widget buildTagList() {

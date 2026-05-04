@@ -35,7 +35,6 @@ class AddProductPage extends HookConsumerWidget {
         TopNotification.show(
           context,
           message: '無法獲取店家資訊，請重新登入',
-          type: NotificationType.error,
         );
         isLoading.value = false;
         return;
@@ -56,12 +55,10 @@ class AddProductPage extends HookConsumerWidget {
       if (result.isSuccess) {
         ref.invalidate(productsProvider);
         Navigator.pop(context, true);
-        TopNotification.show(context, message: '商品新增成功', type: NotificationType.success);
       } else {
         TopNotification.show(
           context,
           message: result.getError()!.displayMessage(context),
-          type: NotificationType.error,
         );
       }
     }

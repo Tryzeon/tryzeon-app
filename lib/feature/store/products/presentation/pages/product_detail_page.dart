@@ -102,13 +102,11 @@ class _ProductDetailContentPage extends HookConsumerWidget {
 
       if (result.isSuccess) {
         ref.invalidate(productsProvider);
-        TopNotification.show(context, message: '商品刪除成功', type: NotificationType.success);
         Navigator.pop(context, true);
       } else {
         TopNotification.show(
           context,
           message: result.getError()!.displayMessage(context),
-          type: NotificationType.error,
         );
       }
     }
@@ -151,12 +149,10 @@ class _ProductDetailContentPage extends HookConsumerWidget {
       if (result.isSuccess) {
         ref.invalidate(productsProvider);
         Navigator.pop(context, true);
-        TopNotification.show(context, message: '商品更新成功', type: NotificationType.success);
       } else {
         TopNotification.show(
           context,
           message: result.getError()!.displayMessage(context),
-          type: NotificationType.error,
         );
       }
     }
