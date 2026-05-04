@@ -1,4 +1,30 @@
 class AppValidators {
+  static final _emailRegex = RegExp(
+    r"^[a-zA-Z0-9.!#$%&'*+\-/=?^_`{|}~]+@[a-zA-Z0-9]+(\.[a-zA-Z]+)+$",
+  );
+
+  static String? validateEmail(final String? value) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isEmpty) {
+      return '請輸入電子郵件';
+    }
+    if (!_emailRegex.hasMatch(trimmed)) {
+      return '請輸入有效的電子郵件';
+    }
+    return null;
+  }
+
+  static String? validateOtp(final String? value) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isEmpty) {
+      return '請輸入驗證碼';
+    }
+    if (trimmed.length != 6 || int.tryParse(trimmed) == null) {
+      return '請輸入 6 位數驗證碼';
+    }
+    return null;
+  }
+
   static String? validatePrice(final String? value) {
     if (value == null || value.trim().isEmpty) {
       return '請輸入價格';

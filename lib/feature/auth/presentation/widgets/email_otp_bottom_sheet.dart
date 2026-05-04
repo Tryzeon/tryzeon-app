@@ -9,6 +9,7 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:typed_result/typed_result.dart';
@@ -19,12 +20,9 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
   final UserType userType;
 
   static Future<void> show(final BuildContext context, final UserType userType) {
-    final colorScheme = Theme.of(context).colorScheme;
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: colorScheme.surface,
-      shape: const RoundedRectangleBorder(borderRadius: AppRadius.sheetTop),
       builder: (final context) => Padding(
         padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
         child: EmailOtpBottomSheet(userType: userType),
@@ -35,8 +33,11 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     final emailController = useTextEditingController();
     final tokenController = useTextEditingController();
+    final emailFormKey = useMemoized(GlobalKey<FormState>.new);
+    final otpFormKey = useMemoized(GlobalKey<FormState>.new);
     final isLoading = useState(false);
     final isOtpSent = useState(false);
     final resendCountdown = useState(0);
@@ -53,22 +54,11 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
       return timer.cancel;
     }, [resendCountdown.value > 0]);
 
-    bool isValidEmail(final String email) {
-      return RegExp(
-        r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%\&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
-      ).hasMatch(email);
-    }
-
     Future<void> handleSendEmailOtp({final bool isResend = false}) async {
-      final email = emailController.text.trim();
-      if (email.isEmpty || !isValidEmail(email)) {
-        TopNotification.show(
-          context,
-          message: '請輸入有效的電子郵件',
-          type: NotificationType.error,
-        );
+      if (!isResend && !(emailFormKey.currentState?.validate() ?? false)) {
         return;
       }
+      final email = emailController.text.trim();
 
       FocusScope.of(context).unfocus();
       isLoading.value = true;
@@ -82,29 +72,21 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
           isOtpSent.value = true;
           tokenController.clear();
           resendCountdown.value = AppConstants.otpResendCountdownSeconds;
-          TopNotification.show(
-            context,
-            message: isResend ? '驗證碼已重新發送' : '驗證碼已發送，請檢查您的信箱',
-            type: NotificationType.success,
-          );
         } else {
           TopNotification.show(
             context,
             message: result.getError()?.displayMessage(context) ?? '發送失敗，請稍後再試',
-            type: NotificationType.error,
           );
         }
       }
     }
 
     Future<void> handleVerifyEmailOtp() async {
-      final email = emailController.text.trim();
-      final token = tokenController.text.trim();
-
-      if (token.isEmpty) {
-        TopNotification.show(context, message: '請輸入驗證碼', type: NotificationType.error);
+      if (!(otpFormKey.currentState?.validate() ?? false)) {
         return;
       }
+      final email = emailController.text.trim();
+      final token = tokenController.text.trim();
 
       FocusScope.of(context).unfocus();
       isLoading.value = true;
@@ -125,7 +107,6 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
           TopNotification.show(
             context,
             message: result.getError()?.displayMessage(context) ?? '驗證碼錯誤',
-            type: NotificationType.error,
           );
         }
       }
@@ -134,6 +115,7 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
     Widget buildInput({
       required final TextEditingController controller,
       required final String hint,
+      required final String? Function(String?) validator,
       final bool isNumber = false,
       final void Function(String)? onSubmitted,
     }) {
@@ -141,34 +123,10 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
         controller: controller,
         keyboardType: isNumber ? TextInputType.number : TextInputType.emailAddress,
         textInputAction: TextInputAction.done,
+        validator: validator,
         onFieldSubmitted: onSubmitted,
-        style: Theme.of(
-          context,
-        ).textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: Theme.of(
-            context,
-          ).textTheme.bodyLarge?.copyWith(color: colorScheme.onSurfaceVariant),
-          filled: true,
-          fillColor: colorScheme.surfaceContainerLow,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.md,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: AppRadius.inputAll,
-            borderSide: BorderSide(color: colorScheme.outline, width: 1.5),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: AppRadius.inputAll,
-            borderSide: BorderSide(color: colorScheme.outline, width: 1.5),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: AppRadius.inputAll,
-            borderSide: BorderSide(color: colorScheme.onSurface, width: 1.5),
-          ),
-        ),
+        style: textTheme.bodyLarge,
+        decoration: InputDecoration(hintText: hint),
       );
     }
 
@@ -178,11 +136,7 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
         child: ElevatedButton(
           onPressed: isLoading.value ? null : onTap,
           style: ElevatedButton.styleFrom(
-            backgroundColor: colorScheme.primary,
-            foregroundColor: colorScheme.onPrimary,
-            elevation: 0,
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-            shape: const RoundedRectangleBorder(borderRadius: AppRadius.buttonAll),
           ),
           child: isLoading.value
               ? SizedBox(
@@ -193,13 +147,7 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
                     color: colorScheme.onPrimary,
                   ),
                 )
-              : Text(
-                  text,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: colorScheme.onPrimary,
-                    letterSpacing: 1.0,
-                  ),
-                ),
+              : Text(text),
         ),
       );
     }
@@ -213,84 +161,83 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
           AppSpacing.lg,
         ),
         child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
+          duration: AppDuration.slow,
           child: isOtpSent.value
-              ? Column(
-                  key: const ValueKey('otp'),
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '輸入驗證碼',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.headlineLarge?.copyWith(color: colorScheme.onSurface),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Text(
-                      '已發送至 ${emailController.text}',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
+              ? Form(
+                  key: otpFormKey,
+                  child: Column(
+                    key: const ValueKey('otp'),
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '輸入驗證碼',
+                        style: textTheme.headlineLarge,
                       ),
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    buildInput(
-                      controller: tokenController,
-                      hint: '6位數驗證碼',
-                      isNumber: true,
-                      onSubmitted: (_) => handleVerifyEmailOtp(),
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    buildButton('驗證並登入', handleVerifyEmailOtp),
-                    const SizedBox(height: AppSpacing.md),
-                    Center(
-                      child: TextButton(
-                        onPressed: (resendCountdown.value > 0 || isLoading.value)
-                            ? null
-                            : () => handleSendEmailOtp(isResend: true),
-                        child: Text(
-                          isLoading.value && resendCountdown.value <= 0
-                              ? '重新發送中...'
-                              : resendCountdown.value > 0
-                              ? '重新發送 (${resendCountdown.value}s)'
-                              : '重新發送驗證碼',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: (resendCountdown.value > 0 || isLoading.value)
-                                ? colorScheme.onSurfaceVariant
-                                : colorScheme.primary,
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        '已發送至 ${emailController.text}',
+                        style: textTheme.bodyLarge?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      buildInput(
+                        controller: tokenController,
+                        hint: '6位數驗證碼',
+                        isNumber: true,
+                        validator: AppValidators.validateOtp,
+                        onSubmitted: (_) => handleVerifyEmailOtp(),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      buildButton('驗證並登入', handleVerifyEmailOtp),
+                      const SizedBox(height: AppSpacing.md),
+                      Center(
+                        child: TextButton(
+                          onPressed: (resendCountdown.value > 0 || isLoading.value)
+                              ? null
+                              : () => handleSendEmailOtp(isResend: true),
+                          child: Text(
+                            isLoading.value && resendCountdown.value <= 0
+                                ? '重新發送中...'
+                                : resendCountdown.value > 0
+                                ? '重新發送 (${resendCountdown.value}s)'
+                                : '重新發送驗證碼',
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 )
-              : Column(
-                  key: const ValueKey('email'),
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '使用 Email 登入',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.headlineLarge?.copyWith(color: colorScheme.onSurface),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Text(
-                      '我們將發送驗證碼至您的信箱',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
+              : Form(
+                  key: emailFormKey,
+                  child: Column(
+                    key: const ValueKey('email'),
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '使用 Email 登入',
+                        style: textTheme.headlineLarge,
                       ),
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    buildInput(
-                      controller: emailController,
-                      hint: 'name@example.com',
-                      onSubmitted: (_) => handleSendEmailOtp(),
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    buildButton('發送驗證碼', handleSendEmailOtp),
-                  ],
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        '我們將發送驗證碼至您的信箱',
+                        style: textTheme.bodyLarge?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      buildInput(
+                        controller: emailController,
+                        hint: 'name@example.com',
+                        validator: AppValidators.validateEmail,
+                        onSubmitted: (_) => handleSendEmailOtp(),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      buildButton('發送驗證碼', handleSendEmailOtp),
+                    ],
+                  ),
                 ),
         ),
       ),
