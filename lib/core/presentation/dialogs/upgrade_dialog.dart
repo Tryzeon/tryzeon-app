@@ -1,50 +1,23 @@
-import 'package:flutter/cupertino.dart';
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 
 class UpgradeDialog {
-  static void show(
+  static Future<void> show(
     final BuildContext context, {
     final String? title,
     final String? content,
-  }) {
-    showAdaptiveDialog<void>(
+  }) async {
+    final result = await showOkCancelAlertDialog(
       context: context,
-      builder: (final ctx) => AlertDialog.adaptive(
-        title: Text(title ?? '已達使用上限'),
-        content: Text(content ?? '您的使用次數已達上限\n升級至更高方案以獲得更多額度！'),
-        actions: [
-          _action(ctx, label: '取消', onPressed: () => Navigator.pop(ctx)),
-          _action(
-            ctx,
-            label: '前往訂閱',
-            isDefault: true,
-            onPressed: () {
-              Navigator.pop(ctx);
-              context.push(AppRoutes.personalSubscription);
-            },
-          ),
-        ],
-      ),
+      title: title ?? '已達使用上限',
+      message: content ?? '您的使用次數已達上限\n升級至更高方案以獲得更多額度！',
+      okLabel: '前往訂閱',
+      cancelLabel: '取消',
     );
-  }
-
-  static Widget _action(
-    final BuildContext context, {
-    required final String label,
-    required final VoidCallback onPressed,
-    final bool isDefault = false,
-  }) {
-    if (Theme.of(context).platform == TargetPlatform.iOS) {
-      return CupertinoDialogAction(
-        isDefaultAction: isDefault,
-        onPressed: onPressed,
-        child: Text(label),
-      );
-    }
-    return isDefault
-        ? FilledButton(onPressed: onPressed, child: Text(label))
-        : OutlinedButton(onPressed: onPressed, child: Text(label));
+    if (result != OkCancelResult.ok) return;
+    if (!context.mounted) return;
+    context.push(AppRoutes.personalSubscription);
   }
 }
