@@ -2,12 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
-import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
@@ -23,6 +21,7 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useRootNavigator: true,
       builder: (final context) => Padding(
         padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
         child: EmailOtpBottomSheet(userType: userType),
@@ -101,8 +100,7 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
       if (context.mounted) {
         isLoading.value = false;
         if (result.isSuccess) {
-          Navigator.of(context).pop();
-          context.go(AppRoutes.homeForUserType(userType));
+          Navigator.of(context, rootNavigator: true).maybePop();
         } else {
           TopNotification.show(
             context,
