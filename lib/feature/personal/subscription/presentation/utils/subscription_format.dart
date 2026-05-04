@@ -8,12 +8,18 @@ String planName(final AppSubscriptionTier tier) => switch (tier) {
 };
 
 /// Format `used / limit`. `limit < 0` → unlimited, `limit == 0` → not available,
-/// `used == null` (data unavailable) → em dash for the used count.
-String formatUsage({required final int? used, required final int limit}) {
+/// `null` for either side (data unavailable) → em dash.
+String formatUsage({required final int? used, required final int? limit}) {
   if (limit == 0) return '未開通';
   final usedText = used?.toString() ?? '—';
-  if (limit < 0) return '$usedText / ∞';
+  if (limit == null) return '$usedText / —';
   return '$usedText / $limit';
+}
+
+/// Format a boolean benefit (✓/✗). `null` → em dash.
+String formatBenefit({required final bool? value}) {
+  if (value == null) return '—';
+  return value ? '✓' : '✗';
 }
 
 /// Builds the second line shown under the plan name on Account page's

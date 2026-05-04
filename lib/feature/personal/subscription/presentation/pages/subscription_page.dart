@@ -35,33 +35,35 @@ class SubscriptionPage extends HookConsumerWidget {
     final AsyncValue<AppSubscriptionEntitlement> entitlementAsync,
     final AsyncValue<SubscriptionCapabilities> capabilitiesAsync,
   ) {
-    if (entitlementAsync.isLoading || capabilitiesAsync.isLoading) {
+    // Entitlement is structural (defines plan identity + CTA target). Without
+    // it the page cannot render. Capabilities and usage degrade per-stat
+    // inside the content. `value == null` keeps cached content during SWR.
+    final entitlement = entitlementAsync.value;
+    if (entitlement == null) {
+      if (entitlementAsync.hasError) {
+        return ErrorView(
+          message: entitlementAsync.error!.displayMessage(context),
+          onRetry: () {
+            ref.invalidate(appSubscriptionEntitlementProvider);
+            ref.invalidate(subscriptionCapabilitiesProvider);
+          },
+        );
+      }
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (entitlementAsync.hasError || capabilitiesAsync.hasError) {
-      final error = entitlementAsync.error ?? capabilitiesAsync.error!;
-      return ErrorView(
-        message: error.displayMessage(context),
-        onRetry: () {
-          ref.invalidate(appSubscriptionEntitlementProvider);
-          ref.invalidate(subscriptionCapabilitiesProvider);
-        },
-      );
-    }
-
     return _SubscriptionContent(
-      entitlement: entitlementAsync.value!,
-      capabilities: capabilitiesAsync.value!,
+      entitlement: entitlement,
+      capabilities: capabilitiesAsync.value,
     );
   }
 }
 
 class _SubscriptionContent extends ConsumerWidget {
-  const _SubscriptionContent({required this.entitlement, required this.capabilities});
+  const _SubscriptionContent({required this.entitlement, this.capabilities});
 
   final AppSubscriptionEntitlement entitlement;
-  final SubscriptionCapabilities capabilities;
+  final SubscriptionCapabilities? capabilities;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
@@ -138,7 +140,7 @@ class _SubscriptionContent extends ConsumerWidget {
             title: '今日試穿',
             trailingValue: formatUsage(
               used: tryonUsed,
-              limit: capabilities.dailyTryOnLimit,
+              limit: capabilities?.dailyTryOnLimit,
             ),
             isFirst: true,
           ),
@@ -146,32 +148,34 @@ class _SubscriptionContent extends ConsumerWidget {
             title: '今日聊天',
             trailingValue: formatUsage(
               used: chatUsed,
-              limit: capabilities.dailyChatLimit,
+              limit: capabilities?.dailyChatLimit,
             ),
           ),
           _BenefitRow(
             title: '今日影片',
             trailingValue: formatUsage(
               used: videoUsed,
-              limit: capabilities.dailyVideoLimit,
+              limit: capabilities?.dailyVideoLimit,
             ),
           ),
           _BenefitRow(
             title: '衣櫃容量',
             trailingValue: formatUsage(
               used: wardrobeUsed,
-              limit: capabilities.wardrobeLimit,
+              limit: capabilities?.wardrobeLimit,
             ),
           ),
           const _SectionLabel('方案權益'),
           _BenefitRow(
             title: '影片試穿',
-            trailingValue: capabilities.hasVideoAccess ? '✓' : '✗',
+            trailingValue: formatBenefit(value: capabilities?.hasVideoAccess),
             isFirst: true,
           ),
           _BenefitRow(
             title: '去除浮水印',
-            trailingValue: capabilities.requiresWatermark ? '✗' : '✓',
+            trailingValue: formatBenefit(
+              value: capabilities == null ? null : !capabilities!.requiresWatermark,
+            ),
           ),
           const SizedBox(height: AppSpacing.xl),
           _PrimaryCta(tier: tier),
