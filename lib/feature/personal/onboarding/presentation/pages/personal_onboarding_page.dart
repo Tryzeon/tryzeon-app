@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
-import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/feature/personal/onboarding/presentation/widgets/age_step.dart';
 import 'package:tryzeon/feature/personal/onboarding/presentation/widgets/gender_selection_step.dart';
 import 'package:tryzeon/feature/personal/onboarding/presentation/widgets/style_preference_step.dart';
@@ -129,7 +127,7 @@ class PersonalOnboardingPage extends HookConsumerWidget {
       case Err(:final error):
         TopNotification.show(context, message: error.displayMessage(context));
       case Ok():
-        context.go(AppRoutes.personalHome);
+        break;
     }
   }
 }

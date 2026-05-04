@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
-import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/presentation/widgets/email_otp_bottom_sheet.dart';
@@ -31,9 +29,7 @@ class LoginPage extends HookConsumerWidget {
       if (!context.mounted) return;
       isLoading.value = false;
 
-      if (result.isSuccess) {
-        context.go(AppRoutes.homeForUserType(userType.value));
-      } else {
+      if (!result.isSuccess) {
         final failure = result.getError()!;
         if (failure is UserCanceledFailure) return;
         TopNotification.show(context, message: failure.displayMessage(context));
