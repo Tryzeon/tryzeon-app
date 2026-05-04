@@ -1,96 +1,92 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:toastification/toastification.dart';
-import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 
-enum NotificationType { success, error, info, warning }
-
+/// Failure-only top banner (Direction A — refined card).
+/// White surface, soft tinted icon container, generous radius, lifted shadow.
+/// Success states stay silent; download-style results use AppSnackBar.
 class TopNotification {
-  static void show(
-    final BuildContext context, {
-    required final String message,
-    final NotificationType type = NotificationType.info,
-  }) {
-    final duration = type == NotificationType.error
-        ? AppConstants.errorToastDuration
-        : AppConstants.toastDuration;
+  static void show(final BuildContext context, {required final String message}) {
+    HapticFeedback.mediumImpact();
 
     toastification.showCustom(
       context: context,
-      autoCloseDuration: duration,
+      autoCloseDuration: AppDuration.toast,
       alignment: Alignment.topCenter,
       direction: TextDirection.ltr,
-      animationDuration: AppConstants.defaultAnimationDuration,
+      animationDuration: AppDuration.slow,
       animationBuilder: (final context, final animation, final alignment, final child) {
         return SlideTransition(
           position: Tween<Offset>(
             begin: const Offset(0, -1),
             end: Offset.zero,
-          ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+          ).animate(CurvedAnimation(parent: animation, curve: AppCurves.emphasized)),
           child: FadeTransition(
-            opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+            opacity: CurvedAnimation(parent: animation, curve: AppCurves.emphasized),
             child: child,
           ),
         );
       },
       builder: (final context, final holder) {
-        final (iconColor, icon) = _getStyle(type);
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
 
-        return Center(
+        return SafeArea(
+          bottom: false,
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
+                color: colorScheme.surface,
+                borderRadius: AppRadius.dialogAll,
+                border: Border.all(color: colorScheme.outline),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 30,
-                    offset: const Offset(0, 10),
+                    color: colorScheme.shadow.withValues(alpha: AppOpacity.light),
+                    blurRadius: 40,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: AppRadius.dialogAll,
                 child: Material(
                   color: Colors.transparent,
-                  child: IntrinsicHeight(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(width: 4, color: iconColor),
-                        Flexible(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Row(
-                              children: [
-                                Icon(icon, color: iconColor, size: 24),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    message,
-                                    style: TextStyle(
-                                      color: Colors.grey[900],
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w500,
-                                      height: 1.4,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                GestureDetector(
-                                  onTap: () => toastification.dismiss(holder),
-                                  child: Icon(
-                                    Icons.close,
-                                    color: Colors.grey[400],
-                                    size: 20,
-                                  ),
-                                ),
-                              ],
+                  child: InkWell(
+                    onTap: () => toastification.dismiss(holder),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.smMd,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.error_outline_rounded,
+                            color: colorScheme.error,
+                            size: 20,
+                          ),
+                          const SizedBox(width: AppSpacing.smMd),
+                          Expanded(
+                            child: Text(
+                              message,
+                              style: theme.textTheme.titleSmall?.copyWith(
+                                color: colorScheme.onSurface,
+                                height: 1.4,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: AppSpacing.sm),
+                          Icon(
+                            Icons.close_rounded,
+                            color: colorScheme.onSurfaceVariant,
+                            size: 16,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -100,14 +96,5 @@ class TopNotification {
         );
       },
     );
-  }
-
-  static (Color, IconData) _getStyle(final NotificationType type) {
-    return switch (type) {
-      NotificationType.success => (const Color(0xFF10B981), Icons.check_circle),
-      NotificationType.error => (const Color(0xFFEF4444), Icons.cancel),
-      NotificationType.warning => (const Color(0xFFF59E0B), Icons.warning),
-      NotificationType.info => (const Color(0xFF3B82F6), Icons.info),
-    };
   }
 }

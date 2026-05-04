@@ -77,6 +77,7 @@ class AppDuration {
   static const Duration standard = Duration(milliseconds: 200);
   static const Duration slow = Duration(milliseconds: 300);
   static const Duration thinking = Duration(milliseconds: 1800);
+  static const Duration toast = Duration(seconds: 4);
 }
 
 // ─── Curve Tokens ───────────────────────────────────────────────────────────────
@@ -88,6 +89,7 @@ class AppCurves {
   static const Curve standard = Curves.easeInOut; // most transitions
   static const Curve enter = Curves.easeOut; // elements entering screen
   static const Curve exit = Curves.easeIn; // elements leaving screen
+  static const Curve emphasized = Curves.easeOutCubic; // banners, sheets
 }
 
 // ─── Border Radius Tokens ─────────────────────────────────────────────────────
