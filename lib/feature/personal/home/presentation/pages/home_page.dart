@@ -13,6 +13,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
+import 'package:tryzeon/core/presentation/widgets/app_snack_bar.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
@@ -243,11 +244,7 @@ class HomePage extends HookConsumerWidget {
         await Gal.putVideo(tempPath);
 
         if (context.mounted) {
-          TopNotification.show(
-            context,
-            message: '影片已儲存到相簿',
-            type: NotificationType.success,
-          );
+          AppSnackBar.show(context, message: '影片已儲存到相簿');
         }
       } finally {
         // 3. Clean up temp file
@@ -277,11 +274,7 @@ class HomePage extends HookConsumerWidget {
       );
 
       if (context.mounted) {
-        TopNotification.show(
-          context,
-          message: '照片已儲存到相簿',
-          type: NotificationType.success,
-        );
+        AppSnackBar.show(context, message: '照片已儲存到相簿');
       }
     }
 

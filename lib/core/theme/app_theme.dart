@@ -299,6 +299,25 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: AppRadius.sheetTop),
       ),
 
+      // ── SnackBar ──────────────────────────────────────────────────────────
+      // Spec: dark pill, floating bottom, used for silent result feedback
+      // (e.g. "saved to album"). Failures use TopNotification banner instead.
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: AppColors.onSurface,
+        contentTextStyle: GoogleFonts.notoSansTc(
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          color: AppColors.background,
+        ),
+        behavior: SnackBarBehavior.floating,
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.cardAll),
+        elevation: 0,
+        insetPadding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+      ),
+
       // ── Dialog ───────────────────────────────────────────────────────────
       // Spec: white bg, radius 16px, no elevation shadow
       dialogTheme: const DialogThemeData(
