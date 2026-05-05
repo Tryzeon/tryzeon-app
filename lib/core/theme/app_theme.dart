@@ -186,6 +186,14 @@ class AppTheme {
         space: 1,
       ),
 
+      // ── Icon ─────────────────────────────────────────────────────────────
+      // Spec: icons default to onSurface (charcoal). Use onSurfaceVariant
+      // explicitly when an icon is meant to look muted.
+      iconTheme: const IconThemeData(color: AppColors.onSurface),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(foregroundColor: AppColors.onSurface),
+      ),
+
       // ── Card ─────────────────────────────────────────────────────────────
       // Spec: radius 12px, 1px outline border, no shadow
       cardTheme: const CardThemeData(
