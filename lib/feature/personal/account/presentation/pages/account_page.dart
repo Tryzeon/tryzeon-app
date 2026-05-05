@@ -153,7 +153,7 @@ class _ProfileHeader extends HookConsumerWidget {
         return Icon(Icons.person_outline, color: colorScheme.onSurfaceVariant);
       }
       if (avatarFile != null) {
-        return Image.file(avatarFile, fit: BoxFit.cover);
+        return SizedBox.expand(child: Image.file(avatarFile, fit: BoxFit.cover));
       }
       return Icon(Icons.person, color: colorScheme.onSurfaceVariant);
     }
@@ -203,7 +203,7 @@ class _ProfileHeader extends HookConsumerWidget {
             color: colorScheme.surfaceContainerHighest,
           ),
           clipBehavior: Clip.antiAlias,
-          child: Center(child: buildAvatar()),
+          child: buildAvatar(),
         ),
         const SizedBox(width: AppSpacing.smMd),
         Expanded(child: buildInfo()),
