@@ -242,11 +242,10 @@ class AppTheme {
           ),
         ),
       ),
-      // Ghost/Tonal: primaryContainer bg, dark Terracotta text, radius 8px (contrast ~3.9:1)
+      // Ghost: transparent bg, Terracotta text, radius 8px
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          backgroundColor: colorScheme.primaryContainer,
-          foregroundColor: AppColors.primaryDark,
+          foregroundColor: colorScheme.primary,
           shape: buttonShape,
           padding: buttonPadding,
           textStyle: GoogleFonts.outfit(
