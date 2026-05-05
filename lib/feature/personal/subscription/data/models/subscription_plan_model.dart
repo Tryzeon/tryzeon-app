@@ -7,7 +7,6 @@ class SubscriptionPlanModel {
   const SubscriptionPlanModel({
     required this.id,
     required this.name,
-    required this.price,
     required this.wardrobeLimit,
     required this.tryonLimit,
     required this.videoLimit,
@@ -21,7 +20,6 @@ class SubscriptionPlanModel {
 
   final String id;
   final String name;
-  final int price;
   final int wardrobeLimit;
   final int tryonLimit;
   final int videoLimit;

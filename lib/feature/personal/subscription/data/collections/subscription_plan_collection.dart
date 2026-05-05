@@ -10,7 +10,6 @@ class SubscriptionPlanCollection {
   late String planId;
 
   late String name;
-  late int price;
   late int wardrobeLimit;
   late int tryonLimit;
   late int videoLimit;
