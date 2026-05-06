@@ -39,7 +39,6 @@ class ProductFormLayout extends StatelessWidget {
 
     return Form(
       key: formData.formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
@@ -59,6 +58,7 @@ class ProductFormLayout extends StatelessWidget {
           FormField<List<ImageItem>>(
             initialValue: formData.images.value,
             validator: AppValidators.validateProductImage,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             builder: (final state) => Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

@@ -42,6 +42,7 @@ class ProductBasicFieldsEditor extends HookWidget {
           textInputAction: TextInputAction.next,
           onFieldSubmitted: (final _) => priceFocusNode.requestFocus(),
           validator: AppValidators.validateProductName,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
         ),
         const SizedBox(height: AppSpacing.md),
         const _FieldLabel('價格 · TWD', required: true),
@@ -54,6 +55,7 @@ class ProductBasicFieldsEditor extends HookWidget {
           textInputAction: TextInputAction.next,
           onFieldSubmitted: (final _) => purchaseLinkFocusNode.requestFocus(),
           validator: AppValidators.validatePrice,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
         ),
         const SizedBox(height: AppSpacing.md),
         const _FieldLabel('分類', required: true),
@@ -61,6 +63,7 @@ class ProductBasicFieldsEditor extends HookWidget {
           data: (final categoryTree) => FormField<Set<String>>(
             initialValue: selectedCategoryIds.value,
             validator: AppValidators.validateSelectedCategories,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             builder: (final state) => Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -97,6 +100,7 @@ class ProductBasicFieldsEditor extends HookWidget {
           textInputAction: TextInputAction.done,
           onFieldSubmitted: (final _) => FocusScope.of(context).unfocus(),
           validator: AppValidators.validateUrl,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
         ),
       ],
     );
