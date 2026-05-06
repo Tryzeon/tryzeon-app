@@ -33,9 +33,7 @@ class ProductMaterialSheet extends HookWidget {
 
     final initialIsPreset =
         initialValue != null && kMaterialPresets.contains(initialValue);
-    final selectedPreset = useState<String?>(
-      initialIsPreset ? initialValue : null,
-    );
+    final selectedPreset = useState<String?>(initialIsPreset ? initialValue : null);
     final customController = useTextEditingController(
       text: initialIsPreset ? '' : (initialValue ?? ''),
     );

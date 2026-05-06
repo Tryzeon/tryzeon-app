@@ -31,11 +31,8 @@ class ProductFitSheet extends HookWidget {
     final textTheme = theme.textTheme;
     final colorScheme = theme.colorScheme;
 
-    final initialIsPreset =
-        initialValue != null && kFitPresets.contains(initialValue);
-    final selectedPreset = useState<String?>(
-      initialIsPreset ? initialValue : null,
-    );
+    final initialIsPreset = initialValue != null && kFitPresets.contains(initialValue);
+    final selectedPreset = useState<String?>(initialIsPreset ? initialValue : null);
     final customController = useTextEditingController(
       text: initialIsPreset ? '' : (initialValue ?? ''),
     );
@@ -73,9 +70,9 @@ class ProductFitSheet extends HookWidget {
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.md,
-            ),
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.md,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

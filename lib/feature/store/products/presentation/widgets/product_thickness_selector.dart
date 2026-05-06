@@ -33,9 +33,7 @@ class ProductThicknessSelector extends StatelessWidget {
               } else if (newSet.length > 1 && value != null) {
                 // user added a new segment while one was already selected;
                 // keep only the newly added one
-                selectedThickness.value = newSet.firstWhere(
-                  (final v) => v != value,
-                );
+                selectedThickness.value = newSet.firstWhere((final v) => v != value);
               } else {
                 selectedThickness.value = newSet.first;
               }

@@ -34,9 +34,7 @@ class ProductFitSelector extends StatelessWidget {
                   child: Text(
                     isEmpty ? '選擇或輸入版型' : value,
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: isEmpty
-                          ? theme.colorScheme.onSurfaceVariant
-                          : null,
+                      color: isEmpty ? theme.colorScheme.onSurfaceVariant : null,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),

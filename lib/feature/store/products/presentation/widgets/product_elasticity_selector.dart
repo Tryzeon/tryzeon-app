@@ -33,9 +33,7 @@ class ProductElasticitySelector extends StatelessWidget {
               } else if (newSet.length > 1 && value != null) {
                 // user added a new segment while one was already selected;
                 // keep only the newly added one
-                selectedElasticity.value = newSet.firstWhere(
-                  (final v) => v != value,
-                );
+                selectedElasticity.value = newSet.firstWhere((final v) => v != value);
               } else {
                 selectedElasticity.value = newSet.first;
               }
