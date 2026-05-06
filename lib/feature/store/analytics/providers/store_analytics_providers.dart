@@ -17,14 +17,14 @@ part 'store_analytics_providers.g.dart';
 @riverpod
 class StoreAnalyticsFilter extends _$StoreAnalyticsFilter {
   @override
-  ({int year, int month})? build() {
+  ({int year, int month}) build() {
     final now = DateTime.now();
     return (year: now.year, month: now.month);
   }
 
-  ({int year, int month})? get filter => state;
+  ({int year, int month}) get filter => state;
 
-  set filter(final ({int year, int month})? filter) {
+  set filter(final ({int year, int month}) filter) {
     state = filter;
   }
 }
@@ -68,8 +68,8 @@ Future<List<ProductAnalyticsSummary>> productAnalyticsSummaries(final Ref ref) a
   final useCase = ref.watch(getProductAnalyticsSummariesProvider);
   final result = await useCase(
     storeId: profile.id,
-    year: filter?.year,
-    month: filter?.month,
+    year: filter.year,
+    month: filter.month,
   );
 
   if (result.isFailure) {
@@ -77,16 +77,6 @@ Future<List<ProductAnalyticsSummary>> productAnalyticsSummaries(final Ref ref) a
   }
 
   return result.get()!;
-}
-
-/// Convenience provider: `Map<productId, summary>` for O(1) lookup
-@riverpod
-Map<String, ProductAnalyticsSummary> productAnalyticsMap(final Ref ref) {
-  final summariesAsync = ref.watch(productAnalyticsSummariesProvider);
-  return summariesAsync.maybeWhen(
-    data: (final summaries) => {for (final s in summaries) s.productId: s},
-    orElse: () => {},
-  );
 }
 
 /// Force refresh analytics data

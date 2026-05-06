@@ -5,8 +5,9 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
-import 'package:tryzeon/feature/store/products/presentation/dialogs/product_sort_dialog.dart';
+import 'package:tryzeon/feature/store/products/presentation/sheets/product_sort_sheet.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_card.dart';
 import 'package:tryzeon/feature/store/products/providers/store_products_providers.dart';
 
@@ -17,9 +18,13 @@ class ProductListSection extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final filteredProductsAsync = ref.watch(filteredProductsProvider);
     final query = ref.watch(productQueryProvider);
+    final productCount = ref.watch(
+      productsProvider.select((final async) => async.value?.length ?? 0),
+    );
 
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     final searchController = useTextEditingController(text: query.searchQuery);
     useListenable(searchController);
@@ -48,47 +53,7 @@ class ProductListSection extends HookConsumerWidget {
 
     Widget buildProductGrid(final List<Product> products) {
       if (products.isEmpty) {
-        return LayoutBuilder(
-          builder: (final context, final constraints) {
-            final minHeight = constraints.maxHeight.isFinite
-                ? constraints.maxHeight
-                : 400.0;
-
-            return ConstrainedBox(
-              constraints: BoxConstraints(minHeight: minHeight),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.inventory_2_outlined,
-                        size: 50,
-                        color: colorScheme.primary.withValues(alpha: 0.5),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      query.searchQuery.isNotEmpty ? '沒有符合條件的商品' : '還沒有商品',
-                      style: textTheme.titleSmall,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      query.searchQuery.isNotEmpty ? '試試清除搜尋關鍵字' : '點擊右下角按鈕新增商品',
-                      style: textTheme.bodyMedium,
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
+        return _EmptyState(hasQuery: query.searchQuery.isNotEmpty);
       }
 
       return GridView.builder(
@@ -96,98 +61,100 @@ class ProductListSection extends HookConsumerWidget {
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          childAspectRatio: 0.75,
+          crossAxisSpacing: AppSpacing.md,
+          mainAxisSpacing: AppSpacing.lg,
+          childAspectRatio: 0.6,
         ),
         itemCount: products.length,
-        itemBuilder: (final context, final index) {
-          return StoreProductCard(product: products[index]);
-        },
+        itemBuilder: (final context, final index) =>
+            StoreProductCard(product: products[index]),
       );
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.xs),
         Row(
           children: [
             Container(
-              width: 4,
-              height: 24,
+              width: 24,
+              height: 2,
               decoration: BoxDecoration(
                 color: colorScheme.primary,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(width: 12),
-            Text('我的商品', style: textTheme.titleLarge),
-            const Spacer(),
-            Container(
-              decoration: BoxDecoration(
-                color: colorScheme.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+            const SizedBox(width: AppSpacing.smMd),
+            Expanded(
+              child: Text(
+                '我的商品 · $productCount',
+                style: textTheme.labelMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
-              child: IconButton(
-                icon: Icon(Icons.sort_rounded, color: colorScheme.primary),
-                onPressed: () => showProductSortSheet(context),
-                tooltip: '排序',
+            ),
+            TextButton(
+              onPressed: () => ProductSortSheet.show(context),
+              style: TextButton.styleFrom(
+                foregroundColor: colorScheme.onSurfaceVariant,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: AppSpacing.xs,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '排序',
+                    style: textTheme.labelMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                  const Icon(Icons.keyboard_arrow_down_rounded, size: 16),
+                ],
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        Container(
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: TextField(
-            controller: searchController,
-            style: textTheme.bodyMedium,
-            onChanged: onSearchChanged,
-            decoration: InputDecoration(
-              hintText: '搜尋商品名稱…',
-              hintStyle: textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurface.withValues(alpha: 0.5),
-              ),
-              prefixIcon: Icon(Icons.search, color: colorScheme.primary),
-              suffixIcon: searchController.text.isEmpty
-                  ? null
-                  : IconButton(
-                      icon: Icon(
-                        Icons.clear,
-                        color: colorScheme.onSurface.withValues(alpha: 0.5),
-                      ),
-                      onPressed: () {
-                        debounceTimer.value?.cancel();
-                        searchController.clear();
-                        ref.read(productQueryProvider.notifier).updateSearch('');
-                      },
-                    ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide.none,
-              ),
-              filled: true,
-              fillColor: colorScheme.surface,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        const SizedBox(height: AppSpacing.smMd),
+        TextField(
+          controller: searchController,
+          style: textTheme.bodyMedium,
+          onChanged: onSearchChanged,
+          decoration: InputDecoration(
+            hintText: '搜尋商品名稱…',
+            prefixIcon: Icon(
+              Icons.search_rounded,
+              color: colorScheme.onSurfaceVariant,
+              size: 20,
             ),
+            suffixIcon: searchController.text.isEmpty
+                ? null
+                : IconButton(
+                    icon: Icon(
+                      Icons.close_rounded,
+                      color: colorScheme.onSurfaceVariant,
+                      size: 18,
+                    ),
+                    onPressed: () {
+                      debounceTimer.value?.cancel();
+                      searchController.clear();
+                      ref.read(productQueryProvider.notifier).updateSearch('');
+                    },
+                  ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.md),
         filteredProductsAsync.when(
           skipLoadingOnReload: true,
           skipError: true,
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Padding(
+            padding: EdgeInsets.symmetric(vertical: AppSpacing.xl),
+            child: Center(child: CircularProgressIndicator()),
+          ),
           error: (final error, final stack) => ErrorView(
             message: error.displayMessage(context),
             onRetry: () => refreshProducts(ref),
@@ -195,6 +162,42 @@ class ProductListSection extends HookConsumerWidget {
           data: buildProductGrid,
         ),
       ],
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.hasQuery});
+
+  final bool hasQuery;
+
+  @override
+  Widget build(final BuildContext context) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    final colorScheme = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxl),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.inventory_2_outlined,
+              size: 32,
+              color: colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(hasQuery ? '沒有符合條件的商品' : '還沒有商品', style: textTheme.titleSmall),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              hasQuery ? '試試清除搜尋關鍵字' : '點擊右下角按鈕新增商品',
+              style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
