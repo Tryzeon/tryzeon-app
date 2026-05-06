@@ -4,9 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
-
 import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_form.dart';
 import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_size_manager.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_form_layout.dart';
@@ -62,13 +62,29 @@ class AddProductPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('新增商品')),
+      appBar: AppBar(
+        title: const Text('新增商品'),
+        centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.smMd),
+            child: TextButton(
+              onPressed: isLoading.value ? null : addProduct,
+              child: isLoading.value
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('儲存'),
+            ),
+          ),
+        ],
+      ),
       body: ProductFormLayout(
-        mode: ProductFormMode.create,
         formData: formData,
         sizeManager: sizeManager,
         isLoading: isLoading.value,
-        onSubmit: addProduct,
         productCategoryTreeAsync: productCategoryTreeAsync,
         onRetryCategories: () => refreshProductCategories(ref),
         onPickImage: (final remainingCount) async {

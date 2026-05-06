@@ -1,55 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/product_attributes.dart';
 import 'package:tryzeon/feature/store/products/presentation/extensions/product_attributes_extension.dart';
 
 class ProductSeasonSelector extends HookWidget {
-  const ProductSeasonSelector({super.key, required this.selectedSeasons, this.onChanged});
+  const ProductSeasonSelector({super.key, required this.selectedSeasons});
 
   final ValueNotifier<List<ProductSeason>?> selectedSeasons;
-  final ValueChanged<List<ProductSeason>?>? onChanged;
 
   @override
   Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
     final current = useListenable(selectedSeasons);
-    final selected = current.value ?? [];
+    final selected = current.value ?? const [];
 
     void toggle(final ProductSeason season) {
-      final newList = [...selected];
-      if (newList.contains(season)) {
-        newList.remove(season);
+      final list = [...selected];
+      if (list.contains(season)) {
+        list.remove(season);
       } else {
-        newList.add(season);
+        list.add(season);
       }
-
-      final result = newList.isEmpty ? null : newList;
-      if (onChanged != null) {
-        onChanged!(result);
-      } else {
-        selectedSeasons.value = result;
-      }
+      selectedSeasons.value = list.isEmpty ? null : list;
     }
 
     return Wrap(
-      spacing: 8,
-      runSpacing: 4,
-      children: ProductSeason.values.map((final season) {
-        final isSelected = selected.contains(season);
-        return FilterChip(
-          label: Text(season.label, style: textTheme.bodyMedium),
-          selected: isSelected,
-          onSelected: (final _) => toggle(season),
-          selectedColor: colorScheme.primaryContainer,
-          checkmarkColor: colorScheme.primary,
-          side: BorderSide(
-            color: isSelected
-                ? colorScheme.primary
-                : colorScheme.outline.withValues(alpha: 0.3),
-          ),
-        );
-      }).toList(),
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.xs,
+      children: ProductSeason.values
+          .map(
+            (final season) => FilterChip(
+              label: Text(season.label),
+              selected: selected.contains(season),
+              onSelected: (final _) => toggle(season),
+            ),
+          )
+          .toList(),
     );
   }
 }

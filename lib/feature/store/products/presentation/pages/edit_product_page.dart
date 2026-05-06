@@ -6,17 +6,17 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
-import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_form.dart';
 import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_size_manager.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_form_layout.dart';
 import 'package:tryzeon/feature/store/products/providers/store_products_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
-class ProductDetailPage extends HookConsumerWidget {
-  const ProductDetailPage({super.key, required this.productId});
+class EditProductPage extends HookConsumerWidget {
+  const EditProductPage({super.key, required this.productId});
 
   final String productId;
 
@@ -25,56 +25,20 @@ class ProductDetailPage extends HookConsumerWidget {
     final productAsync = ref.watch(productByIdProvider(productId));
     final product = productAsync.hasValue ? productAsync.requireValue : null;
 
-    if (product != null) {
-      return _ProductDetailContentPage(key: ValueKey(product.id), product: product);
+    // Loading or error state
+    if (product == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('編輯商品'), centerTitle: true),
+        body: productAsync.isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : ErrorView(
+                message: productAsync.error.displayMessage(context),
+                onRetry: () => ref.invalidate(productByIdProvider(productId)),
+              ),
+      );
     }
 
-    return _ProductDetailFallbackPage(
-      isLoading: productAsync.isLoading,
-      error: productAsync.error,
-      onRetry: () => ref.invalidate(productByIdProvider(productId)),
-    );
-  }
-}
-
-class _ProductDetailFallbackPage extends StatelessWidget {
-  const _ProductDetailFallbackPage({
-    required this.isLoading,
-    required this.error,
-    required this.onRetry,
-  });
-
-  final bool isLoading;
-  final Object? error;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(final BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('商品詳情')),
-      body: isLoading
-          ? const _ProductDetailLoadingView()
-          : ErrorView(message: error.displayMessage(context), onRetry: onRetry),
-    );
-  }
-}
-
-class _ProductDetailLoadingView extends StatelessWidget {
-  const _ProductDetailLoadingView();
-
-  @override
-  Widget build(final BuildContext context) {
-    return const Center(child: CircularProgressIndicator());
-  }
-}
-
-class _ProductDetailContentPage extends HookConsumerWidget {
-  const _ProductDetailContentPage({super.key, required this.product});
-
-  final Product product;
-
-  @override
-  Widget build(final BuildContext context, final WidgetRef ref) {
+    // Product loaded - show form
     final formData = useProductForm(initialProduct: product);
     final sizeManager = useProductSizeManager(initialSizes: product.sizes);
     final isLoading = useState(false);
@@ -122,25 +86,7 @@ class _ProductDetailContentPage extends HookConsumerWidget {
       final updateProductUseCase = ref.read(updateProductUseCaseProvider);
       final result = await updateProductUseCase(
         original: product,
-        params: UpdateProductParams(
-          productId: product.id,
-          finalImageOrder: formData.images.value,
-          sizesToAdd: deltas.sizesToAdd,
-          sizesToUpdate: deltas.sizesToUpdate,
-          sizeIdsToDelete: deltas.sizeIdsToDelete,
-          name: formData.nameController.text,
-          categoryIds: formData.selectedCategoryIds.value.toList(),
-          price: double.tryParse(formData.priceController.text) ?? 0.0,
-          purchaseLink: formData.purchaseLinkController.text.isNotEmpty
-              ? formData.purchaseLinkController.text
-              : null,
-          material: formData.effectiveMaterial,
-          elasticity: formData.selectedElasticity.value,
-          fit: formData.effectiveFit,
-          thickness: formData.selectedThickness.value,
-          styles: formData.selectedStyles.value,
-          seasons: formData.selectedSeasons.value,
-        ),
+        params: formData.toUpdateProductParams(productId: product.id, deltas: deltas),
       );
 
       if (!context.mounted) return;
@@ -161,20 +107,28 @@ class _ProductDetailContentPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('編輯商品'),
+        centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.delete_outline),
-            onPressed: deleteProduct,
-            tooltip: '刪除',
+          Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.smMd),
+            child: TextButton(
+              onPressed: isLoading.value ? null : updateProduct,
+              child: isLoading.value
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('儲存'),
+            ),
           ),
         ],
       ),
       body: ProductFormLayout(
-        mode: ProductFormMode.edit,
         formData: formData,
         sizeManager: sizeManager,
         isLoading: isLoading.value,
-        onSubmit: updateProduct,
+        onDelete: deleteProduct,
         productCategoryTreeAsync: productCategoryTreeAsync,
         onRetryCategories: () => refreshProductCategories(ref),
         onPickImage: (final remainingCount) async {

@@ -6,7 +6,7 @@ import 'package:tryzeon/feature/personal/profile/domain/entities/clothing_style.
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/product_attributes.dart';
-import 'package:tryzeon/feature/store/products/presentation/extensions/product_attributes_extension.dart';
+import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_size_manager.dart';
 
 class ProductFormData {
   ProductFormData({
@@ -14,10 +14,8 @@ class ProductFormData {
     required this.nameController,
     required this.priceController,
     required this.purchaseLinkController,
-    required this.selectedMaterialPreset,
-    required this.materialOtherController,
-    required this.selectedFitPreset,
-    required this.fitOtherController,
+    required this.selectedMaterial,
+    required this.selectedFit,
     required this.images,
     required this.selectedCategoryIds,
     required this.selectedElasticity,
@@ -30,10 +28,8 @@ class ProductFormData {
   final TextEditingController nameController;
   final TextEditingController priceController;
   final TextEditingController purchaseLinkController;
-  final ValueNotifier<String?> selectedMaterialPreset;
-  final TextEditingController materialOtherController;
-  final ValueNotifier<String?> selectedFitPreset;
-  final TextEditingController fitOtherController;
+  final ValueNotifier<String?> selectedMaterial;
+  final ValueNotifier<String?> selectedFit;
   final ValueNotifier<List<ImageItem>> images;
   final ValueNotifier<Set<String>> selectedCategoryIds;
   final ValueNotifier<ProductElasticity?> selectedElasticity;
@@ -53,26 +49,6 @@ class ProductFormData {
   List<String> get keptExistingPaths =>
       images.value.whereType<ExistingImageItem>().map((final e) => e.path).toList();
 
-  String? get effectiveMaterial => _effectiveMaterial();
-
-  String? get effectiveFit => _effectiveFit();
-
-  String? _effectiveMaterial() {
-    if (selectedMaterialPreset.value == kOtherSentinel) {
-      final custom = materialOtherController.text.trim();
-      return custom.isEmpty ? null : custom;
-    }
-    return selectedMaterialPreset.value;
-  }
-
-  String? _effectiveFit() {
-    if (selectedFitPreset.value == kOtherSentinel) {
-      final custom = fitOtherController.text.trim();
-      return custom.isEmpty ? null : custom;
-    }
-    return selectedFitPreset.value;
-  }
-
   CreateProductParams toCreateProductParams({
     required final String storeId,
     required final List<CreateProductSizeParams>? sizes,
@@ -86,13 +62,38 @@ class ProductFormData {
       purchaseLink: purchaseLinkController.text.isNotEmpty
           ? purchaseLinkController.text
           : null,
-      material: _effectiveMaterial(),
+      material: selectedMaterial.value,
       elasticity: selectedElasticity.value,
-      fit: _effectiveFit(),
+      fit: selectedFit.value,
       thickness: selectedThickness.value,
       styles: selectedStyles.value,
       seasons: selectedSeasons.value,
       sizes: sizes,
+    );
+  }
+
+  UpdateProductParams toUpdateProductParams({
+    required final String productId,
+    required final ProductSizeDeltas deltas,
+  }) {
+    return UpdateProductParams(
+      productId: productId,
+      finalImageOrder: images.value,
+      sizesToAdd: deltas.sizesToAdd,
+      sizesToUpdate: deltas.sizesToUpdate,
+      sizeIdsToDelete: deltas.sizeIdsToDelete,
+      name: nameController.text,
+      categoryIds: selectedCategoryIds.value.toList(),
+      price: double.tryParse(priceController.text) ?? 0.0,
+      purchaseLink: purchaseLinkController.text.isNotEmpty
+          ? purchaseLinkController.text
+          : null,
+      material: selectedMaterial.value,
+      elasticity: selectedElasticity.value,
+      fit: selectedFit.value,
+      thickness: selectedThickness.value,
+      styles: selectedStyles.value,
+      seasons: selectedSeasons.value,
     );
   }
 
@@ -111,9 +112,9 @@ class ProductFormData {
       categoryIds: selectedCategoryIds.value.toList(),
       price: double.tryParse(priceController.text) ?? 0.0,
       purchaseLink: purchaseLinkController.text,
-      material: _effectiveMaterial(),
+      material: selectedMaterial.value,
       elasticity: selectedElasticity.value,
-      fit: _effectiveFit(),
+      fit: selectedFit.value,
       thickness: selectedThickness.value,
       styles: selectedStyles.value,
       seasons: selectedSeasons.value,
@@ -127,47 +128,17 @@ class ProductFormData {
   }
 }
 
-String? _initialFitPreset(final String? fitValue) {
-  if (fitValue == null) return null;
-  return kFitPresets.contains(fitValue) ? fitValue : kOtherSentinel;
-}
-
-String _initialFitOtherText(final String? fitValue) {
-  if (fitValue == null) return '';
-  return kFitPresets.contains(fitValue) ? '' : fitValue;
-}
-
-String? _initialMaterialPreset(final String? materialValue) {
-  if (materialValue == null) return null;
-  return kMaterialPresets.contains(materialValue) ? materialValue : kOtherSentinel;
-}
-
-String _initialMaterialOtherText(final String? materialValue) {
-  if (materialValue == null) return '';
-  return kMaterialPresets.contains(materialValue) ? '' : materialValue;
-}
-
 ProductFormData useProductForm({final Product? initialProduct}) {
   final formKey = useMemoized(GlobalKey<FormState>.new);
   final nameController = useTextEditingController(text: initialProduct?.name);
   final priceController = useTextEditingController(
-    text: initialProduct?.price.toString(),
+    text: initialProduct?.price.toInt().toString(),
   );
   final purchaseLinkController = useTextEditingController(
     text: initialProduct?.purchaseLink,
   );
-  final materialOtherController = useTextEditingController(
-    text: _initialMaterialOtherText(initialProduct?.material),
-  );
-  final selectedMaterialPreset = useValueNotifier<String?>(
-    _initialMaterialPreset(initialProduct?.material),
-  );
-  final fitOtherController = useTextEditingController(
-    text: _initialFitOtherText(initialProduct?.fit),
-  );
-  final selectedFitPreset = useValueNotifier<String?>(
-    _initialFitPreset(initialProduct?.fit),
-  );
+  final selectedMaterial = useValueNotifier<String?>(initialProduct?.material);
+  final selectedFit = useValueNotifier<String?>(initialProduct?.fit);
 
   final initialImages = useMemoized(() {
     if (initialProduct == null) return <ImageItem>[];
@@ -198,10 +169,8 @@ ProductFormData useProductForm({final Product? initialProduct}) {
     nameController: nameController,
     priceController: priceController,
     purchaseLinkController: purchaseLinkController,
-    selectedMaterialPreset: selectedMaterialPreset,
-    materialOtherController: materialOtherController,
-    selectedFitPreset: selectedFitPreset,
-    fitOtherController: fitOtherController,
+    selectedMaterial: selectedMaterial,
+    selectedFit: selectedFit,
     images: images,
     selectedCategoryIds: selectedCategoryIds,
     selectedElasticity: selectedElasticity,

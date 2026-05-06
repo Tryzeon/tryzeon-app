@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
 
 class ProductImageEditor extends StatelessWidget {
@@ -10,129 +11,121 @@ class ProductImageEditor extends StatelessWidget {
     required this.onImagesChanged,
     required this.onPickImage,
     this.maxImages = AppConstants.maxProductImages,
+    this.hasError = false,
   });
 
   final List<ImageItem> images;
   final ValueChanged<List<ImageItem>> onImagesChanged;
   final VoidCallback onPickImage;
   final int maxImages;
+  final bool hasError;
 
   @override
   Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
     final canAddMore = images.length < maxImages;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: Row(
             children: [
-              Text('商品圖片', style: textTheme.titleSmall),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (canAddMore) ...[
-                    GestureDetector(
-                      onTap: onPickImage,
-                      child: Icon(Icons.add, color: colorScheme.primary, size: 28),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                  Text(
-                    '${images.length}/$maxImages',
-                    style: textTheme.bodySmall?.copyWith(
-                      color: images.length >= maxImages
-                          ? colorScheme.error
-                          : colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
+              Text(
+                '${images.length}/$maxImages',
+                style: textTheme.labelMedium?.copyWith(
+                  color: images.length >= maxImages
+                      ? colorScheme.error
+                      : colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            '長按拖曳可調整順序',
-            style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-          ),
-          const SizedBox(height: 12),
-          if (images.isEmpty)
-            GestureDetector(
+        ),
+        const SizedBox(height: AppSpacing.smMd),
+        if (images.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            child: GestureDetector(
               onTap: onPickImage,
-              child: _buildAddImagePlaceholder(context, colorScheme, textTheme),
-            )
-          else
-            SizedBox(
-              height: 120,
-              child: ReorderableListView.builder(
-                scrollDirection: Axis.horizontal,
-                buildDefaultDragHandles: false,
-                proxyDecorator: (final child, final index, final animation) {
-                  return Material(
-                    color: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    child: child,
+              child: _AddPlaceholder(hasError: hasError),
+            ),
+          )
+        else
+          SizedBox(
+            height: 96,
+            child: ReorderableListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+              buildDefaultDragHandles: false,
+              proxyDecorator: (final child, final _, final _) => Material(
+                color: Colors.transparent,
+                shadowColor: Colors.transparent,
+                child: child,
+              ),
+              itemCount: images.length + (canAddMore ? 1 : 0),
+              onReorder: (final oldIndex, final newIndex) {
+                if (oldIndex >= images.length) return;
+                final updated = List<ImageItem>.from(images);
+                final item = updated.removeAt(oldIndex);
+                final insertAt = (newIndex > oldIndex ? newIndex - 1 : newIndex).clamp(
+                  0,
+                  updated.length,
+                );
+                updated.insert(insertAt, item);
+                onImagesChanged(updated);
+              },
+              itemBuilder: (final context, final index) {
+                if (index == images.length) {
+                  return Padding(
+                    key: const ValueKey('add-tile'),
+                    padding: const EdgeInsets.only(right: AppSpacing.sm),
+                    child: GestureDetector(onTap: onPickImage, child: const _AddTile()),
                   );
-                },
-                itemCount: images.length,
-                onReorder: (final oldIndex, final newIndex) {
-                  final updated = List<ImageItem>.from(images);
-                  final item = updated.removeAt(oldIndex);
-                  final insertIndex = newIndex > oldIndex ? newIndex - 1 : newIndex;
-                  updated.insert(insertIndex, item);
-                  onImagesChanged(updated);
-                },
-                itemBuilder: (final context, final index) {
-                  final item = images[index];
-                  return ReorderableDragStartListener(
-                    key: ValueKey(item),
+                }
+                final item = images[index];
+                return Padding(
+                  key: ValueKey(item),
+                  padding: const EdgeInsets.only(right: AppSpacing.sm),
+                  child: ReorderableDragStartListener(
                     index: index,
-                    child: _buildImageCard(
-                      context,
-                      colorScheme,
+                    child: _ImageCard(
                       item: item,
                       onRemove: () {
                         final updated = List<ImageItem>.from(images)..removeAt(index);
                         onImagesChanged(updated);
                       },
                     ),
-                  );
-                },
-              ),
+                  ),
+                );
+              },
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
+}
 
-  Widget _buildImageCard(
-    final BuildContext context,
-    final ColorScheme colorScheme, {
-    required final ImageItem item,
-    required final VoidCallback onRemove,
-  }) {
-    return Container(
-      width: 120,
-      margin: const EdgeInsets.only(right: 12),
+class _ImageCard extends StatelessWidget {
+  const _ImageCard({required this.item, required this.onRemove});
+
+  final ImageItem item;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return SizedBox(
+      width: 96,
+      height: 96,
       child: Stack(
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppRadius.buttonAll,
             child: switch (item) {
               ExistingImageItem(:final url, :final path) => CachedNetworkImage(
                 imageUrl: url,
@@ -140,14 +133,15 @@ class ProductImageEditor extends StatelessWidget {
                 fit: BoxFit.cover,
                 width: double.infinity,
                 height: double.infinity,
-                placeholder: (final context, final url) => Center(
-                  child: CircularProgressIndicator(
-                    color: colorScheme.outline,
-                    strokeWidth: 2,
+                placeholder: (final _, final _) =>
+                    Container(color: colorScheme.surfaceContainerLow),
+                errorWidget: (final _, final _, final _) => Container(
+                  color: colorScheme.surfaceContainerLow,
+                  child: Icon(
+                    Icons.broken_image_outlined,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
-                errorWidget: (final context, final url, final error) =>
-                    Center(child: Icon(Icons.error_outline, color: colorScheme.error)),
               ),
               NewImageItem(:final file) => Image.file(
                 file,
@@ -157,19 +151,19 @@ class ProductImageEditor extends StatelessWidget {
               ),
             },
           ),
-          // Remove button
           Positioned(
             top: 4,
             right: 4,
             child: GestureDetector(
               onTap: onRemove,
               child: Container(
-                padding: const EdgeInsets.all(4),
+                width: 18,
+                height: 18,
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.6),
+                  color: colorScheme.scrim,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.close, size: 16, color: Colors.white),
+                child: const Icon(Icons.close, size: 12, color: Colors.white),
               ),
             ),
           ),
@@ -177,27 +171,68 @@ class ProductImageEditor extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildAddImagePlaceholder(
-    final BuildContext context,
-    final ColorScheme colorScheme,
-    final TextTheme textTheme,
-  ) {
+class _AddTile extends StatelessWidget {
+  const _AddTile();
+
+  @override
+  Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      height: 180,
+      width: 96,
+      height: 96,
+      decoration: BoxDecoration(
+        borderRadius: AppRadius.buttonAll,
+        border: Border.all(
+          color: colorScheme.outline,
+          width: 1.5,
+          strokeAlign: BorderSide.strokeAlignInside,
+        ),
+      ),
+      child: Center(
+        child: Icon(Icons.add_rounded, color: colorScheme.onSurfaceVariant, size: 24),
+      ),
+    );
+  }
+}
+
+class _AddPlaceholder extends StatelessWidget {
+  const _AddPlaceholder({this.hasError = false});
+
+  final bool hasError;
+
+  @override
+  Widget build(final BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
+    return Container(
+      height: 160,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: colorScheme.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.primary.withValues(alpha: 0.3), width: 2),
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: AppRadius.buttonAll,
+        border: Border.all(
+          color: hasError ? colorScheme.error : colorScheme.outline,
+          width: 1.5,
+        ),
       ),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add_photo_alternate_rounded, size: 40, color: colorScheme.primary),
-            const SizedBox(height: 6),
-            Text('點擊選擇圖片', style: textTheme.labelLarge),
+            Icon(
+              Icons.add_photo_alternate_outlined,
+              size: 32,
+              color: colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              '點擊新增',
+              style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+            ),
           ],
         ),
       ),
