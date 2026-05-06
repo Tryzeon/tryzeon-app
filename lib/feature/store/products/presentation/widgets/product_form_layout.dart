@@ -18,29 +18,23 @@ class ProductFormLayout extends StatelessWidget {
   const ProductFormLayout({
     required this.formData,
     required this.sizeManager,
-    required this.isLoading,
     required this.onPickImage,
     required this.productCategoryTreeAsync,
     required this.onRetryCategories,
-    this.onDelete,
     super.key,
   });
   final ProductFormData formData;
   final ProductSizeManager sizeManager;
-  final bool isLoading;
   final Future<List<File>?> Function(int remainingCount) onPickImage;
   final AsyncValue<List<CategoryTreeNode>> productCategoryTreeAsync;
   final VoidCallback onRetryCategories;
-  final VoidCallback? onDelete;
 
   @override
   Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Form(
       key: formData.formKey,
-      child: ListView(
-        padding: EdgeInsets.zero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Padding(
             padding: EdgeInsets.fromLTRB(
@@ -139,38 +133,6 @@ class ProductFormLayout extends StatelessWidget {
               onRemove: sizeManager.removeSize,
             ),
           ),
-          if (onDelete != null) ...[
-            const SizedBox(height: AppSpacing.xl),
-            const Divider(),
-            const SizedBox(height: AppSpacing.lg),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '危險操作',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.labelMedium?.copyWith(color: colorScheme.error),
-                  ),
-                  const SizedBox(height: AppSpacing.smMd),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: isLoading ? null : onDelete,
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: colorScheme.error,
-                        side: BorderSide(color: colorScheme.error),
-                      ),
-                      child: const Text('刪除商品'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-          const SizedBox(height: AppSpacing.xxl),
         ],
       ),
     );
@@ -218,12 +180,7 @@ class _ImageErrorText extends StatelessWidget {
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.xl,
-        AppSpacing.sm,
-        AppSpacing.lg,
-        0,
-      ),
+      padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.sm, AppSpacing.lg, 0),
       child: Text(
         text,
         style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.error),

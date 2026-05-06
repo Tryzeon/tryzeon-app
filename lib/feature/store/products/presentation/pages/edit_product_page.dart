@@ -11,6 +11,7 @@ import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
 import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_form.dart';
 import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_size_manager.dart';
+import 'package:tryzeon/feature/store/products/presentation/widgets/product_danger_zone.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_form_layout.dart';
 import 'package:tryzeon/feature/store/products/providers/store_products_providers.dart';
 import 'package:typed_result/typed_result.dart';
@@ -41,14 +42,15 @@ class EditProductPage extends HookConsumerWidget {
     // Product loaded - show form
     final formData = useProductForm(initialProduct: product);
     final sizeManager = useProductSizeManager(initialSizes: product.sizes);
-    final isLoading = useState(false);
+    final isSaving = useState(false);
+    final isDeleting = useState(false);
     final productCategoryTreeAsync = ref.watch(productCategoryTreeProvider);
 
     Future<void> deleteProduct() async {
       final dialogResult = await showOkCancelAlertDialog(
         context: context,
         title: '刪除商品',
-        message: '確定要刪除「${product.name}」嗎?',
+        message: '確定要刪除「${product.name}」嗎?\n此操作無法復原。',
         okLabel: '刪除',
         cancelLabel: '取消',
         isDestructiveAction: true,
@@ -56,14 +58,14 @@ class EditProductPage extends HookConsumerWidget {
 
       if (dialogResult != OkCancelResult.ok) return;
 
-      isLoading.value = true;
+      isDeleting.value = true;
 
       final deleteProductUseCase = ref.read(deleteProductUseCaseProvider);
       final result = await deleteProductUseCase(product);
 
       if (!context.mounted) return;
 
-      isLoading.value = false;
+      isDeleting.value = false;
 
       if (result.isSuccess) {
         ref.invalidate(productsProvider);
@@ -79,7 +81,7 @@ class EditProductPage extends HookConsumerWidget {
     Future<void> updateProduct() async {
       if (!formData.validate(context)) return;
 
-      isLoading.value = true;
+      isSaving.value = true;
 
       final deltas = sizeManager.calculateDeltas(product.id, product.sizes);
 
@@ -91,7 +93,7 @@ class EditProductPage extends HookConsumerWidget {
 
       if (!context.mounted) return;
 
-      isLoading.value = false;
+      isSaving.value = false;
 
       if (result.isSuccess) {
         ref.invalidate(productsProvider);
@@ -112,8 +114,8 @@ class EditProductPage extends HookConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.smMd),
             child: TextButton(
-              onPressed: isLoading.value ? null : updateProduct,
-              child: isLoading.value
+              onPressed: (isSaving.value || isDeleting.value) ? null : updateProduct,
+              child: isSaving.value
                   ? const SizedBox(
                       width: 16,
                       height: 16,
@@ -124,16 +126,28 @@ class EditProductPage extends HookConsumerWidget {
           ),
         ],
       ),
-      body: ProductFormLayout(
-        formData: formData,
-        sizeManager: sizeManager,
-        isLoading: isLoading.value,
-        onDelete: deleteProduct,
-        productCategoryTreeAsync: productCategoryTreeAsync,
-        onRetryCategories: () => refreshProductCategories(ref),
-        onPickImage: (final remainingCount) async {
-          return ImagePickerHelper.pickImages(context, maxImages: remainingCount);
-        },
+      body: SingleChildScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ProductFormLayout(
+              formData: formData,
+              sizeManager: sizeManager,
+              productCategoryTreeAsync: productCategoryTreeAsync,
+              onRetryCategories: () => refreshProductCategories(ref),
+              onPickImage: (final remainingCount) async {
+                return ImagePickerHelper.pickImages(context, maxImages: remainingCount);
+              },
+            ),
+            ProductDangerZone(
+              onDelete: deleteProduct,
+              isSaving: isSaving.value,
+              isDeleting: isDeleting.value,
+            ),
+          ],
+        ),
       ),
     );
   }

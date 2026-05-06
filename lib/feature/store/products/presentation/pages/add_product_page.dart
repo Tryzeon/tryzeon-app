@@ -21,20 +21,20 @@ class AddProductPage extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final formData = useProductForm();
     final sizeManager = useProductSizeManager();
-    final isLoading = useState(false);
+    final isSaving = useState(false);
     final productCategoryTreeAsync = ref.watch(productCategoryTreeProvider);
 
     Future<void> addProduct() async {
       if (!formData.validate(context)) return;
 
-      isLoading.value = true;
+      isSaving.value = true;
 
       final storeProfile = await ref.read(storeProfileProvider.future);
       if (!context.mounted) return;
 
       if (storeProfile == null) {
         TopNotification.show(context, message: '無法獲取店家資訊，請重新登入');
-        isLoading.value = false;
+        isSaving.value = false;
         return;
       }
 
@@ -48,7 +48,7 @@ class AddProductPage extends HookConsumerWidget {
 
       if (!context.mounted) return;
 
-      isLoading.value = false;
+      isSaving.value = false;
 
       if (result.isSuccess) {
         ref.invalidate(productsProvider);
@@ -69,8 +69,8 @@ class AddProductPage extends HookConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.smMd),
             child: TextButton(
-              onPressed: isLoading.value ? null : addProduct,
-              child: isLoading.value
+              onPressed: isSaving.value ? null : addProduct,
+              child: isSaving.value
                   ? const SizedBox(
                       width: 16,
                       height: 16,
@@ -81,15 +81,18 @@ class AddProductPage extends HookConsumerWidget {
           ),
         ],
       ),
-      body: ProductFormLayout(
-        formData: formData,
-        sizeManager: sizeManager,
-        isLoading: isLoading.value,
-        productCategoryTreeAsync: productCategoryTreeAsync,
-        onRetryCategories: () => refreshProductCategories(ref),
-        onPickImage: (final remainingCount) async {
-          return ImagePickerHelper.pickImages(context, maxImages: remainingCount);
-        },
+      body: SingleChildScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
+        child: ProductFormLayout(
+          formData: formData,
+          sizeManager: sizeManager,
+          productCategoryTreeAsync: productCategoryTreeAsync,
+          onRetryCategories: () => refreshProductCategories(ref),
+          onPickImage: (final remainingCount) async {
+            return ImagePickerHelper.pickImages(context, maxImages: remainingCount);
+          },
+        ),
       ),
     );
   }
