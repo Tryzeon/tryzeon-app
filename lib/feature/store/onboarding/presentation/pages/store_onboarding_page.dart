@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
@@ -15,13 +16,12 @@ class StoreOnboardingPage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    const String formUrl = AppConstants.storeOnboardingFormUrl;
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    final colorScheme = theme.colorScheme;
 
     Future<void> openForm() async {
-      final uri = Uri.parse(formUrl);
+      final uri = Uri.parse(AppConstants.storeOnboardingFormUrl);
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
@@ -38,15 +38,10 @@ class StoreOnboardingPage extends HookConsumerWidget {
         okLabel: '確定',
         cancelLabel: '取消',
       );
-
-      if (result == OkCancelResult.ok) {
-        final setLoginTypeUseCase = ref.read(setLastLoginTypeUseCaseProvider);
-        await setLoginTypeUseCase(UserType.personal);
-
-        if (context.mounted) {
-          context.go(AppRoutes.personalHome);
-        }
-      }
+      if (result != OkCancelResult.ok) return;
+      final setLoginTypeUseCase = ref.read(setLastLoginTypeUseCaseProvider);
+      await setLoginTypeUseCase(UserType.personal);
+      if (context.mounted) context.go(AppRoutes.personalHome);
     }
 
     Future<void> handleLogout() async {
@@ -58,271 +53,170 @@ class StoreOnboardingPage extends HookConsumerWidget {
         cancelLabel: '取消',
         isDestructiveAction: true,
       );
-
-      if (result == OkCancelResult.ok) {
-        final signOutUseCase = ref.read(signOutUseCaseProvider);
-        await signOutUseCase();
-      }
+      if (result != OkCancelResult.ok) return;
+      final signOutUseCase = ref.read(signOutUseCaseProvider);
+      await signOutUseCase();
     }
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(color: colorScheme.surface),
-        child: SafeArea(
-          child: Column(
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: () => refreshStoreProfile(ref),
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.zero,
             children: [
-              // 頂部標題欄
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: colorScheme.surface,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.smMd,
+                  vertical: AppSpacing.sm,
                 ),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.description_rounded,
-                        color: colorScheme.onPrimary,
-                        size: 24,
-                      ),
+                    IconButton(
+                      icon: const Icon(Icons.swap_horiz_outlined),
+                      tooltip: '切換回個人帳號',
+                      onPressed: switchToPersonalAccount,
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('店家註冊', style: textTheme.headlineMedium),
-                          Text('開始您的店家之旅', style: textTheme.bodySmall),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: IconButton(
-                        icon: Icon(Icons.person_rounded, color: colorScheme.primary),
-                        onPressed: switchToPersonalAccount,
-                        tooltip: '切換回個人帳號',
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: IconButton(
-                        icon: Icon(Icons.logout_rounded, color: colorScheme.primary),
-                        onPressed: handleLogout,
-                        tooltip: '登出',
-                      ),
+                    IconButton(
+                      icon: const Icon(Icons.logout_outlined),
+                      tooltip: '登出',
+                      onPressed: handleLogout,
                     ),
                   ],
                 ),
               ),
-
-              // 內容區域
-              Expanded(
-                child: RefreshIndicator(
-                  onRefresh: () => refreshStoreProfile(ref),
-                  child: Center(
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              color: colorScheme.surface,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.08),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              children: [
-                                // 標題圖示
-                                Container(
-                                  width: 56,
-                                  height: 56,
-                                  decoration: BoxDecoration(
-                                    color: colorScheme.tertiary,
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Icon(
-                                    Icons.edit_document,
-                                    color: colorScheme.onPrimary,
-                                    size: 28,
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                Text(
-                                  '立即加入店家清單',
-                                  style: textTheme.headlineLarge,
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 24),
-                                // 開啟表單按鈕
-                                Container(
-                                  width: double.infinity,
-                                  decoration: BoxDecoration(
-                                    color: colorScheme.primary,
-                                    borderRadius: BorderRadius.circular(16),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: colorScheme.primary.withValues(alpha: 0.3),
-                                        blurRadius: 12,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                      onTap: openForm,
-                                      borderRadius: BorderRadius.circular(16),
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 32,
-                                          vertical: 16,
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.open_in_new_rounded,
-                                              color: colorScheme.onPrimary,
-                                              size: 24,
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Text(
-                                              '開啟申請表單',
-                                              style: textTheme.titleSmall?.copyWith(
-                                                color: colorScheme.onPrimary,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 24),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: colorScheme.error.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: colorScheme.error.withValues(alpha: 0.3),
-                                      width: 1.5,
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.warning_rounded,
-                                        color: colorScheme.error,
-                                        size: 20,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        '必須使用相同 Gmail',
-                                        style: textTheme.labelMedium?.copyWith(
-                                          color: colorScheme.error,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          const SizedBox(height: 24),
-
-                          // 審核時間資訊卡片
-                          Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: colorScheme.surface,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.08),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 48,
-                                  height: 48,
-                                  decoration: BoxDecoration(
-                                    color: colorScheme.primary,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Icon(
-                                    Icons.info_rounded,
-                                    color: colorScheme.onPrimary,
-                                    size: 24,
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text('審核時間', style: textTheme.titleMedium),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        '填寫完表單後，請稍等 7-14 個工作天進行審核',
-                                        style: textTheme.bodySmall?.copyWith(
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+              const SizedBox(height: AppSpacing.lg),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: Text(
+                  '品牌專區 · TRYZEON',
+                  style: textTheme.labelMedium?.copyWith(color: colorScheme.primary),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.smMd),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: RichText(
+                  text: TextSpan(
+                    style: textTheme.displayMedium?.copyWith(
+                      color: colorScheme.onSurface,
+                      height: 1.1,
                     ),
+                    children: [
+                      const TextSpan(text: '成為\n'),
+                      TextSpan(
+                        text: '認證品牌。',
+                        style: textTheme.displayMedium?.copyWith(
+                          fontStyle: FontStyle.italic,
+                          color: colorScheme.primary,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
+              const SizedBox(height: AppSpacing.md),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: Text(
+                  '完成審核後，你的商品就能在 Tryzeon 上架、虛擬試穿與導購。',
+                  style: textTheme.bodyLarge?.copyWith(
+                    color: colorScheme.onSurface.withValues(alpha: 0.75),
+                    height: 1.7,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: openForm,
+                    icon: const Icon(Icons.open_in_new_rounded, size: 18),
+                    label: const Text('開啟申請表單'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              const Divider(indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.lg),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: Text(
+                  '申請前須知',
+                  style: textTheme.labelMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.smMd),
+              const _OnboardingNote(
+                number: '01',
+                label: '相同信箱',
+                body: '必須使用與此帳號相同的 Gmail 填寫表單，否則無法綁定。',
+              ),
+              const _OnboardingNote(
+                number: '02',
+                label: '審核時程',
+                body: '送出後，請等候 7 – 14 個工作天進行審核。',
+              ),
+              const SizedBox(height: AppSpacing.xxl),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _OnboardingNote extends StatelessWidget {
+  const _OnboardingNote({required this.number, required this.label, required this.body});
+
+  final String number;
+  final String label;
+  final String body;
+
+  @override
+  Widget build(final BuildContext context) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    final colorScheme = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.smMd,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 24,
+            child: Text(
+              number,
+              style: textTheme.labelMedium?.copyWith(color: colorScheme.primary),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.smMd),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: textTheme.labelMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(body, style: textTheme.bodyMedium?.copyWith(height: 1.6)),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
