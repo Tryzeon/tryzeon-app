@@ -27,7 +27,7 @@ class ProductSortSheet extends HookConsumerWidget {
 
     final textTheme = Theme.of(context).textTheme;
 
-    void applyAndClose() {
+    void applySort() {
       ref
           .read(productQueryProvider.notifier)
           .updateSort(
@@ -36,7 +36,6 @@ class ProductSortSheet extends HookConsumerWidget {
               ascending: pendingAscending.value,
             ),
           );
-      Navigator.of(context).pop();
     }
 
     return SafeArea(
@@ -49,24 +48,15 @@ class ProductSortSheet extends HookConsumerWidget {
               horizontal: AppSpacing.lg,
               vertical: AppSpacing.md,
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('排序', style: textTheme.titleMedium),
-                TextButton(
-                  onPressed: () {
-                    pendingSortField.value = SortCondition.defaultSort.field;
-                    pendingAscending.value = SortCondition.defaultSort.ascending;
-                  },
-                  child: const Text('重設'),
-                ),
-              ],
-            ),
+            child: Text('排序', style: textTheme.titleMedium),
           ),
           RadioGroup<SortField>(
             groupValue: pendingSortField.value,
             onChanged: (final v) {
-              if (v != null) pendingSortField.value = v;
+              if (v != null) {
+                pendingSortField.value = v;
+                applySort();
+              }
             },
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -91,22 +81,15 @@ class ProductSortSheet extends HookConsumerWidget {
                 Expanded(child: Text('由小到大', style: textTheme.titleSmall)),
                 Switch(
                   value: pendingAscending.value,
-                  onChanged: (final v) => pendingAscending.value = v,
+                  onChanged: (final v) {
+                    pendingAscending.value = v;
+                    applySort();
+                  },
                 ),
               ],
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton(onPressed: applyAndClose, child: const Text('套用')),
-              ),
-            ),
-          ),
         ],
       ),
     );
