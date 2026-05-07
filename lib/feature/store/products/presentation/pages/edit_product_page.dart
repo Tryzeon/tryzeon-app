@@ -9,6 +9,7 @@ import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
+import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_form.dart';
 import 'package:tryzeon/feature/store/products/presentation/hooks/use_product_size_manager.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_danger_zone.dart';
@@ -16,7 +17,7 @@ import 'package:tryzeon/feature/store/products/presentation/widgets/product_form
 import 'package:tryzeon/feature/store/products/providers/store_products_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
-class EditProductPage extends HookConsumerWidget {
+class EditProductPage extends ConsumerWidget {
   const EditProductPage({super.key, required this.productId});
 
   final String productId;
@@ -26,7 +27,6 @@ class EditProductPage extends HookConsumerWidget {
     final productAsync = ref.watch(productByIdProvider(productId));
     final product = productAsync.hasValue ? productAsync.requireValue : null;
 
-    // Loading or error state
     if (product == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('編輯商品'), centerTitle: true),
@@ -39,7 +39,17 @@ class EditProductPage extends HookConsumerWidget {
       );
     }
 
-    // Product loaded - show form
+    return _EditProductContent(product: product);
+  }
+}
+
+class _EditProductContent extends HookConsumerWidget {
+  const _EditProductContent({required this.product});
+
+  final Product product;
+
+  @override
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final formData = useProductForm(initialProduct: product);
     final sizeManager = useProductSizeManager(initialSizes: product.sizes);
     final isSaving = useState(false);
