@@ -123,7 +123,9 @@ class SubscriptionUsageCardSkeleton extends StatelessWidget {
               const SizedBox(height: AppSpacing.xs),
               Text(
                 '今日試穿',
-                style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                style: textTheme.labelSmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: AppSpacing.xs),
               Container(height: 2, color: colorScheme.surfaceContainerHighest),
