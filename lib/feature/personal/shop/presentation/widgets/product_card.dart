@@ -37,7 +37,6 @@ class ProductCard extends HookConsumerWidget {
     );
 
     void onVisibilityChanged(final VisibilityInfo info) {
-      // Skip analytics for skeleton products
       if (product.id.startsWith('skeleton_')) return;
 
       if (info.visibleFraction > AppConstants.productVisibilityThreshold &&
@@ -50,25 +49,12 @@ class ProductCard extends HookConsumerWidget {
       }
     }
 
-    Color getFitColor(final FitStatus status) {
-      switch (status) {
-        case FitStatus.perfect:
-          return AppColors.success;
-        case FitStatus.good:
-          return AppColors.warning;
-        case FitStatus.poor:
-          return AppColors.error;
-      }
-    }
-
     Future<void> handleTryon({final TryOnMode mode = TryOnMode.image}) async {
-      // 記錄虛擬試穿點擊次數 (非同步執行，不阻塞 UI)
       ref
           .read(incrementTryonCountProvider)
           .call(productId: product.id, storeId: product.storeInfo.id)
           .ignore();
 
-      // 如果契合度為紅色，彈出確認視窗
       if (fitStatus == FitStatus.poor) {
         final result = await showOkCancelAlertDialog(
           context: context,
@@ -88,17 +74,12 @@ class ProductCard extends HookConsumerWidget {
           .tryOnFromStorage(product.imagePaths, mode: mode);
     }
 
-    Widget buildTryonButton() {
-      final buttonColor = fitStatus == null
-          ? colorScheme.primary
-          : getFitColor(fitStatus!);
-
-      return Container(
-        padding: const EdgeInsets.all(AppSpacing.sm),
-        decoration: BoxDecoration(color: buttonColor, borderRadius: AppRadius.pillAll),
-        child: Icon(Icons.auto_awesome, color: colorScheme.onPrimary, size: 20),
-      );
-    }
+    final dotColor = switch (fitStatus) {
+      null => null,
+      FitStatus.perfect => AppColors.success,
+      FitStatus.good => AppColors.warning,
+      FitStatus.poor => AppColors.error,
+    };
 
     return GestureDetector(
       onTap: () {
@@ -108,74 +89,121 @@ class ProductCard extends HookConsumerWidget {
         key: Key('product-card-${product.id}'),
         onVisibilityChanged: onVisibilityChanged,
         child: Card(
+          color: colorScheme.surface,
           clipBehavior: Clip.antiAlias,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: Stack(
-                  children: [
-                    CachedNetworkImage(
-                      imageUrl: product.imageUrls.isNotEmpty
-                          ? product.imageUrls.first
-                          : '',
-                      cacheKey: product.imagePaths.isNotEmpty
-                          ? product.imagePaths.first
-                          : null,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      placeholder: (final context, final url) => Center(
-                        child: CircularProgressIndicator(color: colorScheme.primary),
+                child: Container(
+                  color: colorScheme.surfaceContainerLow,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: product.imageUrls.isEmpty
+                            ? const _ImagePlaceholder()
+                            : CachedNetworkImage(
+                                imageUrl: product.imageUrls.first,
+                                cacheKey: product.imagePaths.isNotEmpty
+                                    ? product.imagePaths.first
+                                    : null,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                placeholder: (final context, final url) =>
+                                    Container(color: colorScheme.surfaceContainerLow),
+                                errorWidget: (final context, final url, final error) =>
+                                    const _ImageErrorWidget(),
+                              ),
                       ),
-                      errorWidget: (final context, final url, final error) =>
-                          const Center(child: Icon(Icons.error_outline)),
-                    ),
-                    // Try-on button with fit color at bottom right
-                    Positioned(
-                      bottom: AppSpacing.sm,
-                      right: AppSpacing.sm,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () {
-                            TryOnModeSheet.show(
-                              context: context,
-                              hasVideoAccess: hasVideoAccess,
-                              onModeSelected: (final mode) => handleTryon(mode: mode),
-                            );
-                          },
-                          borderRadius: AppRadius.pillAll,
-                          child: Skeleton.ignore(child: buildTryonButton()),
+                      Positioned(
+                        bottom: AppSpacing.sm,
+                        right: AppSpacing.sm,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              TryOnModeSheet.show(
+                                context: context,
+                                hasVideoAccess: hasVideoAccess,
+                                onModeSelected: (final mode) => handleTryon(mode: mode),
+                              );
+                            },
+                            borderRadius: AppRadius.pillAll,
+                            child: Skeleton.ignore(
+                              child: Container(
+                                padding: const EdgeInsets.all(AppSpacing.sm),
+                                decoration: BoxDecoration(
+                                  color: colorScheme.primary,
+                                  borderRadius: AppRadius.pillAll,
+                                ),
+                                child: Icon(
+                                  Icons.auto_awesome,
+                                  color: colorScheme.onPrimary,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(AppSpacing.smMd),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              SizedBox(
+                width: double.infinity,
+                child: Stack(
                   children: [
-                    Text(
-                      product.name,
-                      style: textTheme.titleSmall,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      '\$${product.price}',
-                      style: textTheme.titleSmall?.copyWith(color: colorScheme.primary),
-                    ),
-                    Text(
-                      product.storeInfo.name.toUpperCase(),
-                      style: textTheme.labelSmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.smMd,
+                        AppSpacing.smMd,
+                        AppSpacing.lg,
+                        AppSpacing.smMd,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            product.storeInfo.name.toUpperCase(),
+                            style: textTheme.labelSmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            product.name,
+                            style: textTheme.titleSmall,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            '\$${product.price}',
+                            style: textTheme.headlineSmall?.copyWith(
+                              color: colorScheme.primary,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                    if (dotColor != null)
+                      Positioned(
+                        top: AppSpacing.smMd,
+                        right: AppSpacing.smMd,
+                        child: Skeleton.ignore(
+                          child: Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: dotColor,
+                              borderRadius: AppRadius.pillAll,
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -183,6 +211,32 @@ class ProductCard extends HookConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ImagePlaceholder extends StatelessWidget {
+  const _ImagePlaceholder();
+
+  @override
+  Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      color: colorScheme.surfaceContainerLow,
+      child: Icon(Icons.image_outlined, color: colorScheme.onSurfaceVariant),
+    );
+  }
+}
+
+class _ImageErrorWidget extends StatelessWidget {
+  const _ImageErrorWidget();
+
+  @override
+  Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      color: colorScheme.surfaceContainerLow,
+      child: Icon(Icons.broken_image_outlined, color: colorScheme.onSurfaceVariant),
     );
   }
 }

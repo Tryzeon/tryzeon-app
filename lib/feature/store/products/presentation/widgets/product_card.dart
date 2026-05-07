@@ -33,42 +33,46 @@ class StoreProductCard extends HookConsumerWidget {
     return GestureDetector(
       onTap: () => context.push(AppRoutes.storeProductDetailPath(product.id)),
       child: Card(
+        color: colorScheme.surface,
         clipBehavior: Clip.antiAlias,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: product.imageUrls.isEmpty
-                  ? Container(
-                      color: colorScheme.surfaceContainerLow,
-                      child: Icon(
-                        Icons.image_outlined,
-                        color: colorScheme.onSurfaceVariant,
+              child: Container(
+                color: colorScheme.surfaceContainerLow,
+                child: product.imageUrls.isEmpty
+                    ? const _ImagePlaceholder()
+                    : CachedNetworkImage(
+                        imageUrl: product.imageUrls.first,
+                        cacheKey: product.imagePaths.isNotEmpty
+                            ? product.imagePaths.first
+                            : null,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        placeholder: (final context, final url) =>
+                            Container(color: colorScheme.surfaceContainerLow),
+                        errorWidget: (final context, final url, final error) =>
+                            const _ImageErrorWidget(),
                       ),
-                    )
-                  : CachedNetworkImage(
-                      imageUrl: product.imageUrls.first,
-                      cacheKey: product.imagePaths.isNotEmpty
-                          ? product.imagePaths.first
-                          : null,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      placeholder: (final context, final url) =>
-                          Container(color: colorScheme.surfaceContainerLow),
-                      errorWidget: (final context, final url, final error) => Container(
-                        color: colorScheme.surfaceContainerLow,
-                        child: Icon(
-                          Icons.broken_image_outlined,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(AppSpacing.smMd),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (categoryNames.isNotEmpty) ...[
+                    Text(
+                      categoryNames,
+                      style: textTheme.labelSmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                  ],
                   Text(
                     product.name,
                     style: textTheme.titleSmall,
@@ -78,18 +82,9 @@ class StoreProductCard extends HookConsumerWidget {
                   const SizedBox(height: AppSpacing.xs),
                   Text(
                     '\$${product.price.toStringAsFixed(0)}',
-                    style: textTheme.titleSmall?.copyWith(color: colorScheme.primary),
+                    style: textTheme.headlineSmall?.copyWith(color: colorScheme.primary),
                   ),
-                  if (categoryNames.isNotEmpty)
-                    Text(
-                      categoryNames.toUpperCase(),
-                      style: textTheme.labelSmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  const SizedBox(height: AppSpacing.sm),
+                  const SizedBox(height: AppSpacing.smMd),
                   _AnalyticsRow(productId: product.id),
                 ],
               ),
@@ -97,6 +92,32 @@ class StoreProductCard extends HookConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ImagePlaceholder extends StatelessWidget {
+  const _ImagePlaceholder();
+
+  @override
+  Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      color: colorScheme.surfaceContainerLow,
+      child: Icon(Icons.image_outlined, color: colorScheme.onSurfaceVariant),
+    );
+  }
+}
+
+class _ImageErrorWidget extends StatelessWidget {
+  const _ImageErrorWidget();
+
+  @override
+  Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      color: colorScheme.surfaceContainerLow,
+      child: Icon(Icons.broken_image_outlined, color: colorScheme.onSurfaceVariant),
     );
   }
 }
@@ -115,20 +136,22 @@ class _AnalyticsRow extends ConsumerWidget {
       ),
     );
 
-    if (analytics == null) {
-      return const SizedBox.shrink();
-    }
-
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _AnalyticsBadge(icon: Icons.visibility_outlined, count: analytics.viewCount),
+        _AnalyticsBadge(
+          icon: Icons.visibility_outlined,
+          count: analytics?.viewCount ?? 0,
+        ),
         const SizedBox(width: AppSpacing.smMd),
-        _AnalyticsBadge(icon: Icons.checkroom_outlined, count: analytics.tryonCount),
+        _AnalyticsBadge(
+          icon: Icons.checkroom_outlined,
+          count: analytics?.tryonCount ?? 0,
+        ),
         const SizedBox(width: AppSpacing.smMd),
         _AnalyticsBadge(
           icon: Icons.north_east_rounded,
-          count: analytics.purchaseClickCount,
+          count: analytics?.purchaseClickCount ?? 0,
         ),
       ],
     );
@@ -151,7 +174,7 @@ class _AnalyticsBadge extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, size: 12, color: colorScheme.onSurfaceVariant),
-        const SizedBox(width: 4),
+        const SizedBox(width: AppSpacing.xs),
         Text(
           count.toString(),
           style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
