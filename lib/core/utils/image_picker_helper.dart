@@ -41,18 +41,12 @@ class ImagePickerHelper {
                 ),
                 const SizedBox(height: 20),
                 ListTile(
-                  leading: Icon(
-                    Icons.photo_library,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+                  leading: const Icon(Icons.photo_library),
                   title: const Text('從相簿選擇'),
                   onTap: () => Navigator.pop(context, ImageSource.gallery),
                 ),
                 ListTile(
-                  leading: Icon(
-                    Icons.camera_alt,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+                  leading: const Icon(Icons.camera_alt),
                   title: const Text('拍攝新照片'),
                   onTap: () => Navigator.pop(context, ImageSource.camera),
                 ),

@@ -226,6 +226,15 @@ class AppTheme {
         ),
       ),
 
+      // ── List Tile ────────────────────────────────────────────────────────
+      // Spec: 24px horizontal padding (page-aligned), charcoal icons.
+      // Title (bodyLarge) and subtitle (bodyMedium / onSurfaceVariant) inherit
+      // from M3 defaults — no need to override.
+      listTileTheme: const ListTileThemeData(
+        contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        iconColor: AppColors.onSurface,
+      ),
+
       // ── Card ─────────────────────────────────────────────────────────────
       // Spec: radius 12px, 1px outline border, no shadow
       cardTheme: const CardThemeData(

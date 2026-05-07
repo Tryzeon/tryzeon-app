@@ -110,9 +110,6 @@ class ProductStyleSheet extends HookWidget {
                         onChanged: (final _) => toggle(style),
                         title: Text(style.label),
                         controlAffinity: ListTileControlAffinity.leading,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.lg,
-                        ),
                       );
                     },
                   ),

@@ -19,11 +19,7 @@ class TryOnMoreOptionsButton extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final subtitleStyle = theme.textTheme.bodyMedium?.copyWith(
-      color: colorScheme.onSurfaceVariant,
-    );
+    final colorScheme = Theme.of(context).colorScheme;
 
     return IconButton(
       icon: Icon(Icons.more_vert_rounded, color: colorScheme.onPrimary, size: 24),
@@ -39,9 +35,9 @@ class TryOnMoreOptionsButton extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 ListTile(
-                  leading: Icon(Icons.download_rounded, color: colorScheme.onSurface),
+                  leading: const Icon(Icons.download_rounded),
                   title: const Text('下載'),
-                  subtitle: Text('儲存到相簿', style: subtitleStyle),
+                  subtitle: const Text('儲存到相簿'),
                   onTap: () {
                     Navigator.pop(context);
                     onDownload();
@@ -52,7 +48,6 @@ class TryOnMoreOptionsButton extends StatelessWidget {
                     customAvatarIndex == currentTryonIndex
                         ? Icons.person_off_outlined
                         : Icons.person_outline_rounded,
-                    color: colorScheme.onSurface,
                   ),
                   title: Text(
                     customAvatarIndex == currentTryonIndex ? '取消我的形象' : '設為我的形象',
@@ -61,7 +56,6 @@ class TryOnMoreOptionsButton extends StatelessWidget {
                     customAvatarIndex == currentTryonIndex
                         ? '取消使用此照片作為試穿形象'
                         : '使用此照片作為試穿形象',
-                    style: subtitleStyle,
                   ),
                   onTap: () {
                     Navigator.pop(context);
@@ -69,12 +63,9 @@ class TryOnMoreOptionsButton extends StatelessWidget {
                   },
                 ),
                 ListTile(
-                  leading: Icon(
-                    Icons.delete_outline_rounded,
-                    color: colorScheme.onSurface,
-                  ),
+                  leading: const Icon(Icons.delete_outline_rounded),
                   title: const Text('刪除此試穿'),
-                  subtitle: Text('移除這張試穿照片', style: subtitleStyle),
+                  subtitle: const Text('移除這張試穿照片'),
                   onTap: () {
                     Navigator.pop(context);
                     onDelete();
