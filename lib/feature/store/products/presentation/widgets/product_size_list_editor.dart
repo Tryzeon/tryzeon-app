@@ -268,7 +268,7 @@ class _OffsetStepper extends StatelessWidget {
 
   void _update(final double delta) {
     final current = double.tryParse(offsetController.text) ?? 0.0;
-    final next = (current + delta).clamp(0.0, 100.0);
+    final next = (current + delta).clamp(0.0, 50.0);
     offsetController.text = next.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '');
   }
 
