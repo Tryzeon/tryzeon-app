@@ -23,11 +23,7 @@ class BodyMeasurementsSettingsPage extends HookConsumerWidget {
     final profileAsync = ref.watch(userProfileProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('身形資料'),
-        centerTitle: true,
-        foregroundColor: Theme.of(context).colorScheme.onSurface,
-      ),
+      appBar: AppBar(title: const Text('身形資料')),
       body: SafeArea(
         top: false,
         child: profileAsync.when(

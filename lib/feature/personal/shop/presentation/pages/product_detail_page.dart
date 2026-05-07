@@ -34,7 +34,6 @@ class ProductDetailPage extends HookConsumerWidget {
           icon: const Icon(Icons.arrow_back),
         ),
         title: product != null ? Text(product.name, style: textTheme.titleMedium) : null,
-        centerTitle: true,
         actions: [
           if (canShare)
             IconButton(

@@ -60,11 +60,7 @@ class PreferencesPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('偏好設定'),
-        centerTitle: true,
-        foregroundColor: colorScheme.onSurface,
-      ),
+      appBar: AppBar(title: const Text('偏好設定')),
       body: SafeArea(
         top: false,
         child: SingleChildScrollView(

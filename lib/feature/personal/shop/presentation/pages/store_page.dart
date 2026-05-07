@@ -64,7 +64,6 @@ class StorePage extends HookConsumerWidget {
         title: storeInfoAsync.hasValue
             ? Text(storeInfoAsync.value!.name, style: textTheme.titleMedium)
             : const Text('店家'),
-        centerTitle: true,
         actions: [
           if (storeInfoAsync.hasValue)
             IconButton(

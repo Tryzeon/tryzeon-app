@@ -192,6 +192,22 @@ class AppTheme {
       shadowColor: Colors.black.withValues(alpha: 0.08),
       visualDensity: VisualDensity.standard,
 
+      // ── App Bar ──────────────────────────────────────────────────────────
+      // Spec: white bg, no shadow / tint, charcoal icons + title.
+      // `foregroundColor` drives icon and title colours.
+      appBarTheme: AppBarTheme(
+        backgroundColor: AppColors.background,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        foregroundColor: AppColors.onSurface,
+        titleTextStyle: GoogleFonts.outfit(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: AppColors.onSurface,
+        ),
+      ),
+
       // ── Divider ──────────────────────────────────────────────────────────
       dividerTheme: const DividerThemeData(
         color: AppColors.outline,

@@ -24,11 +24,7 @@ class StoreProfileSettingsPage extends HookConsumerWidget {
     final profileAsync = ref.watch(storeProfileProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('店家資料'),
-        centerTitle: true,
-        foregroundColor: Theme.of(context).colorScheme.onSurface,
-      ),
+      appBar: AppBar(title: const Text('店家資料')),
       body: SafeArea(
         top: false,
         child: profileAsync.when(

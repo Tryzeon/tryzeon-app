@@ -19,11 +19,7 @@ class PersonalProfileSettingsPage extends HookConsumerWidget {
     final profileAsync = ref.watch(userProfileProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('個人資料'),
-        centerTitle: true,
-        foregroundColor: Theme.of(context).colorScheme.onSurface,
-      ),
+      appBar: AppBar(title: const Text('個人資料')),
       body: SafeArea(
         top: false,
         child: profileAsync.when(

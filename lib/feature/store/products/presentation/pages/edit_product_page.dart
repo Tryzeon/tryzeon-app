@@ -29,7 +29,7 @@ class EditProductPage extends ConsumerWidget {
 
     if (product == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('編輯商品'), centerTitle: true),
+        appBar: AppBar(title: const Text('編輯商品')),
         body: productAsync.isLoading
             ? const Center(child: CircularProgressIndicator())
             : ErrorView(
@@ -119,7 +119,6 @@ class _EditProductContent extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('編輯商品'),
-        centerTitle: true,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.smMd),

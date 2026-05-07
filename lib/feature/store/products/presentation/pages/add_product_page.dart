@@ -64,7 +64,6 @@ class AddProductPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('新增商品'),
-        centerTitle: true,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.smMd),

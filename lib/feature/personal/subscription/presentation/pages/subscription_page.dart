@@ -23,11 +23,7 @@ class SubscriptionPage extends HookConsumerWidget {
     final capabilitiesAsync = ref.watch(subscriptionCapabilitiesProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('訂閱方案'),
-        centerTitle: true,
-        foregroundColor: Theme.of(context).colorScheme.onSurface,
-      ),
+      appBar: AppBar(title: const Text('訂閱方案')),
       body: SafeArea(
         top: false,
         child: _buildBody(context, ref, entitlementAsync, capabilitiesAsync),
