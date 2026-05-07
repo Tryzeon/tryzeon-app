@@ -4,7 +4,10 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/core/shared/clothing_style/entities/clothing_style.dart';
 import 'package:tryzeon/core/shared/measurements/entities/measurements.dart';
 import 'package:tryzeon/core/shared/product_attributes/entities/product_attributes.dart';
+import 'package:tryzeon/core/shared/product_size/entities/product_size.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
+
+export 'package:tryzeon/core/shared/product_size/entities/product_size.dart';
 
 part 'product.freezed.dart';
 
@@ -54,18 +57,6 @@ sealed class UpdateProductParams with _$UpdateProductParams {
     final List<ClothingStyle>? styles,
     final List<ProductSeason>? seasons,
   }) = _UpdateProductParams;
-}
-
-@freezed
-sealed class ProductSize with _$ProductSize {
-  const factory ProductSize({
-    required final String id,
-    required final String productId,
-    required final String name,
-    final Measurements? measurements,
-    required final DateTime createdAt,
-    required final DateTime updatedAt,
-  }) = _ProductSize;
 }
 
 @freezed

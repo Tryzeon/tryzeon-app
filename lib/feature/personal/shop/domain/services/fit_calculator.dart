@@ -1,7 +1,7 @@
 import 'package:tryzeon/core/shared/measurements/entities/measurements.dart';
+import 'package:tryzeon/core/shared/product_size/entities/product_size.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_status.dart';
-import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 
 class FitCalculator {
   static FitStatus? calculate({
