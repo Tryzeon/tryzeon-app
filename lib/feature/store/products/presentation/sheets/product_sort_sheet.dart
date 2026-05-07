@@ -62,10 +62,8 @@ class ProductSortSheet extends HookConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: SortField.values
                   .map(
-                    (final field) => RadioListTile<SortField>(
-                      value: field,
-                      title: Text(field.label),
-                    ),
+                    (final field) =>
+                        RadioListTile<SortField>(value: field, title: Text(field.label)),
                   )
                   .toList(),
             ),
