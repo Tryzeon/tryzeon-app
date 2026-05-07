@@ -118,7 +118,7 @@ class ShopProductMapprHelper {
 
 class UserProfileMapprHelper {
   static Gender? genderFromString(final UserProfileModel source) =>
-      source.gender != null ? Gender.tryFromString(source.gender!) : null;
+      Gender.tryFromString(source.gender);
 
   static String? genderToString(final UserProfile source) => source.gender?.value;
 

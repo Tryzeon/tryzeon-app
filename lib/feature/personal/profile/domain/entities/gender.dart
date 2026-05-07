@@ -10,6 +10,6 @@ enum Gender {
     Gender.male => '男性',
   };
 
-  static Gender? tryFromString(final String value) =>
+  static Gender? tryFromString(final String? value) =>
       Gender.values.where((final e) => e.value == value).firstOrNull;
 }
