@@ -68,11 +68,6 @@ class PreferencesPage extends HookConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                '管理你的個人偏好。',
-                style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-              ),
-              const SizedBox(height: AppSpacing.lg),
               _ToggleRow(
                 title: '推薦附近店家',
                 subtitle: '根據你的位置推薦附近的優質店家',
@@ -149,12 +144,7 @@ class _ToggleRow extends StatelessWidget {
               ),
             )
           else
-            Switch(
-              value: value,
-              onChanged: onChanged,
-              activeTrackColor: colorScheme.primary,
-              activeThumbColor: colorScheme.onPrimary,
-            ),
+            Switch(value: value, onChanged: onChanged),
         ],
       ),
     );
