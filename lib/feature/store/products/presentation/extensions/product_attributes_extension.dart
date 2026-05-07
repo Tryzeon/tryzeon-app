@@ -1,7 +1,5 @@
 import '../../domain/value_objects/product_attributes.dart';
 
-const String kOtherSentinel = '__other__';
-
 const List<String> kFitPresets = ['合身', '常規', '大尺碼', 'oversize'];
 
 const List<String> kMaterialPresets = [

@@ -130,14 +130,9 @@ class AppValidators {
     return null;
   }
 
-  static String? validateProductImage(
-    final Object? value, {
-    required final bool isCreateMode,
-  }) {
-    if (isCreateMode) {
-      if (value == null) return '請選擇商品圖片';
-      if (value is List && value.isEmpty) return '請選擇至少一張商品圖片';
-    }
+  static String? validateProductImage(final Object? value) {
+    if (value == null) return '請選擇商品圖片';
+    if (value is List && value.isEmpty) return '請選擇至少一張商品圖片';
     return null;
   }
 }

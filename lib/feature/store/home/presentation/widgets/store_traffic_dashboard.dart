@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
 
 class StoreTrafficDashboard extends HookConsumerWidget {
@@ -9,7 +10,6 @@ class StoreTrafficDashboard extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final analyticsAsync = ref.watch(productAnalyticsSummariesProvider);
-
     final colorScheme = Theme.of(context).colorScheme;
 
     int totalView = 0;
@@ -30,76 +30,33 @@ class StoreTrafficDashboard extends HookConsumerWidget {
     final isLoading = analyticsAsync.isLoading;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 24),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.mdLg),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+        border: Border(
+          top: BorderSide(color: colorScheme.outline),
+          bottom: BorderSide(color: colorScheme.outline),
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Text('總流量概況', style: Theme.of(context).textTheme.titleMedium),
-              if (hasError) ...[
-                const SizedBox(width: 8),
-                Tooltip(
-                  message: '資料載入失敗，請下拉刷新',
-                  child: Icon(
-                    Icons.warning_amber_rounded,
-                    color: colorScheme.error,
-                    size: 16,
-                  ),
-                ),
-              ],
-            ],
+          _TrafficStatTile(
+            label: '瀏覽',
+            value: totalView,
+            isLoading: isLoading,
+            hasError: hasError,
+            isHero: true,
           ),
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              _StatItem(
-                label: '瀏覽次數',
-                value: isLoading ? 8888 : totalView,
-                icon: Icons.visibility_rounded,
-                isLoading: isLoading,
-                hasError: hasError,
-              ),
-              Container(
-                width: 1,
-                height: 40,
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-              ),
-              _StatItem(
-                label: '虛擬試穿',
-                value: isLoading ? 8888 : totalTryOn,
-                icon: Icons.checkroom_rounded,
-                isLoading: isLoading,
-                hasError: hasError,
-              ),
-              Container(
-                width: 1,
-                height: 40,
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-              ),
-              _StatItem(
-                label: '購買點擊',
-                value: isLoading ? 8888 : totalPurchaseClicks,
-                icon: Icons.ads_click_rounded,
-                isLoading: isLoading,
-                hasError: hasError,
-              ),
-            ],
+          _TrafficStatTile(
+            label: '試穿',
+            value: totalTryOn,
+            isLoading: isLoading,
+            hasError: hasError,
+          ),
+          _TrafficStatTile(
+            label: '購買點擊',
+            value: totalPurchaseClicks,
+            isLoading: isLoading,
+            hasError: hasError,
           ),
         ],
       ),
@@ -107,45 +64,46 @@ class StoreTrafficDashboard extends HookConsumerWidget {
   }
 }
 
-class _StatItem extends StatelessWidget {
-  const _StatItem({
+class _TrafficStatTile extends StatelessWidget {
+  const _TrafficStatTile({
     required this.label,
     required this.value,
-    required this.icon,
     required this.isLoading,
     required this.hasError,
+    this.isHero = false,
   });
 
   final String label;
   final int value;
-  final IconData icon;
   final bool isLoading;
   final bool hasError;
+  final bool isHero;
 
   @override
   Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    final colorScheme = theme.colorScheme;
+
+    final valueColor = hasError
+        ? colorScheme.onSurfaceVariant
+        : (isHero ? colorScheme.primary : colorScheme.onSurface);
 
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(icon, color: colorScheme.onSurfaceVariant, size: 14),
-              const SizedBox(width: 6),
-              Text(label, style: Theme.of(context).textTheme.bodySmall),
-            ],
-          ),
-          const SizedBox(height: 8),
           Skeletonizer(
             enabled: isLoading,
             child: Text(
-              hasError ? '--' : value.toString(),
-              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                color: hasError ? colorScheme.onSurfaceVariant : colorScheme.primary,
-              ),
+              (isLoading || hasError) ? '--' : value.toString(),
+              style: textTheme.headlineLarge?.copyWith(color: valueColor),
             ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            label,
+            style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
           ),
         ],
       ),

@@ -1,7 +1,7 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 
 class StoreHomeHeader extends StatelessWidget {
@@ -11,109 +11,52 @@ class StoreHomeHeader extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+    final storeName = (profile?.name.isNotEmpty ?? false)
+        ? profile!.name
+        : 'Tryzeon Studio';
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.md,
+        AppSpacing.lg,
+        AppSpacing.sm,
       ),
-      child: Row(
-        children: [
-          _StoreLogo(logoUrl: profile?.logoUrl),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
+      child: SizedBox(
+        width: double.infinity,
+        child: Stack(
+          children: [
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text('店家後台', style: textTheme.titleLarge),
                 Text(
-                  profile == null ? '歡迎回來' : '歡迎回來，${profile!.name}',
-                  style: textTheme.bodySmall,
+                  '歡迎回來，',
+                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.primary),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  storeName,
+                  style: textTheme.displaySmall?.copyWith(fontStyle: FontStyle.normal),
                 ),
               ],
             ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              color: colorScheme.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: IconButton(
+                icon: const Icon(Icons.settings_outlined),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                tooltip: '設定',
+                onPressed: () => context.push(AppRoutes.storeSettings),
+              ),
             ),
-            child: IconButton(
-              icon: Icon(Icons.settings_rounded, color: colorScheme.primary),
-              onPressed: () {
-                context.push(AppRoutes.storeSettings);
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StoreLogo extends StatelessWidget {
-  const _StoreLogo({required this.logoUrl});
-
-  final String? logoUrl;
-
-  @override
-  Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    if (logoUrl == null || logoUrl!.isEmpty) {
-      return Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: colorScheme.primary,
-          borderRadius: BorderRadius.circular(12),
+          ],
         ),
-        child: Icon(Icons.store_rounded, color: colorScheme.onPrimary, size: 24),
-      );
-    }
-
-    return CachedNetworkImage(
-      imageUrl: logoUrl!,
-      imageBuilder: (final context, final imageProvider) => Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
-        ),
-      ),
-      placeholder: (final context, final url) => Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: colorScheme.primary.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Center(
-          child: SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.primary),
-          ),
-        ),
-      ),
-      errorWidget: (final context, final url, final error) => Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: colorScheme.primary,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(Icons.store_rounded, color: colorScheme.onPrimary, size: 24),
       ),
     );
   }

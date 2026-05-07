@@ -186,6 +186,17 @@ class AppTheme {
         space: 1,
       ),
 
+      // ── Icon ─────────────────────────────────────────────────────────────
+      // Spec: icons default to onSurface (charcoal). Use onSurfaceVariant
+      // explicitly when an icon is meant to look muted.
+      iconTheme: const IconThemeData(color: AppColors.onSurface),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          foregroundColor: AppColors.onSurface,
+          disabledForegroundColor: AppColors.onSurfaceVariant,
+        ),
+      ),
+
       // ── Card ─────────────────────────────────────────────────────────────
       // Spec: radius 12px, 1px outline border, no shadow
       cardTheme: const CardThemeData(
@@ -242,11 +253,10 @@ class AppTheme {
           ),
         ),
       ),
-      // Ghost/Tonal: primaryContainer bg, dark Terracotta text, radius 8px (contrast ~3.9:1)
+      // Ghost: transparent bg, Terracotta text, radius 8px
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          backgroundColor: colorScheme.primaryContainer,
-          foregroundColor: AppColors.primaryDark,
+          foregroundColor: colorScheme.primary,
           shape: buttonShape,
           padding: buttonPadding,
           textStyle: GoogleFonts.outfit(
