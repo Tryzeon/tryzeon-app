@@ -12,9 +12,6 @@ class PreferencesPage extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final recommendNearbyShopsAsync = ref.watch(recommendNearbyShopsProvider);
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
 
     Future<void> handleRecommendNearbyShopsToggle(
       final bool isNearbyShopsRecommendationEnabled,
