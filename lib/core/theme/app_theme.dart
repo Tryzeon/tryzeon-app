@@ -235,6 +235,18 @@ class AppTheme {
         iconColor: AppColors.onSurface,
       ),
 
+      // ── Floating Action Button ───────────────────────────────────────────
+      // Spec: solid Terracotta CTA, white icon, circular, soft elevation.
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.onPrimary,
+        shape: CircleBorder(),
+        elevation: 2,
+        focusElevation: 2,
+        hoverElevation: 4,
+        highlightElevation: 4,
+      ),
+
       // ── Card ─────────────────────────────────────────────────────────────
       // Spec: radius 12px, 1px outline border, no shadow
       cardTheme: const CardThemeData(
