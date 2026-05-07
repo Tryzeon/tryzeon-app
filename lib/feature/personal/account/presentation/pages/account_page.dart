@@ -210,11 +210,15 @@ class _ProfileHeader extends HookConsumerWidget {
         OutlinedButton(
           onPressed: () => context.push(AppRoutes.personalSettingsProfile),
           style: OutlinedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+            padding: const EdgeInsets.symmetric(
+              vertical: AppSpacing.sm,
+              horizontal: AppSpacing.smMd,
+            ),
             minimumSize: Size.zero,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            textStyle: theme.textTheme.labelMedium,
           ),
-          child: Text('編輯', style: theme.textTheme.labelSmall),
+          child: const Text('編輯'),
         ),
       ],
     );

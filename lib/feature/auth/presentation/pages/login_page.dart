@@ -36,28 +36,20 @@ class LoginPage extends HookConsumerWidget {
       }
     }
 
+    final softOutlineStyle = OutlinedButton.styleFrom(
+      side: BorderSide(color: colorScheme.outline, width: AppStroke.thin),
+    );
+
     Widget buildSocialButton(final String provider, final VoidCallback onTap) {
       return OutlinedButton(
         onPressed: isLoading.value ? null : onTap,
-        style: OutlinedButton.styleFrom(
-          foregroundColor: colorScheme.onSurface,
-          side: BorderSide(color: colorScheme.outline, width: AppStroke.thin),
-          shape: const RoundedRectangleBorder(borderRadius: AppRadius.buttonAll),
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-          elevation: 0,
-        ),
+        style: softOutlineStyle,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SvgPicture.asset('assets/images/logo/$provider.svg', height: 20, width: 20),
-            const SizedBox(width: 12),
-            Text(
-              '使用 $provider 繼續',
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: colorScheme.onSurface,
-                letterSpacing: 1.0,
-              ),
-            ),
+            const SizedBox(width: AppSpacing.smMd),
+            Text('使用 $provider 繼續'),
           ],
         ),
       );
@@ -68,25 +60,13 @@ class LoginPage extends HookConsumerWidget {
         onPressed: isLoading.value
             ? null
             : () => EmailOtpBottomSheet.show(context, userType.value),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: colorScheme.onSurface,
-          side: BorderSide(color: colorScheme.outline, width: AppStroke.thin),
-          shape: const RoundedRectangleBorder(borderRadius: AppRadius.buttonAll),
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-          elevation: 0,
-        ),
-        child: Row(
+        style: softOutlineStyle,
+        child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.email_outlined, size: 20, color: colorScheme.onSurface),
-            const SizedBox(width: 12),
-            Text(
-              '使用 Email 繼續',
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: colorScheme.onSurface,
-                letterSpacing: 1.0,
-              ),
-            ),
+            Icon(Icons.email_outlined, size: 20),
+            SizedBox(width: AppSpacing.smMd),
+            Text('使用 Email 繼續'),
           ],
         ),
       );

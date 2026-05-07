@@ -16,31 +16,31 @@ class StylePreferenceStep extends HookConsumerWidget {
     final notifier = ref.read(onboardingProvider.notifier);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 10),
+          const SizedBox(height: AppSpacing.smMd),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.smMd),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('你喜歡的風格', style: textTheme.headlineMedium),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Text('可多選，也可以略過', style: textTheme.bodyMedium),
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.lg),
           Expanded(
             child: GridView.builder(
-              padding: const EdgeInsets.only(bottom: 24),
+              padding: const EdgeInsets.only(bottom: AppSpacing.lg),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 childAspectRatio: 0.8,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 20,
+                crossAxisSpacing: AppSpacing.md,
+                mainAxisSpacing: AppSpacing.mdLg,
               ),
               itemCount: ClothingStyle.values.length,
               itemBuilder: (final context, final index) {
@@ -53,20 +53,22 @@ class StylePreferenceStep extends HookConsumerWidget {
                     children: [
                       Expanded(
                         child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
+                          duration: AppDuration.standard,
                           decoration: BoxDecoration(
                             border: Border.all(
                               color: isSelected
                                   ? colorScheme.primary
-                                  : colorScheme.outline.withValues(alpha: 0.3),
+                                  : colorScheme.outline.withValues(
+                                      alpha: AppOpacity.strong,
+                                    ),
                               width: isSelected ? AppStroke.regular : AppStroke.thin,
                             ),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: AppRadius.cardAll,
                           ),
                           child: Stack(
                             children: [
                               ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: AppRadius.inputAll,
                                 child: Image.asset(
                                   'assets/images/onboarding/${style.value}.webp',
                                   fit: BoxFit.cover,
@@ -84,10 +86,10 @@ class StylePreferenceStep extends HookConsumerWidget {
                                                 color: colorScheme.outline,
                                                 size: 32,
                                               ),
-                                              const SizedBox(height: 4),
+                                              const SizedBox(height: AppSpacing.xs),
                                               Text(
                                                 style.value,
-                                                style: const TextStyle(fontSize: 8),
+                                                style: textTheme.labelSmall,
                                               ),
                                             ],
                                           ),
@@ -97,10 +99,10 @@ class StylePreferenceStep extends HookConsumerWidget {
                               ),
                               if (isSelected)
                                 Positioned(
-                                  top: 6,
-                                  right: 6,
+                                  top: AppSpacing.sm,
+                                  right: AppSpacing.sm,
                                   child: Container(
-                                    padding: const EdgeInsets.all(4),
+                                    padding: const EdgeInsets.all(AppSpacing.xs),
                                     decoration: BoxDecoration(
                                       color: colorScheme.primary,
                                       shape: BoxShape.circle,
@@ -116,7 +118,7 @@ class StylePreferenceStep extends HookConsumerWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: AppSpacing.sm),
                       Text(
                         style.label,
                         style: textTheme.bodySmall?.copyWith(

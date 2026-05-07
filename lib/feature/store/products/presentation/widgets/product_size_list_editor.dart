@@ -95,7 +95,6 @@ class ProductSizeListEditor extends StatelessWidget {
             style: OutlinedButton.styleFrom(
               foregroundColor: colorScheme.onSurfaceVariant,
               side: BorderSide(color: colorScheme.outline, width: AppStroke.regular),
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.smMd),
               textStyle: textTheme.labelMedium,
             ),
             child: const Text('+ 新增尺寸'),
@@ -298,7 +297,7 @@ class _OffsetStepper extends StatelessWidget {
                     field.didChange(offsetController.text);
                   },
                 ),
-                Container(width: 1, height: 24, color: colorScheme.outline),
+                Container(width: AppStroke.thin, height: AppSpacing.lg, color: colorScheme.outline),
                 Expanded(
                   child: TextField(
                     controller: offsetController,
@@ -310,7 +309,7 @@ class _OffsetStepper extends StatelessWidget {
                     ],
                     decoration: const InputDecoration(
                       isDense: true,
-                      contentPadding: EdgeInsets.symmetric(vertical: 8),
+                      contentPadding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
                       border: InputBorder.none,
                       focusedBorder: InputBorder.none,
                       enabledBorder: InputBorder.none,
@@ -322,7 +321,7 @@ class _OffsetStepper extends StatelessWidget {
                     onChanged: field.didChange,
                   ),
                 ),
-                Container(width: 1, height: 24, color: colorScheme.outline),
+                Container(width: AppStroke.thin, height: AppSpacing.lg, color: colorScheme.outline),
                 IconButton(
                   icon: const Icon(Icons.add_rounded, size: 16),
                   visualDensity: VisualDensity.compact,
