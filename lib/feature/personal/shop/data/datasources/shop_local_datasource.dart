@@ -4,10 +4,10 @@ import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/shared/measurements/collections/measurements_collection.dart';
 import 'package:tryzeon/core/shared/measurements/data/models/measurements_model.dart';
+import 'package:tryzeon/core/shared/product_size/data/models/product_size_model.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_product_collection.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_product_model.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_store_info_model.dart';
-import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
 
 class ShopLocalDataSource {
   ShopLocalDataSource(this._isarService, this._cacheEntryLocalDataSource);
