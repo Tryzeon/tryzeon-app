@@ -191,7 +191,10 @@ class AppTheme {
       // explicitly when an icon is meant to look muted.
       iconTheme: const IconThemeData(color: AppColors.onSurface),
       iconButtonTheme: IconButtonThemeData(
-        style: IconButton.styleFrom(foregroundColor: AppColors.onSurface),
+        style: IconButton.styleFrom(
+          foregroundColor: AppColors.onSurface,
+          disabledForegroundColor: AppColors.onSurfaceVariant,
+        ),
       ),
 
       // ── Card ─────────────────────────────────────────────────────────────
