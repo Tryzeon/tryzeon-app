@@ -5,6 +5,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
+import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
+import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/main/tryon_coordinator.dart';
 
 class PersonalTabDestination {
@@ -39,6 +41,12 @@ class PersonalShell extends HookConsumerWidget {
 
     final lastTabTapTime = useState<DateTime?>(null);
 
+    Future<void> switchToStore() async {
+      await ref.read(setLastLoginTypeUseCaseProvider).call(UserType.store);
+      if (!context.mounted) return;
+      context.go(AppRoutes.storeHome);
+    }
+
     void onItemTapped(final int index) {
       const doubleTapThreshold = Duration(milliseconds: 400);
       final lastTabIndex = personalTabDestinations.length - 1;
@@ -48,7 +56,7 @@ class PersonalShell extends HookConsumerWidget {
         final last = lastTabTapTime.value;
         if (last != null && now.difference(last) < doubleTapThreshold) {
           lastTabTapTime.value = null;
-          context.go(AppRoutes.storeHome);
+          switchToStore();
           return;
         }
         lastTabTapTime.value = now;
