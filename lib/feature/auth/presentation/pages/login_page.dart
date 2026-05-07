@@ -144,7 +144,12 @@ class LoginPage extends HookConsumerWidget {
                   const SizedBox(height: AppSpacing.lg),
                   Row(
                     children: [
-                      Expanded(child: Divider(color: colorScheme.outline, thickness: AppStroke.thin)),
+                      Expanded(
+                        child: Divider(
+                          color: colorScheme.outline,
+                          thickness: AppStroke.thin,
+                        ),
+                      ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                         child: Text(
@@ -154,7 +159,12 @@ class LoginPage extends HookConsumerWidget {
                           ),
                         ),
                       ),
-                      Expanded(child: Divider(color: colorScheme.outline, thickness: AppStroke.thin)),
+                      Expanded(
+                        child: Divider(
+                          color: colorScheme.outline,
+                          thickness: AppStroke.thin,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.lg),

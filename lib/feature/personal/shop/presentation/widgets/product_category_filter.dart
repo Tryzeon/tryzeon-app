@@ -168,7 +168,8 @@ class ProductCategoryFilter extends HookConsumerWidget {
                                                           height: 20,
                                                           child:
                                                               CircularProgressIndicator(
-                                                                strokeWidth: AppStroke.regular,
+                                                                strokeWidth:
+                                                                    AppStroke.regular,
                                                                 color:
                                                                     colorScheme.outline,
                                                               ),

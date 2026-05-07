@@ -26,11 +26,7 @@ class TryOnMoreOptionsButton extends StatelessWidget {
     );
 
     return IconButton(
-      icon: Icon(
-        Icons.more_vert_rounded,
-        color: colorScheme.onPrimary,
-        size: 24,
-      ),
+      icon: Icon(Icons.more_vert_rounded, color: colorScheme.onPrimary, size: 24),
       splashColor: colorScheme.onPrimary.withValues(alpha: AppOpacity.medium),
       highlightColor: colorScheme.onPrimary.withValues(alpha: AppOpacity.medium),
       onPressed: () {

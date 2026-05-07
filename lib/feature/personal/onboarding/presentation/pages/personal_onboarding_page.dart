@@ -101,7 +101,9 @@ class PersonalOnboardingPage extends HookConsumerWidget {
                                 ? const SizedBox(
                                     width: 20,
                                     height: 20,
-                                    child: CircularProgressIndicator(strokeWidth: AppStroke.regular),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: AppStroke.regular,
+                                    ),
                                   )
                                 : const Text('完成'),
                           ),
