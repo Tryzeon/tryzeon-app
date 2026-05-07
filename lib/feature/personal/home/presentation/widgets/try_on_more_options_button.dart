@@ -30,13 +30,6 @@ class TryOnMoreOptionsButton extends StatelessWidget {
         Icons.more_vert_rounded,
         color: colorScheme.onPrimary,
         size: 24,
-        shadows: [
-          Shadow(
-            color: colorScheme.shadow.withValues(alpha: AppOpacity.strong),
-            blurRadius: 8.0,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       splashColor: colorScheme.onPrimary.withValues(alpha: AppOpacity.medium),
       highlightColor: colorScheme.onPrimary.withValues(alpha: AppOpacity.medium),

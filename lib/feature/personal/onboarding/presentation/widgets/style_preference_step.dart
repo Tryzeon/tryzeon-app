@@ -103,15 +103,6 @@ class StylePreferenceStep extends HookConsumerWidget {
                                     decoration: BoxDecoration(
                                       color: colorScheme.primary,
                                       shape: BoxShape.circle,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: colorScheme.shadow.withValues(
-                                            alpha: 0.2,
-                                          ),
-                                          blurRadius: 4,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
                                     ),
                                     child: Icon(
                                       Icons.check_rounded,

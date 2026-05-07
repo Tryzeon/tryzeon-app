@@ -30,13 +30,6 @@ class TryOnIndicator extends StatelessWidget {
                 ? colorScheme.onPrimary
                 : colorScheme.onPrimary.withValues(alpha: AppOpacity.strong),
             borderRadius: AppRadius.pillAll,
-            boxShadow: [
-              BoxShadow(
-                color: colorScheme.shadow.withValues(alpha: AppOpacity.strong),
-                blurRadius: 4.0,
-                offset: const Offset(0, 1),
-              ),
-            ],
           ),
         );
       }),

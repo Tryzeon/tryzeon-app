@@ -61,15 +61,6 @@ class IdentitySegmentedControl extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected ? colorScheme.surface : Colors.transparent,
           borderRadius: AppRadius.pillAll,
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: colorScheme.onSurface.withValues(alpha: 0.06),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : [],
         ),
         child: Text(
           title,

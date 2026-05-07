@@ -41,13 +41,6 @@ class TopNotification {
                 color: colorScheme.surface,
                 borderRadius: AppRadius.dialogAll,
                 border: Border.all(color: colorScheme.outline),
-                boxShadow: [
-                  BoxShadow(
-                    color: colorScheme.shadow.withValues(alpha: AppOpacity.light),
-                    blurRadius: 40,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
               ),
               child: ClipRRect(
                 borderRadius: AppRadius.dialogAll,
