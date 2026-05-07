@@ -29,17 +29,13 @@ class SubscriptionUsageCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    return Material(
-      color: Colors.transparent,
+    return Card(
+      color: colorScheme.surface,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        borderRadius: AppRadius.cardAll,
-        child: Container(
+        child: Padding(
           padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            borderRadius: AppRadius.cardAll,
-            border: Border.all(color: colorScheme.outline),
-          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

@@ -267,40 +267,41 @@ class _SubscriptionSkeletonCard extends StatelessWidget {
     final textTheme = theme.textTheme;
 
     return Skeletonizer(
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          borderRadius: AppRadius.cardAll,
-          border: Border.all(color: colorScheme.outline),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Plan', style: textTheme.headlineLarge),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              'Renewing on YYYY-MM-DD',
-              style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text('0 / 00', style: textTheme.titleMedium),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              '今日試穿',
-              style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Container(height: 2, color: colorScheme.surfaceContainerHighest),
-            const SizedBox(height: AppSpacing.md),
-            const Divider(),
-            const SizedBox(height: AppSpacing.smMd),
-            Center(
-              child: Text(
-                '查看訂閱詳情',
-                style: textTheme.labelMedium?.copyWith(color: colorScheme.primary),
+      child: Card(
+        color: colorScheme.surface,
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Plan', style: textTheme.headlineLarge),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                'Renewing on YYYY-MM-DD',
+                style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
               ),
-            ),
-          ],
+              const SizedBox(height: AppSpacing.md),
+              Text('0 / 00', style: textTheme.titleMedium),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                '今日試穿',
+                style: textTheme.labelSmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Container(height: 2, color: colorScheme.surfaceContainerHighest),
+              const SizedBox(height: AppSpacing.md),
+              const Divider(),
+              const SizedBox(height: AppSpacing.smMd),
+              Center(
+                child: Text(
+                  '查看訂閱詳情',
+                  style: textTheme.labelMedium?.copyWith(color: colorScheme.primary),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -316,22 +317,20 @@ class _SubscriptionErrorCard extends StatelessWidget {
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    return Material(
-      color: Colors.transparent,
+    return Card(
+      color: colorScheme.surface,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        borderRadius: AppRadius.cardAll,
-        child: Container(
+        child: SizedBox(
           width: double.infinity,
-          padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            borderRadius: AppRadius.cardAll,
-            border: Border.all(color: colorScheme.outline),
-          ),
-          child: Text(
-            '很抱歉，無法載入訂閱資訊，請稍後再試！',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: colorScheme.onSurfaceVariant,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Text(
+              '很抱歉，無法載入訂閱資訊，請稍後再試！',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
         ),

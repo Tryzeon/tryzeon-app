@@ -89,47 +89,46 @@ class _SubscriptionContent extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const _SectionLabel('方案'),
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              borderRadius: AppRadius.cardAll,
-              border: Border.all(color: colorScheme.outline),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      planName(tier),
-                      style: textTheme.headlineLarge?.copyWith(
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                    const Spacer(),
-                    if (entitlement.hasActiveSubscription)
-                      Chip(
-                        label: Text(
-                          '啟用中',
-                          style: textTheme.labelSmall?.copyWith(
-                            color: colorScheme.primary,
-                          ),
+          Card(
+            color: colorScheme.surface,
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        planName(tier),
+                        style: textTheme.headlineLarge?.copyWith(
+                          color: colorScheme.onSurface,
                         ),
-                        backgroundColor: colorScheme.primaryContainer,
-                        side: BorderSide.none,
-                        visualDensity: VisualDensity.compact,
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  formatRenewalLine(entitlement),
-                  style: textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+                      const Spacer(),
+                      if (entitlement.hasActiveSubscription)
+                        Chip(
+                          label: Text(
+                            '啟用中',
+                            style: textTheme.labelSmall?.copyWith(
+                              color: colorScheme.primary,
+                            ),
+                          ),
+                          backgroundColor: colorScheme.primaryContainer,
+                          side: BorderSide.none,
+                          visualDensity: VisualDensity.compact,
+                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                    ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    formatRenewalLine(entitlement),
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           const _SectionLabel('目前用量'),
