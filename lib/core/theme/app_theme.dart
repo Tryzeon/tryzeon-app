@@ -247,6 +247,19 @@ class AppTheme {
         highlightElevation: 4,
       ),
 
+      // ── Slider ───────────────────────────────────────────────────────────
+      // Spec: thin 2px track, classic round thumb, Terracotta accent.
+      // Bypasses M3 expressive slider; value indicator suppressed (callers
+      // surface the value separately).
+      sliderTheme: const SliderThemeData(
+        activeTrackColor: AppColors.primary,
+        inactiveTrackColor: AppColors.outline,
+        thumbColor: AppColors.primary,
+        trackHeight: 1,
+        rangeThumbShape: RoundRangeSliderThumbShape(enabledThumbRadius: 6),
+        overlayShape: RoundSliderOverlayShape(overlayRadius: 15),
+      ),
+
       // ── Card ─────────────────────────────────────────────────────────────
       // Spec: radius 12px, 1px outline border, no shadow
       cardTheme: const CardThemeData(
