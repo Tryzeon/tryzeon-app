@@ -260,6 +260,13 @@ class AppTheme {
         overlayShape: RoundSliderOverlayShape(overlayRadius: 15),
       ),
 
+      // ── Expansion Tile ───────────────────────────────────────────────────
+      // Spec: no top/bottom dividers (design system forbids stacked lines).
+      expansionTileTheme: const ExpansionTileThemeData(
+        shape: Border(),
+        collapsedShape: Border(),
+      ),
+
       // ── Card ─────────────────────────────────────────────────────────────
       // Spec: radius 12px, 1px outline border, no shadow
       cardTheme: const CardThemeData(
