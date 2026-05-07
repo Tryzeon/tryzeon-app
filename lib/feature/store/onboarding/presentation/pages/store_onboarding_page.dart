@@ -123,7 +123,7 @@ class StoreOnboardingPage extends HookConsumerWidget {
                 child: Text(
                   '完成審核後，你的商品就能在 Tryzeon 上架、虛擬試穿與導購。',
                   style: textTheme.bodyLarge?.copyWith(
-                    color: colorScheme.onSurface.withValues(alpha: 0.75),
+                    color: colorScheme.onSurface,
                     height: 1.7,
                   ),
                 ),
