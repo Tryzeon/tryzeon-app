@@ -165,7 +165,7 @@ class _StoreProfileForm extends HookConsumerWidget {
               child: SizedBox(
                 width: 18,
                 height: 18,
-                child: CircularProgressIndicator(strokeWidth: 2),
+                child: CircularProgressIndicator(strokeWidth: AppStroke.regular),
               ),
             ),
           ),
@@ -229,7 +229,7 @@ class _StoreProfileForm extends HookConsumerWidget {
                         height: AppSpacing.mdLg,
                         child: CircularProgressIndicator(
                           color: colorScheme.onPrimary,
-                          strokeWidth: 2,
+                          strokeWidth: AppStroke.regular,
                         ),
                       )
                     : const Text('儲存'),

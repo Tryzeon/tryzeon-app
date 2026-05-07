@@ -38,7 +38,7 @@ class HomePrimaryActionButton extends StatelessWidget {
                 color: colorScheme.onSurface.withValues(alpha: AppOpacity.overlay),
                 border: Border.all(
                   color: colorScheme.onPrimary.withValues(alpha: AppOpacity.medium),
-                  width: 1,
+                  width: AppStroke.thin,
                 ),
                 borderRadius: AppRadius.pillAll,
               ),

@@ -224,7 +224,7 @@ class _ImageItem extends HookWidget {
                 width: 44,
                 height: 44,
                 child: CircularProgressIndicator(
-                  strokeWidth: 3,
+                  strokeWidth: AppStroke.medium,
                   color: colorScheme.onPrimary,
                 ),
               ),

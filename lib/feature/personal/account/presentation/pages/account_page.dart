@@ -146,7 +146,7 @@ class _ProfileHeader extends HookConsumerWidget {
         return const SizedBox(
           width: 18,
           height: 18,
-          child: CircularProgressIndicator(strokeWidth: 2),
+          child: CircularProgressIndicator(strokeWidth: AppStroke.regular),
         );
       }
       if (hasProfileError || profile == null) {

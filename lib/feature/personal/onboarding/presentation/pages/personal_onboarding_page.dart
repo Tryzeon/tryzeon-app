@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/onboarding/presentation/widgets/age_step.dart';
 import 'package:tryzeon/feature/personal/onboarding/presentation/widgets/gender_selection_step.dart';
 import 'package:tryzeon/feature/personal/onboarding/presentation/widgets/style_preference_step.dart';
@@ -100,7 +101,7 @@ class PersonalOnboardingPage extends HookConsumerWidget {
                                 ? const SizedBox(
                                     width: 20,
                                     height: 20,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                    child: CircularProgressIndicator(strokeWidth: AppStroke.regular),
                                   )
                                 : const Text('完成'),
                           ),

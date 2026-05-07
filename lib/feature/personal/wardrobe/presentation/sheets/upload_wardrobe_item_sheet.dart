@@ -203,7 +203,7 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
                     width: AppSpacing.mdLg,
                     height: AppSpacing.mdLg,
                     child: CircularProgressIndicator(
-                      strokeWidth: AppSpacing.xxs,
+                      strokeWidth: AppStroke.regular,
                       color: colorScheme.onPrimary,
                     ),
                   )

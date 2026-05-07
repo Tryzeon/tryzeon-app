@@ -273,7 +273,7 @@ class _BenefitRow extends StatelessWidget {
   Widget build(final BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final hairline = BorderSide(color: colorScheme.outline, width: 1);
+    final hairline = BorderSide(color: colorScheme.outline, width: AppStroke.thin);
 
     return Container(
       decoration: BoxDecoration(

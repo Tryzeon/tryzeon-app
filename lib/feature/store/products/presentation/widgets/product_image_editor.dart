@@ -186,7 +186,7 @@ class _AddTile extends StatelessWidget {
         borderRadius: AppRadius.buttonAll,
         border: Border.all(
           color: colorScheme.outline,
-          width: 1.5,
+          width: AppStroke.regular,
           strokeAlign: BorderSide.strokeAlignInside,
         ),
       ),
@@ -216,7 +216,7 @@ class _AddPlaceholder extends StatelessWidget {
         borderRadius: AppRadius.buttonAll,
         border: Border.all(
           color: hasError ? colorScheme.error : colorScheme.outline,
-          width: 1.5,
+          width: AppStroke.regular,
         ),
       ),
       child: Center(

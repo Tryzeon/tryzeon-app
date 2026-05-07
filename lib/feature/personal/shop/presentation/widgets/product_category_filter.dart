@@ -143,7 +143,7 @@ class ProductCategoryFilter extends HookConsumerWidget {
                                         side: isSelected
                                             ? BorderSide(
                                                 color: colorScheme.primary,
-                                                width: 1.5,
+                                                width: AppStroke.regular,
                                               )
                                             : BorderSide.none,
                                       ),
@@ -168,7 +168,7 @@ class ProductCategoryFilter extends HookConsumerWidget {
                                                           height: 20,
                                                           child:
                                                               CircularProgressIndicator(
-                                                                strokeWidth: 2.5,
+                                                                strokeWidth: AppStroke.regular,
                                                                 color:
                                                                     colorScheme.outline,
                                                               ),

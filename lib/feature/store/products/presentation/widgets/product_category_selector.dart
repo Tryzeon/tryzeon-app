@@ -66,21 +66,21 @@ class ProductCategorySelector extends HookWidget {
             borderRadius: AppRadius.inputAll,
             borderSide: BorderSide(
               color: hasError ? colorScheme.error : colorScheme.outline,
-              width: 1.5,
+              width: AppStroke.regular,
             ),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: AppRadius.inputAll,
             borderSide: BorderSide(
               color: hasError ? colorScheme.error : colorScheme.outline,
-              width: 1.5,
+              width: AppStroke.regular,
             ),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: AppRadius.inputAll,
             borderSide: BorderSide(
               color: hasError ? colorScheme.error : colorScheme.onSurface,
-              width: 1.5,
+              width: AppStroke.regular,
             ),
           ),
         ),

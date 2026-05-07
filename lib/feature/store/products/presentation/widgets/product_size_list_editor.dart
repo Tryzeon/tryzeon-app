@@ -94,7 +94,7 @@ class ProductSizeListEditor extends StatelessWidget {
             onPressed: onAdd,
             style: OutlinedButton.styleFrom(
               foregroundColor: colorScheme.onSurfaceVariant,
-              side: BorderSide(color: colorScheme.outline, width: 1.5),
+              side: BorderSide(color: colorScheme.outline, width: AppStroke.regular),
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.smMd),
               textStyle: textTheme.labelMedium,
             ),

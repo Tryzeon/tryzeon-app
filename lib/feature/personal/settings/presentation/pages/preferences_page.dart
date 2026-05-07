@@ -117,7 +117,7 @@ class _ToggleRow extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
-    final hairline = BorderSide(color: colorScheme.outline, width: 1);
+    final hairline = BorderSide(color: colorScheme.outline, width: AppStroke.thin);
 
     return Container(
       decoration: BoxDecoration(
@@ -148,7 +148,7 @@ class _ToggleRow extends StatelessWidget {
               width: AppSpacing.mdLg,
               height: AppSpacing.mdLg,
               child: CircularProgressIndicator(
-                strokeWidth: 2,
+                strokeWidth: AppStroke.regular,
                 color: colorScheme.primary,
               ),
             )

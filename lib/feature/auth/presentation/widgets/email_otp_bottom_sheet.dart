@@ -141,7 +141,7 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
                   height: 20,
                   width: 20,
                   child: CircularProgressIndicator(
-                    strokeWidth: 2,
+                    strokeWidth: AppStroke.regular,
                     color: colorScheme.onPrimary,
                   ),
                 )

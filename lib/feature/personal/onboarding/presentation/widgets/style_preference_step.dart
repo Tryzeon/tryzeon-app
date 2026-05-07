@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/clothing_style.dart';
 
 import '../providers/onboarding_notifier.dart';
@@ -58,7 +59,7 @@ class StylePreferenceStep extends HookConsumerWidget {
                               color: isSelected
                                   ? colorScheme.primary
                                   : colorScheme.outline.withValues(alpha: 0.3),
-                              width: isSelected ? 3 : 1.5,
+                              width: isSelected ? AppStroke.regular : AppStroke.thin,
                             ),
                             borderRadius: BorderRadius.circular(12),
                           ),

@@ -92,6 +92,19 @@ class AppCurves {
   static const Curve emphasized = Curves.easeOutCubic; // banners, sheets
 }
 
+// ─── Stroke Width Tokens ──────────────────────────────────────────────────────
+
+/// Standard line widths for borders, dividers, and progress strokes.
+/// Use `AppStroke.regular` instead of magic numbers like `1.5`.
+class AppStroke {
+  AppStroke._();
+
+  static const double thin = 1; // hairline borders, dividers
+  static const double regular = 1.5; // standard borders (inputs, outlined buttons)
+  static const double medium = 2; // progress indicators
+  static const double thick = 3; // emphasized progress
+}
+
 // ─── Border Radius Tokens ─────────────────────────────────────────────────────
 
 /// Unified border radius constants. Use `AppRadius.card`, etc.
@@ -243,7 +256,7 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: colorScheme.onSurface,
-          side: BorderSide(color: colorScheme.onSurface, width: 1.5),
+          side: BorderSide(color: colorScheme.onSurface, width: AppStroke.regular),
           shape: buttonShape,
           padding: buttonPadding,
           textStyle: GoogleFonts.outfit(
@@ -278,23 +291,23 @@ class AppTheme {
         ),
         border: const OutlineInputBorder(
           borderRadius: AppRadius.inputAll,
-          borderSide: BorderSide(color: AppColors.outline, width: 1.5),
+          borderSide: BorderSide(color: AppColors.outline, width: AppStroke.regular),
         ),
         enabledBorder: const OutlineInputBorder(
           borderRadius: AppRadius.inputAll,
-          borderSide: BorderSide(color: AppColors.outline, width: 1.5),
+          borderSide: BorderSide(color: AppColors.outline, width: AppStroke.regular),
         ),
         focusedBorder: const OutlineInputBorder(
           borderRadius: AppRadius.inputAll,
-          borderSide: BorderSide(color: AppColors.onSurface, width: 1.5),
+          borderSide: BorderSide(color: AppColors.onSurface, width: AppStroke.regular),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: AppRadius.inputAll,
-          borderSide: BorderSide(color: colorScheme.error, width: 1.5),
+          borderSide: BorderSide(color: colorScheme.error, width: AppStroke.regular),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: AppRadius.inputAll,
-          borderSide: BorderSide(color: colorScheme.error, width: 1.5),
+          borderSide: BorderSide(color: colorScheme.error, width: AppStroke.regular),
         ),
         hintStyle: GoogleFonts.notoSansTc(
           fontSize: 13,

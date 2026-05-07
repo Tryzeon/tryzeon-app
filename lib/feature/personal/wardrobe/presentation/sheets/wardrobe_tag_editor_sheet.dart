@@ -114,7 +114,7 @@ class WardrobeTagEditorSheet extends HookWidget {
                       ? const SizedBox(
                           width: AppSpacing.md,
                           height: AppSpacing.md,
-                          child: CircularProgressIndicator(strokeWidth: AppSpacing.xxs),
+                          child: CircularProgressIndicator(strokeWidth: AppStroke.regular),
                         )
                       : const Text('完成'),
                 ),

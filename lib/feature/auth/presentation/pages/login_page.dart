@@ -41,7 +41,7 @@ class LoginPage extends HookConsumerWidget {
         onPressed: isLoading.value ? null : onTap,
         style: OutlinedButton.styleFrom(
           foregroundColor: colorScheme.onSurface,
-          side: BorderSide(color: colorScheme.outline, width: 1),
+          side: BorderSide(color: colorScheme.outline, width: AppStroke.thin),
           shape: const RoundedRectangleBorder(borderRadius: AppRadius.buttonAll),
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
           elevation: 0,
@@ -70,7 +70,7 @@ class LoginPage extends HookConsumerWidget {
             : () => EmailOtpBottomSheet.show(context, userType.value),
         style: OutlinedButton.styleFrom(
           foregroundColor: colorScheme.onSurface,
-          side: BorderSide(color: colorScheme.outline, width: 1),
+          side: BorderSide(color: colorScheme.outline, width: AppStroke.thin),
           shape: const RoundedRectangleBorder(borderRadius: AppRadius.buttonAll),
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
           elevation: 0,
@@ -144,7 +144,7 @@ class LoginPage extends HookConsumerWidget {
                   const SizedBox(height: AppSpacing.lg),
                   Row(
                     children: [
-                      Expanded(child: Divider(color: colorScheme.outline, thickness: 1)),
+                      Expanded(child: Divider(color: colorScheme.outline, thickness: AppStroke.thin)),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                         child: Text(
@@ -154,7 +154,7 @@ class LoginPage extends HookConsumerWidget {
                           ),
                         ),
                       ),
-                      Expanded(child: Divider(color: colorScheme.outline, thickness: 1)),
+                      Expanded(child: Divider(color: colorScheme.outline, thickness: AppStroke.thin)),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.lg),

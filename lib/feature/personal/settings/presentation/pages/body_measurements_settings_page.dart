@@ -167,7 +167,7 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
                         height: AppSpacing.mdLg,
                         child: CircularProgressIndicator(
                           color: colorScheme.onPrimary,
-                          strokeWidth: 2,
+                          strokeWidth: AppStroke.regular,
                         ),
                       )
                     : const Text('儲存'),

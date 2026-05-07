@@ -162,7 +162,7 @@ class VideoPromptCustomizeSheet extends HookConsumerWidget {
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: CircularProgressIndicator(strokeWidth: AppStroke.regular),
                       )
                     : const Text('儲存'),
               ),

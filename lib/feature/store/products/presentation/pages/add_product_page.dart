@@ -74,7 +74,7 @@ class AddProductPage extends HookConsumerWidget {
                   ? const SizedBox(
                       width: 16,
                       height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(strokeWidth: AppStroke.regular),
                     )
                   : const Text('儲存'),
             ),

@@ -28,7 +28,7 @@ class NavRow extends StatelessWidget {
 
     final foreground = isDestructive ? colorScheme.error : colorScheme.onSurface;
     final muted = colorScheme.onSurfaceVariant;
-    final hairline = BorderSide(color: colorScheme.outline, width: 1);
+    final hairline = BorderSide(color: colorScheme.outline, width: AppStroke.thin);
 
     return InkWell(
       onTap: onTap,
