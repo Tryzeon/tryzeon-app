@@ -294,21 +294,6 @@ class AppTheme {
           ),
         ),
       ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: colorScheme.primary,
-          foregroundColor: colorScheme.onPrimary,
-          elevation: 0,
-          shadowColor: Colors.transparent,
-          shape: buttonShape,
-          padding: buttonPadding,
-          textStyle: GoogleFonts.outfit(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.2,
-          ),
-        ),
-      ),
       // Secondary: transparent bg, charcoal border + text, radius 8px
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
