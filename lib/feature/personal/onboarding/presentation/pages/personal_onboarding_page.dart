@@ -30,8 +30,8 @@ class PersonalOnboardingPage extends HookConsumerWidget {
       if ((previous?.currentStep ?? 0) != next.currentStep) {
         pageController.animateToPage(
           next.currentStep,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
+          duration: AppDuration.slow,
+          curve: AppCurves.standard,
         );
       }
     });
@@ -64,7 +64,7 @@ class PersonalOnboardingPage extends HookConsumerWidget {
           // Bottom Action Area
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -72,14 +72,14 @@ class PersonalOnboardingPage extends HookConsumerWidget {
                     controller: pageController,
                     count: _totalSteps,
                     effect: ExpandingDotsEffect(
-                      dotHeight: 8,
-                      dotWidth: 8,
-                      spacing: 8,
+                      dotHeight: AppSpacing.sm,
+                      dotWidth: AppSpacing.sm,
+                      spacing: AppSpacing.sm,
                       activeDotColor: colorScheme.primary,
                       dotColor: colorScheme.surfaceContainerHighest,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.lg),
                   if (currentStep < _totalSteps - 1)
                     SizedBox(
                       width: double.infinity,

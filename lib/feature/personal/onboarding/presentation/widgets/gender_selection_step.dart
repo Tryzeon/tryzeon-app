@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 
 import '../providers/onboarding_notifier.dart';
@@ -18,11 +19,11 @@ class GenderSelectionStep extends HookConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 10),
+          const SizedBox(height: AppSpacing.smMd),
           Text('你的性別', style: textTheme.headlineMedium),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           Text('我們會優先推薦符合你性別的款式', style: textTheme.bodyMedium),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.lg),
           ...Gender.values.map(
             (final gender) => RadioListTile<Gender>(
               title: Text(gender.label),

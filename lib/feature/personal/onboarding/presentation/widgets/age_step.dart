@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 
 import '../providers/onboarding_notifier.dart';
 
@@ -30,11 +31,11 @@ class AgeStep extends HookConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 10),
+          const SizedBox(height: AppSpacing.smMd),
           Text('你的年齡', style: textTheme.headlineMedium),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           Text('您的年齡不會公開顯示', style: textTheme.bodyMedium),
-          const SizedBox(height: 32),
+          const SizedBox(height: AppSpacing.xl),
           Center(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -49,7 +50,9 @@ class AgeStep extends HookConsumerWidget {
                       notifier.setAge(_minAge + index);
                     },
                     selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
-                      background: colorScheme.primaryContainer.withValues(alpha: 0.3),
+                      background: colorScheme.primaryContainer.withValues(
+                        alpha: AppOpacity.strong,
+                      ),
                     ),
                     children: List.generate(
                       _maxAge - _minAge + 1,
@@ -59,7 +62,7 @@ class AgeStep extends HookConsumerWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.sm),
                 Text('歲', style: textTheme.titleLarge),
               ],
             ),

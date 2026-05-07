@@ -55,9 +55,12 @@ class IdentitySegmentedControl extends StatelessWidget {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOut,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: 10),
+        duration: AppDuration.standard,
+        curve: AppCurves.enter,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.smMd,
+        ),
         decoration: BoxDecoration(
           color: isSelected ? colorScheme.surface : Colors.transparent,
           borderRadius: AppRadius.pillAll,
