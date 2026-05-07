@@ -65,9 +65,6 @@ class ProductSortSheet extends HookConsumerWidget {
                     (final field) => RadioListTile<SortField>(
                       value: field,
                       title: Text(field.label),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.lg,
-                      ),
                     ),
                   )
                   .toList(),
