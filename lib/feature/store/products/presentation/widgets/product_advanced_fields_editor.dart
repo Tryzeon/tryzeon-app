@@ -31,39 +31,36 @@ class ProductAdvancedFieldsEditor extends StatelessWidget {
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
 
-    return Theme(
-      data: theme.copyWith(dividerColor: Colors.transparent),
-      child: ExpansionTile(
-        tilePadding: EdgeInsets.zero,
-        childrenPadding: const EdgeInsets.only(top: AppSpacing.sm),
-        expandedCrossAxisAlignment: CrossAxisAlignment.start,
-        title: Text('進階資料', style: theme.textTheme.titleSmall),
-        subtitle: Text(
-          '展開以填寫更多選填屬性',
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
+    return ExpansionTile(
+      tilePadding: EdgeInsets.zero,
+      childrenPadding: const EdgeInsets.only(top: AppSpacing.sm),
+      expandedCrossAxisAlignment: CrossAxisAlignment.start,
+      title: Text('進階資料', style: theme.textTheme.titleSmall),
+      subtitle: Text(
+        '展開以填寫更多選填屬性',
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
         ),
-        children: [
-          const _FieldLabel('風格標籤'),
-          ProductStyleSelector(selectedStyles: selectedStyles),
-          const SizedBox(height: AppSpacing.md),
-          const _FieldLabel('季節'),
-          ProductSeasonSelector(selectedSeasons: selectedSeasons),
-          const SizedBox(height: AppSpacing.md),
-          const _FieldLabel('材質'),
-          ProductMaterialSelector(selectedMaterial: selectedMaterial),
-          const SizedBox(height: AppSpacing.md),
-          const _FieldLabel('彈性'),
-          ProductElasticitySelector(selectedElasticity: selectedElasticity),
-          const SizedBox(height: AppSpacing.md),
-          const _FieldLabel('版型'),
-          ProductFitSelector(selectedFit: selectedFit),
-          const SizedBox(height: AppSpacing.md),
-          const _FieldLabel('厚度'),
-          ProductThicknessSelector(selectedThickness: selectedThickness),
-        ],
       ),
+      children: [
+        const _FieldLabel('風格標籤'),
+        ProductStyleSelector(selectedStyles: selectedStyles),
+        const SizedBox(height: AppSpacing.md),
+        const _FieldLabel('季節'),
+        ProductSeasonSelector(selectedSeasons: selectedSeasons),
+        const SizedBox(height: AppSpacing.md),
+        const _FieldLabel('材質'),
+        ProductMaterialSelector(selectedMaterial: selectedMaterial),
+        const SizedBox(height: AppSpacing.md),
+        const _FieldLabel('彈性'),
+        ProductElasticitySelector(selectedElasticity: selectedElasticity),
+        const SizedBox(height: AppSpacing.md),
+        const _FieldLabel('版型'),
+        ProductFitSelector(selectedFit: selectedFit),
+        const SizedBox(height: AppSpacing.md),
+        const _FieldLabel('厚度'),
+        ProductThicknessSelector(selectedThickness: selectedThickness),
+      ],
     );
   }
 }
