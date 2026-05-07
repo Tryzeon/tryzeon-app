@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/modules/revenue_cat/di/revenue_cat_providers.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_overlay.dart';
@@ -241,7 +240,7 @@ class _SubscriptionSection extends HookConsumerWidget {
     if (entitlement == null) {
       return entitlementAsync.hasError
           ? _SubscriptionErrorCard(onTap: openSubscription)
-          : const _SubscriptionSkeletonCard();
+          : const SubscriptionUsageCardSkeleton();
     }
 
     return SubscriptionUsageCard(
@@ -250,60 +249,6 @@ class _SubscriptionSection extends HookConsumerWidget {
       dailyTryOnUsed: usageAsync.value?.tryonCount,
       dailyTryOnLimit: capabilitiesAsync.value?.dailyTryOnLimit,
       onTap: openSubscription,
-    );
-  }
-}
-
-/// Layout-only skeleton matching [SubscriptionUsageCard]'s structure so the
-/// real card swaps in without a height jump. Skeletonizer shimmers over the
-/// placeholder text — the strings themselves are arbitrary.
-class _SubscriptionSkeletonCard extends StatelessWidget {
-  const _SubscriptionSkeletonCard();
-
-  @override
-  Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
-
-    return Skeletonizer(
-      child: Card(
-        color: colorScheme.surface,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Plan', style: textTheme.headlineLarge),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                'Renewing on YYYY-MM-DD',
-                style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Text('0 / 00', style: textTheme.titleMedium),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                '今日試穿',
-                style: textTheme.labelSmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Container(height: 2, color: colorScheme.surfaceContainerHighest),
-              const SizedBox(height: AppSpacing.md),
-              const Divider(),
-              const SizedBox(height: AppSpacing.smMd),
-              Center(
-                child: Text(
-                  '查看訂閱詳情',
-                  style: textTheme.labelMedium?.copyWith(color: colorScheme.primary),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/utils/subscription_format.dart';
@@ -7,6 +8,9 @@ import 'package:tryzeon/feature/personal/subscription/presentation/utils/subscri
 /// stat (today's try-ons). Full per-feature usage breakdown lives on the
 /// Subscription page (progressive disclosure — keeps Account page clean and
 /// avoids ambient scarcity anxiety).
+///
+/// For the loading variant use [SubscriptionUsageCardSkeleton] — it mirrors
+/// this layout under Skeletonizer so hydration doesn't cause a height jump.
 class SubscriptionUsageCard extends StatelessWidget {
   const SubscriptionUsageCard({
     required this.entitlement,
@@ -76,6 +80,61 @@ class SubscriptionUsageCard extends StatelessWidget {
                   const SizedBox(width: AppSpacing.xs),
                   Icon(Icons.arrow_forward_rounded, size: 14, color: colorScheme.primary),
                 ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Layout-only skeleton mirroring [SubscriptionUsageCard]'s structure so the
+/// real card swaps in without a height jump. Skeletonizer shimmers over the
+/// placeholder text — the strings themselves are arbitrary.
+///
+/// Kept structurally close to the real card by convention; if [SubscriptionUsageCard]
+/// changes shape, update this widget too (covered by golden tests).
+class SubscriptionUsageCardSkeleton extends StatelessWidget {
+  const SubscriptionUsageCardSkeleton({super.key});
+
+  @override
+  Widget build(final BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
+    return Skeletonizer(
+      child: Card(
+        color: colorScheme.surface,
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Plan', style: textTheme.headlineLarge),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                'Renewing on YYYY-MM-DD',
+                style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Text('0 / 00', style: textTheme.titleMedium),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                '今日試穿',
+                style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Container(height: 2, color: colorScheme.surfaceContainerHighest),
+              const SizedBox(height: AppSpacing.md),
+              const Divider(),
+              const SizedBox(height: AppSpacing.smMd),
+              Center(
+                child: Text(
+                  '查看訂閱詳情',
+                  style: textTheme.labelMedium?.copyWith(color: colorScheme.primary),
+                ),
               ),
             ],
           ),
