@@ -2,9 +2,9 @@ import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
 
 import '../../../../core/shared/clothing_style/entities/clothing_style.dart';
 import '../../../../core/shared/measurements/data/mappers/measurements_mappr.dart';
+import '../../../../core/shared/product_attributes/entities/product_attributes.dart';
 import '../../../../feature/store/products/data/models/product_model.dart';
 import '../../../../feature/store/products/domain/entities/product.dart';
-import '../../../../feature/store/products/domain/value_objects/product_attributes.dart';
 import '../../profile/data/collections/user_profile_collection.dart';
 import '../../profile/data/models/user_profile_model.dart';
 import '../../profile/domain/entities/gender.dart';
@@ -108,16 +108,12 @@ class ShopProductMapprHelper {
   static ProductThickness? thicknessFromString(final ShopProductModel source) =>
       ProductThickness.tryFromString(source.thickness);
 
-  static List<ProductSeason>? seasonsFromStrings(final ShopProductModel source) => source
-      .seasons
-      ?.map(ProductSeason.tryFromString)
-      .whereType<ProductSeason>()
-      .toList();
+  static List<ProductSeason>? seasonsFromStrings(final ShopProductModel source) =>
+      ProductSeason.listFromStrings(source.seasons);
 
   static List<ClothingStyle>? stylesFromProductModelStrings(
     final ShopProductModel source,
-  ) =>
-      ClothingStyle.listFromStrings(source.styles);
+  ) => ClothingStyle.listFromStrings(source.styles);
 }
 
 class UserProfileMapprHelper {

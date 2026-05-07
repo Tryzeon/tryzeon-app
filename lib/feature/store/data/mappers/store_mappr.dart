@@ -2,7 +2,7 @@ import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
 
 import '../../../../core/shared/clothing_style/entities/clothing_style.dart';
 import '../../../../core/shared/measurements/data/mappers/measurements_mappr.dart';
-import '../../../../feature/store/products/domain/value_objects/product_attributes.dart';
+import '../../../../core/shared/product_attributes/entities/product_attributes.dart';
 import '../../analytics/data/collections/product_analytics_collection.dart';
 import '../../analytics/data/models/product_analytics_summary_model.dart';
 import '../../analytics/domain/entities/product_analytics_summary.dart';
@@ -77,11 +77,8 @@ class StoreMapprHelper {
   static List<ClothingStyle>? stringsToStyles(final ProductModel source) =>
       ClothingStyle.listFromStrings(source.styles);
 
-  static List<ProductSeason>? stringsToSeasons(final ProductModel source) => source
-      .seasons
-      ?.map(ProductSeason.tryFromString)
-      .whereType<ProductSeason>()
-      .toList();
+  static List<ProductSeason>? stringsToSeasons(final ProductModel source) =>
+      ProductSeason.listFromStrings(source.seasons);
 
   // Enum to String conversions
   static String? elasticityToString(final Product source) => source.elasticity?.value;

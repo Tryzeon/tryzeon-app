@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/core/shared/clothing_style/entities/clothing_style.dart';
 import 'package:tryzeon/core/shared/measurements/entities/measurements.dart';
+import 'package:tryzeon/core/shared/product_attributes/entities/product_attributes.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
-import 'package:tryzeon/feature/store/products/domain/value_objects/product_attributes.dart';
 
 part 'product.freezed.dart';
 

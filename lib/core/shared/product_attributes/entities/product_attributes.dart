@@ -34,4 +34,7 @@ enum ProductSeason {
 
   static ProductSeason? tryFromString(final String? value) =>
       ProductSeason.values.where((final e) => e.value == value).firstOrNull;
+
+  static List<ProductSeason>? listFromStrings(final Iterable<String>? values) =>
+      values?.map(tryFromString).whereType<ProductSeason>().toList();
 }

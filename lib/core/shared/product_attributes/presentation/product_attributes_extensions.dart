@@ -1,4 +1,4 @@
-import '../../domain/value_objects/product_attributes.dart';
+import '../entities/product_attributes.dart';
 
 const List<String> kFitPresets = ['合身', '常規', '大尺碼', 'oversize'];
 

@@ -1,8 +1,8 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/core/shared/clothing_style/entities/clothing_style.dart';
+import 'package:tryzeon/core/shared/product_attributes/entities/product_attributes.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
-import 'package:tryzeon/feature/store/products/domain/value_objects/product_attributes.dart';
 
 part 'shop_product.freezed.dart';
 
