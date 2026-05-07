@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/shared/clothing_style/entities/clothing_style.dart';
 import 'package:tryzeon/core/shared/measurements/data/mappers/measurements_mappr.dart';
 import 'package:tryzeon/core/shared/measurements/data/models/measurements_model.dart';
 import 'package:tryzeon/core/shared/measurements/entities/measurements.dart';
@@ -10,7 +11,6 @@ import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_local_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/models/user_profile_model.dart';
-import 'package:tryzeon/feature/personal/profile/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';

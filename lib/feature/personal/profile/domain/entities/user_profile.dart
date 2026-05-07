@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:tryzeon/core/shared/clothing_style/entities/clothing_style.dart';
 import 'package:tryzeon/core/shared/measurements/entities/measurements.dart';
-import 'package:tryzeon/feature/personal/profile/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 
 part 'user_profile.freezed.dart';

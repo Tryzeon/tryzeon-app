@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:tryzeon/core/shared/clothing_style/entities/clothing_style.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/feature/personal/profile/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/product_attributes.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_elasticity_selector.dart';
 import 'package:tryzeon/feature/store/products/presentation/widgets/product_fit_selector.dart';

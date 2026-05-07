@@ -1,12 +1,12 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
 
+import '../../../../core/shared/clothing_style/entities/clothing_style.dart';
 import '../../../../core/shared/measurements/data/mappers/measurements_mappr.dart';
 import '../../../../feature/store/products/data/models/product_model.dart';
 import '../../../../feature/store/products/domain/entities/product.dart';
 import '../../../../feature/store/products/domain/value_objects/product_attributes.dart';
 import '../../profile/data/collections/user_profile_collection.dart';
 import '../../profile/data/models/user_profile_model.dart';
-import '../../profile/domain/entities/clothing_style.dart';
 import '../../profile/domain/entities/gender.dart';
 import '../../profile/domain/entities/user_profile.dart';
 import '../../shop/data/models/shop_product_model.dart';
@@ -117,7 +117,7 @@ class ShopProductMapprHelper {
   static List<ClothingStyle>? stylesFromProductModelStrings(
     final ShopProductModel source,
   ) =>
-      source.styles?.map(ClothingStyle.tryFromString).whereType<ClothingStyle>().toList();
+      ClothingStyle.listFromStrings(source.styles);
 }
 
 class UserProfileMapprHelper {
@@ -128,10 +128,7 @@ class UserProfileMapprHelper {
 
   static List<ClothingStyle>? stylePreferencesFromStrings(
     final UserProfileModel source,
-  ) => source.stylePreferences
-      ?.map(ClothingStyle.tryFromString)
-      .whereType<ClothingStyle>()
-      .toList();
+  ) => ClothingStyle.listFromStrings(source.stylePreferences);
 
   static List<String>? stylePreferencesToStrings(final UserProfile source) =>
       source.stylePreferences?.map((final e) => e.value).toList();

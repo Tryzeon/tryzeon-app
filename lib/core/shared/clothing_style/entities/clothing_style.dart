@@ -66,6 +66,9 @@ enum ClothingStyle {
     ClothingStyle.sweet => '甜美風',
   };
 
-  static ClothingStyle? tryFromString(final String value) =>
+  static ClothingStyle? tryFromString(final String? value) =>
       ClothingStyle.values.where((final e) => e.value == value).firstOrNull;
+
+  static List<ClothingStyle>? listFromStrings(final Iterable<String>? values) =>
+      values?.map(tryFromString).whereType<ClothingStyle>().toList();
 }

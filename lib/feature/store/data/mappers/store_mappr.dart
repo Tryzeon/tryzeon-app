@@ -1,7 +1,7 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
 
+import '../../../../core/shared/clothing_style/entities/clothing_style.dart';
 import '../../../../core/shared/measurements/data/mappers/measurements_mappr.dart';
-import '../../../../feature/personal/profile/domain/entities/clothing_style.dart';
 import '../../../../feature/store/products/domain/value_objects/product_attributes.dart';
 import '../../analytics/data/collections/product_analytics_collection.dart';
 import '../../analytics/data/models/product_analytics_summary_model.dart';
@@ -75,7 +75,7 @@ class StoreMapprHelper {
       ProductThickness.tryFromString(source.thickness);
 
   static List<ClothingStyle>? stringsToStyles(final ProductModel source) =>
-      source.styles?.map(ClothingStyle.tryFromString).whereType<ClothingStyle>().toList();
+      ClothingStyle.listFromStrings(source.styles);
 
   static List<ProductSeason>? stringsToSeasons(final ProductModel source) => source
       .seasons
