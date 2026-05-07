@@ -73,7 +73,6 @@ class PreferencesPage extends HookConsumerWidget {
                 onChanged: recommendNearbyShopsAsync.isLoading
                     ? null
                     : handleRecommendNearbyShopsToggle,
-                isFirst: true,
               ),
             ],
           ),
@@ -90,7 +89,6 @@ class _ToggleRow extends StatelessWidget {
     required this.value,
     required this.onChanged,
     this.isLoading = false,
-    this.isFirst = false,
   });
 
   final String title;
@@ -98,52 +96,31 @@ class _ToggleRow extends StatelessWidget {
   final bool value;
   final bool isLoading;
   final ValueChanged<bool>? onChanged;
-  final bool isFirst;
 
   @override
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
-    final hairline = BorderSide(color: colorScheme.outline, width: AppStroke.thin);
 
-    return Container(
-      decoration: BoxDecoration(
-        border: Border(top: isFirst ? hairline : BorderSide.none, bottom: hairline),
-      ),
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: textTheme.bodyLarge),
-                const SizedBox(height: AppSpacing.xxs),
-                Text(
-                  subtitle,
-                  style: textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+    return Column(
+      children: [
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(title),
+          subtitle: Text(subtitle),
+          trailing: isLoading
+              ? SizedBox(
+                  width: AppSpacing.mdLg,
+                  height: AppSpacing.mdLg,
+                  child: CircularProgressIndicator(
+                    strokeWidth: AppStroke.regular,
+                    color: colorScheme.primary,
                   ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          if (isLoading)
-            SizedBox(
-              width: AppSpacing.mdLg,
-              height: AppSpacing.mdLg,
-              child: CircularProgressIndicator(
-                strokeWidth: AppStroke.regular,
-                color: colorScheme.primary,
-              ),
-            )
-          else
-            Switch(value: value, onChanged: onChanged),
-        ],
-      ),
+                )
+              : Switch(value: value, onChanged: onChanged),
+        ),
+        const Divider(),
+      ],
     );
   }
 }

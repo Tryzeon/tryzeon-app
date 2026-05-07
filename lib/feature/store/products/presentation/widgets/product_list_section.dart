@@ -103,17 +103,12 @@ class ProductListSection extends HookConsumerWidget {
                   vertical: AppSpacing.xs,
                 ),
               ),
-              child: Row(
+              child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    '排序',
-                    style: textTheme.labelMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.xs),
-                  const Icon(Icons.keyboard_arrow_down_rounded, size: 16),
+                  Text('排序'),
+                  SizedBox(width: AppSpacing.xs),
+                  Icon(Icons.keyboard_arrow_down_rounded, size: 16),
                 ],
               ),
             ),

@@ -24,6 +24,7 @@ class ProductCategorySelector extends HookWidget {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
+    final inputTheme = theme.inputDecorationTheme;
     final selectedNotifier = useListenable(selectedCategoryIds);
     final selectedIds = selectedNotifier.value;
 
@@ -61,29 +62,13 @@ class ProductCategorySelector extends HookWidget {
       onTap: openSheet,
       borderRadius: AppRadius.inputAll,
       child: InputDecorator(
-        decoration: InputDecoration(
-          border: OutlineInputBorder(
-            borderRadius: AppRadius.inputAll,
-            borderSide: BorderSide(
-              color: hasError ? colorScheme.error : colorScheme.outline,
-              width: AppStroke.regular,
+        decoration: const InputDecoration()
+            .applyDefaults(inputTheme)
+            .copyWith(
+              border: hasError ? inputTheme.errorBorder : null,
+              enabledBorder: hasError ? inputTheme.errorBorder : null,
+              focusedBorder: hasError ? inputTheme.focusedErrorBorder : null,
             ),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: AppRadius.inputAll,
-            borderSide: BorderSide(
-              color: hasError ? colorScheme.error : colorScheme.outline,
-              width: AppStroke.regular,
-            ),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: AppRadius.inputAll,
-            borderSide: BorderSide(
-              color: hasError ? colorScheme.error : colorScheme.onSurface,
-              width: AppStroke.regular,
-            ),
-          ),
-        ),
         child: Row(
           children: [
             Expanded(

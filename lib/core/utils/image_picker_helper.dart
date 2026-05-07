@@ -33,10 +33,7 @@ class ImagePickerHelper {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  '選擇圖片來源',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
+                Text('選擇圖片來源', style: Theme.of(context).textTheme.headlineMedium),
                 const SizedBox(height: AppSpacing.mdLg),
                 ListTile(
                   leading: const Icon(Icons.photo_library),

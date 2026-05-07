@@ -297,7 +297,11 @@ class _OffsetStepper extends StatelessWidget {
                     field.didChange(offsetController.text);
                   },
                 ),
-                Container(width: AppStroke.thin, height: AppSpacing.lg, color: colorScheme.outline),
+                Container(
+                  width: AppStroke.thin,
+                  height: AppSpacing.lg,
+                  color: colorScheme.outline,
+                ),
                 Expanded(
                   child: TextField(
                     controller: offsetController,
@@ -321,7 +325,11 @@ class _OffsetStepper extends StatelessWidget {
                     onChanged: field.didChange,
                   ),
                 ),
-                Container(width: AppStroke.thin, height: AppSpacing.lg, color: colorScheme.outline),
+                Container(
+                  width: AppStroke.thin,
+                  height: AppSpacing.lg,
+                  color: colorScheme.outline,
+                ),
                 IconButton(
                   icon: const Icon(Icons.add_rounded, size: 16),
                   visualDensity: VisualDensity.compact,

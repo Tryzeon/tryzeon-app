@@ -133,9 +133,6 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
         width: double.infinity,
         child: FilledButton(
           onPressed: isLoading.value ? null : onTap,
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-          ),
           child: isLoading.value
               ? SizedBox(
                   height: 20,
