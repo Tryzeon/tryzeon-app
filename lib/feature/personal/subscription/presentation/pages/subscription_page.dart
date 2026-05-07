@@ -108,21 +108,17 @@ class _SubscriptionContent extends ConsumerWidget {
                     ),
                     const Spacer(),
                     if (entitlement.hasActiveSubscription)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.sm,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: colorScheme.primaryContainer,
-                          borderRadius: AppRadius.pillAll,
-                        ),
-                        child: Text(
+                      Chip(
+                        label: Text(
                           '啟用中',
                           style: textTheme.labelSmall?.copyWith(
                             color: colorScheme.primary,
                           ),
                         ),
+                        backgroundColor: colorScheme.primaryContainer,
+                        side: BorderSide.none,
+                        visualDensity: VisualDensity.compact,
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                   ],
                 ),

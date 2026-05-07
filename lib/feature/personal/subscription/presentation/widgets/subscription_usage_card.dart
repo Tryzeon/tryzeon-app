@@ -93,16 +93,15 @@ class _ActivePill extends StatelessWidget {
   @override
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 3),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primaryContainer,
-        borderRadius: AppRadius.pillAll,
-      ),
-      child: Text(
+    return Chip(
+      label: Text(
         '啟用中',
         style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.primary),
       ),
+      backgroundColor: theme.colorScheme.primaryContainer,
+      side: BorderSide.none,
+      visualDensity: VisualDensity.compact,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
   }
 }
