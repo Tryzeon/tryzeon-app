@@ -103,7 +103,7 @@ platform :ios do
       app_version: version_number,
       build_number: build_number,
       skip_binary_upload: true,
-      skip_metadata: true,
+      skip_metadata: false,
       skip_screenshots: true,
       submit_for_review: true,
       automatic_release: true,
