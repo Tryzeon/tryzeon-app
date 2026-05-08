@@ -134,17 +134,6 @@ class ShopPage extends HookConsumerWidget {
         bottom: false,
         child: Column(
           children: [
-            // 頂部品牌標題
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg,
-                AppSpacing.md,
-                AppSpacing.lg,
-                AppSpacing.md,
-              ),
-              child: Text('Tryzeon', style: textTheme.displaySmall),
-            ),
-
             // 內容區域
             Expanded(
               child: RefreshIndicator(
