@@ -155,12 +155,7 @@ class ProductCard extends HookConsumerWidget {
                 child: Stack(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.smMd,
-                        AppSpacing.smMd,
-                        AppSpacing.lg,
-                        AppSpacing.smMd,
-                      ),
+                      padding: const EdgeInsets.all(AppSpacing.sm),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
