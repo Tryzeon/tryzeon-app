@@ -3,25 +3,32 @@ import 'package:google_fonts/google_fonts.dart';
 
 // ─── Color Tokens ────────────────────────────────────────────────────────────
 
-/// Extended color tokens not covered by Material 3 ColorScheme.
-/// Access via `AppColors.primaryLight`, etc.
+/// Raw colour palette (M3 *reference* tokens). Tonal numbers follow Material 3
+/// convention: 100 = white, 0 = black. Roles (surface, onSurface, …) are
+/// assigned in [AppTheme]'s `ColorScheme`; widgets should read from
+/// `Theme.of(context).colorScheme`, not from this class.
+///
+/// Semantic colours that have no Material role (success, warning) live here as
+/// flat tokens — pair with their `on*` counterpart for foreground content.
 class AppColors {
   AppColors._();
 
-  static const Color primary = Color(0xFFB5674A); // Terracotta
+  // ── Brand — Terracotta ────────────────────────────────────────────────
+  static const Color primary = Color(0xFFB5674A);
   static const Color primaryLight = Color(0xFFC8856C);
   static const Color primaryDark = Color(0xFF924F37);
   static const Color primaryContainer = Color(0xFFF5EDE9);
 
-  static const Color background = Color(0xFFFFFFFF);
-  static const Color surface = Color(0xFFF7F7F7);
-  static const Color surfaceVariant = Color(0xFFEFEFEF);
-  static const Color outline = Color(0xFFE5E5E5);
+  // ── Neutral tonal palette (high = light) ──────────────────────────────
+  static const Color neutral100 = Color(0xFFFFFFFF); // page background
+  static const Color neutral98 = Color(0xFFF7F7F7); // surfaceContainerLow
+  static const Color neutral95 = Color(0xFFEFEFEF); // surfaceContainer
+  static const Color neutral92 = Color(0xFFE8E8E8); // surfaceContainerHigh
+  static const Color neutral90 = Color(0xFFE5E5E5); // outline / containerHighest
+  static const Color neutral60 = Color(0xFF9E9E9E); // onSurfaceVariant
+  static const Color neutral10 = Color(0xFF1A1A1A); // onSurface
 
-  static const Color onSurface = Color(0xFF1A1A1A);
-  static const Color onSurfaceVariant = Color(0xFF9E9E9E);
-  static const Color onPrimary = Color(0xFFFFFFFF);
-
+  // ── Semantic (no M3 role) ─────────────────────────────────────────────
   static const Color error = Color(0xFFB00020);
   static const Color onError = Color(0xFFFFFFFF);
   static const Color errorContainer = Color(0xFFFFDAD6);
@@ -140,41 +147,41 @@ class AppTheme {
       brightness: Brightness.light,
       // Primary — Terracotta
       primary: AppColors.primary,
-      onPrimary: AppColors.onPrimary,
+      onPrimary: AppColors.neutral100,
       primaryContainer: AppColors.primaryContainer,
       onPrimaryContainer: AppColors.primaryDark,
-      // Secondary — neutral charcoal (onSurface as bg → white text, contrast ~14:1)
-      secondary: AppColors.onSurface,
-      onSecondary: AppColors.onPrimary,
-      secondaryContainer: AppColors.surfaceVariant,
-      onSecondaryContainer: AppColors.onSurface,
+      // Secondary — neutral charcoal (neutral10 as bg → white text, contrast ~14:1)
+      secondary: AppColors.neutral10,
+      onSecondary: AppColors.neutral100,
+      secondaryContainer: AppColors.neutral95,
+      onSecondaryContainer: AppColors.neutral10,
       // Tertiary — same as secondary (unused slot, safe fallback)
-      tertiary: AppColors.onSurface,
-      onTertiary: AppColors.onPrimary,
-      tertiaryContainer: AppColors.surfaceVariant,
-      onTertiaryContainer: AppColors.onSurface,
+      tertiary: AppColors.neutral10,
+      onTertiary: AppColors.neutral100,
+      tertiaryContainer: AppColors.neutral95,
+      onTertiaryContainer: AppColors.neutral10,
       // Error
       error: AppColors.error,
       onError: AppColors.onError,
       errorContainer: AppColors.errorContainer,
       onErrorContainer: AppColors.onErrorContainer,
       // Surface
-      surface: AppColors.background,
-      onSurface: AppColors.onSurface,
-      surfaceContainerLowest: AppColors.background,
-      surfaceContainerLow: AppColors.surface,
-      surfaceContainer: AppColors.surfaceVariant,
-      surfaceContainerHigh: Color(0xFFE8E8E8),
-      surfaceContainerHighest: AppColors.outline,
-      onSurfaceVariant: AppColors.onSurfaceVariant,
+      surface: AppColors.neutral100,
+      onSurface: AppColors.neutral10,
+      surfaceContainerLowest: AppColors.neutral100,
+      surfaceContainerLow: AppColors.neutral98,
+      surfaceContainer: AppColors.neutral95,
+      surfaceContainerHigh: AppColors.neutral92,
+      surfaceContainerHighest: AppColors.neutral90,
+      onSurfaceVariant: AppColors.neutral60,
       // Outline
-      outline: AppColors.outline,
-      outlineVariant: AppColors.surfaceVariant,
+      outline: AppColors.neutral90,
+      outlineVariant: AppColors.neutral95,
       // Misc
       shadow: Colors.black,
       scrim: Colors.black,
-      inverseSurface: AppColors.onSurface,
-      onInverseSurface: AppColors.background,
+      inverseSurface: AppColors.neutral10,
+      onInverseSurface: AppColors.neutral100,
       inversePrimary: AppColors.primaryLight,
     );
 
@@ -188,7 +195,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: AppColors.background,
+      scaffoldBackgroundColor: colorScheme.surface,
       shadowColor: Colors.black.withValues(alpha: 0.08),
       visualDensity: VisualDensity.standard,
 
@@ -196,33 +203,29 @@ class AppTheme {
       // Spec: white bg, no shadow / tint, charcoal icons + title.
       // `foregroundColor` drives icon and title colours.
       appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.background,
+        backgroundColor: colorScheme.surface,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        foregroundColor: AppColors.onSurface,
+        foregroundColor: colorScheme.onSurface,
         titleTextStyle: GoogleFonts.outfit(
           fontSize: 20,
           fontWeight: FontWeight.w600,
-          color: AppColors.onSurface,
+          color: colorScheme.onSurface,
         ),
       ),
 
       // ── Divider ──────────────────────────────────────────────────────────
-      dividerTheme: const DividerThemeData(
-        color: AppColors.outline,
-        thickness: 1,
-        space: 1,
-      ),
+      dividerTheme: DividerThemeData(color: colorScheme.outline, thickness: 1, space: 1),
 
       // ── Icon ─────────────────────────────────────────────────────────────
       // Spec: icons default to onSurface (charcoal). Use onSurfaceVariant
       // explicitly when an icon is meant to look muted.
-      iconTheme: const IconThemeData(color: AppColors.onSurface),
+      iconTheme: IconThemeData(color: colorScheme.onSurface),
       iconButtonTheme: IconButtonThemeData(
         style: IconButton.styleFrom(
-          foregroundColor: AppColors.onSurface,
-          disabledForegroundColor: AppColors.onSurfaceVariant,
+          foregroundColor: colorScheme.onSurface,
+          disabledForegroundColor: colorScheme.onSurfaceVariant,
         ),
       ),
 
@@ -230,17 +233,17 @@ class AppTheme {
       // Spec: 24px horizontal padding (page-aligned), charcoal icons.
       // Title (bodyLarge) and subtitle (bodyMedium / onSurfaceVariant) inherit
       // from M3 defaults — no need to override.
-      listTileTheme: const ListTileThemeData(
-        contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-        iconColor: AppColors.onSurface,
+      listTileTheme: ListTileThemeData(
+        contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        iconColor: colorScheme.onSurface,
       ),
 
       // ── Floating Action Button ───────────────────────────────────────────
       // Spec: solid Terracotta CTA, white icon, circular, soft elevation.
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.onPrimary,
-        shape: CircleBorder(),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
+        shape: const CircleBorder(),
         elevation: 2,
         focusElevation: 2,
         hoverElevation: 4,
@@ -251,13 +254,13 @@ class AppTheme {
       // Spec: thin 2px track, classic round thumb, Terracotta accent.
       // Bypasses M3 expressive slider; value indicator suppressed (callers
       // surface the value separately).
-      sliderTheme: const SliderThemeData(
-        activeTrackColor: AppColors.primary,
-        inactiveTrackColor: AppColors.outline,
-        thumbColor: AppColors.primary,
+      sliderTheme: SliderThemeData(
+        activeTrackColor: colorScheme.primary,
+        inactiveTrackColor: colorScheme.outline,
+        thumbColor: colorScheme.primary,
         trackHeight: 1,
-        rangeThumbShape: RoundRangeSliderThumbShape(enabledThumbRadius: 6),
-        overlayShape: RoundSliderOverlayShape(overlayRadius: 15),
+        rangeThumbShape: const RoundRangeSliderThumbShape(enabledThumbRadius: 6),
+        overlayShape: const RoundSliderOverlayShape(overlayRadius: 15),
       ),
 
       // ── Expansion Tile ───────────────────────────────────────────────────
@@ -269,12 +272,12 @@ class AppTheme {
 
       // ── Card ─────────────────────────────────────────────────────────────
       // Spec: radius 12px, 1px outline border, no shadow
-      cardTheme: const CardThemeData(
-        color: AppColors.surface,
+      cardTheme: CardThemeData(
+        color: colorScheme.surfaceContainerLow,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: AppRadius.cardAll,
-          side: BorderSide(color: AppColors.outline),
+          side: BorderSide(color: colorScheme.outline),
         ),
         margin: EdgeInsets.zero,
       ),
@@ -326,22 +329,22 @@ class AppTheme {
       // Spec: outlined style, 1.5px border, radius 10px, focus → onSurface
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surface,
+        fillColor: colorScheme.surfaceContainerLow,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
           vertical: AppSpacing.sm + 4, // 12px
         ),
-        border: const OutlineInputBorder(
+        border: OutlineInputBorder(
           borderRadius: AppRadius.inputAll,
-          borderSide: BorderSide(color: AppColors.outline, width: AppStroke.regular),
+          borderSide: BorderSide(color: colorScheme.outline, width: AppStroke.regular),
         ),
-        enabledBorder: const OutlineInputBorder(
+        enabledBorder: OutlineInputBorder(
           borderRadius: AppRadius.inputAll,
-          borderSide: BorderSide(color: AppColors.outline, width: AppStroke.regular),
+          borderSide: BorderSide(color: colorScheme.outline, width: AppStroke.regular),
         ),
-        focusedBorder: const OutlineInputBorder(
+        focusedBorder: OutlineInputBorder(
           borderRadius: AppRadius.inputAll,
-          borderSide: BorderSide(color: AppColors.onSurface, width: AppStroke.regular),
+          borderSide: BorderSide(color: colorScheme.onSurface, width: AppStroke.regular),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: AppRadius.inputAll,
@@ -353,28 +356,28 @@ class AppTheme {
         ),
         hintStyle: GoogleFonts.notoSansTc(
           fontSize: 13,
-          color: AppColors.onSurfaceVariant,
+          color: colorScheme.onSurfaceVariant,
         ),
       ),
 
       // ── Bottom Sheet ──────────────────────────────────────────────────────
       // Spec: white bg, top radius 20px, no elevation
-      bottomSheetTheme: const BottomSheetThemeData(
-        backgroundColor: AppColors.background,
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: colorScheme.surface,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: AppRadius.sheetTop),
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.sheetTop),
       ),
 
       // ── SnackBar ──────────────────────────────────────────────────────────
       // Spec: dark pill, floating bottom, used for silent result feedback
       // (e.g. "saved to album"). Failures use TopNotification banner instead.
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: AppColors.onSurface,
+        backgroundColor: colorScheme.inverseSurface,
         contentTextStyle: GoogleFonts.notoSansTc(
           fontSize: 13,
           fontWeight: FontWeight.w500,
-          color: AppColors.background,
+          color: colorScheme.onInverseSurface,
         ),
         behavior: SnackBarBehavior.floating,
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.cardAll),
@@ -387,31 +390,34 @@ class AppTheme {
 
       // ── Dialog ───────────────────────────────────────────────────────────
       // Spec: white bg, radius 16px, no elevation shadow
-      dialogTheme: const DialogThemeData(
-        backgroundColor: AppColors.background,
+      dialogTheme: DialogThemeData(
+        backgroundColor: colorScheme.surface,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: AppRadius.dialogAll),
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.dialogAll),
         titleTextStyle: null, // inherits from textTheme.titleLarge
       ),
 
       // ── Chip ─────────────────────────────────────────────────────────────
       // Spec: pill shape, outline border, no elevation
-      chipTheme: const ChipThemeData(
-        backgroundColor: AppColors.background,
-        selectedColor: AppColors.primaryContainer,
-        side: BorderSide(color: AppColors.outline),
-        shape: RoundedRectangleBorder(borderRadius: AppRadius.pillAll),
+      chipTheme: ChipThemeData(
+        backgroundColor: colorScheme.surface,
+        selectedColor: colorScheme.primaryContainer,
+        side: BorderSide(color: colorScheme.outline),
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.pillAll),
         elevation: 0,
         pressElevation: 0,
-        padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
-        labelStyle: TextStyle(fontSize: 12, color: AppColors.onSurface),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xs,
+        ),
+        labelStyle: TextStyle(fontSize: 12, color: colorScheme.onSurface),
       ),
 
       // ── Bottom Navigation Bar ─────────────────────────────────────────────
       // Spec: white bg, top border 1px outline, Terracotta active, no pill
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: AppColors.background,
+        backgroundColor: colorScheme.surface,
         indicatorColor: Colors.transparent, // disable M3 pill indicator
         shadowColor: Colors.transparent,
         elevation: 0,
@@ -422,13 +428,13 @@ class AppTheme {
             fontSize: 9,
             fontWeight: FontWeight.w700,
             letterSpacing: 1.5,
-            color: active ? AppColors.primary : AppColors.onSurfaceVariant,
+            color: active ? colorScheme.primary : colorScheme.onSurfaceVariant,
           );
         }),
         iconTheme: WidgetStateProperty.resolveWith((final states) {
           final active = states.contains(WidgetState.selected);
           return IconThemeData(
-            color: active ? AppColors.primary : AppColors.onSurfaceVariant,
+            color: active ? colorScheme.primary : colorScheme.onSurfaceVariant,
             size: 24,
           );
         }),
