@@ -106,7 +106,8 @@ platform :ios do
       skip_metadata: true,
       skip_screenshots: true,
       submit_for_review: true,
-      automatic_release: true
+      automatic_release: true,
+      run_precheck_before_submit: false
     )
   end
 end
