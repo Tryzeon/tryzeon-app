@@ -5,6 +5,7 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
+import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:tryzeon/feature/personal/shop/domain/services/fit_calculator.dart';
@@ -119,11 +120,11 @@ class ProductGrid extends HookConsumerWidget {
           ),
           itemBuilder: (final context, final index) {
             final product = products[index];
-            final fitStatus = FitCalculator.calculate(
+            final fitResult = FitCalculator.calculate(
               userProfile: userProfile,
               productSizes: product.sizes,
             );
-            return ProductCard(product: product, fitStatus: fitStatus);
+            return ProductCard(product: product, fitResult: fitResult);
           },
         ),
       );
@@ -147,11 +148,7 @@ class ProductGrid extends HookConsumerWidget {
             ),
             itemBuilder: (final context, final index) {
               final product = _skeletonProducts[index];
-              final fitStatus = FitCalculator.calculate(
-                userProfile: userProfile,
-                productSizes: product.sizes,
-              );
-              return ProductCard(product: product, fitStatus: fitStatus);
+              return ProductCard(product: product, fitResult: const FitResult());
             },
           ),
         ),

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
-import 'package:tryzeon/feature/personal/shop/presentation/actions/launch_product_purchase.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/actions/share_product.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_detail_body.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
@@ -17,7 +16,6 @@ class ProductDetailPage extends HookConsumerWidget {
     final productAsync = ref.watch(shopProductByIdProvider(productId));
     final product = productAsync.hasValue ? productAsync.value : null;
     final canShare = product != null;
-    final canPurchase = product != null && hasPurchaseLink(product);
 
     final textTheme = Theme.of(context).textTheme;
 
@@ -43,11 +41,6 @@ class ProductDetailPage extends HookConsumerWidget {
                     ? Icons.ios_share
                     : Icons.share,
               ),
-            ),
-          if (canPurchase)
-            IconButton(
-              onPressed: () => launchProductPurchase(context, ref, product),
-              icon: const Icon(Icons.open_in_new),
             ),
         ],
       ),

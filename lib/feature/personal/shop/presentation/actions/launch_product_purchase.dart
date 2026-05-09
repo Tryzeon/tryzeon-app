@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
+import 'package:tryzeon/feature/personal/shop/presentation/widgets/pre_purchase_sheet.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -12,8 +14,17 @@ Future<void> launchProductPurchase(
   final BuildContext context,
   final WidgetRef ref,
   final ShopProduct product,
+  final FitResult fitResult,
 ) async {
   if (!hasPurchaseLink(product)) return;
+
+  final confirmed = await PrePurchaseSheet.show(
+    context: context,
+    product: product,
+    fitResult: fitResult,
+  );
+  if (confirmed != true) return;
+  if (!context.mounted) return;
 
   final Uri url = Uri.parse(product.purchaseLink!);
   if (!await canLaunchUrl(url)) {

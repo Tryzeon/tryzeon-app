@@ -1,4 +1,3 @@
-import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -10,7 +9,7 @@ import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/main/tryon_coordinator.dart';
-import 'package:tryzeon/feature/personal/shop/domain/entities/fit_status.dart';
+import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/tryon_mode_sheet.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
@@ -18,10 +17,10 @@ import 'package:tryzeon/feature/personal/subscription/presentation/providers/sub
 import 'package:visibility_detector/visibility_detector.dart';
 
 class ProductCard extends HookConsumerWidget {
-  const ProductCard({super.key, required this.product, this.fitStatus});
+  const ProductCard({super.key, required this.product, this.fitResult});
 
   final ShopProduct product;
-  final FitStatus? fitStatus;
+  final FitResult? fitResult;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
@@ -55,31 +54,14 @@ class ProductCard extends HookConsumerWidget {
           .call(productId: product.id, storeId: product.storeInfo.id)
           .ignore();
 
-      if (fitStatus == FitStatus.poor) {
-        final result = await showOkCancelAlertDialog(
-          context: context,
-          title: '尺寸不合',
-          message: '這件衣服沒有符合你的尺寸，是否還要繼續試穿？',
-          okLabel: '繼續試穿',
-          cancelLabel: '取消',
-        );
-
-        if (result != OkCancelResult.ok) {
-          return;
-        }
-      }
-
       await ref
           .read(tryOnCoordinatorProvider)
           .tryOnFromStorage(product.imagePaths, mode: mode);
     }
 
-    final dotColor = switch (fitStatus) {
-      null => null,
-      FitStatus.perfect => AppColors.success,
-      FitStatus.good => AppColors.warning,
-      FitStatus.poor => AppColors.error,
-    };
+    final showSizeChip =
+        fitResult?.displayState == FitDisplayState.match &&
+        fitResult?.recommendedSize != null;
 
     return GestureDetector(
       onTap: () {
@@ -152,11 +134,11 @@ class ProductCard extends HookConsumerWidget {
               ),
               SizedBox(
                 width: double.infinity,
-                child: Stack(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(AppSpacing.sm),
-                      child: Column(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.smMd),
+                  child: Stack(
+                    children: [
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
@@ -183,28 +165,53 @@ class ProductCard extends HookConsumerWidget {
                           ),
                         ],
                       ),
-                    ),
-                    if (dotColor != null)
-                      Positioned(
-                        top: AppSpacing.smMd,
-                        right: AppSpacing.smMd,
-                        child: Skeleton.ignore(
-                          child: Container(
-                            width: 6,
-                            height: 6,
-                            decoration: BoxDecoration(
-                              color: dotColor,
-                              borderRadius: AppRadius.pillAll,
-                            ),
+                      if (showSizeChip)
+                        Positioned(
+                          top: 0,
+                          right: 0,
+                          child: Skeleton.ignore(
+                            child: _SizeChip(sizeName: fitResult!.recommendedSize!),
                           ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SizeChip extends StatelessWidget {
+  const _SizeChip({required this.sizeName});
+
+  final String sizeName;
+
+  @override
+  Widget build(final BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xxs,
+      ),
+      decoration: const BoxDecoration(
+        color: AppColors.fitMatchContainer,
+        borderRadius: AppRadius.pillAll,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.check_rounded, size: 10, color: AppColors.onFitMatchContainer),
+          const SizedBox(width: AppSpacing.xxs),
+          Text(
+            sizeName,
+            style: textTheme.labelMedium?.copyWith(color: AppColors.onFitMatchContainer),
+          ),
+        ],
       ),
     );
   }
