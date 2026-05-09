@@ -84,17 +84,21 @@ class ProductCard extends HookConsumerWidget {
                       Positioned.fill(
                         child: product.imageUrls.isEmpty
                             ? const _ImagePlaceholder()
-                            : CachedNetworkImage(
-                                imageUrl: product.imageUrls.first,
-                                cacheKey: product.imagePaths.isNotEmpty
-                                    ? product.imagePaths.first
-                                    : null,
-                                fit: BoxFit.cover,
-                                width: double.infinity,
-                                placeholder: (final context, final url) =>
-                                    Container(color: colorScheme.surfaceContainerLow),
-                                errorWidget: (final context, final url, final error) =>
-                                    const _ImageErrorWidget(),
+                            : PageView.builder(
+                                itemCount: product.imageUrls.length,
+                                itemBuilder: (final context, final index) {
+                                  return CachedNetworkImage(
+                                    imageUrl: product.imageUrls[index],
+                                    cacheKey: product.imagePaths[index],
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    placeholder: (final context, final url) =>
+                                        Container(color: colorScheme.surfaceContainerLow),
+                                    errorWidget:
+                                        (final context, final url, final error) =>
+                                            const _ImageErrorWidget(),
+                                  );
+                                },
                               ),
                       ),
                       Positioned(
