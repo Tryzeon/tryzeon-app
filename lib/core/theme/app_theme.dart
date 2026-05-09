@@ -34,10 +34,24 @@ class AppColors {
   static const Color errorContainer = Color(0xFFFFDAD6);
   static const Color onErrorContainer = Color(0xFF410002);
 
-  static const Color warning = Color(0xFFFFC107);
-  static const Color onWarning = Color(0xFF1A1A1A);
-  static const Color success = Color(0xFF4CAF50);
-  static const Color onSuccess = Color(0xFFFFFFFF);
+  // ── Fit Advisor (semantic, no M3 role) ────────────────────────────────
+  // Sage — Fit Match (true-to-size)
+  static const Color fitMatch = Color(0xFF4A6B45);
+  static const Color onFitMatch = Color(0xFFFFFFFF);
+  static const Color fitMatchContainer = Color(0xFFDCE5D5);
+  static const Color onFitMatchContainer = Color(0xFF2A3F26);
+
+  // Amber — Fit Caveat (partial match)
+  static const Color fitCaveat = Color(0xFFB08840);
+  static const Color onFitCaveat = Color(0xFFFFFFFF);
+  static const Color fitCaveatContainer = Color(0xFFF2E5CC);
+  static const Color onFitCaveatContainer = Color(0xFF4D3A1A);
+
+  // Dusty Rose — Fit Out of Range (outside available size range)
+  static const Color fitOutOfRange = Color(0xFF9B7160);
+  static const Color onFitOutOfRange = Color(0xFFFFFFFF);
+  static const Color fitOutOfRangeContainer = Color(0xFFEFE0DA);
+  static const Color onFitOutOfRangeContainer = Color(0xFF4A2F22);
 }
 
 // ─── Spacing Tokens ───────────────────────────────────────────────────────────
