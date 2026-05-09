@@ -50,16 +50,23 @@ class FitCalculator {
 
     scoredSizes.sort((final a, final b) => a.totalDistance.compareTo(b.totalDistance));
 
-    final best = scoredSizes.first;
+    final validSizes = scoredSizes
+        .where(
+          (final s) =>
+              s.worstDistance <= _outOfRangeSingleThreshold &&
+              s.totalDistance <= _outOfRangeTotalThreshold,
+        )
+        .toList();
 
-    if (best.worstDistance > _outOfRangeSingleThreshold ||
-        best.totalDistance > _outOfRangeTotalThreshold) {
+    if (validSizes.isEmpty) {
       return const FitResult(outOfRange: true);
     }
 
+    final best = validSizes.first;
+
     String? alternativeSize;
-    if (scoredSizes.length > 1) {
-      final second = scoredSizes[1];
+    if (validSizes.length > 1) {
+      final second = validSizes[1];
       if (second.totalDistance - best.totalDistance < _alternativeThreshold) {
         alternativeSize = second.size.name;
       }
