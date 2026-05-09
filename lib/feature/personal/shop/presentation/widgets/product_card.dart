@@ -59,9 +59,9 @@ class ProductCard extends HookConsumerWidget {
           .tryOnFromStorage(product.imagePaths, mode: mode);
     }
 
-    final showSizeChip =
-        fitResult?.displayState == FitDisplayState.match &&
-        fitResult?.recommendedSize != null;
+    final recommendedSize = fitResult?.displayState == FitDisplayState.match
+        ? fitResult?.recommendedSize
+        : null;
 
     return GestureDetector(
       onTap: () {
@@ -165,12 +165,12 @@ class ProductCard extends HookConsumerWidget {
                           ),
                         ],
                       ),
-                      if (showSizeChip)
+                      if (recommendedSize != null)
                         Positioned(
                           top: 0,
                           right: 0,
                           child: Skeleton.ignore(
-                            child: _SizeChip(sizeName: fitResult!.recommendedSize!),
+                            child: _SizeChip(sizeName: recommendedSize),
                           ),
                         ),
                     ],

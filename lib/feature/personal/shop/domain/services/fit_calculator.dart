@@ -1,53 +1,143 @@
 import 'package:tryzeon/core/shared/measurements/entities/measurements.dart';
 import 'package:tryzeon/core/shared/product_size/entities/product_size.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
-import 'package:tryzeon/feature/personal/shop/domain/entities/fit_status.dart';
+import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 
+/// Scores every product size by total deviation when user measurements fall
+/// outside the size range, and recommends the closest one.
 class FitCalculator {
-  static FitStatus? calculate({
+  FitCalculator._();
+
+  /// Any single measurement beyond this deviation triggers outOfRange.
+  static const double _outOfRangeSingleThreshold = 5.0;
+
+  /// Total deviation beyond this value triggers outOfRange.
+  static const double _outOfRangeTotalThreshold = 8.0;
+
+  /// The second-best size is only suggested when its total distance is within
+  /// this value of the best size.
+  static const double _alternativeThreshold = 2.0;
+
+  static FitResult calculate({
     required final UserProfile? userProfile,
     required final List<ProductSize>? productSizes,
   }) {
-    if (userProfile == null || productSizes == null) {
-      return null;
+    final userMeasurements = userProfile?.measurements;
+    if (userMeasurements == null) {
+      return const FitResult(noUserData: true);
     }
 
-    int bestPerfectCount = -1;
+    final hasAnyMeasurement = MeasurementType.values.any(
+      (final t) => userMeasurements.getValue(t) != null,
+    );
+    if (!hasAnyMeasurement) {
+      return const FitResult(noUserData: true);
+    }
 
+    if (productSizes == null || productSizes.isEmpty) {
+      return const FitResult();
+    }
+
+    final scoredSizes = <_ScoredSize>[];
     for (final size in productSizes) {
-      int perfectCount = 0;
-      int comparisonCount = 0;
+      final scored = _scoreSize(size, userMeasurements);
+      if (scored != null) scoredSizes.add(scored);
+    }
 
-      for (final type in MeasurementType.values) {
-        final userValue = userProfile.measurements?[type];
-        final range = size.measurements?.getRange(type);
+    if (scoredSizes.isEmpty) {
+      return const FitResult();
+    }
 
-        if (userValue != null && range != null) {
-          comparisonCount++;
-          // 檢查是否在區間內 (inclusive)
-          if (userValue >= range.$1 && userValue <= range.$2) {
-            perfectCount++;
-          }
-        }
+    scoredSizes.sort((final a, final b) => a.totalDistance.compareTo(b.totalDistance));
+
+    final best = scoredSizes.first;
+
+    if (best.worstDistance > _outOfRangeSingleThreshold ||
+        best.totalDistance > _outOfRangeTotalThreshold) {
+      return const FitResult(outOfRange: true);
+    }
+
+    String? alternativeSize;
+    if (scoredSizes.length > 1) {
+      final second = scoredSizes[1];
+      if (second.totalDistance - best.totalDistance < _alternativeThreshold) {
+        alternativeSize = second.size.name;
       }
-
-      if (comparisonCount > 0) {
-        if (perfectCount > bestPerfectCount) {
-          bestPerfectCount = perfectCount;
-        }
-      }
     }
 
-    if (bestPerfectCount == -1) {
-      return null;
-    }
-
-    if (bestPerfectCount <= 1) {
-      return FitStatus.poor;
-    } else if (bestPerfectCount == 2) {
-      return FitStatus.good;
-    } else {
-      return FitStatus.perfect;
-    }
+    return FitResult(
+      recommendedSize: best.size.name,
+      caveats: best.caveats,
+      matchedTypes: best.matchedTypes,
+      alternativeSize: alternativeSize,
+    );
   }
+
+  static _ScoredSize? _scoreSize(
+    final ProductSize size,
+    final Measurements userMeasurements,
+  ) {
+    final sizeMeasurements = size.measurements;
+    if (sizeMeasurements == null) return null;
+
+    double totalDistance = 0;
+    double worstDistance = 0;
+    int comparisonCount = 0;
+    final caveats = <MeasurementCaveat>[];
+    final matchedTypes = <MeasurementType>[];
+
+    for (final type in MeasurementType.values) {
+      final userValue = userMeasurements.getValue(type);
+      final range = sizeMeasurements.getRange(type);
+      if (userValue == null || range == null) continue;
+
+      comparisonCount++;
+      double distance = 0;
+      FitDirection? direction;
+
+      if (userValue >= range.$1 && userValue <= range.$2) {
+        matchedTypes.add(type);
+      } else if (userValue > range.$2) {
+        distance = userValue - range.$2;
+        direction = FitDirection.tight;
+      } else {
+        distance = range.$1 - userValue;
+        direction = FitDirection.loose;
+      }
+
+      if (distance > 0) {
+        caveats.add(
+          MeasurementCaveat(type: type, deviation: distance, direction: direction!),
+        );
+      }
+      totalDistance += distance;
+      if (distance > worstDistance) worstDistance = distance;
+    }
+
+    if (comparisonCount == 0) return null;
+
+    return _ScoredSize(
+      size: size,
+      totalDistance: totalDistance,
+      worstDistance: worstDistance,
+      caveats: caveats,
+      matchedTypes: matchedTypes,
+    );
+  }
+}
+
+class _ScoredSize {
+  const _ScoredSize({
+    required this.size,
+    required this.totalDistance,
+    required this.worstDistance,
+    required this.caveats,
+    required this.matchedTypes,
+  });
+
+  final ProductSize size;
+  final double totalDistance;
+  final double worstDistance;
+  final List<MeasurementCaveat> caveats;
+  final List<MeasurementType> matchedTypes;
 }
