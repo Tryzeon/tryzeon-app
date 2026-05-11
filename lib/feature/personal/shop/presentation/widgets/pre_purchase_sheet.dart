@@ -81,9 +81,7 @@ class PrePurchaseSheet extends StatelessWidget {
             if (fitResult.displayState != FitDisplayState.unknown) ...[
               const SizedBox(height: AppSpacing.md),
               const Divider(),
-              const SizedBox(height: AppSpacing.smMd),
               _FitInfoRow(fitResult: fitResult),
-              const SizedBox(height: AppSpacing.smMd),
               const Divider(),
               const SizedBox(height: AppSpacing.smMd),
             ] else ...[
@@ -192,51 +190,25 @@ class _FitInfoRow extends StatelessWidget {
           }
         : null;
 
-    final content = Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 2),
-          child: Icon(fitResult.iconData, size: 16, color: iconColor),
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(fitResult.iconData, size: 16, color: iconColor),
+      title: Text(
+        fitResult.headline,
+        style: textTheme.titleSmall?.copyWith(
+          color: colorScheme.onSurface,
+          fontWeight: FontWeight.w600,
         ),
-        const SizedBox(width: AppSpacing.smMd),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                fitResult.headline,
-                style: textTheme.titleSmall?.copyWith(
-                  color: colorScheme.onSurface,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                fitResult.subline,
-                style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-              ),
-            ],
-          ),
-        ),
-        if (onTap != null) ...[
-          const SizedBox(width: AppSpacing.sm),
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Icon(
-              Icons.chevron_right_rounded,
-              size: 16,
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ],
-    );
-
-    if (onTap == null) return content;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(onTap: onTap, borderRadius: AppRadius.cardAll, child: content),
+      ),
+      subtitle: Text(
+        fitResult.subline,
+        style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+      ),
+      trailing: onTap != null
+          ? Icon(Icons.chevron_right_rounded, size: 16, color: colorScheme.onSurfaceVariant)
+          : null,
+      onTap: onTap,
+      shape: const RoundedRectangleBorder(borderRadius: AppRadius.cardAll),
     );
   }
 }
