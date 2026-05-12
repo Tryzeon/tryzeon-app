@@ -3,6 +3,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/store/analytics/domain/entities/product_analytics_summary.dart';
+import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
 import 'package:tryzeon/feature/store/products/data/datasources/product_local_datasource.dart';
 import 'package:tryzeon/feature/store/products/data/datasources/product_remote_datasource.dart';
 import 'package:tryzeon/feature/store/products/data/repositories/product_repository_impl.dart';
@@ -96,12 +99,34 @@ Future<List<Product>> products(final Ref ref) async {
   return result.get()!;
 }
 
-/// Applies search and sort entirely in memory.
+/// Applies search and sort (incl. analytics-based sort) entirely in memory.
 @riverpod
 Future<List<Product>> filteredProducts(final Ref ref) async {
   final products = await ref.watch(productsProvider.future);
   final query = ref.watch(productQueryProvider);
-  return filterAndSortProducts(products, query);
+
+  final analyticsAsync = ref.watch(productAnalyticsSummariesProvider);
+  final summaries = analyticsAsync.when(
+    data: (final v) => v,
+    loading: () => const <ProductAnalyticsSummary>[],
+    error: (final e, final st) {
+      AppLogger.warning('Analytics summaries unavailable for sort', e, st);
+      return const <ProductAnalyticsSummary>[];
+    },
+  );
+  final byId = {for (final s in summaries) s.productId: s};
+
+  int lookup(final String productId, final AnalyticsMetric metric) {
+    final summary = byId[productId];
+    if (summary == null) return 0;
+    return switch (metric) {
+      AnalyticsMetric.viewCount => summary.viewCount,
+      AnalyticsMetric.tryOnCount => summary.tryonCount,
+      AnalyticsMetric.purchaseClickCount => summary.purchaseClickCount,
+    };
+  }
+
+  return filterAndSortProducts(products, query, lookup);
 }
 
 @riverpod
