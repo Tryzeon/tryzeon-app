@@ -205,7 +205,11 @@ class _FitInfoRow extends StatelessWidget {
         style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
       ),
       trailing: onTap != null
-          ? Icon(Icons.chevron_right_rounded, size: 16, color: colorScheme.onSurfaceVariant)
+          ? Icon(
+              Icons.chevron_right_rounded,
+              size: 16,
+              color: colorScheme.onSurfaceVariant,
+            )
           : null,
       onTap: onTap,
       shape: const RoundedRectangleBorder(borderRadius: AppRadius.cardAll),
