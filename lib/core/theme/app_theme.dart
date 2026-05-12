@@ -250,6 +250,7 @@ class AppTheme {
       listTileTheme: ListTileThemeData(
         contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
         iconColor: colorScheme.onSurface,
+        selectedColor: colorScheme.onSurface,
       ),
 
       // ── Floating Action Button ───────────────────────────────────────────
