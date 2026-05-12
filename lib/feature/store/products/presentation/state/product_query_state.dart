@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
-import 'package:tryzeon/feature/store/products/domain/value_objects/product_sort_condition.dart';
+import 'package:tryzeon/feature/store/products/presentation/state/product_sort_condition.dart';
 import 'package:tryzeon/feature/store/products/presentation/state/product_sorting.dart';
 
 part 'product_query_state.freezed.dart';

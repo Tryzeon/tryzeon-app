@@ -1,5 +1,5 @@
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
-import 'package:tryzeon/feature/store/products/domain/value_objects/product_sort_condition.dart';
+import 'package:tryzeon/feature/store/products/presentation/state/product_sort_condition.dart';
 
 typedef AnalyticsLookup = int Function(String productId, AnalyticsMetric metric);
 
