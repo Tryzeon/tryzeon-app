@@ -6,6 +6,8 @@ class AppConstants {
   static const String authCallbackUrl = 'com.tryzeon.app://login-callback';
   static const String googleMapsQueryUrl =
       'https://www.google.com/maps/search/?api=1&query=';
+  static const String googleServerClientId =
+      '924030382971-ppc2nttqs2dn977e4b6j79i83g03bk11.apps.googleusercontent.com';
 
   // Supabase Tables
   static const String tableUserProfiles = 'user_profiles';
