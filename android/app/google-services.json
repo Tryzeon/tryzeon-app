@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "924030382971-flj81snin9f918jf0ik5i9alq4u3l7h9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tryzeon.app",
+            "certificate_hash": "ef678cc9eb728a494e0ce444cb51028d868d124c"
+          }
+        },
+        {
           "client_id": "924030382971-ppc2nttqs2dn977e4b6j79i83g03bk11.apps.googleusercontent.com",
           "client_type": 3
         }
