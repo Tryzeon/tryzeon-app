@@ -35,7 +35,7 @@ docs/superpowers
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-/build/
+build/
 /coverage/
 devtools_options.yaml
 
