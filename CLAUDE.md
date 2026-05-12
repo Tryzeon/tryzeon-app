@@ -34,7 +34,7 @@ Code generation is required after editing any annotated file (`@riverpod`, `@fre
 - `lib/main.dart` — bootstraps Firebase, Supabase (PKCE auth flow), RevenueCat, Crashlytics; wraps app in `ProviderScope` with a custom retry policy keyed off `NetworkFailure`.
 - `lib/core/` — cross-feature infrastructure: `router/` (go_router), `theme/` (`AppTheme`, Material 3 ColorScheme), `di/core_providers.dart` (shared Riverpod providers), `error/failures.dart`, `data/`, `domain/`, `modules/` (analytics, location, revenue_cat), `presentation/widgets/` (shared widgets), `extensions/`, `utils/`, `shared/`, `config/`.
 - `lib/feature/` — feature-first modules. Each feature follows clean-architecture layering: `data/` (datasources, repositories, Isar collections, DTOs) → `domain/` (entities, repository interfaces, usecases) → `presentation/` (pages, widgets) plus `providers/` for Riverpod wiring.
-- `lib/feature/auth/` — shared auth (Supabase + Apple/Google/Facebook social sign-in).
+- `lib/feature/auth/` — shared auth (Supabase + Apple/Google social sign-in).
 - `lib/feature/personal/` — consumer side (try-on, wardrobe, chat, shop, profile, subscription, usage, onboarding, settings).
 - `lib/feature/store/` — store-owner side (analytics, products, profile, onboarding, settings).
 - `lib/feature/common/` — shared between personal and store.

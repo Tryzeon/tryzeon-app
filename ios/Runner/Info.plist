@@ -42,23 +42,9 @@
 				<string>com.googleusercontent.apps.924030382971-umbf26kuhgeogllgsp52d9ligcpvnp3l</string>
 			</array>
 		</dict>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>fb822194696967429</string>
-			</array>
-		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
-	<key>FacebookAppID</key>
-	<string>822194696967429</string>
-	<key>FacebookClientToken</key>
-	<string>bdab5a9e7c3abd3947ec73547a21bfb2</string>
-	<key>FacebookDisplayName</key>
-	<string>Tryzeon</string>
 	<key>GIDClientID</key>
 	<string>924030382971-umbf26kuhgeogllgsp52d9ligcpvnp3l.apps.googleusercontent.com</string>
 	<key>GIDServerClientID</key>

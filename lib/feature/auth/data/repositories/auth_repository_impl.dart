@@ -49,9 +49,6 @@ class AuthRepositoryImpl implements AuthRepository {
         case 'google':
           oauthProvider = OAuthProvider.google;
           break;
-        case 'facebook':
-          oauthProvider = OAuthProvider.facebook;
-          break;
         case 'apple':
           oauthProvider = OAuthProvider.apple;
           break;
@@ -63,8 +60,6 @@ class AuthRepositoryImpl implements AuthRepository {
         await _remoteDataSource.signInWithAppleNative();
       } else if (oauthProvider == OAuthProvider.google) {
         await _remoteDataSource.signInWithGoogleNative();
-      } else if (oauthProvider == OAuthProvider.facebook && Platform.isIOS) {
-        await _remoteDataSource.signInWithFacebookNative();
       } else {
         await _remoteDataSource.signInWithOAuthProvider(oauthProvider);
       }

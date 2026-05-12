@@ -37,11 +37,6 @@
 -keep class com.google.api.client.** { *; }
 -dontwarn com.google.android.gms.**
 
-# Facebook Login
--keep class com.facebook.** { *; }
--keepclassmembers class com.facebook.** { *; }
--dontwarn com.facebook.**
-
 # Sign in with Apple (via browser/intent — no native keep needed, but suppress warnings)
 -dontwarn com.aboutyou.dart_packages.**
 
