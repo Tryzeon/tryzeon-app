@@ -5,11 +5,9 @@ import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
-import 'package:tryzeon/feature/store/products/data/mappers/product_sort_field_mapper.dart';
 import 'package:tryzeon/feature/store/products/data/models/create_product_request.dart';
 import 'package:tryzeon/feature/store/products/data/models/create_product_size_request.dart';
 import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
-import 'package:tryzeon/feature/store/products/domain/value_objects/product_sort_condition.dart';
 
 class ProductRemoteDataSource {
   ProductRemoteDataSource(this._supabaseClient);
@@ -19,17 +17,11 @@ class ProductRemoteDataSource {
   static const _productSizesTable = AppConstants.tableProductVariants;
   static const _productImagesBucket = AppConstants.bucketProductImages;
 
-  Future<List<ProductModel>> getProducts({
-    required final String storeId,
-    required final SortCondition sort,
-  }) async {
-    final dbColumn = sort.field.toDbColumn();
-
+  Future<List<ProductModel>> getProducts({required final String storeId}) async {
     final response = await _supabaseClient
         .from(_productsTable)
         .select('*, product_variants(*)')
-        .eq('store_id', storeId)
-        .order(dbColumn, ascending: sort.ascending);
+        .eq('store_id', storeId);
 
     return (response as List).map((final e) {
       return ProductModel.fromJson(_withProductImageUrl(e));

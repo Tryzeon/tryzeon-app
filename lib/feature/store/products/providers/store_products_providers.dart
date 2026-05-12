@@ -78,7 +78,8 @@ class ProductQuery extends _$ProductQuery {
   void reset() => state = const ProductQueryState();
 }
 
-/// Fetches all products for the store with a stable default sort.
+/// Fetches all products for the store. Sorting is applied entirely client-side
+/// in [filteredProductsProvider].
 @riverpod
 Future<List<Product>> products(final Ref ref) async {
   final profile = await ref.watch(storeProfileProvider.future);
@@ -87,10 +88,7 @@ Future<List<Product>> products(final Ref ref) async {
   }
 
   final getProductsUseCase = ref.watch(getProductsUseCaseProvider);
-  final result = await getProductsUseCase(
-    storeId: profile.id,
-    sort: SortCondition.defaultSort,
-  );
+  final result = await getProductsUseCase(storeId: profile.id);
 
   if (result.isFailure) {
     throw result.getError()!;
@@ -136,11 +134,7 @@ Future<void> refreshProducts(final WidgetRef ref) async {
   final getProductsUseCase = ref.read(getProductsUseCaseProvider);
 
   try {
-    await getProductsUseCase(
-      storeId: profile.id,
-      sort: SortCondition.defaultSort,
-      forceRefresh: true,
-    );
+    await getProductsUseCase(storeId: profile.id, forceRefresh: true);
     ref.invalidate(productsProvider);
     await ref.read(productsProvider.future);
   } catch (_) {

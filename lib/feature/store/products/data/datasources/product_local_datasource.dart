@@ -8,7 +8,6 @@ import 'package:tryzeon/core/domain/services/cache_service.dart';
 import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:tryzeon/feature/store/products/data/collections/product_collection.dart';
 import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
-import 'package:tryzeon/feature/store/products/domain/value_objects/product_sort_condition.dart';
 
 class ProductLocalDataSource {
   ProductLocalDataSource(
@@ -53,7 +52,6 @@ class ProductLocalDataSource {
 
   Future<CacheLookup<List<ProductModel>>> getProducts({
     required final String storeId,
-    required final SortCondition sort,
   }) async {
     final isar = await _isarService.db;
     final cacheKey = cacheKeyForStore(storeId);
@@ -70,16 +68,6 @@ class ProductLocalDataSource {
         .findAll();
 
     if (collections.isEmpty) return const CacheMiss();
-
-    collections.sort((final a, final b) {
-      final result = switch (sort.field) {
-        SortField.name => a.name.compareTo(b.name),
-        SortField.price => a.price.compareTo(b.price),
-        SortField.createdAt => a.createdAt.compareTo(b.createdAt),
-        SortField.updatedAt => a.updatedAt.compareTo(b.updatedAt),
-      };
-      return sort.ascending ? result : -result;
-    });
 
     final models = _mappr.convertList<ProductCollection, ProductModel>(collections);
     return CacheHit(models);

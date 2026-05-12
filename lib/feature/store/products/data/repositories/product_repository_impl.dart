@@ -15,7 +15,6 @@ import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
 import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/domain/repositories/product_repository.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
-import 'package:tryzeon/feature/store/products/domain/value_objects/product_sort_condition.dart';
 import 'package:typed_result/typed_result.dart';
 
 class ProductRepositoryImpl implements ProductRepository {
@@ -32,17 +31,13 @@ class ProductRepositoryImpl implements ProductRepository {
   @override
   Future<Result<List<Product>, Failure>> getProducts({
     required final String storeId,
-    final SortCondition sort = SortCondition.defaultSort,
     final bool forceRefresh = false,
   }) async {
     try {
       // 1. Try Local Cache
       if (!forceRefresh) {
         try {
-          final cachedProducts = await _localDataSource.getProducts(
-            storeId: storeId,
-            sort: sort,
-          );
+          final cachedProducts = await _localDataSource.getProducts(storeId: storeId);
           switch (cachedProducts) {
             case CacheHit<List<ProductModel>>(:final data):
               return Ok(_mappr.convertList<ProductModel, Product>(data));
@@ -61,10 +56,7 @@ class ProductRepositoryImpl implements ProductRepository {
       }
 
       // 2. Try Remote
-      final remoteProducts = await _remoteDataSource.getProducts(
-        storeId: storeId,
-        sort: sort,
-      );
+      final remoteProducts = await _remoteDataSource.getProducts(storeId: storeId);
 
       // 3. Update Cache
       try {
