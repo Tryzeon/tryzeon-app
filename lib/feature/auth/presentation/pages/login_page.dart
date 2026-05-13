@@ -7,7 +7,7 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
-import 'package:tryzeon/feature/auth/presentation/widgets/email_otp_bottom_sheet.dart';
+import 'package:tryzeon/feature/auth/presentation/sheets/email_otp_bottom_sheet.dart';
 import 'package:tryzeon/feature/auth/presentation/widgets/identity_segmented_control.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:typed_result/typed_result.dart';

@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
-import 'package:tryzeon/feature/personal/shop/presentation/widgets/video_prompt_customize_sheet.dart';
+import 'package:tryzeon/feature/personal/shop/presentation/sheets/video_prompt_customize_sheet.dart';
 
 class TryOnModeSheet extends StatelessWidget {
   const TryOnModeSheet({
