@@ -63,9 +63,7 @@ class AuthRemoteDataSource {
   Future<void> signInWithGoogleNative() async {
     try {
       final GoogleSignIn googleSignIn = GoogleSignIn.instance;
-      await googleSignIn.initialize(
-        serverClientId: AppConstants.googleServerClientId,
-      );
+      await googleSignIn.initialize(serverClientId: AppConstants.googleServerClientId);
 
       final googleUser = await googleSignIn.authenticate();
       final googleAuth = googleUser.authentication;
