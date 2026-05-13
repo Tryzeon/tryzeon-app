@@ -9,7 +9,7 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_optio
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 
-import '../dialogs/filter_dialog.dart';
+import '../sheets/filter_sheet.dart';
 import '../widgets/ad_banner.dart';
 import '../widgets/product_category_filter.dart';
 import '../widgets/product_grid.dart';
@@ -60,8 +60,8 @@ class ShopPage extends HookConsumerWidget {
       }
     }
 
-    void handleShowFilterDialog() {
-      FilterDialog(
+    void handleShowFilterSheet() {
+      FilterSheet.show(
         context: context,
         minPrice: minPrice.value,
         maxPrice: maxPrice.value,
@@ -114,7 +114,7 @@ class ShopPage extends HookConsumerWidget {
     Widget buildFilterButton() {
       return IconButton.filledTonal(
         icon: const Icon(Icons.filter_list_rounded, size: 18),
-        onPressed: handleShowFilterDialog,
+        onPressed: handleShowFilterSheet,
       );
     }
 

@@ -5,20 +5,31 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 
 const double kMaxPrice = 3000;
 
-class FilterDialog {
-  FilterDialog({
-    required this.context,
+class FilterSheet extends HookConsumerWidget {
+  const FilterSheet({
+    super.key,
     this.minPrice,
     this.maxPrice,
     required this.onApply,
+  });
+
+  final int? minPrice;
+  final int? maxPrice;
+  final void Function(int? minPrice, int? maxPrice) onApply;
+
+  static Future<void> show({
+    required final BuildContext context,
+    final int? minPrice,
+    final int? maxPrice,
+    required final void Function(int? minPrice, int? maxPrice) onApply,
   }) {
-    showModalBottomSheet(
+    return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       useRootNavigator: true,
       showDragHandle: true,
       builder: (final BuildContext context) {
-        return _FilterDialogContent(
+        return FilterSheet(
           minPrice: minPrice,
           maxPrice: maxPrice,
           onApply: onApply,
@@ -26,17 +37,6 @@ class FilterDialog {
       },
     );
   }
-  final BuildContext context;
-  final int? minPrice;
-  final int? maxPrice;
-  final Function(int? minPrice, int? maxPrice) onApply;
-}
-
-class _FilterDialogContent extends HookConsumerWidget {
-  const _FilterDialogContent({this.minPrice, this.maxPrice, required this.onApply});
-  final int? minPrice;
-  final int? maxPrice;
-  final Function(int? minPrice, int? maxPrice) onApply;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
