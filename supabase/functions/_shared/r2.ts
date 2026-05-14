@@ -10,8 +10,8 @@ const validateR2Env = () => {
     "R2_ACCESS_KEY_ID",
     "R2_SECRET_ACCESS_KEY",
     "R2_ENDPOINT",
-    "R2_VIDEOS_BUCKET_NAME",
-    "R2_IMAGES_BUCKET_NAME",
+    "R2_TRYON_VIDEOS_BUCKET_NAME",
+    "R2_TRYON_IMAGES_BUCKET_NAME",
   ];
 
   for (const envVar of requiredVars) {
@@ -64,7 +64,7 @@ async function uploadToR2(
 }
 
 export async function uploadVideoToR2(buffer: ArrayBuffer, fileName: string): Promise<string> {
-  const bucketName = Deno.env.get("R2_VIDEOS_BUCKET_NAME")!;
+  const bucketName = Deno.env.get("R2_TRYON_IMAGES_BUCKET_NAME")!;
   return await uploadToR2(bucketName, fileName, new Uint8Array(buffer), "video/mp4");
 }
 
@@ -73,6 +73,6 @@ export async function uploadImageToR2(
   fileName: string,
   contentType: string,
 ): Promise<string> {
-  const bucketName = Deno.env.get("R2_IMAGES_BUCKET_NAME")!;
+  const bucketName = Deno.env.get("R2_TRYON_IMAGES_BUCKET_NAME")!;
   return await uploadToR2(bucketName, fileName, new Uint8Array(buffer), contentType);
 }
