@@ -286,6 +286,7 @@ class _VideoPlayerItem extends HookWidget {
     return VisibilityDetector(
       key: ValueKey('video-$videoUrl'),
       onVisibilityChanged: (final info) {
+        if (!context.mounted) return;
         visibleFraction.value = info.visibleFraction;
       },
       child: !isInitialized.value
