@@ -32,7 +32,7 @@ class ProductGrid extends HookConsumerWidget {
       storeInfo: const ShopStoreInfo(
         id: 'skeleton_store',
         name: 'Loading Store',
-        channels: {StoreChannel.physical, StoreChannel.online},
+        channels: StoreChannel.all,
       ),
       name: 'Loading Product Name',
       categoryIds: ['Category'],
@@ -47,7 +47,7 @@ class ProductGrid extends HookConsumerWidget {
       storeInfo: const ShopStoreInfo(
         id: 'skeleton_store',
         name: 'Loading Store',
-        channels: {StoreChannel.physical, StoreChannel.online},
+        channels: StoreChannel.all,
       ),
       name: 'Loading Product Name',
       categoryIds: ['Category'],
@@ -62,7 +62,7 @@ class ProductGrid extends HookConsumerWidget {
       storeInfo: const ShopStoreInfo(
         id: 'skeleton_store',
         name: 'Loading Store',
-        channels: {StoreChannel.physical, StoreChannel.online},
+        channels: StoreChannel.all,
       ),
       name: 'Loading Product Name',
       categoryIds: ['Category'],
@@ -77,7 +77,7 @@ class ProductGrid extends HookConsumerWidget {
       storeInfo: const ShopStoreInfo(
         id: 'skeleton_store',
         name: 'Loading Store',
-        channels: {StoreChannel.physical, StoreChannel.online},
+        channels: StoreChannel.all,
       ),
       name: 'Loading Product Name',
       categoryIds: ['Category'],

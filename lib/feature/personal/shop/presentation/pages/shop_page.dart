@@ -43,10 +43,7 @@ class ShopPage extends HookConsumerWidget {
     final maxPrice = useState<int?>(null);
     final searchQuery = useState<String?>(null);
 
-    final channels = useState<Set<StoreChannel>>({
-      StoreChannel.physical,
-      StoreChannel.online,
-    });
+    final channels = useState<Set<StoreChannel>>(StoreChannel.all);
 
     final selectedRootId = useState<String?>(null);
     final selectedSubcategoryIds = useState<Set<String>>({});

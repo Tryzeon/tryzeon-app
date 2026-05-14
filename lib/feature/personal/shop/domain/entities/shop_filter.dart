@@ -14,8 +14,7 @@ sealed class ShopFilter with _$ShopFilter {
     final int? minPrice,
     final int? maxPrice,
     final Set<String>? categories,
-    @Default(<StoreChannel>{StoreChannel.physical, StoreChannel.online})
-    final Set<StoreChannel> channels,
+    @Default(StoreChannel.all) final Set<StoreChannel> channels,
 
     /// 使用者位置（用於附近店家排序）
     final UserLocation? userLocation,

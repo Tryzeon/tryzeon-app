@@ -68,7 +68,7 @@ class FilterSheet extends HookWidget {
       currentMinPrice.value = null;
       currentMaxPrice.value = null;
       priceRange.value = const RangeValues(0, kMaxPrice);
-      selectedChannels.value = StoreChannel.values.toSet();
+      selectedChannels.value = {...StoreChannel.all};
       onApply(null, null, selectedChannels.value);
     }
 

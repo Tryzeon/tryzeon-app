@@ -8,6 +8,8 @@ enum StoreChannel {
   final String code;
   final String label;
 
+  static const Set<StoreChannel> all = {physical, online};
+
   static StoreChannel? fromCode(final String code) {
     for (final c in values) {
       if (c.code == code) return c;

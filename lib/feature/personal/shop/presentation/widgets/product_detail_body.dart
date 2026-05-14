@@ -30,7 +30,7 @@ class ProductDetailBody extends HookConsumerWidget {
     storeInfo: const ShopStoreInfo(
       id: 'skeleton_store',
       name: 'Loading Store Name',
-      channels: {StoreChannel.physical, StoreChannel.online},
+      channels: StoreChannel.all,
       address: 'Loading Store Address',
     ),
     name: 'Loading Product Name here that is long',
