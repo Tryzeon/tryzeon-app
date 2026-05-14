@@ -1,57 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
+import 'package:tryzeon/feature/personal/shop/providers/shop_filter_provider.dart';
 
 const double kMaxPrice = 3000;
 
-class FilterSheet extends HookWidget {
-  const FilterSheet({
-    super.key,
-    this.minPrice,
-    this.maxPrice,
-    required this.channels,
-    required this.onApply,
-  });
+class FilterSheet extends HookConsumerWidget {
+  const FilterSheet({super.key});
 
-  final int? minPrice;
-  final int? maxPrice;
-  final Set<StoreChannel> channels;
-  final void Function(int? minPrice, int? maxPrice, Set<StoreChannel> channels) onApply;
-
-  static Future<void> show({
-    required final BuildContext context,
-    final int? minPrice,
-    final int? maxPrice,
-    required final Set<StoreChannel> channels,
-    required final void Function(int? minPrice, int? maxPrice, Set<StoreChannel> channels)
-    onApply,
-  }) {
+  static Future<void> show({required final BuildContext context}) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       useRootNavigator: true,
       showDragHandle: true,
-      builder: (final BuildContext context) {
-        return FilterSheet(
-          minPrice: minPrice,
-          maxPrice: maxPrice,
-          channels: channels,
-          onApply: onApply,
-        );
-      },
+      builder: (final BuildContext context) => const FilterSheet(),
     );
   }
 
   @override
-  Widget build(final BuildContext context) {
-    final initialMin = minPrice?.toDouble() ?? 0;
-    final initialMax = maxPrice?.toDouble() ?? kMaxPrice;
+  Widget build(final BuildContext context, final WidgetRef ref) {
+    final initial = useMemoized(() => ref.read(shopFilterProvider));
 
-    final priceRange = useState(RangeValues(initialMin, initialMax));
-    final currentMinPrice = useState(minPrice);
-    final currentMaxPrice = useState(maxPrice);
-    final selectedChannels = useState<Set<StoreChannel>>({...channels});
+    final priceRange = useState(
+      RangeValues(
+        initial.minPrice?.toDouble() ?? 0,
+        initial.maxPrice?.toDouble() ?? kMaxPrice,
+      ),
+    );
+    final currentMinPrice = useState(initial.minPrice);
+    final currentMaxPrice = useState(initial.maxPrice);
+    final selectedChannels = useState<Set<StoreChannel>>({...initial.channels});
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
@@ -60,8 +41,12 @@ class FilterSheet extends HookWidget {
 
     void applyFilters() {
       if (!canApply) return;
-      onApply(currentMinPrice.value, currentMaxPrice.value, selectedChannels.value);
-      Navigator.pop(context);
+      ref
+          .read(shopFilterProvider.notifier)
+          .setPriceRange(min: currentMinPrice.value, max: currentMaxPrice.value);
+
+      ref.read(shopFilterProvider.notifier).setChannels(selectedChannels.value);
+      Navigator.of(context, rootNavigator: true).pop();
     }
 
     void resetFilters() {
@@ -69,7 +54,7 @@ class FilterSheet extends HookWidget {
       currentMaxPrice.value = null;
       priceRange.value = const RangeValues(0, kMaxPrice);
       selectedChannels.value = {...StoreChannel.all};
-      onApply(null, null, selectedChannels.value);
+      ref.read(shopFilterProvider.notifier).reset();
     }
 
     return Container(

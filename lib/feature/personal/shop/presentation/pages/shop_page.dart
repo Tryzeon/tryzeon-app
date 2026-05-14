@@ -4,10 +4,9 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
-import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
-import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
+import 'package:tryzeon/feature/personal/shop/providers/shop_filter_provider.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 
 import '../sheets/filter_sheet.dart';
@@ -30,51 +29,35 @@ class ShopPage extends HookConsumerWidget {
 
     final adsAsync = ref.watch(shopAdsProvider);
 
-    // 取得使用者位置（用於附近店家排序）
+    // 使用者位置（附近店家排序用）
     final userLocationAsync = ref.watch(userLocationProvider);
     final userLocation = userLocationAsync.maybeWhen(
       data: (final location) => location,
       orElse: () => null,
     );
 
-    // 過濾和排序狀態
-    final sortOption = useState(ProductSortOption.latest);
-    final minPrice = useState<int?>(null);
-    final maxPrice = useState<int?>(null);
-    final searchQuery = useState<String?>(null);
-
-    final channels = useState<Set<StoreChannel>>(StoreChannel.all);
+    // 篩選/排序狀態
+    final filterState = ref.watch(shopFilterProvider);
+    final filterNotifier = ref.read(shopFilterProvider.notifier);
 
     final selectedRootId = useState<String?>(null);
-    final selectedSubcategoryIds = useState<Set<String>>({});
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     void handleSortByLatest() {
-      sortOption.value = ProductSortOption.latest;
+      filterNotifier.setSort(ProductSortOption.latest);
     }
 
     void handleSortByPrice() {
-      if (sortOption.value == ProductSortOption.priceLowToHigh) {
-        sortOption.value = ProductSortOption.priceHighToLow;
-      } else {
-        sortOption.value = ProductSortOption.priceLowToHigh;
-      }
+      final next = filterState.sortOption == ProductSortOption.priceLowToHigh
+          ? ProductSortOption.priceHighToLow
+          : ProductSortOption.priceLowToHigh;
+      filterNotifier.setSort(next);
     }
 
     void handleShowFilterSheet() {
-      FilterSheet.show(
-        context: context,
-        minPrice: minPrice.value,
-        maxPrice: maxPrice.value,
-        channels: channels.value,
-        onApply: (final newMin, final newMax, final newChannels) {
-          minPrice.value = newMin;
-          maxPrice.value = newMax;
-          channels.value = newChannels;
-        },
-      );
+      FilterSheet.show(context: context);
     }
 
     Widget buildSortButton({
@@ -93,7 +76,7 @@ class ShopPage extends HookConsumerWidget {
     }
 
     Widget buildComprehensiveSortButton() {
-      final isActive = sortOption.value == ProductSortOption.latest;
+      final isActive = filterState.sortOption == ProductSortOption.latest;
       return buildSortButton(
         label: '綜合',
         icon: Icons.emoji_events_outlined,
@@ -104,9 +87,9 @@ class ShopPage extends HookConsumerWidget {
 
     Widget buildPriceSortButton() {
       final isActive =
-          sortOption.value == ProductSortOption.priceLowToHigh ||
-          sortOption.value == ProductSortOption.priceHighToLow;
-      final isAscending = sortOption.value == ProductSortOption.priceLowToHigh;
+          filterState.sortOption == ProductSortOption.priceLowToHigh ||
+          filterState.sortOption == ProductSortOption.priceHighToLow;
+      final isAscending = filterState.sortOption == ProductSortOption.priceLowToHigh;
 
       return buildSortButton(
         label: '價格',
@@ -123,16 +106,7 @@ class ShopPage extends HookConsumerWidget {
       );
     }
 
-    final filter = ShopFilter(
-      searchQuery: searchQuery.value,
-      sortOption: sortOption.value,
-      minPrice: minPrice.value,
-      maxPrice: maxPrice.value,
-      categories: selectedSubcategoryIds.value,
-      channels: channels.value,
-      userLocation: userLocation,
-    );
-
+    final filter = filterState.copyWith(userLocation: userLocation);
     final productsAsync = ref.watch(shopProductsProvider(filter));
 
     return Scaffold(
@@ -167,7 +141,7 @@ class ShopPage extends HookConsumerWidget {
                               ),
                               child: ShopSearchBar(
                                 onSearch: (final query) async {
-                                  searchQuery.value = query.isEmpty ? null : query;
+                                  filterNotifier.setSearch(query);
                                 },
                               ),
                             ),
@@ -181,24 +155,24 @@ class ShopPage extends HookConsumerWidget {
                             ProductCategoryFilter(
                               categoryTreeAsync: productCategoryTreeAsync,
                               selectedRootId: selectedRootId.value,
-                              selectedSubcategoryIds: selectedSubcategoryIds.value,
+                              selectedSubcategoryIds: filterState.categories ?? {},
                               onRootSelected: (final rootId) {
                                 selectedRootId.value = rootId;
-                                selectedSubcategoryIds.value = {};
+                                filterNotifier.setCategories({});
                               },
                               onSubcategoryToggle: (final subcategoryId) {
-                                if (selectedSubcategoryIds.value.contains(
-                                  subcategoryId,
-                                )) {
-                                  selectedSubcategoryIds.value = selectedSubcategoryIds
-                                      .value
-                                      .where((final id) => id != subcategoryId)
-                                      .toSet();
+                                final current = filterState.categories ?? {};
+                                if (current.contains(subcategoryId)) {
+                                  filterNotifier.setCategories(
+                                    current
+                                        .where((final id) => id != subcategoryId)
+                                        .toSet(),
+                                  );
                                 } else {
-                                  selectedSubcategoryIds.value = {
-                                    ...selectedSubcategoryIds.value,
+                                  filterNotifier.setCategories({
+                                    ...current,
                                     subcategoryId,
-                                  };
+                                  });
                                 }
                               },
                               onRetry: () {
