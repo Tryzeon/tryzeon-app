@@ -106,13 +106,17 @@ class StorePage extends HookConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         CircleAvatar(
-                          radius: 36,
+                          radius: 32,
                           backgroundColor: colorScheme.surfaceContainerHighest,
                           backgroundImage: storeInfo.logoUrl != null
                               ? CachedNetworkImageProvider(storeInfo.logoUrl!)
                               : null,
                           child: storeInfo.logoUrl == null
-                              ? Icon(Icons.store, size: 36, color: colorScheme.primary)
+                              ? Icon(
+                                  Icons.store,
+                                  size: 28,
+                                  color: colorScheme.onSurfaceVariant,
+                                )
                               : null,
                         ),
                         const SizedBox(width: AppSpacing.md),
@@ -120,17 +124,27 @@ class StorePage extends HookConsumerWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(storeInfo.name, style: textTheme.headlineLarge),
+                              Text(
+                                storeInfo.name,
+                                style: textTheme.displaySmall,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                               if (storeInfo.channels.isNotEmpty) ...[
                                 const SizedBox(height: AppSpacing.sm),
                                 Wrap(
-                                  spacing: AppSpacing.xs,
-                                  runSpacing: AppSpacing.xs,
+                                  spacing: AppSpacing.sm,
+                                  runSpacing: AppSpacing.sm,
                                   children: StoreChannel.values
                                       .where(storeInfo.channels.contains)
                                       .map(
-                                        (final channel) =>
-                                            Chip(label: Text(channel.label)),
+                                        (final channel) => Chip(
+                                          label: Text(channel.label),
+                                          labelStyle: textTheme.labelMedium,
+                                          visualDensity: VisualDensity.compact,
+                                          materialTapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
+                                        ),
                                       )
                                       .toList(),
                                 ),
@@ -138,31 +152,41 @@ class StorePage extends HookConsumerWidget {
                               if (storeInfo.address != null &&
                                   storeInfo.address!.isNotEmpty) ...[
                                 const SizedBox(height: AppSpacing.sm),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.location_on_outlined,
-                                      size: 18,
-                                      color: colorScheme.onSurfaceVariant,
+                                InkWell(
+                                  onTap: () => handleOpenMap(storeInfo.address!),
+                                  borderRadius: AppRadius.buttonAll,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: AppSpacing.xs,
+                                      horizontal: AppSpacing.xs,
                                     ),
-                                    const SizedBox(width: AppSpacing.sm),
-                                    Flexible(
-                                      child: Text(
-                                        storeInfo.address!,
-                                        style: textTheme.bodyMedium,
-                                      ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.location_on_outlined,
+                                          size: 14,
+                                          color: colorScheme.onSurfaceVariant,
+                                        ),
+                                        const SizedBox(width: AppSpacing.sm),
+                                        Expanded(
+                                          child: Text(
+                                            storeInfo.address!,
+                                            style: textTheme.bodyMedium?.copyWith(
+                                              color: colorScheme.onSurfaceVariant,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        const SizedBox(width: AppSpacing.xs),
+                                        Icon(
+                                          Icons.north_east,
+                                          size: 12,
+                                          color: colorScheme.onSurfaceVariant,
+                                        ),
+                                      ],
                                     ),
-                                    IconButton(
-                                      onPressed: () => handleOpenMap(storeInfo.address!),
-                                      icon: Icon(
-                                        Icons.open_in_new,
-                                        size: 16,
-                                        color: colorScheme.onSurfaceVariant,
-                                      ),
-                                      constraints: const BoxConstraints(),
-                                      padding: const EdgeInsets.all(AppSpacing.xs),
-                                    ),
-                                  ],
+                                  ),
                                 ),
                               ],
                             ],
