@@ -1,6 +1,6 @@
-import 'dart:convert';
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
@@ -71,30 +71,12 @@ class TryOnGallery extends HookWidget {
               }
 
               if (result.mode == TryOnMode.image) {
-                final imageBase64 = result.imageBase64;
-                if (imageBase64 == null) {
-                  return Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.broken_image_outlined,
-                          size: 48,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Image unavailable',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
+                final imageUrl = result.imageUrl;
+                if (imageUrl == null || imageUrl.isEmpty) {
+                  return const Center(child: Text('Image unavailable'));
                 }
 
-                return _ImageItem(imageBase64: imageBase64);
+                return _ImageItem(imageUrl: imageUrl);
               }
 
               return const Center(child: Text('Invalid TryOn Result'));
@@ -187,13 +169,9 @@ class _SkeletonItem extends HookWidget {
 }
 
 class _ImageItem extends HookWidget {
-  const _ImageItem({
-    this.imageBase64,
-    this.imageProvider,
-    this.showLoadingOverlay = false,
-  });
+  const _ImageItem({this.imageUrl, this.imageProvider, this.showLoadingOverlay = false});
 
-  final String? imageBase64;
+  final String? imageUrl;
   final ImageProvider? imageProvider;
   final bool showLoadingOverlay;
 
@@ -201,24 +179,34 @@ class _ImageItem extends HookWidget {
   Widget build(final BuildContext context) {
     useAutomaticKeepAlive();
 
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    final finalImageProvider = useMemoized(() {
-      if (imageProvider != null) {
-        return imageProvider!;
-      }
-      if (imageBase64 != null) {
-        final imageBytes = base64Decode(imageBase64!);
-        return MemoryImage(imageBytes);
-      }
-      throw Exception('Either imageBase64 or imageProvider must be provided');
-    }, [imageBase64, imageProvider]);
+    Widget imageWidget;
+    if (imageProvider != null) {
+      imageWidget = Image(
+        image: imageProvider!,
+        fit: BoxFit.cover,
+        gaplessPlayback: true,
+      );
+    } else if (imageUrl != null) {
+      imageWidget = CachedNetworkImage(
+        imageUrl: imageUrl!,
+        fit: BoxFit.cover,
+        fadeInDuration: Duration.zero,
+        fadeOutDuration: Duration.zero,
+        placeholder: (final context, final url) =>
+            const Center(child: CircularProgressIndicator()),
+        errorWidget: (final context, final url, final error) =>
+            const Center(child: Icon(Icons.broken_image_outlined)),
+      );
+    } else {
+      throw Exception('Either imageUrl or imageProvider must be provided');
+    }
 
     return Stack(
       fit: StackFit.expand,
       children: [
-        Image(image: finalImageProvider, fit: BoxFit.cover, gaplessPlayback: true),
+        imageWidget,
         if (showLoadingOverlay)
           ColoredBox(
             color: colorScheme.scrim.withValues(alpha: AppOpacity.overlay),

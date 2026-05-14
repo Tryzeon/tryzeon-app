@@ -6,6 +6,7 @@ import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gal/gal.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -108,6 +109,11 @@ class HomePage extends HookConsumerWidget {
       }
     }
 
+    Future<Uint8List> downloadBytes(final String url) async {
+      final file = await DefaultCacheManager().getSingleFile(url);
+      return file.readAsBytes();
+    }
+
     Future<void> performTryOn({
       final List<String>? clothesBase64s,
       final List<String>? clothesPaths,
@@ -119,7 +125,20 @@ class HomePage extends HookConsumerWidget {
         return;
       }
 
-      final customAvatarBase64 = galleryState.customAvatarResult?.imageBase64;
+      String? customAvatarBase64;
+      final customAvatarUrl = galleryState.customAvatarResult?.imageUrl;
+      if (customAvatarUrl != null && customAvatarUrl.isNotEmpty) {
+        try {
+          final bytes = await downloadBytes(customAvatarUrl);
+          customAvatarBase64 = base64Encode(bytes);
+        } catch (e, stackTrace) {
+          AppLogger.error('Failed to download custom avatar', e, stackTrace);
+          if (context.mounted) {
+            TopNotification.show(context, message: '無法載入照片，請重新試穿');
+          }
+          return;
+        }
+      }
 
       final requestId = UniqueKey().toString();
       final placeholderResult = TryonResult(id: requestId, mode: mode, isLoading: true);
@@ -193,7 +212,8 @@ class HomePage extends HookConsumerWidget {
     }
 
     Future<void> downloadVideo(final TryonResult result) async {
-      if (result.videoUrl == null) {
+      final videoUrl = result.videoUrl;
+      if (videoUrl == null || videoUrl.isEmpty) {
         throw Exception('Video URL is missing');
       }
 
@@ -222,11 +242,12 @@ class HomePage extends HookConsumerWidget {
     }
 
     Future<void> downloadImage(final TryonResult result) async {
-      if (result.imageBase64 == null) {
-        throw Exception('Image data is null');
+      final imageUrl = result.imageUrl;
+      if (imageUrl == null || imageUrl.isEmpty) {
+        throw Exception('Image URL is missing');
       }
 
-      final originalBytes = base64Decode(result.imageBase64!);
+      final originalBytes = await downloadBytes(imageUrl);
       Uint8List imageToSave = originalBytes;
 
       final capabilities = await ref.read(subscriptionCapabilitiesProvider.future);
