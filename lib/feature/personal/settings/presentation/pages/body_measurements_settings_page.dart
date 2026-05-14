@@ -228,6 +228,7 @@ class _MeasurementField extends StatelessWidget {
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
       validator: AppValidators.validateMeasurement,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       decoration: InputDecoration(labelText: type.label, suffixText: 'cm'),
     );
   }

@@ -84,6 +84,7 @@ class _PersonalProfileForm extends HookConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: Form(
         key: formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
