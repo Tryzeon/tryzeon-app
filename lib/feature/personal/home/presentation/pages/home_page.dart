@@ -322,8 +322,8 @@ class HomePage extends HookConsumerWidget {
                     pageController: pageController,
                     onPageChanged: (final index) {
                       final resultIndex = index - 1;
-                      final id = (resultIndex >= 0 &&
-                              resultIndex < galleryState.images.length)
+                      final id =
+                          (resultIndex >= 0 && resultIndex < galleryState.images.length)
                           ? galleryState.images[resultIndex].id
                           : null;
                       galleryNotifier.setCurrentId(id);

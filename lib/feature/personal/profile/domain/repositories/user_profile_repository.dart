@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:tryzeon/core/error/failures.dart';
-import 'package:tryzeon/core/shared/clothing_style/entities/clothing_style.dart';
-import 'package:tryzeon/core/shared/measurements/entities/measurements.dart';
+import 'package:tryzeon/feature/common/clothing_style/entities/clothing_style.dart';
+import 'package:tryzeon/feature/common/measurements/entities/measurements.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:typed_result/typed_result.dart';

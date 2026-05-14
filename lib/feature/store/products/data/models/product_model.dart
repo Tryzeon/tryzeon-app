@@ -1,7 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:tryzeon/core/shared/product_size/data/models/product_size_model.dart';
+import 'package:tryzeon/feature/common/product_size/data/models/product_size_model.dart';
 
-export 'package:tryzeon/core/shared/product_size/data/models/product_size_model.dart';
+export 'package:tryzeon/feature/common/product_size/data/models/product_size_model.dart';
 
 part 'product_model.g.dart';
 

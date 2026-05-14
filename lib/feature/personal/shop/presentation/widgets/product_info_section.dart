@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tryzeon/core/shared/product_attributes/presentation/product_attributes_extensions.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/common/product_attributes/presentation/product_attributes_extensions.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 
 class ProductInfoSection extends StatelessWidget {

@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:tryzeon/core/shared/measurements/data/models/measurements_model.dart';
+import 'package:tryzeon/feature/common/measurements/data/models/measurements_model.dart';
 
 part 'user_profile_model.g.dart';
 

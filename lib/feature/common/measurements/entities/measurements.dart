@@ -1,7 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:tryzeon/core/shared/measurements/entities/measurement_type.dart';
+import 'package:tryzeon/feature/common/measurements/entities/measurement_type.dart';
 
-export 'package:tryzeon/core/shared/measurements/entities/measurement_type.dart';
+export 'package:tryzeon/feature/common/measurements/entities/measurement_type.dart';
 
 part 'measurements.freezed.dart';
 part 'measurements.g.dart';

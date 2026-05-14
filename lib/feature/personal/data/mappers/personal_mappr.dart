@@ -1,9 +1,9 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
 
-import '../../../../core/shared/clothing_style/entities/clothing_style.dart';
-import '../../../../core/shared/measurements/data/mappers/measurements_mappr.dart';
-import '../../../../core/shared/product_attributes/entities/product_attributes.dart';
-import '../../../../core/shared/product_size/entities/product_size.dart';
+import '../../../../feature/common/clothing_style/entities/clothing_style.dart';
+import '../../../../feature/common/measurements/data/mappers/measurements_mappr.dart';
+import '../../../../feature/common/product_attributes/entities/product_attributes.dart';
+import '../../../../feature/common/product_size/entities/product_size.dart';
 import '../../../../feature/store/products/data/models/product_model.dart';
 import '../../../common/store/domain/entities/store_channel.dart';
 import '../../profile/data/collections/user_profile_collection.dart';

@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:tryzeon/core/shared/product_size/data/models/product_size_model.dart';
+import 'package:tryzeon/feature/common/product_size/data/models/product_size_model.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_store_info_model.dart';
 
 part 'shop_product_model.g.dart';

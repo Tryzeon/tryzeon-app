@@ -47,14 +47,8 @@ class TryOnMoreOptionsButton extends StatelessWidget {
                         ? Icons.person_off_outlined
                         : Icons.person_outline_rounded,
                   ),
-                  title: Text(
-                    isCurrentTheAvatar ? '取消我的形象' : '設為我的形象',
-                  ),
-                  subtitle: Text(
-                    isCurrentTheAvatar
-                        ? '取消使用此照片作為試穿形象'
-                        : '使用此照片作為試穿形象',
-                  ),
+                  title: Text(isCurrentTheAvatar ? '取消我的形象' : '設為我的形象'),
+                  subtitle: Text(isCurrentTheAvatar ? '取消使用此照片作為試穿形象' : '使用此照片作為試穿形象'),
                   onTap: () {
                     Navigator.pop(context);
                     onToggleAvatar();

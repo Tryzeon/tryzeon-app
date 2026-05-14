@@ -21,12 +21,10 @@ sealed class TryonGalleryState with _$TryonGalleryState {
   TryonResult? get customAvatarResult =>
       images.where((final r) => r.id == customAvatarId).firstOrNull;
 
-  int get currentIndex => currentId == null
-      ? -1
-      : images.indexWhere((final r) => r.id == currentId);
+  int get currentIndex =>
+      currentId == null ? -1 : images.indexWhere((final r) => r.id == currentId);
 
-  bool get isCurrentTheAvatar =>
-      customAvatarId != null && customAvatarId == currentId;
+  bool get isCurrentTheAvatar => customAvatarId != null && customAvatarId == currentId;
 }
 
 @riverpod
@@ -79,9 +77,7 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
   void toggleAvatarForCurrent() {
     final id = state.currentId;
     if (id == null) return;
-    state = state.copyWith(
-      customAvatarId: state.customAvatarId == id ? null : id,
-    );
+    state = state.copyWith(customAvatarId: state.customAvatarId == id ? null : id);
   }
 
   void deleteCurrent() {

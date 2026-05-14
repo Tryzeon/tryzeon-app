@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tryzeon/core/shared/product_attributes/entities/product_attributes.dart';
-import 'package:tryzeon/core/shared/product_attributes/presentation/product_attributes_extensions.dart';
+import 'package:tryzeon/feature/common/product_attributes/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/product_attributes/presentation/product_attributes_extensions.dart';
 
 class ProductThicknessSelector extends StatelessWidget {
   const ProductThicknessSelector({super.key, required this.selectedThickness});
