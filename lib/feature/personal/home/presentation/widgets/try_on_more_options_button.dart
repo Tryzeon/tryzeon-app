@@ -5,12 +5,14 @@ class TryOnMoreOptionsButton extends StatelessWidget {
   const TryOnMoreOptionsButton({
     super.key,
     required this.isCurrentTheAvatar,
+    required this.canSetAsAvatar,
     required this.onDownload,
     required this.onToggleAvatar,
     required this.onDelete,
   });
 
   final bool isCurrentTheAvatar;
+  final bool canSetAsAvatar;
   final VoidCallback onDownload;
   final VoidCallback onToggleAvatar;
   final VoidCallback onDelete;
@@ -41,19 +43,20 @@ class TryOnMoreOptionsButton extends StatelessWidget {
                     onDownload();
                   },
                 ),
-                ListTile(
-                  leading: Icon(
-                    isCurrentTheAvatar
-                        ? Icons.person_off_outlined
-                        : Icons.person_outline_rounded,
+                if (canSetAsAvatar)
+                  ListTile(
+                    leading: Icon(
+                      isCurrentTheAvatar
+                          ? Icons.person_off_outlined
+                          : Icons.person_outline_rounded,
+                    ),
+                    title: Text(isCurrentTheAvatar ? '取消我的形象' : '設為我的形象'),
+                    subtitle: Text(isCurrentTheAvatar ? '取消使用此照片作為試穿形象' : '使用此照片作為試穿形象'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      onToggleAvatar();
+                    },
                   ),
-                  title: Text(isCurrentTheAvatar ? '取消我的形象' : '設為我的形象'),
-                  subtitle: Text(isCurrentTheAvatar ? '取消使用此照片作為試穿形象' : '使用此照片作為試穿形象'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    onToggleAvatar();
-                  },
-                ),
                 ListTile(
                   leading: const Icon(Icons.delete_outline_rounded),
                   title: const Text('刪除此試穿'),

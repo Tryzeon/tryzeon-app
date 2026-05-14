@@ -391,6 +391,7 @@ class HomePage extends HookConsumerWidget {
                     const SizedBox(width: AppSpacing.sm),
                     TryOnMoreOptionsButton(
                       isCurrentTheAvatar: isCurrentTheAvatar,
+                      canSetAsAvatar: currentResult.mode == TryOnMode.image,
                       onDownload: downloadCurrentMedia,
                       onToggleAvatar: toggleAvatar,
                       onDelete: deleteCurrentTryon,
