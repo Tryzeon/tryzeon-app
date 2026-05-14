@@ -1,4 +1,5 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 
 import '../../../../core/shared/clothing_style/entities/clothing_style.dart';
 import '../../../../core/shared/measurements/data/mappers/measurements_mappr.dart';
@@ -45,9 +46,13 @@ import 'store_mappr.auto_mappr.dart';
     MapType<ProductModel, ProductCollection>(fields: [Field('productId', from: 'id')]),
     MapType<ProductCollection, ProductModel>(fields: [Field('id', from: 'productId')]),
 
-    // StoreProfile mappings
-    MapType<StoreProfileModel, StoreProfile>(),
-    MapType<StoreProfile, StoreProfileModel>(),
+    // StoreProfile mappings — convert channels at Model ↔ Entity boundary
+    MapType<StoreProfileModel, StoreProfile>(
+      fields: [Field('channels', custom: StoreMapprHelper.codesToChannelSet)],
+    ),
+    MapType<StoreProfile, StoreProfileModel>(
+      fields: [Field('channels', custom: StoreMapprHelper.channelSetToCodes)],
+    ),
     MapType<StoreProfileModel, StoreProfileCollection>(
       fields: [Field('storeId', from: 'id')],
     ),
@@ -90,4 +95,10 @@ class StoreMapprHelper {
 
   static List<String>? seasonsToStrings(final Product source) =>
       source.seasons?.map((final e) => e.value).toList();
+
+  static Set<StoreChannel> codesToChannelSet(final StoreProfileModel source) =>
+      StoreChannel.setFromCodes(source.channels);
+
+  static List<String> channelSetToCodes(final StoreProfile source) =>
+      StoreChannel.codesFromSet(source.channels);
 }

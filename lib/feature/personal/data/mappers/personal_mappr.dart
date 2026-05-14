@@ -5,6 +5,7 @@ import '../../../../core/shared/measurements/data/mappers/measurements_mappr.dar
 import '../../../../core/shared/product_attributes/entities/product_attributes.dart';
 import '../../../../core/shared/product_size/entities/product_size.dart';
 import '../../../../feature/store/products/data/models/product_model.dart';
+import '../../../common/store/domain/entities/store_channel.dart';
 import '../../profile/data/collections/user_profile_collection.dart';
 import '../../profile/data/models/user_profile_model.dart';
 import '../../profile/domain/entities/gender.dart';
@@ -73,7 +74,9 @@ import 'personal_mappr.auto_mappr.dart';
     ),
 
     // ShopStoreInfo mappings (read-only for consumer)
-    MapType<ShopStoreInfoModel, ShopStoreInfo>(),
+    MapType<ShopStoreInfoModel, ShopStoreInfo>(
+      fields: [Field('channels', custom: ShopStoreInfoMapprHelper.codesToChannelSet)],
+    ),
 
     // ProductSize mappings (needed for ShopProduct.sizes)
     MapType<ProductSizeModel, ProductSize>(),
@@ -114,6 +117,11 @@ class ShopProductMapprHelper {
   static List<ClothingStyle>? stylesFromProductModelStrings(
     final ShopProductModel source,
   ) => ClothingStyle.listFromStrings(source.styles);
+}
+
+class ShopStoreInfoMapprHelper {
+  static Set<StoreChannel> codesToChannelSet(final ShopStoreInfoModel source) =>
+      StoreChannel.setFromCodes(source.channels);
 }
 
 class UserProfileMapprHelper {
