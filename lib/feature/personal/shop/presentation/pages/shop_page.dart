@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
@@ -42,6 +43,11 @@ class ShopPage extends HookConsumerWidget {
     final maxPrice = useState<int?>(null);
     final searchQuery = useState<String?>(null);
 
+    final channels = useState<Set<StoreChannel>>({
+      StoreChannel.physical,
+      StoreChannel.online,
+    });
+
     final selectedRootId = useState<String?>(null);
     final selectedSubcategoryIds = useState<Set<String>>({});
 
@@ -65,9 +71,11 @@ class ShopPage extends HookConsumerWidget {
         context: context,
         minPrice: minPrice.value,
         maxPrice: maxPrice.value,
-        onApply: (final newMin, final newMax) {
+        channels: channels.value,
+        onApply: (final newMin, final newMax, final newChannels) {
           minPrice.value = newMin;
           maxPrice.value = newMax;
+          channels.value = newChannels;
         },
       );
     }
@@ -124,6 +132,7 @@ class ShopPage extends HookConsumerWidget {
       minPrice: minPrice.value,
       maxPrice: maxPrice.value,
       categories: selectedSubcategoryIds.value,
+      channels: channels.value,
       userLocation: userLocation,
     );
 

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
@@ -12,6 +13,7 @@ import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/core/utils/validators.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
 import 'package:typed_result/typed_result.dart';
@@ -62,11 +64,15 @@ class _StoreProfileForm extends HookConsumerWidget {
     final storeName = useValueListenable(storeNameController).text;
     final storeAddress = useValueListenable(storeAddressController).text;
     final newLogo = newLogoImage.value;
+    final selectedChannels = useState<Set<StoreChannel>>(profile.channels);
+
+    final channelsChanged = !setEquals(selectedChannels.value, profile.channels);
 
     final hasChanges =
         storeName.trim() != profile.name ||
-        storeAddress.trim() != profile.address ||
-        newLogo != null;
+        storeAddress.trim() != (profile.address ?? '') ||
+        newLogo != null ||
+        channelsChanged;
 
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -77,9 +83,11 @@ class _StoreProfileForm extends HookConsumerWidget {
 
       isLoading.value = true;
 
+      final trimmedAddress = storeAddressController.text.trim();
       final targetProfile = profile.copyWith(
         name: storeNameController.text.trim(),
-        address: storeAddressController.text.trim(),
+        address: trimmedAddress.isEmpty ? null : trimmedAddress,
+        channels: selectedChannels.value,
       );
 
       final updateUseCase = ref.read(updateStoreProfileUseCaseProvider);
@@ -213,6 +221,52 @@ class _StoreProfileForm extends HookConsumerWidget {
               controller: storeAddressController,
               textInputAction: TextInputAction.done,
               decoration: const InputDecoration(labelText: '店家地址'),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            FormField<Set<StoreChannel>>(
+              initialValue: selectedChannels.value,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              validator: (final value) =>
+                  (value == null || value.isEmpty) ? '請至少選擇一項店家類型' : null,
+              builder: (final field) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '店家類型',
+                      style: textTheme.titleSmall?.copyWith(color: colorScheme.onSurface),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Wrap(
+                      spacing: AppSpacing.sm,
+                      children: StoreChannel.values.map((final channel) {
+                        final isSelected = selectedChannels.value.contains(channel);
+                        return FilterChip(
+                          label: Text(channel.label),
+                          selected: isSelected,
+                          onSelected: (final v) {
+                            final next = {...selectedChannels.value};
+                            if (v) {
+                              next.add(channel);
+                            } else {
+                              next.remove(channel);
+                            }
+                            selectedChannels.value = next;
+                            field.didChange(next);
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    if (field.hasError) ...[
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        field.errorText!,
+                        style: textTheme.bodySmall?.copyWith(color: colorScheme.error),
+                      ),
+                    ],
+                  ],
+                );
+              },
             ),
             const SizedBox(height: AppSpacing.xl),
             SizedBox(

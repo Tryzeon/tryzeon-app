@@ -10,6 +10,7 @@ import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_grid.dart';
@@ -120,6 +121,20 @@ class StorePage extends HookConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(storeInfo.name, style: textTheme.headlineLarge),
+                              if (storeInfo.channels.isNotEmpty) ...[
+                                const SizedBox(height: AppSpacing.sm),
+                                Wrap(
+                                  spacing: AppSpacing.xs,
+                                  runSpacing: AppSpacing.xs,
+                                  children: StoreChannel.values
+                                      .where(storeInfo.channels.contains)
+                                      .map(
+                                        (final channel) =>
+                                            Chip(label: Text(channel.label)),
+                                      )
+                                      .toList(),
+                                ),
+                              ],
                               if (storeInfo.address != null &&
                                   storeInfo.address!.isNotEmpty) ...[
                                 const SizedBox(height: AppSpacing.sm),
