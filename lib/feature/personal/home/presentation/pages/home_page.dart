@@ -305,7 +305,7 @@ class HomePage extends HookConsumerWidget {
     useEffect(() {
       coordinator.bindTryOnFromStorage(tryOnFromStorage);
       return () => coordinator.unbindTryOnFromStorage(tryOnFromStorage);
-    }, [coordinator]);
+    });
 
     final bottomOffset =
         MediaQuery.paddingOf(context).bottom +
