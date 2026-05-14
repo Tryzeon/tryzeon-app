@@ -3,12 +3,15 @@ import { getSignedUrl } from "npm:@aws-sdk/s3-request-presigner";
 
 let _r2Client: S3Client | null = null;
 
+const SIGNED_URL_EXPIRY_SECONDS = 604800; // 7 days
+
 const validateR2Env = () => {
   const requiredVars = [
     "R2_ACCESS_KEY_ID",
     "R2_SECRET_ACCESS_KEY",
     "R2_ENDPOINT",
     "R2_VIDEOS_BUCKET_NAME",
+    "R2_IMAGES_BUCKET_NAME",
   ];
 
   for (const envVar of requiredVars) {
@@ -33,25 +36,43 @@ export const getR2Client = () => {
   return _r2Client;
 };
 
-export async function uploadVideoToR2(buffer: ArrayBuffer, fileName: string): Promise<string> {
+async function uploadToR2(
+  bucket: string,
+  key: string,
+  body: Uint8Array,
+  contentType: string,
+): Promise<string> {
   const s3Client = getR2Client();
-  const bucketName = Deno.env.get("R2_VIDEOS_BUCKET_NAME")!;
 
   const putCommand = new PutObjectCommand({
-    Bucket: bucketName,
-    Key: fileName,
-    Body: new Uint8Array(buffer),
-    ContentType: "video/mp4",
+    Bucket: bucket,
+    Key: key,
+    Body: body,
+    ContentType: contentType,
   });
 
   await s3Client.send(putCommand);
 
   const getCommand = new GetObjectCommand({
-    Bucket: bucketName,
-    Key: fileName,
+    Bucket: bucket,
+    Key: key,
   });
 
-  // Generate a presigned URL valid for 7 days (604800 seconds)
-  const signedUrl = await getSignedUrl(s3Client, getCommand, { expiresIn: 604800 });
-  return signedUrl;
+  return await getSignedUrl(s3Client, getCommand, {
+    expiresIn: SIGNED_URL_EXPIRY_SECONDS,
+  });
+}
+
+export async function uploadVideoToR2(buffer: ArrayBuffer, fileName: string): Promise<string> {
+  const bucketName = Deno.env.get("R2_VIDEOS_BUCKET_NAME")!;
+  return await uploadToR2(bucketName, fileName, new Uint8Array(buffer), "video/mp4");
+}
+
+export async function uploadImageToR2(
+  buffer: ArrayBuffer,
+  fileName: string,
+  contentType: string,
+): Promise<string> {
+  const bucketName = Deno.env.get("R2_IMAGES_BUCKET_NAME")!;
+  return await uploadToR2(bucketName, fileName, new Uint8Array(buffer), contentType);
 }

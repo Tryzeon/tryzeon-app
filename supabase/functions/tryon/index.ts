@@ -1,9 +1,11 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getAuthenticatedUserClient, getAdminClient } from "../_shared/supabase.ts";
 import { QuotaManager, FeatureName } from "../_shared/quota.ts";
-import { fetchImageAsBase64 } from "../_shared/image-utils.ts";
+import { fetchImageAsBase64, detectMimeType, mimeTypeToExtension, base64ToUint8Array } from "../_shared/image-utils.ts";
+import { uploadImageToR2 } from "../_shared/r2.ts";
 import { generateTryonImage } from "./image.ts";
 import { generateTryonVideo } from "./video.ts";
+
 Deno.serve(async (req) => {
   let quotaManager: QuotaManager | undefined;
 
@@ -59,7 +61,6 @@ Deno.serve(async (req) => {
     if (clothesBase64s && clothesBase64s.length > 0) {
       clothesImages = clothesBase64s.slice(0, 3);
     } else if (clothesPaths && clothesPaths.length > 0) {
-      // Limit to 3 images to avoid confusing the AI and save tokens
       const pathsToFetch = clothesPaths.slice(0, 3);
       clothesImages = await Promise.all(pathsToFetch.map((p: string) => fetchImageAsBase64(userClient!, p)));
     }
@@ -81,8 +82,20 @@ Deno.serve(async (req) => {
       );
     }
 
+    const cleanBase64 = tryonImageBase64.replace(/^data:image\/[a-z]+;base64,/, "");
+    const mimeType = detectMimeType(cleanBase64);
+    const extension = mimeTypeToExtension(mimeType);
+
+    const bytes = base64ToUint8Array(cleanBase64);
+    const imageBuffer = bytes.buffer;
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const fileName = `${user!.id}/${timestamp}.${extension}`;
+
+    const imageUrl = await uploadImageToR2(imageBuffer, fileName, mimeType);
+
     return new Response(
-      JSON.stringify({ image: tryonImageBase64, usage: usage }),
+      JSON.stringify({ imageUrl: imageUrl, usage: usage }),
       { headers: { "Content-Type": "application/json" } },
     );
   } catch (err) {
