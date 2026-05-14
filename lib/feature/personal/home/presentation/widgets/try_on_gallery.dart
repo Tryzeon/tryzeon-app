@@ -303,9 +303,7 @@ class _VideoPlayerItem extends HookWidget {
       child: !isInitialized.value
           ? ColoredBox(
               color: colorScheme.surfaceContainerLow,
-              child: Center(
-                child: CircularProgressIndicator(color: colorScheme.primary),
-              ),
+              child: Center(child: CircularProgressIndicator(color: colorScheme.primary)),
             )
           : GestureDetector(
               onTap: () {
