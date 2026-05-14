@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 
 part 'store_profile.freezed.dart';
 
@@ -10,6 +11,7 @@ sealed class StoreProfile with _$StoreProfile {
     required final String name,
     required final DateTime createdAt,
     required final DateTime updatedAt,
+    required final Set<StoreChannel> channels,
     final String? address,
     final String? logoPath,
     final String? logoUrl,

@@ -19,6 +19,7 @@ class GetShopProducts {
       minPrice: filter.minPrice,
       maxPrice: filter.maxPrice,
       categories: filter.categories,
+      channels: filter.channels,
       userLocation: filter.userLocation,
       forceRefresh: forceRefresh,
     );

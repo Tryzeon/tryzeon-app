@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/core/modules/location/domain/entities/user_location.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
 
 part 'shop_filter.freezed.dart';
@@ -13,6 +14,8 @@ sealed class ShopFilter with _$ShopFilter {
     final int? minPrice,
     final int? maxPrice,
     final Set<String>? categories,
+    @Default(<StoreChannel>{StoreChannel.physical, StoreChannel.online})
+    final Set<StoreChannel> channels,
 
     /// 使用者位置（用於附近店家排序）
     final UserLocation? userLocation,

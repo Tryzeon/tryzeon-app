@@ -7,6 +7,7 @@ class ShopStoreInfoModel {
   const ShopStoreInfoModel({
     required this.id,
     required this.name,
+    required this.channels,
     this.address,
     this.logoUrl,
   });
@@ -16,6 +17,7 @@ class ShopStoreInfoModel {
 
   final String id;
   final String name;
+  final List<String> channels;
   final String? address;
   final String? logoUrl;
 

@@ -7,6 +7,7 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/product_categories/providers/product_categories_providers.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
@@ -29,6 +30,7 @@ class ProductDetailBody extends HookConsumerWidget {
     storeInfo: const ShopStoreInfo(
       id: 'skeleton_store',
       name: 'Loading Store Name',
+      channels: {StoreChannel.physical, StoreChannel.online},
       address: 'Loading Store Address',
     ),
     name: 'Loading Product Name here that is long',

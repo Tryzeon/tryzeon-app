@@ -47,6 +47,7 @@ class ProductSizeEmbedded {
 class ShopStoreInfoEmbedded {
   late String storeId;
   late String name;
+  late List<String> channels;
   String? address;
   String? logoUrl;
   String? logoPath;

@@ -11,6 +11,7 @@ class StoreProfileCollection {
 
   late String name;
   late String ownerId;
+  late List<String> channels;
   String? address;
   String? logoPath;
   String? logoUrl;

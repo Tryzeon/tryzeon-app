@@ -25,7 +25,8 @@ class ShopLocalDataSource {
         ..storeId = model.storeInfo.id
         ..name = model.storeInfo.name
         ..address = model.storeInfo.address
-        ..logoUrl = model.storeInfo.logoUrl;
+        ..logoUrl = model.storeInfo.logoUrl
+        ..channels = model.storeInfo.channels;
 
       List<ProductSizeEmbedded>? sizes;
       if (model.sizes != null) {
@@ -107,6 +108,7 @@ class ShopLocalDataSource {
       name: collection.storeInfo.name,
       address: collection.storeInfo.address,
       logoUrl: collection.storeInfo.logoUrl,
+      channels: collection.storeInfo.channels,
     );
 
     List<ProductSizeModel>? sizes;
