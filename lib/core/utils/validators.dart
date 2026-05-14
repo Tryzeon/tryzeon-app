@@ -123,16 +123,10 @@ class AppValidators {
     return null;
   }
 
-  static String? validateSelectedCategories(final Set<String>? value) {
-    if (value == null || value.isEmpty) {
-      return '請選擇至少一種商品類型';
-    }
-    return null;
-  }
-
-  static String? validateProductImage(final Object? value) {
-    if (value == null) return '請選擇商品圖片';
-    if (value is List && value.isEmpty) return '請選擇至少一張商品圖片';
+  static String? validateNonEmpty(final Object? value, {required final String message}) {
+    if (value == null) return message;
+    if (value is Iterable && value.isEmpty) return message;
+    if (value is String && value.trim().isEmpty) return message;
     return null;
   }
 }

@@ -227,7 +227,7 @@ class _StoreProfileForm extends HookConsumerWidget {
               initialValue: selectedChannels.value,
               autovalidateMode: AutovalidateMode.onUserInteraction,
               validator: (final value) =>
-                  (value == null || value.isEmpty) ? '請至少選擇一項店家類型' : null,
+                  AppValidators.validateNonEmpty(value, message: '請至少選擇一項店家類型'),
               builder: (final field) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

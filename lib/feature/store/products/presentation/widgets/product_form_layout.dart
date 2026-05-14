@@ -51,7 +51,8 @@ class ProductFormLayout extends StatelessWidget {
           ),
           FormField<List<ImageItem>>(
             initialValue: formData.images.value,
-            validator: AppValidators.validateProductImage,
+            validator: (final value) =>
+                AppValidators.validateNonEmpty(value, message: '請選擇至少一張商品圖片'),
             autovalidateMode: AutovalidateMode.onUserInteraction,
             builder: (final state) => Column(
               crossAxisAlignment: CrossAxisAlignment.start,

@@ -62,7 +62,8 @@ class ProductBasicFieldsEditor extends HookWidget {
         productCategoryTreeAsync.when(
           data: (final categoryTree) => FormField<Set<String>>(
             initialValue: selectedCategoryIds.value,
-            validator: AppValidators.validateSelectedCategories,
+            validator: (final value) =>
+                AppValidators.validateNonEmpty(value, message: '請選擇至少一種商品類型'),
             autovalidateMode: AutovalidateMode.onUserInteraction,
             builder: (final state) => Column(
               crossAxisAlignment: CrossAxisAlignment.start,
