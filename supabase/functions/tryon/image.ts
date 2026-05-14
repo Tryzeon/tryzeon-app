@@ -1,3 +1,5 @@
+import { detectMimeType } from "../_shared/image-utils.ts";
+
 const SYSTEM_INSTRUCTION =
   `You are a virtual try-on system. Your ONLY job is to dress the person in a new garment while preserving their identity exactly. 
 
@@ -89,16 +91,6 @@ Place the person in this scene: ${scenePrompt}
   }
 
   return prompt;
-}
-
-function detectMimeType(base64Data: string): string {
-  const header = atob(base64Data.slice(0, 16));
-  if (header.startsWith("\x89PNG")) return "image/png";
-  if (header.startsWith("\xFF\xD8\xFF")) return "image/jpeg";
-  if (header.slice(0, 4) === "RIFF" && header.slice(8, 12) === "WEBP") {
-    return "image/webp";
-  }
-  return "image/jpeg";
 }
 
 /**

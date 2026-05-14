@@ -1,4 +1,5 @@
 import { uploadVideoToR2 } from "../_shared/r2.ts";
+import { detectMimeType, base64ToUint8Array } from "../_shared/image-utils.ts";
 
 const DEFAULT_VIDEO_PROMPT =
   "The person is wearing the new outfit and turning slightly to show the fit of the clothing. Natural movement, professional fashion video style.";
@@ -13,13 +14,6 @@ function buildVideoPrompt(transitionPrompt?: string): string {
   prompt += " Natural movement, professional fashion video style.";
 
   return prompt;
-}
-
-function detectMimeType(base64Data: string): string {
-  const header = atob(base64Data.slice(0, 16));
-  if (header.startsWith("\x89PNG")) return "image/png";
-  if (header.startsWith("\xFF\xD8\xFF")) return "image/jpeg";
-  return "image/png";
 }
 
 const MAX_POLL_ATTEMPTS = 60;
@@ -146,12 +140,7 @@ async function pollForCompletion(operationName: string, userId: string): Promise
       throw new Error("Video generation failed - no video bytes returned");
     }
 
-    const binaryString = atob(videoBase64);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    
+    const bytes = base64ToUint8Array(videoBase64);
     const videoBuffer = bytes.buffer;
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const fileName = `${userId}/${timestamp}.mp4`;
