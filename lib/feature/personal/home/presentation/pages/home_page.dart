@@ -29,6 +29,7 @@ import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_galler
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_indicator.dart';
 import 'package:tryzeon/feature/personal/home/presentation/widgets/try_on_more_options_button.dart';
 import 'package:tryzeon/feature/personal/home/providers/home_providers.dart';
+import 'package:tryzeon/feature/personal/home/providers/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/main/tryon_coordinator.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
@@ -41,9 +42,8 @@ class HomePage extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final avatarAsync = ref.watch(avatarFileProvider);
-    final tryonImages = useState<List<TryonResult>>([]);
-    final currentTryonIndex = useState(-1);
-    final customAvatarIndex = useState<int?>(null);
+    final galleryState = ref.watch(tryonGalleryProvider);
+    final galleryNotifier = ref.read(tryonGalleryProvider.notifier);
     final isUploadingAvatar = useState(false);
     final pageController = usePageController(initialPage: 0);
 
@@ -51,10 +51,12 @@ class HomePage extends HookConsumerWidget {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    // Sync PageController with currentTryonIndex changes (from logic)
+    final currentIndex = galleryState.currentIndex;
+    final isCurrentTheAvatar = galleryState.isCurrentTheAvatar;
+
     useEffect(() {
       if (pageController.hasClients) {
-        final targetPage = currentTryonIndex.value + 1;
+        final targetPage = currentIndex + 1;
         if (pageController.page?.round() != targetPage) {
           pageController.animateToPage(
             targetPage,
@@ -64,7 +66,7 @@ class HomePage extends HookConsumerWidget {
         }
       }
       return null;
-    }, [currentTryonIndex.value]);
+    }, [currentIndex]);
 
     Future<void> uploadAvatar() async {
       final File? imageFile = await ImagePickerHelper.pickImage(context);
@@ -111,31 +113,18 @@ class HomePage extends HookConsumerWidget {
       final List<String>? clothesPaths,
       final TryOnMode mode = TryOnMode.image,
     }) async {
-      // 0. Check if avatar is uploaded
       final avatarFile = ref.read(avatarFileProvider).value;
       if (avatarFile == null) {
         TopNotification.show(context, message: '請先上傳個人照片才能開始試穿呦！');
         return;
       }
 
-      // 1. Prepare Request Data
-      String? customAvatarBase64;
-      if (customAvatarIndex.value != null &&
-          customAvatarIndex.value! < tryonImages.value.length) {
-        final result = tryonImages.value[customAvatarIndex.value!];
-        if (result.imageBase64 != null) {
-          customAvatarBase64 = result.imageBase64!;
-        }
-      }
+      final customAvatarBase64 = galleryState.customAvatarResult?.imageBase64;
 
-      // 2. Optimistic Update (Add Loading Placeholder)
       final requestId = UniqueKey().toString();
       final placeholderResult = TryonResult(id: requestId, mode: mode, isLoading: true);
-      final placeholderIndex = tryonImages.value.length;
-      tryonImages.value = [...tryonImages.value, placeholderResult];
-      currentTryonIndex.value = placeholderIndex;
+      galleryNotifier.addPlaceholder(placeholderResult);
 
-      // 3. API Call
       String? scenePrompt;
       String? transitionPrompt;
       if (mode == TryOnMode.video) {
@@ -164,27 +153,12 @@ class HomePage extends HookConsumerWidget {
 
       if (!context.mounted) return;
 
-      // 4. Handle Result
       if (result.isSuccess) {
-        final resultIndex = tryonImages.value.indexWhere(
-          (final result) => result.id == requestId,
-        );
-        if (resultIndex == -1) return;
-
         final tryonResult = result.get()!.copyWith(isLoading: false);
-        tryonImages.value = [...tryonImages.value]..[resultIndex] = tryonResult;
-        currentTryonIndex.value = resultIndex;
-
+        galleryNotifier.replaceById(requestId, tryonResult);
         HapticFeedback.heavyImpact();
       } else {
-        // Failure: Remove placeholder
-        final resultIndex = tryonImages.value.indexWhere(
-          (final result) => result.id == requestId,
-        );
-        if (resultIndex == -1) return;
-
-        tryonImages.value = [...tryonImages.value]..removeAt(resultIndex);
-        currentTryonIndex.value = tryonImages.value.length - 1;
+        galleryNotifier.removeById(requestId);
 
         final failure = result.getError()!;
         if (failure is RateLimitFailure) {
@@ -272,7 +246,8 @@ class HomePage extends HookConsumerWidget {
 
     Future<void> downloadCurrentMedia() async {
       try {
-        final result = tryonImages.value[currentTryonIndex.value];
+        final result = galleryState.currentResult;
+        if (result == null) return;
 
         if (result.mode == TryOnMode.video) {
           await downloadVideo(result);
@@ -287,14 +262,8 @@ class HomePage extends HookConsumerWidget {
       }
     }
 
-    Future<void> toggleAvatar() async {
-      final isCurrentlySet = customAvatarIndex.value == currentTryonIndex.value;
-
-      if (isCurrentlySet) {
-        customAvatarIndex.value = null;
-      } else {
-        customAvatarIndex.value = currentTryonIndex.value;
-      }
+    void toggleAvatar() {
+      galleryNotifier.toggleAvatarForCurrent();
     }
 
     Future<void> deleteCurrentTryon() async {
@@ -307,24 +276,7 @@ class HomePage extends HookConsumerWidget {
       );
 
       if (result == OkCancelResult.ok) {
-        final deletedIndex = currentTryonIndex.value;
-
-        final newImages = List<TryonResult>.from(tryonImages.value);
-        newImages.removeAt(deletedIndex);
-        tryonImages.value = newImages;
-
-        if (customAvatarIndex.value == deletedIndex) {
-          customAvatarIndex.value = null;
-        } else if (customAvatarIndex.value != null &&
-            customAvatarIndex.value! > deletedIndex) {
-          customAvatarIndex.value = customAvatarIndex.value! - 1;
-        }
-
-        if (tryonImages.value.isEmpty) {
-          currentTryonIndex.value = -1;
-        } else if (currentTryonIndex.value >= tryonImages.value.length) {
-          currentTryonIndex.value = tryonImages.value.length - 1;
-        }
+        galleryNotifier.deleteCurrent();
       }
     }
 
@@ -338,10 +290,9 @@ class HomePage extends HookConsumerWidget {
         MediaQuery.paddingOf(context).bottom +
         (PlatformInfo.isIOS26OrHigher() ? AppSpacing.bottomNavBarHeight : 0);
 
-    final showMoreOptions =
-        currentTryonIndex.value >= 0 &&
-        !tryonImages.value[currentTryonIndex.value].isLoading;
-    final showIndicator = currentTryonIndex.value >= 0;
+    final currentResult = galleryState.currentResult;
+    final showMoreOptions = currentResult != null && !currentResult.isLoading;
+    final showIndicator = currentResult != null;
 
     return Scaffold(
       extendBody: true,
@@ -369,10 +320,17 @@ class HomePage extends HookConsumerWidget {
                   ),
                   data: (final avatarFile) => TryOnGallery(
                     pageController: pageController,
-                    onPageChanged: (final index) => currentTryonIndex.value = index - 1,
+                    onPageChanged: (final index) {
+                      final resultIndex = index - 1;
+                      final id = (resultIndex >= 0 &&
+                              resultIndex < galleryState.images.length)
+                          ? galleryState.images[resultIndex].id
+                          : null;
+                      galleryNotifier.setCurrentId(id);
+                    },
                     onUploadTap: uploadAvatar,
-                    tryonResults: tryonImages.value,
-                    currentTryonIndex: currentTryonIndex.value,
+                    tryonResults: galleryState.images,
+                    currentTryonIndex: currentIndex,
                     avatarFile: avatarFile,
                     isUploadingAvatar: isUploadingAvatar.value,
                   ),
@@ -408,13 +366,10 @@ class HomePage extends HookConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    TryOnAvatarBadge(
-                      isVisible: customAvatarIndex.value == currentTryonIndex.value,
-                    ),
+                    TryOnAvatarBadge(isVisible: isCurrentTheAvatar),
                     const SizedBox(width: AppSpacing.sm),
                     TryOnMoreOptionsButton(
-                      currentTryonIndex: currentTryonIndex.value,
-                      customAvatarIndex: customAvatarIndex.value,
+                      isCurrentTheAvatar: isCurrentTheAvatar,
                       onDownload: downloadCurrentMedia,
                       onToggleAvatar: toggleAvatar,
                       onDelete: deleteCurrentTryon,
@@ -429,8 +384,8 @@ class HomePage extends HookConsumerWidget {
                 bottom: bottomOffset + AppSpacing.xl,
                 left: AppSpacing.xxl,
                 child: TryOnIndicator(
-                  currentTryonIndex: currentTryonIndex.value,
-                  tryonImagesCount: tryonImages.value.length,
+                  currentTryonIndex: currentIndex,
+                  tryonImagesCount: galleryState.images.length,
                 ),
               ),
 

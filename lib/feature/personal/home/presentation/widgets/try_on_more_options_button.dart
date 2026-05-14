@@ -4,15 +4,13 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 class TryOnMoreOptionsButton extends StatelessWidget {
   const TryOnMoreOptionsButton({
     super.key,
-    required this.currentTryonIndex,
-    required this.customAvatarIndex,
+    required this.isCurrentTheAvatar,
     required this.onDownload,
     required this.onToggleAvatar,
     required this.onDelete,
   });
 
-  final int currentTryonIndex;
-  final int? customAvatarIndex;
+  final bool isCurrentTheAvatar;
   final VoidCallback onDownload;
   final VoidCallback onToggleAvatar;
   final VoidCallback onDelete;
@@ -45,15 +43,15 @@ class TryOnMoreOptionsButton extends StatelessWidget {
                 ),
                 ListTile(
                   leading: Icon(
-                    customAvatarIndex == currentTryonIndex
+                    isCurrentTheAvatar
                         ? Icons.person_off_outlined
                         : Icons.person_outline_rounded,
                   ),
                   title: Text(
-                    customAvatarIndex == currentTryonIndex ? '取消我的形象' : '設為我的形象',
+                    isCurrentTheAvatar ? '取消我的形象' : '設為我的形象',
                   ),
                   subtitle: Text(
-                    customAvatarIndex == currentTryonIndex
+                    isCurrentTheAvatar
                         ? '取消使用此照片作為試穿形象'
                         : '使用此照片作為試穿形象',
                   ),
