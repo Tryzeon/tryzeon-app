@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/modules/location/domain/entities/user_location.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_product_model.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/product_sort_option.dart';
 
@@ -19,86 +20,51 @@ class ShopRemoteDataSource {
     final int? minPrice,
     final int? maxPrice,
     final Set<String>? categories,
+    final Set<StoreChannel>? channels,
     final UserLocation? userLocation,
   }) async {
-    // 查詢主頁推薦列表所需欄位（詳細資訊由 getProduct 取得）
-    dynamic query = _supabaseClient.from(_productsTable).select('''
-          id, store_id, name, category_ids, price, image_paths, created_at, updated_at,
-          purchase_link, material, elasticity, fit, thickness, styles, seasons,
-          product_variants(*),
-          store_profiles!products_store_id_fkey(id, name, address, logo_path)
-        ''');
-
-    // 類型過濾
-    if (categories != null && categories.isNotEmpty) {
-      query = query.overlaps('category_ids', categories.toList());
-    }
-
-    // 店家過濾
-    if (storeId != null && storeId.isNotEmpty) {
-      query = query.eq('store_id', storeId);
-    }
-
-    // 過濾店家名稱或商品名稱
-    if (searchQuery != null && searchQuery.isNotEmpty) {
-      final condition = StringBuffer();
-      condition.write('name.ilike.%$searchQuery%');
-
-      // 找出名稱符合搜尋關鍵字的店家 ID
-      final matchingStores = await _supabaseClient
-          .from(_storeProfileTable)
-          .select('id')
-          .ilike('name', '%$searchQuery%');
-
-      final storeIds = (matchingStores as List)
-          .map((final e) => e['id'] as String)
-          .toList();
-
-      if (storeIds.isNotEmpty) {
-        condition.write(',store_id.in.(${storeIds.join(',')})');
-      }
-
-      query = query.or(condition.toString());
-    }
-
-    // 價格區間過濾
-    if (minPrice != null) {
-      query = query.gte('price', minPrice);
-    }
-    if (maxPrice != null) {
-      query = query.lte('price', maxPrice);
-    }
-
-    // 排序邏輯
-    final String dbSortColumn;
+    final String sortColumn;
     final bool isAscending;
-
     switch (sortOption) {
       case ProductSortOption.priceLowToHigh:
-        dbSortColumn = 'price';
+        sortColumn = 'price';
         isAscending = true;
       case ProductSortOption.priceHighToLow:
-        dbSortColumn = 'price';
+        sortColumn = 'price';
         isAscending = false;
       case ProductSortOption.latest:
-        dbSortColumn = 'created_at';
+        sortColumn = 'created_at';
         isAscending = false;
     }
 
-    // 排序
-    final response = await query.order(dbSortColumn, ascending: isAscending);
+    final response = await _supabaseClient.rpc(
+      'get_shop_products',
+      params: {
+        'p_store_id': storeId,
+        'p_search_query': (searchQuery == null || searchQuery.isEmpty)
+            ? null
+            : searchQuery,
+        'p_category_ids': (categories == null || categories.isEmpty)
+            ? null
+            : categories.toList(),
+        'p_min_price': minPrice,
+        'p_max_price': maxPrice,
+        'p_channels': _channelsParam(channels),
+        'p_sort_column': sortColumn,
+        'p_sort_ascending': isAscending,
+      },
+    );
 
-    // 將結果轉換為 Model
     var products = (response as List).map((final item) {
-      final map = _withProductImageUrl(item);
+      final map = _withProductImageUrl(Map<String, dynamic>.from(item as Map));
       if (map['store_profiles'] != null) {
-        map['store_profiles'] = _withStoreLogoUrl(map['store_profiles']);
+        map['store_profiles'] = _withStoreLogoUrl(
+          Map<String, dynamic>.from(map['store_profiles'] as Map),
+        );
       }
-
       return ShopProductModel.fromJson(map);
     }).toList();
 
-    // 若有使用者位置，依接近度排序：同區優先 > 同城市 > 其他
     if (userLocation != null) {
       final sameDistrict = <ShopProductModel>[];
       final sameCity = <ShopProductModel>[];
@@ -120,13 +86,19 @@ class ShopRemoteDataSource {
     return products;
   }
 
+  static List<String>? _channelsParam(final Set<StoreChannel>? channels) {
+    if (channels == null || channels.isEmpty) return null;
+    if (channels.length == StoreChannel.values.length) return null;
+    return StoreChannel.codesFromSet(channels);
+  }
+
   Future<ShopProductModel> getProduct(final String productId) async {
     final response = await _supabaseClient
         .from(_productsTable)
         .select('''
           *,
           product_variants(*),
-          store_profiles!products_store_id_fkey(id, name, address, logo_path)
+          store_profiles!products_store_id_fkey(id, name, address, logo_path, channels)
         ''')
         .eq('id', productId)
         .single();
@@ -142,7 +114,7 @@ class ShopRemoteDataSource {
   Future<Map<String, dynamic>> getStoreProfile(final String storeId) async {
     final response = await _supabaseClient
         .from(_storeProfileTable)
-        .select('id, name, address, logo_path')
+        .select('id, name, address, logo_path, channels')
         .eq('id', storeId)
         .single();
     return _withStoreLogoUrl(response);
