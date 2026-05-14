@@ -8,6 +8,7 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/home/domain/entities/tryon_result.dart';
 import 'package:video_player/video_player.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 class TryOnGallery extends HookWidget {
   const TryOnGallery({
@@ -198,6 +199,8 @@ class _ImageItem extends HookWidget {
 
   @override
   Widget build(final BuildContext context) {
+    useAutomaticKeepAlive();
+
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -261,53 +264,72 @@ class _VideoPlayerItem extends HookWidget {
 
   @override
   Widget build(final BuildContext context) {
+    useAutomaticKeepAlive();
+
     final colorScheme = Theme.of(context).colorScheme;
     final controller = useMemoized(
       () => VideoPlayerController.networkUrl(Uri.parse(videoUrl)),
       [videoUrl],
     );
     final isInitialized = useState(false);
+    final isUserPaused = useState(false);
+    final visibleFraction = useState(1.0);
     final showPlayIcon = useState(false);
 
     useEffect(() {
       controller.initialize().then((_) {
         isInitialized.value = true;
         controller.setLooping(true);
-        controller.play();
       });
       return controller.dispose;
     }, [controller]);
 
-    if (!isInitialized.value) {
-      return Center(
-        child: CircularProgressIndicator(
-          color: colorScheme.onPrimary.withValues(alpha: AppOpacity.overlay),
-        ),
-      );
-    }
+    useEffect(() {
+      if (!isInitialized.value) return null;
+      final shouldPlay = !isUserPaused.value && visibleFraction.value > 0.5;
+      if (shouldPlay && !controller.value.isPlaying) {
+        controller.play();
+      } else if (!shouldPlay && controller.value.isPlaying) {
+        controller.pause();
+      }
+      return null;
+    }, [isInitialized.value, visibleFraction.value, isUserPaused.value]);
 
-    return GestureDetector(
-      onTap: () {
-        if (controller.value.isPlaying) {
-          controller.pause();
-          showPlayIcon.value = true;
-        } else {
-          controller.play();
-          showPlayIcon.value = false;
-        }
+    return VisibilityDetector(
+      key: ValueKey('video-$videoUrl'),
+      onVisibilityChanged: (final info) {
+        visibleFraction.value = info.visibleFraction;
       },
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          _buildVideoFill(controller),
-          if (showPlayIcon.value)
-            Icon(
-              Icons.play_arrow_rounded,
-              color: colorScheme.onPrimary.withValues(alpha: AppOpacity.overlay),
-              size: 64,
+      child: !isInitialized.value
+          ? ColoredBox(
+              color: colorScheme.surfaceContainerLow,
+              child: Center(
+                child: CircularProgressIndicator(color: colorScheme.primary),
+              ),
+            )
+          : GestureDetector(
+              onTap: () {
+                if (controller.value.isPlaying) {
+                  isUserPaused.value = true;
+                  showPlayIcon.value = true;
+                } else {
+                  isUserPaused.value = false;
+                  showPlayIcon.value = false;
+                }
+              },
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  _buildVideoFill(controller),
+                  if (showPlayIcon.value)
+                    Icon(
+                      Icons.play_arrow_rounded,
+                      color: colorScheme.onPrimary.withValues(alpha: AppOpacity.overlay),
+                      size: 64,
+                    ),
+                ],
+              ),
             ),
-        ],
-      ),
     );
   }
 }
