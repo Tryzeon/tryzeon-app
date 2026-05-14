@@ -53,7 +53,7 @@ class StoreProductCard extends HookConsumerWidget {
                         placeholder: (final context, final url) =>
                             Container(color: colorScheme.surfaceContainerLow),
                         errorWidget: (final context, final url, final error) =>
-                            const _ImageErrorWidget(),
+                            const Center(child: Icon(Icons.broken_image_outlined)),
                       ),
               ),
             ),
@@ -105,19 +105,6 @@ class _ImagePlaceholder extends StatelessWidget {
     return Container(
       color: colorScheme.surfaceContainerLow,
       child: Icon(Icons.image_outlined, color: colorScheme.onSurfaceVariant),
-    );
-  }
-}
-
-class _ImageErrorWidget extends StatelessWidget {
-  const _ImageErrorWidget();
-
-  @override
-  Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      color: colorScheme.surfaceContainerLow,
-      child: Icon(Icons.broken_image_outlined, color: colorScheme.onSurfaceVariant),
     );
   }
 }

@@ -78,14 +78,10 @@ class ProductImageViewer extends HookWidget {
                     width: double.infinity,
                     height: 400,
                     fit: BoxFit.cover,
-                    placeholder: (final context, final url) => Center(
-                      child: CircularProgressIndicator(color: colorScheme.primary),
-                    ),
-                    errorWidget: (final context, final url, final error) => Container(
-                      height: 400,
-                      color: colorScheme.surfaceContainer,
-                      child: const Icon(Icons.image_not_supported, size: 50),
-                    ),
+                    placeholder: (final context, final url) =>
+                        const Center(child: CircularProgressIndicator()),
+                    errorWidget: (final context, final url, final error) =>
+                        const Center(child: Icon(Icons.broken_image_outlined)),
                   ),
                 ),
               );

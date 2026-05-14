@@ -133,15 +133,10 @@ class _ImageCard extends StatelessWidget {
                 fit: BoxFit.cover,
                 width: double.infinity,
                 height: double.infinity,
-                placeholder: (final _, final _) =>
+                placeholder: (final context, final url) =>
                     Container(color: colorScheme.surfaceContainerLow),
-                errorWidget: (final _, final _, final _) => Container(
-                  color: colorScheme.surfaceContainerLow,
-                  child: Icon(
-                    Icons.broken_image_outlined,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
+                errorWidget: (final context, final url, final error) =>
+                    const Center(child: Icon(Icons.broken_image_outlined)),
               ),
               NewImageItem(:final file) => Image.file(
                 file,

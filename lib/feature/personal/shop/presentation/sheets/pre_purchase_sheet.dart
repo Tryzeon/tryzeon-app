@@ -147,15 +147,10 @@ class _ProductThumb extends StatelessWidget {
             : CachedNetworkImage(
                 imageUrl: imageUrl!,
                 fit: BoxFit.cover,
-                placeholder: (_, _) => Container(color: colorScheme.surfaceContainerLow),
-                errorWidget: (_, _, _) => Container(
-                  color: colorScheme.surfaceContainerLow,
-                  child: Icon(
-                    Icons.broken_image_outlined,
-                    color: colorScheme.onSurfaceVariant,
-                    size: 20,
-                  ),
-                ),
+                placeholder: (final context, final url) =>
+                    Container(color: colorScheme.surfaceContainerLow),
+                errorWidget: (final context, final url, final error) =>
+                    const Center(child: Icon(Icons.broken_image_outlined)),
               ),
       ),
     );
