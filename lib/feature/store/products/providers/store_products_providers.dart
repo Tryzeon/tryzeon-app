@@ -1,6 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/data/services/store_images_api_provider.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
@@ -25,7 +26,10 @@ part 'store_products_providers.g.dart';
 
 @riverpod
 ProductRemoteDataSource productRemoteDataSource(final Ref ref) {
-  return ProductRemoteDataSource(Supabase.instance.client);
+  return ProductRemoteDataSource(
+    Supabase.instance.client,
+    ref.watch(storeImagesApiProvider),
+  );
 }
 
 @riverpod

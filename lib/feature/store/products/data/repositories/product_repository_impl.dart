@@ -16,6 +16,7 @@ import 'package:tryzeon/feature/store/products/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/products/domain/repositories/product_repository.dart';
 import 'package:tryzeon/feature/store/products/domain/value_objects/image_item.dart';
 import 'package:typed_result/typed_result.dart';
+import 'package:uuid/uuid.dart';
 
 class ProductRepositoryImpl implements ProductRepository {
   ProductRepositoryImpl({
@@ -27,6 +28,7 @@ class ProductRepositoryImpl implements ProductRepository {
   final ProductRemoteDataSource _remoteDataSource;
   final ProductLocalDataSource _localDataSource;
   static const _mappr = StoreMappr();
+  static const _uuid = Uuid();
 
   @override
   Future<Result<List<Product>, Failure>> getProducts({
@@ -76,8 +78,11 @@ class ProductRepositoryImpl implements ProductRepository {
   @override
   Future<Result<void, Failure>> createProduct(final CreateProductParams params) async {
     try {
+      final productId = _uuid.v4();
+
       final imagePaths = await _remoteDataSource.uploadProductImages(
         storeId: params.storeId,
+        productId: productId,
         images: params.images,
       );
 
@@ -88,6 +93,7 @@ class ProductRepositoryImpl implements ProductRepository {
       }
 
       final request = CreateProductRequest(
+        id: productId,
         storeId: params.storeId,
         name: params.name,
         categoryIds: params.categoryIds,
@@ -102,7 +108,7 @@ class ProductRepositoryImpl implements ProductRepository {
         seasons: params.seasons?.map((final e) => e.value).toList(),
       );
 
-      final productId = await _remoteDataSource.insertProduct(request);
+      await _remoteDataSource.insertProduct(request);
 
       final sizesList = params.sizes ?? [];
       if (sizesList.isNotEmpty) {
@@ -191,6 +197,7 @@ class ProductRepositoryImpl implements ProductRepository {
       if (newFiles.isNotEmpty) {
         uploadedPaths = await _remoteDataSource.uploadProductImages(
           storeId: original.storeId,
+          productId: original.id,
           images: newFiles,
         );
 
@@ -251,9 +258,9 @@ class ProductRepositoryImpl implements ProductRepository {
         await _remoteDataSource.updateProduct(targetModel);
       }
 
-      // 7. Delete removed images (fire-and-forget)
+      // 7. Drop removed images from local cache only.
+      // R2 objects become orphans and are reclaimed by the cleanup function.
       if (removedPaths.isNotEmpty) {
-        _remoteDataSource.deleteProductImages(removedPaths).ignore();
         _localDataSource.deleteProductImages(removedPaths).ignore();
       }
 
@@ -303,7 +310,7 @@ class ProductRepositoryImpl implements ProductRepository {
       await _remoteDataSource.deleteProductSizes(product.id);
 
       if (product.imagePaths.isNotEmpty) {
-        _remoteDataSource.deleteProductImages(product.imagePaths).ignore();
+        // R2 objects become orphans and are reclaimed by the cleanup function.
         _localDataSource.deleteProductImages(product.imagePaths).ignore();
       }
 

@@ -1,21 +1,19 @@
 import 'dart:io';
 
-import 'package:mime/mime.dart';
-import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
-import 'package:tryzeon/core/error/exceptions.dart';
+import 'package:tryzeon/core/data/services/store_images_api.dart';
 import 'package:tryzeon/feature/store/products/data/models/create_product_request.dart';
 import 'package:tryzeon/feature/store/products/data/models/create_product_size_request.dart';
 import 'package:tryzeon/feature/store/products/data/models/product_model.dart';
 
 class ProductRemoteDataSource {
-  ProductRemoteDataSource(this._supabaseClient);
+  ProductRemoteDataSource(this._supabaseClient, this._storeImagesApi);
 
   final SupabaseClient _supabaseClient;
+  final StoreImagesApi _storeImagesApi;
   static const _productsTable = AppConstants.tableProducts;
   static const _productSizesTable = AppConstants.tableProductVariants;
-  static const _productImagesBucket = AppConstants.bucketProductImages;
 
   Future<List<ProductModel>> getProducts({required final String storeId}) async {
     final response = await _supabaseClient
@@ -28,13 +26,8 @@ class ProductRemoteDataSource {
     }).toList();
   }
 
-  Future<String> insertProduct(final CreateProductRequest request) async {
-    final response = await _supabaseClient
-        .from(_productsTable)
-        .insert(request.toJson())
-        .select('id')
-        .single();
-    return response['id'] as String;
+  Future<void> insertProduct(final CreateProductRequest request) async {
+    await _supabaseClient.from(_productsTable).insert(request.toJson());
   }
 
   Future<void> insertProductSizes(final List<CreateProductSizeRequest> requests) async {
@@ -91,58 +84,22 @@ class ProductRemoteDataSource {
 
   Future<List<String>> uploadProductImages({
     required final String storeId,
+    required final String productId,
     required final List<File> images,
   }) async {
-    final user = _supabaseClient.auth.currentUser;
-    if (user == null) throw const UnauthenticatedException();
-
-    final futures = images.map((final image) async {
-      final imageName = p.basename(image.path);
-      final productImagePath = '$storeId/products/$imageName';
-      final mimeType = lookupMimeType(image.path);
-
-      final bytes = await image.readAsBytes();
-      await _supabaseClient.storage
-          .from(_productImagesBucket)
-          .uploadBinary(
-            productImagePath,
-            bytes,
-            fileOptions: FileOptions(contentType: mimeType),
-          );
-
-      return productImagePath;
-    });
-
-    return Future.wait(futures);
-  }
-
-  Future<void> deleteProductImages(final List<String> imagePaths) async {
-    if (imagePaths.isEmpty) return;
-    await _supabaseClient.storage.from(_productImagesBucket).remove(imagePaths);
-  }
-
-  List<String> _getProductImageUrls(final List<String> imagePaths) {
-    return imagePaths
-        .map(
-          (final path) =>
-              _supabaseClient.storage.from(_productImagesBucket).getPublicUrl(path),
-        )
-        .toList();
+    return _storeImagesApi.uploadProductImages(
+      storeId: storeId,
+      productId: productId,
+      images: images,
+    );
   }
 
   Map<String, dynamic> _withProductImageUrl(final Map<String, dynamic> json) {
     final map = Map<String, dynamic>.from(json);
-
-    // Fallback to array for mapping correctly
     final rawPaths = map['image_paths'];
     final imagePaths = rawPaths != null ? List<String>.from(rawPaths) : <String>[];
     map['image_paths'] = imagePaths;
-
-    if (imagePaths.isNotEmpty) {
-      map['image_urls'] = _getProductImageUrls(imagePaths);
-    } else {
-      map['image_urls'] = <String>[];
-    }
+    map['image_urls'] = imagePaths.map(StoreImagesApi.publicUrl).toList();
     return map;
   }
 }
