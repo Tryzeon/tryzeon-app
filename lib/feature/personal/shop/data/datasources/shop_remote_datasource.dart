@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/data/services/store_images_api.dart';
 import 'package:tryzeon/core/modules/location/domain/entities/user_location.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/shop/data/models/shop_product_model.dart';
@@ -10,8 +11,6 @@ class ShopRemoteDataSource {
   final SupabaseClient _supabaseClient;
   static const _productsTable = AppConstants.tableProducts;
   static const _storeProfileTable = AppConstants.tableStoreProfiles;
-  static const _logoBucket = AppConstants.bucketStoreLogos;
-  static const _productBucket = AppConstants.bucketProductImages;
 
   Future<List<ShopProductModel>> getProducts({
     final String? storeId,
@@ -120,33 +119,12 @@ class ShopRemoteDataSource {
     return _withStoreLogoUrl(response);
   }
 
-  List<String> _getProductImageUrls(final List<String> imagePaths) {
-    return imagePaths
-        .map(
-          (final path) => _supabaseClient.storage.from(_productBucket).getPublicUrl(path),
-        )
-        .toList();
-  }
-
-  String _getStoreLogoUrl(final String logoPath) {
-    return _supabaseClient.storage.from(_logoBucket).getPublicUrl(logoPath);
-  }
-
   Map<String, dynamic> _withProductImageUrl(final Map<String, dynamic> json) {
     final map = Map<String, dynamic>.from(json);
-
-    // Fallback to array for mapping correctly
     final rawPaths = map['image_paths'];
     final imagePaths = rawPaths != null ? List<String>.from(rawPaths) : <String>[];
-
-    // We must ensure the field exists for JSON deserialization
     map['image_paths'] = imagePaths;
-
-    if (imagePaths.isNotEmpty) {
-      map['image_urls'] = _getProductImageUrls(imagePaths);
-    } else {
-      map['image_urls'] = <String>[];
-    }
+    map['image_urls'] = imagePaths.map(StoreImagesApi.publicUrl).toList();
     return map;
   }
 
@@ -154,7 +132,7 @@ class ShopRemoteDataSource {
     final map = Map<String, dynamic>.from(json);
     final logoPath = map['logo_path'] as String?;
     if (logoPath != null && logoPath.isNotEmpty) {
-      map['logo_url'] = _getStoreLogoUrl(logoPath);
+      map['logo_url'] = StoreImagesApi.publicUrl(logoPath);
     }
     return map;
   }
