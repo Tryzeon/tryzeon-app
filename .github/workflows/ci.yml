@@ -51,6 +51,7 @@ jobs:
           echo "SUPABASE_URL=https://placeholder.supabase.co" > .env
           echo "SUPABASE_ANON_KEY=placeholder" >> .env
           echo "REVENUE_CAT_API_KEY=${{ secrets.REVENUE_CAT_API_KEY }}" >> .env
+          echo "R2_PUBLIC_IMAGES_BASE_URL=https://placeholder.r2.dev" >> .env
 
       - name: Get Flutter dependencies
         run: flutter pub get
@@ -106,6 +107,7 @@ jobs:
           echo "SUPABASE_URL=https://placeholder.supabase.co" > .env
           echo "SUPABASE_ANON_KEY=placeholder" >> .env
           echo "REVENUE_CAT_API_KEY=${{ secrets.REVENUE_CAT_API_KEY }}" >> .env
+          echo "R2_PUBLIC_IMAGES_BASE_URL=https://placeholder.r2.dev" >> .env
 
       - name: Get Flutter dependencies
         run: flutter pub get
@@ -169,6 +171,7 @@ jobs:
           echo "SUPABASE_URL=https://placeholder.supabase.co" > .env
           echo "SUPABASE_ANON_KEY=placeholder" >> .env
           echo "REVENUE_CAT_API_KEY=${{ secrets.REVENUE_CAT_API_KEY }}" >> .env
+          echo "R2_PUBLIC_IMAGES_BASE_URL=https://placeholder.r2.dev" >> .env
 
       - name: Install FlutterFire CLI
         run: dart pub global activate flutterfire_cli
