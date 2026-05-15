@@ -92,6 +92,8 @@ class ProductCard extends HookConsumerWidget {
                                     cacheKey: product.imagePaths[index],
                                     fit: BoxFit.cover,
                                     width: double.infinity,
+                                    fadeInDuration: Duration.zero,
+                                    fadeOutDuration: Duration.zero,
                                     placeholder: (final context, final url) =>
                                         Container(color: colorScheme.surfaceContainerLow),
                                     errorWidget:

@@ -50,6 +50,8 @@ class StoreProductCard extends HookConsumerWidget {
                             : null,
                         fit: BoxFit.cover,
                         width: double.infinity,
+                        fadeInDuration: Duration.zero,
+                        fadeOutDuration: Duration.zero,
                         placeholder: (final context, final url) =>
                             Container(color: colorScheme.surfaceContainerLow),
                         errorWidget: (final context, final url, final error) =>

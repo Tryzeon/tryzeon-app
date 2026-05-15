@@ -158,6 +158,8 @@ class ProductCategoryFilter extends HookConsumerWidget {
                                                   fit: BoxFit.cover,
                                                   memCacheWidth: 180,
                                                   memCacheHeight: 180,
+                                                  fadeInDuration: Duration.zero,
+                                                  fadeOutDuration: Duration.zero,
                                                   placeholder:
                                                       (
                                                         final context,

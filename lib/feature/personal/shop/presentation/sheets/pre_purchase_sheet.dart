@@ -147,6 +147,8 @@ class _ProductThumb extends StatelessWidget {
             : CachedNetworkImage(
                 imageUrl: imageUrl!,
                 fit: BoxFit.cover,
+                fadeInDuration: Duration.zero,
+                fadeOutDuration: Duration.zero,
                 placeholder: (final context, final url) =>
                     Container(color: colorScheme.surfaceContainerLow),
                 errorWidget: (final context, final url, final error) =>
