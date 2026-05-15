@@ -103,15 +103,6 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
 
       await _localDataSource.saveStoreProfile(updatedProfile);
 
-      // Clean up old logo if changed
-      if (logoFile != null &&
-          original.logoPath != null &&
-          original.logoPath!.isNotEmpty) {
-        // Fire and forget
-        _remoteDataSource.deleteLogo(original.logoPath!);
-        // We no longer manually delete from local cache as we use network image cache
-      }
-
       return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to update store profile', e, stackTrace);

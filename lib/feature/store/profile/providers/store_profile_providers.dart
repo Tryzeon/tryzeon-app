@@ -1,6 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/data/services/store_images_api_provider.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_local_datasource.dart';
@@ -16,7 +17,10 @@ part 'store_profile_providers.g.dart';
 
 @riverpod
 StoreProfileRemoteDataSource storeProfileRemoteDataSource(final Ref ref) {
-  return StoreProfileRemoteDataSource(Supabase.instance.client);
+  return StoreProfileRemoteDataSource(
+    Supabase.instance.client,
+    ref.watch(storeImagesApiProvider),
+  );
 }
 
 @riverpod

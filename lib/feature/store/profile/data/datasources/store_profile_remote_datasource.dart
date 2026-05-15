@@ -1,18 +1,17 @@
 import 'dart:io';
 
-import 'package:mime/mime.dart';
-import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/data/services/store_images_api.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/feature/store/profile/data/models/store_profile_model.dart';
 
 class StoreProfileRemoteDataSource {
-  StoreProfileRemoteDataSource(this._supabaseClient);
+  StoreProfileRemoteDataSource(this._supabaseClient, this._storeImagesApi);
 
   final SupabaseClient _supabaseClient;
+  final StoreImagesApi _storeImagesApi;
   static const _storeProfileTable = AppConstants.tableStoreProfiles;
-  static const _logoBucket = AppConstants.bucketStoreLogos;
 
   Future<StoreProfileModel?> getStoreProfile() async {
     final user = _supabaseClient.auth.currentUser;
@@ -55,34 +54,14 @@ class StoreProfileRemoteDataSource {
     required final String storeId,
     required final File image,
   }) async {
-    final user = _supabaseClient.auth.currentUser;
-    if (user == null) throw const UnauthenticatedException();
-
-    final imageName = p.basename(image.path);
-    final logoPath = '$storeId/logo/$imageName';
-    final mimeType = lookupMimeType(image.path);
-
-    final bytes = await image.readAsBytes();
-    await _supabaseClient.storage
-        .from(_logoBucket)
-        .uploadBinary(logoPath, bytes, fileOptions: FileOptions(contentType: mimeType));
-
-    return logoPath;
-  }
-
-  Future<void> deleteLogo(final String logoPath) async {
-    await _supabaseClient.storage.from(_logoBucket).remove([logoPath]);
-  }
-
-  String _getLogoUrl(final String logoPath) {
-    return _supabaseClient.storage.from(_logoBucket).getPublicUrl(logoPath);
+    return _storeImagesApi.uploadStoreLogo(storeId: storeId, logo: image);
   }
 
   Map<String, dynamic> _withLogoUrl(final Map<String, dynamic> json) {
     final map = Map<String, dynamic>.from(json);
     final logoPath = map['logo_path'] as String?;
     if (logoPath != null && logoPath.isNotEmpty) {
-      map['logo_url'] = _getLogoUrl(logoPath);
+      map['logo_url'] = StoreImagesApi.publicUrl(logoPath);
     }
     return map;
   }
