@@ -123,6 +123,38 @@ export async function deletePublicImagesFromR2(keys: string[]): Promise<void> {
   }
 }
 
+export interface R2ObjectInfo {
+  key: string;
+  lastModified: Date;
+}
+
+export async function listPublicImagesFromR2(params: {
+  prefix?: string;
+  maxObjects?: number;
+}): Promise<R2ObjectInfo[]> {
+  const bucket = getPublicImagesBucketName();
+  const s3Client = getR2Client();
+  const cap = params.maxObjects ?? 50000;
+
+  const out: R2ObjectInfo[] = [];
+  let token: string | undefined;
+  do {
+    const resp = await s3Client.send(new ListObjectsV2Command({
+      Bucket: bucket,
+      Prefix: params.prefix,
+      ContinuationToken: token,
+    }));
+    for (const obj of resp.Contents ?? []) {
+      if (obj.Key && obj.LastModified) {
+        out.push({ key: obj.Key, lastModified: obj.LastModified });
+        if (out.length >= cap) return out;
+      }
+    }
+    token = resp.IsTruncated ? resp.NextContinuationToken : undefined;
+  } while (token);
+  return out;
+}
+
 export async function downloadPublicImageFromR2(key: string): Promise<Uint8Array> {
   const bucket = getPublicImagesBucketName();
   const resp = await getR2Client().send(new GetObjectCommand({
