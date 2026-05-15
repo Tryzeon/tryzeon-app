@@ -2,7 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getAuthenticatedUserClient, getAdminClient } from "../_shared/supabase.ts";
 import { QuotaManager, FeatureName } from "../_shared/quota.ts";
 import { fetchImageAsBase64, detectMimeType, mimeTypeToExtension, base64ToUint8Array } from "../_shared/image-utils.ts";
-import { uploadImageToR2 } from "../_shared/r2.ts";
+import { uploadTryonImageToR2 } from "../_shared/r2.ts";
 import { generateTryonImage } from "./image.ts";
 import { generateTryonVideo } from "./video.ts";
 
@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const fileName = `${user!.id}/${timestamp}.${extension}`;
 
-    const imageUrl = await uploadImageToR2(imageBuffer, fileName, mimeType);
+    const imageUrl = await uploadTryonImageToR2(imageBuffer, fileName, mimeType);
 
     return new Response(
       JSON.stringify({ imageUrl: imageUrl, usage: usage }),

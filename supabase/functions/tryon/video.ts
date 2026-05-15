@@ -1,4 +1,4 @@
-import { uploadVideoToR2 } from "../_shared/r2.ts";
+import { uploadTryonVideoToR2 } from "../_shared/r2.ts";
 import { detectMimeType, base64ToUint8Array } from "../_shared/image-utils.ts";
 
 const DEFAULT_VIDEO_PROMPT =
@@ -145,7 +145,7 @@ async function pollForCompletion(operationName: string, userId: string): Promise
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const fileName = `${userId}/${timestamp}.mp4`;
     
-    const videoUrl = await uploadVideoToR2(videoBuffer, fileName);
+    const videoUrl = await uploadTryonVideoToR2(videoBuffer, fileName);
     return videoUrl;
   }
 

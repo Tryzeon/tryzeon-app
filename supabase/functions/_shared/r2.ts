@@ -67,12 +67,12 @@ async function uploadToR2(
   });
 }
 
-export async function uploadVideoToR2(buffer: ArrayBuffer, fileName: string): Promise<string> {
-  const bucketName = Deno.env.get("R2_TRYON_IMAGES_BUCKET_NAME")!;
+export async function uploadTryonVideoToR2(buffer: ArrayBuffer, fileName: string): Promise<string> {
+  const bucketName = Deno.env.get("R2_TRYON_VIDEOS_BUCKET_NAME")!;
   return await uploadToR2(bucketName, fileName, new Uint8Array(buffer), "video/mp4");
 }
 
-export async function uploadImageToR2(
+export async function uploadTryonImageToR2(
   buffer: ArrayBuffer,
   fileName: string,
   contentType: string,
