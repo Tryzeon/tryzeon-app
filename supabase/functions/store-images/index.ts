@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { getAuthenticatedUserClient, getAdminClient } from "../_shared/supabase.ts";
-import { generatePresignedPutUrl } from "../_shared/r2.ts";
+import { deletePublicImagesFromR2, generatePresignedPutUrl } from "../_shared/r2.ts";
 
 const ALLOWED_MIMES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -78,6 +78,9 @@ Deno.serve(async (req) => {
     if (req.method === "POST" && sub === "presign-products") {
       return await handlePresignProducts(req, adminClient, user!.id);
     }
+    if (req.method === "POST" && sub === "delete") {
+      return await handleDelete(req, adminClient, user!.id);
+    }
     return json({ error: "Not found", code: "NOT_FOUND" }, 404);
   } catch (err) {
     console.error("store-images error", err);
@@ -154,4 +157,36 @@ async function handlePresignProducts(
     }),
   );
   return json({ items });
+}
+
+async function handleDelete(
+  req: Request,
+  adminClient: AdminClient,
+  userId: string,
+): Promise<Response> {
+  const body = await req.json().catch(() => null);
+  const storeId = body?.storeId;
+  const keys = body?.keys;
+
+  if (typeof storeId !== "string" || !storeId) {
+    return json({ error: "Missing storeId", code: "VALIDATION_ERROR" }, 400);
+  }
+  if (!Array.isArray(keys) || keys.length === 0) {
+    return json({ error: "Missing keys", code: "VALIDATION_ERROR" }, 400);
+  }
+  
+  // Enforce that every key lives under this store's namespace so the caller
+  // cannot delete another store's objects even if assertStoreOwner passes.
+  const prefix = `stores/${storeId}/`;
+  for (const k of keys) {
+    if (typeof k !== "string" || !k.startsWith(prefix)) {
+      return json({ error: "Invalid key for store", code: "VALIDATION_ERROR" }, 400);
+    }
+  }
+
+  const ownerErr = await assertStoreOwner(adminClient, userId, storeId);
+  if (ownerErr) return ownerErr;
+
+  await deletePublicImagesFromR2(keys as string[]);
+  return json({ deleted: keys.length });
 }

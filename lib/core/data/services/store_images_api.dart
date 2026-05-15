@@ -86,6 +86,17 @@ class StoreImagesApi {
     return keys;
   }
 
+  Future<void> deleteImages({
+    required final String storeId,
+    required final List<String> keys,
+  }) async {
+    if (keys.isEmpty) return;
+    await _supabaseClient.functions.invoke(
+      'store-images/delete',
+      body: {'storeId': storeId, 'keys': keys},
+    );
+  }
+
   Future<void> _putToR2({
     required final String uploadUrl,
     required final Uint8List bytes,

@@ -57,6 +57,13 @@ class StoreProfileRemoteDataSource {
     return _storeImagesApi.uploadStoreLogo(storeId: storeId, logo: image);
   }
 
+  Future<void> deleteLogo({
+    required final String storeId,
+    required final String key,
+  }) async {
+    return _storeImagesApi.deleteImages(storeId: storeId, keys: [key]);
+  }
+
   Map<String, dynamic> _withLogoUrl(final Map<String, dynamic> json) {
     final map = Map<String, dynamic>.from(json);
     final logoPath = map['logo_path'] as String?;

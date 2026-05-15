@@ -94,6 +94,13 @@ class ProductRemoteDataSource {
     );
   }
 
+  Future<void> deleteProductImages({
+    required final String storeId,
+    required final List<String> keys,
+  }) async {
+    return _storeImagesApi.deleteImages(storeId: storeId, keys: keys);
+  }
+
   Map<String, dynamic> _withProductImageUrl(final Map<String, dynamic> json) {
     final map = Map<String, dynamic>.from(json);
     final rawPaths = map['image_paths'];

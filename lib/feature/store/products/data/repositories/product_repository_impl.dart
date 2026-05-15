@@ -258,10 +258,14 @@ class ProductRepositoryImpl implements ProductRepository {
         await _remoteDataSource.updateProduct(targetModel);
       }
 
-      // 7. Drop removed images from local cache only.
-      // R2 objects become orphans and are reclaimed by the cleanup function.
+      // 7. Drop removed images locally and on R2.
       if (removedPaths.isNotEmpty) {
         _localDataSource.deleteProductImages(removedPaths).ignore();
+        _remoteDataSource
+            .deleteProductImages(storeId: original.storeId, keys: removedPaths)
+            .onError((final e, final s) {
+              AppLogger.warning('R2 delete failed for removed images', e, s);
+            });
       }
 
       // 8. Handle size changes
@@ -310,8 +314,12 @@ class ProductRepositoryImpl implements ProductRepository {
       await _remoteDataSource.deleteProductSizes(product.id);
 
       if (product.imagePaths.isNotEmpty) {
-        // R2 objects become orphans and are reclaimed by the cleanup function.
         _localDataSource.deleteProductImages(product.imagePaths).ignore();
+        _remoteDataSource
+            .deleteProductImages(storeId: product.storeId, keys: product.imagePaths)
+            .onError((final e, final s) {
+              AppLogger.warning('R2 delete failed for product images', e, s);
+            });
       }
 
       await _localDataSource.deleteProduct(
