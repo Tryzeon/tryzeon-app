@@ -1,13 +1,24 @@
 import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
+import { downloadPublicImageFromR2 } from "./r2.ts";
+
+function uint8ToBase64(bytes: Uint8Array): string {
+  return btoa(Array.from(bytes, (b) => String.fromCharCode(b)).join(""));
+}
 
 /**
- * Downloads an image from Supabase storage and converts it to base64.
- * Infers the bucket name from the path.
+ * Downloads an image (Supabase Storage or Cloudflare R2 public bucket) and
+ * returns it as base64. R2 is used for keys starting with `stores/` (store
+ * logos and product images); Supabase Storage is used for wardrobe and avatar
+ * paths.
  */
 export async function fetchImageAsBase64(supabase: SupabaseClient, path: string): Promise<string> {
+  if (path.startsWith("stores/")) {
+    const bytes = await downloadPublicImageFromR2(path);
+    return uint8ToBase64(bytes);
+  }
+
   const folderToBucketMap: Record<string, string> = {
     "wardrobe": "wardrobe-images",
-    "products": "product-images",
     "avatar": "user-avatars",
   };
 
@@ -15,13 +26,13 @@ export async function fetchImageAsBase64(supabase: SupabaseClient, path: string)
   const folder = segments.find(segment => folderToBucketMap.hasOwnProperty(segment));
 
   if (!folder) {
-    throw new Error(`Invalid path structure: ${path}. No valid folder segment found. Expected one of: ${Object.keys(folderToBucketMap).join(", ")}`);
+    throw new Error(`Invalid path structure: ${path}. No valid folder segment found. Expected R2 prefix (stores/) or Supabase folder: ${Object.keys(folderToBucketMap).join(", ")}`);
   }
 
   const bucket = folderToBucketMap[folder];
 
   const { data, error } = await supabase.storage.from(bucket).download(path);
-  
+
   if (error) {
     throw new Error(`Failed to download image from ${bucket}/${path}: ${error.message}`);
   }
@@ -31,10 +42,7 @@ export async function fetchImageAsBase64(supabase: SupabaseClient, path: string)
   }
 
   const arrayBuffer = await data.arrayBuffer();
-  const uint8Array = new Uint8Array(arrayBuffer);
-  
-  // Efficient base64 conversion for Deno, avoiding stack limits
-  return btoa(Array.from(uint8Array, (b) => String.fromCharCode(b)).join(""));
+  return uint8ToBase64(new Uint8Array(arrayBuffer));
 }
 
 /**
