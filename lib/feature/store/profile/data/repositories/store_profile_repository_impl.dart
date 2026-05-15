@@ -93,11 +93,12 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
 
         final oldLogoPath = original.logoPath;
         if (oldLogoPath != null && oldLogoPath.isNotEmpty && oldLogoPath != newLogoPath) {
-          _remoteDataSource
-              .deleteLogo(storeId: target.id, key: oldLogoPath)
-              .onError((final e, final s) {
-                AppLogger.warning('delete failed for old store logo', e, s);
-              });
+          _remoteDataSource.deleteLogo(storeId: target.id, key: oldLogoPath).onError((
+            final e,
+            final s,
+          ) {
+            AppLogger.warning('delete failed for old store logo', e, s);
+          });
         }
       }
 
