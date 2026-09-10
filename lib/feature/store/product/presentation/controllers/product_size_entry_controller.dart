@@ -1,19 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/feature/common/measurement/domain/entities/measurement_unit.dart';
+import 'package:tryzeon/feature/common/measurement/presentation/formatters/measurement_value_format.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/standard_size_label.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/parsed_size.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/size_item.dart';
+
+String _formatValue(final double? value) =>
+    value == null ? '' : formatMeasurementValue(value);
+
+class RangeEntryControllers {
+  RangeEntryControllers({final MeasurementRange? initial})
+    : min = TextEditingController(text: _formatValue(initial?.min)),
+      max = TextEditingController(text: _formatValue(initial?.max));
+
+  final TextEditingController min;
+  final TextEditingController max;
+
+  bool get isEmpty => min.text.isEmpty && max.text.isEmpty;
+
+  MeasurementRange? toRange() {
+    final lower = double.tryParse(min.text);
+    final upper = double.tryParse(max.text);
+    if (lower == null || upper == null) return null;
+    return MeasurementRange(min: lower, max: upper);
+  }
+
+  void apply(final MeasurementRange range) {
+    min.text = _formatValue(range.min);
+    max.text = _formatValue(range.max);
+  }
+
+  void dispose() {
+    min.dispose();
+    max.dispose();
+  }
+}
 
 class ProductSizeEntryController {
   ProductSizeEntryController({
     required this.label,
     this.id,
     final GarmentMeasurements? garmentMeasurements,
+    final BodyMeasurementRanges? bodyMeasurementRanges,
   }) {
     for (final type in GarmentMeasurementType.values) {
       measurementControllers[type] = TextEditingController(
-        text: garmentMeasurements?.getValue(type)?.toString() ?? '',
+        text: _formatValue(garmentMeasurements?.getValue(type)),
+      );
+    }
+    for (final type in bodyMeasurementRangeTypes) {
+      rangeControllers[type] = RangeEntryControllers(
+        initial: bodyMeasurementRanges?.getValue(type),
       );
     }
   }
@@ -23,6 +61,7 @@ class ProductSizeEntryController {
       id: size.id,
       label: size.name,
       garmentMeasurements: size.garmentMeasurements,
+      bodyMeasurementRanges: size.bodyMeasurementRanges,
     );
   }
 
@@ -31,15 +70,20 @@ class ProductSizeEntryController {
 
   final Map<GarmentMeasurementType, TextEditingController> measurementControllers = {};
 
+  /// Body measurement ranges are body values in the body type's own unit (cm or kg), so
+  /// they stay out of the cm/寸/吋 conversion the garment cells go through.
+  final Map<BodyMeasurementType, RangeEntryControllers> rangeControllers = {};
+
   String get matchKey => StandardSizeLabel.matchKeyOf(label);
 
   void applyParsed(final ParsedSize parsed, {required final MeasurementUnit targetUnit}) {
-    String format(final double v) => v.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '');
-
     for (final entry in parsed.garmentMeasurements.entries) {
       final m = entry.value;
       final factor = m.unit.toCmFactor / targetUnit.toCmFactor;
-      measurementControllers[entry.key]?.text = format(m.value * factor);
+      measurementControllers[entry.key]?.text = _formatValue(m.value * factor);
+    }
+    for (final entry in parsed.bodyMeasurementRanges.entries) {
+      rangeControllers[entry.key]?.apply(entry.value);
     }
   }
 
@@ -60,6 +104,13 @@ class ProductSizeEntryController {
     });
   }
 
+  BodyMeasurementRanges? _buildBodyMeasurementRanges() {
+    final range = BodyMeasurementRanges.fromValues({
+      for (final entry in rangeControllers.entries) entry.key: entry.value.toRange(),
+    });
+    return range.isEmpty ? null : range;
+  }
+
   SizeItem toSizeItem({
     required final MeasurementUnit unit,
     required final List<GarmentMeasurementType> visibleTypes,
@@ -68,14 +119,20 @@ class ProductSizeEntryController {
       unit: unit,
       visibleTypes: visibleTypes,
     );
+    final bodyMeasurementRanges = _buildBodyMeasurementRanges();
     final sizeId = id;
 
     return sizeId == null
-        ? SizeItem.newSize(name: label, garmentMeasurements: garmentMeasurements)
+        ? SizeItem.newSize(
+            name: label,
+            garmentMeasurements: garmentMeasurements,
+            bodyMeasurementRanges: bodyMeasurementRanges,
+          )
         : SizeItem.existing(
             id: sizeId,
             name: label,
             garmentMeasurements: garmentMeasurements,
+            bodyMeasurementRanges: bodyMeasurementRanges,
           );
   }
 
@@ -90,9 +147,7 @@ class ProductSizeEntryController {
     void convert(final TextEditingController controller) {
       final value = double.tryParse(controller.text);
       if (value == null) return;
-      controller.text = (value * factor)
-          .toStringAsFixed(1)
-          .replaceAll(RegExp(r'\.0$'), '');
+      controller.text = _formatValue(value * factor);
     }
 
     measurementControllers.values.forEach(convert);
@@ -100,6 +155,9 @@ class ProductSizeEntryController {
 
   void dispose() {
     for (final controller in measurementControllers.values) {
+      controller.dispose();
+    }
+    for (final controller in rangeControllers.values) {
       controller.dispose();
     }
   }

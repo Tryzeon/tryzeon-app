@@ -4,19 +4,33 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/validators.dart';
+import 'package:tryzeon/feature/common/body_measurements/presentation/mappers/body_measurement_type_ui_mapper.dart';
 import 'package:tryzeon/feature/common/measurement/domain/entities/measurement_unit.dart';
+import 'package:tryzeon/feature/common/product_size/domain/entities/body_measurement_ranges.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/standard_size_label.dart';
 import 'package:tryzeon/feature/common/product_size/presentation/mappers/garment_measurement_type_ui_mapper.dart';
 import 'package:tryzeon/feature/store/product/presentation/controllers/product_size_entry_controller.dart';
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_size_manager.dart';
 
 // Table geometry: the left column and the cells must share a height to line
-// up, so these are fixed rather than sized to content. Row height includes room
-// for one line of error text, so a row does not change height when it errors.
+// up, so these are fixed rather than sized to content. Every field reserves its
+// helper line (see [_fieldDecoration]) so a cell keeps its height and position
+// when an error appears beneath it.
 const double _labelColumnWidth = 40;
-// Cell width is set by the longest error message (`40–200cm`); any narrower
+// Cell width is set by the longest error message (`100–250 cm`); any narrower
 // and it ellipsizes.
 const double _cellWidth = 65;
+// A range pair shares one message line, so each bound only needs to fit a
+// four-digit value. The gap between two range columns must read as clearly
+// wider than the gap inside a pair, or the four boxes blur into one row.
+const double _boundWidth = 56;
+const double _rangeGap = AppSpacing.smMd;
+const double _rangeColumnPadding = AppSpacing.smMd;
+const double _rangeCellWidth = _boundWidth * 2 + _rangeGap + _rangeColumnPadding * 2;
+// The visible input box, before the caption line beneath it. Row labels centre
+// on this rather than on the whole row.
+const double _fieldHeight = 40;
+const double _tableGap = AppSpacing.lg;
 const double _rowHeight = 62;
 const double _headerHeight = 32;
 
@@ -44,15 +58,7 @@ class ProductSizeMatrixEditor extends HookWidget {
           manager: manager,
           onAddCustom: () => _promptCustomSize(context, manager),
         ),
-        const SizedBox(height: AppSpacing.sm),
-        Align(
-          alignment: Alignment.centerRight,
-          child: _UnitSelector(
-            selectedUnit: manager.selectedUnit,
-            onUnitChanged: manager.changeUnit,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: AppSpacing.md),
         if (manager.sizeEntries.isEmpty)
           Card(
             child: Padding(
@@ -67,12 +73,47 @@ class ProductSizeMatrixEditor extends HookWidget {
               ),
             ),
           )
-        else
+        else ...[
+          _SubsectionHeader(
+            title: '商品尺寸',
+            helper: '衣服本身量出來的數字',
+            trailing: _UnitSelector(
+              selectedUnit: manager.selectedUnit,
+              onUnitChanged: manager.changeUnit,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
           _MatrixTable(
             entries: manager.sizeEntries,
-            visibleTypes: visibleTypes,
-            unit: manager.selectedUnit,
+            columns: [
+              for (final type in visibleTypes)
+                _MatrixColumn(
+                  label: type.label,
+                  width: _cellWidth,
+                  cellBuilder: (final entry) => _MeasurementCell(
+                    controller: entry.measurementControllers[type]!,
+                    type: type,
+                    unit: manager.selectedUnit,
+                  ),
+                ),
+            ],
           ),
+          const SizedBox(height: _tableGap),
+          const _SubsectionHeader(title: '適合身形', helper: '這個尺寸適合的穿著者範圍'),
+          const SizedBox(height: AppSpacing.sm),
+          _MatrixTable(
+            entries: manager.sizeEntries,
+            columns: [
+              for (final type in bodyMeasurementRangeTypes)
+                _MatrixColumn(
+                  label: '${type.label} (${type.quantity.unitSuffix})',
+                  width: _rangeCellWidth,
+                  cellBuilder: (final entry) =>
+                      _RangeCell(controllers: entry.rangeControllers[type]!, type: type),
+                ),
+            ],
+          ),
+        ],
       ],
     );
   }
@@ -176,16 +217,59 @@ class _SizeChipRow extends StatelessWidget {
   }
 }
 
-class _MatrixTable extends StatelessWidget {
-  const _MatrixTable({
-    required this.entries,
-    required this.visibleTypes,
-    required this.unit,
+class _SubsectionHeader extends StatelessWidget {
+  const _SubsectionHeader({required this.title, required this.helper, this.trailing});
+
+  final String title;
+  final String helper;
+  final Widget? trailing;
+
+  @override
+  Widget build(final BuildContext context) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: textTheme.titleSmall),
+              const SizedBox(height: AppSpacing.xxs),
+              Text(
+                helper,
+                style: textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+        ?trailing,
+      ],
+    );
+  }
+}
+
+class _MatrixColumn {
+  const _MatrixColumn({
+    required this.label,
+    required this.width,
+    required this.cellBuilder,
   });
 
+  final String label;
+  final double width;
+  final Widget Function(ProductSizeEntryController entry) cellBuilder;
+}
+
+class _MatrixTable extends StatelessWidget {
+  const _MatrixTable({required this.entries, required this.columns});
+
   final List<ProductSizeEntryController> entries;
-  final List<GarmentMeasurementType> visibleTypes;
-  final MeasurementUnit unit;
+  final List<_MatrixColumn> columns;
 
   @override
   Widget build(final BuildContext context) {
@@ -207,13 +291,22 @@ class _MatrixTable extends StatelessWidget {
                 SizedBox(
                   key: ObjectKey(entry),
                   height: rowHeight,
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      entry.label,
-                      style: textTheme.labelLarge,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.xs),
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: SizedBox(
+                        height: textScaler.scale(_fieldHeight),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            entry.label,
+                            style: textTheme.labelLarge,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -230,18 +323,8 @@ class _MatrixTable extends StatelessWidget {
                   height: headerHeight,
                   child: Row(
                     children: [
-                      for (final type in visibleTypes)
-                        SizedBox(
-                          width: _cellWidth,
-                          child: Center(
-                            child: Text(
-                              type.label,
-                              style: textTheme.labelLarge,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ),
+                      for (final column in columns)
+                        _HeaderCell(label: column.label, width: column.width),
                     ],
                   ),
                 ),
@@ -250,14 +333,8 @@ class _MatrixTable extends StatelessWidget {
                     key: ObjectKey(entry),
                     height: rowHeight,
                     child: Row(
-                      children: [
-                        for (final type in visibleTypes)
-                          _MeasurementCell(
-                            controller: entry.measurementControllers[type]!,
-                            type: type,
-                            unit: unit,
-                          ),
-                      ],
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [for (final column in columns) column.cellBuilder(entry)],
                     ),
                   ),
               ],
@@ -265,6 +342,28 @@ class _MatrixTable extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _HeaderCell extends StatelessWidget {
+  const _HeaderCell({required this.label, required this.width});
+
+  final String label;
+  final double width;
+
+  @override
+  Widget build(final BuildContext context) {
+    return SizedBox(
+      width: width,
+      child: Center(
+        child: Text(
+          label,
+          style: Theme.of(context).textTheme.labelLarge,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
     );
   }
 }
@@ -307,15 +406,176 @@ class _MeasurementCell extends StatelessWidget {
             scale: unit.toCmFactor,
             compact: true,
           ),
-          decoration: const InputDecoration(
-            isDense: true,
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: AppSpacing.xxs,
-              vertical: AppSpacing.sm,
-            ),
-            errorStyle: TextStyle(fontSize: 9, height: 1.1),
-            errorMaxLines: 1,
+          decoration: _fieldDecoration(context),
+        ),
+      ),
+    );
+  }
+}
+
+const TextStyle _captionStyle = TextStyle(fontSize: 9, height: 1.1);
+
+InputDecoration _fieldDecoration(final BuildContext context, {final String? hint}) {
+  final theme = Theme.of(context);
+  return InputDecoration(
+    isDense: true,
+    hintText: hint,
+    hintStyle: theme.textTheme.bodySmall?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    ),
+    contentPadding: const EdgeInsets.symmetric(
+      horizontal: AppSpacing.xxs,
+      vertical: AppSpacing.sm,
+    ),
+    helperText: ' ',
+    helperStyle: _captionStyle,
+    errorStyle: _captionStyle,
+    errorMaxLines: 1,
+  );
+}
+
+class _RangeCell extends StatelessWidget {
+  const _RangeCell({required this.controllers, required this.type});
+
+  final RangeEntryControllers controllers;
+  final BodyMeasurementType type;
+
+  @override
+  Widget build(final BuildContext context) {
+    final theme = Theme.of(context);
+
+    return SizedBox(
+      width: _rangeCellWidth,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: _rangeColumnPadding,
+          vertical: AppSpacing.xs,
+        ),
+        child: FormField<void>(
+          autovalidateMode: AutovalidateMode.onUserInteractionIfError,
+          validator: (final _) => _validate(),
+          builder: (final state) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  _BoundField(
+                    controller: controllers.min,
+                    hint: '下限',
+                    hasError: state.hasError,
+                    onChanged: state.didChange,
+                  ),
+                  SizedBox(
+                    width: _rangeGap,
+                    child: Center(
+                      child: Text(
+                        '–',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ),
+                  _BoundField(
+                    controller: controllers.max,
+                    hint: '上限',
+                    hasError: state.hasError,
+                    onChanged: state.didChange,
+                  ),
+                ],
+              ),
+              _CaptionLine(text: state.errorText, color: theme.colorScheme.error),
+            ],
           ),
+        ),
+      ),
+    );
+  }
+
+  String? _validate() {
+    final minText = controllers.min.text.trim();
+    final maxText = controllers.max.text.trim();
+    if (minText.isEmpty && maxText.isEmpty) return null;
+    if (minText.isEmpty) return '請填下限';
+    if (maxText.isEmpty) return '請填上限';
+    final unit = type.quantity.unitSuffix;
+    for (final text in [minText, maxText]) {
+      final error = AppValidators.validateRange(
+        text,
+        min: type.min,
+        max: type.max,
+        unitSuffix: unit,
+        compact: true,
+      );
+      if (error != null) return '${type.label}需在 $error';
+    }
+    if (double.parse(maxText) < double.parse(minText)) return '上限需大於下限';
+    return null;
+  }
+}
+
+/// Reserves the same line the garment cells reserve through their helper text,
+/// so the two tables' rows line up whether or not anything is shown.
+class _CaptionLine extends StatelessWidget {
+  const _CaptionLine({required this.text, required this.color});
+
+  final String? text;
+  final Color color;
+
+  @override
+  Widget build(final BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.xs),
+      child: Text(
+        text ?? ' ',
+        style: _captionStyle.copyWith(color: color),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+}
+
+class _BoundField extends StatelessWidget {
+  const _BoundField({
+    required this.controller,
+    required this.hint,
+    required this.hasError,
+    required this.onChanged,
+  });
+
+  final TextEditingController controller;
+  final String hint;
+  final bool hasError;
+  final ValueChanged<void> onChanged;
+
+  @override
+  Widget build(final BuildContext context) {
+    final theme = Theme.of(context);
+    final errorBorder = theme.inputDecorationTheme.errorBorder;
+
+    return SizedBox(
+      width: _boundWidth,
+      child: TextField(
+        controller: controller,
+        textAlign: TextAlign.center,
+        style: theme.textTheme.bodyMedium,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        textInputAction: TextInputAction.next,
+        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,1}'))],
+        onChanged: (final _) => onChanged(null),
+        decoration: InputDecoration(
+          isDense: true,
+          hintText: hint,
+          hintStyle: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.xxs,
+            vertical: AppSpacing.sm,
+          ),
+          enabledBorder: hasError ? errorBorder : null,
+          focusedBorder: hasError ? theme.inputDecorationTheme.focusedErrorBorder : null,
         ),
       ),
     );
