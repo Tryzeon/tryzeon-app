@@ -241,6 +241,7 @@ export type Database = {
         Row: {
           category_id: string
           created_at: string
+          description: string | null
           elasticity: Database["public"]["Enums"]["product_elasticity"] | null
           fit: Database["public"]["Enums"]["product_fit"] | null
           gender: Database["public"]["Enums"]["product_gender"]
@@ -260,6 +261,7 @@ export type Database = {
         Insert: {
           category_id: string
           created_at?: string
+          description?: string | null
           elasticity?: Database["public"]["Enums"]["product_elasticity"] | null
           fit?: Database["public"]["Enums"]["product_fit"] | null
           gender?: Database["public"]["Enums"]["product_gender"]
@@ -279,6 +281,7 @@ export type Database = {
         Update: {
           category_id?: string
           created_at?: string
+          description?: string | null
           elasticity?: Database["public"]["Enums"]["product_elasticity"] | null
           fit?: Database["public"]["Enums"]["product_fit"] | null
           gender?: Database["public"]["Enums"]["product_gender"]
