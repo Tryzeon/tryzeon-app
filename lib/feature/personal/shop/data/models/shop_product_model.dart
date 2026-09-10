@@ -17,6 +17,7 @@ class ShopProductModel {
     required this.createdAt,
     required this.updatedAt,
     this.purchaseLink,
+    this.description,
     this.material,
     this.elasticity,
     this.fit,
@@ -39,6 +40,7 @@ class ShopProductModel {
   final List<String> imageUrls;
   final String id;
   final String? purchaseLink;
+  final String? description;
   final String? material;
   final String? elasticity;
   final String? fit;
