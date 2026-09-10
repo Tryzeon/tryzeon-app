@@ -18,6 +18,7 @@ class ProductBasicFieldsEditor extends HookWidget {
     required this.nameController,
     required this.priceController,
     required this.purchaseLinkController,
+    required this.descriptionController,
     required this.selectedGender,
     required this.selectedCategoryId,
     required this.productCategoriesAsync,
@@ -27,6 +28,7 @@ class ProductBasicFieldsEditor extends HookWidget {
   final TextEditingController nameController;
   final TextEditingController priceController;
   final TextEditingController purchaseLinkController;
+  final TextEditingController descriptionController;
   final ValueNotifier<ProductGender?> selectedGender;
   final ValueNotifier<String?> selectedCategoryId;
   final AsyncValue<List<ProductCategory>> productCategoriesAsync;
@@ -36,6 +38,7 @@ class ProductBasicFieldsEditor extends HookWidget {
   Widget build(final BuildContext context) {
     final priceFocusNode = useFocusNode();
     final purchaseLinkFocusNode = useFocusNode();
+    final descriptionFocusNode = useFocusNode();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,9 +120,23 @@ class ProductBasicFieldsEditor extends HookWidget {
             helperMaxLines: 2,
           ),
           keyboardType: TextInputType.url,
-          textInputAction: TextInputAction.done,
-          onFieldSubmitted: (final _) => FocusScope.of(context).unfocus(),
+          textInputAction: TextInputAction.next,
+          onFieldSubmitted: (final _) => descriptionFocusNode.requestFocus(),
           validator: AppValidators.validateUrl,
+          autovalidateMode: AutovalidateMode.onUserInteractionIfError,
+        ),
+        const SizedBox(height: AppSpacing.md),
+        const _FieldLabel('商品描述（選填）'),
+        TextFormField(
+          controller: descriptionController,
+          focusNode: descriptionFocusNode,
+          decoration: const InputDecoration(hintText: '介紹商品特色、穿搭建議或注意事項'),
+          keyboardType: TextInputType.multiline,
+          textInputAction: TextInputAction.newline,
+          minLines: 3,
+          maxLines: 8,
+          maxLength: AppValidators.productDescriptionMaxLength,
+          validator: AppValidators.validateProductDescription,
           autovalidateMode: AutovalidateMode.onUserInteractionIfError,
         ),
       ],

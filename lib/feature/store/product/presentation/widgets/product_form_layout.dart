@@ -114,6 +114,7 @@ class ProductFormLayout extends StatelessWidget {
                   nameController: formData.nameController,
                   priceController: formData.priceController,
                   purchaseLinkController: formData.purchaseLinkController,
+                  descriptionController: formData.descriptionController,
                   selectedGender: formData.selectedGender,
                   selectedCategoryId: formData.selectedCategoryId,
                   productCategoriesAsync: productCategoriesAsync,

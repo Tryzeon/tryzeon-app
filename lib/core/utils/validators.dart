@@ -102,6 +102,16 @@ class AppValidators {
     return null;
   }
 
+  static const productDescriptionMaxLength = 500;
+
+  static String? validateProductDescription(final String? value) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.runes.length > productDescriptionMaxLength) {
+      return '商品描述最多 $productDescriptionMaxLength 字';
+    }
+    return null;
+  }
+
   static String? validateStoreName(final String? value) {
     if (value == null || value.trim().isEmpty) {
       return '請輸入店家名稱';

@@ -16,6 +16,7 @@ class ProductFormData {
     required this.nameController,
     required this.priceController,
     required this.purchaseLinkController,
+    required this.descriptionController,
     required this.selectedGender,
     required this.selectedMaterial,
     required this.selectedFit,
@@ -31,6 +32,7 @@ class ProductFormData {
   final TextEditingController nameController;
   final TextEditingController priceController;
   final TextEditingController purchaseLinkController;
+  final TextEditingController descriptionController;
   final ValueNotifier<ProductGender?> selectedGender;
   final ValueNotifier<String?> selectedMaterial;
   final ValueNotifier<ProductFit?> selectedFit;
@@ -65,6 +67,9 @@ class ProductFormData {
       gender: selectedGender.value!,
       purchaseLink: purchaseLinkController.text.isNotEmpty
           ? purchaseLinkController.text
+          : null,
+      description: descriptionController.text.trim().isNotEmpty
+          ? descriptionController.text.trim()
           : null,
       material: selectedMaterial.value,
       elasticity: selectedElasticity.value,
@@ -115,6 +120,9 @@ ProductFormData useProductForm({final Product? initialProduct}) {
   final purchaseLinkController = useTextEditingController(
     text: initialProduct?.purchaseLink,
   );
+  final descriptionController = useTextEditingController(
+    text: initialProduct?.description,
+  );
   final selectedGender = useValueNotifier<ProductGender?>(initialProduct?.gender);
   final selectedMaterial = useValueNotifier<String?>(initialProduct?.material);
   final selectedFit = useValueNotifier<ProductFit?>(initialProduct?.fit);
@@ -146,6 +154,7 @@ ProductFormData useProductForm({final Product? initialProduct}) {
     nameController: nameController,
     priceController: priceController,
     purchaseLinkController: purchaseLinkController,
+    descriptionController: descriptionController,
     selectedGender: selectedGender,
     selectedMaterial: selectedMaterial,
     selectedFit: selectedFit,

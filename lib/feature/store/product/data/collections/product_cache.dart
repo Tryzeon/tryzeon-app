@@ -21,6 +21,7 @@ class ProductCache {
   String? status;
   String? gender;
   String? purchaseLink;
+  String? description;
   String? material;
 
   String? elasticity;

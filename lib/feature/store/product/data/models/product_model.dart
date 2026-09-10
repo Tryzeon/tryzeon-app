@@ -20,6 +20,7 @@ class ProductModel {
     this.status,
     this.gender,
     this.purchaseLink,
+    this.description,
     this.material,
     this.elasticity,
     this.fit,
@@ -43,6 +44,7 @@ class ProductModel {
   final String? status;
   final String? gender;
   final String? purchaseLink;
+  final String? description;
   final String? material;
   final String? elasticity;
   final String? fit;

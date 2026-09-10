@@ -123,6 +123,7 @@ class ProductRepositoryImpl implements ProductRepository {
         imagePaths: imagePaths,
         gender: draft.gender.value,
         purchaseLink: draft.purchaseLink,
+        description: draft.description,
         material: draft.material,
         elasticity: draft.elasticity?.value,
         fit: draft.fit?.value,

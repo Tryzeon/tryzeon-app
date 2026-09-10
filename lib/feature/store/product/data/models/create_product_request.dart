@@ -14,6 +14,7 @@ class CreateProductRequest {
     required this.imagePaths,
     this.gender,
     this.purchaseLink,
+    this.description,
     this.material,
     this.elasticity,
     this.fit,
@@ -30,6 +31,7 @@ class CreateProductRequest {
   final List<String> imagePaths;
   final String? gender;
   final String? purchaseLink;
+  final String? description;
   final String? material;
   final String? elasticity;
   final String? fit;
