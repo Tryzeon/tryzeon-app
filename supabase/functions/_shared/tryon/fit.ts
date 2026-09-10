@@ -6,10 +6,10 @@ import type { BodyMeasurements } from "../user-profile.ts";
 import { LIMITS } from "./types.ts";
 
 /**
- * As stored in `product_sizes.garment_measurements`; sparse, since store owners publish
- * only what they actually measured.
+ * As stored in `product_sizes.garment_measurements`; sparse, since store owners
+ * publish only what they actually measured.
  */
-export interface SizeMeasurements {
+export interface GarmentMeasurements {
   shoulder_width?: number;
   chest_circumference?: number;
   sleeve_length?: number;
@@ -18,6 +18,45 @@ export interface SizeMeasurements {
   thigh_circumference?: number;
   length?: number;
 }
+
+export interface MeasurementRange {
+  min: number;
+  max: number;
+}
+
+/**
+ * As stored in `product_sizes.body_measurement_ranges`: the body a size is published as
+ * fitting, keyed like `BodyMeasurements`. Height is centimeters, weight is
+ * kilograms. Only height and weight are described here — for a circumference
+ * the ease clause above already says how the garment sits.
+ */
+export type BodyMeasurementRanges = Partial<
+  Record<keyof BodyMeasurements, MeasurementRange>
+>;
+
+/** The `product_sizes` row as the fit description needs it. */
+export interface ProductSizeFit {
+  name: string;
+  garment_measurements: GarmentMeasurements | null;
+  body_measurement_ranges: BodyMeasurementRanges | null;
+}
+
+const BODY_MEASUREMENT_RANGE_DIMENSIONS: ReadonlyArray<{
+  key: "height" | "weight";
+  unit: "cm" | "kg";
+  phrase: (range: string) => string;
+}> = [
+  {
+    key: "height",
+    unit: "cm",
+    phrase: (r) => `recommended for wearers ${r} tall`,
+  },
+  {
+    key: "weight",
+    unit: "kg",
+    phrase: (r) => `recommended for wearers of ${r}`,
+  },
+];
 
 /**
  * Ease thresholds in centimeters, per body dimension. DERIVED, NOT CALIBRATED:
@@ -45,7 +84,7 @@ interface EaseLadder {
  */
 const CIRCUMFERENCES: ReadonlyArray<{
   label: string;
-  garment: keyof SizeMeasurements;
+  garment: keyof GarmentMeasurements;
   body: keyof BodyMeasurements;
   ladder: EaseLadder;
 }> = [
@@ -113,14 +152,34 @@ function num(value: unknown): number | undefined {
  * "accepted" while their input was quietly cut short.
  */
 export function buildGarmentFitDetail(
-  sizeName: string,
-  size: SizeMeasurements | null,
+  size: ProductSizeFit,
   body: BodyMeasurements,
 ): string | undefined {
-  if (!size) return undefined;
-
   const clauses: string[] = [];
+  if (size.garment_measurements) {
+    appendMeasurementClauses(clauses, size.garment_measurements, body);
+  }
+  if (size.body_measurement_ranges) {
+    appendBodyMeasurementRangeClauses(
+      clauses,
+      size.body_measurement_ranges,
+      body,
+    );
+  }
 
+  if (clauses.length === 0) return undefined;
+
+  return `size ${size.name}: ${clauses.join("; ")}`.slice(
+    0,
+    LIMITS.MAX_GARMENT_FIT_LENGTH,
+  );
+}
+
+function appendMeasurementClauses(
+  clauses: string[],
+  size: GarmentMeasurements,
+  body: BodyMeasurements,
+): void {
   for (const dim of CIRCUMFERENCES) {
     const garmentValue = num(size[dim.garment]);
     const bodyValue = num(body[dim.body]);
@@ -168,11 +227,34 @@ export function buildGarmentFitDetail(
 
   const sleeve = num(size.sleeve_length);
   if (sleeve !== undefined) clauses.push(`sleeve length ${cm(sleeve)}cm`);
+}
 
-  if (clauses.length === 0) return undefined;
-
-  return `size ${sizeName}: ${clauses.join("; ")}`.slice(
-    0,
-    LIMITS.MAX_GARMENT_FIT_LENGTH,
-  );
+/**
+ * Where the wearer falls against the store's stated range: outside it, a
+ * taller wearer makes the same garment sit shorter and a heavier one fills it
+ * further, which the ease clauses cannot say for a dimension with no garment
+ * counterpart.
+ */
+function appendBodyMeasurementRangeClauses(
+  clauses: string[],
+  bodyMeasurementRanges: BodyMeasurementRanges,
+  body: BodyMeasurements,
+): void {
+  for (const dim of BODY_MEASUREMENT_RANGE_DIMENSIONS) {
+    const range = bodyMeasurementRanges[dim.key];
+    const min = num(range?.min);
+    const max = num(range?.max);
+    const value = num(body[dim.key]);
+    if (min === undefined || max === undefined || value === undefined) continue;
+    const position = value < min
+      ? `${cm(min - value)}${dim.unit} below that range`
+      : value > max
+      ? `${cm(value - max)}${dim.unit} above that range`
+      : "within that range";
+    clauses.push(
+      `${dim.phrase(`${cm(min)}–${cm(max)}${dim.unit}`)}; this wearer is ${
+        cm(value)
+      }${dim.unit}, ${position}`,
+    );
+  }
 }

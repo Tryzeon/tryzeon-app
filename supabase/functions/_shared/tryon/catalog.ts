@@ -1,6 +1,6 @@
 import { isUuid } from "../text.ts";
 import type { BodyMeasurements } from "../user-profile.ts";
-import { buildGarmentFitDetail, type SizeMeasurements } from "./fit.ts";
+import { buildGarmentFitDetail, type ProductSizeFit } from "./fit.ts";
 import { ValidationError } from "./errors.ts";
 import { LIMITS } from "./types.ts";
 import type { ProductRef, ResolvedGarment } from "./types.ts";
@@ -62,7 +62,7 @@ async function resolveSizeFit(
 ): Promise<string | undefined> {
   const { data, error } = await client
     .from(PRODUCT_SIZES_TABLE)
-    .select("name, garment_measurements")
+    .select("name, garment_measurements, body_measurement_ranges")
     .eq("id", sizeId)
     .eq("product_id", productId)
     .maybeSingle();
@@ -80,11 +80,17 @@ async function resolveSizeFit(
     return undefined;
   }
 
-  return buildGarmentFitDetail(
-    typeof data.name === "string" ? data.name : "",
-    (data.garment_measurements as SizeMeasurements | null) ?? null,
-    body,
-  );
+  const size: ProductSizeFit = {
+    name: typeof data.name === "string" ? data.name : "",
+    garment_measurements:
+      (data.garment_measurements as ProductSizeFit["garment_measurements"]) ??
+        null,
+    body_measurement_ranges: (data
+      .body_measurement_ranges as ProductSizeFit[
+        "body_measurement_ranges"
+      ]) ?? null,
+  };
+  return buildGarmentFitDetail(size, body);
 }
 
 export async function resolveProductGarment(

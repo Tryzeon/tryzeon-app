@@ -1,8 +1,4 @@
-import {
-  assertEquals,
-  assertRejects,
-  assertStringIncludes,
-} from "@std/assert";
+import { assertEquals, assertRejects, assertStringIncludes } from "@std/assert";
 import { buildProductGarmentDetail, resolveProductGarment } from "./catalog.ts";
 import { LIMITS } from "./types.ts";
 import { ValidationError } from "./errors.ts";
@@ -160,6 +156,32 @@ Deno.test("SECURITY: a sizeId belonging to a different product does not attach a
   assertEquals("fit" in garment, false);
 });
 
+Deno.test("resolveProductGarment describes the size's body measurement range against the shopper", async () => {
+  const { admin } = fakeAdmin({
+    products: { row: PRODUCT_ROW },
+    product_sizes: {
+      row: {
+        id: SIZE_ID,
+        product_id: PRODUCT_ID,
+        name: "M",
+        garment_measurements: null,
+        body_measurement_ranges: { height: { min: 160, max: 170 } },
+      },
+    },
+  });
+
+  const garment = await resolveProductGarment(
+    admin,
+    { productId: PRODUCT_ID, sizeId: SIZE_ID },
+    { height: 172 },
+  );
+
+  assertEquals(
+    garment.fit,
+    "size M: recommended for wearers 160–170cm tall; this wearer is 172cm, 2cm above that range",
+  );
+});
+
 Deno.test("resolveProductGarment looks the product up through get_shop_product", async () => {
   const { admin, rpcCalls } = fakeAdmin({ products: { row: PRODUCT_ROW } });
   await resolveProductGarment(admin, { productId: PRODUCT_ID }, null);
@@ -191,7 +213,11 @@ Deno.test("resolveProductGarment sends only the product's first image", async ()
     },
   });
 
-  const garment = await resolveProductGarment(admin, { productId: PRODUCT_ID }, null);
+  const garment = await resolveProductGarment(
+    admin,
+    { productId: PRODUCT_ID },
+    null,
+  );
 
   assertEquals(garment.images, [{ path: "stores/main.jpg" }]);
 });

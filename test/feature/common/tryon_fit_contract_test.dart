@@ -2,7 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/feature/common/body_measurements/data/models/body_measurements_model.dart';
 import 'package:tryzeon/feature/common/body_measurements/domain/entities/body_measurement_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/product_size/data/models/body_measurement_ranges_model.dart';
 import 'package:tryzeon/feature/common/product_size/data/models/garment_measurements_model.dart';
+import 'package:tryzeon/feature/common/product_size/data/models/measurement_range_model.dart';
 import 'package:tryzeon/feature/personal/shop/domain/services/ease_table.dart';
 
 /// `supabase/functions/_shared/tryon/fit.ts` hand-copies two things from this
@@ -63,6 +65,35 @@ void main() {
         'hips',
         'thigh',
       });
+    },
+  );
+
+  test(
+    'BodyMeasurementRangesModel serializes the same 7 body keys as BodyMeasurementsModel, '
+    'each as {min, max} (update fit.ts BodyMeasurementRanges if this fails)',
+    () {
+      const bound = MeasurementRangeModel(min: 1, max: 2);
+      const model = BodyMeasurementRangesModel(
+        height: bound,
+        weight: bound,
+        shoulder: bound,
+        chest: bound,
+        waist: bound,
+        hips: bound,
+        thigh: bound,
+      );
+
+      final json = model.toJson();
+      expect(json.keys.toSet(), {
+        'height',
+        'weight',
+        'shoulder',
+        'chest',
+        'waist',
+        'hips',
+        'thigh',
+      });
+      expect(json['height'], {'min': 1.0, 'max': 2.0});
     },
   );
 
