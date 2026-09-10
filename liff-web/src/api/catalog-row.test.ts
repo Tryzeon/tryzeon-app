@@ -60,3 +60,18 @@ describe("buildCatalogItem", () => {
       .toBeNull();
   });
 });
+
+describe("buildCatalogItem description", () => {
+  it("carries the description", () => {
+    expect(buildCatalogItem({ ...row, description: "亞麻襯衫" }, BASE).description)
+      .toBe("亞麻襯衫");
+  });
+
+  it("normalizes a missing or blank description to null", () => {
+    expect(buildCatalogItem(row, BASE).description).toBeNull();
+    expect(buildCatalogItem({ ...row, description: "" }, BASE).description)
+      .toBeNull();
+    expect(buildCatalogItem({ ...row, description: null }, BASE).description)
+      .toBeNull();
+  });
+});

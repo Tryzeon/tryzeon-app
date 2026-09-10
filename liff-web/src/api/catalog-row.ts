@@ -5,6 +5,7 @@ export interface CatalogItem {
   storeName: string | null;
   imageUrls: string[];
   purchaseLink: string | null;
+  description: string | null;
 }
 
 export interface CatalogStore {
@@ -30,6 +31,7 @@ export function buildCatalogItem(row: unknown, baseUrl: string): CatalogItem {
 
   const store = (r.store_profiles ?? null) as Record<string, unknown> | null;
   const link = r.purchase_link;
+  const description = r.description;
 
   return {
     productId: String(r.id),
@@ -38,5 +40,9 @@ export function buildCatalogItem(row: unknown, baseUrl: string): CatalogItem {
     storeName: store && typeof store.name === "string" ? store.name : null,
     imageUrls: keys.map((k) => publicImageUrl(baseUrl, k)),
     purchaseLink: typeof link === "string" && link.length > 0 ? link : null,
+    description:
+      typeof description === "string" && description.trim().length > 0
+        ? description
+        : null,
   };
 }

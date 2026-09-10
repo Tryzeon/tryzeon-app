@@ -914,6 +914,13 @@ button { font-family: inherit; }
   font-weight: 600;
   line-height: 1.4;
 }
+.pdp__description {
+  margin: 0 0 4px;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 .pdp .cta { margin-top: 20px; }
 
 .pdp__skgallery { aspect-ratio: 25 / 26; margin: 0 -16px 16px; }

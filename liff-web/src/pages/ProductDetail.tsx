@@ -110,6 +110,7 @@ function Detail({ item }: { item: CatalogItem }) {
       <h1 className="pdp__name">{item.name}</h1>
       {item.storeName && <p className="sheet__store">{item.storeName}</p>}
       {item.price != null && <p className="sheet__price">NT${item.price}</p>}
+      {item.description && <p className="pdp__description">{item.description}</p>}
 
       {!hasPhotos
         ? <p className="sheet__note">這件商品還沒有照片，無法試穿。</p>
