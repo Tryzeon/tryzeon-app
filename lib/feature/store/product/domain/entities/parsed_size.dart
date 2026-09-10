@@ -1,4 +1,5 @@
 import 'package:tryzeon/feature/common/measurement/domain/entities/measurement_unit.dart';
+import 'package:tryzeon/feature/common/product_size/domain/entities/body_measurement_ranges.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/garment_measurement_type.dart';
 
 class ParsedMeasurement {
@@ -9,8 +10,13 @@ class ParsedMeasurement {
 }
 
 class ParsedSize {
-  const ParsedSize({required this.name, required this.garmentMeasurements});
+  const ParsedSize({
+    required this.name,
+    this.garmentMeasurements = const {},
+    this.bodyMeasurementRanges = const {},
+  });
 
   final String name;
   final Map<GarmentMeasurementType, ParsedMeasurement> garmentMeasurements;
+  final Map<BodyMeasurementType, MeasurementRange> bodyMeasurementRanges;
 }

@@ -4,11 +4,19 @@ import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/feature/common/measurement/domain/entities/measurement_unit.dart';
+import 'package:tryzeon/feature/common/product_size/domain/entities/body_measurement_ranges.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/garment_measurement_type.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/parsed_size.dart';
 
 GarmentMeasurementType? _typeFromKey(final String key) {
   for (final t in GarmentMeasurementType.values) {
+    if (t.value == key) return t;
+  }
+  return null;
+}
+
+BodyMeasurementType? _bodyTypeFromKey(final String key) {
+  for (final t in bodyMeasurementRangeTypes) {
     if (t.value == key) return t;
   }
   return null;
@@ -50,7 +58,25 @@ List<ParsedSize> parseSizeVoiceResponse(final Map<String, dynamic> data) {
         );
       });
     }
-    result.add(ParsedSize(name: name, garmentMeasurements: garmentMeasurements));
+    final bodyMeasurementRanges = <BodyMeasurementType, MeasurementRange>{};
+    final rawRanges = rawSize['body_measurement_ranges'];
+    if (rawRanges is Map) {
+      rawRanges.forEach((final key, final value) {
+        final type = key is String ? _bodyTypeFromKey(key) : null;
+        if (type == null || value is! Map) return;
+        final min = _toDouble(value['min']);
+        final max = _toDouble(value['max']);
+        if (min == null || max == null) return;
+        bodyMeasurementRanges[type] = MeasurementRange(min: min, max: max);
+      });
+    }
+    result.add(
+      ParsedSize(
+        name: name,
+        garmentMeasurements: garmentMeasurements,
+        bodyMeasurementRanges: bodyMeasurementRanges,
+      ),
+    );
   }
   return result;
 }
