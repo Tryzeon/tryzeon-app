@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:tryzeon/feature/common/product_size/domain/entities/body_measurement_ranges.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/garment_measurements.dart';
 
 part 'size_item.freezed.dart';
@@ -9,10 +10,12 @@ sealed class SizeItem with _$SizeItem {
     required final String id,
     required final String name,
     final GarmentMeasurements? garmentMeasurements,
+    final BodyMeasurementRanges? bodyMeasurementRanges,
   }) = ExistingSizeItem;
 
   const factory SizeItem.newSize({
     required final String name,
     final GarmentMeasurements? garmentMeasurements,
+    final BodyMeasurementRanges? bodyMeasurementRanges,
   }) = NewSizeItem;
 }

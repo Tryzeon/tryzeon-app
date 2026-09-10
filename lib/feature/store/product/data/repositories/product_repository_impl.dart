@@ -5,7 +5,9 @@ import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/product_size/data/mappers/body_measurement_ranges_mappr.dart';
 import 'package:tryzeon/feature/common/product_size/data/mappers/garment_measurements_mappr.dart';
+import 'package:tryzeon/feature/common/product_size/data/models/body_measurement_ranges_model.dart';
 import 'package:tryzeon/feature/common/product_size/data/models/garment_measurements_model.dart';
 import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:tryzeon/feature/store/product/data/datasources/product_local_datasource.dart';
@@ -41,6 +43,16 @@ class ProductRepositoryImpl implements ProductRepository {
         .convert<GarmentMeasurements, GarmentMeasurementsModel>(measurements);
   }
 
+  static BodyMeasurementRangesModel? _toBodyMeasurementRangesModel(
+    final BodyMeasurementRanges? bodyMeasurementRanges,
+  ) {
+    if (bodyMeasurementRanges == null) return null;
+    return const BodyMeasurementRangesMappr()
+        .convert<BodyMeasurementRanges, BodyMeasurementRangesModel>(
+          bodyMeasurementRanges,
+        );
+  }
+
   static CreateProductSizeRequest _toSizeRequest(
     final String productId,
     final NewSizeItem size,
@@ -49,6 +61,7 @@ class ProductRepositoryImpl implements ProductRepository {
       productId: productId,
       name: size.name,
       garmentMeasurements: _toMeasurementsModel(size.garmentMeasurements),
+      bodyMeasurementRanges: _toBodyMeasurementRangesModel(size.bodyMeasurementRanges),
     );
   }
 
@@ -284,6 +297,7 @@ class ProductRepositoryImpl implements ProductRepository {
           productId: update.original.productId,
           name: update.target.name,
           garmentMeasurements: update.target.garmentMeasurements,
+          bodyMeasurementRanges: update.target.bodyMeasurementRanges,
           createdAt: update.original.createdAt,
           updatedAt: update.original.updatedAt,
         );

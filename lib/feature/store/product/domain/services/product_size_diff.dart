@@ -46,7 +46,8 @@ ProductSizeDiff computeSizeDiff(
         if (existing == null) continue;
         keptIds.add(id);
         if (existing.name != item.name ||
-            existing.garmentMeasurements != item.garmentMeasurements) {
+            existing.garmentMeasurements != item.garmentMeasurements ||
+            existing.bodyMeasurementRanges != item.bodyMeasurementRanges) {
           toUpdate.add(ProductSizeUpdate(original: existing, target: item));
         }
     }
