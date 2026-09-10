@@ -7,6 +7,7 @@ import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact
 import '../../../../feature/common/clothing_style/domain/entities/clothing_style.dart';
 import '../../../../feature/common/product_attributes/domain/entities/product_attributes.dart';
 import '../../../../feature/common/product_size/data/collections/product_size_embedded.dart';
+import '../../../../feature/common/product_size/data/mappers/body_measurement_ranges_mappr.dart';
 import '../../../../feature/common/product_size/data/mappers/garment_measurements_mappr.dart';
 import '../../analytics/data/collections/product_analytics_cache.dart';
 import '../../analytics/data/models/product_analytics_summary_model.dart';
@@ -74,7 +75,7 @@ import 'store_mappr.auto_mappr.dart';
     MapType<ProductAnalyticsSummaryModel, ProductAnalyticsCache>(),
     MapType<ProductAnalyticsCache, ProductAnalyticsSummaryModel>(),
   ],
-  includes: [GarmentMeasurementsMappr()],
+  includes: [GarmentMeasurementsMappr(), BodyMeasurementRangesMappr()],
 )
 class StoreMappr extends $StoreMappr {
   const StoreMappr();

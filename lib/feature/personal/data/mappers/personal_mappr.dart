@@ -4,6 +4,7 @@ import 'package:tryzeon/feature/common/product_attributes/domain/entities/wardro
 import '../../../../feature/common/body_measurements/data/mappers/body_measurements_mappr.dart';
 import '../../../../feature/common/clothing_style/domain/entities/clothing_style.dart';
 import '../../../../feature/common/product_attributes/domain/entities/product_attributes.dart';
+import '../../../../feature/common/product_size/data/mappers/body_measurement_ranges_mappr.dart';
 import '../../../../feature/common/product_size/data/mappers/garment_measurements_mappr.dart';
 import '../../../../feature/common/product_size/domain/entities/product_size.dart';
 import '../../../../feature/store/product/data/models/product_model.dart';
@@ -89,6 +90,7 @@ import 'personal_mappr.auto_mappr.dart';
   includes: [
     BodyMeasurementsMappr(), // UserProfile.measurements
     GarmentMeasurementsMappr(), // ProductSize.measurements
+    BodyMeasurementRangesMappr(), // ProductSize.bodyMeasurementRanges
   ],
 )
 class PersonalMappr extends $PersonalMappr {

@@ -1,6 +1,8 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:tryzeon/feature/common/product_size/domain/entities/body_measurement_ranges.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/garment_measurements.dart';
 
+export 'package:tryzeon/feature/common/product_size/domain/entities/body_measurement_ranges.dart';
 export 'package:tryzeon/feature/common/product_size/domain/entities/garment_measurements.dart';
 
 part 'product_size.freezed.dart';
@@ -12,6 +14,7 @@ sealed class ProductSize with _$ProductSize {
     required final String productId,
     required final String name,
     final GarmentMeasurements? garmentMeasurements,
+    final BodyMeasurementRanges? bodyMeasurementRanges,
     required final DateTime createdAt,
     required final DateTime updatedAt,
   }) = _ProductSize;

@@ -1,11 +1,12 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:tryzeon/feature/common/product_size/data/models/body_measurement_ranges_model.dart';
 import 'package:tryzeon/feature/common/product_size/data/models/garment_measurements_model.dart';
 
 part 'product_size_model.g.dart';
 
-/// [explicitToJson] keeps the nested garment measurements a plain map rather than a
-/// [GarmentMeasurementsModel] instance, so `jsonDiff` can compare it structurally
-/// instead of falling back to identity equality.
+/// [explicitToJson] serializes nested garment measurements and body measurement
+/// ranges as plain maps, so `jsonDiff` can compare them structurally instead of
+/// falling back to identity equality.
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class ProductSizeModel {
   const ProductSizeModel({
@@ -15,6 +16,7 @@ class ProductSizeModel {
     required this.createdAt,
     required this.updatedAt,
     this.garmentMeasurements,
+    this.bodyMeasurementRanges,
   });
 
   factory ProductSizeModel.fromJson(final Map<String, dynamic> json) =>
@@ -24,6 +26,7 @@ class ProductSizeModel {
   final String productId;
   final String name;
   final GarmentMeasurementsModel? garmentMeasurements;
+  final BodyMeasurementRangesModel? bodyMeasurementRanges;
   final DateTime createdAt;
   final DateTime updatedAt;
 
