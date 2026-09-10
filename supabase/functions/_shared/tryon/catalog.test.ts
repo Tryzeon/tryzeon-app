@@ -146,7 +146,7 @@ Deno.test("SECURITY: a sizeId belonging to a different product does not attach a
         id: SIZE_ID,
         product_id: "99999999-9999-9999-9999-999999999999",
         name: "M",
-        measurements: { chest_circumference: 100 },
+        garment_measurements: { chest_circumference: 100 },
       },
     },
   });
@@ -235,7 +235,7 @@ Deno.test("resolveProductGarment attaches the fit description for a matching siz
         id: SIZE_ID,
         product_id: PRODUCT_ID,
         name: "M",
-        measurements: { chest_circumference: 104 },
+        garment_measurements: { chest_circumference: 104 },
       },
     },
   });
@@ -260,7 +260,7 @@ Deno.test("resolveProductGarment ships the cut label alongside real fit numbers"
         id: SIZE_ID,
         product_id: PRODUCT_ID,
         name: "M",
-        measurements: { chest_circumference: 88 },
+        garment_measurements: { chest_circumference: 88 },
       },
     },
   });
@@ -283,7 +283,7 @@ Deno.test("resolveProductGarment skips the product_sizes lookup entirely when th
         id: SIZE_ID,
         product_id: PRODUCT_ID,
         name: "M",
-        measurements: { chest_circumference: 104 },
+        garment_measurements: { chest_circumference: 104 },
       },
     },
   });

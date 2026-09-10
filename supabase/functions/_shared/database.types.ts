@@ -205,24 +205,24 @@ export type Database = {
       product_sizes: {
         Row: {
           created_at: string
+          garment_measurements: Json | null
           id: string
-          measurements: Json | null
           name: string
           product_id: string
           updated_at: string
         }
         Insert: {
           created_at?: string
+          garment_measurements?: Json | null
           id?: string
-          measurements?: Json | null
           name: string
           product_id: string
           updated_at?: string
         }
         Update: {
           created_at?: string
+          garment_measurements?: Json | null
           id?: string
-          measurements?: Json | null
           name?: string
           product_id?: string
           updated_at?: string

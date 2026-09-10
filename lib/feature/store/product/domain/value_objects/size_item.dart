@@ -8,11 +8,11 @@ sealed class SizeItem with _$SizeItem {
   const factory SizeItem.existing({
     required final String id,
     required final String name,
-    final GarmentMeasurements? measurements,
+    final GarmentMeasurements? garmentMeasurements,
   }) = ExistingSizeItem;
 
   const factory SizeItem.newSize({
     required final String name,
-    final GarmentMeasurements? measurements,
+    final GarmentMeasurements? garmentMeasurements,
   }) = NewSizeItem;
 }

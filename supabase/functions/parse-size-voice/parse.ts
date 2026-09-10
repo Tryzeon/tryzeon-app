@@ -47,7 +47,7 @@ export function buildPrompt(): string {
     "請從語音中萃取每一個尺寸與其量測值，輸出 JSON。",
     "規則：",
     "1. 忽略口頭禪、語助詞、重複與與尺寸無關的閒聊，只保留尺寸資訊（去贅字）。",
-    "2. 量測欄位只允許：shoulder_width(肩寬)、chest_circumference(胸圍)、sleeve_length(袖長)、waist_circumference(腰圍)、hip_circumference(臀圍)、thigh_circumference(大腿圍)、length(長度)。沒講到的欄位不要輸出。",
+    "2. garment_measurements 的量測欄位只允許：shoulder_width(肩寬)、chest_circumference(胸圍)、sleeve_length(袖長)、waist_circumference(腰圍)、hip_circumference(臀圍)、thigh_circumference(大腿圍)、length(長度)。沒講到的欄位不要輸出。",
     "2-0. length 是衣服本身的長度，衣長、褲長、裙長、洋裝長一律填 length。",
     "2-1. 這是「衣服」的尺寸，不是人體的尺寸。身高不是衣服的尺寸，絕對不要輸出。",
     "2-2. 胸圍、腰圍、臀圍、大腿圍是該部位一圈的長度。店家若說的是「平放衣服量的胸寬／腰寬／臀寬／大腿寬」（半圈），請乘以 2 後填入對應的圍度欄位。",
@@ -78,9 +78,9 @@ export function buildSchema(): Record<string, unknown> {
           type: "object",
           properties: {
             name: { type: "string" },
-            measurements: { type: "object", properties: measurementProps },
+            garment_measurements: { type: "object", properties: measurementProps },
           },
-          required: ["name", "measurements"],
+          required: ["name", "garment_measurements"],
         },
       },
     },
@@ -111,18 +111,18 @@ function toNumber(v: unknown): number | null {
 
 export function normalizeParsedSizes(
   raw: unknown,
-): Array<{ name: string; measurements: Record<string, { value: number; unit: string }> }> {
+): Array<{ name: string; garment_measurements: Record<string, { value: number; unit: string }> }> {
   const sizes = (raw as { sizes?: unknown })?.sizes;
   if (!Array.isArray(sizes)) return [];
-  const out: Array<{ name: string; measurements: Record<string, { value: number; unit: string }> }> = [];
+  const out: Array<{ name: string; garment_measurements: Record<string, { value: number; unit: string }> }> = [];
   for (const s of sizes) {
     if (s === null || typeof s !== "object") continue;
     const nameRaw = (s as Record<string, unknown>).name;
     const name = typeof nameRaw === "string"
       ? normalizeSizeName(nameRaw.slice(0, 20))
       : "";
-    const measurements: Record<string, { value: number; unit: string }> = {};
-    const mRaw = (s as Record<string, unknown>).measurements;
+    const garmentMeasurements: Record<string, { value: number; unit: string }> = {};
+    const mRaw = (s as Record<string, unknown>).garment_measurements;
     if (mRaw && typeof mRaw === "object") {
       for (const key of MEASUREMENT_KEYS) {
         const m = (mRaw as Record<string, unknown>)[key];
@@ -135,10 +135,10 @@ export function normalizeParsedSizes(
         if (value === null) continue;
         const cm = value * TO_CM_FACTOR[unit];
         if (cm <= 0 || cm > MAX_CM) continue;
-        measurements[key] = { value, unit };
+        garmentMeasurements[key] = { value, unit };
       }
     }
-    out.push({ name, measurements });
+    out.push({ name, garment_measurements: garmentMeasurements });
   }
   return out;
 }

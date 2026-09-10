@@ -27,11 +27,11 @@ Deno.test("normalizeParsedSizes keeps thigh_circumference", () => {
     sizes: [
       {
         name: "L",
-        measurements: { thigh_circumference: { value: 60, unit: "centimeter" } },
+        garment_measurements: { thigh_circumference: { value: 60, unit: "centimeter" } },
       },
     ],
   });
-  assertEquals(parsed[0].measurements.thigh_circumference, {
+  assertEquals(parsed[0].garment_measurements.thigh_circumference, {
     value: 60,
     unit: "centimeter",
   });
@@ -40,10 +40,10 @@ Deno.test("normalizeParsedSizes keeps thigh_circumference", () => {
 Deno.test("normalizeParsedSizes normalizes the name it returns", () => {
   const parsed = normalizeParsedSizes({
     sizes: [
-      { name: "XXL", measurements: { chest_circumference: { value: 100, unit: "centimeter" } } },
-      { name: "US 10", measurements: {} },
+      { name: "XXL", garment_measurements: { chest_circumference: { value: 100, unit: "centimeter" } } },
+      { name: "US 10", garment_measurements: {} },
     ],
   });
   assertEquals(parsed.map((s) => s.name), ["2XL", "US 10"]);
-  assertEquals(parsed[0].measurements.chest_circumference, { value: 100, unit: "centimeter" });
+  assertEquals(parsed[0].garment_measurements.chest_circumference, { value: 100, unit: "centimeter" });
 });

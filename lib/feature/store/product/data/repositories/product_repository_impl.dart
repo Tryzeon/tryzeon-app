@@ -48,7 +48,7 @@ class ProductRepositoryImpl implements ProductRepository {
     return CreateProductSizeRequest(
       productId: productId,
       name: size.name,
-      measurements: _toMeasurementsModel(size.measurements),
+      garmentMeasurements: _toMeasurementsModel(size.garmentMeasurements),
     );
   }
 
@@ -283,7 +283,7 @@ class ProductRepositoryImpl implements ProductRepository {
           id: update.original.id,
           productId: update.original.productId,
           name: update.target.name,
-          measurements: update.target.measurements,
+          garmentMeasurements: update.target.garmentMeasurements,
           createdAt: update.original.createdAt,
           updatedAt: update.original.updatedAt,
         );

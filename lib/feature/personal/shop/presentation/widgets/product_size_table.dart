@@ -77,8 +77,7 @@ class ProductSizeTable extends StatelessWidget {
                         ),
                       ),
                       ...columnTypes.map((final type) {
-                        final measurements = size.measurements;
-                        final value = measurements?.getValue(type);
+                        final value = size.garmentMeasurements?.getValue(type);
                         return DataCell(
                           Text(
                             value != null ? value.toStringAsFixed(1) : '-',

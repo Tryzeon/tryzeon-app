@@ -8,12 +8,12 @@ class CreateProductSizeRequest {
   const CreateProductSizeRequest({
     required this.productId,
     required this.name,
-    this.measurements,
+    this.garmentMeasurements,
   });
 
   final String productId;
   final String name;
-  final GarmentMeasurementsModel? measurements;
+  final GarmentMeasurementsModel? garmentMeasurements;
 
   Map<String, dynamic> toJson() => _$CreateProductSizeRequestToJson(this);
 }

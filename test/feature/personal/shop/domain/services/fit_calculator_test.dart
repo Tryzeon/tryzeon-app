@@ -7,12 +7,12 @@ import 'package:tryzeon/feature/personal/shop/domain/services/fit_calculator.dar
 
 final _epoch = DateTime.fromMillisecondsSinceEpoch(0);
 
-ProductSize _size(final String name, final GarmentMeasurements? measurements) =>
+ProductSize _size(final String name, final GarmentMeasurements? garmentMeasurements) =>
     ProductSize(
       id: name,
       productId: 'p1',
       name: name,
-      measurements: measurements,
+      garmentMeasurements: garmentMeasurements,
       createdAt: _epoch,
       updatedAt: _epoch,
     );

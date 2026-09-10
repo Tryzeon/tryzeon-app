@@ -86,7 +86,7 @@ class FitCalculator {
       final bodyType = garmentType.comparableBodyType!;
       if (!userDimensions.contains(bodyType)) continue;
 
-      final garmentValue = size.measurements?.getValue(garmentType);
+      final garmentValue = size.garmentMeasurements?.getValue(garmentType);
       final bodyValue = body.getValue(bodyType);
       if (garmentValue == null || bodyValue == null) continue;
 

@@ -9,7 +9,7 @@ class ProductSizeEmbedded {
   late String productId;
   late String name;
 
-  GarmentMeasurementsEmbedded? measurements;
+  GarmentMeasurementsEmbedded? garmentMeasurements;
   late DateTime createdAt;
   late DateTime updatedAt;
 }

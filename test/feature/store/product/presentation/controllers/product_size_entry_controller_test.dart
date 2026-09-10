@@ -36,7 +36,10 @@ void main() {
       );
       expect(item, isA<NewSizeItem>());
       expect((item as NewSizeItem).name, '4XL');
-      expect(item.measurements?.getValue(GarmentMeasurementType.chestCircumference), 100);
+      expect(
+        item.garmentMeasurements?.getValue(GarmentMeasurementType.chestCircumference),
+        100,
+      );
     });
 
     test('with an id it produces an ExistingSizeItem', () {

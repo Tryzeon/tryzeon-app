@@ -9,8 +9,8 @@ class ParsedMeasurement {
 }
 
 class ParsedSize {
-  const ParsedSize({required this.name, required this.measurements});
+  const ParsedSize({required this.name, required this.garmentMeasurements});
 
   final String name;
-  final Map<GarmentMeasurementType, ParsedMeasurement> measurements;
+  final Map<GarmentMeasurementType, ParsedMeasurement> garmentMeasurements;
 }

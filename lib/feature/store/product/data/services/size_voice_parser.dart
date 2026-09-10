@@ -36,21 +36,21 @@ List<ParsedSize> parseSizeVoiceResponse(final Map<String, dynamic> data) {
   for (final rawSize in rawSizes) {
     if (rawSize is! Map) continue;
     final name = rawSize['name'] is String ? rawSize['name'] as String : '';
-    final measurements = <GarmentMeasurementType, ParsedMeasurement>{};
-    final rawMeasurements = rawSize['measurements'];
+    final garmentMeasurements = <GarmentMeasurementType, ParsedMeasurement>{};
+    final rawMeasurements = rawSize['garment_measurements'];
     if (rawMeasurements is Map) {
       rawMeasurements.forEach((final key, final value) {
         final type = key is String ? _typeFromKey(key) : null;
         if (type == null || value is! Map) return;
         final v = _toDouble(value['value']);
         if (v == null) return;
-        measurements[type] = ParsedMeasurement(
+        garmentMeasurements[type] = ParsedMeasurement(
           value: v,
           unit: _unitFromString(value['unit']),
         );
       });
     }
-    result.add(ParsedSize(name: name, measurements: measurements));
+    result.add(ParsedSize(name: name, garmentMeasurements: garmentMeasurements));
   }
   return result;
 }

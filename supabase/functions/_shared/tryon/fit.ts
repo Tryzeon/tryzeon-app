@@ -6,7 +6,7 @@ import type { BodyMeasurements } from "../user-profile.ts";
 import { LIMITS } from "./types.ts";
 
 /**
- * As stored in `product_sizes.measurements`; sparse, since store owners publish
+ * As stored in `product_sizes.garment_measurements`; sparse, since store owners publish
  * only what they actually measured.
  */
 export interface SizeMeasurements {

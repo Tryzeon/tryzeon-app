@@ -9,11 +9,11 @@ class ProductSizeEntryController {
   ProductSizeEntryController({
     required this.label,
     this.id,
-    final GarmentMeasurements? measurements,
+    final GarmentMeasurements? garmentMeasurements,
   }) {
     for (final type in GarmentMeasurementType.values) {
       measurementControllers[type] = TextEditingController(
-        text: measurements?.getValue(type)?.toString() ?? '',
+        text: garmentMeasurements?.getValue(type)?.toString() ?? '',
       );
     }
   }
@@ -22,7 +22,7 @@ class ProductSizeEntryController {
     return ProductSizeEntryController(
       id: size.id,
       label: size.name,
-      measurements: size.measurements,
+      garmentMeasurements: size.garmentMeasurements,
     );
   }
 
@@ -36,7 +36,7 @@ class ProductSizeEntryController {
   void applyParsed(final ParsedSize parsed, {required final MeasurementUnit targetUnit}) {
     String format(final double v) => v.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '');
 
-    for (final entry in parsed.measurements.entries) {
+    for (final entry in parsed.garmentMeasurements.entries) {
       final m = entry.value;
       final factor = m.unit.toCmFactor / targetUnit.toCmFactor;
       measurementControllers[entry.key]?.text = format(m.value * factor);
@@ -64,12 +64,19 @@ class ProductSizeEntryController {
     required final MeasurementUnit unit,
     required final List<GarmentMeasurementType> visibleTypes,
   }) {
-    final measurements = _buildMeasurements(unit: unit, visibleTypes: visibleTypes);
+    final garmentMeasurements = _buildMeasurements(
+      unit: unit,
+      visibleTypes: visibleTypes,
+    );
     final sizeId = id;
 
     return sizeId == null
-        ? SizeItem.newSize(name: label, measurements: measurements)
-        : SizeItem.existing(id: sizeId, name: label, measurements: measurements);
+        ? SizeItem.newSize(name: label, garmentMeasurements: garmentMeasurements)
+        : SizeItem.existing(
+            id: sizeId,
+            name: label,
+            garmentMeasurements: garmentMeasurements,
+          );
   }
 
   void convertValues({

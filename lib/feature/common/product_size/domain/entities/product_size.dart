@@ -11,7 +11,7 @@ sealed class ProductSize with _$ProductSize {
     required final String id,
     required final String productId,
     required final String name,
-    final GarmentMeasurements? measurements,
+    final GarmentMeasurements? garmentMeasurements,
     required final DateTime createdAt,
     required final DateTime updatedAt,
   }) = _ProductSize;

@@ -62,7 +62,7 @@ async function resolveSizeFit(
 ): Promise<string | undefined> {
   const { data, error } = await client
     .from(PRODUCT_SIZES_TABLE)
-    .select("name, measurements")
+    .select("name, garment_measurements")
     .eq("id", sizeId)
     .eq("product_id", productId)
     .maybeSingle();
@@ -82,7 +82,7 @@ async function resolveSizeFit(
 
   return buildGarmentFitDetail(
     typeof data.name === "string" ? data.name : "",
-    (data.measurements as SizeMeasurements | null) ?? null,
+    (data.garment_measurements as SizeMeasurements | null) ?? null,
     body,
   );
 }
@@ -99,7 +99,7 @@ export async function resolveProductGarment(
     throw new ValidationError(`invalid productId: ${productId}`);
   }
   // Checked here rather than where it is used: gating it on whether the shopper
-  // happens to have measurements would report the caller bug to some users and
+  // happens to have body measurements would report the caller bug to some users and
   // swallow it for the rest.
   if (ref.sizeId !== undefined && !isUuid(ref.sizeId)) {
     throw new ValidationError(`invalid sizeId: ${ref.sizeId}`);
