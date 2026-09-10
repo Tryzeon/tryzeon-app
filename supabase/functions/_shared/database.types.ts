@@ -204,6 +204,7 @@ export type Database = {
       }
       product_sizes: {
         Row: {
+          body_measurement_ranges: Json | null
           created_at: string
           garment_measurements: Json | null
           id: string
@@ -212,6 +213,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          body_measurement_ranges?: Json | null
           created_at?: string
           garment_measurements?: Json | null
           id?: string
@@ -220,6 +222,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          body_measurement_ranges?: Json | null
           created_at?: string
           garment_measurements?: Json | null
           id?: string
