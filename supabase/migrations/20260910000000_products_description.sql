@@ -1,7 +1,6 @@
 -- Store-authored, shopper-facing free text shown on the product page (app and
--- LIFF web). Read through `get_shop_product`; `list_shop_products` is left
--- untouched because grid cards do not render it and the app's detail page reads
--- the row directly.
+-- LIFF web). Read through `get_shop_product` here; `list_shop_products` picks
+-- it up in 20260910010000.
 --
 -- The length cap is enforced here and mirrored by
 -- `AppValidators.validateProductDescription`; keep the two numbers in step.
