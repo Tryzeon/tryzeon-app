@@ -7,15 +7,19 @@ import 'package:tryzeon/feature/personal/shop/domain/services/fit_calculator.dar
 
 final _epoch = DateTime.fromMillisecondsSinceEpoch(0);
 
-ProductSize _size(final String name, final GarmentMeasurements? garmentMeasurements) =>
-    ProductSize(
-      id: name,
-      productId: 'p1',
-      name: name,
-      garmentMeasurements: garmentMeasurements,
-      createdAt: _epoch,
-      updatedAt: _epoch,
-    );
+ProductSize _size(
+  final String name,
+  final GarmentMeasurements? garmentMeasurements, {
+  final BodyMeasurementRanges? bodyMeasurementRanges,
+}) => ProductSize(
+  id: name,
+  productId: 'p1',
+  name: name,
+  garmentMeasurements: garmentMeasurements,
+  bodyMeasurementRanges: bodyMeasurementRanges,
+  createdAt: _epoch,
+  updatedAt: _epoch,
+);
 
 FitResult _calc(
   final BodyMeasurements? body,
@@ -39,14 +43,18 @@ void main() {
       expect(result.displayState, FitDisplayState.noUserData);
     });
 
-    test('reports no user data when only height is recorded', () {
-      // Height carries no fit signal, so a height-only profile cannot be advised.
-      final result = _calc(const BodyMeasurements(height: 170), [
-        _size('M', const GarmentMeasurements(chestCircumference: 96)),
-      ]);
+    test(
+      'stays unknown when only height is recorded and no size states a height range',
+      () {
+        // Height has no garment counterpart, so without a published range there
+        // is nothing to compare it against.
+        final result = _calc(const BodyMeasurements(height: 170), [
+          _size('M', const GarmentMeasurements(chestCircumference: 96)),
+        ]);
 
-      expect(result.displayState, FitDisplayState.noUserData);
-    });
+        expect(result.displayState, FitDisplayState.unknown);
+      },
+    );
 
     test('stays unknown when no size overlaps the shopper dimensions', () {
       // Shopper has a chest; the only published dimension is length (display-only).
@@ -213,5 +221,173 @@ void main() {
 
       expect(result.tryonSizeId, isNull);
     });
+
+    test('recommends the size whose wearer height range holds the shopper', () {
+      final result = _calc(const BodyMeasurements(height: 168), [
+        _size(
+          'S',
+          null,
+          bodyMeasurementRanges: const BodyMeasurementRanges(
+            height: MeasurementRange(min: 150, max: 160),
+          ),
+        ),
+        _size(
+          'M',
+          null,
+          bodyMeasurementRanges: const BodyMeasurementRanges(
+            height: MeasurementRange(min: 160, max: 170),
+          ),
+        ),
+        _size(
+          'L',
+          null,
+          bodyMeasurementRanges: const BodyMeasurementRanges(
+            height: MeasurementRange(min: 170, max: 180),
+          ),
+        ),
+      ]);
+
+      expect(result.displayState, FitDisplayState.match);
+      expect(result.recommendedSize, 'M');
+      expect(result.matchedTypes, [BodyMeasurementType.height]);
+    });
+
+    test(
+      'prefers the size whose range is centred on the shopper when several hold them',
+      () {
+        // 165 sits at M's centre and at L's lower bound.
+        final result = _calc(const BodyMeasurements(height: 165), [
+          _size(
+            'L',
+            null,
+            bodyMeasurementRanges: const BodyMeasurementRanges(
+              height: MeasurementRange(min: 165, max: 175),
+            ),
+          ),
+          _size(
+            'M',
+            null,
+            bodyMeasurementRanges: const BodyMeasurementRanges(
+              height: MeasurementRange(min: 160, max: 170),
+            ),
+          ),
+        ]);
+
+        expect(result.recommendedSize, 'M');
+        expect(result.alternativeSize, 'L');
+      },
+    );
+
+    test('reports a below-range weight as a caveat in kilograms', () {
+      final result = _calc(const BodyMeasurements(weight: 47), [
+        _size(
+          'M',
+          null,
+          bodyMeasurementRanges: const BodyMeasurementRanges(
+            weight: MeasurementRange(min: 50, max: 60),
+          ),
+        ),
+      ]);
+
+      expect(result.displayState, FitDisplayState.caveats);
+      final caveat = result.caveats.single;
+      expect(caveat.type, BodyMeasurementType.weight);
+      expect(caveat.direction, FitDirection.below);
+      expect(caveat.deviation, closeTo(3, 0.001));
+    });
+
+    test('reports an above-range height as a caveat', () {
+      final result = _calc(const BodyMeasurements(height: 174), [
+        _size(
+          'M',
+          null,
+          bodyMeasurementRanges: const BodyMeasurementRanges(
+            height: MeasurementRange(min: 160, max: 170),
+          ),
+        ),
+      ]);
+
+      expect(result.caveats.single.direction, FitDirection.above);
+      expect(result.caveats.single.deviation, closeTo(4, 0.001));
+    });
+
+    test(
+      'flags out of range when the shopper is far outside every body measurement range',
+      () {
+        final result = _calc(const BodyMeasurements(height: 190), [
+          _size(
+            'M',
+            null,
+            bodyMeasurementRanges: const BodyMeasurementRanges(
+              height: MeasurementRange(min: 160, max: 170),
+            ),
+          ),
+        ]);
+
+        expect(result.displayState, FitDisplayState.outOfRange);
+        expect(result.tryonSizeId, 'M');
+      },
+    );
+
+    test('lets a published waist range override the ease estimate for waist', () {
+      // Waist 70 against garment waist 76 is loose by 2cm on the ease table,
+      // but the store says this size fits waists 68–72, and the store wins.
+      final result = _calc(const BodyMeasurements(waist: 70), [
+        _size(
+          'M',
+          const GarmentMeasurements(waistCircumference: 76),
+          bodyMeasurementRanges: const BodyMeasurementRanges(
+            waist: MeasurementRange(min: 68, max: 72),
+          ),
+        ),
+      ]);
+
+      expect(result.displayState, FitDisplayState.match);
+      expect(result.matchedTypes, [BodyMeasurementType.waist]);
+    });
+
+    test('judges ease and range dimensions together and reports each once', () {
+      // Chest 88 → regular band [96, 103]; garment 100 fits.
+      // Height 175 against 160–170 → above by 5.
+      final result = _calc(const BodyMeasurements(height: 175, chest: 88), [
+        _size(
+          'M',
+          const GarmentMeasurements(chestCircumference: 100),
+          bodyMeasurementRanges: const BodyMeasurementRanges(
+            height: MeasurementRange(min: 160, max: 170),
+          ),
+        ),
+      ]);
+
+      expect(result.displayState, FitDisplayState.caveats);
+      expect(result.matchedTypes, [BodyMeasurementType.chest]);
+      expect(result.caveats.single.type, BodyMeasurementType.height);
+    });
+
+    test(
+      'lets a measured circumference outvote height when neither size fits cleanly',
+      () {
+        // Both sizes miss on one dimension. A misses on height (weight 0.5),
+        // B misses on chest (weight 1) by the same amount, so A ranks first.
+        final result = _calc(const BodyMeasurements(height: 175, chest: 88), [
+          _size(
+            'A',
+            const GarmentMeasurements(chestCircumference: 100),
+            bodyMeasurementRanges: const BodyMeasurementRanges(
+              height: MeasurementRange(min: 160, max: 172),
+            ),
+          ),
+          _size(
+            'B',
+            const GarmentMeasurements(chestCircumference: 93),
+            bodyMeasurementRanges: const BodyMeasurementRanges(
+              height: MeasurementRange(min: 170, max: 180),
+            ),
+          ),
+        ]);
+
+        expect(result.recommendedSize, 'A');
+      },
+    );
   });
 }

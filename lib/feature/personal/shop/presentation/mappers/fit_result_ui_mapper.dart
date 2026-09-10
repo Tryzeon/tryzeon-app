@@ -23,14 +23,14 @@ extension FitResultUiMapper on FitResult {
   String get subline {
     switch (displayState) {
       case FitDisplayState.match:
-        if (matchedTypes.length == 1) return '${matchedTypes.first.label}合身';
-        return '${matchedTypes.map((final t) => t.label).join('、')}皆合身';
+        if (matchedTypes.length == 1) return '${matchedTypes.first.label}符合';
+        return '${matchedTypes.map((final t) => t.label).join('、')}皆符合';
       case FitDisplayState.caveats:
         return caveats
             .map(
               (final c) =>
-                  '${c.type.label}${c.direction == FitDirection.tight ? '偏緊' : '偏鬆'} '
-                  '${c.deviation.toStringAsFixed(1)}cm',
+                  '${c.type.label}${c.direction.label} '
+                  '${c.deviation.toStringAsFixed(1)}${c.type.quantity.unitSuffix}',
             )
             .join('、');
       case FitDisplayState.outOfRange:
@@ -48,5 +48,14 @@ extension FitResultUiMapper on FitResult {
     FitDisplayState.outOfRange => Icons.remove_rounded,
     FitDisplayState.noUserData => Icons.straighten_rounded,
     FitDisplayState.unknown => Icons.help_outline,
+  };
+}
+
+extension FitDirectionUiMapper on FitDirection {
+  String get label => switch (this) {
+    FitDirection.tight => '偏緊',
+    FitDirection.loose => '偏鬆',
+    FitDirection.below => '低於建議',
+    FitDirection.above => '高於建議',
   };
 }

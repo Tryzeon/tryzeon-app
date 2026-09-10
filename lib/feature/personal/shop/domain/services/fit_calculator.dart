@@ -3,16 +3,20 @@ import 'package:tryzeon/feature/common/product_attributes/domain/entities/produc
 import 'package:tryzeon/feature/common/product_size/domain/entities/product_size.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/domain/services/ease_table.dart';
+import 'package:tryzeon/feature/personal/shop/domain/services/fit_dimension_weights.dart';
 import 'package:tryzeon/feature/personal/shop/domain/services/garment_fit_dimension.dart';
 
-/// For every published size it measures each comparable dimension's *ease*
-/// (garment minus body) against the expected band and decides whether the size
-/// fits, runs tight, or runs loose. A garment's length and the shopper's height
-/// carry no fit signal and are never read here.
+/// For every published size it judges each body dimension the shopper has
+/// recorded and decides whether the size fits, runs tight, or runs loose.
 ///
-/// Dimensions absent on either side are skipped rather than guessed, so a size
-/// judged on chest alone says so ("chest fits") instead of implying a full-body
-/// match.
+/// A dimension is judged one of two ways. If the store published a wearer
+/// range for it, the shopper's value is checked against that range — the store
+/// knows its own cut better than a generic ease table, so the range wins and
+/// the ease estimate is not consulted. Otherwise, if the dimension has a
+/// garment counterpart, the *ease* (garment minus body) is checked against the
+/// expected band. Dimensions with neither are skipped rather than guessed, so a
+/// size judged on chest alone says so ("chest fits") instead of implying a
+/// full-body match.
 class FitCalculator {
   FitCalculator._();
 
@@ -22,9 +26,8 @@ class FitCalculator {
     required final ProductFit? fit,
     required final ProductElasticity? elasticity,
   }) {
-    final userDimensions = fitComparableGarmentTypes
-        .map((final g) => g.comparableBodyType!)
-        .where((final b) => body?.getValue(b) != null)
+    final userDimensions = BodyMeasurementType.values
+        .where((final t) => body?.getValue(t) != null)
         .toList();
     if (userDimensions.isEmpty) return const FitResult(noUserData: true);
 
@@ -82,58 +85,95 @@ class FitCalculator {
     final ProductElasticity? elasticity,
   ) {
     final dimensions = <_DimensionFit>[];
-    for (final garmentType in fitComparableGarmentTypes) {
-      final bodyType = garmentType.comparableBodyType!;
-      if (!userDimensions.contains(bodyType)) continue;
+    for (final type in userDimensions) {
+      final bodyValue = body.getValue(type)!;
 
+      final range = size.bodyMeasurementRanges?.getValue(type);
+      if (range != null) {
+        dimensions.add(_RangeFit(type: type, value: bodyValue, range: range));
+        continue;
+      }
+
+      final garmentType = type.comparableGarmentType;
+      if (garmentType == null) continue;
       final garmentValue = size.garmentMeasurements?.getValue(garmentType);
-      final bodyValue = body.getValue(bodyType);
-      if (garmentValue == null || bodyValue == null) continue;
+      if (garmentValue == null) continue;
 
-      final band = EaseTable.bandFor(bodyType, fit, elasticity);
+      final band = EaseTable.bandFor(type, fit, elasticity);
       if (band == null) continue;
 
-      dimensions.add(
-        _DimensionFit(type: bodyType, ease: garmentValue - bodyValue, band: band),
-      );
+      dimensions.add(_EaseFit(type: type, ease: garmentValue - bodyValue, band: band));
     }
     return _SizeFit(size: size, dimensions: dimensions);
   }
 }
 
-class _DimensionFit {
-  _DimensionFit({required this.type, required this.ease, required this.band});
+sealed class _DimensionFit {
+  const _DimensionFit({required this.type});
 
   final BodyMeasurementType type;
+
+  /// How far outside the acceptable band, in the dimension's own unit; zero
+  /// when it fits.
+  double get deviation;
+
+  /// Distance from the ideal value, used to rank sizes that all fit cleanly.
+  double get centerDistance;
+
+  FitDirection get direction;
+
+  bool get inRange => deviation == 0;
+
+  double get weight => FitDimensionWeights.weightFor(type);
+
+  MeasurementCaveat get caveat =>
+      MeasurementCaveat(type: type, deviation: deviation, direction: direction);
+}
+
+class _EaseFit extends _DimensionFit {
+  const _EaseFit({required super.type, required this.ease, required this.band});
 
   /// Garment measurement minus body measurement, in centimeters.
   final double ease;
   final EaseBand band;
 
-  bool get isTight => ease < band.min;
-  bool get isLoose => ease > band.max;
-  bool get inRange => !isTight && !isLoose;
-
+  @override
   double get deviation {
-    if (isTight) return band.min - ease;
-    if (isLoose) return ease - band.max;
+    if (ease < band.min) return band.min - ease;
+    if (ease > band.max) return ease - band.max;
     return 0;
   }
 
-  double get weight => EaseTable.weightFor(type);
+  @override
+  double get centerDistance => (ease - band.center).abs();
 
-  MeasurementCaveat get caveat => MeasurementCaveat(
-    type: type,
-    deviation: deviation,
-    direction: isTight ? FitDirection.tight : FitDirection.loose,
-  );
+  @override
+  FitDirection get direction => ease < band.min ? FitDirection.tight : FitDirection.loose;
+}
+
+class _RangeFit extends _DimensionFit {
+  const _RangeFit({required super.type, required this.value, required this.range});
+
+  /// The shopper's own value, in the dimension's unit.
+  final double value;
+  final MeasurementRange range;
+
+  @override
+  double get deviation => range.distanceOutside(value);
+
+  @override
+  double get centerDistance => (value - range.center).abs();
+
+  @override
+  FitDirection get direction =>
+      value < range.min ? FitDirection.below : FitDirection.above;
 }
 
 class _SizeFit {
   _SizeFit({required this.size, required this.dimensions}) {
     centerScore = dimensions.fold(
       0,
-      (final sum, final d) => sum + (d.ease - d.band.center).abs() * d.weight,
+      (final sum, final d) => sum + d.centerDistance * d.weight,
     );
   }
 
@@ -142,7 +182,7 @@ class _SizeFit {
 
   bool get fitsCleanly => dimensions.every((final d) => d.inRange);
 
-  /// Weighted distance from the ideal ease. Ranks sizes that all fit cleanly.
+  /// Weighted distance from the ideal value. Ranks sizes that all fit cleanly.
   double centerScore = 0;
 
   /// Weighted sum of out-of-range distances. Ranks sizes when none fit cleanly.

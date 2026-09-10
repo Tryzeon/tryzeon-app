@@ -92,18 +92,9 @@ class EaseTable {
     ProductElasticity.high: -9,
   };
 
-  /// Circumferences drive fit; shoulder width is the least decisive of the
-  /// comparable dimensions.
-  static const Map<BodyMeasurementType, double> _weights = {
-    BodyMeasurementType.chest: 1,
-    BodyMeasurementType.waist: 1,
-    BodyMeasurementType.hips: 1,
-    BodyMeasurementType.shoulder: 0.8,
-    BodyMeasurementType.thigh: 0.8,
-  };
-
-  /// The largest single-dimension miss (cm) still worth recommending with a
-  /// caveat. Beyond this the product simply does not carry the shopper's size.
+  /// The largest single-dimension miss still worth recommending with a caveat,
+  /// in the dimension's own unit (cm, or kg for a weight range). Beyond this
+  /// the product simply does not carry the shopper's size.
   static const double maxRecommendableDeviation = 6;
 
   static EaseBand? bandFor(
@@ -117,6 +108,4 @@ class EaseTable {
     final shift = _elasticityMinShift[elasticity ?? _defaultElasticity] ?? 0;
     return base._shiftMin(shift);
   }
-
-  static double weightFor(final BodyMeasurementType type) => _weights[type] ?? 1;
 }
