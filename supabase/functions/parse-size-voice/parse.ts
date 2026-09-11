@@ -12,10 +12,18 @@ export const MEASUREMENT_KEYS = [
   "length",
 ] as const;
 
-/// Recommended wearer body ranges — must stay in sync with `bodyMeasurementRangeTypes`
-/// in lib/feature/common/product_size/domain/entities/body_measurement_ranges.dart.
-/// Height is centimeters, weight kilograms; neither takes a spoken unit.
-export const BODY_MEASUREMENT_RANGE_KEYS = ["height", "weight"] as const;
+/// Recommended wearer body ranges — must stay in sync with `BodyMeasurementType`
+/// in lib/feature/common/body_measurements/domain/entities/body_measurement_type.dart.
+/// Weight is kilograms, everything else centimeters; none takes a spoken unit.
+export const BODY_MEASUREMENT_RANGE_KEYS = [
+  "height",
+  "weight",
+  "shoulder",
+  "chest",
+  "waist",
+  "hips",
+  "thigh",
+] as const;
 
 export const UNIT_VALUES = ["centimeter", "cun", "inch"] as const;
 
@@ -85,6 +93,7 @@ export function buildPrompt(): string {
     "5. name 填聽到的尺寸代號（例 M、L、US 10）；若聽不出名稱填空字串。標準尺碼一律用 XS、S、M、L、XL、2XL、均碼 這幾個字面值（例如聽到「XXL」填 2XL、「free size」填 均碼）；不屬於標準尺碼的照聽到的原樣填。",
     "6. 若聽不出任何尺寸，sizes 回空陣列。",
     "7. 店家若說某尺寸「適合／建議身高 160 到 170、體重 50 到 60」，這是建議穿著者的身形範圍，輸出到 body_measurement_ranges：height 填 { min, max }（公分）、weight 填 { min, max }（公斤）。只說單一數字（例如「適合 165」）時 min 與 max 都填該數字。沒講到的欄位不要輸出。",
+    "7-1. 肩寬、胸圍、腰圍、臀圍、大腿圍也可以是穿著者的身形範圍：店家說「適合／建議胸圍 88 到 96 的人穿」這類明確指人體的說法時，輸出到 body_measurement_ranges 的 shoulder、chest、waist、hips、thigh（公分）。沒有說「適合／建議」、只是報一個數字的，仍然是衣服尺寸，填 garment_measurements。",
   ].join("\n");
 }
 
@@ -169,13 +178,18 @@ export interface ParsedSize {
 }
 
 /**
- * Upper bounds are the app's `BodyMeasurementType` maxima for height and
- * weight, so a misheard "1600" is dropped here rather than failing form
- * validation after it has been typed into the chart.
+ * Upper bounds are the app's `BodyMeasurementType` maxima, so a misheard
+ * "1600" is dropped here rather than failing form validation after it has
+ * been typed into the chart.
  */
 const BODY_MEASUREMENT_RANGE_MAX: Record<(typeof BODY_MEASUREMENT_RANGE_KEYS)[number], number> = {
   height: 250,
   weight: 300,
+  shoulder: 70,
+  chest: 200,
+  waist: 200,
+  hips: 200,
+  thigh: 120,
 };
 
 function normalizeBodyMeasurementRanges(raw: unknown): ParsedSize["body_measurement_ranges"] {

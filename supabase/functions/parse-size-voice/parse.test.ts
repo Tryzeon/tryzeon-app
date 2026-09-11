@@ -77,6 +77,35 @@ Deno.test("normalizeParsedSizes keeps a body measurement range whose bounds are 
   });
 });
 
+Deno.test("normalizeParsedSizes keeps a body measurement range for every body dimension", () => {
+  const ranges = {
+    height: { min: 160, max: 170 },
+    weight: { min: 50, max: 60 },
+    shoulder: { min: 40, max: 44 },
+    chest: { min: 88, max: 96 },
+    waist: { min: 70, max: 78 },
+    hips: { min: 90, max: 98 },
+    thigh: { min: 50, max: 56 },
+  };
+  const parsed = normalizeParsedSizes({
+    sizes: [{ name: "M", garment_measurements: {}, body_measurement_ranges: ranges }],
+  });
+  assertEquals(parsed[0].body_measurement_ranges, ranges);
+});
+
+Deno.test("normalizeParsedSizes drops a circumference range above the app's body measurement maximum", () => {
+  const parsed = normalizeParsedSizes({
+    sizes: [
+      {
+        name: "M",
+        garment_measurements: {},
+        body_measurement_ranges: { chest: { min: 88, max: 201 } },
+      },
+    ],
+  });
+  assertEquals(parsed[0].body_measurement_ranges, {});
+});
+
 Deno.test("normalizeParsedSizes drops a body measurement range that is reversed, non-positive or implausibly large", () => {
   const parsed = normalizeParsedSizes({
     sizes: [

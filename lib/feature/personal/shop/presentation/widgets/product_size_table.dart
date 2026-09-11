@@ -27,7 +27,7 @@ class ProductSizeTable extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
-    final rangeTypes = bodyMeasurementRangeTypes
+    final rangeTypes = BodyMeasurementType.values
         .where(
           (final type) =>
               sizes.any((final s) => s.bodyMeasurementRanges?.getValue(type) != null),

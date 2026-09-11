@@ -50,12 +50,3 @@ sealed class BodyMeasurementRanges with _$BodyMeasurementRanges {
 
   bool get isEmpty => BodyMeasurementType.values.every((final t) => getValue(t) == null);
 }
-
-/// The wearer dimensions a store can publish a range for. Height and weight
-/// have no garment counterpart, so a range is the only way a size chart can
-/// speak to them; circumference ranges are supported by the type but not yet
-/// offered in the editor.
-const List<BodyMeasurementType> bodyMeasurementRangeTypes = [
-  BodyMeasurementType.height,
-  BodyMeasurementType.weight,
-];

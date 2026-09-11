@@ -5,6 +5,26 @@ import 'package:tryzeon/feature/store/product/data/services/size_voice_parser.da
 
 void main() {
   group('parseSizeVoiceResponse', () {
+    test('reads a body measurement range for every body measurement type', () {
+      final parsed = parseSizeVoiceResponse({
+        'sizes': [
+          {
+            'name': 'M',
+            'garment_measurements': <String, dynamic>{},
+            'body_measurement_ranges': {
+              for (final type in BodyMeasurementType.values)
+                type.value: {'min': type.min, 'max': type.max},
+            },
+          },
+        ],
+      });
+
+      final ranges = parsed.single.bodyMeasurementRanges;
+      for (final type in BodyMeasurementType.values) {
+        expect(ranges[type], MeasurementRange(min: type.min, max: type.max));
+      }
+    });
+
     test('reads measurements and body measurement ranges for each size', () {
       final parsed = parseSizeVoiceResponse({
         'sizes': [
@@ -43,7 +63,7 @@ void main() {
             'name': 'M',
             'garment_measurements': <String, dynamic>{},
             'body_measurement_ranges': {
-              'chest': {'min': 90, 'max': 95},
+              'neck': {'min': 36, 'max': 40},
               'height': {'min': 160},
             },
           },

@@ -49,7 +49,7 @@ class ProductSizeEntryController {
         text: _formatValue(garmentMeasurements?.getValue(type)),
       );
     }
-    for (final type in bodyMeasurementRangeTypes) {
+    for (final type in BodyMeasurementType.values) {
       rangeControllers[type] = RangeEntryControllers(
         initial: bodyMeasurementRanges?.getValue(type),
       );

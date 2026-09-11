@@ -16,7 +16,7 @@ GarmentMeasurementType? _typeFromKey(final String key) {
 }
 
 BodyMeasurementType? _bodyTypeFromKey(final String key) {
-  for (final t in bodyMeasurementRangeTypes) {
+  for (final t in BodyMeasurementType.values) {
     if (t.value == key) return t;
   }
   return null;

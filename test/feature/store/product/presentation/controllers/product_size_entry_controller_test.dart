@@ -56,9 +56,9 @@ void main() {
   });
 
   group('bodyMeasurementRanges', () {
-    test('has a min/max controller pair for every body measurement range type', () {
+    test('has a min/max controller pair for every body measurement type', () {
       final entry = ProductSizeEntryController(label: 'M');
-      expect(entry.rangeControllers.keys, bodyMeasurementRangeTypes);
+      expect(entry.rangeControllers.keys, BodyMeasurementType.values);
     });
 
     test('is omitted when no range is filled', () {

@@ -6,7 +6,6 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/common/body_measurements/presentation/mappers/body_measurement_type_ui_mapper.dart';
 import 'package:tryzeon/feature/common/measurement/domain/entities/measurement_unit.dart';
-import 'package:tryzeon/feature/common/product_size/domain/entities/body_measurement_ranges.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/standard_size_label.dart';
 import 'package:tryzeon/feature/common/product_size/presentation/mappers/garment_measurement_type_ui_mapper.dart';
 import 'package:tryzeon/feature/store/product/presentation/controllers/product_size_entry_controller.dart';
@@ -104,7 +103,7 @@ class ProductSizeMatrixEditor extends HookWidget {
           _MatrixTable(
             entries: manager.sizeEntries,
             columns: [
-              for (final type in bodyMeasurementRangeTypes)
+              for (final type in BodyMeasurementType.values)
                 _MatrixColumn(
                   label: '${type.label} (${type.quantity.unitSuffix})',
                   width: _rangeCellWidth,
