@@ -612,6 +612,7 @@ export type Database = {
           name: string
         }[]
       }
+      is_admin: { Args: never; Returns: boolean }
       list_shop_products: {
         Args: {
           p_category_ids?: string[]
