@@ -4,24 +4,7 @@ import type { DbClient } from "./supabase.ts";
 
 export const USER_PROFILES_TABLE = "user_profiles";
 
-/**
- * The shopper's own body dimensions, as stored in `user_profiles.measurements`.
- * Every field is optional — the profile form lets a shopper fill in as few as
- * they like. Lengths and circumferences are centimeters; `weight` is kilograms.
- */
-export interface BodyMeasurements {
-  height?: number;
-  weight?: number;
-  shoulder?: number;
-  chest?: number;
-  waist?: number;
-  hips?: number;
-  thigh?: number;
-}
-
 const AVATAR_PATH_COLUMN = "avatar_path";
-
-const MEASUREMENTS_COLUMN = "measurements";
 
 const PROFILE_COLUMNS = "name, gender, age_range, style_preferences";
 
@@ -46,28 +29,6 @@ export async function getAvatarPath(
     throw new Error(`${AVATAR_PATH_COLUMN} lookup failed: ${error.message}`);
   }
   return nonEmptyStr(data?.[AVATAR_PATH_COLUMN]);
-}
-
-/**
- * Deliberately separate from `getUserProfile`: chat projects that row on every
- * message and has no use for measurements, so this column stays out of
- * `PROFILE_COLUMNS`.
- */
-export async function getBodyMeasurements(
-  client: DbClient,
-  userId: string,
-): Promise<BodyMeasurements | null> {
-  const { data, error } = await client
-    .from(USER_PROFILES_TABLE)
-    .select(MEASUREMENTS_COLUMN)
-    .eq("user_id", userId)
-    .maybeSingle();
-  if (error) {
-    throw new Error(`${MEASUREMENTS_COLUMN} lookup failed: ${error.message}`);
-  }
-  const raw = data?.[MEASUREMENTS_COLUMN];
-  if (typeof raw !== "object" || raw === null) return null;
-  return raw as BodyMeasurements;
 }
 
 export async function getUserProfile(

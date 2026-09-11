@@ -1,5 +1,4 @@
 import type { DailyUsage, UsageCounter } from "../quota.ts";
-import type { BodyMeasurements } from "../user-profile.ts";
 import type { TaskPromptOptions } from "./prompt.ts";
 import type { DbClient } from "../supabase.ts";
 
@@ -25,7 +24,11 @@ export type AvatarOverride = { base64: string };
  */
 export type BaseImage = { base64: string };
 
-/** Absent `sizeId` means "describe the garment, not its fit". */
+/**
+ * `sizeId` is accepted and carried through unchanged but nothing reads it: the
+ * prompt no longer describes how a size sits on the wearer, and the model is
+ * left to judge that from the images alone.
+ */
 export interface ProductRef {
   productId: string;
   sizeId?: string;
@@ -57,7 +60,6 @@ export interface GarmentMaterial {
 export interface ResolvedGarment {
   images: ImageSource[];
   detail?: string;
-  fit?: string;
 }
 
 export type GarmentInput = ProductRef | WardrobeRef | GarmentMaterial;
@@ -119,7 +121,6 @@ export const LIMITS = {
   MAX_GARMENTS: 3,
   MAX_IMAGES_PER_GARMENT: 3,
   MAX_GARMENT_DETAIL_LENGTH: 500,
-  MAX_GARMENT_FIT_LENGTH: 600,
   MAX_PROMPT_LENGTH: 1000,
   MAX_BASE64_LENGTH: 8 * 1024 * 1024,
 } as const;
@@ -167,11 +168,9 @@ export type VideoUploader = (
   fileName: string,
 ) => Promise<string>;
 
-/** A `null` body means "describe the garment, not its fit". */
 export type ProductResolver = (
   client: DbClient,
   ref: ProductRef,
-  body: BodyMeasurements | null,
 ) => Promise<ResolvedGarment>;
 
 /**
@@ -189,8 +188,3 @@ export type AvatarResolver = (
   client: DbClient,
   userId: string,
 ) => Promise<ImageSource>;
-
-export type BodyResolver = (
-  client: DbClient,
-  userId: string,
-) => Promise<BodyMeasurements | null>;

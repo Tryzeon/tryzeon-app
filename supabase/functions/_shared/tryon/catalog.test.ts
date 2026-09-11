@@ -1,11 +1,10 @@
-import { assertEquals, assertRejects, assertStringIncludes } from "@std/assert";
+import { assertEquals, assertRejects } from "@std/assert";
 import { buildProductGarmentDetail, resolveProductGarment } from "./catalog.ts";
 import { LIMITS } from "./types.ts";
 import { ValidationError } from "./errors.ts";
 import type { DbClient } from "../supabase.ts";
 
 const PRODUCT_ID = "11111111-1111-1111-1111-111111111111";
-const SIZE_ID = "22222222-2222-2222-2222-222222222222";
 
 interface LookupStub {
   row: Record<string, unknown> | null;
@@ -13,14 +12,13 @@ interface LookupStub {
 }
 
 /**
- * `products` is served through `.rpc()`, and `.from("products")` throws, so a
- * regression to a direct, unfiltered table read fails the suite instead of
- * silently widening what a try-on can reach. The rpc arm re-checks `p_id` and
- * `status` against the stub row, modelling what the SQL function does, so the
- * security test below describes a real outcome and not merely a recorded call.
+ * `products` is served through `.rpc()`, and `.from()` throws, so a regression
+ * to a direct, unfiltered table read fails the suite instead of silently
+ * widening what a try-on can reach. The rpc arm re-checks `p_id` and `status`
+ * against the stub row, modelling what the SQL function does, so the security
+ * test below describes a real outcome and not merely a recorded call.
  */
 function fakeAdmin(stubs: Record<string, LookupStub>) {
-  const filters: Record<string, Array<[string, string]>> = {};
   const rpcCalls: Array<[string, Record<string, unknown>]> = [];
   const admin = {
     rpc: (name: string, params: Record<string, unknown>) => {
@@ -36,37 +34,12 @@ function fakeAdmin(stubs: Record<string, LookupStub>) {
       });
     },
     from: (table: string) => {
-      if (table === "products") {
-        throw new Error(
-          "fakeAdmin: the product lookup must go through get_shop_product",
-        );
-      }
-      const tableFilters: Array<[string, string]> = [];
-      filters[table] = tableFilters;
-      return {
-        select: () => {
-          const chain = {
-            eq: (column: string, value: string) => {
-              tableFilters.push([column, value]);
-              return chain;
-            },
-            maybeSingle: () => {
-              const stub = stubs[table];
-              const row = stub?.row ?? null;
-              const match = row !== null &&
-                tableFilters.every(([column, value]) => row[column] === value);
-              return Promise.resolve({
-                data: match ? row : null,
-                error: stub?.error ?? null,
-              });
-            },
-          };
-          return chain;
-        },
-      };
+      throw new Error(
+        `fakeAdmin: unexpected table read of ${table}; the product lookup must go through get_shop_product`,
+      );
     },
   } as unknown as DbClient;
-  return { admin, filters, rpcCalls };
+  return { admin, rpcCalls };
 }
 
 const PRODUCT_ROW = {
@@ -131,60 +104,9 @@ Deno.test("buildProductGarmentDetail caps overlong detail at the limit", () => {
   assertEquals(detail?.length, LIMITS.MAX_GARMENT_DETAIL_LENGTH);
 });
 
-Deno.test("SECURITY: a sizeId belonging to a different product does not attach a fit", async () => {
-  // The row exists and would produce a fit if read, so this is the test that
-  // must fail if `.eq("product_id", productId)` is dropped from
-  // `resolveSizeFit`.
-  const { admin } = fakeAdmin({
-    products: { row: PRODUCT_ROW },
-    product_sizes: {
-      row: {
-        id: SIZE_ID,
-        product_id: "99999999-9999-9999-9999-999999999999",
-        name: "M",
-        garment_measurements: { chest_circumference: 100 },
-      },
-    },
-  });
-
-  const garment = await resolveProductGarment(
-    admin,
-    { productId: PRODUCT_ID, sizeId: SIZE_ID },
-    { chest: 90 },
-  );
-
-  assertEquals("fit" in garment, false);
-});
-
-Deno.test("resolveProductGarment describes the size's body measurement range against the shopper", async () => {
-  const { admin } = fakeAdmin({
-    products: { row: PRODUCT_ROW },
-    product_sizes: {
-      row: {
-        id: SIZE_ID,
-        product_id: PRODUCT_ID,
-        name: "M",
-        garment_measurements: null,
-        body_measurement_ranges: { height: { min: 160, max: 170 } },
-      },
-    },
-  });
-
-  const garment = await resolveProductGarment(
-    admin,
-    { productId: PRODUCT_ID, sizeId: SIZE_ID },
-    { height: 172 },
-  );
-
-  assertEquals(
-    garment.fit,
-    "size M: recommended for wearers 160–170cm tall; this wearer is 172cm, 2cm above that range",
-  );
-});
-
 Deno.test("resolveProductGarment looks the product up through get_shop_product", async () => {
   const { admin, rpcCalls } = fakeAdmin({ products: { row: PRODUCT_ROW } });
-  await resolveProductGarment(admin, { productId: PRODUCT_ID }, null);
+  await resolveProductGarment(admin, { productId: PRODUCT_ID });
 
   assertEquals(rpcCalls, [["get_shop_product", { p_id: PRODUCT_ID }]]);
 });
@@ -197,7 +119,7 @@ Deno.test("SECURITY: an unlisted product does not resolve", async () => {
   });
 
   await assertRejects(
-    () => resolveProductGarment(admin, { productId: PRODUCT_ID }, null),
+    () => resolveProductGarment(admin, { productId: PRODUCT_ID }),
     ValidationError,
     "no product for productId",
   );
@@ -213,145 +135,7 @@ Deno.test("resolveProductGarment sends only the product's first image", async ()
     },
   });
 
-  const garment = await resolveProductGarment(
-    admin,
-    { productId: PRODUCT_ID },
-    null,
-  );
+  const garment = await resolveProductGarment(admin, { productId: PRODUCT_ID });
 
   assertEquals(garment.images, [{ path: "stores/main.jpg" }]);
-});
-
-Deno.test("resolveProductGarment skips the fit description for a sizeId that matches no row", async () => {
-  const { admin } = fakeAdmin({
-    products: { row: PRODUCT_ROW },
-    product_sizes: { row: null },
-  });
-
-  const garment = await resolveProductGarment(
-    admin,
-    { productId: PRODUCT_ID, sizeId: SIZE_ID },
-    { chest: 90 },
-  );
-
-  assertEquals("fit" in garment, false);
-});
-
-Deno.test("resolveProductGarment survives a failed product_sizes lookup", async () => {
-  const { admin } = fakeAdmin({
-    products: { row: PRODUCT_ROW },
-    product_sizes: { row: null, error: { message: "connection reset" } },
-  });
-
-  const garment = await resolveProductGarment(
-    admin,
-    { productId: PRODUCT_ID, sizeId: SIZE_ID },
-    { chest: 90 },
-  );
-
-  assertEquals("fit" in garment, false);
-  assertEquals(garment.images.length, 1);
-});
-
-Deno.test("resolveProductGarment attaches the fit description for a matching sizeId", async () => {
-  const { admin } = fakeAdmin({
-    products: { row: PRODUCT_ROW },
-    product_sizes: {
-      row: {
-        id: SIZE_ID,
-        product_id: PRODUCT_ID,
-        name: "M",
-        garment_measurements: { chest_circumference: 104 },
-      },
-    },
-  });
-
-  const garment = await resolveProductGarment(
-    admin,
-    { productId: PRODUCT_ID, sizeId: SIZE_ID },
-    { chest: 90 },
-  );
-
-  assertEquals(
-    garment.fit,
-    "size M: chest 104cm on a 90cm chest (+14cm — fitted, follows the body with a little room)",
-  );
-});
-
-Deno.test("resolveProductGarment ships the cut label alongside real fit numbers", async () => {
-  const { admin } = fakeAdmin({
-    products: { row: { ...PRODUCT_ROW, fit: "oversize" } },
-    product_sizes: {
-      row: {
-        id: SIZE_ID,
-        product_id: PRODUCT_ID,
-        name: "M",
-        garment_measurements: { chest_circumference: 88 },
-      },
-    },
-  });
-
-  const garment = await resolveProductGarment(
-    admin,
-    { productId: PRODUCT_ID, sizeId: SIZE_ID },
-    { chest: 110 },
-  );
-
-  assertEquals(garment.detail, "Product: Shirt. Cut: oversize");
-  assertStringIncludes(garment.fit ?? "", "-22cm — compression");
-});
-
-Deno.test("resolveProductGarment skips the product_sizes lookup entirely when there is no body", async () => {
-  const { admin, filters } = fakeAdmin({
-    products: { row: PRODUCT_ROW },
-    product_sizes: {
-      row: {
-        id: SIZE_ID,
-        product_id: PRODUCT_ID,
-        name: "M",
-        garment_measurements: { chest_circumference: 104 },
-      },
-    },
-  });
-
-  const garment = await resolveProductGarment(
-    admin,
-    { productId: PRODUCT_ID, sizeId: SIZE_ID },
-    null,
-  );
-
-  assertEquals("fit" in garment, false);
-  assertEquals("product_sizes" in filters, false);
-});
-
-Deno.test("resolveProductGarment rejects a malformed sizeId", async () => {
-  const { admin } = fakeAdmin({ products: { row: PRODUCT_ROW } });
-
-  await assertRejects(
-    () =>
-      resolveProductGarment(
-        admin,
-        { productId: PRODUCT_ID, sizeId: "not-a-uuid" },
-        { chest: 90 },
-      ),
-    ValidationError,
-    "invalid sizeId",
-  );
-});
-
-Deno.test("resolveProductGarment rejects a malformed sizeId even with no body", async () => {
-  // Validation must not depend on user state, or the bug goes unreported for
-  // half the population.
-  const { admin } = fakeAdmin({ products: { row: PRODUCT_ROW } });
-
-  await assertRejects(
-    () =>
-      resolveProductGarment(
-        admin,
-        { productId: PRODUCT_ID, sizeId: "not-a-uuid" },
-        null,
-      ),
-    ValidationError,
-    "invalid sizeId",
-  );
 });

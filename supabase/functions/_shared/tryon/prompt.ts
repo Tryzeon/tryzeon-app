@@ -34,45 +34,21 @@ ${lines.join("\n")}`;
 }
 
 /**
- * The wearer stays a hard invariant — without an explicit prohibition the model
- * will happily resize the person to match a number.
- */
-function buildGarmentFitSection(garmentFits?: (string | undefined)[]): string {
-  if (!garmentFits) return "";
-  const lines: string[] = [];
-  garmentFits.forEach((fit, i) => {
-    const text = fit?.trim();
-    if (text) lines.push(`   - Garment ${i + 1}, ${text}`);
-  });
-  if (lines.length === 0) return "";
-
-  return `
-GARMENT FIT — HOW THIS SIZE SITS ON THIS BODY
-The published measurements of the size being worn, next to the wearer's own measurements. Use them to judge how tightly the garment sits on this person.
-- Negative ease means this body fills the garment past its measured size, so the fabric stretches and pulls taut, with visible tension lines. How far it can stretch is governed by the elasticity noted in GARMENT DETAILS.
-- NEVER resize, reshape, or re-proportion the person to match these numbers — the garment changes, the body does not.
-${lines.join("\n")}`;
-}
-
-/**
- * Named rather than positional: `garmentDetails` and `garmentFits` are both
- * `(string | undefined)[]`, so two positionals of the same shape could be
- * transposed and still type-check. `ImageGenerator` and `generateTryonImage`
- * take THIS type, not a copy — every field being optional, a copy would stay
- * assignable after a rename and silently drop that input.
+ * `ImageGenerator` and `generateTryonImage` take THIS type, not a copy — every
+ * field being optional, a copy would stay assignable after a rename and
+ * silently drop that input.
  */
 export interface TaskPromptOptions {
   garmentDetails?: (string | undefined)[];
   scenePrompt?: string;
   stylingPrompt?: string;
-  garmentFits?: (string | undefined)[];
 }
 
 export function buildTaskPrompt(
   garmentGroups: string[][],
   opts: TaskPromptOptions = {},
 ): string {
-  const { garmentDetails, scenePrompt, stylingPrompt, garmentFits } = opts;
+  const { garmentDetails, scenePrompt, stylingPrompt } = opts;
   const totalGarmentImages = garmentGroups.reduce((a, g) => a + g.length, 0);
   let prompt = `You will receive ${
     totalGarmentImages + 1
@@ -133,7 +109,6 @@ OUTPUT
 - Return ONE photorealistic image with sharp garment detail, accurate color reproduction, and fashion photography quality.`;
 
   prompt += buildGarmentDetailsSection(garmentDetails);
-  prompt += buildGarmentFitSection(garmentFits);
 
   if (stylingPrompt) {
     prompt += `

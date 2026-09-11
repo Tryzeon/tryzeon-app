@@ -43,18 +43,6 @@ class EaseTable {
   /// Base ease bands, before any elasticity adjustment. Waist, hips, and thigh
   /// are calibrated to trouser (bottoms) ease, distinct from the looser chest
   /// allowance used for tops.
-  ///
-  /// `supabase/functions/_shared/tryon/fit.ts` hard-codes twelve of these
-  /// numbers as prompt-wording thresholds for the image model: for each of
-  /// chest/waist/hips/thigh it flattens this table's `ProductFit` axis into
-  /// `slimMin` (the slim band's `min`), `regularMax` (the regular band's
-  /// `max`), and `looseMax` (the loose band's `max`).
-  /// `test/feature/common/tryon_fit_contract_test.dart` asserts those twelve
-  /// numbers, so re-calibrating here fails that test rather than silently
-  /// leaving the prompt on the old bands. That file also re-encodes which
-  /// garment dimension pairs with which body dimension — the same pairing
-  /// `garment_fit_dimension.dart` defines here — and nothing checks that half;
-  /// re-derive it by hand when the pairing changes.
   static const Map<ProductFit, Map<BodyMeasurementType, EaseBand>> _bands = {
     ProductFit.slim: {
       BodyMeasurementType.shoulder: EaseBand(-1, 2),

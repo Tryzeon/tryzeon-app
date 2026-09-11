@@ -1,6 +1,10 @@
 import { assertEquals, assertRejects } from "@std/assert";
 import { runTryonJob } from "./run.ts";
-import { GenerationFailedError, MissingAvatarError, ValidationError } from "./errors.ts";
+import {
+  GenerationFailedError,
+  MissingAvatarError,
+  ValidationError,
+} from "./errors.ts";
 import { type DailyUsage, QuotaExceededError } from "../quota.ts";
 import type { QuotaFactory, TryonMode, TryonParams } from "./types.ts";
 import type { DbClient } from "../supabase.ts";
@@ -428,80 +432,6 @@ Deno.test("each garment kind reaches its own resolver", async () => {
   assertEquals(seenGarmentB64, ["PRODUCTB64", "WARDROBEB64", "RAWB64"]);
 });
 
-Deno.test("runTryonJob does not read measurements when no garment names a size", async () => {
-  const quota = fakeQuota();
-  let bodyReads = 0;
-
-  await runTryonJob(client, {
-    userId: "u1",
-    avatar: { base64: "AVATAR" },
-    garments: [{ productId: "p1" }],
-    mode: "image",
-  }, {
-    quota: quota.factory,
-    resolveBody: () => {
-      bodyReads++;
-      return Promise.resolve(null);
-    },
-    resolveProduct: () => Promise.resolve({ images: [{ base64: "G" }] }),
-    generate: () => Promise.resolve("GENERATEDB64"),
-    upload: () => Promise.resolve("https://img/result.png"),
-  });
-
-  assertEquals(bodyReads, 0);
-});
-
-Deno.test("runTryonJob reads measurements once for several sized garments", async () => {
-  const quota = fakeQuota();
-  let bodyReads = 0;
-
-  await runTryonJob(client, {
-    userId: "u1",
-    avatar: { base64: "AVATAR" },
-    garments: [
-      { productId: "p1", sizeId: "s1" },
-      { productId: "p2", sizeId: "s2" },
-    ],
-    mode: "image",
-  }, {
-    quota: quota.factory,
-    resolveBody: () => {
-      bodyReads++;
-      return Promise.resolve({ chest: 92 });
-    },
-    resolveProduct: () => Promise.resolve({ images: [{ base64: "G" }] }),
-    generate: () => Promise.resolve("GENERATEDB64"),
-    upload: () => Promise.resolve("https://img/result.png"),
-  });
-
-  assertEquals(bodyReads, 1);
-});
-
-Deno.test("runTryonJob still generates when the measurements read fails", async () => {
-  const quota = fakeQuota();
-  let seenBody: unknown = "unset";
-
-  const result = await runTryonJob(client, {
-    userId: "u1",
-    avatar: { base64: "AVATAR" },
-    garments: [{ productId: "p1", sizeId: "s1" }],
-    mode: "image",
-  }, {
-    quota: quota.factory,
-    resolveBody: () => Promise.reject(new Error("connection reset")),
-    resolveProduct: (_admin, _ref, body) => {
-      seenBody = body;
-      return Promise.resolve({ images: [{ base64: "G" }] });
-    },
-    generate: () => Promise.resolve("GENERATEDB64"),
-    upload: () => Promise.resolve("https://img/result.png"),
-  });
-
-  assertEquals(seenBody, null);
-  assertEquals(result.kind, "image");
-  assertEquals(quota.calls, ["charge"]);
-});
-
 Deno.test("runTryonJob hands the resolver the whole ref, size included", async () => {
   const quota = fakeQuota();
   let seenRef: unknown;
@@ -513,7 +443,6 @@ Deno.test("runTryonJob hands the resolver the whole ref, size included", async (
     mode: "image",
   }, {
     quota: quota.factory,
-    resolveBody: () => Promise.resolve({ chest: 92 }),
     resolveProduct: (_admin, ref) => {
       seenRef = ref;
       return Promise.resolve({ images: [{ base64: "G" }] });
@@ -523,54 +452,6 @@ Deno.test("runTryonJob hands the resolver the whole ref, size included", async (
   });
 
   assertEquals(seenRef, { productId: "p1", sizeId: "s1" });
-});
-
-Deno.test("runTryonJob passes each garment's fit through to the generator", async () => {
-  const quota = fakeQuota();
-  let seenFits: (string | undefined)[] | undefined;
-
-  await runTryonJob(client, {
-    userId: "u1",
-    avatar: { base64: "AVATAR" },
-    garments: [{ productId: "p1", sizeId: "s1" }],
-    mode: "image",
-  }, {
-    quota: quota.factory,
-    resolveBody: () => Promise.resolve({ chest: 92 }),
-    resolveProduct: () =>
-      Promise.resolve({
-        images: [{ base64: "G" }],
-        fit: "size M: chest 104cm",
-      }),
-    generate: (_avatar, _groups, opts) => {
-      seenFits = opts?.garmentFits;
-      return Promise.resolve("GENERATEDB64");
-    },
-    upload: () => Promise.resolve("https://img/result.png"),
-  });
-
-  assertEquals(seenFits, ["size M: chest 104cm"]);
-});
-
-Deno.test("runTryonJob reports an undefined fit for a garment without one", async () => {
-  const quota = fakeQuota();
-  let seenFits: (string | undefined)[] | undefined;
-
-  await runTryonJob(client, {
-    userId: "u1",
-    avatar: { base64: "AVATAR" },
-    garments: [{ images: [{ base64: "GARMENT" }] }],
-    mode: "image",
-  }, {
-    quota: quota.factory,
-    generate: (_avatar, _groups, opts) => {
-      seenFits = opts?.garmentFits;
-      return Promise.resolve("GENERATEDB64");
-    },
-    upload: () => Promise.resolve("https://img/result.png"),
-  });
-
-  assertEquals(seenFits, [undefined]);
 });
 
 const animateParams: TryonParams = {
@@ -622,11 +503,10 @@ Deno.test("a baseImage job never resolves an avatar", async () => {
   assertEquals(avatarResolved, false);
 });
 
-Deno.test("a baseImage job resolves no garment and reads no measurements", async () => {
+Deno.test("a baseImage job resolves no garment", async () => {
   const quota = fakeQuota();
   let productResolved = false;
   let wardrobeResolved = false;
-  let bodyRead = false;
   await runTryonJob(client, animateParams, {
     quota: quota.factory,
     resolveProduct: () => {
@@ -637,17 +517,12 @@ Deno.test("a baseImage job resolves no garment and reads no measurements", async
       wardrobeResolved = true;
       return Promise.reject(new Error("should not happen"));
     },
-    resolveBody: () => {
-      bodyRead = true;
-      return Promise.reject(new Error("should not happen"));
-    },
     generateVideo: () => Promise.resolve(new Uint8Array([1])),
     uploadVideo: () => Promise.resolve("https://vid/x.mp4"),
     now: () => 1,
   });
   assertEquals(productResolved, false);
   assertEquals(wardrobeResolved, false);
-  assertEquals(bodyRead, false);
 });
 
 Deno.test("a baseImage job charges the video quota", async () => {

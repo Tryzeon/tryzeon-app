@@ -1,12 +1,8 @@
 import { isUuid } from "../text.ts";
-import type { BodyMeasurements } from "../user-profile.ts";
-import { buildGarmentFitDetail, type ProductSizeFit } from "./fit.ts";
 import { ValidationError } from "./errors.ts";
 import { LIMITS } from "./types.ts";
 import type { ProductRef, ResolvedGarment } from "./types.ts";
 import { asJsonObject, type DbClient } from "../supabase.ts";
-
-const PRODUCT_SIZES_TABLE = "product_sizes";
 
 export interface ProductGarmentRow {
   image_paths: unknown;
@@ -24,9 +20,7 @@ function trimmedString(value: unknown): string {
 /**
  * `products.fit` is emitted as `Cut:`, not `Fit:`: it is a label derived from
  * the product photo (see `analyze-product-image`) describing the design
- * silhouette on a generic body, saying nothing about this wearer. It ships
- * alongside `buildGarmentFitDetail`'s ease numbers rather than being displaced
- * by them, and the prompt names which of the two governs tightness.
+ * silhouette on a generic body, saying nothing about this wearer.
  */
 export function buildProductGarmentDetail(
   row: ProductGarmentRow,
@@ -46,57 +40,9 @@ export function buildProductGarmentDetail(
   return parts.join(". ").slice(0, LIMITS.MAX_GARMENT_DETAIL_LENGTH);
 }
 
-/**
- * Bound by BOTH `id` and `product_id`, so a client-supplied sizeId can only
- * ever name a size of the product it is trying on.
- *
- * Neither a missing row nor a failed read is an error: the size may have been
- * deleted since the client read the catalog, and failing a generation that has
- * already been charged over a prompt enhancement would be the wrong trade.
- */
-async function resolveSizeFit(
-  client: DbClient,
-  productId: string,
-  sizeId: string,
-  body: BodyMeasurements,
-): Promise<string | undefined> {
-  const { data, error } = await client
-    .from(PRODUCT_SIZES_TABLE)
-    .select("name, garment_measurements, body_measurement_ranges")
-    .eq("id", sizeId)
-    .eq("product_id", productId)
-    .maybeSingle();
-
-  if (error) {
-    console.warn(
-      `${PRODUCT_SIZES_TABLE} lookup failed for sizeId ${sizeId}; skipping fit detail: ${error.message}`,
-    );
-    return undefined;
-  }
-  if (!data) {
-    console.warn(
-      `no ${PRODUCT_SIZES_TABLE} row for sizeId ${sizeId} on product ${productId}; skipping fit detail`,
-    );
-    return undefined;
-  }
-
-  const size: ProductSizeFit = {
-    name: typeof data.name === "string" ? data.name : "",
-    garment_measurements:
-      (data.garment_measurements as ProductSizeFit["garment_measurements"]) ??
-        null,
-    body_measurement_ranges: (data
-      .body_measurement_ranges as ProductSizeFit[
-        "body_measurement_ranges"
-      ]) ?? null,
-  };
-  return buildGarmentFitDetail(size, body);
-}
-
 export async function resolveProductGarment(
   client: DbClient,
   ref: ProductRef,
-  body: BodyMeasurements | null,
 ): Promise<ResolvedGarment> {
   const { productId } = ref;
   // Reject non-UUID ids up front so garbage yields a clean validation error
@@ -104,13 +50,6 @@ export async function resolveProductGarment(
   if (!isUuid(productId)) {
     throw new ValidationError(`invalid productId: ${productId}`);
   }
-  // Checked here rather than where it is used: gating it on whether the shopper
-  // happens to have body measurements would report the caller bug to some users and
-  // swallow it for the rest.
-  if (ref.sizeId !== undefined && !isUuid(ref.sizeId)) {
-    throw new ValidationError(`invalid sizeId: ${ref.sizeId}`);
-  }
-
   const { data, error } = await client.rpc("get_shop_product", {
     p_id: productId,
   });
@@ -136,12 +75,8 @@ export async function resolveProductGarment(
   const images = [{ path: paths[0] }];
 
   const detail = buildProductGarmentDetail(row);
-  const fit = ref.sizeId && body
-    ? await resolveSizeFit(client, productId, ref.sizeId, body)
-    : undefined;
 
   const garment: ResolvedGarment = { images };
   if (detail !== undefined) garment.detail = detail;
-  if (fit !== undefined) garment.fit = fit;
   return garment;
 }
