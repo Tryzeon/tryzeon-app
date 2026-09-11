@@ -92,7 +92,8 @@ void main() {
     });
 
     test('recommends with a caveat when the closest size runs slightly tight', () {
-      // Chest 88 → regular band [96, 103]. Nearest is 94 → tight by 2cm.
+      // Chest 88 → regular band [96, 103]. Nearest is 94 → body range [79, 86],
+      // so 88 is above it by 2cm.
       final result = _calc(const BodyMeasurements(chest: 88), [
         _size('S', const GarmentMeasurements(chestCircumference: 94)),
       ]);
@@ -102,7 +103,7 @@ void main() {
       expect(result.caveats, hasLength(1));
       final caveat = result.caveats.single;
       expect(caveat.type, BodyMeasurementType.chest);
-      expect(caveat.direction, FitDirection.tight);
+      expect(caveat.direction, FitDirection.above);
       expect(caveat.deviation, closeTo(2, 0.001));
     });
 
@@ -134,8 +135,9 @@ void main() {
     });
 
     test('judges each dimension independently and reports every miss', () {
-      // Chest 84 → regular band [92, 99]; garment 100 → loose by 1.
-      // Waist 70 → recalibrated trouser band [71, 74]; garment 76 → loose by 2.
+      // Chest 84 → regular band [92, 99]; garment 100 → body range [85, 92],
+      // 84 is below by 1. Waist 70 → trouser band [71, 74]; garment 76 → body
+      // range [72, 75], 70 is below by 2.
       final result = _calc(const BodyMeasurements(chest: 84, waist: 70), [
         _size(
           'M',
@@ -145,8 +147,8 @@ void main() {
 
       expect(result.displayState, FitDisplayState.caveats);
       final byType = {for (final c in result.caveats) c.type: c};
-      expect(byType[BodyMeasurementType.chest]?.direction, FitDirection.loose);
-      expect(byType[BodyMeasurementType.waist]?.direction, FitDirection.loose);
+      expect(byType[BodyMeasurementType.chest]?.direction, FitDirection.below);
+      expect(byType[BodyMeasurementType.waist]?.direction, FitDirection.below);
     });
 
     test('recommends a size the per-dimension cap allows over a lower total miss', () {

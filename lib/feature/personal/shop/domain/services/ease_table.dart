@@ -1,5 +1,6 @@
 import 'package:tryzeon/feature/common/body_measurements/domain/entities/body_measurement_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/product_size/domain/entities/measurement_range.dart';
 
 /// The bands come from standard patternmaking ease allowances (close-fitting
 /// through very-loose-fitting) mapped onto this app's four `ProductFit` values,
@@ -14,7 +15,10 @@ class EaseBand {
   final double min;
   final double max;
 
-  double get center => (min + max) / 2;
+  /// The body this garment measurement fits: `body + min <= garment <= body + max`
+  /// rearranged into bounds on the body.
+  MeasurementRange toBodyRange(final double garmentValue) =>
+      MeasurementRange(min: garmentValue - max, max: garmentValue - min);
 
   EaseBand _shiftMin(final double delta) => EaseBand(min + delta, max);
 }

@@ -53,8 +53,6 @@ extension FitResultUiMapper on FitResult {
 
 extension FitDirectionUiMapper on FitDirection {
   String get label => switch (this) {
-    FitDirection.tight => '偏緊',
-    FitDirection.loose => '偏鬆',
     FitDirection.below => '低於建議',
     FitDirection.above => '高於建議',
   };

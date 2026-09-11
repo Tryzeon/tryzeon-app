@@ -3,14 +3,11 @@ import 'package:tryzeon/feature/common/body_measurements/domain/entities/body_me
 
 part 'fit_result.freezed.dart';
 
-/// [tight] / [loose] come from an ease comparison against the garment;
-/// [below] / [above] from the shopper's value against a store's published
-/// body measurement range.
-enum FitDirection { tight, loose, below, above }
+/// Which side of the size's body range the shopper falls on.
+enum FitDirection { below, above }
 
 /// `deviation` is always positive, in the type's own unit (cm, or kg for
-/// weight); `direction` records which side of the acceptable band the shopper
-/// falls on.
+/// weight).
 @freezed
 sealed class MeasurementCaveat with _$MeasurementCaveat {
   const factory MeasurementCaveat({
