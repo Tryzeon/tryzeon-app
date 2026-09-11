@@ -16,16 +16,14 @@ import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_siz
 // helper line (see [_fieldDecoration]) so a cell keeps its height and position
 // when an error appears beneath it.
 const double _labelColumnWidth = 40;
-// Cell width is set by the longest error message (`100–250 cm`); any narrower
-// and it ellipsizes.
-const double _cellWidth = 65;
-// A range pair shares one message line, so each bound only needs to fit a
-// four-digit value. The gap between two range columns must read as clearly
-// wider than the gap inside a pair, or the four boxes blur into one row.
-const double _boundWidth = 56;
-const double _rangeGap = AppSpacing.smMd;
-const double _rangeColumnPadding = AppSpacing.smMd;
-const double _rangeCellWidth = _boundWidth * 2 + _rangeGap + _rangeColumnPadding * 2;
+// One width for both tables so their columns line up. It is set by the widest
+// header (`大腿圍 (cm)`) and by a range pair: two bounds that each fit a
+// four-digit value, separated by a gap narrower than the padding between
+// cells so the pair reads as one column.
+const double _cellWidth = 104;
+const double _cellPadding = AppSpacing.xs;
+const double _boundGap = AppSpacing.xs;
+const double _boundWidth = (_cellWidth - _cellPadding * 2 - _boundGap) / 2;
 // The visible input box, before the caption line beneath it. Row labels centre
 // on this rather than on the whole row.
 const double _fieldHeight = 40;
@@ -106,7 +104,7 @@ class ProductSizeMatrixEditor extends HookWidget {
               for (final type in BodyMeasurementType.values)
                 _MatrixColumn(
                   label: '${type.label} (${type.quantity.unitSuffix})',
-                  width: _rangeCellWidth,
+                  width: _cellWidth,
                   cellBuilder: (final entry) =>
                       _RangeCell(controllers: entry.rangeControllers[type]!, type: type),
                 ),
@@ -386,7 +384,7 @@ class _MeasurementCell extends StatelessWidget {
       width: _cellWidth,
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.xxs,
+          horizontal: _cellPadding,
           vertical: AppSpacing.xs,
         ),
         child: TextFormField(
@@ -444,10 +442,10 @@ class _RangeCell extends StatelessWidget {
     final theme = Theme.of(context);
 
     return SizedBox(
-      width: _rangeCellWidth,
+      width: _cellWidth,
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          horizontal: _rangeColumnPadding,
+          horizontal: _cellPadding,
           vertical: AppSpacing.xs,
         ),
         child: FormField<void>(
@@ -464,17 +462,7 @@ class _RangeCell extends StatelessWidget {
                     hasError: state.hasError,
                     onChanged: state.didChange,
                   ),
-                  SizedBox(
-                    width: _rangeGap,
-                    child: Center(
-                      child: Text(
-                        '–',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                  ),
+                  const SizedBox(width: _boundGap),
                   _BoundField(
                     controller: controllers.max,
                     hint: '上限',
@@ -506,7 +494,7 @@ class _RangeCell extends StatelessWidget {
         unitSuffix: unit,
         compact: true,
       );
-      if (error != null) return '${type.label}需在 $error';
+      if (error != null) return '需在 $error';
     }
     if (double.parse(maxText) < double.parse(minText)) return '上限需大於下限';
     return null;

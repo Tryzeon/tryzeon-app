@@ -73,7 +73,7 @@ class ProductSizeTable extends StatelessWidget {
         ],
         if (garmentTypes.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.md),
-          Text('商品尺寸（cm）', style: textTheme.titleSmall),
+          Text('商品尺寸', style: textTheme.titleSmall),
           const SizedBox(height: AppSpacing.sm),
           _SizeDataTable(
             sizes: sizes,
@@ -84,7 +84,9 @@ class ProductSizeTable extends StatelessWidget {
                   label: type.label,
                   cellText: (final size) {
                     final value = size.garmentMeasurements?.getValue(type);
-                    return value == null ? '-' : formatMeasurementValue(value);
+                    return value == null
+                        ? '-'
+                        : '${formatMeasurementValue(value)} ${MeasurementQuantity.length.unitSuffix}';
                   },
                 ),
             ],
