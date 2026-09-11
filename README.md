@@ -88,19 +88,24 @@ graph TD
     subgraph Backend [Supabase]
         Batch -.->|3. RPC Call| API[log_analytics_events]
         API --> RawTable[(analytics_events)]
-        
-        RawTable -->|4. Trigger| TrigFunction[update_analytics_summary]
-        TrigFunction -->|5. Aggregation| SummaryTable[(analytics_monthly_summary)]
+        Scan[QR / short-link open] --> LinkTable[(link_events)]
+
+        RawTable -->|4. GROUP BY on read| ProductView[analytics_product_monthly_summary]
+        RawTable -->|4. GROUP BY on read| StoreView[analytics_store_monthly_summary]
+        LinkTable -->|4. GROUP BY on read| ScanView[scan_store_monthly_summary]
     end
 
-    %% Dashboard
-    subgraph Dashboard [Store Owner]
-        Owner[User] -->|6. View Stats| GetSum[get_store_analytics_summary]
-        GetSum --> SummaryTable
+    %% Dashboards
+    subgraph Dashboards
+        Owner[Store owner, app] -->|5. own store via RLS| ProductView
+        Team[Tryzeon team, tryzeon.com/admin] -->|5. every store via admin_users| StoreView
+        Team --> ProductView
+        Team --> ScanView
     end
 ```
 
 ### Key Features
 1. **Frontend**: Batched upload (10 events/5s), lifecycle awareness (auto-flush).
-2. **Backend**: Trigger-based real-time aggregation, O(1) dashboard queries.
-3. **Events**: `view` (Page/Impression), `try_on`, `purchase_click`.
+2. **Backend**: Events are append-only; every number is a `security_invoker` view that aggregates on read, bucketed by Asia/Taipei calendar month. Nothing is pre-computed, so a definition change needs no backfill. When the event tables outgrow this, swap a view for a `MATERIALIZED VIEW` behind the same name.
+3. **Access**: RLS on the event tables — store owners read their own store, members of `admin_users` (via `is_admin()`) read every store.
+4. **Events**: `view` (Page/Impression), `try_on`, `purchase_click`; QR opens live in `link_events`.

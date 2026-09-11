@@ -84,44 +84,6 @@ export type Database = {
           },
         ]
       }
-      analytics_product_monthly_summary: {
-        Row: {
-          month: number
-          product_id: string
-          purchase_click_count: number
-          store_id: string
-          tryon_count: number
-          view_count: number
-          year: number
-        }
-        Insert: {
-          month: number
-          product_id: string
-          purchase_click_count?: number
-          store_id: string
-          tryon_count?: number
-          view_count?: number
-          year: number
-        }
-        Update: {
-          month?: number
-          product_id?: string
-          purchase_click_count?: number
-          store_id?: string
-          tryon_count?: number
-          view_count?: number
-          year?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "analytics_product_monthly_summary_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "store_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       line_user_links: {
         Row: {
           created_at: string
@@ -567,7 +529,62 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      analytics_product_monthly_summary: {
+        Row: {
+          month: number | null
+          product_id: string | null
+          purchase_click_count: number | null
+          store_id: string | null
+          tryon_count: number | null
+          view_count: number | null
+          year: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_events_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "store_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      analytics_store_monthly_summary: {
+        Row: {
+          month: number | null
+          purchase_click_count: number | null
+          store_id: string | null
+          tryon_count: number | null
+          view_count: number | null
+          year: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_events_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "store_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scan_store_monthly_summary: {
+        Row: {
+          month: number | null
+          scan_count: number | null
+          store_id: string | null
+          year: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "short_links_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "store_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       cleanup_old_daily_usage: { Args: never; Returns: undefined }
@@ -605,6 +622,7 @@ export type Database = {
         Args: { p_feature_name: string; p_user_id: string }
         Returns: Json
       }
+      is_admin: { Args: never; Returns: boolean }
       list_migration_objects: {
         Args: { p_buckets: string[]; p_limit: number; p_offset: number }
         Returns: {
@@ -612,7 +630,6 @@ export type Database = {
           name: string
         }[]
       }
-      is_admin: { Args: never; Returns: boolean }
       list_shop_products: {
         Args: {
           p_category_ids?: string[]
