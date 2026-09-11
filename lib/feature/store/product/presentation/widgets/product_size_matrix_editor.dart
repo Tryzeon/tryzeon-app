@@ -14,22 +14,15 @@ import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_siz
 // Table geometry: the left column and the cells must share a height to line
 // up, so these are fixed rather than sized to content. Every field reserves its
 // helper line (see [_fieldDecoration]) so a cell keeps its height and position
-// when an error appears beneath it.
-const double _labelColumnWidth = 40;
-// One width for both tables so their columns line up. It is set by the widest
-// header (`大腿圍 (cm)`) and by a range pair: two bounds that each fit a
-// four-digit value, separated by a gap narrower than the padding between
-// cells so the pair reads as one column.
-const double _cellWidth = 104;
-const double _cellPadding = AppSpacing.xs;
-const double _boundGap = AppSpacing.xs;
-const double _boundWidth = (_cellWidth - _cellPadding * 2 - _boundGap) / 2;
+// when an error appears beneath it. The label column fits `均碼`, the widest
+// standard size label.
+const double _labelColumnWidth = 42;
 // The visible input box, before the caption line beneath it. Row labels centre
 // on this rather than on the whole row.
 const double _fieldHeight = 40;
 const double _tableGap = AppSpacing.lg;
 const double _rowHeight = 62;
-const double _headerHeight = 32;
+const double _headerHeight = AppSpacing.xl;
 
 class ProductSizeMatrixEditor extends HookWidget {
   const ProductSizeMatrixEditor({
@@ -86,7 +79,7 @@ class ProductSizeMatrixEditor extends HookWidget {
               for (final type in visibleTypes)
                 _MatrixColumn(
                   label: type.label,
-                  width: _cellWidth,
+                  width: _MeasurementCell.width,
                   cellBuilder: (final entry) => _MeasurementCell(
                     controller: entry.measurementControllers[type]!,
                     type: type,
@@ -104,7 +97,7 @@ class ProductSizeMatrixEditor extends HookWidget {
               for (final type in BodyMeasurementType.values)
                 _MatrixColumn(
                   label: '${type.label} (${type.quantity.unitSuffix})',
-                  width: _cellWidth,
+                  width: _RangeCell.width,
                   cellBuilder: (final entry) =>
                       _RangeCell(controllers: entry.rangeControllers[type]!, type: type),
                 ),
@@ -376,15 +369,21 @@ class _MeasurementCell extends StatelessWidget {
   final GarmentMeasurementType type;
   final MeasurementUnit unit;
 
+  // The box fits the longest error caption (`100–250 cm`); any narrower and it
+  // ellipsizes.
+  static const double _fieldWidth = 64;
+  static const double _padding = AppSpacing.sm;
+  static const double width = _fieldWidth + _padding * 2;
+
   @override
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
 
     return SizedBox(
-      width: _cellWidth,
+      width: width,
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          horizontal: _cellPadding,
+          horizontal: _padding,
           vertical: AppSpacing.xs,
         ),
         child: TextFormField(
@@ -437,15 +436,22 @@ class _RangeCell extends StatelessWidget {
   final RangeEntryControllers controllers;
   final BodyMeasurementType type;
 
+  // Each bound fits a four-digit value; the dash between them sits in a gap
+  // narrower than the padding between cells so the pair reads as one column.
+  static const double _boundWidth = 46;
+  static const double _boundGap = AppSpacing.smMd;
+  static const double _padding = AppSpacing.sm;
+  static const double width = _boundWidth * 2 + _boundGap + _padding * 2;
+
   @override
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
 
     return SizedBox(
-      width: _cellWidth,
+      width: width,
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          horizontal: _cellPadding,
+          horizontal: _padding,
           vertical: AppSpacing.xs,
         ),
         child: FormField<void>(
@@ -458,13 +464,25 @@ class _RangeCell extends StatelessWidget {
                 children: [
                   _BoundField(
                     controller: controllers.min,
+                    width: _boundWidth,
                     hint: '下限',
                     hasError: state.hasError,
                     onChanged: state.didChange,
                   ),
-                  const SizedBox(width: _boundGap),
+                  SizedBox(
+                    width: _boundGap,
+                    child: Center(
+                      child: Text(
+                        '–',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ),
                   _BoundField(
                     controller: controllers.max,
+                    width: _boundWidth,
                     hint: '上限',
                     hasError: state.hasError,
                     onChanged: state.didChange,
@@ -526,12 +544,14 @@ class _CaptionLine extends StatelessWidget {
 class _BoundField extends StatelessWidget {
   const _BoundField({
     required this.controller,
+    required this.width,
     required this.hint,
     required this.hasError,
     required this.onChanged,
   });
 
   final TextEditingController controller;
+  final double width;
   final String hint;
   final bool hasError;
   final ValueChanged<void> onChanged;
@@ -542,7 +562,7 @@ class _BoundField extends StatelessWidget {
     final errorBorder = theme.inputDecorationTheme.errorBorder;
 
     return SizedBox(
-      width: _boundWidth,
+      width: width,
       child: TextField(
         controller: controller,
         textAlign: TextAlign.center,
