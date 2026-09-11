@@ -6,8 +6,19 @@ export function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: JSON_HEADERS });
 }
 
-export function jsonError(message: string, code: string, status: number): Response {
+export function jsonError(
+  message: string,
+  code: string,
+  status: number,
+): Response {
   return json({ error: message, code }, status);
+}
+
+/** For responses that depend on who is asking, or that record a side effect when served. */
+export function noStore(response: Response): Response {
+  const headers = new Headers(response.headers);
+  headers.set("Cache-Control", "no-store");
+  return new Response(response.body, { status: response.status, headers });
 }
 
 export function jsonRateLimited(usage?: unknown): Response {

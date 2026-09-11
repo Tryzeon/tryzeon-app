@@ -1,7 +1,7 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 import { type DbClient, getAnonClient } from "../_shared/supabase.ts";
 import { publicImageUrl } from "../_shared/storage.ts";
-import { json, jsonError } from "../_shared/http.ts";
+import { json, jsonError, noStore } from "../_shared/http.ts";
 import {
   channelFromUserAgent,
   codeFromPathname,
@@ -9,7 +9,11 @@ import {
   platformFromUserAgent,
   type Surface,
 } from "./surface.ts";
-import { buildStoreDestination, deliveryFor, isOpenWith } from "./destination.ts";
+import {
+  buildStoreDestination,
+  deliveryFor,
+  isOpenWith,
+} from "./destination.ts";
 
 declare const EdgeRuntime: { waitUntil(p: Promise<unknown>): void } | undefined;
 
@@ -45,14 +49,6 @@ async function recordOpen(
   } catch (err) {
     console.error("short-links: failed to record open:", err);
   }
-}
-
-/** Always no-store — every call records an open event, so callers must not cache
- * this endpoint. */
-function noStore(response: Response): Response {
-  const headers = new Headers(response.headers);
-  headers.set("Cache-Control", "no-store");
-  return new Response(response.body, { status: response.status, headers });
 }
 
 /**
@@ -97,7 +93,11 @@ Deno.serve(async (req) => {
       return noStore(jsonError("Unsupported link target", "INTERNAL_ERROR", 500));
     }
 
-    const url = buildStoreDestination(link.open_with, link.store_id, DESTINATION_CONFIG);
+    const url = buildStoreDestination(
+      link.open_with,
+      link.store_id,
+      DESTINATION_CONFIG,
+    );
     if (url === null) {
       console.error(`short-links: missing config for open_with "${link.open_with}"`);
       return noStore(jsonError("Server misconfigured", "INTERNAL_ERROR", 500));
