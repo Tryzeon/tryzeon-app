@@ -306,7 +306,9 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
           ),
           child: FilledButton(
             onPressed:
-                selectedGarmentType.value != null && !isUploading && !isAnalyzingTags.value
+                selectedGarmentType.value != null &&
+                    !isUploading &&
+                    !isAnalyzingTags.value
                 ? handleUpload
                 : null,
             child: isUploading

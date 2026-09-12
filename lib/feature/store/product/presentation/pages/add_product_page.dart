@@ -57,7 +57,11 @@ class AddProductPage extends HookConsumerWidget {
         try {
           categories = await ref.read(productCategoriesProvider.future);
         } catch (e, stackTrace) {
-          AppLogger.warning('Categories unavailable for analysis pre-fill', e, stackTrace);
+          AppLogger.warning(
+            'Categories unavailable for analysis pre-fill',
+            e,
+            stackTrace,
+          );
           categories = const [];
         }
         if (!context.mounted) return;

@@ -182,7 +182,6 @@ class WardrobePage extends HookConsumerWidget {
               ),
             ),
 
-            // Category Bar
             buildGarmentTypeBar(),
 
             // Grid Content

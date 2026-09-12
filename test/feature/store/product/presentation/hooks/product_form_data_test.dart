@@ -68,10 +68,7 @@ void main() {
     test('applyAnalysis selects a known category', () {
       final form = _formData();
 
-      form.applyAnalysis(
-        const ProductAnalysisResult(categoryId: 'cat-top'),
-        _categories,
-      );
+      form.applyAnalysis(const ProductAnalysisResult(categoryId: 'cat-top'), _categories);
 
       expect(form.selectedCategoryId.value, _top.id);
       expect(form.selectedGarmentType.value, GarmentType.top);
@@ -92,10 +89,7 @@ void main() {
     test('applyAnalysis does not override a category already chosen', () {
       final form = _formData()..selectCategory(_pants);
 
-      form.applyAnalysis(
-        const ProductAnalysisResult(categoryId: 'cat-top'),
-        _categories,
-      );
+      form.applyAnalysis(const ProductAnalysisResult(categoryId: 'cat-top'), _categories);
 
       expect(form.selectedCategoryId.value, _pants.id);
       expect(form.selectedGarmentType.value, GarmentType.pants);

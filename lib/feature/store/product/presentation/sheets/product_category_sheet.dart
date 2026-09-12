@@ -47,9 +47,8 @@ class ProductCategorySheet extends HookWidget {
       groups
           .firstWhere(
             (final g) => g.value.any((final c) => c.id == initialId),
-            orElse: () => groups.isEmpty
-                ? const MapEntry(GarmentType.others, [])
-                : groups.first,
+            orElse: () =>
+                groups.isEmpty ? const MapEntry(GarmentType.others, []) : groups.first,
           )
           .key,
     );

@@ -147,9 +147,7 @@ ProductFormData useProductForm({final Product? initialProduct}) {
   final images = useState<List<ImageItem>>(initialImages);
 
   final selectedCategoryId = useValueNotifier<String?>(initialProduct?.categoryId);
-  final selectedGarmentType = useValueNotifier<GarmentType?>(
-    initialProduct?.garmentType,
-  );
+  final selectedGarmentType = useValueNotifier<GarmentType?>(initialProduct?.garmentType);
   final selectedElasticity = useValueNotifier<ProductElasticity?>(
     initialProduct?.elasticity,
   );

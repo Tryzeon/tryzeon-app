@@ -53,14 +53,10 @@ import 'personal_mappr.auto_mappr.dart';
     MapType<UserProfileCache, UserProfileModel>(),
 
     MapType<WardrobeItemModel, WardrobeItem>(
-      fields: [
-        Field('garmentType', custom: WardrobeItemMapprHelper.stringToGarmentType),
-      ],
+      fields: [Field('garmentType', custom: WardrobeItemMapprHelper.stringToGarmentType)],
     ),
     MapType<WardrobeItem, WardrobeItemModel>(
-      fields: [
-        Field('garmentType', custom: WardrobeItemMapprHelper.garmentTypeToString),
-      ],
+      fields: [Field('garmentType', custom: WardrobeItemMapprHelper.garmentTypeToString)],
     ),
     MapType<WardrobeItemModel, WardrobeItemCache>(fields: [Field('itemId', from: 'id')]),
     MapType<WardrobeItemCache, WardrobeItemModel>(fields: [Field('id', from: 'itemId')]),
@@ -106,7 +102,8 @@ class WardrobeItemMapprHelper {
   static GarmentType stringToGarmentType(final WardrobeItemModel source) =>
       GarmentType.tryFromString(source.garmentType) ?? GarmentType.others;
 
-  static String garmentTypeToString(final WardrobeItem source) => source.garmentType.value;
+  static String garmentTypeToString(final WardrobeItem source) =>
+      source.garmentType.value;
 }
 
 class ShopProductMapprHelper {

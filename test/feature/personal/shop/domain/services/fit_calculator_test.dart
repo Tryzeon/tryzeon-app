@@ -398,35 +398,27 @@ void main() {
     test('ignores body dimensions the garment type does not have', () {
       // Chest 60 is deliberately absurd: judged, it would sink M. Pants have no
       // chest, so only the waist counts. Waist 70 → trouser band [71, 74].
-      final result = _calc(
-        const BodyMeasurements(chest: 90, waist: 70),
-        [
-          _size(
-            'M',
-            const GarmentMeasurements(chestCircumference: 60, waistCircumference: 73),
-          ),
-        ],
-        garmentType: GarmentType.pants,
-      );
+      final result = _calc(const BodyMeasurements(chest: 90, waist: 70), [
+        _size(
+          'M',
+          const GarmentMeasurements(chestCircumference: 60, waistCircumference: 73),
+        ),
+      ], garmentType: GarmentType.pants);
 
       expect(result.recommendedSize, 'M');
       expect(result.matchedTypes, [BodyMeasurementType.waist]);
     });
 
     test('still judges height against a published range on any garment type', () {
-      final result = _calc(
-        const BodyMeasurements(height: 190),
-        [
-          _size(
-            'M',
-            null,
-            bodyMeasurementRanges: const BodyMeasurementRanges(
-              height: MeasurementRange(min: 160, max: 170),
-            ),
+      final result = _calc(const BodyMeasurements(height: 190), [
+        _size(
+          'M',
+          null,
+          bodyMeasurementRanges: const BodyMeasurementRanges(
+            height: MeasurementRange(min: 160, max: 170),
           ),
-        ],
-        garmentType: GarmentType.pants,
-      );
+        ),
+      ], garmentType: GarmentType.pants);
 
       expect(result.recommendedSize, isNull);
       expect(result.outOfRange, isTrue);
