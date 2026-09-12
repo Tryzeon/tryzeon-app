@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/common/garment_type/presentation/garment_type_display.dart';
+import 'package:tryzeon/feature/common/product_category/providers/product_category_providers.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
 
-class ToolUseBubble extends StatelessWidget {
+class ToolUseBubble extends ConsumerWidget {
   const ToolUseBubble({super.key, required this.block});
 
   final ToolUseBlock block;
@@ -17,11 +21,14 @@ class ToolUseBubble extends StatelessWidget {
 
   // Keys mirror the search_products / search_wardrobe tool params (tools.ts) —
   // keep in sync if a filter is added there.
-  static String _hint(final Map<String, dynamic> input) {
+  static String _hint(
+    final Map<String, dynamic> input,
+    final Map<String, String> categoryNameByCode,
+  ) {
     final parts = <String>[];
     for (final key in const [
-      'category_name',
-      'category',
+      'category_code',
+      'garment_type',
       'query',
       'gender',
       'styles',
@@ -35,7 +42,12 @@ class ToolUseBubble extends StatelessWidget {
     ]) {
       final v = input[key];
       if (v is String && v.trim().isNotEmpty) {
-        parts.add(v.trim());
+        final text = v.trim();
+        parts.add(switch (key) {
+          'category_code' => categoryNameByCode[text] ?? text,
+          'garment_type' => GarmentType.tryFromString(text)?.displayName ?? text,
+          _ => text,
+        });
       } else if (v is List && v.isNotEmpty) {
         parts.add(v.join(' '));
       }
@@ -49,8 +61,10 @@ class ToolUseBubble extends StatelessWidget {
   }
 
   @override
-  Widget build(final BuildContext context) {
-    final hint = _hint(block.input);
+  Widget build(final BuildContext context, final WidgetRef ref) {
+    final categories = ref.watch(productCategoriesProvider).value ?? const [];
+    final categoryNameByCode = {for (final c in categories) c.code: c.name};
+    final hint = _hint(block.input, categoryNameByCode);
     final label = [_verb(block.name), if (hint.isNotEmpty) hint].join(' · ');
     return _StepChip(icon: Icons.search, label: label);
   }
