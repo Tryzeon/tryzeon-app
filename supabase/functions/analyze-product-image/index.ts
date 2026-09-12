@@ -25,23 +25,22 @@ Deno.serve(async (req) => {
     // read needs no privilege the caller does not already have.
     const { data: categories, error: categoriesError } = await userClient!
       .from("product_categories")
-      .select("id, name");
+      .select("id, code, name");
     if (categoriesError || !categories || categories.length === 0) {
       console.error("analyze-product-image: product_categories unavailable", categoriesError);
       return jsonError("Product categories unavailable", "CATEGORIES_UNAVAILABLE", 500);
     }
-    const idByName = new Map<string, string>(
-      categories.map((c) => [c.name, c.id]),
+    const idByCode = new Map<string, string>(
+      categories.map((c) => [c.code, c.id]),
     );
-    const categoryNames = [...idByName.keys()];
 
     const parsed = await analyzeImage({
       base64,
-      prompt: buildPrompt(categoryNames),
-      schema: buildSchema(categoryNames),
+      prompt: buildPrompt(categories),
+      schema: buildSchema(categories),
     });
 
-    return json(toResponse(parsed, idByName));
+    return json(toResponse(parsed, idByCode));
   } catch (err) {
     console.error("analyze-product-image error", err);
     return jsonError("Internal error", "INTERNAL", 500);

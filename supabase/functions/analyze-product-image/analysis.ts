@@ -54,12 +54,20 @@ const filterList = (v: unknown, list: readonly string[], cap: number): string[] 
       .slice(0, cap)
     : [];
 
-export function buildPrompt(categoryNames: string[]): string {
+export interface CategoryOption {
+  code: string;
+  name: string;
+}
+
+const listCategories = (categories: CategoryOption[]): string =>
+  categories.map((c) => `${c.code}（${c.name}）`).join(", ");
+
+export function buildPrompt(categories: CategoryOption[]): string {
   return `You label products for an online clothing store. Analyse the product photo and return JSON.
 Every field is required. When the photo does not tell you, answer with the string "${UNKNOWN}" (an empty array for array fields) — never the word "null".
 - name: a concise product name in Traditional Chinese (colour + fit + material + garment type, e.g. 「白色寬鬆棉質襯衫」), at most ${MAX_NAME_LENGTH} characters; ${UNKNOWN} if you cannot tell.
-- category: exactly one of the following names, or ${UNKNOWN} if you cannot tell: ${
-    list(categoryNames)
+- category_code: exactly one of the following codes (Chinese name in parentheses), or ${UNKNOWN} if you cannot tell: ${
+    listCategories(categories)
   }
 - gender: ${list(GENDER_VALUES)}; ${UNKNOWN} if you cannot tell.
 - styles: at most ${MAX_STYLES} of: ${list(STYLE_VALUES)}.
@@ -75,12 +83,12 @@ Every field is required. When the photo does not tell you, answer with the strin
 Return JSON only, with no surrounding text.`;
 }
 
-export function buildSchema(categoryNames: string[]): Record<string, unknown> {
+export function buildSchema(categories: CategoryOption[]): Record<string, unknown> {
   return {
     type: "object",
     properties: {
       name: { type: "string" },
-      category: { type: "string", enum: [...categoryNames, UNKNOWN] },
+      category_code: { type: "string", enum: [...categories.map((c) => c.code), UNKNOWN] },
       gender: { type: "string", enum: [...GENDER_VALUES, UNKNOWN] },
       styles: { type: "array", items: { type: "string", enum: STYLE_VALUES } },
       seasons: { type: "array", items: { type: "string", enum: SEASON_VALUES } },
@@ -93,7 +101,7 @@ export function buildSchema(categoryNames: string[]): Record<string, unknown> {
     // so allowing both only gives the model a third option — writing the *word*
     // "null" into a field typed as a string.
     required: [
-      "name", "category", "gender", "styles",
+      "name", "category_code", "gender", "styles",
       "seasons", "material", "fit", "thickness", "elasticity",
     ],
   };
@@ -113,19 +121,20 @@ export interface ProductAnalysisResponse {
 
 /**
  * Anything outside the agreed vocabulary — sentinels, hallucinated enum members,
- * over-long names, categories that no longer exist — comes back `null`, which
- * the app reads as "leave this input alone".
+ * over-long names, category codes that no longer exist — comes back `null`,
+ * which the app reads as "leave this input alone". The category is answered as
+ * its `code` and resolved to the id the app stores.
  */
 export function toResponse(
   parsed: Record<string, unknown>,
-  idByName: Map<string, string>,
+  idByCode: Map<string, string>,
 ): ProductAnalysisResponse {
-  const categoryName = str(parsed.category);
+  const categoryCode = str(parsed.category_code);
   const name = freeText(parsed.name);
 
   return {
     name: name ? name.slice(0, MAX_NAME_LENGTH) : null,
-    categoryId: categoryName ? (idByName.get(categoryName) ?? null) : null,
+    categoryId: categoryCode ? (idByCode.get(categoryCode) ?? null) : null,
     gender: inList(parsed.gender, GENDER_VALUES),
     styles: filterList(parsed.styles, STYLE_VALUES, MAX_STYLES),
     seasons: filterList(parsed.seasons, SEASON_VALUES, SEASON_VALUES.length),
