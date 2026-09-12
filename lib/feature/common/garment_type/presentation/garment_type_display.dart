@@ -6,7 +6,7 @@ extension GarmentTypeDisplay on GarmentType {
     GarmentType.top => '上衣',
     GarmentType.pants => '褲子',
     GarmentType.skirt => '裙子',
-    GarmentType.dress => '洋裝',
+    GarmentType.dress => '連身',
     GarmentType.outerwear => '外套',
     GarmentType.others => '其他',
   };
