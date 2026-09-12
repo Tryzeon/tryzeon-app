@@ -1,6 +1,6 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
-import 'package:tryzeon/feature/common/product_attributes/domain/entities/wardrobe_category.dart';
 
 import '../../domain/entities/product_category.dart';
 import '../collections/product_category_cache.dart';
@@ -11,8 +11,8 @@ import 'product_category_mappr.auto_mappr.dart';
   MapType<ProductCategoryModel, ProductCategory>(
     fields: [
       Field(
-        'wardrobeCategory',
-        custom: ProductCategoryMapprHelper.stringToWardrobeCategory,
+        'defaultGarmentType',
+        custom: ProductCategoryMapprHelper.stringToDefaultGarmentType,
       ),
       Field('gender', custom: ProductCategoryMapprHelper.stringToGender),
     ],
@@ -29,8 +29,8 @@ class ProductCategoryMappr extends $ProductCategoryMappr {
 }
 
 class ProductCategoryMapprHelper {
-  static WardrobeCategory? stringToWardrobeCategory(final ProductCategoryModel source) =>
-      WardrobeCategory.tryFromString(source.wardrobeCategory);
+  static GarmentType stringToDefaultGarmentType(final ProductCategoryModel source) =>
+      GarmentType.tryFromString(source.defaultGarmentType) ?? GarmentType.others;
 
   static ProductGender stringToGender(final ProductCategoryModel source) =>
       ProductGender.tryFromString(source.gender) ?? ProductGender.unisex;

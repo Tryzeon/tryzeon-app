@@ -5,8 +5,8 @@ import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type_measurements.dart';
 import 'package:tryzeon/feature/common/product_category/providers/product_category_providers.dart';
-import 'package:tryzeon/feature/common/product_size/domain/entities/garment_category_measurements.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
@@ -89,12 +89,13 @@ class _ProductDetailContent extends HookConsumerWidget {
 
     // Falls back to every dimension while the categories are still loading.
     final sizeColumnTypes = categoriesAsync.maybeWhen(
-      data: (final categories) => relevantMeasurementTypesFor(
-        categories
-            .where((final c) => c.id == product.categoryId)
-            .firstOrNull
-            ?.wardrobeCategory,
-      ),
+      data: (final categories) =>
+          categories
+              .where((final c) => c.id == product.categoryId)
+              .firstOrNull
+              ?.defaultGarmentType
+              .measurementTypes ??
+          GarmentMeasurementType.values,
       orElse: () => GarmentMeasurementType.values,
     );
 

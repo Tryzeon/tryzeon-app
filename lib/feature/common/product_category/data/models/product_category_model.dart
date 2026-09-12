@@ -6,9 +6,10 @@ part 'product_category_model.g.dart';
 class ProductCategoryModel {
   const ProductCategoryModel({
     required this.id,
+    required this.code,
     required this.name,
     this.gender,
-    this.wardrobeCategory,
+    this.defaultGarmentType,
     this.imageMale,
     this.imageFemale,
     this.imageMaleUrl,
@@ -19,11 +20,12 @@ class ProductCategoryModel {
       _$ProductCategoryModelFromJson(json);
 
   final String id;
+  final String code;
   final String name;
 
   /// Applicability (raw value): `male`/`female`/`unisex`. `unisex` = both.
   final String? gender;
-  final String? wardrobeCategory;
+  final String? defaultGarmentType;
 
   /// Per-gender model imagery (R2 paths).
   final String? imageMale;

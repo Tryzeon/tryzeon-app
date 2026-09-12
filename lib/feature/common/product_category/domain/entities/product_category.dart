@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
-import 'package:tryzeon/feature/common/product_attributes/domain/entities/wardrobe_category.dart';
 
 part 'product_category.freezed.dart';
 
@@ -8,10 +8,11 @@ part 'product_category.freezed.dart';
 sealed class ProductCategory with _$ProductCategory {
   const factory ProductCategory({
     required final String id,
+    required final String code,
     required final String name,
 
     @Default(ProductGender.unisex) final ProductGender gender,
-    final WardrobeCategory? wardrobeCategory,
+    required final GarmentType defaultGarmentType,
     final String? imageMaleUrl,
     final String? imageFemaleUrl,
   }) = _ProductCategory;
