@@ -6,6 +6,7 @@ import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/presentation/widgets/selection_form_field.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/validators.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_category/domain/entities/product_category.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.dart';
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_form.dart';
@@ -117,6 +118,7 @@ class ProductFormLayout extends StatelessWidget {
                   descriptionController: formData.descriptionController,
                   selectedGender: formData.selectedGender,
                   selectedCategoryId: formData.selectedCategoryId,
+                  onCategorySelected: formData.selectCategory,
                   productCategoriesAsync: productCategoriesAsync,
                   onRetryCategories: onRetryCategories,
                 ),
@@ -150,14 +152,14 @@ class ProductFormLayout extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            child: ValueListenableBuilder<String?>(
-              valueListenable: formData.selectedCategoryId,
-              builder: (final context, final _, final _) => ProductSizeMatrixEditor(
-                manager: sizeManager,
-                visibleTypes: formData.visibleMeasurementTypes(
-                  productCategoriesAsync.value ?? const [],
-                ),
-              ),
+            child: ValueListenableBuilder<GarmentType?>(
+              valueListenable: formData.selectedGarmentType,
+              builder: (final context, final garmentType, final _) =>
+                  ProductSizeMatrixEditor(
+                    manager: sizeManager,
+                    visibleTypes: formData.visibleMeasurementTypes,
+                    garmentType: garmentType,
+                  ),
             ),
           ),
         ],

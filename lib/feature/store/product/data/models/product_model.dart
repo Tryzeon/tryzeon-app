@@ -11,6 +11,7 @@ class ProductModel {
     required this.storeId,
     required this.name,
     required this.categoryId,
+    required this.garmentType,
     required this.price,
     required this.imagePaths,
     required this.imageUrls,
@@ -36,6 +37,7 @@ class ProductModel {
   final String storeId;
   final String name;
   final String categoryId;
+  final String garmentType;
   final double price;
   final List<String> imagePaths;
   @JsonKey(includeToJson: false)

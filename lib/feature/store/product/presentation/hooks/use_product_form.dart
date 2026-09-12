@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type_measurements.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/product_category/domain/entities/product_category.dart';
@@ -22,6 +23,7 @@ class ProductFormData {
     required this.selectedFit,
     required this.images,
     required this.selectedCategoryId,
+    required this.selectedGarmentType,
     required this.selectedElasticity,
     required this.selectedThickness,
     required this.selectedStyles,
@@ -38,6 +40,7 @@ class ProductFormData {
   final ValueNotifier<ProductFit?> selectedFit;
   final ValueNotifier<List<ImageItem>> images;
   final ValueNotifier<String?> selectedCategoryId;
+  final ValueNotifier<GarmentType?> selectedGarmentType;
   final ValueNotifier<ProductElasticity?> selectedElasticity;
   final ValueNotifier<ProductThickness?> selectedThickness;
   final ValueNotifier<Set<ClothingStyle>?> selectedStyles;
@@ -50,19 +53,19 @@ class ProductFormData {
   List<File> get newImageFiles =>
       images.value.whereType<NewImageItem>().map((final e) => e.file).toList();
 
-  List<GarmentMeasurementType> visibleMeasurementTypes(
-    final List<ProductCategory> allCategories,
-  ) {
-    final selected = allCategories
-        .where((final c) => c.id == selectedCategoryId.value)
-        .firstOrNull;
-    return selected?.defaultGarmentType.measurementTypes ?? GarmentMeasurementType.values;
+  void selectCategory(final ProductCategory category) {
+    selectedCategoryId.value = category.id;
+    selectedGarmentType.value = category.defaultGarmentType;
   }
+
+  List<GarmentMeasurementType> get visibleMeasurementTypes =>
+      selectedGarmentType.value?.measurementTypes ?? GarmentMeasurementType.values;
 
   ProductDraft toDraft() {
     return ProductDraft(
       name: nameController.text,
       categoryId: selectedCategoryId.value!,
+      garmentType: selectedGarmentType.value!,
       price: double.parse(priceController.text),
       gender: selectedGender.value!,
       purchaseLink: purchaseLinkController.text.isNotEmpty
@@ -80,12 +83,16 @@ class ProductFormData {
     );
   }
 
-  void applyAnalysis(final ProductAnalysisResult r) {
+  void applyAnalysis(
+    final ProductAnalysisResult r,
+    final List<ProductCategory> categories,
+  ) {
     if (nameController.text.trim().isEmpty && (r.name?.isNotEmpty ?? false)) {
       nameController.text = r.name!;
     }
     if (selectedCategoryId.value == null && r.categoryId != null) {
-      selectedCategoryId.value = r.categoryId;
+      final category = categories.where((final c) => c.id == r.categoryId).firstOrNull;
+      if (category != null) selectCategory(category);
     }
     if (selectedGender.value == null && r.gender != null) {
       selectedGender.value = r.gender;
@@ -140,6 +147,9 @@ ProductFormData useProductForm({final Product? initialProduct}) {
   final images = useState<List<ImageItem>>(initialImages);
 
   final selectedCategoryId = useValueNotifier<String?>(initialProduct?.categoryId);
+  final selectedGarmentType = useValueNotifier<GarmentType?>(
+    initialProduct?.garmentType,
+  );
   final selectedElasticity = useValueNotifier<ProductElasticity?>(
     initialProduct?.elasticity,
   );
@@ -160,6 +170,7 @@ ProductFormData useProductForm({final Product? initialProduct}) {
     selectedFit: selectedFit,
     images: images,
     selectedCategoryId: selectedCategoryId,
+    selectedGarmentType: selectedGarmentType,
     selectedElasticity: selectedElasticity,
     selectedThickness: selectedThickness,
     selectedStyles: selectedStyles,

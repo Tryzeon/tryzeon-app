@@ -11,12 +11,12 @@ class ProductCategorySheet extends HookWidget {
   final List<ProductCategory> categories;
   final String? initialId;
 
-  static Future<String?> show({
+  static Future<ProductCategory?> show({
     required final BuildContext context,
     required final List<ProductCategory> categories,
     final String? initialId,
   }) {
-    return showModalBottomSheet<String>(
+    return showModalBottomSheet<ProductCategory>(
       context: context,
       useRootNavigator: true,
       isScrollControlled: true,
@@ -104,7 +104,7 @@ class ProductCategorySheet extends HookWidget {
                     trailing: category.id == initialId
                         ? Icon(Icons.check_rounded, color: colorScheme.primary)
                         : null,
-                    onTap: () => Navigator.of(context).pop(category.id),
+                    onTap: () => Navigator.of(context).pop(category),
                   ),
               ],
             ),

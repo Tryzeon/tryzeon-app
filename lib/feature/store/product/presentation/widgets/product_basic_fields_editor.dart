@@ -21,6 +21,7 @@ class ProductBasicFieldsEditor extends HookWidget {
     required this.descriptionController,
     required this.selectedGender,
     required this.selectedCategoryId,
+    required this.onCategorySelected,
     required this.productCategoriesAsync,
     required this.onRetryCategories,
   });
@@ -31,6 +32,7 @@ class ProductBasicFieldsEditor extends HookWidget {
   final TextEditingController descriptionController;
   final ValueNotifier<ProductGender?> selectedGender;
   final ValueNotifier<String?> selectedCategoryId;
+  final ValueChanged<ProductCategory> onCategorySelected;
   final AsyncValue<List<ProductCategory>> productCategoriesAsync;
   final VoidCallback onRetryCategories;
 
@@ -93,7 +95,7 @@ class ProductBasicFieldsEditor extends HookWidget {
                   categories: categories,
                   selectedCategoryId: selectedCategoryId,
                   hasError: state.hasError,
-                  onChanged: (final newId) => selectedCategoryId.value = newId,
+                  onChanged: onCategorySelected,
                 ),
                 loading: () => const Padding(
                   padding: EdgeInsets.all(AppSpacing.md),

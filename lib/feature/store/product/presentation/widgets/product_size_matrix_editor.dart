@@ -5,6 +5,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/common/body_measurements/presentation/mappers/body_measurement_type_ui_mapper.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/common/garment_type/presentation/garment_type_display.dart';
 import 'package:tryzeon/feature/common/measurement/domain/entities/measurement_unit.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/standard_size_label.dart';
 import 'package:tryzeon/feature/common/product_size/presentation/mappers/garment_measurement_type_ui_mapper.dart';
@@ -29,11 +31,14 @@ class ProductSizeMatrixEditor extends HookWidget {
     super.key,
     required this.manager,
     required this.visibleTypes,
+    this.garmentType,
   });
 
   final ProductSizeManager manager;
 
   final List<GarmentMeasurementType> visibleTypes;
+
+  final GarmentType? garmentType;
 
   @override
   Widget build(final BuildContext context) {
@@ -78,7 +83,7 @@ class ProductSizeMatrixEditor extends HookWidget {
             columns: [
               for (final type in visibleTypes)
                 _MatrixColumn(
-                  label: type.label,
+                  label: garmentType?.measurementLabel(type) ?? type.label,
                   width: _MeasurementCell.width,
                   cellBuilder: (final entry) => _MeasurementCell(
                     controller: entry.measurementControllers[type]!,

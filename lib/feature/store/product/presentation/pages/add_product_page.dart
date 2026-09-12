@@ -6,7 +6,9 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
+import 'package:tryzeon/feature/common/product_category/domain/entities/product_category.dart';
 import 'package:tryzeon/feature/common/product_category/providers/product_category_providers.dart';
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_form.dart';
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_size_manager.dart';
@@ -51,7 +53,16 @@ class AddProductPage extends HookConsumerWidget {
         final result = await ref.read(analyzeProductImageUseCaseProvider)(file);
         if (!context.mounted) return;
 
-        formData.applyAnalysis(result);
+        List<ProductCategory> categories;
+        try {
+          categories = await ref.read(productCategoriesProvider.future);
+        } catch (e, stackTrace) {
+          AppLogger.warning('Categories unavailable for analysis pre-fill', e, stackTrace);
+          categories = const [];
+        }
+        if (!context.mounted) return;
+
+        formData.applyAnalysis(result, categories);
 
         if (result.hasAdvancedFields) advancedController.expand();
         isAnalyzing.value = false;
@@ -68,9 +79,7 @@ class AddProductPage extends HookConsumerWidget {
             draft: formData.toDraft(),
             images: formData.newImageFiles,
             sizes: sizeManager.toNewSizeItems(
-              visibleTypes: formData.visibleMeasurementTypes(
-                productCategoriesAsync.value ?? const [],
-              ),
+              visibleTypes: formData.visibleMeasurementTypes,
             ),
           );
 

@@ -1,4 +1,5 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/store/data/collections/store_order_contact_embedded.dart';
 import 'package:tryzeon/feature/common/store/data/models/store_order_contact_model.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
@@ -29,6 +30,7 @@ import 'store_mappr.auto_mappr.dart';
 
     MapType<ProductModel, Product>(
       fields: [
+        Field('garmentType', custom: StoreMapprHelper.stringToGarmentType),
         Field('status', custom: StoreMapprHelper.stringToStatus),
         Field('gender', custom: StoreMapprHelper.stringToGender),
         Field('elasticity', custom: StoreMapprHelper.stringToElasticity),
@@ -40,6 +42,7 @@ import 'store_mappr.auto_mappr.dart';
     ),
     MapType<Product, ProductModel>(
       fields: [
+        Field('garmentType', custom: StoreMapprHelper.garmentTypeToString),
         Field('status', custom: StoreMapprHelper.statusToString),
         Field('gender', custom: StoreMapprHelper.genderToString),
         Field('elasticity', custom: StoreMapprHelper.elasticityToString),
@@ -82,6 +85,9 @@ class StoreMappr extends $StoreMappr {
 }
 
 class StoreMapprHelper {
+  static GarmentType stringToGarmentType(final ProductModel source) =>
+      GarmentType.tryFromString(source.garmentType) ?? GarmentType.others;
+
   static ProductStatus stringToStatus(final ProductModel source) =>
       ProductStatus.tryFromString(source.status) ?? ProductStatus.active;
 
@@ -102,6 +108,8 @@ class StoreMapprHelper {
 
   static Set<ProductSeason>? stringsToSeasons(final ProductModel source) =>
       ProductSeason.listFromStrings(source.seasons)?.toSet();
+
+  static String garmentTypeToString(final Product source) => source.garmentType.value;
 
   static String statusToString(final Product source) => source.status.value;
 

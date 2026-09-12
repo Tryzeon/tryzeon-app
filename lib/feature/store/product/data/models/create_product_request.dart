@@ -10,6 +10,7 @@ class CreateProductRequest {
     required this.storeId,
     required this.name,
     required this.categoryId,
+    required this.garmentType,
     required this.price,
     required this.imagePaths,
     this.gender,
@@ -27,6 +28,7 @@ class CreateProductRequest {
   final String storeId;
   final String name;
   final String categoryId;
+  final String garmentType;
   final double price;
   final List<String> imagePaths;
   final String? gender;

@@ -9,13 +9,13 @@ class ProductCategorySelector extends HookWidget {
     super.key,
     required this.categories,
     required this.selectedCategoryId,
-    this.onChanged,
+    required this.onChanged,
     this.hasError = false,
   });
 
   final List<ProductCategory> categories;
   final ValueNotifier<String?> selectedCategoryId;
-  final ValueChanged<String>? onChanged;
+  final ValueChanged<ProductCategory> onChanged;
   final bool hasError;
 
   @override
@@ -40,11 +40,7 @@ class ProductCategorySelector extends HookWidget {
         initialId: selectedId,
       );
       if (result == null) return;
-      if (onChanged != null) {
-        onChanged!(result);
-      } else {
-        selectedCategoryId.value = result;
-      }
+      onChanged(result);
     }
 
     return InkWell(

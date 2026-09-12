@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/product_size.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.dart';
@@ -16,6 +17,7 @@ sealed class ProductDraft with _$ProductDraft {
   const factory ProductDraft({
     required final String name,
     required final String categoryId,
+    required final GarmentType garmentType,
     required final double price,
     @Default(ProductGender.unisex) final ProductGender gender,
     final String? purchaseLink,
@@ -55,6 +57,7 @@ sealed class Product with _$Product {
     required final String storeId,
     required final String name,
     required final String categoryId,
+    required final GarmentType garmentType,
     required final double price,
     required final List<String> imagePaths,
     required final List<String> imageUrls,
@@ -79,6 +82,7 @@ extension ProductApplyDraft on Product {
   Product applyDraft(final ProductDraft draft) => copyWith(
     name: draft.name,
     categoryId: draft.categoryId,
+    garmentType: draft.garmentType,
     price: draft.price,
     gender: draft.gender,
     purchaseLink: draft.purchaseLink,

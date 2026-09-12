@@ -17,6 +17,7 @@ class ProductCache {
   late String storeId;
   late String name;
   late String categoryId;
+  late String garmentType;
   late double price;
   late List<String> imagePaths;
   late List<String> imageUrls;

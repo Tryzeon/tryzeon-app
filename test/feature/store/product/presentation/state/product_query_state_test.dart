@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/presentation/state/product_query_state.dart';
@@ -11,6 +12,7 @@ Product product(final String name, {final ProductStatus status = ProductStatus.a
     storeId: 's1',
     name: name,
     categoryId: 'c1',
+    garmentType: GarmentType.top,
     price: 100,
     imagePaths: const [],
     imageUrls: const [],
