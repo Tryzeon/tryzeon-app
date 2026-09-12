@@ -10,6 +10,7 @@ class ShopProductModel {
     required this.storeInfo,
     required this.name,
     required this.categoryId,
+    required this.garmentType,
     required this.price,
     required this.imagePaths,
     required this.imageUrls,
@@ -34,6 +35,7 @@ class ShopProductModel {
   final ShopStoreInfoModel storeInfo;
   final String name;
   final String categoryId;
+  final String garmentType;
   final double price;
   final List<String> imagePaths;
   @JsonKey(includeToJson: false)

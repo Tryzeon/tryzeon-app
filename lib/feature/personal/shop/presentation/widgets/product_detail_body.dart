@@ -5,6 +5,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type_measurements.dart';
 import 'package:tryzeon/feature/common/product_category/providers/product_category_providers.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
@@ -36,6 +37,7 @@ class ProductDetailBody extends HookConsumerWidget {
     ),
     name: 'Loading Product Name here that is long',
     categoryId: 'category',
+    garmentType: GarmentType.top,
     price: 8888.0,
     imagePaths: ['skeleton_path'],
     imageUrls: [],
@@ -87,17 +89,7 @@ class _ProductDetailContent extends HookConsumerWidget {
       orElse: () => <String, String>{},
     );
 
-    // Falls back to every dimension while the categories are still loading.
-    final sizeColumnTypes = categoriesAsync.maybeWhen(
-      data: (final categories) =>
-          categories
-              .where((final c) => c.id == product.categoryId)
-              .firstOrNull
-              ?.defaultGarmentType
-              .measurementTypes ??
-          GarmentMeasurementType.values,
-      orElse: () => GarmentMeasurementType.values,
-    );
+    final sizeColumnTypes = product.garmentType.measurementTypes;
 
     final fitResult = ref.watch(productFitResolverProvider).resolve(product);
 
@@ -201,6 +193,7 @@ class _ProductDetailContent extends HookConsumerWidget {
                   ProductSizeTable(
                     sizes: product.sizes!,
                     columnTypes: sizeColumnTypes,
+                    garmentType: product.garmentType,
                     fitResult: fitResult,
                   ),
                   const SizedBox(height: AppSpacing.xl),

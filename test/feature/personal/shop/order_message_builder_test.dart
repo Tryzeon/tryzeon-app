@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
@@ -8,6 +9,7 @@ ShopProduct product({required final List<String> imageUrls}) => ShopProduct(
   storeInfo: const ShopStoreInfo(id: 's1', name: 'Store', channels: {}),
   name: 'White Tee',
   categoryId: 'c1',
+  garmentType: GarmentType.top,
   price: 590,
   imagePaths: const [],
   imageUrls: imageUrls,

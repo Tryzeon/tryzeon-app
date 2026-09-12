@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/body_measurements/presentation/mappers/body_measurement_type_ui_mapper.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/common/garment_type/presentation/garment_type_display.dart';
 import 'package:tryzeon/feature/common/measurement/presentation/formatters/measurement_value_format.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/product_size.dart';
-import 'package:tryzeon/feature/common/product_size/presentation/mappers/garment_measurement_type_ui_mapper.dart';
 import 'package:tryzeon/feature/common/product_size/presentation/mappers/measurement_range_ui_mapper.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/size_advisor_banner.dart';
@@ -14,12 +15,14 @@ class ProductSizeTable extends StatelessWidget {
   const ProductSizeTable({
     required this.sizes,
     required this.columnTypes,
+    required this.garmentType,
     required this.fitResult,
     super.key,
   });
 
   final List<ProductSize> sizes;
   final List<GarmentMeasurementType> columnTypes;
+  final GarmentType garmentType;
   final FitResult fitResult;
 
   @override
@@ -81,7 +84,7 @@ class ProductSizeTable extends StatelessWidget {
             columns: [
               for (final type in garmentTypes)
                 _SizeColumn(
-                  label: type.label,
+                  label: garmentType.measurementLabel(type),
                   cellText: (final size) {
                     final value = size.garmentMeasurements?.getValue(type);
                     return value == null
