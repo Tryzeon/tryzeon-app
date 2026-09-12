@@ -44,6 +44,9 @@ devtools_options.yaml
 *.freezed.dart
 *.isar
 *.auto_mappr.dart
+
+# Isar native library downloaded by Isar.initializeIsarCore(download: true)
+libisar.dylib
 # Allow obfuscated env generated file — no plaintext secrets, safe to commit
 # New worktrees/clones can build without needing .env or build_runner
 

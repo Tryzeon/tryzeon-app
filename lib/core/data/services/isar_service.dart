@@ -1,6 +1,8 @@
 import 'package:isar_community/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tryzeon/core/data/collections/cache_entry.dart';
+import 'package:tryzeon/core/data/collections/cache_schema.dart';
+import 'package:tryzeon/core/data/services/cache_migrator.dart';
 import 'package:tryzeon/feature/auth/data/collections/auth_settings_cache.dart';
 import 'package:tryzeon/feature/common/product_category/data/collections/product_category_cache.dart';
 import 'package:tryzeon/feature/personal/profile/data/collections/user_profile_cache.dart';
@@ -19,8 +21,9 @@ class IsarService {
   Future<Isar> openDB() async {
     if (Isar.instanceNames.isEmpty) {
       final dir = await getApplicationDocumentsDirectory();
-      return Isar.open(
+      final isar = await Isar.open(
         [
+          CacheSchemaSchema,
           CacheEntrySchema,
           AuthSettingsCacheSchema,
           ProductCategoryCacheSchema,
@@ -34,6 +37,8 @@ class IsarService {
         directory: dir.path,
         inspector: false,
       );
+      await CacheMigrator.run(isar);
+      return isar;
     }
 
     return Future.value(Isar.getInstance());
