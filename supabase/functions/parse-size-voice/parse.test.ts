@@ -39,6 +39,23 @@ Deno.test("normalizeParsedSizes keeps thigh_circumference", () => {
   });
 });
 
+Deno.test("normalizeParsedSizes keeps leg_opening and drops a key outside the garment vocabulary", () => {
+  const parsed = normalizeParsedSizes({
+    sizes: [
+      {
+        name: "M",
+        garment_measurements: {
+          leg_opening: { value: 18, unit: "centimeter" },
+          inseam: { value: 72, unit: "centimeter" },
+        },
+      },
+    ],
+  });
+  assertEquals(parsed[0].garment_measurements, {
+    leg_opening: { value: 18, unit: "centimeter" },
+  });
+});
+
 Deno.test("normalizeParsedSizes normalizes the name it returns", () => {
   const parsed = normalizeParsedSizes({
     sizes: [

@@ -1,6 +1,6 @@
 import { jsonError } from "../_shared/http.ts";
 
-/// Garment flat measurements — must stay in sync with GarmentMeasurementType
+/// Garment measurements — must stay in sync with GarmentMeasurementType
 /// in lib/feature/common/product_size/domain/entities/.
 export const MEASUREMENT_KEYS = [
   "shoulder_width",
@@ -10,6 +10,7 @@ export const MEASUREMENT_KEYS = [
   "hip_circumference",
   "thigh_circumference",
   "length",
+  "leg_opening",
 ] as const;
 
 /// Recommended wearer body ranges — must stay in sync with `BodyMeasurementType`
@@ -84,7 +85,7 @@ export function buildPrompt(): string {
     "請從語音中萃取每一個尺寸與其量測值，輸出 JSON。",
     "規則：",
     "1. 忽略口頭禪、語助詞、重複與與尺寸無關的閒聊，只保留尺寸資訊（去贅字）。",
-    "2. garment_measurements 的量測欄位只允許：shoulder_width(肩寬)、chest_circumference(胸圍)、sleeve_length(袖長)、waist_circumference(腰圍)、hip_circumference(臀圍)、thigh_circumference(大腿圍)、length(長度)。沒講到的欄位不要輸出。",
+    "2. garment_measurements 的量測欄位只允許：shoulder_width(肩寬)、chest_circumference(胸圍)、sleeve_length(袖長)、waist_circumference(腰圍)、hip_circumference(臀圍)、thigh_circumference(大腿圍)、length(長度)、leg_opening(褲口寬)。沒講到的欄位不要輸出。",
     "2-0. length 是衣服本身的長度，衣長、褲長、裙長、洋裝長一律填 length。",
     "2-1. garment_measurements 是「衣服」的尺寸，不是人體的尺寸。身高、體重絕對不要放進 garment_measurements。",
     "2-2. 胸圍、腰圍、臀圍、大腿圍是該部位一圈的長度。店家若說的是「平放衣服量的胸寬／腰寬／臀寬／大腿寬」（半圈），請乘以 2 後填入對應的圍度欄位。",
