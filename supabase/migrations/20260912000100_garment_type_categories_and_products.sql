@@ -112,10 +112,3 @@ ALTER TABLE "public"."products"
   ALTER COLUMN "garment_type" SET NOT NULL;
 
 CREATE INDEX "idx_products_garment_type" ON "public"."products" USING "btree" ("garment_type");
-
--- 6. chest_circumference -> chest_width (key rename; values are kept as stored)
-UPDATE "public"."product_sizes"
-  SET "garment_measurements" =
-    ("garment_measurements" - 'chest_circumference')
-    || jsonb_build_object('chest_width', "garment_measurements"->'chest_circumference')
-  WHERE "garment_measurements" ? 'chest_circumference';

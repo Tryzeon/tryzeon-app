@@ -21,6 +21,7 @@ extension GarmentTypeMeasurements on GarmentType {
       GarmentMeasurementType.hipCircumference,
       GarmentMeasurementType.thighCircumference,
       GarmentMeasurementType.length,
+      GarmentMeasurementType.legOpening,
     ],
     GarmentType.others => GarmentMeasurementType.values,
   };

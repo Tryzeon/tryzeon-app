@@ -11,5 +11,6 @@ extension GarmentMeasurementTypeUiMapper on GarmentMeasurementType {
     GarmentMeasurementType.hipCircumference => '臀圍',
     GarmentMeasurementType.thighCircumference => '大腿圍',
     GarmentMeasurementType.length => '長度',
+    GarmentMeasurementType.legOpening => '褲口寬',
   };
 }

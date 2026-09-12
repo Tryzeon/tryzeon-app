@@ -3,9 +3,9 @@ import 'package:tryzeon/feature/common/product_size/domain/entities/garment_meas
 
 /// The garment dimension whose ease against this body dimension says how the
 /// garment sits. `null` means no garment measurement can say that — height and
-/// weight are only ever judged against a store's published body measurement range. Sleeve
-/// and body length have no body counterpart in the other direction: they are
-/// displayed, not compared.
+/// weight are only ever judged against a store's published body measurement range. Sleeve,
+/// body length and leg opening have no body counterpart in the other
+/// direction: they are displayed, not compared.
 extension BodyFitDimension on BodyMeasurementType {
   GarmentMeasurementType? get comparableGarmentType => switch (this) {
     BodyMeasurementType.shoulder => GarmentMeasurementType.shoulderWidth,

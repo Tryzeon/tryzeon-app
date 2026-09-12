@@ -11,4 +11,5 @@ class GarmentMeasurementsEmbedded {
   double? hipCircumference;
   double? thighCircumference;
   double? length;
+  double? legOpening;
 }

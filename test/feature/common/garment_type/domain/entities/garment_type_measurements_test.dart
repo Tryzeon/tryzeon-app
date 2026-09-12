@@ -24,12 +24,13 @@ void main() {
       ]);
     });
 
-    test('pants add thigh to the skirt set', () {
+    test('pants add thigh and leg opening to the skirt set', () {
       expect(GarmentType.pants.measurementTypes, const [
         GarmentMeasurementType.waistCircumference,
         GarmentMeasurementType.hipCircumference,
         GarmentMeasurementType.thighCircumference,
         GarmentMeasurementType.length,
+        GarmentMeasurementType.legOpening,
       ]);
     });
 

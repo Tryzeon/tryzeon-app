@@ -6,10 +6,10 @@
 /// circumference.
 ///
 /// [length] is the garment's own top-to-bottom length, whatever the garment is
-/// — a top's body length, a pair of trousers' inseam-to-hem length, a skirt's
-/// hem length. One dimension covers all three because the garment type
-/// already says which one is meant (trousers, skirt, top). It is displayed to
-/// shoppers but carries no fit signal on its own, so it has no body
+/// — a top's body length, a pair of trousers' outseam, a skirt's hem length.
+/// One dimension covers all three because the garment type already says which
+/// one is meant. It and [sleeveLength] and [legOpening] are displayed to
+/// shoppers but carry no fit signal on their own, so they have no body
 /// counterpart.
 enum GarmentMeasurementType {
   shoulderWidth('shoulder_width', minCm: 20, maxCm: 70),
@@ -18,7 +18,8 @@ enum GarmentMeasurementType {
   waistCircumference('waist_circumference', minCm: 30, maxCm: 200),
   hipCircumference('hip_circumference', minCm: 40, maxCm: 200),
   thighCircumference('thigh_circumference', minCm: 25, maxCm: 120),
-  length('length', minCm: 20, maxCm: 160);
+  length('length', minCm: 20, maxCm: 160),
+  legOpening('leg_opening', minCm: 10, maxCm: 60);
 
   const GarmentMeasurementType(this.value, {required this.minCm, required this.maxCm});
 

@@ -16,6 +16,7 @@ sealed class GarmentMeasurements with _$GarmentMeasurements {
     final double? hipCircumference,
     final double? thighCircumference,
     final double? length,
+    final double? legOpening,
   }) = _GarmentMeasurements;
   const GarmentMeasurements._();
 
@@ -29,6 +30,7 @@ sealed class GarmentMeasurements with _$GarmentMeasurements {
     hipCircumference: values[GarmentMeasurementType.hipCircumference],
     thighCircumference: values[GarmentMeasurementType.thighCircumference],
     length: values[GarmentMeasurementType.length],
+    legOpening: values[GarmentMeasurementType.legOpening],
   );
 
   double? getValue(final GarmentMeasurementType type) => switch (type) {
@@ -39,6 +41,7 @@ sealed class GarmentMeasurements with _$GarmentMeasurements {
     GarmentMeasurementType.hipCircumference => hipCircumference,
     GarmentMeasurementType.thighCircumference => thighCircumference,
     GarmentMeasurementType.length => length,
+    GarmentMeasurementType.legOpening => legOpening,
   };
 
   double? operator [](final GarmentMeasurementType type) => getValue(type);

@@ -12,6 +12,7 @@ class GarmentMeasurementsModel {
     this.hipCircumference,
     this.thighCircumference,
     this.length,
+    this.legOpening,
   });
 
   factory GarmentMeasurementsModel.fromJson(final Map<String, dynamic> json) =>
@@ -24,6 +25,7 @@ class GarmentMeasurementsModel {
   final double? hipCircumference;
   final double? thighCircumference;
   final double? length;
+  final double? legOpening;
 
   Map<String, dynamic> toJson() => _$GarmentMeasurementsModelToJson(this);
 }
