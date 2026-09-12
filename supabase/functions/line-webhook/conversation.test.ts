@@ -207,7 +207,7 @@ Deno.test("a store that is down costs continuity, not the turn", async () => {
 Deno.test("a finished wardrobe try-on is written back with what it was", () => {
   const note = wardrobeTryonNote({
     id: "44444444-4444-4444-4444-444444444444",
-    categoryLabel: "上衣",
+    garmentTypeLabel: "上衣",
     tags: ["寬鬆", "米色"],
   });
 
@@ -219,7 +219,7 @@ Deno.test("a finished wardrobe try-on is written back with what it was", () => {
 });
 
 Deno.test("a tag-less wardrobe note still reads as a sentence", () => {
-  const note = wardrobeTryonNote({ id: "w1", categoryLabel: "外套", tags: [] });
+  const note = wardrobeTryonNote({ id: "w1", garmentTypeLabel: "外套", tags: [] });
   assertEquals(note.content[0].text, "（使用者剛試穿了自己衣櫃裡的單品 id:w1「外套」）");
 });
 
@@ -229,7 +229,7 @@ Deno.test("a pathologically long tag cannot blow up the transcript note", () => 
   const longTag = "x".repeat(500);
   const note = wardrobeTryonNote({
     id: "w1",
-    categoryLabel: "外套",
+    garmentTypeLabel: "外套",
     tags: [longTag],
   });
 

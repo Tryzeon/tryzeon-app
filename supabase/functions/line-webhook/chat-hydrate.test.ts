@@ -101,7 +101,7 @@ Deno.test("a wardrobe ref reads the wardrobe, bound to the asking user", async (
   const wardrobeRow = {
     id: "w1",
     image_path: "u1/top/w1.png",
-    category: "top",
+    garment_type: "top",
     tags: ["寬鬆"],
   };
   const { admin, tables, eqCalls } = fakeAdmin([], [wardrobeRow]);

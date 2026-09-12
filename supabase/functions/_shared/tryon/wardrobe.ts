@@ -7,7 +7,7 @@ import type { DbClient } from "../supabase.ts";
 
 export type WardrobeGarmentRow = Pick<
   Tables<"wardrobe_items">,
-  "image_path" | "category" | "tags"
+  "image_path" | "garment_type" | "tags"
 >;
 
 function trimmedString(value: unknown): string {
@@ -15,11 +15,11 @@ function trimmedString(value: unknown): string {
 }
 
 /**
- * The category goes in as its raw enum code: the one enum→Chinese map in this
- * codebase belongs to the LINE card, which dresses rows for people.
+ * The garment type goes in as its raw enum code: the one enum→Chinese map in
+ * this codebase belongs to the LINE card, which dresses rows for people.
  */
 export function buildWardrobeGarmentDetail(row: WardrobeGarmentRow): string {
-  const parts = [`Category: ${row.category}`];
+  const parts = [`Garment type: ${row.garment_type}`];
 
   const tags = textArrayValues(row.tags).map((t) => t.trim()).filter((t) => t.length > 0);
   if (tags.length > 0) parts.push(`Tags: ${tags.join(", ")}`);
@@ -46,7 +46,7 @@ export async function resolveWardrobeGarment(
 
   const { data, error } = await client
     .from("wardrobe_items")
-    .select("image_path, category, tags")
+    .select("image_path, garment_type, tags")
     .eq("id", wardrobeItemId)
     .eq("user_id", userId)
     .maybeSingle();

@@ -93,7 +93,7 @@ export function photoNote(description: string): ChatMessage {
 }
 
 /**
- * Carries the tags as well as the category because the chip this card offers
+ * Carries the tags as well as the garment type because the chip this card offers
  * next is "幫我配這件" — the agent has to know what "這件" was to answer it,
  * and a bare "上衣" is not enough to pair anything with. Tags go through
  * `tagLine` because `wardrobe_items.tags` is unconstrained text.
@@ -105,7 +105,7 @@ export function wardrobeTryonNote(item: WardrobeItemInfo): ChatMessage {
     content: [{
       type: "text",
       text:
-        `（使用者剛試穿了自己衣櫃裡的單品 id:${item.id}「${item.categoryLabel}${tags}」）`,
+        `（使用者剛試穿了自己衣櫃裡的單品 id:${item.id}「${item.garmentTypeLabel}${tags}」）`,
     }],
   };
 }

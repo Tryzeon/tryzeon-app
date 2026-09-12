@@ -165,7 +165,7 @@ Deno.test("a busy try-on offers no chip on either path", () => {
 
 const wardrobeItem: WardrobeItemInfo = {
   id: "44444444-4444-4444-4444-444444444444",
-  categoryLabel: "上衣",
+  garmentTypeLabel: "上衣",
   tags: ["寬鬆"],
 };
 
@@ -178,8 +178,9 @@ Deno.test("the wardrobe acknowledgement names the kind of thing being tried on",
 
 Deno.test("the others bucket reads as 單品, not 其他, in the acknowledgement", () => {
   // 「其他」 is a bucket label, not a countable noun — 「試穿這件其他」 is
-  // broken Chinese. `shoes` and `accessories` both remap to `others`
-  // (20260616120000_remap_wardrobe_category_enum.sql), so this is not rare.
+  // broken Chinese. `shoes` and `accessories` (20260616120000_remap_wardrobe_category_enum.sql)
+  // and later `sets` (20260912000000_garment_type_enum.sql) all remap to
+  // `others`, so this is not rare.
   assertEquals(wardrobeProcessingMessage("其他"), {
     type: "text",
     text: "收到，正在幫你試穿衣櫃裡這件單品，請稍等！",

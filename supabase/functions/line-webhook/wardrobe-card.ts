@@ -5,11 +5,11 @@ import { CARD_COLOR } from "./card-kit.ts";
 import type { Enums, Tables } from "../_shared/database.types.ts";
 import type { DbClient } from "../_shared/supabase.ts";
 
-export const WARDROBE_CARD_SELECT = "id, image_path, category, tags";
+export const WARDROBE_CARD_SELECT = "id, image_path, garment_type, tags";
 
 export type WardrobeCardRow = Pick<
   Tables<"wardrobe_items">,
-  "id" | "image_path" | "category" | "tags"
+  "id" | "image_path" | "garment_type" | "tags"
 >;
 
 /**
@@ -17,11 +17,12 @@ export type WardrobeCardRow = Pick<
  * here. The `?? code` fallback below survives it anyway: a deployed function can
  * be reading a schema newer than the types it was built against.
  */
-const CATEGORY_LABEL: Record<Enums<"wardrobe_category">, string> = {
+const GARMENT_TYPE_LABEL: Record<Enums<"garment_type">, string> = {
   top: "上衣",
-  bottoms: "下身",
+  pants: "褲子",
+  skirt: "裙子",
+  dress: "洋裝",
   outerwear: "外套",
-  sets: "套裝",
   others: "其他",
 };
 
@@ -36,7 +37,7 @@ const MAX_TAG_LINE_CHARS = 40;
 
 export interface WardrobeItemInfo {
   id: string;
-  categoryLabel: string;
+  garmentTypeLabel: string;
   tags: string[];
 }
 
@@ -47,7 +48,7 @@ export interface LineWardrobeItem extends WardrobeItemInfo {
 export function toWardrobeItemInfo(row: WardrobeCardRow): WardrobeItemInfo {
   return {
     id: row.id,
-    categoryLabel: CATEGORY_LABEL[row.category] ?? row.category,
+    garmentTypeLabel: GARMENT_TYPE_LABEL[row.garment_type] ?? row.garment_type,
     tags: textArrayValues(row.tags).filter((t) => t.length > 0).slice(0, MAX_TAGS),
   };
 }
@@ -69,7 +70,7 @@ export function tagLine(tags: string[]): string {
 
 /** Derived rather than re-listed so the two cannot drift. */
 const NOUN_LABELS = new Set(
-  Object.entries(CATEGORY_LABEL)
+  Object.entries(GARMENT_TYPE_LABEL)
     .filter(([code]) => code !== "others")
     .map(([, label]) => label),
 );
@@ -79,15 +80,15 @@ const NOUN_LABELS = new Set(
  * both become `單品`. The card's own headline keeps the raw label, where a bucket
  * name reads fine standing alone.
  */
-export function garmentNoun(categoryLabel: string): string {
-  return NOUN_LABELS.has(categoryLabel) ? categoryLabel : "單品";
+export function garmentNoun(garmentTypeLabel: string): string {
+  return NOUN_LABELS.has(garmentTypeLabel) ? garmentTypeLabel : "單品";
 }
 
 export function wardrobeInfoContents(item: WardrobeItemInfo): object[] {
   const contents: object[] = [
     {
       type: "text",
-      text: item.categoryLabel,
+      text: item.garmentTypeLabel,
       size: "sm",
       weight: "bold",
       color: CARD_COLOR.primary,

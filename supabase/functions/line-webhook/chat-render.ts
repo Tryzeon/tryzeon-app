@@ -145,7 +145,7 @@ function wardrobeBubble(item: LineWardrobeItem): object {
           data: wardrobeTryonPostbackData(item.id),
           // Not clamped, unlike a product's: `garmentNoun` bounds the word to
           // a fixed set of short labels, far from displayText's 300-character cap.
-          displayText: `試穿「你的${garmentNoun(item.categoryLabel)}」`,
+          displayText: `試穿「你的${garmentNoun(item.garmentTypeLabel)}」`,
         }),
       ],
     },

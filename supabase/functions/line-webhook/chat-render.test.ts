@@ -27,7 +27,7 @@ const wardrobeItem = (
 ): LineWardrobeItem => ({
   id,
   imageUrl: `https://sig.example/${id}.png?token=abc`,
-  categoryLabel: "上衣",
+  garmentTypeLabel: "上衣",
   tags: ["寬鬆"],
   ...over,
 });
@@ -280,7 +280,7 @@ Deno.test("a wardrobe card offers a try-on keyed by its own id", () => {
 
 Deno.test("the others bucket's card button reads 單品, not 其他", () => {
   // 「試穿「你的其他」」 is broken Chinese, and `others` is not a rare code.
-  const out = renderAnswer([wardrobeCard(wardrobeItem("w1", { categoryLabel: "其他" }))]);
+  const out = renderAnswer([wardrobeCard(wardrobeItem("w1", { garmentTypeLabel: "其他" }))]);
   // deno-lint-ignore no-explicit-any
   const bubble = bubbles(out[0])[0] as any;
 

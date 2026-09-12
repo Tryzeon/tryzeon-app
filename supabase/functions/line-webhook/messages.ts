@@ -132,10 +132,10 @@ export function productResultMessage(
   ]);
 }
 
-export function wardrobeProcessingMessage(categoryLabel: string): object {
+export function wardrobeProcessingMessage(garmentTypeLabel: string): object {
   return {
     type: "text",
-    text: `收到，正在幫你試穿衣櫃裡這件${garmentNoun(categoryLabel)}，請稍等！`,
+    text: `收到，正在幫你試穿衣櫃裡這件${garmentNoun(garmentTypeLabel)}，請稍等！`,
   };
 }
 
@@ -162,7 +162,7 @@ export function wardrobeResultMessage(
 ): object {
   return withQuickReply({
     type: "flex",
-    altText: `為你試穿了衣櫃裡的${garmentNoun(item.categoryLabel)}`,
+    altText: `為你試穿了衣櫃裡的${garmentNoun(item.garmentTypeLabel)}`,
     contents: {
       type: "bubble",
       hero: {
@@ -202,7 +202,7 @@ export function wardrobeTryonErrorMessage(
   const retry = postbackChip(
     "再試一次",
     wardrobeTryonPostbackData(item.id),
-    `試穿「你的${garmentNoun(item.categoryLabel)}」`,
+    `試穿「你的${garmentNoun(item.garmentTypeLabel)}」`,
   );
 
   switch (kind) {

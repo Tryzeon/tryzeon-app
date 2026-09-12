@@ -11,7 +11,7 @@ import {
   wardrobeInfoContents,
 } from "./wardrobe-card.ts";
 import { CARD_COLOR } from "./card-kit.ts";
-import { WARDROBE_CATEGORY_VALUES } from "../_shared/vocabularies.ts";
+import { GARMENT_TYPE_VALUES } from "../_shared/vocabularies.ts";
 import type { Enums } from "../_shared/database.types.ts";
 
 const URL = "https://sig.example/w1.png?token=abc";
@@ -19,7 +19,7 @@ const URL = "https://sig.example/w1.png?token=abc";
 const row = (over: Partial<WardrobeCardRow> = {}): WardrobeCardRow => ({
   id: "w1",
   image_path: "u1/top/w1.png",
-  category: "top",
+  garment_type: "top",
   tags: ["寬鬆", "米色"],
   ...over,
 });
@@ -27,7 +27,7 @@ const row = (over: Partial<WardrobeCardRow> = {}): WardrobeCardRow => ({
 const item = (over: Partial<LineWardrobeItem> = {}): LineWardrobeItem => ({
   id: "w1",
   imageUrl: URL,
-  categoryLabel: "上衣",
+  garmentTypeLabel: "上衣",
   tags: ["寬鬆", "米色"],
   ...over,
 });
@@ -36,23 +36,23 @@ Deno.test("toLineWardrobeItem maps the row onto the card's fields", () => {
   assertEquals(toLineWardrobeItem(row(), URL), {
     id: "w1",
     imageUrl: URL,
-    categoryLabel: "上衣",
+    garmentTypeLabel: "上衣",
     tags: ["寬鬆", "米色"],
   });
 });
 
-Deno.test("every wardrobe_category code has a label", () => {
-  const labels = WARDROBE_CATEGORY_VALUES.map(
-    (c) => toLineWardrobeItem(row({ category: c }), URL)?.categoryLabel,
+Deno.test("every garment_type code has a label", () => {
+  const labels = GARMENT_TYPE_VALUES.map(
+    (c) => toLineWardrobeItem(row({ garment_type: c }), URL)?.garmentTypeLabel,
   );
-  assertEquals(labels, ["上衣", "下身", "外套", "套裝", "其他"]);
+  assertEquals(labels, ["上衣", "外套", "褲子", "裙子", "洋裝", "其他"]);
 });
 
-Deno.test("an unknown category shows its own code rather than dropping the card", () => {
+Deno.test("an unknown garment type shows its own code rather than dropping the card", () => {
   // The cast stands in for a deployed function reading a schema newer than the
   // types it was built against.
-  const grown = "hats" as Enums<"wardrobe_category">;
-  assertEquals(toLineWardrobeItem(row({ category: grown }), URL)?.categoryLabel, "hats");
+  const grown = "hats" as Enums<"garment_type">;
+  assertEquals(toLineWardrobeItem(row({ garment_type: grown }), URL)?.garmentTypeLabel, "hats");
 });
 
 Deno.test("toLineWardrobeItem drops an item whose image could not be signed", () => {
@@ -95,9 +95,10 @@ Deno.test("tagLine truncates a line LINE would reject the whole send for", () =>
 
 Deno.test("garmentNoun keeps a real noun as-is", () => {
   assertEquals(garmentNoun("上衣"), "上衣");
-  assertEquals(garmentNoun("下身"), "下身");
+  assertEquals(garmentNoun("褲子"), "褲子");
+  assertEquals(garmentNoun("裙子"), "裙子");
+  assertEquals(garmentNoun("洋裝"), "洋裝");
   assertEquals(garmentNoun("外套"), "外套");
-  assertEquals(garmentNoun("套裝"), "套裝");
 });
 
 Deno.test("garmentNoun turns the others bucket, and anything unmapped, into 單品", () => {
@@ -105,7 +106,7 @@ Deno.test("garmentNoun turns the others bucket, and anything unmapped, into 單�
   assertEquals(garmentNoun("hats"), "單品");
 });
 
-Deno.test("the info block is category, tags and the wardrobe label", () => {
+Deno.test("the info block is garment type, tags and the wardrobe label", () => {
   // deno-lint-ignore no-explicit-any
   const contents = wardrobeInfoContents(item()) as any[];
 
@@ -279,7 +280,7 @@ Deno.test("fetchWardrobeItemInfo yields the text fields and no image url", async
   const { admin } = fakeItemAdmin(row());
   const info = await fetchWardrobeItemInfo(admin, "u1", "w1");
 
-  assertEquals(info, { id: "w1", categoryLabel: "上衣", tags: ["寬鬆", "米色"] });
+  assertEquals(info, { id: "w1", garmentTypeLabel: "上衣", tags: ["寬鬆", "米色"] });
 });
 
 Deno.test("fetchWardrobeItemInfo is null for an item that is gone or never theirs", async () => {
@@ -291,7 +292,7 @@ Deno.test("fetchWardrobeItemInfo is null for an item that is gone or never their
 Deno.test("toWardrobeItemInfo needs no url to describe an item", () => {
   assertEquals(toWardrobeItemInfo(row()), {
     id: "w1",
-    categoryLabel: "上衣",
+    garmentTypeLabel: "上衣",
     tags: ["寬鬆", "米色"],
   });
 });

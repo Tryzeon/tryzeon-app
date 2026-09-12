@@ -43,33 +43,33 @@ function fakeAdmin(stub: LookupStub) {
   return { admin, filters };
 }
 
-Deno.test("buildWardrobeGarmentDetail joins category and tags", () => {
+Deno.test("buildWardrobeGarmentDetail joins garment type and tags", () => {
   assertEquals(
     buildWardrobeGarmentDetail({
       image_path: "u1/top/a.png",
-      category: "top",
+      garment_type: "top",
       tags: ["寬鬆", "米色"],
     }),
-    "Category: top. Tags: 寬鬆, 米色",
+    "Garment type: top. Tags: 寬鬆, 米色",
   );
 });
 
 Deno.test("buildWardrobeGarmentDetail passes the enum code through untranslated", () => {
   assertEquals(
-    buildWardrobeGarmentDetail({ image_path: "p", category: "others", tags: [] }),
-    "Category: others",
+    buildWardrobeGarmentDetail({ image_path: "p", garment_type: "others", tags: [] }),
+    "Garment type: others",
   );
 });
 
 Deno.test("buildWardrobeGarmentDetail omits the tags part rather than leaving it blank", () => {
-  // `category` is a NOT NULL enum, so only the tags half can ever be absent.
+  // `garment_type` is a NOT NULL enum, so only the tags half can ever be absent.
   assertEquals(
-    buildWardrobeGarmentDetail({ image_path: "p", category: "bottoms", tags: null }),
-    "Category: bottoms",
+    buildWardrobeGarmentDetail({ image_path: "p", garment_type: "pants", tags: null }),
+    "Garment type: pants",
   );
   assertEquals(
-    buildWardrobeGarmentDetail({ image_path: "p", category: "bottoms", tags: [] }),
-    "Category: bottoms",
+    buildWardrobeGarmentDetail({ image_path: "p", garment_type: "pants", tags: [] }),
+    "Garment type: pants",
   );
 });
 
@@ -79,17 +79,17 @@ Deno.test("buildWardrobeGarmentDetail ignores blank and non-string tags", () => 
   assertEquals(
     buildWardrobeGarmentDetail({
       image_path: "p",
-      category: "top",
+      garment_type: "top",
       tags: ["a", 7, "", null, "  ", "b"] as unknown as string[],
     }),
-    "Category: top. Tags: a, b",
+    "Garment type: top. Tags: a, b",
   );
 });
 
 Deno.test("buildWardrobeGarmentDetail caps overlong detail at the limit", () => {
   const detail = buildWardrobeGarmentDetail({
     image_path: "p",
-    category: "top",
+    garment_type: "top",
     tags: ["x".repeat(LIMITS.MAX_GARMENT_DETAIL_LENGTH + 200)],
   });
   assertEquals(detail.length, LIMITS.MAX_GARMENT_DETAIL_LENGTH);
@@ -106,7 +106,7 @@ Deno.test("resolveWardrobeGarment rejects an id that cannot name a row", async (
 
 Deno.test("resolveWardrobeGarment binds the read to the asking user", async () => {
   const { admin, filters } = fakeAdmin({
-    row: { id: ID, user_id: "u1", image_path: "u1/top/a.png", category: "top", tags: ["寬鬆"] },
+    row: { id: ID, user_id: "u1", image_path: "u1/top/a.png", garment_type: "top", tags: ["寬鬆"] },
   });
   await resolveWardrobeGarment(admin, "u1", ID);
 
@@ -115,25 +115,25 @@ Deno.test("resolveWardrobeGarment binds the read to the asking user", async () =
 
 Deno.test("resolveWardrobeGarment yields one image source and the detail", async () => {
   const { admin } = fakeAdmin({
-    row: { id: ID, user_id: "u1", image_path: "u1/top/a.png", category: "top", tags: ["寬鬆"] },
+    row: { id: ID, user_id: "u1", image_path: "u1/top/a.png", garment_type: "top", tags: ["寬鬆"] },
   });
   const garment = await resolveWardrobeGarment(admin, "u1", ID);
 
   assertEquals(garment, {
     images: [{ path: "u1/top/a.png" }],
-    detail: "Category: top. Tags: 寬鬆",
+    detail: "Garment type: top. Tags: 寬鬆",
   });
 });
 
 Deno.test("resolveWardrobeGarment still describes a row with no tags", async () => {
   const { admin } = fakeAdmin({
-    row: { id: ID, user_id: "u1", image_path: "u1/top/a.png", category: "top", tags: [] },
+    row: { id: ID, user_id: "u1", image_path: "u1/top/a.png", garment_type: "top", tags: [] },
   });
   const garment = await resolveWardrobeGarment(admin, "u1", ID);
 
   assertEquals(garment, {
     images: [{ path: "u1/top/a.png" }],
-    detail: "Category: top",
+    detail: "Garment type: top",
   });
 });
 
@@ -149,7 +149,7 @@ Deno.test("SECURITY: another user's item is indistinguishable from one that does
     () =>
       resolveWardrobeGarment(
         fakeAdmin({
-          row: { id: ID, user_id: "u1", image_path: "u1/top/a.png", category: "top", tags: [] },
+          row: { id: ID, user_id: "u1", image_path: "u1/top/a.png", garment_type: "top", tags: [] },
         }).admin,
         "u2",
         ID,
@@ -162,7 +162,7 @@ Deno.test("SECURITY: another user's item is indistinguishable from one that does
 });
 
 Deno.test("resolveWardrobeGarment treats a blank image_path as no item", async () => {
-  const { admin } = fakeAdmin({ row: { id: ID, user_id: "u1", image_path: "   ", category: "top", tags: [] } });
+  const { admin } = fakeAdmin({ row: { id: ID, user_id: "u1", image_path: "   ", garment_type: "top", tags: [] } });
   await assertRejects(
     () => resolveWardrobeGarment(admin, "u1", ID),
     ValidationError,
@@ -174,7 +174,7 @@ Deno.test("resolveWardrobeGarment rejects a row whose path points outside its ow
   // The row passes the `user_id` filter, but `image_path` is client-written
   // free text and here names another user's folder.
   const { admin } = fakeAdmin({
-    row: { id: ID, user_id: "u1", image_path: "u2/top/a.png", category: "top", tags: [] },
+    row: { id: ID, user_id: "u1", image_path: "u2/top/a.png", garment_type: "top", tags: [] },
   });
   await assertRejects(
     () => resolveWardrobeGarment(admin, "u1", ID),

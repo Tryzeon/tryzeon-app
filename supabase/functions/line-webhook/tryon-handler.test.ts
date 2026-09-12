@@ -605,7 +605,7 @@ Deno.test("generation refused for capacity is not reported as the sender's spent
 
 const ITEM = {
   id: "44444444-4444-4444-4444-444444444444",
-  categoryLabel: "上衣",
+  garmentTypeLabel: "上衣",
   tags: ["寬鬆"],
 };
 

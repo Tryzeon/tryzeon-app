@@ -248,7 +248,7 @@ export async function handleWardrobeTryon(
   }
 
   await deps.line.reply(event.replyToken, [
-    wardrobeProcessingMessage(item.categoryLabel),
+    wardrobeProcessingMessage(item.garmentTypeLabel),
   ]);
 
   const outcome = await runTryon(deps, {
