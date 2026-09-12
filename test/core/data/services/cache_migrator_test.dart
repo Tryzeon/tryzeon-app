@@ -50,7 +50,8 @@ void main() {
       ProductCategoryCache()
         ..categoryId = 'c1'
         ..code = ''
-        ..name = '長褲',
+        ..name = '長褲'
+        ..defaultGarmentType = 'pants',
     );
     await isar.wardrobeItemCaches.put(
       WardrobeItemCache()

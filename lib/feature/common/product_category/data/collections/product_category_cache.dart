@@ -13,9 +13,9 @@ class ProductCategoryCache {
 
   late String code;
 
-  String? gender;
+  late String defaultGarmentType;
 
-  String? defaultGarmentType;
+  String? gender;
 
   String? imageMale;
 

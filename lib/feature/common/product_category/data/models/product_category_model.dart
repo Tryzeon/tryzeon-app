@@ -8,8 +8,8 @@ class ProductCategoryModel {
     required this.id,
     required this.code,
     required this.name,
+    required this.defaultGarmentType,
     this.gender,
-    this.defaultGarmentType,
     this.imageMale,
     this.imageFemale,
     this.imageMaleUrl,
@@ -22,10 +22,10 @@ class ProductCategoryModel {
   final String id;
   final String code;
   final String name;
+  final String defaultGarmentType;
 
   /// Applicability (raw value): `male`/`female`/`unisex`. `unisex` = both.
   final String? gender;
-  final String? defaultGarmentType;
 
   /// Per-gender model imagery (R2 paths).
   final String? imageMale;
