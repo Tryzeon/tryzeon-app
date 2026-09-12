@@ -142,40 +142,37 @@ export type Database = {
       }
       product_categories: {
         Row: {
+          code: string
           created_at: string
+          default_garment_type: Database["public"]["Enums"]["garment_type"]
           gender: Database["public"]["Enums"]["product_gender"]
           id: string
           image_female: string | null
           image_male: string | null
           name: string
           order: number
-          wardrobe_category:
-            | Database["public"]["Enums"]["wardrobe_category"]
-            | null
         }
         Insert: {
+          code: string
           created_at?: string
+          default_garment_type: Database["public"]["Enums"]["garment_type"]
           gender?: Database["public"]["Enums"]["product_gender"]
           id?: string
           image_female?: string | null
           image_male?: string | null
           name: string
           order?: number
-          wardrobe_category?:
-            | Database["public"]["Enums"]["wardrobe_category"]
-            | null
         }
         Update: {
+          code?: string
           created_at?: string
+          default_garment_type?: Database["public"]["Enums"]["garment_type"]
           gender?: Database["public"]["Enums"]["product_gender"]
           id?: string
           image_female?: string | null
           image_male?: string | null
           name?: string
           order?: number
-          wardrobe_category?:
-            | Database["public"]["Enums"]["wardrobe_category"]
-            | null
         }
         Relationships: []
       }
@@ -224,6 +221,7 @@ export type Database = {
           description: string | null
           elasticity: Database["public"]["Enums"]["product_elasticity"] | null
           fit: Database["public"]["Enums"]["product_fit"] | null
+          garment_type: Database["public"]["Enums"]["garment_type"]
           gender: Database["public"]["Enums"]["product_gender"]
           id: string
           image_paths: string[] | null
@@ -244,6 +242,7 @@ export type Database = {
           description?: string | null
           elasticity?: Database["public"]["Enums"]["product_elasticity"] | null
           fit?: Database["public"]["Enums"]["product_fit"] | null
+          garment_type: Database["public"]["Enums"]["garment_type"]
           gender?: Database["public"]["Enums"]["product_gender"]
           id?: string
           image_paths?: string[] | null
@@ -264,6 +263,7 @@ export type Database = {
           description?: string | null
           elasticity?: Database["public"]["Enums"]["product_elasticity"] | null
           fit?: Database["public"]["Enums"]["product_fit"] | null
+          garment_type?: Database["public"]["Enums"]["garment_type"]
           gender?: Database["public"]["Enums"]["product_gender"]
           id?: string
           image_paths?: string[] | null
@@ -499,8 +499,8 @@ export type Database = {
       }
       wardrobe_items: {
         Row: {
-          category: Database["public"]["Enums"]["wardrobe_category"]
           created_at: string
+          garment_type: Database["public"]["Enums"]["garment_type"]
           id: string
           image_path: string
           tags: string[] | null
@@ -508,8 +508,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          category: Database["public"]["Enums"]["wardrobe_category"]
           created_at?: string
+          garment_type: Database["public"]["Enums"]["garment_type"]
           id?: string
           image_path: string
           tags?: string[] | null
@@ -517,8 +517,8 @@ export type Database = {
           user_id: string
         }
         Update: {
-          category?: Database["public"]["Enums"]["wardrobe_category"]
           created_at?: string
+          garment_type?: Database["public"]["Enums"]["garment_type"]
           id?: string
           image_path?: string
           tags?: string[] | null
@@ -659,6 +659,7 @@ export type Database = {
     }
     Enums: {
       analytics_event_type: "view" | "try_on" | "purchase_click"
+      garment_type: "top" | "outerwear" | "pants" | "skirt" | "dress" | "others"
       product_elasticity: "none" | "low" | "medium" | "high"
       product_fit: "slim" | "regular" | "loose" | "oversize"
       product_gender: "male" | "female" | "unisex"
@@ -666,7 +667,6 @@ export type Database = {
       product_thickness: "low" | "medium" | "high"
       store_channel: "physical" | "online"
       user_gender: "female" | "male"
-      wardrobe_category: "top" | "bottoms" | "outerwear" | "sets" | "others"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -798,6 +798,7 @@ export const Constants = {
   public: {
     Enums: {
       analytics_event_type: ["view", "try_on", "purchase_click"],
+      garment_type: ["top", "outerwear", "pants", "skirt", "dress", "others"],
       product_elasticity: ["none", "low", "medium", "high"],
       product_fit: ["slim", "regular", "loose", "oversize"],
       product_gender: ["male", "female", "unisex"],
@@ -805,7 +806,6 @@ export const Constants = {
       product_thickness: ["low", "medium", "high"],
       store_channel: ["physical", "online"],
       user_gender: ["female", "male"],
-      wardrobe_category: ["top", "bottoms", "outerwear", "sets", "others"],
     },
   },
 } as const

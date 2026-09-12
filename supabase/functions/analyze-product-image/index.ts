@@ -26,11 +26,12 @@ Deno.serve(async (req) => {
     const { data: categories, error: categoriesError } = await userClient!
       .from("product_categories")
       .select("id, name");
-    if (categoriesError) {
-      console.warn("analyze-product-image: failed to load product_categories", categoriesError);
+    if (categoriesError || !categories || categories.length === 0) {
+      console.error("analyze-product-image: product_categories unavailable", categoriesError);
+      return jsonError("Product categories unavailable", "CATEGORIES_UNAVAILABLE", 500);
     }
     const idByName = new Map<string, string>(
-      (categories ?? []).map((c) => [c.name, c.id]),
+      categories.map((c) => [c.name, c.id]),
     );
     const categoryNames = [...idByName.keys()];
 
