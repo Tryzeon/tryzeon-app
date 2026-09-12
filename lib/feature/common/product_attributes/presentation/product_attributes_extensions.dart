@@ -1,5 +1,4 @@
 import '../domain/entities/product_attributes.dart';
-import '../domain/entities/wardrobe_category.dart';
 
 const List<String> kMaterialPresets = [
   '棉',
@@ -13,22 +12,6 @@ const List<String> kMaterialPresets = [
   '萊卡',
   '混紡',
 ];
-
-/// The ONLY place where Chinese labels for [WardrobeCategory] should exist.
-extension CategoryDisplay on WardrobeCategory {
-  String get displayName => switch (this) {
-    WardrobeCategory.top => '上衣',
-    WardrobeCategory.bottoms => '下身',
-    WardrobeCategory.outerwear => '外套',
-    WardrobeCategory.sets => '套裝',
-    WardrobeCategory.others => '其他',
-  };
-
-  static List<MapEntry<WardrobeCategory, String>> get allWithDisplayNames =>
-      WardrobeCategory.values
-          .map((final category) => MapEntry(category, category.displayName))
-          .toList();
-}
 
 extension ProductGenderX on ProductGender {
   String get label => switch (this) {
