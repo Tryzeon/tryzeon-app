@@ -9,8 +9,8 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/feature/common/product_attributes/domain/entities/wardrobe_category.dart';
-import 'package:tryzeon/feature/common/product_attributes/presentation/product_attributes_extensions.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/common/garment_type/presentation/garment_type_display.dart';
 import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 import 'package:typed_result/typed_result.dart';
@@ -21,7 +21,7 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final selectedCategory = useState<WardrobeCategory?>(null);
+    final selectedGarmentType = useState<GarmentType?>(null);
     final isUploading = ref.watch(wardrobeEditProvider).isLoading;
     final tags = useState<List<String>>(const []);
     final tagController = useTextEditingController();
@@ -42,8 +42,8 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
         final result = await usecase.labels(image);
         if (cancelled) return;
         tags.value = result.tags;
-        if (result.category != null && selectedCategory.value == null) {
-          selectedCategory.value = result.category;
+        if (result.garmentType != null && selectedGarmentType.value == null) {
+          selectedGarmentType.value = result.garmentType;
         }
         isAnalyzingTags.value = false;
       }
@@ -53,7 +53,6 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
       return () => cancelled = true;
     }, const []);
 
-    final categoriesWithDisplay = CategoryDisplay.allWithDisplayNames;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -78,7 +77,7 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
           .read(wardrobeEditProvider.notifier)
           .upload(
             image: image,
-            category: selectedCategory.value!,
+            garmentType: selectedGarmentType.value!,
             tags: tags.value,
             replacementBytes: useRemovedBg.value ? removedBgImage.value : null,
           );
@@ -86,7 +85,7 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
       if (!context.mounted) return;
 
       if (result.isSuccess) {
-        Navigator.pop(context, selectedCategory.value);
+        Navigator.pop(context, selectedGarmentType.value);
       } else {
         final failure = result.getError()!;
 
@@ -192,15 +191,13 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
           Wrap(
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
-            children: categoriesWithDisplay.map((final entry) {
-              final category = entry.key;
-              final displayName = entry.value;
-              final isSelected = selectedCategory.value == category;
+            children: GarmentType.values.map((final garmentType) {
+              final isSelected = selectedGarmentType.value == garmentType;
 
               return ChoiceChip(
-                label: Text(displayName),
+                label: Text(garmentType.displayName),
                 selected: isSelected,
-                onSelected: (final selected) => selectedCategory.value = category,
+                onSelected: (final selected) => selectedGarmentType.value = garmentType,
               );
             }).toList(),
           ),
@@ -309,7 +306,7 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
           ),
           child: FilledButton(
             onPressed:
-                selectedCategory.value != null && !isUploading && !isAnalyzingTags.value
+                selectedGarmentType.value != null && !isUploading && !isAnalyzingTags.value
                 ? handleUpload
                 : null,
             child: isUploading

@@ -11,7 +11,7 @@ class WardrobeItemCache {
 
   late String imagePath;
 
-  late String category;
+  late String garmentType;
 
   List<String>? tags;
 

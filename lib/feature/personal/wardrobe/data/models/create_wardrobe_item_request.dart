@@ -1,6 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 
-import 'package:tryzeon/feature/common/product_attributes/domain/entities/wardrobe_category.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 
 part 'create_wardrobe_item_request.g.dart';
 
@@ -8,12 +8,12 @@ part 'create_wardrobe_item_request.g.dart';
 class CreateWardrobeItemRequest {
   const CreateWardrobeItemRequest({
     required this.imagePath,
-    required this.category,
+    required this.garmentType,
     this.tags = const [],
   });
 
   final String imagePath;
-  final WardrobeCategory category;
+  final GarmentType garmentType;
   final List<String> tags;
 
   Map<String, dynamic> toJson() => _$CreateWardrobeItemRequestToJson(this);

@@ -75,13 +75,13 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
     final CreateWardrobeItemParams params,
   ) async {
     try {
-      final categoryString = params.category.value;
+      final garmentTypeString = params.garmentType.value;
       final imageName = p.basename(params.image.path);
       final bytes = await params.image.readAsBytes();
 
       // 1. Upload Image first
       final imagePath = await _remoteDataSource.uploadImage(
-        category: categoryString,
+        garmentType: garmentTypeString,
         fileName: imageName,
         bytes: bytes,
       );
@@ -91,7 +91,7 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
       // 2. Create Request DTO
       final request = CreateWardrobeItemRequest(
         imagePath: imagePath,
-        category: params.category,
+        garmentType: params.garmentType,
         tags: params.tags,
       );
 

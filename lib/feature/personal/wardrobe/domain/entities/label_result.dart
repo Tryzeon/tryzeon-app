@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import 'package:tryzeon/feature/common/product_attributes/domain/entities/wardrobe_category.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 
 part 'label_result.freezed.dart';
 
@@ -8,6 +8,6 @@ part 'label_result.freezed.dart';
 sealed class LabelResult with _$LabelResult {
   const factory LabelResult({
     @Default([]) final List<String> tags,
-    final WardrobeCategory? category,
+    final GarmentType? garmentType,
   }) = _LabelResult;
 }

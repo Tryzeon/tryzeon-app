@@ -8,7 +8,7 @@ import 'package:tryzeon/core/data/services/image_analysis_api.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
-import 'package:tryzeon/feature/common/product_attributes/domain/entities/wardrobe_category.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_local_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_remote_datasource.dart';
@@ -125,7 +125,7 @@ class WardrobeEditNotifier extends _$WardrobeEditNotifier {
 
   Future<Result<void, Failure>> upload({
     required final File image,
-    required final WardrobeCategory category,
+    required final GarmentType garmentType,
     required final List<String> tags,
     final Uint8List? replacementBytes,
   }) {
@@ -141,7 +141,7 @@ class WardrobeEditNotifier extends _$WardrobeEditNotifier {
         return await ref.read(uploadWardrobeItemUseCaseProvider)(
           params: CreateWardrobeItemParams(
             image: tempFile ?? image,
-            category: category,
+            garmentType: garmentType,
             tags: tags,
           ),
           currentItemCount: items.length,

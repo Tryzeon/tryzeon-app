@@ -8,8 +8,8 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
-import 'package:tryzeon/feature/common/product_attributes/domain/entities/wardrobe_category.dart';
-import 'package:tryzeon/feature/common/product_attributes/presentation/product_attributes_extensions.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/common/garment_type/presentation/garment_type_display.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 
 import '../sheets/upload_wardrobe_item_sheet.dart';
@@ -24,24 +24,19 @@ class WardrobePage extends HookConsumerWidget {
     final wardrobeItemsAsync = ref.watch(wardrobeItemsProvider);
 
     // 2. State
-    final selectedCategory = useState<WardrobeCategory?>(null);
-    final categoryScrollController = useScrollController();
+    final selectedGarmentType = useState<GarmentType?>(null);
+    final garmentTypeScrollController = useScrollController();
 
-    // 3. Memoized Data
-    final wardrobeCategories = useMemoized(() {
-      return CategoryDisplay.allWithDisplayNames;
-    }, []);
-
-    // 4. Theme
+    // 3. Theme
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
-    // 5. Actions
+    // 4. Actions
     Future<void> showUploadSheet() async {
       final File? image = await ImagePickerHelper.pickImage(context);
 
       if (image != null && context.mounted) {
-        final uploadedCategory = await showModalBottomSheet<WardrobeCategory>(
+        final uploadedGarmentType = await showModalBottomSheet<GarmentType>(
           context: context,
           isScrollControlled: true,
           useRootNavigator: true,
@@ -53,52 +48,39 @@ class WardrobePage extends HookConsumerWidget {
           ),
         );
 
-        if (uploadedCategory != null) {
-          if (selectedCategory.value != null) {
-            selectedCategory.value = uploadedCategory;
+        if (uploadedGarmentType != null) {
+          if (selectedGarmentType.value != null) {
+            selectedGarmentType.value = uploadedGarmentType;
           }
         }
       }
     }
 
-    // 6. Widget Helpers
-    Widget buildCategoryChip(final String displayName, final bool isSelected) {
+    // 5. Widget Helpers
+    Widget buildGarmentTypeChip(final GarmentType? type) {
+      final isSelected = selectedGarmentType.value == type;
       return Padding(
         padding: const EdgeInsets.only(right: AppSpacing.sm),
         child: ChoiceChip(
-          label: Text(displayName),
+          label: Text(type?.displayName ?? '全部'),
           selected: isSelected,
-          onSelected: (final selected) {
-            if (displayName == '全部') {
-              selectedCategory.value = null;
-            } else {
-              final categoryEntry = wardrobeCategories.firstWhere(
-                (final entry) => entry.value == displayName,
-              );
-              selectedCategory.value = categoryEntry.key;
-            }
-          },
+          onSelected: (final selected) => selectedGarmentType.value = type,
         ),
       );
     }
 
-    Widget buildCategoryBar() {
+    Widget buildGarmentTypeBar() {
+      final chipTypes = [null, ...GarmentType.values];
       return Container(
         height: 40,
         margin: const EdgeInsets.only(bottom: AppSpacing.sm),
         child: ListView.builder(
-          controller: categoryScrollController,
+          controller: garmentTypeScrollController,
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-          itemCount: wardrobeCategories.length + 1,
+          itemCount: chipTypes.length,
           itemBuilder: (final context, final index) {
-            if (index == 0) {
-              final isSelected = selectedCategory.value == null;
-              return buildCategoryChip('全部', isSelected);
-            }
-            final categoryEntry = wardrobeCategories[index - 1];
-            final isSelected = selectedCategory.value == categoryEntry.key;
-            return buildCategoryChip(categoryEntry.value, isSelected);
+            return buildGarmentTypeChip(chipTypes[index]);
           },
         ),
       );
@@ -201,7 +183,7 @@ class WardrobePage extends HookConsumerWidget {
             ),
 
             // Category Bar
-            buildCategoryBar(),
+            buildGarmentTypeBar(),
 
             // Grid Content
             Expanded(
@@ -211,10 +193,12 @@ class WardrobePage extends HookConsumerWidget {
                   skipLoadingOnReload: true,
                   skipError: true,
                   data: (final wardrobeItems) {
-                    final filtered = selectedCategory.value == null
+                    final filtered = selectedGarmentType.value == null
                         ? wardrobeItems
                         : wardrobeItems
-                              .where((final i) => i.category == selectedCategory.value)
+                              .where(
+                                (final i) => i.garmentType == selectedGarmentType.value,
+                              )
                               .toList();
 
                     if (filtered.isEmpty) return buildEmptyState();

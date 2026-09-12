@@ -1,5 +1,5 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
-import 'package:tryzeon/feature/common/product_attributes/domain/entities/wardrobe_category.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 
 import '../../../../feature/common/body_measurements/data/mappers/body_measurements_mappr.dart';
 import '../../../../feature/common/clothing_style/domain/entities/clothing_style.dart';
@@ -53,10 +53,14 @@ import 'personal_mappr.auto_mappr.dart';
     MapType<UserProfileCache, UserProfileModel>(),
 
     MapType<WardrobeItemModel, WardrobeItem>(
-      fields: [Field('category', custom: WardrobeItemMapprHelper.stringToCategory)],
+      fields: [
+        Field('garmentType', custom: WardrobeItemMapprHelper.stringToGarmentType),
+      ],
     ),
     MapType<WardrobeItem, WardrobeItemModel>(
-      fields: [Field('category', custom: WardrobeItemMapprHelper.categoryToString)],
+      fields: [
+        Field('garmentType', custom: WardrobeItemMapprHelper.garmentTypeToString),
+      ],
     ),
     MapType<WardrobeItemModel, WardrobeItemCache>(fields: [Field('itemId', from: 'id')]),
     MapType<WardrobeItemCache, WardrobeItemModel>(fields: [Field('id', from: 'itemId')]),
@@ -98,10 +102,10 @@ class PersonalMappr extends $PersonalMappr {
 }
 
 class WardrobeItemMapprHelper {
-  static WardrobeCategory stringToCategory(final WardrobeItemModel source) =>
-      WardrobeCategory.tryFromString(source.category) ?? WardrobeCategory.others;
+  static GarmentType stringToGarmentType(final WardrobeItemModel source) =>
+      GarmentType.tryFromString(source.garmentType) ?? GarmentType.others;
 
-  static String categoryToString(final WardrobeItem source) => source.category.value;
+  static String garmentTypeToString(final WardrobeItem source) => source.garmentType.value;
 }
 
 class ShopProductMapprHelper {

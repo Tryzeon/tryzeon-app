@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/data/services/image_analysis_api.dart';
-import 'package:tryzeon/feature/common/product_attributes/domain/entities/wardrobe_category.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 
 import '../../domain/entities/label_result.dart';
 import '../../domain/services/label_tagger.dart';
@@ -13,12 +13,12 @@ LabelResult parseAnalysisResponse(final Map<String, dynamic> data) {
       ? rawTags.whereType<String>().where((final t) => t.isNotEmpty).toList()
       : <String>[];
 
-  final rawCategory = data['category'];
-  final category = rawCategory is String
-      ? WardrobeCategory.tryFromString(rawCategory)
+  final rawGarmentType = data['garment_type'];
+  final garmentType = rawGarmentType is String
+      ? GarmentType.tryFromString(rawGarmentType)
       : null;
 
-  return LabelResult(tags: tags, category: category);
+  return LabelResult(tags: tags, garmentType: garmentType);
 }
 
 class LabelTaggerImpl implements LabelTagger {

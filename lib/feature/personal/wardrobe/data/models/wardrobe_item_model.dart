@@ -7,7 +7,7 @@ class WardrobeItemModel {
   const WardrobeItemModel({
     required this.id,
     required this.imagePath,
-    required this.category,
+    required this.garmentType,
     required this.createdAt,
     required this.updatedAt,
     this.tags = const [],
@@ -18,7 +18,7 @@ class WardrobeItemModel {
 
   final String id;
   final String imagePath;
-  final String category;
+  final String garmentType;
   final List<String> tags;
   final DateTime createdAt;
   final DateTime updatedAt;

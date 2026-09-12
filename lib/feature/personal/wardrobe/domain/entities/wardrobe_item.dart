@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:tryzeon/feature/common/product_attributes/domain/entities/wardrobe_category.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 
 part 'wardrobe_item.freezed.dart';
 
@@ -9,7 +9,7 @@ part 'wardrobe_item.freezed.dart';
 sealed class CreateWardrobeItemParams with _$CreateWardrobeItemParams {
   const factory CreateWardrobeItemParams({
     required final File image,
-    required final WardrobeCategory category,
+    required final GarmentType garmentType,
     @Default([]) final List<String> tags,
   }) = _CreateWardrobeItemParams;
 }
@@ -19,7 +19,7 @@ sealed class WardrobeItem with _$WardrobeItem {
   const factory WardrobeItem({
     required final String id,
     required final String imagePath,
-    required final WardrobeCategory category,
+    required final GarmentType garmentType,
     required final DateTime createdAt,
     required final DateTime updatedAt,
     @Default([]) final List<String> tags,
