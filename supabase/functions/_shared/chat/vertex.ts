@@ -22,7 +22,7 @@ export const runVertexAgent: AgentRunner = async (req) => {
   const tools = buildTools({
     client: req.client,
     userId: req.userId,
-    categoryIdByName: req.context.categoryIdByName,
+    categoryIdByCode: req.context.categoryIdByCode,
   });
 
   // The SDK runs the loop: search_* tools have `execute`, so it calls them and

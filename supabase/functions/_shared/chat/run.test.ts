@@ -53,7 +53,7 @@ function fakeQuota(allowed = true) {
 const context: ContextLoader = () =>
   Promise.resolve({
     systemInstruction: "SYSTEM",
-    categoryIdByName: new Map([["上衣", "cat-1"]]),
+    categoryIdByCode: new Map([["tops", "cat-1"]]),
   });
 
 function fakeAgent(
@@ -175,7 +175,7 @@ Deno.test("passes the loaded grounding through to the agent", async () => {
   assertEquals(agent.seen[0].context.systemInstruction, "SYSTEM");
   assertEquals(agent.seen[0].userId, "u1");
   assertEquals(agent.seen[0].messages, params.messages);
-  assertEquals(agent.seen[0].context.categoryIdByName.get("上衣"), "cat-1");
+  assertEquals(agent.seen[0].context.categoryIdByCode.get("tops"), "cat-1");
   assertEquals(typeof agent.seen[0].onEvent, "function");
 });
 

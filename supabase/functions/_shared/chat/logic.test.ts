@@ -10,28 +10,34 @@ import {
   validateVocabularyFilters,
 } from "./logic.ts";
 
-const CATEGORIES = new Map([["上衣", "cat-1"], ["洋裝", "cat-2"]]);
+const CATEGORIES = new Map([["tops", "cat-1"], ["dresses", "cat-2"]]);
 
 // Answer-block ids are row ids, so the fixtures are uuids: `parseAnswerRefs`
 // rejects anything else.
 const PRODUCT_ID = "f8f49d33-e34a-4121-a6b9-f654e0614971";
 const WARDROBE_ID = "0b2c3d4e-5f60-4718-8293-a4b5c6d7e8f9";
 
-Deno.test("resolveCategoryFilter maps a known name to its id", () => {
-  const r = resolveCategoryFilter("上衣", CATEGORIES);
+Deno.test("resolveCategoryFilter maps a known code to its id", () => {
+  const r = resolveCategoryFilter("tops", CATEGORIES);
   assertEquals(r, { ok: true, categoryIds: ["cat-1"] });
 });
 
-Deno.test("resolveCategoryFilter treats a missing name as no category filter", () => {
+Deno.test("resolveCategoryFilter treats a missing code as no category filter", () => {
   assertEquals(resolveCategoryFilter(undefined, CATEGORIES), { ok: true, categoryIds: null });
   assertEquals(resolveCategoryFilter("   ", CATEGORIES), { ok: true, categoryIds: null });
 });
 
-Deno.test("resolveCategoryFilter rejects an unknown name instead of dropping the filter", () => {
-  const r = resolveCategoryFilter("洋裝褲", CATEGORIES);
+Deno.test("resolveCategoryFilter rejects an unknown code instead of dropping the filter", () => {
+  const r = resolveCategoryFilter("dress_pants", CATEGORIES);
   assertEquals(r.ok, false);
   if (r.ok) throw new Error("expected a rejection");
-  assertStringIncludes(r.error, "洋裝褲");
+  assertStringIncludes(r.error, "dress_pants");
+  assertStringIncludes(r.error, "category_code");
+});
+
+Deno.test("resolveCategoryFilter does not accept a display name where a code is expected", () => {
+  const r = resolveCategoryFilter("上衣", CATEGORIES);
+  assertEquals(r.ok, false);
 });
 
 Deno.test("mapSearchProductsArgs trims query, keeps non-empty arrays, drops empties", () => {

@@ -16,7 +16,7 @@ export const buildChatContext: ContextLoader = async (client, userId) => {
       console.error("chat: user profile lookup failed:", err);
       return null;
     }),
-    client.from("product_categories").select("id, name"),
+    client.from("product_categories").select("id, code, name"),
   ]);
 
   const userName = profile?.name ?? null;
@@ -28,11 +28,11 @@ export const buildChatContext: ContextLoader = async (client, userId) => {
     throw new Error(`Failed to fetch product_categories: ${catErr.message}`);
   }
 
-  const categoryIdByName = new Map<string, string>(
-    (categories ?? []).map((c) => [c.name, c.id]),
+  const categoryIdByCode = new Map<string, string>(
+    (categories ?? []).map((c) => [c.code, c.id]),
   );
 
-  const categoryLines = (categories ?? []).map((c) => `- ${c.name}`).join("\n");
+  const categoryLines = (categories ?? []).map((c) => `- ${c.code}（${c.name}）`).join("\n");
 
   const userContextLines = [
     userName && `- 姓名：${userName}`,
@@ -54,7 +54,7 @@ export const buildChatContext: ContextLoader = async (client, userId) => {
 - 使用者想「找 / 買某件單品」時，直接 search_products。
 - 使用者想「幫我配一套 / 用我現有的搭」時，先 search_wardrobe，缺的品類再 search_products。
 - 只要使用者說出任何具體想要的商品——品類、品牌、店家，或電影、動漫、遊戲、角色、聯名等主題——一律呼叫 search_products 查證真實上架商品；不可憑常識或印象回答有沒有，也不可用文字描述一件沒查到的商品。
-- search_products 的 query 一次只放「一個」最可能原封不動寫進商品名稱的詞（品類、品牌店家名，或作品、角色等專有名詞）；品類用 category_name，風格、季節、材質、版型、性別、價格都用對應參數，不要塞進 query。
+- search_products 的 query 一次只放「一個」最可能原封不動寫進商品名稱的詞（品類、品牌店家名，或作品、角色等專有名詞）；品類用 category_code，風格、季節、材質、版型、性別、價格都用對應參數，不要塞進 query。
 最終回覆格式（務必遵守）：你的最終回覆是一個「有序」的 blocks 陣列，依序顯示給使用者。每個 block 的 type 只能是 text、product 或 wardrobe：
 - text：一段說明、過場或追問文字（放在 text 欄位）。
 - product：商店商品，id 必須是 search_products 回傳的商品 id。
@@ -67,8 +67,8 @@ export const buildChatContext: ContextLoader = async (client, userId) => {
 - 搜尋可能回 0 筆。某條件找不到時，放寬條件（移除精確過濾或簡化 query）再搜一次；仍找不到就用 text 說明並追問。
 - 商店單品用 product、衣櫃單品用 wardrobe，type 與 id 來源要對應；嚴禁編造 id。每一回合都必須有輸出，絕不空白。${userContextBlock}
 
-【可用商品分類清單】（search_products 的 category_name 請從這裡選）
+【可用商品分類清單】（search_products 的 category_code 請從這裡選 code）
 ${categoryLines}`;
 
-  return { systemInstruction, categoryIdByName };
+  return { systemInstruction, categoryIdByCode };
 };

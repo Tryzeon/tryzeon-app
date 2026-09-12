@@ -56,7 +56,7 @@ export type ChatQuotaFactory = (userId: string) => UsageCounter;
 
 export interface ChatContext {
   systemInstruction: string;
-  categoryIdByName: Map<string, string>;
+  categoryIdByCode: Map<string, string>;
 }
 
 export type ContextLoader = (

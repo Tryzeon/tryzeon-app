@@ -21,7 +21,7 @@ import type {
 
 export const SEARCH_LIMIT = 10;
 
-export const WARDROBE_SELECT = "id, image_path, category, tags, created_at, updated_at";
+export const WARDROBE_SELECT = "id, image_path, garment_type, tags, created_at, updated_at";
 
 // Shop product shape for an answer card — mirrors the product detail page so the
 // client renders it directly (sizes + the owning store's public fields).
@@ -110,8 +110,8 @@ export function validateVocabularyFilters(args: Record<string, unknown>): Vocabu
   };
 }
 
-// Resolve the model's category_name into the id filter the RPC takes. An absent
-// name means "no category filter"; an unrecognised one is rejected rather than
+// Resolve the model's category_code into the id filter the RPC takes. An absent
+// code means "no category filter"; an unrecognised one is rejected rather than
 // silently dropped — dropping it would run an unfiltered search and hand the
 // model cross-category products it believes are filtered.
 export type CategoryFilter =
@@ -119,18 +119,18 @@ export type CategoryFilter =
   | { ok: false; error: string };
 
 export function resolveCategoryFilter(
-  rawName: unknown,
-  categoryIdByName: Map<string, string>,
+  rawCode: unknown,
+  categoryIdByCode: Map<string, string>,
 ): CategoryFilter {
-  const name = nonEmptyStr(rawName);
-  if (name === null) return { ok: true, categoryIds: null };
+  const code = nonEmptyStr(rawCode);
+  if (code === null) return { ok: true, categoryIds: null };
 
-  const id = categoryIdByName.get(name);
+  const id = categoryIdByCode.get(code);
   if (id === undefined) {
     return {
       ok: false,
       error:
-        `未知的分類名稱「${name}」。請改用【可用商品分類清單】中的名稱，或省略 category_name 後重試。`,
+        `未知的分類 code「${code}」。請改用【可用商品分類清單】中的 code，或省略 category_code 後重試。`,
     };
   }
   return { ok: true, categoryIds: [id] };

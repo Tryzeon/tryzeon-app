@@ -12,16 +12,16 @@ import {
   CHANNEL_VALUES,
   ELASTICITY_VALUES,
   FIT_VALUES,
+  GARMENT_TYPE_VALUES,
   GENDER_VALUES,
   SEASON_VALUES,
   STYLE_VALUES,
   THICKNESS_VALUES,
-  WARDROBE_CATEGORY_VALUES,
 } from "../vocabularies.ts";
 import type { DbClient } from "../supabase.ts";
 
 // The error case is returned, not thrown: a throw would abort the agent loop,
-// whereas an empty result carrying the reason lets the model correct the name
+// whereas an empty result carrying the reason lets the model correct the code
 // (or drop the filter) and search again, which the system prompt already asks
 // it to do when a search comes back empty.
 type SearchResult = {
@@ -32,12 +32,12 @@ type SearchResult = {
 type SearchProductsArgs = z.infer<typeof SEARCH_PRODUCTS_SCHEMA>;
 type SearchWardrobeArgs = z.infer<typeof SEARCH_WARDROBE_SCHEMA>;
 
-async function runSearchProducts(
+export async function runSearchProducts(
   client: DbClient,
   args: SearchProductsArgs,
-  categoryIdByName: Map<string, string>,
+  categoryIdByCode: Map<string, string>,
 ): Promise<SearchResult> {
-  const category = resolveCategoryFilter(args.category_name, categoryIdByName);
+  const category = resolveCategoryFilter(args.category_code, categoryIdByCode);
   if (!category.ok) {
     return { items: [], error: category.error };
   }
@@ -56,7 +56,7 @@ async function runSearchProducts(
 
 // The `.eq("user_id", …)` is the filter, not the guard: with a user-scoped `client`
 // the wardrobe RLS policy refuses another user's rows independently of it.
-async function runSearchWardrobe(
+export async function runSearchWardrobe(
   client: DbClient,
   userId: string,
   args: SearchWardrobeArgs,
@@ -67,7 +67,7 @@ async function runSearchWardrobe(
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(SEARCH_LIMIT);
-  if (args.category) q = q.eq("category", args.category);
+  if (args.garment_type) q = q.eq("garment_type", args.garment_type);
   if (Array.isArray(args.tags) && args.tags.length > 0) {
     q = q.contains("tags", args.tags);
   }
@@ -80,9 +80,9 @@ const SEARCH_PRODUCTS_SCHEMA = z.object({
   query: z.string().optional().describe(
     "只比對『商品名稱』與『店家/品牌名稱』。多個詞以空白分隔，且每個詞都必須出現在商品名稱中（AND），詞越多越容易 0 筆，所以一次只放『一個』最具代表性、最可能原封不動寫進商品名稱的詞。\n" +
       "適合放：品牌或店家名，系列、聯名、作品或角色等專有名詞（電影、動漫、遊戲，如『鬼滅』『蜘蛛人』『寶可夢』）。\n" +
-      "不要放：材質、風格、季節、版型、彈性、厚度、性別、價格、分類——這些都有對應參數。也不要把品類和專有名詞併成同一個 query（『蜘蛛人 T恤』會要求名稱同時含這兩個詞），品類請改用 category_name。\n",
+      "不要放：材質、風格、季節、版型、彈性、厚度、性別、價格、分類——這些都有對應參數。也不要把品類和專有名詞併成同一個 query（『蜘蛛人 T恤』會要求名稱同時含這兩個詞），品類請改用 category_code。\n",
   ),
-  category_name: z.string().optional().describe("商品分類名稱，需與分類清單一致"),
+  category_code: z.string().optional().describe("商品分類 code，需與【可用商品分類清單】一致"),
   gender: z.enum(GENDER_VALUES).optional().describe(
     "選填。依商品適用性別篩選。可參考使用者資訊自行決定是否使用。",
   ),
@@ -104,7 +104,9 @@ const SEARCH_PRODUCTS_SCHEMA = z.object({
 });
 
 const SEARCH_WARDROBE_SCHEMA = z.object({
-  category: z.enum(WARDROBE_CATEGORY_VALUES).optional().describe("衣櫃單品分類。"),
+  garment_type: z.enum(GARMENT_TYPE_VALUES).optional().describe(
+    "衣櫃單品類型：top（上衣）, pants（褲子）, skirt（裙子）, dress（洋裝）, outerwear（外套）, others（其他）。",
+  ),
   tags: z.array(z.string()).optional(),
 });
 
@@ -123,15 +125,15 @@ export const answerSchema = z.object({
 export function buildTools(deps: {
   client: DbClient;
   userId: string;
-  categoryIdByName: Map<string, string>;
+  categoryIdByCode: Map<string, string>;
 }) {
-  const { client, userId, categoryIdByName } = deps;
+  const { client, userId, categoryIdByCode } = deps;
   return {
     search_products: tool({
       description:
-        "搜尋商店真實上架商品。使用者提到任何想找、想買的商品時一律呼叫本工具查證，不可憑印象或常識回答有沒有；回傳的 id 之後用於最終回覆的 product block。除 query 與 category_name 外，其餘屬性參數皆為選填，只有當使用者明確提到該條件時才填，否則留空以免過度篩選而找不到商品。",
+        "搜尋商店真實上架商品。使用者提到任何想找、想買的商品時一律呼叫本工具查證，不可憑印象或常識回答有沒有；回傳的 id 之後用於最終回覆的 product block。除 query 與 category_code 外，其餘屬性參數皆為選填，只有當使用者明確提到該條件時才填，否則留空以免過度篩選而找不到商品。",
       inputSchema: SEARCH_PRODUCTS_SCHEMA,
-      execute: (args) => runSearchProducts(client, args, categoryIdByName),
+      execute: (args) => runSearchProducts(client, args, categoryIdByCode),
     }),
     search_wardrobe: tool({
       description: "搜尋使用者衣櫃既有衣物；想用既有單品搭配時優先呼叫。",
