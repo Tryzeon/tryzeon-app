@@ -1,4 +1,6 @@
 import 'package:tryzeon/feature/common/body_measurements/domain/entities/body_measurements.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type_measurements.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/product_size.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
@@ -7,8 +9,10 @@ import 'package:tryzeon/feature/personal/shop/domain/services/fit_dimension_weig
 import 'package:tryzeon/feature/personal/shop/domain/services/garment_fit_dimension.dart';
 
 /// For every published size it judges each body dimension the shopper has
-/// recorded against the body range that size fits, and decides whether the
-/// shopper falls inside, below, or above it.
+/// recorded — and the garment type can speak to — against the body range that
+/// size fits, and decides whether the shopper falls inside, below, or above it.
+/// Height and weight have no garment counterpart and are judged on every type
+/// whenever the store publishes a range for them.
 ///
 /// The range comes from one of two places. If the store published a wearer
 /// range for the dimension, that is the range — the store knows its own cut
@@ -25,9 +29,15 @@ class FitCalculator {
     required final List<ProductSize>? productSizes,
     required final ProductFit? fit,
     required final ProductElasticity? elasticity,
+    required final GarmentType garmentType,
   }) {
+    final allowedGarmentTypes = garmentType.measurementTypes;
     final userDimensions = BodyMeasurementType.values
         .where((final t) => body?.getValue(t) != null)
+        .where((final t) {
+          final garment = t.comparableGarmentType;
+          return garment == null || allowedGarmentTypes.contains(garment);
+        })
         .toList();
     if (body == null || userDimensions.isEmpty) {
       return const FitResult(noUserData: true);

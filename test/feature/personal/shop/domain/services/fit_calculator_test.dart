@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/feature/common/body_measurements/domain/entities/body_measurements.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/product_size.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
@@ -26,11 +27,13 @@ FitResult _calc(
   final List<ProductSize>? sizes, {
   final ProductFit? fit,
   final ProductElasticity? elasticity,
+  final GarmentType garmentType = GarmentType.others,
 }) => FitCalculator.calculate(
   body: body,
   productSizes: sizes,
   fit: fit,
   elasticity: elasticity,
+  garmentType: garmentType,
 );
 
 void main() {
@@ -391,5 +394,42 @@ void main() {
         expect(result.recommendedSize, 'A');
       },
     );
+
+    test('ignores body dimensions the garment type does not have', () {
+      // Chest 60 is deliberately absurd: judged, it would sink M. Pants have no
+      // chest, so only the waist counts. Waist 70 → trouser band [71, 74].
+      final result = _calc(
+        const BodyMeasurements(chest: 90, waist: 70),
+        [
+          _size(
+            'M',
+            const GarmentMeasurements(chestCircumference: 60, waistCircumference: 73),
+          ),
+        ],
+        garmentType: GarmentType.pants,
+      );
+
+      expect(result.recommendedSize, 'M');
+      expect(result.matchedTypes, [BodyMeasurementType.waist]);
+    });
+
+    test('still judges height against a published range on any garment type', () {
+      final result = _calc(
+        const BodyMeasurements(height: 190),
+        [
+          _size(
+            'M',
+            null,
+            bodyMeasurementRanges: const BodyMeasurementRanges(
+              height: MeasurementRange(min: 160, max: 170),
+            ),
+          ),
+        ],
+        garmentType: GarmentType.pants,
+      );
+
+      expect(result.recommendedSize, isNull);
+      expect(result.outOfRange, isTrue);
+    });
   });
 }

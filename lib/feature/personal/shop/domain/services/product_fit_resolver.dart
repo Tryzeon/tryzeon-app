@@ -13,5 +13,6 @@ class ProductFitResolver {
     productSizes: product.sizes,
     fit: product.fit,
     elasticity: product.elasticity,
+    garmentType: product.garmentType,
   );
 }
