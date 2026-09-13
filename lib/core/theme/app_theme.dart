@@ -62,8 +62,11 @@ class AppSpacing {
   static const double xl = 32;
   static const double xxl = 48;
 
-  static const double iosTabBarHeight = 50; // iOS 26 native floating tab bar
-  static const double bottomNavBarHeight = 56; // AppBottomNavBar capsule (iOS <26, Android)
+  // iOS 26 native floating tab bar
+  static const double iosTabBarHeight = 50;
+  // AppBottomNavBar capsule (iOS <26, Android)
+  static const double bottomNavBarHeight = 56;
+
   static const double bottomNavBarItemWidth = 72;
   static const double bottomNavBarHorizontalMargin = md;
   static const double bottomNavBarBottomMargin = smMd;
