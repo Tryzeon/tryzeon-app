@@ -164,10 +164,12 @@ Tryzeon 的目標受眾是對時尚有品味的 Gen Z 用戶。UI 設計的核�
 
 ### 導航列（Bottom Navigation）
 
-- 背景：`background`，`border-top: 1px solid outline`。
-- Active 指示器：寬 `18px`、高 `3px`、`border-radius: 2px`，顏色為 `primary`（炭黑）。
-- 不使用 Material 3 預設的 NavigationBar pill indicator，改用細線指示器。
-- 標籤文字：`labelSmall` Uppercase。
+- iOS 26+ 使用原生 Liquid Glass tab bar；iOS < 26 與 Android 使用 `AppBottomNavBar`（`lib/core/presentation/widgets/`）。
+- 浮動膠囊：`surface` 底、`border: 1px solid outline`、`border-radius: pill`、輕陰影（`shadow` @ 8%，blur 16，y 4）；高 `56px`，每個 item 固定 `72px` 寬、膠囊隨 item 數量縮放並置中，最寬為螢幕寬減兩側 `16px` 邊距；底部距安全區 `12px`。
+- 內容從膠囊後方滑過（shell `extendBody: true`）；頁面底部留白統一加 `AppSpacing.bottomNavBarOverlap`（+ 安全區），不再各自判斷平台。
+- Active：填色圖示 + `primary` 文字（w600），背後 `surfaceContainer` pill；Inactive：outlined 圖示 + `onSurfaceVariant`。
+- 不使用指示線、不做切換動畫。
+- 圖示 `24px`；標籤文字 `labelMedium`，中文標籤不加字距（`letterSpacing: 0`）。
 
 ---
 
