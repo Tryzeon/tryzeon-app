@@ -1,3 +1,4 @@
+import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -61,8 +62,17 @@ class AppSpacing {
   static const double xl = 32;
   static const double xxl = 48;
 
-  static const double iosTabBarHeight = 50; // iOS UITabBar / iOS26 floating
-  static const double androidNavBarHeight = 80; // Material NavigationBar
+  static const double iosTabBarHeight = 50; // iOS 26 native floating tab bar
+  static const double bottomNavBarHeight = 56; // AppBottomNavBar capsule (iOS <26, Android)
+  static const double bottomNavBarItemWidth = 72;
+  static const double bottomNavBarHorizontalMargin = md;
+  static const double bottomNavBarBottomMargin = smMd;
+
+  /// Height the floating bottom navigation covers above the safe-area inset;
+  /// pages add this (plus the inset) so content scrolls clear of the bar.
+  static double get bottomNavBarOverlap => PlatformInfo.isIOS26OrHigher()
+      ? iosTabBarHeight
+      : bottomNavBarHeight + bottomNavBarBottomMargin;
 }
 
 class AppOpacity {
@@ -415,30 +425,6 @@ class AppTheme {
           fontSize: 12,
           color: colorScheme.onPrimaryContainer,
         ),
-      ),
-
-      navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: colorScheme.surface,
-        indicatorColor: Colors.transparent, // disable M3 pill indicator
-        shadowColor: Colors.transparent,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        labelTextStyle: WidgetStateProperty.resolveWith((final states) {
-          final active = states.contains(WidgetState.selected);
-          return GoogleFonts.outfit(
-            fontSize: 9,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.5,
-            color: active ? colorScheme.primary : colorScheme.onSurfaceVariant,
-          );
-        }),
-        iconTheme: WidgetStateProperty.resolveWith((final states) {
-          final active = states.contains(WidgetState.selected);
-          return IconThemeData(
-            color: active ? colorScheme.primary : colorScheme.onSurfaceVariant,
-            size: 24,
-          );
-        }),
       ),
 
       textTheme: TextTheme(
