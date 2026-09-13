@@ -23,6 +23,7 @@ class AppBottomNavBar extends StatelessWidget {
 
   static const Key capsuleKey = ValueKey('app_bottom_nav_bar_capsule');
   static const Key selectedPillKey = ValueKey('app_bottom_nav_bar_selected_pill');
+  static const double maxLabelTextScaleFactor = 1.3;
 
   final List<AppBottomNavItem> items;
   final int selectedIndex;
@@ -108,12 +109,18 @@ class _NavItem extends StatelessWidget {
           color: foreground,
         ),
         const SizedBox(height: AppSpacing.xxs),
-        Text(
-          item.label,
-          style: textTheme.labelMedium?.copyWith(
-            color: foreground,
-            letterSpacing: 0,
-            fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+        MediaQuery.withClampedTextScaling(
+          maxScaleFactor: AppBottomNavBar.maxLabelTextScaleFactor,
+          child: Text(
+            item.label,
+            maxLines: 1,
+            softWrap: false,
+            overflow: TextOverflow.ellipsis,
+            style: textTheme.labelMedium?.copyWith(
+              color: foreground,
+              letterSpacing: 0,
+              fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+            ),
           ),
         ),
       ],

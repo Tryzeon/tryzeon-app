@@ -29,12 +29,16 @@ Widget _subject({
   required final int selectedIndex,
   final ValueChanged<int>? onTap,
   final double safeAreaBottom = 0,
+  final double textScale = 1,
   final List<AppBottomNavItem> items = _items,
 }) {
   return MaterialApp(
     theme: _theme,
     home: MediaQuery(
-      data: MediaQueryData(padding: EdgeInsets.only(bottom: safeAreaBottom)),
+      data: MediaQueryData(
+        padding: EdgeInsets.only(bottom: safeAreaBottom),
+        textScaler: TextScaler.linear(textScale),
+      ),
       child: Scaffold(
         extendBody: true,
         bottomNavigationBar: AppBottomNavBar(
@@ -170,6 +174,23 @@ void main() {
     expect(capsule.right, screen.width - AppSpacing.bottomNavBarHorizontalMargin);
     for (final item in _fiveItems) {
       expect(find.text(item.label), findsOneWidget);
+    }
+  });
+
+  testWidgets('labels stay inside the capsule under large text scale', (
+    final tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(_subject(selectedIndex: 0, items: _fiveItems, textScale: 2));
+
+    expect(tester.takeException(), isNull);
+    final capsule = tester.getRect(find.byKey(AppBottomNavBar.capsuleKey));
+    for (final item in _fiveItems) {
+      final label = tester.getRect(find.text(item.label));
+      expect(capsule.contains(label.topLeft), isTrue);
+      expect(capsule.contains(label.bottomRight), isTrue);
     }
   });
 
