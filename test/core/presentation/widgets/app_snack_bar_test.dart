@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/core/presentation/widgets/app_bottom_nav_bar.dart';
 import 'package:tryzeon/core/presentation/widgets/app_snack_bar.dart';
+import 'package:tryzeon/core/presentation/widgets/bottom_nav_bar_inset.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
 const _items = [
@@ -11,33 +12,41 @@ const _items = [
 
 const _fabKey = ValueKey('fab');
 
+Widget _page({required final bool withFab}) => Scaffold(
+  floatingActionButton: withFab
+      ? Padding(
+          padding: EdgeInsets.only(bottom: AppSpacing.bottomNavBarOverlap),
+          child: FloatingActionButton(
+            key: _fabKey,
+            onPressed: () {},
+            child: const Icon(Icons.add),
+          ),
+        )
+      : null,
+  body: Builder(
+    builder: (final context) => TextButton(
+      onPressed: () => AppSnackBar.show(context, message: 'saved'),
+      child: const Text('show'),
+    ),
+  ),
+);
+
 Widget _shell({required final bool withFab}) => MaterialApp(
   theme: AppTheme.lightTheme,
   home: Scaffold(
     extendBody: true,
     bottomNavigationBar: AppBottomNavBar(items: _items, selectedIndex: 0, onTap: (_) {}),
     body: ScaffoldMessenger(
-      child: Scaffold(
-        floatingActionButton: withFab
-            ? Padding(
-                padding: EdgeInsets.only(bottom: AppSpacing.bottomNavBarOverlap),
-                child: FloatingActionButton(
-                  key: _fabKey,
-                  onPressed: () {},
-                  child: const Icon(Icons.add),
-                ),
-              )
-            : null,
-        body: Builder(
-          builder: (final context) => TextButton(
-            onPressed: () => AppSnackBar.show(context, message: 'saved'),
-            child: const Text('show'),
-          ),
-        ),
+      child: BottomNavBarInset(
+        overlap: AppSpacing.bottomNavBarOverlap,
+        child: _page(withFab: withFab),
       ),
     ),
   ),
 );
+
+Widget _fullScreen() =>
+    MaterialApp(theme: AppTheme.lightTheme, home: _page(withFab: false));
 
 Future<Rect> _showSnackBar(final WidgetTester tester) async {
   await tester.tap(find.text('show'));
@@ -66,5 +75,15 @@ void main() {
     final fab = tester.getRect(find.byKey(_fabKey));
 
     expect(snackBar.bottom, lessThanOrEqualTo(fab.top));
+  });
+
+  testWidgets('sits a fixed gap above the safe area on a full-screen route', (
+    final tester,
+  ) async {
+    await tester.pumpWidget(_fullScreen());
+    final snackBar = await _showSnackBar(tester);
+    final screen = tester.getSize(find.byType(MaterialApp));
+
+    expect(snackBar.bottom, screen.height - AppSpacing.sm);
   });
 }

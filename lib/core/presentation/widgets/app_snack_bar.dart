@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:tryzeon/core/presentation/widgets/bottom_nav_bar_inset.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
 /// Silent result feedback (e.g. "saved to album"). Hosted by the calling
 /// page's Scaffold (the tab shells provide their own ScaffoldMessenger), so it
-/// lifts above the page FAB when present and otherwise above the floating nav
-/// bar, which the framework's safe-area padding doesn't account for. Failures
-/// should use `TopNotification`.
+/// lifts above the page FAB when present and otherwise above the shell's nav
+/// bar via [BottomNavBarInset]. Failures should use `TopNotification`.
 class AppSnackBar {
   static void show(
     final BuildContext context, {
@@ -15,7 +15,7 @@ class AppSnackBar {
   }) {
     final liftsItself = Scaffold.maybeOf(context)?.hasFloatingActionButton ?? false;
 
-    final navBarOffset = liftsItself ? 0.0 : AppSpacing.bottomNavBarOverlap;
+    final navBarOffset = liftsItself ? 0.0 : BottomNavBarInset.of(context);
 
     final hasAction = actionLabel != null && onAction != null;
 

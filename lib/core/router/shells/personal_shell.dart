@@ -4,8 +4,10 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/app_bottom_nav_bar.dart';
+import 'package:tryzeon/core/presentation/widgets/bottom_nav_bar_inset.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/router/shells/personal_tab.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
@@ -59,9 +61,12 @@ class PersonalShell extends HookConsumerWidget {
 
     final mediaQuery = MediaQuery.of(context);
     // Own messenger so each page's Scaffold (not this shell's) hosts snackbars
-    // and lifts them above its own FAB; AppSnackBar adds the nav-bar offset.
+    // and lifts them above its own FAB; the inset tells them about the nav bar.
     final body = ScaffoldMessenger(
-      child: MediaQuery(data: mediaQuery, child: navigationShell),
+      child: BottomNavBarInset(
+        overlap: AppSpacing.bottomNavBarOverlap,
+        child: MediaQuery(data: mediaQuery, child: navigationShell),
+      ),
     );
 
     return MediaQuery(
