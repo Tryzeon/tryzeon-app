@@ -131,6 +131,22 @@ class HomePage extends HookConsumerWidget {
     return Scaffold(
       extendBody: true,
       extendBodyBehindAppBar: true,
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(bottom: AppSpacing.bottomNavBarOverlap),
+        child: HomePrimaryActionButton(
+          label: hasAvatar ? '虛擬試穿' : '上傳照片',
+          icon: hasAvatar
+              ? Image.asset(
+                  AppConstants.logoMark,
+                  width: 20,
+                  height: 20,
+                  fit: BoxFit.contain,
+                )
+              : Icon(Icons.upload_rounded, size: 20, color: colorScheme.primaryContainer),
+          isDisabled: isUploadingAvatar,
+          onTap: hasAvatar ? startTryon : uploadAvatar,
+        ),
+      ),
       body: RefreshIndicator(
         onRefresh: () => ref.read(userProfileProvider.notifier).refresh(),
         edgeOffset: MediaQuery.of(context).padding.top,
@@ -216,31 +232,6 @@ class HomePage extends HookConsumerWidget {
                   ],
                 ),
               ),
-
-            // 5. Bottom Right — Try On Button (dark glassmorphism pill).
-            // Only an in-flight avatar upload blocks it: the backend resolves
-            // the model photo itself, so a try-on never waits on the download.
-            Positioned(
-              bottom: bottomOffset + AppSpacing.lg,
-              right: AppSpacing.lg,
-              child: HomePrimaryActionButton(
-                label: hasAvatar ? '虛擬試穿' : '上傳照片',
-                icon: hasAvatar
-                    ? Image.asset(
-                        AppConstants.logoMark,
-                        width: 20,
-                        height: 20,
-                        fit: BoxFit.contain,
-                      )
-                    : Icon(
-                        Icons.upload_rounded,
-                        size: 20,
-                        color: colorScheme.primaryContainer,
-                      ),
-                isDisabled: isUploadingAvatar,
-                onTap: hasAvatar ? startTryon : uploadAvatar,
-              ),
-            ),
           ],
         ),
       ),
