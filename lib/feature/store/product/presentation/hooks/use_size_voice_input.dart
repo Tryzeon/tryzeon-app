@@ -1,8 +1,9 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/presentation/widgets/app_snack_bar.dart';
+import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/store/product/domain/services/audio_recorder_service.dart';
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_size_manager.dart';
@@ -22,12 +23,15 @@ const _maxRecordingDuration = Duration(seconds: 60);
 SizeVoiceInput useSizeVoiceInput({
   required final WidgetRef ref,
   required final ProductSizeManager sizeManager,
-  required final void Function(int addedCount) onApplied,
-  required final void Function(String message) onError,
-  required final VoidCallback onPermissionDenied,
 }) {
+  final context = useContext();
   final status = useState(SizeVoiceStatus.idle);
   final autoStopTimer = useRef<Timer?>(null);
+
+  void showError(final String message) {
+    if (!context.mounted) return;
+    TopNotification.show(context, message: message);
+  }
 
   useEffect(
     () =>
@@ -42,7 +46,7 @@ SizeVoiceInput useSizeVoiceInput({
       final recording = await recorder.stop();
       final bytes = recording.bytes;
       if (bytes == null || bytes.isEmpty) {
-        onError('沒有錄到聲音，請再試一次');
+        showError('沒有錄到聲音，請再試一次');
         return;
       }
       final parser = ref.read(sizeVoiceParserProvider);
@@ -52,14 +56,15 @@ SizeVoiceInput useSizeVoiceInput({
         currentUnit: sizeManager.selectedUnit,
       );
       if (parsed.isEmpty) {
-        onError('沒有聽到尺寸資訊，請再試一次');
+        showError('沒有聽到尺寸資訊，請再試一次');
         return;
       }
       sizeManager.applyParsedSizes(parsed);
-      onApplied(parsed.length);
+      if (!context.mounted) return;
+      AppSnackBar.show(context, message: '已填入 ${parsed.length} 筆尺寸，請檢查數字');
     } catch (e, st) {
       AppLogger.error('Size voice parse failed', e, st);
-      onError('語音解析失敗，請再試一次');
+      showError('語音解析失敗，請再試一次');
     } finally {
       status.value = SizeVoiceStatus.idle;
     }
@@ -76,7 +81,7 @@ SizeVoiceInput useSizeVoiceInput({
 
     final result = await recorder.start();
     if (result == RecorderStartResult.permissionDenied) {
-      onPermissionDenied();
+      showError('需要麥克風權限才能語音輸入，請至系統設定開啟');
       return;
     }
     status.value = SizeVoiceStatus.recording;

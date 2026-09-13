@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
-import 'package:tryzeon/core/presentation/widgets/app_snack_bar.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
@@ -53,22 +52,7 @@ class _EditProductContent extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final formData = useProductForm(initialProduct: product);
     final sizeManager = useProductSizeManager(initialSizes: product.sizes);
-    final voiceInput = useSizeVoiceInput(
-      ref: ref,
-      sizeManager: sizeManager,
-      onApplied: (final count) {
-        if (!context.mounted) return;
-        AppSnackBar.show(context, message: '已填入 $count 筆尺寸，請檢查數字');
-      },
-      onError: (final message) {
-        if (!context.mounted) return;
-        TopNotification.show(context, message: message);
-      },
-      onPermissionDenied: () {
-        if (!context.mounted) return;
-        TopNotification.show(context, message: '需要麥克風權限才能語音輸入，請至系統設定開啟');
-      },
-    );
+    final voiceInput = useSizeVoiceInput(ref: ref, sizeManager: sizeManager);
     final mutation = ref.watch(productEditProvider);
     final isSaving = mutation == ProductMutation.update;
     final isDeleting = mutation == ProductMutation.delete;
