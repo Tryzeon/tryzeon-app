@@ -1,4 +1,3 @@
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
@@ -41,7 +40,7 @@ class ProductListSection extends HookConsumerWidget {
       final bottomInset =
           MediaQuery.of(context).padding.bottom +
           80 + // FAB clearance
-          (PlatformInfo.isIOS26OrHigher() ? AppSpacing.iosTabBarHeight : 0.0);
+          AppSpacing.bottomNavBarOverlap;
 
       return GridView.builder(
         key: PageStorageKey(query.status),

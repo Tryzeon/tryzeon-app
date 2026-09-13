@@ -1,4 +1,3 @@
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -203,9 +202,8 @@ class _ProductDetailContent extends HookConsumerWidget {
           ),
 
           SizedBox(
-            height: PlatformInfo.isIOS26OrHigher()
-                ? MediaQuery.of(context).padding.bottom + AppSpacing.iosTabBarHeight
-                : 0,
+            height:
+                MediaQuery.of(context).padding.bottom + AppSpacing.bottomNavBarOverlap,
           ),
         ],
       ),

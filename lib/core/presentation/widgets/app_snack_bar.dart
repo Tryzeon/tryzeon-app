@@ -1,4 +1,3 @@
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
@@ -14,9 +13,7 @@ class AppSnackBar {
   }) {
     final liftsItself = Scaffold.maybeOf(context)?.hasFloatingActionButton ?? false;
 
-    final navBarOffset = PlatformInfo.isIOS26OrHigher() && !liftsItself
-        ? AppSpacing.iosTabBarHeight
-        : 0.0;
+    final navBarOffset = liftsItself ? 0.0 : AppSpacing.bottomNavBarOverlap;
 
     final hasAction = actionLabel != null && onAction != null;
 

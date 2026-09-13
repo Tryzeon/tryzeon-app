@@ -1,4 +1,3 @@
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -217,10 +216,9 @@ class StorePage extends HookConsumerWidget {
 
                   SliverToBoxAdapter(
                     child: SizedBox(
-                      height: PlatformInfo.isIOS26OrHigher()
-                          ? MediaQuery.of(context).padding.bottom +
-                                AppSpacing.iosTabBarHeight
-                          : 0,
+                      height:
+                          MediaQuery.of(context).padding.bottom +
+                          AppSpacing.bottomNavBarOverlap,
                     ),
                   ),
                 ],
