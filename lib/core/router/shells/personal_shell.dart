@@ -1,8 +1,9 @@
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/presentation/widgets/app_bottom_nav_bar.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/router/shells/personal_tab.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
@@ -57,50 +58,45 @@ class PersonalShell extends HookConsumerWidget {
     }
 
     final mediaQuery = MediaQuery.of(context);
+    final body = MediaQuery(data: mediaQuery, child: navigationShell);
 
     return MediaQuery(
       data: mediaQuery.copyWith(viewInsets: mediaQuery.viewInsets.copyWith(bottom: 0)),
-      child: AdaptiveScaffold(
-        minimizeBehavior: TabBarMinimizeBehavior.never,
-        body: MediaQuery(data: mediaQuery, child: navigationShell),
-        bottomNavigationBar: AdaptiveBottomNavigationBar(
-          selectedIndex: navigationShell.currentIndex,
-          onTap: onItemTapped,
-          useNativeBottomBar: true,
-          items: PersonalTab.values
-              .map(
-                (final tab) => AdaptiveNavigationDestination(
-                  icon: _adaptiveIcon(tab),
-                  label: tab.label,
-                ),
-              )
-              .toList(),
-        ),
-      ),
+      child: PlatformInfo.isIOS26OrHigher()
+          ? AdaptiveScaffold(
+              minimizeBehavior: TabBarMinimizeBehavior.never,
+              body: body,
+              bottomNavigationBar: AdaptiveBottomNavigationBar(
+                selectedIndex: navigationShell.currentIndex,
+                onTap: onItemTapped,
+                useNativeBottomBar: true,
+                items: PersonalTab.values
+                    .map(
+                      (final tab) => AdaptiveNavigationDestination(
+                        icon: tab.sfSymbol,
+                        label: tab.label,
+                      ),
+                    )
+                    .toList(),
+              ),
+            )
+          : Scaffold(
+              extendBody: true,
+              body: body,
+              bottomNavigationBar: AppBottomNavBar(
+                selectedIndex: navigationShell.currentIndex,
+                onTap: onItemTapped,
+                items: PersonalTab.values
+                    .map(
+                      (final tab) => AppBottomNavItem(
+                        icon: tab.icon,
+                        selectedIcon: tab.selectedIcon,
+                        label: tab.label,
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
     );
   }
-}
-
-Object _adaptiveIcon(final PersonalTab tab) {
-  if (PlatformInfo.isIOS26OrHigher()) {
-    return switch (tab) {
-      PersonalTab.home => 'house',
-      PersonalTab.shop => 'cart',
-      PersonalTab.chat => 'message',
-      PersonalTab.wardrobe => 'hanger',
-      PersonalTab.account => 'person',
-    };
-  }
-
-  if (PlatformInfo.isIOS) {
-    return switch (tab) {
-      PersonalTab.home => CupertinoIcons.house,
-      PersonalTab.shop => CupertinoIcons.cart,
-      PersonalTab.chat => CupertinoIcons.chat_bubble,
-      PersonalTab.wardrobe => CupertinoIcons.collections,
-      PersonalTab.account => CupertinoIcons.person,
-    };
-  }
-
-  return tab.icon;
 }

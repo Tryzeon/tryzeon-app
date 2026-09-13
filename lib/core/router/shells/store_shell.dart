@@ -1,24 +1,39 @@
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/presentation/widgets/app_bottom_nav_bar.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 
-class StoreTabDestination {
-  const StoreTabDestination({required this.label, required this.icon});
+enum StoreTab {
+  products(
+    label: '商品',
+    icon: Icons.storefront_outlined,
+    selectedIcon: Icons.storefront,
+    sfSymbol: 'bag',
+  ),
+  account(
+    label: '我的',
+    icon: Icons.person_outline,
+    selectedIcon: Icons.person,
+    sfSymbol: 'person',
+  );
+
+  const StoreTab({
+    required this.label,
+    required this.icon,
+    required this.selectedIcon,
+    required this.sfSymbol,
+  });
 
   final String label;
   final IconData icon;
+  final IconData selectedIcon;
+  final String sfSymbol;
 }
-
-const storeTabDestinations = [
-  StoreTabDestination(label: '商品', icon: Icons.storefront_outlined),
-  StoreTabDestination(label: '我的', icon: Icons.person_outline),
-];
 
 class StoreShell extends HookConsumerWidget {
   const StoreShell({super.key, required this.navigationShell});
@@ -37,7 +52,7 @@ class StoreShell extends HookConsumerWidget {
 
     void onItemTapped(final int index) {
       const doubleTapThreshold = Duration(milliseconds: 400);
-      final lastTabIndex = storeTabDestinations.length - 1;
+      final lastTabIndex = StoreTab.values.length - 1;
 
       if (index == lastTabIndex) {
         final now = DateTime.now();
@@ -60,46 +75,45 @@ class StoreShell extends HookConsumerWidget {
     }
 
     final mediaQuery = MediaQuery.of(context);
+    final body = MediaQuery(data: mediaQuery, child: navigationShell);
 
     return MediaQuery(
       data: mediaQuery.copyWith(viewInsets: mediaQuery.viewInsets.copyWith(bottom: 0)),
-      child: AdaptiveScaffold(
-        minimizeBehavior: TabBarMinimizeBehavior.never,
-        body: MediaQuery(data: mediaQuery, child: navigationShell),
-        bottomNavigationBar: AdaptiveBottomNavigationBar(
-          selectedIndex: navigationShell.currentIndex,
-          onTap: onItemTapped,
-          useNativeBottomBar: true,
-          items: storeTabDestinations
-              .map(
-                (final destination) => AdaptiveNavigationDestination(
-                  icon: _adaptiveIcon(destination),
-                  label: destination.label,
-                ),
-              )
-              .toList(),
-        ),
-      ),
+      child: PlatformInfo.isIOS26OrHigher()
+          ? AdaptiveScaffold(
+              minimizeBehavior: TabBarMinimizeBehavior.never,
+              body: body,
+              bottomNavigationBar: AdaptiveBottomNavigationBar(
+                selectedIndex: navigationShell.currentIndex,
+                onTap: onItemTapped,
+                useNativeBottomBar: true,
+                items: StoreTab.values
+                    .map(
+                      (final tab) => AdaptiveNavigationDestination(
+                        icon: tab.sfSymbol,
+                        label: tab.label,
+                      ),
+                    )
+                    .toList(),
+              ),
+            )
+          : Scaffold(
+              extendBody: true,
+              body: body,
+              bottomNavigationBar: AppBottomNavBar(
+                selectedIndex: navigationShell.currentIndex,
+                onTap: onItemTapped,
+                items: StoreTab.values
+                    .map(
+                      (final tab) => AppBottomNavItem(
+                        icon: tab.icon,
+                        selectedIcon: tab.selectedIcon,
+                        label: tab.label,
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
     );
   }
-}
-
-Object _adaptiveIcon(final StoreTabDestination destination) {
-  if (PlatformInfo.isIOS26OrHigher()) {
-    return switch (destination.label) {
-      '商品' => 'bag',
-      '我的' => 'person',
-      _ => 'circle',
-    };
-  }
-
-  if (PlatformInfo.isIOS) {
-    return switch (destination.label) {
-      '商品' => CupertinoIcons.bag,
-      '我的' => CupertinoIcons.person,
-      _ => CupertinoIcons.circle,
-    };
-  }
-
-  return destination.icon;
 }
