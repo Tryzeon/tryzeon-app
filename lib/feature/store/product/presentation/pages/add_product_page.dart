@@ -3,6 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
+import 'package:tryzeon/core/presentation/widgets/app_snack_bar.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
@@ -24,16 +25,21 @@ class AddProductPage extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final formData = useProductForm();
     final sizeManager = useProductSizeManager();
-    final messenger = ScaffoldMessenger.of(context);
     final voiceInput = useSizeVoiceInput(
       ref: ref,
       sizeManager: sizeManager,
-      onApplied: (final count) =>
-          messenger.showSnackBar(SnackBar(content: Text('已填入 $count 筆尺寸，請檢查數字'))),
-      onError: (final message) =>
-          messenger.showSnackBar(SnackBar(content: Text(message))),
-      onPermissionDenied: () =>
-          messenger.showSnackBar(const SnackBar(content: Text('需要麥克風權限才能語音輸入，請至系統設定開啟'))),
+      onApplied: (final count) {
+        if (!context.mounted) return;
+        AppSnackBar.show(context, message: '已填入 $count 筆尺寸，請檢查數字');
+      },
+      onError: (final message) {
+        if (!context.mounted) return;
+        TopNotification.show(context, message: message);
+      },
+      onPermissionDenied: () {
+        if (!context.mounted) return;
+        TopNotification.show(context, message: '需要麥克風權限才能語音輸入，請至系統設定開啟');
+      },
     );
     final isSaving = ref.watch(productEditProvider) == ProductMutation.create;
     final productCategoriesAsync = ref.watch(productCategoriesProvider);
