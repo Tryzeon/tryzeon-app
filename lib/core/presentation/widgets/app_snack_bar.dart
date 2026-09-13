@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
-/// Silent result feedback (e.g. "saved to album"). Floats above the bottom
-/// safe area, plus the in-app nav bar on iOS 26+ which the framework's safe
-/// area padding doesn't account for. Failures should use `TopNotification`.
+/// Silent result feedback (e.g. "saved to album"). Hosted by the calling
+/// page's Scaffold (the tab shells provide their own ScaffoldMessenger), so it
+/// lifts above the page FAB when present and otherwise above the floating nav
+/// bar, which the framework's safe-area padding doesn't account for. Failures
+/// should use `TopNotification`.
 class AppSnackBar {
   static void show(
     final BuildContext context, {

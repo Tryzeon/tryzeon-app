@@ -75,7 +75,11 @@ class StoreShell extends HookConsumerWidget {
     }
 
     final mediaQuery = MediaQuery.of(context);
-    final body = MediaQuery(data: mediaQuery, child: navigationShell);
+    // Own messenger so each page's Scaffold (not this shell's) hosts snackbars
+    // and lifts them above its own FAB; AppSnackBar adds the nav-bar offset.
+    final body = ScaffoldMessenger(
+      child: MediaQuery(data: mediaQuery, child: navigationShell),
+    );
 
     return MediaQuery(
       data: mediaQuery.copyWith(viewInsets: mediaQuery.viewInsets.copyWith(bottom: 0)),
