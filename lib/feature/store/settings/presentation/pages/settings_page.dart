@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:simple_icons/simple_icons.dart';
-import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/app_action_sheet.dart';
-import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_overlay.dart';
 import 'package:tryzeon/core/presentation/widgets/nav_row.dart';
 import 'package:tryzeon/core/presentation/widgets/section_label.dart';
@@ -13,6 +11,7 @@ import 'package:tryzeon/core/presentation/widgets/version_info.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
+import 'package:tryzeon/feature/common/settings/presentation/actions/account_actions.dart';
 import 'package:tryzeon/feature/common/settings/providers/settings_controller.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -23,46 +22,8 @@ class StoreSettingsPage extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
-    final controller = ref.watch(settingsControllerProvider.notifier);
-    final state = ref.watch(settingsControllerProvider);
+    final isBusy = ref.watch(settingsControllerProvider).isLoading;
     final profile = ref.watch(storeProfileProvider).value;
-
-    ref.listen(settingsControllerProvider, (final previous, final next) {
-      if (next is AsyncError) {
-        TopNotification.show(context, message: next.error.displayMessage(context));
-      }
-    });
-
-    Future<void> switchToPersonal() async {
-      final result = await showAppOkCancelDialog(
-        context: context,
-        title: '切換帳號',
-        message: '你確定要切換到個人版帳號嗎？',
-        okLabel: '確定',
-        cancelLabel: '取消',
-      );
-      if (result != OkCancelResult.ok) return;
-
-      await controller.switchTo(UserType.personal);
-
-      if (!context.mounted) return;
-
-      context.go(AppRoutes.personalHome);
-    }
-
-    Future<void> handleSignOut() async {
-      final result = await showAppOkCancelDialog(
-        context: context,
-        title: '登出',
-        message: '你確定要登出嗎？',
-        okLabel: '登出',
-        cancelLabel: '取消',
-        isDestructiveAction: true,
-      );
-      if (result != OkCancelResult.ok) return;
-
-      await controller.signOut();
-    }
 
     Future<void> openContactLink(final String url, final String label) async {
       final uri = Uri.parse(url);
@@ -95,22 +56,8 @@ class StoreSettingsPage extends HookConsumerWidget {
       );
     }
 
-    Future<void> handleDeleteAccount() async {
-      final dialogResult = await showAppOkCancelDialog(
-        context: context,
-        title: '刪除帳號',
-        message: '此操作將永久刪除您的帳號及所有相關資料，包括個人資料、衣櫃、店家資料、商品等，且無法復原。您確定要繼續嗎？',
-        okLabel: '刪除帳號',
-        cancelLabel: '取消',
-        isDestructiveAction: true,
-      );
-      if (dialogResult != OkCancelResult.ok) return;
-
-      await controller.deleteAccount();
-    }
-
     return LoadingOverlay(
-      isLoading: state.isLoading,
+      isLoading: isBusy,
       child: Scaffold(
         appBar: AppBar(title: const Text('設定')),
         body: SafeArea(
@@ -133,7 +80,7 @@ class StoreSettingsPage extends HookConsumerWidget {
                   icon: Icons.swap_horiz_rounded,
                   title: '切換到個人帳號',
                   isFirst: true,
-                  onTap: switchToPersonal,
+                  onTap: () => confirmAndSwitchTo(context, UserType.personal),
                 ),
                 NavRow(
                   icon: Icons.chat_bubble_outline,
@@ -147,14 +94,14 @@ class StoreSettingsPage extends HookConsumerWidget {
                   isDestructive: true,
                   isFirst: true,
                   showChevron: false,
-                  onTap: handleSignOut,
+                  onTap: () => confirmAndSignOut(context),
                 ),
                 NavRow(
                   icon: Icons.delete_outline,
                   title: '刪除帳號',
                   isDestructive: true,
                   showChevron: false,
-                  onTap: handleDeleteAccount,
+                  onTap: () => confirmAndDeleteAccount(context),
                 ),
                 const SizedBox(height: AppSpacing.xxl),
                 const VersionInfo(),
