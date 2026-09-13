@@ -59,6 +59,17 @@ class PersonalSettingsPage extends HookConsumerWidget {
       context.go(AppRoutes.dashboardAccount);
     }
 
+    Future<void> openContactLink(final String url, final String label) async {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        return;
+      }
+
+      if (!context.mounted) return;
+      TopNotification.show(context, message: '目前無法開啟 $label 連結');
+    }
+
     Future<void> handleContactUs() async {
       await showAppActionSheet(
         context,
@@ -67,18 +78,13 @@ class PersonalSettingsPage extends HookConsumerWidget {
           AppMenuAction(
             icon: SimpleIcons.line,
             title: 'LINE 官方帳號',
-            onTap: () => launchUrl(
-              Uri.parse('https://lin.ee/rY3VZMB'),
-              mode: LaunchMode.externalApplication,
-            ),
+            onTap: () => openContactLink('https://lin.ee/rY3VZMB', 'LINE'),
           ),
           AppMenuAction(
             icon: SimpleIcons.instagram,
             title: 'Instagram',
-            onTap: () => launchUrl(
-              Uri.parse('https://www.instagram.com/tryzeon/'),
-              mode: LaunchMode.externalApplication,
-            ),
+            onTap: () =>
+                openContactLink('https://www.instagram.com/tryzeon/', 'Instagram'),
           ),
         ],
       );
@@ -88,7 +94,7 @@ class PersonalSettingsPage extends HookConsumerWidget {
       final dialogResult = await showAppOkCancelDialog(
         context: context,
         title: '刪除帳號',
-        message: '此操作將永久刪除您的帳號及所有相關資料，包括個人資料、衣櫃、店家資料（如有）等，且無法復原。您確定要繼續嗎？',
+        message: '此操作將永久刪除您的帳號及所有相關資料，包括個人資料、衣櫃、店家資料、商品等，且無法復原。您確定要繼續嗎？',
         okLabel: '刪除帳號',
         cancelLabel: '取消',
         isDestructiveAction: true,
