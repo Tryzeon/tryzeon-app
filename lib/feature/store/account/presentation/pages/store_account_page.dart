@@ -50,7 +50,12 @@ class StoreAccountPage extends HookConsumerWidget {
                 child: StoreTrafficDashboard(),
               ),
               const UnlistReminderSection(),
-              SizedBox(height: AppSpacing.bottomNavBarOverlap + AppSpacing.md),
+              SizedBox(
+                height:
+                    MediaQuery.of(context).padding.bottom +
+                    AppSpacing.bottomNavBarOverlap +
+                    AppSpacing.md,
+              ),
             ],
           ),
         ),

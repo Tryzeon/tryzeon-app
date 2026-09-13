@@ -255,7 +255,12 @@ class _WardrobeItemDetailContent extends ConsumerWidget {
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   buildTagChips(),
-                  SizedBox(height: MediaQuery.of(context).padding.bottom + AppSpacing.lg),
+                  SizedBox(
+                    height:
+                        MediaQuery.of(context).padding.bottom +
+                        AppSpacing.bottomNavBarOverlap +
+                        AppSpacing.lg,
+                  ),
                 ],
               ),
             ),

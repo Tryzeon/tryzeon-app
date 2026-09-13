@@ -67,13 +67,13 @@ class AccountPage extends HookConsumerWidget {
           child: RefreshIndicator(
             onRefresh: () => _refresh(ref),
             edgeOffset: MediaQuery.of(context).padding.top,
-            child: const SingleChildScrollView(
-              physics: AlwaysScrollableScrollPhysics(),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _TopBar(),
-                  Padding(
+                  const _TopBar(),
+                  const Padding(
                     padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,7 +89,12 @@ class AccountPage extends HookConsumerWidget {
                       ],
                     ),
                   ),
-                  SizedBox(height: AppSpacing.xxl),
+                  SizedBox(
+                    height:
+                        MediaQuery.of(context).padding.bottom +
+                        AppSpacing.bottomNavBarOverlap +
+                        AppSpacing.md,
+                  ),
                 ],
               ),
             ),
