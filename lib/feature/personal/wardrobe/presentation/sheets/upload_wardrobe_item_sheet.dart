@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
+import 'package:tryzeon/core/presentation/widgets/loading_button.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
@@ -304,23 +305,12 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
             AppSpacing.md,
             MediaQuery.of(context).padding.bottom + AppSpacing.md,
           ),
-          child: FilledButton(
-            onPressed:
-                selectedGarmentType.value != null &&
-                    !isUploading &&
-                    !isAnalyzingTags.value
+          child: LoadingButton.filled(
+            isLoading: isUploading,
+            onPressed: selectedGarmentType.value != null && !isAnalyzingTags.value
                 ? handleUpload
                 : null,
-            child: isUploading
-                ? SizedBox(
-                    width: AppSpacing.mdLg,
-                    height: AppSpacing.mdLg,
-                    child: CircularProgressIndicator(
-                      strokeWidth: AppStroke.regular,
-                      color: colorScheme.onPrimary,
-                    ),
-                  )
-                : const Text('上傳'),
+            child: const Text('上傳'),
           ),
         ),
       ],

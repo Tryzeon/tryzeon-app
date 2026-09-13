@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:tryzeon/core/presentation/widgets/loading_button.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
@@ -108,17 +109,10 @@ class WardrobeTagEditorSheet extends HookWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('編輯標籤', style: textTheme.titleMedium),
-                TextButton(
-                  onPressed: isSaving.value ? null : handleSave,
-                  child: isSaving.value
-                      ? const SizedBox(
-                          width: AppSpacing.md,
-                          height: AppSpacing.md,
-                          child: CircularProgressIndicator(
-                            strokeWidth: AppStroke.regular,
-                          ),
-                        )
-                      : const Text('完成'),
+                LoadingButton.text(
+                  isLoading: isSaving.value,
+                  onPressed: handleSave,
+                  child: const Text('完成'),
                 ),
               ],
             ),

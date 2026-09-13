@@ -5,6 +5,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
+import 'package:tryzeon/core/presentation/widgets/loading_button.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/validators.dart';
@@ -131,18 +132,10 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
     Widget buildButton(final String text, final VoidCallback onTap) {
       return SizedBox(
         width: double.infinity,
-        child: FilledButton(
-          onPressed: isLoading.value ? null : onTap,
-          child: isLoading.value
-              ? SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: AppStroke.regular,
-                    color: colorScheme.onPrimary,
-                  ),
-                )
-              : Text(text),
+        child: LoadingButton.filled(
+          isLoading: isLoading.value,
+          onPressed: onTap,
+          child: Text(text),
         ),
       );
     }

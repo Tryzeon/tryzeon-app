@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
+import 'package:tryzeon/core/presentation/widgets/loading_button.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/validators.dart';
@@ -145,18 +146,10 @@ class _PersonalProfileForm extends HookConsumerWidget {
             const SizedBox(height: AppSpacing.xl),
             SizedBox(
               width: double.infinity,
-              child: FilledButton(
-                onPressed: isLoading || !hasChanges ? null : updateProfile,
-                child: isLoading
-                    ? SizedBox(
-                        width: AppSpacing.mdLg,
-                        height: AppSpacing.mdLg,
-                        child: CircularProgressIndicator(
-                          color: colorScheme.onPrimary,
-                          strokeWidth: AppStroke.regular,
-                        ),
-                      )
-                    : const Text('儲存'),
+              child: LoadingButton.filled(
+                isLoading: isLoading,
+                onPressed: hasChanges ? updateProfile : null,
+                child: const Text('儲存'),
               ),
             ),
             const SizedBox(height: AppSpacing.xl),

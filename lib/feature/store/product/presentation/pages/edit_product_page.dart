@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
+import 'package:tryzeon/core/presentation/widgets/loading_button.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
@@ -118,15 +119,10 @@ class _EditProductContent extends HookConsumerWidget {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.smMd),
-            child: TextButton(
-              onPressed: (isSaving || isDeleting) ? null : updateProduct,
-              child: isSaving
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: AppStroke.regular),
-                    )
-                  : const Text('儲存'),
+            child: LoadingButton.text(
+              isLoading: isSaving,
+              onPressed: isDeleting ? null : updateProduct,
+              child: const Text('儲存'),
             ),
           ),
         ],
