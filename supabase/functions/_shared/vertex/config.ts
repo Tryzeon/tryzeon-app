@@ -8,19 +8,26 @@
  *
  * ## Environment
  *
- * | Variable                 | Required     | Read by                              |
- * | ------------------------ | ------------ | ------------------------------------ |
- * | `GOOGLE_SERVICE_ACCOUNT` | yes          | everything — credential and project  |
- * | `CHAT_MODEL`             | yes          | chat, image analysis, audio analysis |
- * | `TRYON_MODEL`            | yes          | try-on images, standard engine       |
- * | `TRYON_MODEL_ADVANCED`   | yes          | try-on images, advanced engine       |
- * | `VIDEO_MODEL`            | yes          | try-on video                         |
- * | `VERTEX_LOCATION`        | no, `global` | everything — the endpoint region     |
+ * | Variable                   | Required     | Read by                              |
+ * | -------------------------- | ------------ | ------------------------------------ |
+ * | `GOOGLE_SERVICE_ACCOUNT`   | yes          | everything — credential and project  |
+ * | `CHAT_MODEL`               | yes          | chat, image analysis, audio analysis |
+ * | `TRYON_MODEL`              | yes          | try-on images, standard engine       |
+ * | `TRYON_MODEL_EXPERIMENTAL` | yes          | try-on images, experimental engine   |
+ * | `VIDEO_MODEL`              | yes          | try-on video, standard engine        |
+ * | `VIDEO_MODEL_EXPERIMENTAL` | yes          | try-on video, experimental engine    |
+ * | `VERTEX_LOCATION`          | no, `global` | everything — the endpoint region     |
  *
  * `GOOGLE_SERVICE_ACCOUNT` is the downloaded key file, pasted whole.
  *
  * `CHAT_MODEL` naming three unrelated features is a known wart: changing the
  * chat model also changes how wardrobe photos and size recordings are read.
+ *
+ * Engine tiers follow the Artificial Analysis arenas (image editing and
+ * image-to-video without audio) restricted to Google models on Vertex: the
+ * standard engine is the top-ranked one, the experimental engine the runner-up.
+ * Re-rank when the arenas move; the values below are what the tiers meant when
+ * last set.
  */
 
 function requireEnv(name: string): string {
@@ -76,7 +83,8 @@ export const vertexLocation = (): string => Deno.env.get("VERTEX_LOCATION") ?? "
 
 export const chatModel = (): string => requireEnv("CHAT_MODEL");
 
-export const tryonImageModel = (): string => requireEnv("TRYON_MODEL"); // gemini-2.5-flash-image
-export const tryonAdvancedImageModel = (): string => requireEnv("TRYON_MODEL_ADVANCED"); // gemini-3.1-flash-image
+export const tryonImageModel = (): string => requireEnv("TRYON_MODEL"); // gemini-3.1-flash-image
+export const tryonExperimentalImageModel = (): string => requireEnv("TRYON_MODEL_EXPERIMENTAL"); // gemini-3-pro-image
 
-export const tryonVideoModel = (): string => requireEnv("VIDEO_MODEL"); // veo-3.1-generate-001
+export const tryonVideoModel = (): string => requireEnv("VIDEO_MODEL"); // veo-3.1-fast-generate-001
+export const tryonExperimentalVideoModel = (): string => requireEnv("VIDEO_MODEL_EXPERIMENTAL"); // veo-3.1-generate-001

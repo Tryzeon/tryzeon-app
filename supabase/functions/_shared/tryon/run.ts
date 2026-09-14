@@ -141,7 +141,10 @@ export async function runTryonJob<M extends TryonMode>(
     // Stage 3: persist. The two casts are the single point where the
     // mode -> result-variant correspondence is asserted.
     if (job.mode === "video") {
-      const bytes = await generateVideo(generated, job.transitionPrompt);
+      const bytes = await generateVideo(generated, {
+        engine: job.engine,
+        transitionPrompt: job.transitionPrompt,
+      });
       const videoUrl = await uploadVideo(
         bytes,
         assetKey(job.userId, now(), "mp4"),

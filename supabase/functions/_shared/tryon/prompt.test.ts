@@ -56,7 +56,7 @@ Deno.test("buildVideoPrompt falls back to the default when no transition is give
 });
 
 Deno.test("buildVideoPrompt embeds a custom transition style", () => {
-  const prompt = buildVideoPrompt("slow dolly in");
+  const prompt = buildVideoPrompt({ transitionPrompt: "slow dolly in" });
   assertStringIncludes(prompt, "Camera and transition style: slow dolly in.");
 });
 

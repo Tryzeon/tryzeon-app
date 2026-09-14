@@ -5,7 +5,8 @@
 import { experimental_generateVideo, generateText } from "ai";
 import { base64ToUint8Array } from "../image-utils.ts";
 import {
-  tryonAdvancedImageModel,
+  tryonExperimentalImageModel,
+  tryonExperimentalVideoModel,
   tryonImageModel,
   tryonVideoModel,
 } from "../vertex/config.ts";
@@ -16,7 +17,7 @@ import {
   buildVideoPrompt,
   SYSTEM_INSTRUCTION,
 } from "./prompt.ts";
-import type { ImageGenerationOptions } from "./types.ts";
+import type { ImageGenerationOptions, VideoGenerationOptions } from "./types.ts";
 
 /**
  * An `image` part rather than a `file` one so the SDK settles the media type: a
@@ -39,10 +40,10 @@ export async function generateTryonImage(
   const taskPrompt = buildTaskPrompt(garmentGroups, opts);
   console.log("[tryon] task prompt:\n" + taskPrompt);
 
-  // Read at call time, not at module load: a deployment missing the advanced
-  // model must still serve standard jobs.
-  const modelName = opts.engine === "advanced"
-    ? tryonAdvancedImageModel()
+  // Read at call time, not at module load: a deployment missing the
+  // experimental model must still serve standard jobs.
+  const modelName = opts.engine === "experimental"
+    ? tryonExperimentalImageModel()
     : tryonImageModel();
 
   const { files, finishReason } = await generateText({
@@ -89,13 +90,17 @@ const POLL_INTERVAL_MS = 5000;
  */
 export async function generateTryonVideo(
   tryonImageBase64: string,
-  transitionPrompt?: string,
+  opts: VideoGenerationOptions = {},
 ): Promise<Uint8Array> {
+  const modelName = opts.engine === "experimental"
+    ? tryonExperimentalVideoModel()
+    : tryonVideoModel();
+
   const { video } = await experimental_generateVideo({
-    model: vertexVideoModel(tryonVideoModel()),
+    model: vertexVideoModel(modelName),
     prompt: {
       image: tryonImageBase64,
-      text: buildVideoPrompt(transitionPrompt),
+      text: buildVideoPrompt(opts),
     },
     aspectRatio: "9:16",
     generateAudio: false,

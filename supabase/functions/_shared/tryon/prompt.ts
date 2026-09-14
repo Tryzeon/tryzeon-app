@@ -38,7 +38,7 @@ ${lines.join("\n")}`;
  * field being optional, a copy would stay assignable after a rename and
  * silently drop that input.
  */
-export interface TaskPromptOptions {
+export interface ImagePromptOptions {
   garmentDetails?: (string | undefined)[];
   scenePrompt?: string;
   stylingPrompt?: string;
@@ -46,7 +46,7 @@ export interface TaskPromptOptions {
 
 export function buildTaskPrompt(
   garmentGroups: string[][],
-  opts: TaskPromptOptions = {},
+  opts: ImagePromptOptions = {},
 ): string {
   const { garmentDetails, scenePrompt, stylingPrompt } = opts;
   const totalGarmentImages = garmentGroups.reduce((a, g) => a + g.length, 0);
@@ -135,7 +135,12 @@ Place the person in this scene: ${scenePrompt}
 const DEFAULT_VIDEO_PROMPT =
   "The person is wearing the new outfit and turning slightly to show the fit of the clothing. Natural movement, professional fashion video style.";
 
-export function buildVideoPrompt(transitionPrompt?: string): string {
+export interface VideoPromptOptions {
+  transitionPrompt?: string;
+}
+
+export function buildVideoPrompt(opts: VideoPromptOptions = {}): string {
+  const { transitionPrompt } = opts;
   if (!transitionPrompt) {
     return DEFAULT_VIDEO_PROMPT;
   }

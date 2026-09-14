@@ -394,8 +394,7 @@ Deno.test("validateTryonParams rejects baseImage combined with garments", () => 
 
 Deno.test("validateTryonParams rejects baseImage combined with an avatar", () => {
   assertThrows(
-    () =>
-      validateTryonParams({ ...animateParams, avatar: { base64: "A" } }),
+    () => validateTryonParams({ ...animateParams, avatar: { base64: "A" } }),
     ValidationError,
     "avatar",
   );
@@ -408,7 +407,10 @@ Deno.test("validateTryonParams accepts a scenePrompt with baseImage and drops it
 });
 
 Deno.test("validateTryonParams keeps the transitionPrompt with baseImage", () => {
-  const out = validateTryonParams({ ...animateParams, transitionPrompt: "spin" });
+  const out = validateTryonParams({
+    ...animateParams,
+    transitionPrompt: "spin",
+  });
   assertEquals(out.transitionPrompt, "spin");
 });
 
@@ -493,26 +495,30 @@ Deno.test("validateTryonParams defaults a missing engine to standard", () => {
   assertEquals(validateTryonParams(validParams).engine, "standard");
 });
 
-Deno.test("validateTryonParams keeps the advanced engine on a generate job", () => {
-  const job = validateTryonParams({ ...validParams, engine: "advanced" });
-  assertEquals(job.engine, "advanced");
+Deno.test("validateTryonParams keeps the experimental engine on a generate job", () => {
+  const job = validateTryonParams({ ...validParams, engine: "experimental" });
+  assertEquals(job.engine, "experimental");
 });
 
-Deno.test("validateTryonParams rejects an unknown engine", () => {
-  assertThrows(
-    () =>
-      validateTryonParams({
-        ...validParams,
-        engine: "turbo" as TryonParams["engine"],
-      }),
-    ValidationError,
-    "engine",
-  );
+Deno.test("validateTryonParams falls back to standard on an unknown engine", () => {
+  const job = validateTryonParams({
+    ...validParams,
+    engine: "turbo" as TryonParams["engine"],
+  });
+  assertEquals(job.engine, "standard");
+});
+
+Deno.test("validateTryonParams falls back to standard on a non-string engine", () => {
+  const job = validateTryonParams({
+    ...validParams,
+    engine: 7 as unknown as TryonParams["engine"],
+  });
+  assertEquals(job.engine, "standard");
 });
 
 Deno.test("validateTryonParams keeps the engine on an animate job", () => {
-  const out = validateTryonParams({ ...animateParams, engine: "advanced" });
-  assertEquals(out.engine, "advanced");
+  const out = validateTryonParams({ ...animateParams, engine: "experimental" });
+  assertEquals(out.engine, "experimental");
   assertEquals(out.baseImage, { base64: "FINISHED" });
 });
 

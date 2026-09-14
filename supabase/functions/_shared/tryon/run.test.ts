@@ -130,8 +130,8 @@ Deno.test("video mode passes the transition prompt to the generator", async () =
     {
       quota: quota.factory,
       generate: () => Promise.resolve("GENERATEDB64"),
-      generateVideo: (_image, transitionPrompt) => {
-        seenPrompt = transitionPrompt;
+      generateVideo: (_image, opts) => {
+        seenPrompt = opts?.transitionPrompt;
         return Promise.resolve(new Uint8Array([1]));
       },
       uploadVideo: () => Promise.resolve("https://vid/x.mp4"),
@@ -591,7 +591,7 @@ Deno.test("runTryonJob forwards the engine to the image generator", async () => 
   const quota = fakeQuota();
   let seenEngine: string | undefined;
 
-  await runTryonJob(client, { ...imageParams, engine: "advanced" }, {
+  await runTryonJob(client, { ...imageParams, engine: "experimental" }, {
     quota: quota.factory,
     generate: (_avatar, _groups, opts) => {
       seenEngine = opts?.engine;
@@ -600,7 +600,44 @@ Deno.test("runTryonJob forwards the engine to the image generator", async () => 
     upload: () => Promise.resolve("https://img/result.png"),
   });
 
-  assertEquals(seenEngine, "advanced");
+  assertEquals(seenEngine, "experimental");
+});
+
+Deno.test("runTryonJob forwards the engine to the video generator", async () => {
+  const quota = fakeQuota();
+  let seenEngine: string | undefined;
+
+  await runTryonJob(
+    client,
+    { ...imageParams, mode: "video", engine: "experimental" },
+    {
+      quota: quota.factory,
+      generate: () => Promise.resolve("GENERATEDB64"),
+      generateVideo: (_image, opts) => {
+        seenEngine = opts?.engine;
+        return Promise.resolve(new Uint8Array([1]));
+      },
+      uploadVideo: () => Promise.resolve("https://vid/x.mp4"),
+    },
+  );
+
+  assertEquals(seenEngine, "experimental");
+});
+
+Deno.test("animate mode forwards the engine to the video generator", async () => {
+  const quota = fakeQuota();
+  let seenEngine: string | undefined;
+
+  await runTryonJob(client, { ...animateParams, engine: "experimental" }, {
+    quota: quota.factory,
+    generateVideo: (_image, opts) => {
+      seenEngine = opts?.engine;
+      return Promise.resolve(new Uint8Array([1]));
+    },
+    uploadVideo: () => Promise.resolve("https://vid/x.mp4"),
+  });
+
+  assertEquals(seenEngine, "experimental");
 });
 
 Deno.test("runTryonJob sends the standard engine when the caller names none", async () => {

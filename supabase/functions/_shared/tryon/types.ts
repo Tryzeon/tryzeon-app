@@ -1,5 +1,5 @@
 import type { DailyUsage, UsageCounter } from "../quota.ts";
-import type { TaskPromptOptions } from "./prompt.ts";
+import type { ImagePromptOptions, VideoPromptOptions } from "./prompt.ts";
 import type { DbClient } from "../supabase.ts";
 
 export type { UsageCounter };
@@ -78,7 +78,7 @@ export type TryonMode = "image" | "video";
  * Video goes through the same image pass, so this is not an image-mode-only
  * setting; only an animate job escapes it. Defaults to `standard`.
  */
-export type TryonEngine = "standard" | "advanced";
+export type TryonEngine = "standard" | "experimental";
 
 export interface TryonParams {
   userId: string;
@@ -147,14 +147,18 @@ export type ImageGenerator = (
   opts?: ImageGenerationOptions,
 ) => Promise<string | null>;
 
-/** `engine` names a model rather than text, so the prompt builder ignores it. */
-export interface ImageGenerationOptions extends TaskPromptOptions {
+/** `engine` names a model rather than text, so the prompt builders ignore it. */
+export interface ImageGenerationOptions extends ImagePromptOptions {
+  engine?: TryonEngine;
+}
+
+export interface VideoGenerationOptions extends VideoPromptOptions {
   engine?: TryonEngine;
 }
 
 export type VideoGenerator = (
   tryonImageBase64: string,
-  transitionPrompt?: string,
+  opts?: VideoGenerationOptions,
 ) => Promise<Uint8Array>;
 
 export type ImageUploader = (

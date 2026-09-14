@@ -12,6 +12,7 @@ import type {
   BaseImage,
   GarmentInput,
   ProductRef,
+  TryonEngine,
   TryonParams,
 } from "./types.ts";
 
@@ -132,6 +133,21 @@ function validateGarment(garment: GarmentInput): GarmentInput {
   };
 }
 
+/**
+ * Defaulted rather than rejected: the engine only picks a model tier, so an
+ * unrecognised value — a client ahead of or behind this deployment — should
+ * still get a result on the standard model instead of a 400 for a setting it
+ * cannot see or fix.
+ */
+function normalizeEngine(value: unknown): TryonEngine {
+  if (value === undefined || value === null) return "standard";
+  if (value === "standard" || value === "experimental") return value;
+  console.warn(
+    `[tryon] unknown engine ${JSON.stringify(value)}, using standard`,
+  );
+  return "standard";
+}
+
 /** Called by `runTryonJob`, so every caller (app, LIFF, LINE) is checked. */
 export function validateTryonParams(params: TryonParams): TryonParams {
   requireString(params.userId, "userId");
@@ -140,13 +156,7 @@ export function validateTryonParams(params: TryonParams): TryonParams {
     throw new ValidationError("mode must be 'image' or 'video'");
   }
 
-  // Rejected rather than defaulted: an unrecognised engine means the caller
-  // asked for a model this deployment does not have, and quietly running the
-  // standard one would bill them for something they did not ask for.
-  const engine = params.engine ?? "standard";
-  if (engine !== "standard" && engine !== "advanced") {
-    throw new ValidationError("engine must be 'standard' or 'advanced'");
-  }
+  const engine = normalizeEngine(params.engine);
 
   assertOptionalText(
     params.scenePrompt,
