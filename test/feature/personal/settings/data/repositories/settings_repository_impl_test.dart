@@ -31,7 +31,7 @@ void main() {
         scenePrompt: 'urban street',
         stylingPrompt: 'tucked in',
         transitionPrompt: 'jump cut',
-        engine: TryonEngine.advanced,
+        engine: TryonEngine.experimental,
       ),
     );
 
@@ -39,7 +39,7 @@ void main() {
     expect(config.scenePrompt, 'urban street');
     expect(config.stylingPrompt, 'tucked in');
     expect(config.transitionPrompt, 'jump cut');
-    expect(config.engine, TryonEngine.advanced);
+    expect(config.engine, TryonEngine.experimental);
   });
 
   test('falls back to the standard engine when the stored name is unknown', () async {

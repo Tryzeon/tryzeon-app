@@ -179,17 +179,17 @@ void main() {
     expect(body.containsKey('stylingPrompt'), isFalse);
   });
 
-  test('sends the engine only when the user picked the advanced one', () {
+  test('sends the engine only when the user picked the experimental one', () {
     final body = TryonRequestModel.fromDomain(
       const TryonRequest.generate(
         requestId: 'r1',
         garments: garments,
         mode: TryonMode.image,
-        engine: TryonEngine.advanced,
+        engine: TryonEngine.experimental,
       ),
     ).toJson();
 
-    expect(body['engine'], 'advanced');
+    expect(body['engine'], 'experimental');
   });
 
   test('names the engine on every body, the standard one included', () {
@@ -210,11 +210,11 @@ void main() {
       const TryonRequest.animate(
         requestId: 'r1',
         baseImageBase64: 'FINISHED',
-        engine: TryonEngine.advanced,
+        engine: TryonEngine.experimental,
       ),
     ).toJson();
 
-    expect(body['engine'], 'advanced');
+    expect(body['engine'], 'experimental');
   });
 
   test('an animate request reports video as its mode', () {

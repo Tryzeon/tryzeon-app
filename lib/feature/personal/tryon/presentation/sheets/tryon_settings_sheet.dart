@@ -166,17 +166,17 @@ class _TryonSettingsForm extends HookConsumerWidget {
                   children: [
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: Text('進階模型 Beta', style: textTheme.titleSmall),
+                      title: Text('實驗模型 Beta', style: textTheme.titleSmall),
                       subtitle: Text(
-                        '實驗性質的模型，可能會有不穩定的結果',
+                        '改用評估中的其他模型生成，效果可能不穩定',
                         style: textTheme.bodySmall?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),
                       ),
-                      value: engine.value == TryonEngine.advanced,
-                      onChanged: (final isAdvanced) {
-                        engine.value = isAdvanced
-                            ? TryonEngine.advanced
+                      value: engine.value == TryonEngine.experimental,
+                      onChanged: (final isExperimental) {
+                        engine.value = isExperimental
+                            ? TryonEngine.experimental
                             : TryonEngine.standard;
                         commit();
                       },
