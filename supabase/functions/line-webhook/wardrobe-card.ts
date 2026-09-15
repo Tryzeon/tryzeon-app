@@ -21,7 +21,7 @@ const GARMENT_TYPE_LABEL: Record<Enums<"garment_type">, string> = {
   top: "上衣",
   pants: "褲子",
   skirt: "裙子",
-  dress: "洋裝",
+  one_piece: "連身",
   outerwear: "外套",
   others: "其他",
 };

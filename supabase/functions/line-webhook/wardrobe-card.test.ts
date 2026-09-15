@@ -45,7 +45,7 @@ Deno.test("every garment_type code has a label", () => {
   const labels = GARMENT_TYPE_VALUES.map(
     (c) => toLineWardrobeItem(row({ garment_type: c }), URL)?.garmentTypeLabel,
   );
-  assertEquals(labels, ["上衣", "外套", "褲子", "裙子", "洋裝", "其他"]);
+  assertEquals(labels, ["上衣", "外套", "褲子", "裙子", "連身", "其他"]);
 });
 
 Deno.test("an unknown garment type shows its own code rather than dropping the card", () => {
@@ -97,7 +97,7 @@ Deno.test("garmentNoun keeps a real noun as-is", () => {
   assertEquals(garmentNoun("上衣"), "上衣");
   assertEquals(garmentNoun("褲子"), "褲子");
   assertEquals(garmentNoun("裙子"), "裙子");
-  assertEquals(garmentNoun("洋裝"), "洋裝");
+  assertEquals(garmentNoun("連身"), "連身");
   assertEquals(garmentNoun("外套"), "外套");
 });
 

@@ -30,7 +30,7 @@ const SCHEMA_GARMENT_TYPES = [...VALID_GARMENT_TYPES, UNKNOWN];
 
 export const ANALYSIS_PROMPT =
   `你是時尚衣物標註助手。分析這張單一衣物的照片，輸出 JSON。
-- garment_type 從以下擇一：top（上衣）, pants（褲子）, skirt（裙子）, dress（洋裝）, outerwear（外套）, others（其他，含套裝、鞋子、配件及無法歸類者）；無法判斷用 ${UNKNOWN}。
+- garment_type 從以下擇一：top（上衣）, pants（褲子）, skirt（裙子）, one_piece（連身：洋裝、連身裙、連身褲、吊帶褲；上下兩件套不算）, outerwear（外套）, others（其他，含套裝、鞋子、配件及無法歸類者）；無法判斷用 ${UNKNOWN}。
 - tags 以「繁體中文」輸出，最多 ${MAX_TAGS} 個，只能從下列受控詞彙挑選：
   顏色：黑、白、灰、米、棕、紅、橙、黃、綠、藍、紫、粉、金、銀
   風格：休閒、正式、運動、復古、簡約、甜美、街頭

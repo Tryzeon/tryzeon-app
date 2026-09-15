@@ -8,7 +8,7 @@ const schemaProperties = (): Record<string, PropertySpec> =>
   (ANALYSIS_SCHEMA as { properties: Record<string, PropertySpec> }).properties;
 
 Deno.test("toResponse passes each valid garment type through", () => {
-  for (const type of ["top", "pants", "skirt", "dress", "outerwear", "others"]) {
+  for (const type of ["top", "pants", "skirt", "one_piece", "outerwear", "others"]) {
     assertEquals(toResponse({ garment_type: type, tags: [] }).garment_type, type);
   }
 });
@@ -18,7 +18,7 @@ Deno.test("toResponse maps the unknown sentinel to null", () => {
 });
 
 Deno.test("toResponse nulls a garment type outside the list, including the retired values", () => {
-  for (const retired of ["shoes", "bottoms", "sets"]) {
+  for (const retired of ["shoes", "bottoms", "sets", "dress"]) {
     assertEquals(toResponse({ garment_type: retired, tags: [] }).garment_type, null);
   }
 });

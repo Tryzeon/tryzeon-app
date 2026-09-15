@@ -105,7 +105,7 @@ const SEARCH_PRODUCTS_SCHEMA = z.object({
 
 const SEARCH_WARDROBE_SCHEMA = z.object({
   garment_type: z.enum(GARMENT_TYPE_VALUES).optional().describe(
-    "衣櫃單品類型：top（上衣）, pants（褲子）, skirt（裙子）, dress（洋裝）, outerwear（外套）, others（其他）。",
+    "衣櫃單品類型：top（上衣）, pants（褲子）, skirt（裙子）, one_piece（連身：洋裝、連身褲）, outerwear（外套）, others（其他）。",
   ),
   tags: z.array(z.string()).optional(),
 });
