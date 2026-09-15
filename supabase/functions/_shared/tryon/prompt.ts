@@ -60,7 +60,7 @@ First classify each garment's category (top / bottom / full-body / outerwear) us
 
 HARD INVARIANTS — DO NOT CHANGE THESE
 - Person's face, expression, hair (color, length, style), skin tone, age, body shape, pose, camera angle, and framing must be identical to the first image.
-- Do not add, remove, or alter tattoos, jewelry, accessories, hands, or fingers.
+- All visible skin (arms, neck, legs, hands, fingers) must be reproduced exactly as in the first image: same tone, same texture. Skin that is plain in the first image stays plain — introduce NO tattoos, body art, marks, or piercings. Existing tattoos, jewelry, and accessories stay exactly as they are.
 - Do not change the background from the first image${
     scenePrompt ? " (unless overridden by SCENE CONTEXT below)" : ""
   }.
@@ -106,7 +106,7 @@ LIGHTING & REALISM
 - Natural skin rendering, no artifacts, no warping, no halos, no double edges.
 
 OUTPUT
-- Return ONE photorealistic image with sharp garment detail, accurate color reproduction, and fashion photography quality.`;
+- Return ONE photorealistic image with sharp garment detail, accurate color reproduction, and clean e-commerce catalog photography quality.`;
 
   prompt += buildGarmentDetailsSection(garmentDetails);
 
