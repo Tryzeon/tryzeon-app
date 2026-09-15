@@ -49,7 +49,7 @@ void main() {
   });
 
   testWidgets('a zoomed guide pans instead of flipping the page', (final tester) async {
-    await pumpSheet(tester, GarmentType.dress);
+    await pumpSheet(tester, GarmentType.onePiece);
     await tester.runAsync(
       () => precacheImage(
         const AssetImage('assets/images/size_guide/top.webp'),
