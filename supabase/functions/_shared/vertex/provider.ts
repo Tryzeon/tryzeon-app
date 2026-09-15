@@ -40,3 +40,8 @@ export function vertexVideoModel(modelId: string) {
   announce(modelId);
   return vertexProvider().videoModel(modelId);
 }
+
+export function vertexInteractionsModel(modelId: string) {
+  announce(modelId);
+  return vertexProvider().interactions(modelId);
+}

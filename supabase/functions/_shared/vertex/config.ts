@@ -23,11 +23,15 @@
  * `CHAT_MODEL` naming three unrelated features is a known wart: changing the
  * chat model also changes how wardrobe photos and size recordings are read.
  *
- * Engine tiers follow the Artificial Analysis arenas (image editing and
- * image-to-video without audio) restricted to Google models on Vertex: the
- * standard engine is the top-ranked one, the experimental engine the runner-up.
- * Re-rank when the arenas move; the values below are what the tiers meant when
- * last set.
+ * Image engine tiers follow the Artificial Analysis image-editing arena
+ * restricted to Google models on Vertex: the standard engine is the top-ranked
+ * one, the experimental engine the runner-up. Re-rank when the arena moves.
+ *
+ * Video engines name an API as well as a model: the standard engine goes
+ * through the Interactions API, the experimental engine through Veo's
+ * `predictLongRunning`. Swapping a value across that line needs a code change
+ * in `tryon/vertex.ts`, not just a new secret. The values below are what the
+ * tiers meant when last set.
  */
 
 function requireEnv(name: string): string {
@@ -86,5 +90,5 @@ export const chatModel = (): string => requireEnv("CHAT_MODEL");
 export const tryonImageModel = (): string => requireEnv("TRYON_MODEL"); // gemini-3.1-flash-image
 export const tryonExperimentalImageModel = (): string => requireEnv("TRYON_MODEL_EXPERIMENTAL"); // gemini-3-pro-image
 
-export const tryonVideoModel = (): string => requireEnv("VIDEO_MODEL"); // veo-3.1-fast-generate-001
-export const tryonExperimentalVideoModel = (): string => requireEnv("VIDEO_MODEL_EXPERIMENTAL"); // veo-3.1-generate-001
+export const tryonVideoModel = (): string => requireEnv("VIDEO_MODEL"); // gemini-omni-1.1-flash-preview
+export const tryonExperimentalVideoModel = (): string => requireEnv("VIDEO_MODEL_EXPERIMENTAL"); // veo-3.1-fast-generate-001
