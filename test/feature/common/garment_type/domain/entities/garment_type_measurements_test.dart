@@ -4,16 +4,28 @@ import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type
 
 void main() {
   group('GarmentType.measurementTypes', () {
-    test('top, outerwear and dress share the upper-body set', () {
+    test('top and outerwear share the upper-body set', () {
       const expected = [
-        GarmentMeasurementType.sleeveLength,
         GarmentMeasurementType.shoulderWidth,
+        GarmentMeasurementType.sleeveLength,
         GarmentMeasurementType.chestCircumference,
         GarmentMeasurementType.length,
       ];
       expect(GarmentType.top.measurementTypes, expected);
       expect(GarmentType.outerwear.measurementTypes, expected);
-      expect(GarmentType.dress.measurementTypes, expected);
+    });
+
+    test('dress covers upper body then lower body', () {
+      expect(GarmentType.dress.measurementTypes, const [
+        GarmentMeasurementType.shoulderWidth,
+        GarmentMeasurementType.sleeveLength,
+        GarmentMeasurementType.chestCircumference,
+        GarmentMeasurementType.waistCircumference,
+        GarmentMeasurementType.hipCircumference,
+        GarmentMeasurementType.thighCircumference,
+        GarmentMeasurementType.legOpening,
+        GarmentMeasurementType.length,
+      ]);
     });
 
     test('skirt has waist, hip and length', () {
