@@ -3,6 +3,7 @@ import {
   CHANNEL_VALUES,
   ELASTICITY_VALUES,
   FIT_VALUES,
+  GARMENT_TYPE_VALUES,
   GENDER_VALUES,
   SEASON_VALUES,
   THICKNESS_VALUES,
@@ -17,6 +18,10 @@ Deno.test("vocabularies match the schema enums", () => {
   assertEquals([...GENDER_VALUES], ["male", "female", "unisex"]);
 });
 
+Deno.test("garment types name one_piece, not dress", () => {
+  assertEquals([...GARMENT_TYPE_VALUES], ["top", "outerwear", "pants", "skirt", "one_piece", "others"]);
+});
+
 Deno.test("no vocabulary is empty", () => {
   for (
     const v of [
@@ -26,6 +31,7 @@ Deno.test("no vocabulary is empty", () => {
       FIT_VALUES,
       CHANNEL_VALUES,
       GENDER_VALUES,
+      GARMENT_TYPE_VALUES,
     ]
   ) {
     assertEquals(v.length > 0, true);

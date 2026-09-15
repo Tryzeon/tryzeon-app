@@ -659,7 +659,13 @@ export type Database = {
     }
     Enums: {
       analytics_event_type: "view" | "try_on" | "purchase_click"
-      garment_type: "top" | "outerwear" | "pants" | "skirt" | "dress" | "others"
+      garment_type:
+        | "top"
+        | "outerwear"
+        | "pants"
+        | "skirt"
+        | "one_piece"
+        | "others"
       product_elasticity: "none" | "low" | "medium" | "high"
       product_fit: "slim" | "regular" | "loose" | "oversize"
       product_gender: "male" | "female" | "unisex"
@@ -798,7 +804,14 @@ export const Constants = {
   public: {
     Enums: {
       analytics_event_type: ["view", "try_on", "purchase_click"],
-      garment_type: ["top", "outerwear", "pants", "skirt", "dress", "others"],
+      garment_type: [
+        "top",
+        "outerwear",
+        "pants",
+        "skirt",
+        "one_piece",
+        "others",
+      ],
       product_elasticity: ["none", "low", "medium", "high"],
       product_fit: ["slim", "regular", "loose", "oversize"],
       product_gender: ["male", "female", "unisex"],
