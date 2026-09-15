@@ -91,6 +91,7 @@ flutter:
     - assets/images/profile/
     - assets/images/logo/
     - assets/images/ads/
+    - assets/images/size_guide/
     - assets/videos/
 
   uses-material-design: true
