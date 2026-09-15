@@ -15,8 +15,8 @@ void main() {
       expect(GarmentType.outerwear.measurementTypes, expected);
     });
 
-    test('dress covers upper body then lower body', () {
-      expect(GarmentType.dress.measurementTypes, const [
+    test('one_piece covers upper body then lower body', () {
+      expect(GarmentType.onePiece.measurementTypes, const [
         GarmentMeasurementType.shoulderWidth,
         GarmentMeasurementType.sleeveLength,
         GarmentMeasurementType.chestCircumference,

@@ -8,7 +8,7 @@ void main() {
     test('names the length by what the garment covers', () {
       expect(GarmentType.top.lengthLabel, '衣長');
       expect(GarmentType.outerwear.lengthLabel, '衣長');
-      expect(GarmentType.dress.lengthLabel, '總長');
+      expect(GarmentType.onePiece.lengthLabel, '總長');
       expect(GarmentType.skirt.lengthLabel, '裙長');
       expect(GarmentType.pants.lengthLabel, '褲長');
       expect(GarmentType.others.lengthLabel, '長度');

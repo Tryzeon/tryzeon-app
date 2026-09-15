@@ -6,14 +6,14 @@ extension GarmentTypeDisplay on GarmentType {
     GarmentType.top => '上衣',
     GarmentType.pants => '褲子',
     GarmentType.skirt => '裙子',
-    GarmentType.dress => '連身',
+    GarmentType.onePiece => '連身',
     GarmentType.outerwear => '外套',
     GarmentType.others => '其他',
   };
 
   String get lengthLabel => switch (this) {
     GarmentType.top || GarmentType.outerwear => '衣長',
-    GarmentType.dress => '總長',
+    GarmentType.onePiece => '總長',
     GarmentType.skirt => '裙長',
     GarmentType.pants => '褲長',
     GarmentType.others => '長度',

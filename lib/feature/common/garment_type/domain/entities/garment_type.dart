@@ -2,7 +2,7 @@ enum GarmentType {
   top('top'),
   pants('pants'),
   skirt('skirt'),
-  dress('dress'),
+  onePiece('one_piece'),
   outerwear('outerwear'),
   others('others');
 

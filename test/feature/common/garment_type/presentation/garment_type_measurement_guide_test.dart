@@ -18,8 +18,8 @@ void main() {
       expect(GarmentType.pants.measurementGuideAssets, const [pants]);
     });
 
-    test('dress shows the top guide followed by the pants guide', () {
-      expect(GarmentType.dress.measurementGuideAssets, const [top, pants]);
+    test('one_piece shows the top guide followed by the pants guide', () {
+      expect(GarmentType.onePiece.measurementGuideAssets, const [top, pants]);
     });
 
     test('others has no guide', () {

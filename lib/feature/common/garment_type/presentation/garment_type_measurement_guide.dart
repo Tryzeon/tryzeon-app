@@ -9,7 +9,7 @@ extension GarmentTypeMeasurementGuide on GarmentType {
     GarmentType.top || GarmentType.outerwear => const [_topGuide],
     GarmentType.skirt => const [_skirtGuide],
     GarmentType.pants => const [_pantsGuide],
-    GarmentType.dress => const [_topGuide, _pantsGuide],
+    GarmentType.onePiece => const [_topGuide, _pantsGuide],
     GarmentType.others => const [],
   };
 }

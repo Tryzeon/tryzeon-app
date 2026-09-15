@@ -32,8 +32,10 @@ void main() {
     expect(find.byType(SmoothPageIndicator), findsNothing);
   });
 
-  testWidgets('dress pages through two guides with an indicator', (final tester) async {
-    await pumpSheet(tester, GarmentType.dress);
+  testWidgets('one_piece pages through two guides with an indicator', (
+    final tester,
+  ) async {
+    await pumpSheet(tester, GarmentType.onePiece);
 
     expect(find.text('連身測量方式'), findsOneWidget);
     expect(find.byType(SmoothPageIndicator), findsOneWidget);

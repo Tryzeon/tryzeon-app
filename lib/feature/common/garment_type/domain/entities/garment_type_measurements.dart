@@ -11,7 +11,7 @@ extension GarmentTypeMeasurements on GarmentType {
       GarmentMeasurementType.chestCircumference,
       GarmentMeasurementType.length,
     ],
-    GarmentType.dress => const [
+    GarmentType.onePiece => const [
       GarmentMeasurementType.shoulderWidth,
       GarmentMeasurementType.sleeveLength,
       GarmentMeasurementType.chestCircumference,
