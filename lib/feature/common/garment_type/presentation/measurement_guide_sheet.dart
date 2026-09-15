@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
@@ -8,6 +10,7 @@ import 'package:tryzeon/feature/common/garment_type/presentation/garment_type_me
 
 const double _guideAspectRatio = 1;
 const double _maxGuideHeightFraction = 0.7;
+const double _maxGuideZoom = 4;
 
 class MeasurementGuideSheet extends HookWidget {
   const MeasurementGuideSheet({super.key, required this.garmentType});
@@ -60,11 +63,14 @@ class MeasurementGuideSheet extends HookWidget {
                 ),
                 child: AspectRatio(
                   aspectRatio: _guideAspectRatio,
-                  child: PageView.builder(
-                    controller: pageController,
+                  child: PhotoViewGallery.builder(
+                    pageController: pageController,
                     itemCount: assets.length,
-                    itemBuilder: (final context, final index) => InteractiveViewer(
-                      child: Image.asset(assets[index], fit: BoxFit.contain),
+                    backgroundDecoration: const BoxDecoration(color: Colors.transparent),
+                    builder: (final context, final index) => PhotoViewGalleryPageOptions(
+                      imageProvider: AssetImage(assets[index]),
+                      minScale: PhotoViewComputedScale.contained,
+                      maxScale: PhotoViewComputedScale.contained * _maxGuideZoom,
                     ),
                   ),
                 ),
