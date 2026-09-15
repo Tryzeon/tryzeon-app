@@ -91,7 +91,7 @@ void main() {
       ),
     );
     await tester.tap(find.text('測量方式'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
 
     expect(find.byType(MeasurementGuideSheet), findsOneWidget);
     expect(find.text('上衣測量方式'), findsOneWidget);
