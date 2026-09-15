@@ -3,6 +3,7 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/body_measurements/presentation/mappers/body_measurement_type_ui_mapper.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/garment_type/presentation/garment_type_display.dart';
+import 'package:tryzeon/feature/common/garment_type/presentation/measurement_guide_button.dart';
 import 'package:tryzeon/feature/common/measurement/presentation/formatters/measurement_value_format.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/product_size.dart';
 import 'package:tryzeon/feature/common/product_size/presentation/mappers/measurement_range_ui_mapper.dart';
@@ -76,7 +77,12 @@ class ProductSizeTable extends StatelessWidget {
         ],
         if (garmentTypes.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.md),
-          Text('商品尺寸', style: textTheme.titleSmall),
+          Row(
+            children: [
+              Expanded(child: Text('商品尺寸', style: textTheme.titleSmall)),
+              MeasurementGuideButton(garmentType: garmentType),
+            ],
+          ),
           const SizedBox(height: AppSpacing.sm),
           _SizeDataTable(
             sizes: sizes,

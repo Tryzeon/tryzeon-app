@@ -7,6 +7,7 @@ import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/common/body_measurements/presentation/mappers/body_measurement_type_ui_mapper.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/garment_type/presentation/garment_type_display.dart';
+import 'package:tryzeon/feature/common/garment_type/presentation/measurement_guide_button.dart';
 import 'package:tryzeon/feature/common/measurement/domain/entities/measurement_unit.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/standard_size_label.dart';
 import 'package:tryzeon/feature/common/product_size/presentation/mappers/garment_measurement_type_ui_mapper.dart';
@@ -72,9 +73,16 @@ class ProductSizeMatrixEditor extends HookWidget {
           _SubsectionHeader(
             title: '商品尺寸',
             helper: '衣服本身量出來的數字',
-            trailing: _UnitSelector(
-              selectedUnit: manager.selectedUnit,
-              onUnitChanged: manager.changeUnit,
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (garmentType case final type?)
+                  MeasurementGuideButton(garmentType: type),
+                _UnitSelector(
+                  selectedUnit: manager.selectedUnit,
+                  onUnitChanged: manager.changeUnit,
+                ),
+              ],
             ),
           ),
           const SizedBox(height: AppSpacing.sm),

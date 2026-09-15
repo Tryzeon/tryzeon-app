@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/common/garment_type/presentation/measurement_guide_sheet.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/product_size.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_size_table.dart';
@@ -66,5 +67,33 @@ void main() {
 
     expect(find.text('褲長'), findsOneWidget);
     expect(find.text('長度'), findsNothing);
+  });
+
+  testWidgets('offers the measurement guide only for garment types that have one', (
+    final tester,
+  ) async {
+    final size = _size(garmentMeasurements: const GarmentMeasurements(length: 60));
+
+    await tester.pumpWidget(
+      _table(
+        size: size,
+        columnTypes: const [GarmentMeasurementType.length],
+        garmentType: GarmentType.others,
+      ),
+    );
+    expect(find.text('測量方式'), findsNothing);
+
+    await tester.pumpWidget(
+      _table(
+        size: size,
+        columnTypes: const [GarmentMeasurementType.length],
+        garmentType: GarmentType.top,
+      ),
+    );
+    await tester.tap(find.text('測量方式'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MeasurementGuideSheet), findsOneWidget);
+    expect(find.text('上衣測量方式'), findsOneWidget);
   });
 }
