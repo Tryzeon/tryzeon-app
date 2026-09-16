@@ -88,6 +88,7 @@ graph TD
     subgraph Backend [Supabase]
         Batch -.->|3. RPC Call| API[log_analytics_events]
         API --> RawTable[(analytics_events)]
+        Tryon[tryon Edge Function] -->|3. try_on per product| RawTable
         Scan[QR / short-link open] --> LinkTable[(link_events)]
 
         RawTable -->|4. GROUP BY on read| ProductView[analytics_product_monthly_summary]
@@ -108,4 +109,4 @@ graph TD
 1. **Frontend**: Batched upload (10 events/5s), lifecycle awareness (auto-flush).
 2. **Backend**: Events are append-only; every number is a `security_invoker` view that aggregates on read, bucketed by Asia/Taipei calendar month. Nothing is pre-computed, so a definition change needs no backfill. When the event tables outgrow this, swap a view for a `MATERIALIZED VIEW` behind the same name.
 3. **Access**: RLS on the event tables — store owners read their own store, members of `admin_users` (via `is_admin()`) read every store.
-4. **Events**: `view` (Page/Impression), `try_on`, `purchase_click`; QR opens live in `link_events`.
+4. **Events**: `view` (Page/Impression) and `purchase_click` are sent by the app; `try_on` is recorded by the `tryon` Edge Function (via `log_tryon_events`, service-role only) once a job succeeds, so clients cannot inflate it; QR opens live in `link_events`.
