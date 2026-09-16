@@ -1,7 +1,9 @@
 import { assertEquals, assertRejects, assertStringIncludes } from "@std/assert";
+import { ServiceBusyError } from "../errors.ts";
 import { GenerationFailedError } from "./errors.ts";
-import { generateTryonVideo } from "./vertex.ts";
+import { generateTryonImage, generateTryonVideo } from "./vertex.ts";
 
+const IMAGE_MODEL = "gemini-3.1-flash-image";
 const STANDARD_MODEL = "gemini-omni-1.1-flash-preview";
 const EXPERIMENTAL_MODEL = "veo-3.1-fast-generate-001";
 const VIDEO_BASE64 = btoa("mp4-bytes");
@@ -36,6 +38,7 @@ async function installServiceAccount() {
       private_key: pem(der),
     }),
   );
+  Deno.env.set("TRYON_MODEL", IMAGE_MODEL);
   Deno.env.set("VIDEO_MODEL", STANDARD_MODEL);
   Deno.env.set("VIDEO_MODEL_EXPERIMENTAL", EXPERIMENTAL_MODEL);
 }
@@ -64,7 +67,10 @@ function stubFetch(
     }
     const body = JSON.parse(init?.body as string);
     captured.push({ url, body });
-    return Promise.resolve(Response.json(respond(url, body)));
+    const answer = respond(url, body);
+    return Promise.resolve(
+      answer instanceof Response ? answer : Response.json(answer),
+    );
   }) as typeof fetch;
   return { captured, restore: () => (globalThis.fetch = original) };
 }
@@ -156,6 +162,43 @@ Deno.test("generateTryonVideo keeps the experimental engine on Veo", async () =>
       captured[0].url,
       `/models/${EXPERIMENTAL_MODEL}:predictLongRunning`,
     );
+  } finally {
+    restore();
+  }
+});
+
+// A quota refusal that asks for no wait, so the test observes the attempt
+// count without sitting through the backoff.
+function quotaRefusal(): Response {
+  return Response.json(
+    { error: { code: 429, status: "RESOURCE_EXHAUSTED" } },
+    { status: 429, headers: { "retry-after": "0" } },
+  );
+}
+
+Deno.test("generateTryonImage retries a quota refusal enough to reach the next minute", async () => {
+  await installServiceAccount();
+  const { captured, restore } = stubFetch(quotaRefusal);
+  try {
+    await assertRejects(
+      () => generateTryonImage(IMAGE_BASE64, [[IMAGE_BASE64]]),
+      ServiceBusyError,
+    );
+    assertEquals(captured.length, 6);
+  } finally {
+    restore();
+  }
+});
+
+Deno.test("generateTryonVideo retries a quota refusal enough to reach the next minute", async () => {
+  await installServiceAccount();
+  const { captured, restore } = stubFetch(quotaRefusal);
+  try {
+    await assertRejects(
+      () => generateTryonVideo(IMAGE_BASE64),
+      ServiceBusyError,
+    );
+    assertEquals(captured.length, 6);
   } finally {
     restore();
   }

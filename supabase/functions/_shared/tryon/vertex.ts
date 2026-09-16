@@ -11,6 +11,7 @@ import {
   tryonVideoModel,
 } from "../vertex/config.ts";
 import { rethrowAsBusy } from "../vertex/errors.ts";
+import { QUOTA_WINDOW_RETRIES } from "../vertex/retry.ts";
 import { GenerationFailedError } from "./errors.ts";
 import {
   vertexInteractionsModel,
@@ -71,6 +72,7 @@ export async function generateTryonImage(
         imageConfig: { aspectRatio: "9:16" },
       },
     },
+    maxRetries: QUOTA_WINDOW_RETRIES,
   }).catch(rethrowAsBusy);
 
   const image = files.find((file) => file.mediaType.startsWith("image/"));
@@ -108,6 +110,7 @@ async function generateInteractionsVideo(
         responseFormat: [{ type: "video", aspectRatio: "9:16" }],
       },
     },
+    maxRetries: QUOTA_WINDOW_RETRIES,
   }).catch(rethrowAsBusy);
 
   const video = files.find((file) => file.mediaType.startsWith("video/"));
@@ -143,6 +146,7 @@ async function generateVeoVideo(
     },
     aspectRatio: "9:16",
     providerOptions: { vertex: { pollIntervalMs: POLL_INTERVAL_MS } },
+    maxRetries: QUOTA_WINDOW_RETRIES,
   }).catch(rethrowAsBusy);
 
   return base64ToUint8Array(video.base64);
