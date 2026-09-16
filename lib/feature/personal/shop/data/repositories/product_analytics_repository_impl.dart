@@ -12,26 +12,6 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
   final AnalyticsEventQueueService _analyticsQueueService;
 
   @override
-  Future<Result<void, Failure>> trackTryon({
-    required final String productId,
-    required final String storeId,
-  }) async {
-    try {
-      _analyticsQueueService.enqueue(
-        AnalyticsEvent(
-          productId: productId,
-          storeId: storeId,
-          eventType: AnalyticsEventType.tryon,
-        ),
-      );
-      return const Ok(null);
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to enqueue try-on event', e, stackTrace);
-      return Err(mapExceptionToFailure(e));
-    }
-  }
-
-  @override
   Future<Result<void, Failure>> trackView({
     required final String productId,
     required final String storeId,

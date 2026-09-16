@@ -15,7 +15,6 @@ import 'package:tryzeon/feature/personal/shop/domain/usecases/get_ads.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/get_shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/get_store_info.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/increment_purchase_click_count.dart';
-import 'package:tryzeon/feature/personal/shop/domain/usecases/increment_tryon_count.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/increment_view_count.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/list_shop_products.dart';
 import 'package:typed_result/typed_result.dart';
@@ -74,11 +73,6 @@ GetStoreInfo getStoreInfo(final Ref ref) {
 @riverpod
 GetAds getAds(final Ref ref) {
   return GetAds(ref.watch(adRepositoryProvider));
-}
-
-@riverpod
-IncrementTryonCount incrementTryonCount(final Ref ref) {
-  return IncrementTryonCount(ref.watch(productAnalyticsRepositoryProvider));
 }
 
 @riverpod
