@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/error/failures.dart';
@@ -9,6 +8,7 @@ import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_preferences.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_garment.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_request.dart';
@@ -39,56 +39,10 @@ class TryonController extends _$TryonController {
   @override
   bool updateShouldNotify(final TryonOutcome? previous, final TryonOutcome? next) => true;
 
-  Future<void> tryonFromLocalImage(
-    final File image, {
+  Future<void> tryonFromOutfit(
+    final List<OutfitPiece> pieces, {
     final TryonMode mode = TryonMode.image,
-  }) async {
-    final Uint8List bytes;
-    try {
-      bytes = await image.readAsBytes();
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to read picked garment image', e, stackTrace);
-      state = TryonFailed(mapExceptionToFailure(e));
-      return;
-    }
-
-    await _start(
-      TryonSubject.generate(
-        garments: [
-          TryonGarment.images(base64Images: [base64Encode(bytes)]),
-        ],
-        mode: mode,
-      ),
-    );
-  }
-
-  Future<void> tryonFromWardrobeItem(
-    final String wardrobeItemId, {
-    final TryonMode mode = TryonMode.image,
-  }) {
-    return _start(
-      TryonSubject.generate(
-        garments: [TryonGarment.wardrobe(wardrobeItemId: wardrobeItemId)],
-        mode: mode,
-      ),
-    );
-  }
-
-  /// The backend resolves the garment image and prompt detail from the product
-  /// id. [sizeId] names the size being worn, when the shopper's measurements
-  /// yielded a recommendation.
-  Future<void> tryonFromProduct(
-    final String productId, {
-    final String? sizeId,
-    final TryonMode mode = TryonMode.image,
-  }) {
-    return _start(
-      TryonSubject.generate(
-        garments: [TryonGarment.product(productId: productId, sizeId: sizeId)],
-        mode: mode,
-      ),
-    );
-  }
+  }) => _start(TryonSubject.generate(pieces: pieces, mode: mode));
 
   Future<void> regenerate(final TryonGalleryEntry entry) => _start(entry.subject);
 
@@ -205,7 +159,10 @@ class TryonController extends _$TryonController {
           ),
         );
 
-      case TryonSubjectGenerate(:final garments, :final mode):
+      case TryonSubjectGenerate(:final pieces, :final mode):
+        final garments = await _garmentsFor(pieces);
+        if (garments.isFailure) return Err(garments.getError()!);
+
         // Sending none makes the backend fall back to the profile photo.
         String? avatarBase64;
         if (customAvatarUrl != null && customAvatarUrl.isNotEmpty) {
@@ -217,7 +174,7 @@ class TryonController extends _$TryonController {
         return Ok(
           TryonRequest.generate(
             requestId: id,
-            garments: garments,
+            garments: garments.get()!,
             mode: mode,
             avatarBase64: avatarBase64,
             scenePrompt: preferences.scenePrompt,
@@ -229,5 +186,28 @@ class TryonController extends _$TryonController {
           ),
         );
     }
+  }
+
+  /// Local photos are read here, at launch, so a regenerate re-reads the file
+  /// instead of every gallery entry holding a base64 copy.
+  Future<Result<List<TryonGarment>, Failure>> _garmentsFor(
+    final List<OutfitPiece> pieces,
+  ) async {
+    final garments = <TryonGarment>[];
+    for (final piece in pieces) {
+      switch (piece) {
+        case OutfitPieceWardrobe() || OutfitPieceProduct():
+          garments.add(piece.garment!);
+        case OutfitPieceLocal(:final path):
+          try {
+            final bytes = await File(path).readAsBytes();
+            garments.add(TryonGarment.images(base64Images: [base64Encode(bytes)]));
+          } catch (e, stackTrace) {
+            AppLogger.error('Failed to read picked garment image', e, stackTrace);
+            return Err(mapExceptionToFailure(e));
+          }
+      }
+    }
+    return Ok(garments);
   }
 }

@@ -1,7 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:tryzeon/core/router/shells/personal_tab.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/controllers/tryon_controller.dart';
 
@@ -17,42 +17,21 @@ class TryonCoordinator {
   TryonCoordinator(this._ref);
 
   final Ref _ref;
-  VoidCallback? _navigateToHome;
+  ValueChanged<PersonalTab>? _navigateTo;
 
   // ignore: use_setters_to_change_properties
-  void bindNavigateToHome(final VoidCallback fn) => _navigateToHome = fn;
-  void unbindNavigateToHome(final VoidCallback fn) {
-    if (_navigateToHome == fn) _navigateToHome = null;
+  void bindNavigation(final ValueChanged<PersonalTab> fn) => _navigateTo = fn;
+  void unbindNavigation(final ValueChanged<PersonalTab> fn) {
+    if (_navigateTo == fn) _navigateTo = null;
   }
 
-  Future<void> tryonFromLocalImage(
-    final File image, {
-    final TryonMode mode = TryonMode.image,
-  }) async {
-    _navigateToHome?.call();
-    await _ref
-        .read(tryonControllerProvider.notifier)
-        .tryonFromLocalImage(image, mode: mode);
-  }
+  void navigateTo(final PersonalTab tab) => _navigateTo?.call(tab);
 
-  Future<void> tryonFromWardrobeItem(
-    final String wardrobeItemId, {
+  Future<void> tryonFromOutfit(
+    final List<OutfitPiece> pieces, {
     final TryonMode mode = TryonMode.image,
   }) async {
-    _navigateToHome?.call();
-    await _ref
-        .read(tryonControllerProvider.notifier)
-        .tryonFromWardrobeItem(wardrobeItemId, mode: mode);
-  }
-
-  Future<void> tryonFromProduct(
-    final String productId, {
-    final String? sizeId,
-    final TryonMode mode = TryonMode.image,
-  }) async {
-    _navigateToHome?.call();
-    await _ref
-        .read(tryonControllerProvider.notifier)
-        .tryonFromProduct(productId, sizeId: sizeId, mode: mode);
+    navigateTo(PersonalTab.home);
+    await _ref.read(tryonControllerProvider.notifier).tryonFromOutfit(pieces, mode: mode);
   }
 }

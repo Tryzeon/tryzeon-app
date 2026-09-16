@@ -68,7 +68,7 @@ class TryonModeSheet extends ConsumerWidget {
             _ModeCard(
               icon: Icons.photo_outlined,
               title: '圖片試穿',
-              subtitle: '讓 AI 幫你穿上這件衣服',
+              subtitle: '讓 AI 幫你穿上',
               isLocked: false,
               isNew: false,
               onTap: () {
