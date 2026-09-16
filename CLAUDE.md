@@ -43,6 +43,7 @@ Every feature follows Clean Architecture. When adding code, these are hard rules
 - **`core/modules/*` use the service pattern, not repository + usecase** (template: `location`). These are infrastructure (location, short_link, analytics), not business features — abstract the capability behind an interface in `domain/services/`, put the implementation in `data/services/`, and keep domain types in `domain/entities/`. Consumers (providers, pages) depend on the interface, never the concrete impl or a raw datasource. Do NOT add a usecase layer here.
 - **Constants:** every table name, storage bucket, edge-function name, RPC name, and route segment is a constant in `AppConstants` / `AppRoutes`. No raw strings at call sites.
 - **Exception mapping:** extend `mapExceptionToFailure` with typed `is` checks when introducing a new error source. Never match on `toString()` contents, and never swallow errors with a bare `catch (_)` — at minimum log via `AppLogger`.
+- **Isar cache invalidation:** changing an Isar `@collection` field or the set of values a cached string can hold (e.g. renaming an enum value) must bump `AppConstants.cacheSchemaVersion` in the same commit, or stale rows decode to fallbacks while the cache still reads as valid.
 - **Widgets stay thin:** no business logic (network calls, encoding, orchestration) inside `build()` or inline page callbacks — put it in a notifier/controller or usecase that returns `Result`.
 
 ### Analytics
