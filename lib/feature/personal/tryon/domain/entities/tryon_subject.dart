@@ -1,15 +1,16 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_garment.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 
 part 'tryon_subject.freezed.dart';
 
-/// Holds only what the app cannot rebuild: the avatar and the preferences are
-/// read fresh on every run, so regenerating picks up a changed setting.
+/// Holds only what the app cannot rebuild: garments are resolved from the
+/// pieces at launch, and the avatar and preferences are read fresh on every
+/// run, so regenerating picks up a changed setting.
 @freezed
 sealed class TryonSubject with _$TryonSubject {
   const factory TryonSubject.generate({
-    required final List<TryonGarment> garments,
+    required final List<OutfitPiece> pieces,
     required final TryonMode mode,
   }) = TryonSubjectGenerate;
 
@@ -27,15 +28,8 @@ sealed class TryonSubject with _$TryonSubject {
     TryonSubjectAnimated() => TryonMode.video,
   };
 
-  String? get productId => switch (this) {
-    TryonSubjectGenerate(:final garments) =>
-      garments.whereType<TryonGarmentProduct>().firstOrNull?.productId,
-    TryonSubjectAnimated(:final origin) => origin.productId,
-  };
-
-  String? get wardrobeItemId => switch (this) {
-    TryonSubjectGenerate(:final garments) =>
-      garments.whereType<TryonGarmentWardrobe>().firstOrNull?.wardrobeItemId,
-    TryonSubjectAnimated(:final origin) => origin.wardrobeItemId,
+  List<OutfitPiece> get pieces => switch (this) {
+    TryonSubjectGenerate(:final pieces) => pieces,
+    TryonSubjectAnimated(:final origin) => origin.pieces,
   };
 }
