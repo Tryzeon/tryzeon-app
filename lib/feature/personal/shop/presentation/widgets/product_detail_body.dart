@@ -11,7 +11,7 @@ import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart'
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/actions/launch_product_purchase.dart';
-import 'package:tryzeon/feature/personal/shop/presentation/actions/trigger_product_tryon.dart';
+import 'package:tryzeon/feature/personal/shop/presentation/actions/product_outfit_actions.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_description_section.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_image_viewer.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_info_section.dart';
@@ -108,9 +108,7 @@ class _ProductDetailContent extends HookConsumerWidget {
                 bottom: AppSpacing.sm,
                 right: AppSpacing.sm,
                 child: Skeleton.ignore(
-                  child: TryonFab(
-                    onTap: () => triggerProductTryon(context, ref, product),
-                  ),
+                  child: TryonFab(onTap: () => triggerProductTryon(context, ref, product)),
                 ),
               ),
             ],
