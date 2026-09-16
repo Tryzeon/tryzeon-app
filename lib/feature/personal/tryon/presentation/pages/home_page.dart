@@ -13,10 +13,13 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/crop_options.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/actions/edit_outfit.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/controllers/tryon_controller.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/coordinators/tryon_coordinator.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/sheets/tryon_mode_sheet.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_outcome.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/home_primary_action_button.dart';
@@ -25,6 +28,7 @@ import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_discla
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_gallery.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_gallery_actions.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_indicator.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_outfit_strip.dart';
 import 'package:typed_result/typed_result.dart';
 
 class HomePage extends HookConsumerWidget {
@@ -113,9 +117,9 @@ class HomePage extends HookConsumerWidget {
       );
       if (garmentImage == null) return;
 
-      await ref
-          .read(tryonCoordinatorProvider)
-          .tryonFromLocalImage(garmentImage, mode: mode);
+      await ref.read(tryonCoordinatorProvider).tryonFromOutfit([
+        OutfitPiece.local(path: garmentImage.path),
+      ], mode: mode);
     }
 
     void startTryon() {
@@ -223,6 +227,14 @@ class HomePage extends HookConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (galleryState.currentEntry case final FinishedTryonEntry entry
+                        when entry.pieces.isNotEmpty) ...[
+                      TryonOutfitStrip(
+                        pieces: entry.pieces,
+                        onTap: () => showOutfitPieces(context, ref, entry),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                    ],
                     TryonIndicator(
                       currentTryonIndex: galleryState.currentIndex,
                       tryonImagesCount: galleryState.entries.length,
