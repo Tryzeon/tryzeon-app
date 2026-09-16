@@ -655,6 +655,10 @@ export type Database = {
         Returns: Json[]
       }
       log_analytics_events: { Args: { p_events: Json }; Returns: undefined }
+      log_tryon_events: {
+        Args: { p_product_ids: string[]; p_user_id: string }
+        Returns: undefined
+      }
       visible_email: { Args: { p_email: string }; Returns: string }
     }
     Enums: {
