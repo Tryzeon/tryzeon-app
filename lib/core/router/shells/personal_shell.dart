@@ -22,9 +22,9 @@ class PersonalShell extends HookConsumerWidget {
     final coordinator = ref.read(tryonCoordinatorProvider);
 
     useEffect(() {
-      void navigateToHome() => navigationShell.goBranch(0);
-      coordinator.bindNavigateToHome(navigateToHome);
-      return () => coordinator.unbindNavigateToHome(navigateToHome);
+      void navigateTo(final PersonalTab tab) => navigationShell.goBranch(tab.index);
+      coordinator.bindNavigation(navigateTo);
+      return () => coordinator.unbindNavigation(navigateTo);
     }, [coordinator, navigationShell]);
 
     final lastTabTapTime = useState<DateTime?>(null);
@@ -60,12 +60,41 @@ class PersonalShell extends HookConsumerWidget {
     }
 
     final mediaQuery = MediaQuery.of(context);
+    final currentTab = PersonalTab.values[navigationShell.currentIndex];
+    final showsDock = currentTab == PersonalTab.wardrobe;
+    final dockIsOpen = ref.watch(outfitTrayProvider.select((final s) => s.isOpen));
+    final dockInset = showsDock && dockIsOpen
+        ? OutfitDock.reservedHeight + AppSpacing.md
+        : 0.0;
+
     // Own messenger so each page's Scaffold (not this shell's) hosts snackbars
     // and lifts them above its own FAB; the inset tells them about the nav bar.
+    // The open dock is folded into the bottom padding so every page, FAB and
+    // SafeArea under it clears the dock without knowing it exists.
     final body = ScaffoldMessenger(
       child: BottomNavBarInset(
         overlap: AppSpacing.bottomNavBarOverlap,
-        child: MediaQuery(data: mediaQuery, child: navigationShell),
+        child: MediaQuery(
+          data: mediaQuery.copyWith(
+            padding: mediaQuery.padding.copyWith(
+              bottom: mediaQuery.padding.bottom + dockInset,
+            ),
+          ),
+          child: Stack(
+            children: [
+              navigationShell,
+              Positioned(
+                left: AppSpacing.md,
+                right: AppSpacing.md,
+                bottom:
+                    mediaQuery.padding.bottom +
+                    AppSpacing.bottomNavBarOverlap +
+                    AppSpacing.smMd,
+                child: OutfitDock(isVisible: showsDock),
+              ),
+            ],
+          ),
+        ),
       ),
     );
 
