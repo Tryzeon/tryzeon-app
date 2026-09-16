@@ -1,5 +1,4 @@
 enum AnalyticsEventType {
-  tryon('try_on'),
   purchaseClick('purchase_click'),
   view('view');
 
