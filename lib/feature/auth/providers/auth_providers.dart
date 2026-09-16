@@ -36,6 +36,11 @@ User? currentUser(final Ref ref) {
   return Supabase.instance.client.auth.currentUser;
 }
 
+/// Changes only when a different account signs in — not on token refresh —
+/// so per-user caches can key on it without refetching every hour.
+@riverpod
+String? currentUserId(final Ref ref) => ref.watch(currentUserProvider)?.id;
+
 @riverpod
 AuthRemoteDataSource authRemoteDataSource(final Ref ref) {
   return AuthRemoteDataSource(Supabase.instance.client);

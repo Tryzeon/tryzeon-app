@@ -8,6 +8,7 @@ import 'package:tryzeon/core/data/services/image_analysis_api.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_local_datasource.dart';
@@ -90,10 +91,14 @@ AnalyzeWardrobeImage analyzeWardrobeImageUseCase(final Ref ref) {
   );
 }
 
+/// Keyed on the signed-in user, not on who is listening: a keepAlive holder
+/// (the outfit tray) must never carry one account's list into the next.
 @riverpod
 class WardrobeItemsNotifier extends _$WardrobeItemsNotifier {
   @override
   Future<List<WardrobeItem>> build() async {
+    if (ref.watch(currentUserIdProvider) == null) return const [];
+
     final getWardrobeItemsUseCase = ref.watch(getWardrobeItemsUseCaseProvider);
     final result = await getWardrobeItemsUseCase();
     if (result.isFailure) {
@@ -214,3 +219,9 @@ Future<File> wardrobeItemImage(final Ref ref, final String imagePath) async {
   }
   return result.get()!;
 }
+
+/// Null while the wardrobe has not loaded, so callers can tell "unknown" from
+/// "empty".
+@riverpod
+Set<String>? wardrobeItemIds(final Ref ref) =>
+    ref.watch(wardrobeItemsProvider).value?.map((final i) => i.id).toSet();
