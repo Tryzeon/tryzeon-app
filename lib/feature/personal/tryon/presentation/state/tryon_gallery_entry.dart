@@ -1,3 +1,4 @@
+import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_subject.dart';
@@ -12,6 +13,8 @@ sealed class TryonGalleryEntry {
   TryonResult? get result;
 
   TryonMode get mode => subject.mode;
+
+  List<OutfitPiece> get pieces => subject.pieces;
 }
 
 final class PendingTryonEntry extends TryonGalleryEntry {

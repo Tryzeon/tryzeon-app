@@ -1,7 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_garment.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_subject.dart';
@@ -9,15 +10,13 @@ import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
 
 void main() {
-  const imageSubject = TryonSubject.generate(
-    garments: [TryonGarment.product(productId: 'p1')],
-    mode: TryonMode.image,
+  const piece = OutfitPiece.wardrobe(
+    wardrobeItemId: 'w1',
+    imagePath: 'w1.jpg',
+    garmentType: GarmentType.top,
   );
-
-  const videoSubject = TryonSubject.generate(
-    garments: [TryonGarment.product(productId: 'p1')],
-    mode: TryonMode.video,
-  );
+  const imageSubject = TryonSubject.generate(pieces: [piece], mode: TryonMode.image);
+  const videoSubject = TryonSubject.generate(pieces: [piece], mode: TryonMode.video);
 
   TryonGalleryNotifier makeNotifier() {
     final container = ProviderContainer(
@@ -73,5 +72,13 @@ void main() {
       imageSubject,
       videoSubject,
     ]);
+  });
+
+  test('the finished entry keeps the pieces its placeholder carried', () {
+    final notifier = makeNotifier()..addPending(id: 'a', subject: imageSubject);
+
+    notifier.complete(const TryonResult(id: 'a', mode: TryonMode.image, imageUrl: 'u'));
+
+    expect(notifier.state.entries.single.pieces, const [piece]);
   });
 }

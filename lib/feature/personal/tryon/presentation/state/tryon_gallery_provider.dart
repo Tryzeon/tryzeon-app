@@ -71,9 +71,9 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
   bool complete(final TryonResult result) {
     final index = state.entries.indexWhere((final e) => e.id == result.id);
     if (index == -1) return false;
+    final entry = state.entries[index];
     state = state.copyWith(
-      entries: [...state.entries]
-        ..[index] = FinishedTryonEntry(result, state.entries[index].subject),
+      entries: [...state.entries]..[index] = FinishedTryonEntry(result, entry.subject),
     );
     return true;
   }
