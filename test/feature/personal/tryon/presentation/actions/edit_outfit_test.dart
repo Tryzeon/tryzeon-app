@@ -4,6 +4,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/router/shells/personal_tab.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_subject.dart';
@@ -27,10 +29,10 @@ void main() {
   late ProviderContainer container;
   late WidgetRef capturedRef;
   late BuildContext capturedContext;
-  var wardrobeNavigations = 0;
+  final navigations = <PersonalTab>[];
 
   setUp(() async {
-    wardrobeNavigations = 0;
+    navigations.clear();
     container = ProviderContainer(
       overrides: [
         isAuthenticatedProvider.overrideWithValue(true),
@@ -38,9 +40,7 @@ void main() {
       ],
     );
     addTearDown(container.dispose);
-    container.read(tryonCoordinatorProvider).bindNavigation((final tab) {
-      if (tab == PersonalTab.wardrobe) wardrobeNavigations++;
-    });
+    container.read(tryonCoordinatorProvider).bindNavigation(navigations.add);
     await container.read(wardrobeItemsProvider.future);
   });
 
@@ -71,7 +71,7 @@ void main() {
     final tray = container.read(outfitTrayProvider);
     expect(tray.isOpen, isTrue);
     expect(tray.pieces.map((final p) => p.id), ['a']);
-    expect(wardrobeNavigations, 1);
+    expect(navigations, [PersonalTab.wardrobe]);
   });
 
   testWidgets('asks before replacing a non-empty dock and keeps it on 取消', (
@@ -89,7 +89,30 @@ void main() {
     await pending;
 
     expect(container.read(outfitTrayProvider).isOpen, isFalse);
-    expect(wardrobeNavigations, 0);
+    expect(navigations, isEmpty);
+  });
+
+  testWidgets('a pure shop outfit is edited in the shop', (final tester) async {
+    await pump(tester);
+    final shopEntry = FinishedTryonEntry(
+      entry.result,
+      const TryonSubject.generate(
+        pieces: [
+          OutfitPiece.product(
+            productId: 'p1',
+            name: 'Tee',
+            imageUrl: 'u',
+            garmentType: GarmentType.top,
+          ),
+        ],
+        mode: TryonMode.image,
+      ),
+    );
+
+    await editOutfit(capturedContext, capturedRef, shopEntry);
+    await tester.pump();
+
+    expect(navigations, [PersonalTab.shop]);
   });
 
   test('outfitHasLivePiece is false when every wardrobe piece is gone', () {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/router/shells/personal_tab.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/coordinators/tryon_coordinator.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/sheets/outfit_pieces_sheet.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/outfit_tray_controller.dart';
@@ -37,5 +38,12 @@ Future<void> editOutfit(
     if (confirmed != OkCancelResult.ok || !context.mounted) return;
   }
   tray.replaceWith(entry.pieces);
-  ref.read(tryonCoordinatorProvider).navigateTo(PersonalTab.wardrobe);
+  ref.read(tryonCoordinatorProvider).navigateTo(_tabToEdit(entry.pieces));
 }
+
+/// A pure shop outfit is edited where it was assembled; anything touching the
+/// wardrobe goes there.
+PersonalTab _tabToEdit(final List<OutfitPiece> pieces) =>
+    pieces.every((final p) => p is OutfitPieceProduct)
+    ? PersonalTab.shop
+    : PersonalTab.wardrobe;
