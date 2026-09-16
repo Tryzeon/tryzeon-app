@@ -61,7 +61,8 @@ class PersonalShell extends HookConsumerWidget {
 
     final mediaQuery = MediaQuery.of(context);
     final currentTab = PersonalTab.values[navigationShell.currentIndex];
-    final showsDock = currentTab == PersonalTab.wardrobe;
+    final showsDock =
+        currentTab == PersonalTab.wardrobe || currentTab == PersonalTab.shop;
     final dockIsOpen = ref.watch(outfitTrayProvider.select((final s) => s.isOpen));
     final dockInset = showsDock && dockIsOpen
         ? OutfitDock.reservedHeight + AppSpacing.md
