@@ -9,7 +9,7 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/garment_type/presentation/garment_type_display.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
-import 'package:tryzeon/feature/personal/wardrobe/presentation/actions/trigger_wardrobe_item_tryon.dart';
+import 'package:tryzeon/feature/personal/wardrobe/presentation/actions/wardrobe_outfit_actions.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -209,9 +209,7 @@ class _WardrobeItemDetailContent extends ConsumerWidget {
                   Positioned(
                     bottom: AppSpacing.sm,
                     right: AppSpacing.sm,
-                    child: TryonFab(
-                      onTap: () => triggerWardrobeItemTryon(context, ref, item),
-                    ),
+                    child: OutfitPillRow(piece: outfitPieceFromWardrobeItem(item)),
                   ),
                 ],
               ),
