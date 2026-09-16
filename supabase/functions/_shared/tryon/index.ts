@@ -7,6 +7,7 @@
 // Running a job.
 export { runTryonJob, type RunTryonJobDeps } from "./run.ts";
 export { supabaseQuota } from "./quota.ts";
+export { supabaseTryonRecorder } from "./analytics.ts";
 export type {
   AvatarResolver,
   ImageGenerationOptions,
@@ -15,6 +16,7 @@ export type {
   ProductResolver,
   WardrobeResolver,
   QuotaFactory,
+  TryonRecorder,
   UsageCounter,
   VideoGenerator,
   VideoUploader,

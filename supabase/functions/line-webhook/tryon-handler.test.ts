@@ -566,6 +566,30 @@ Deno.test("a product that would not generate can be retried by id alone", async 
   assertEquals(action.displayText, "試穿「短版牛仔外套」");
 });
 
+Deno.test("a product try-on hands the job a try-on recorder", async () => {
+  // The dashboards count try-ons server-side, so the port must be bound here —
+  // the core has no admin client of its own to build one from.
+  let seenRecorder: unknown;
+  await handleProductTryon(
+    makeProductDeps({
+      // deno-lint-ignore no-explicit-any
+      runJob: ((_clients: any, _params: any, deps: any) => {
+        seenRecorder = deps.recordTryon;
+        return Promise.resolve({
+          kind: "image",
+          imageUrl: "https://img.example/result.jpg",
+          usage: null,
+          // deno-lint-ignore no-explicit-any
+        } as any);
+        // deno-lint-ignore no-explicit-any
+      }) as any,
+    }),
+    productEvent,
+  );
+
+  assertEquals(typeof seenRecorder, "function");
+});
+
 Deno.test("a product try-on puts no avatar on the job params", async () => {
   // The avatar reaches the core through `resolveAvatar`, never as a params field.
   let seenAvatar: unknown = "unset";

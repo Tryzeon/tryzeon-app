@@ -3,6 +3,7 @@ import {
   classifyTryonError,
   runTryonJob,
   supabaseQuota,
+  supabaseTryonRecorder,
 } from "../_shared/tryon/index.ts";
 import type { GarmentInput } from "../_shared/tryon/types.ts";
 import { uint8ToBase64 } from "../_shared/image-utils.ts";
@@ -85,7 +86,10 @@ async function runTryon(
     const result = await runJob(
       deps.admin,
       { userId: params.userId, garments: [params.garment], mode: "image" },
-      { quota: supabaseQuota(deps.admin) },
+      {
+        quota: supabaseQuota(deps.admin),
+        recordTryon: supabaseTryonRecorder(deps.admin),
+      },
     );
     return { ok: true, imageUrl: result.imageUrl };
   } catch (err) {

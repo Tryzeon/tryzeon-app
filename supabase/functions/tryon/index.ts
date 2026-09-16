@@ -3,7 +3,11 @@ import { getAdminClient, getAuthenticatedUserClient } from "../_shared/supabase.
 import { json, jsonError } from "../_shared/http.ts";
 import { makeCors } from "../_shared/cors.ts";
 import { tryonErrorResponse } from "../_shared/tryon/http.ts";
-import { runTryonJob, supabaseQuota } from "../_shared/tryon/index.ts";
+import {
+  runTryonJob,
+  supabaseQuota,
+  supabaseTryonRecorder,
+} from "../_shared/tryon/index.ts";
 import { parseTryonParams } from "./request.ts";
 
 const cors = makeCors({ methods: "POST" });
@@ -22,9 +26,11 @@ Deno.serve(async (req) => {
 
     // The job runs on the requester's own client, so RLS bounds every row and
     // storage object it can reach. The service-role key goes no further than the
-    // quota counter bound here.
+    // quota counter and try-on recorder bound here.
+    const admin = getAdminClient();
     const result = await runTryonJob(userClient!, params, {
-      quota: supabaseQuota(getAdminClient()),
+      quota: supabaseQuota(admin),
+      recordTryon: supabaseTryonRecorder(admin),
     });
 
     return cors.wrap(

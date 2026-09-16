@@ -138,6 +138,17 @@ export type QuotaFactory = (
 ) => UsageCounter;
 
 /**
+ * Records a finished try-on against the products it wore, for the store
+ * dashboards. Service-role only for the same reason as {@link QuotaFactory}:
+ * the LINE adapter has no session, so the writer must name the user itself,
+ * and a client able to do that could inflate any store's counts.
+ */
+export type TryonRecorder = (
+  userId: string,
+  productIds: string[],
+) => Promise<void>;
+
+/**
  * Resolves to clean base64 image data: no data-URI prefix — stripping any
  * provider preamble is the implementation's job.
  */

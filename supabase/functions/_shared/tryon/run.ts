@@ -26,6 +26,7 @@ import {
   type ResolvedGarment,
   type TryonMode,
   type TryonParams,
+  type TryonRecorder,
   type TryonResultFor,
   type VideoGenerator,
   type VideoUploader,
@@ -38,10 +39,11 @@ type TryonSource =
 
 export interface RunTryonJobDeps {
   /**
-   * The one required port: its implementation needs a service-role client, and
-   * which one is the adapter's to say. `supabaseQuota(adminClient)` builds it.
+   * Required: its implementation needs a service-role client, and which one is
+   * the adapter's to say. `supabaseQuota(adminClient)` builds it.
    */
   quota: QuotaFactory;
+  recordTryon: TryonRecorder;
   generate?: ImageGenerator;
   generateVideo?: VideoGenerator;
   upload?: ImageUploader;
@@ -54,7 +56,7 @@ export interface RunTryonJobDeps {
 
 /**
  * Single try-on entry point: validate -> resolve avatar -> quota -> resolve
- * garments -> load -> generate -> persist.
+ * garments -> load -> generate -> persist -> record.
  *
  * One client, and it is the caller's own: an adapter with a session (the app)
  * has RLS bounding what a request can reach, while an adapter without one
@@ -140,6 +142,7 @@ export async function runTryonJob<M extends TryonMode>(
 
     // Stage 3: persist. The two casts are the single point where the
     // mode -> result-variant correspondence is asserted.
+    let result: TryonResultFor<M>;
     if (job.mode === "video") {
       const bytes = await generateVideo(generated, {
         engine: job.engine,
@@ -149,16 +152,22 @@ export async function runTryonJob<M extends TryonMode>(
         bytes,
         assetKey(job.userId, now(), "mp4"),
       );
-      return { kind: "video", videoUrl, usage } as TryonResultFor<M>;
+      result = { kind: "video", videoUrl, usage } as TryonResultFor<M>;
+    } else {
+      const mimeType = detectMimeType(generated);
+      const imageUrl = await upload(
+        base64ToUint8Array(generated),
+        assetKey(job.userId, now(), mimeTypeToExtension(mimeType)),
+        mimeType,
+      );
+      result = { kind: "image", imageUrl, usage } as TryonResultFor<M>;
     }
 
-    const mimeType = detectMimeType(generated);
-    const imageUrl = await upload(
-      base64ToUint8Array(generated),
-      assetKey(job.userId, now(), mimeTypeToExtension(mimeType)),
-      mimeType,
-    );
-    return { kind: "image", imageUrl, usage } as TryonResultFor<M>;
+    // Stage 4: record. Outside the refund path and never rethrown: the user
+    // has a result they were charged for, and a dashboard count is not worth
+    // reporting that as a failure.
+    await recordProductTryons(deps.recordTryon, job);
+    return result;
   } catch (err) {
     // Refund is best-effort: a failure here must not replace the error that
     // actually caused the job to fail, or callers would report the wrong thing.
@@ -168,6 +177,19 @@ export async function runTryonJob<M extends TryonMode>(
       console.error("try-on quota refund failed:", refundErr);
     }
     throw err;
+  }
+}
+
+async function recordProductTryons(
+  record: TryonRecorder,
+  job: TryonParams,
+): Promise<void> {
+  const productIds = job.garments.filter(isProductRef).map((g) => g.productId);
+  if (productIds.length === 0) return;
+  try {
+    await record(job.userId, productIds);
+  } catch (err) {
+    console.error("try-on analytics record failed:", err);
   }
 }
 
