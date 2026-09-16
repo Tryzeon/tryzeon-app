@@ -216,23 +216,23 @@ PODS:
   - PromisesObjC (2.4.1)
   - PromisesSwift (2.4.1):
     - PromisesObjC (= 2.4.1)
-  - purchases_flutter (9.15.1):
+  - purchases_flutter (10.12.0):
     - Flutter
-    - PurchasesHybridCommon (= 17.53.0)
-  - purchases_ui_flutter (9.15.1):
+    - PurchasesHybridCommon (= 18.37.0)
+  - purchases_ui_flutter (10.12.0):
     - Flutter
-    - PurchasesHybridCommonUI (= 17.53.0)
-  - PurchasesHybridCommon (17.53.0):
-    - RevenueCat (= 5.66.0)
-  - PurchasesHybridCommonUI (17.53.0):
-    - PurchasesHybridCommon (= 17.53.0)
-    - RevenueCatUI (= 5.66.0)
+    - PurchasesHybridCommonUI (= 18.37.0)
+  - PurchasesHybridCommon (18.37.0):
+    - RevenueCat (= 5.88.0)
+  - PurchasesHybridCommonUI (18.37.0):
+    - PurchasesHybridCommon (= 18.37.0)
+    - RevenueCatUI (= 5.88.0)
   - RecaptchaInterop (101.0.0)
   - record_darwin (1.0.0):
     - Flutter
-  - RevenueCat (5.66.0)
-  - RevenueCatUI (5.66.0):
-    - RevenueCat (= 5.66.0)
+  - RevenueCat (5.88.0)
+  - RevenueCatUI (5.88.0):
+    - RevenueCat (= 5.88.0)
   - SDWebImage (5.21.7):
     - SDWebImage/Core (= 5.21.7)
   - SDWebImage/Core (5.21.7)
@@ -419,14 +419,14 @@ SPEC CHECKSUMS:
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
   PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273
   PromisesSwift: 217dea0fd5d2ad65222a109c48698add13cc1c5b
-  purchases_flutter: eaa65afecf3a856e8729efceab7a01b8685e2eab
-  purchases_ui_flutter: a716603c97c961794aa03ed7bb734978e610fb45
-  PurchasesHybridCommon: 53d966ac5c39df13c3c759289bb3ef3e2f9f1622
-  PurchasesHybridCommonUI: c9ac2debefc5a098cfeca28bf05a9602eb49cb32
+  purchases_flutter: 2b5d794e1a67c6e200a2c9c623598055dcc3751c
+  purchases_ui_flutter: cd8190c10ebcbde997eb91dafa4f2792ff79d484
+  PurchasesHybridCommon: 2e72564d3393d480ca126d4d057737435dd7ccba
+  PurchasesHybridCommonUI: b9e63653fa3abb753b702e0a9b074fbf452b0cbb
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
   record_darwin: fb1f375f1d9603714f55b8708a903bbb91ffdb0a
-  RevenueCat: a3cf721ad8b1b56a930d748a40342aba16c09bbb
-  RevenueCatUI: 1091be7f4e7eb6068bc0c78d470af3a2a19d3a49
+  RevenueCat: 96e12da1f3de201c65f337ff661506ac28ee1514
+  RevenueCatUI: 86e2209d13c41893a4e24da4e26370d4bd9f8b93
   SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
   SDWebImageWebPCoder: 0e06e365080397465cc73a7a9b472d8a3bd0f377
   share_plus: 50da8cb520a8f0f65671c6c6a99b3617ed10a58a
