@@ -5,11 +5,12 @@ import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
 class TryonFab extends StatelessWidget {
-  const TryonFab({super.key, required this.onTap, this.size = 24, this.label});
+  const TryonFab({super.key, required this.onTap, this.size = 24, this.label, this.icon});
 
   final VoidCallback onTap;
   final double size;
   final String? label;
+  final IconData? icon;
 
   @override
   Widget build(final BuildContext context) {
@@ -40,12 +41,14 @@ class TryonFab extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Image.asset(
-                  AppConstants.logoMark,
-                  width: size,
-                  height: size,
-                  fit: BoxFit.contain,
-                ),
+                icon == null
+                    ? Image.asset(
+                        AppConstants.logoMark,
+                        width: size,
+                        height: size,
+                        fit: BoxFit.contain,
+                      )
+                    : Icon(icon, size: size, color: colorScheme.onPrimary),
                 if (label != null) ...[
                   const SizedBox(width: AppSpacing.xs),
                   Text(
