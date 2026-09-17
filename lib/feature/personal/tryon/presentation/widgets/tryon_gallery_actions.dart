@@ -24,6 +24,7 @@ class TryonGalleryActions extends ConsumerWidget {
     final entry = gallery.currentEntry;
     final result = gallery.currentResult;
     final isCurrentTheAvatar = gallery.isCurrentTheAvatar;
+    final isVideo = result?.mode == TryonMode.video;
 
     Future<void> shareMedia() async {
       if (result == null) return;
@@ -43,10 +44,7 @@ class TryonGalleryActions extends ConsumerWidget {
       if (outcome.isFailure) {
         TopNotification.show(context, message: '儲存失敗，請檢查儲存權限');
       } else {
-        AppSnackBar.show(
-          context,
-          message: result.mode == TryonMode.video ? '影片已儲存到相簿' : '照片已儲存到相簿',
-        );
+        AppSnackBar.show(context, message: isVideo ? '影片已儲存到相簿' : '照片已儲存到相簿');
       }
     }
 
@@ -100,7 +98,7 @@ class TryonGalleryActions extends ConsumerWidget {
 
       final choice = await showAppOkCancelDialog(
         context: context,
-        message: '確定要刪除這張試穿照片嗎？',
+        message: isVideo ? '確定要刪除這支試穿影片嗎？' : '確定要刪除這張試穿照片嗎？',
         okLabel: '刪除',
         cancelLabel: '取消',
         isDestructiveAction: true,
@@ -134,7 +132,7 @@ class TryonGalleryActions extends ConsumerWidget {
         AppMenuAction(
           icon: Icons.ios_share_rounded,
           title: '分享',
-          subtitle: '分享試穿照片',
+          subtitle: isVideo ? '分享試穿影片' : '分享試穿照片',
           onTap: shareMedia,
         ),
         AppMenuAction(
@@ -147,7 +145,7 @@ class TryonGalleryActions extends ConsumerWidget {
           AppMenuAction(
             icon: Icons.refresh_rounded,
             title: '重新生成',
-            subtitle: result?.mode == TryonMode.video ? '再生成一支影片' : '再生成一張試穿照片',
+            subtitle: isVideo ? '再生成一支影片' : '再生成一張試穿照片',
             onTap: regenerate,
           ),
         if (result?.mode == TryonMode.image && hasVideoAccess)
@@ -170,7 +168,7 @@ class TryonGalleryActions extends ConsumerWidget {
         AppMenuAction(
           icon: Icons.delete_outline_rounded,
           title: '刪除此試穿',
-          subtitle: '移除這張試穿照片',
+          subtitle: isVideo ? '移除這支試穿影片' : '移除這張試穿照片',
           onTap: confirmDelete,
           isDestructive: true,
         ),
