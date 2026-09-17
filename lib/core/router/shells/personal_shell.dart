@@ -60,9 +60,11 @@ class PersonalShell extends HookConsumerWidget {
     }
 
     final mediaQuery = MediaQuery.of(context);
-    final currentTab = PersonalTab.values[navigationShell.currentIndex];
-    final showsDock =
-        currentTab == PersonalTab.wardrobe || currentTab == PersonalTab.shop;
+    // Garment pages can be pushed onto any branch (e.g. a product opened from a
+    // try-on result on Home), so gate on the page on top, not the tab.
+    final topLocation =
+        navigationShell.shellRouteContext.match.matches.last.matchedLocation;
+    final showsDock = OutfitDock.isHostedAt(topLocation);
     final dockIsOpen = ref.watch(outfitTrayProvider.select((final s) => s.isOpen));
     final dockInset = showsDock && dockIsOpen
         ? OutfitDock.reservedHeight + AppSpacing.md

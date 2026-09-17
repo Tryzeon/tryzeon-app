@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/actions/outfit_actions.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/outfit_tray_controller.dart';
@@ -18,6 +19,10 @@ class OutfitDock extends HookConsumerWidget {
   static const Duration _capMessageDuration = Duration(seconds: 2);
 
   final bool isVisible;
+
+  static bool isHostedAt(final String location) =>
+      location.startsWith(AppRoutes.personalShop) ||
+      location.startsWith(AppRoutes.personalWardrobe);
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
