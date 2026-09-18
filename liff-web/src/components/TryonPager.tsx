@@ -1,10 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { nextLoadingVideo } from "../lib/loadingVideos";
+import { nearestPage } from "../lib/pager";
 import type { GalleryEntry } from "../state/gallery";
-
-/** How long scrolling must be still before the page counts as the user's
- * choice. */
-const SETTLE_MS = 120;
 
 /** Tolerance for deciding we are already on a page; snapping often leaves a
  * sub-pixel remainder. */
@@ -31,18 +28,19 @@ export function TryonPager(
   const trackRef = useRef<HTMLDivElement>(null);
 
   // Together these two refs keep state → scroll position and scroll position →
-  // state apart. Without them the two directions feed each other: every page a
-  // smooth scroll passes through gets reported as a page change, which rewrites
-  // the state, and the effect below then scrolls back to that intermediate page
-  // — so a multi-page jump (tapping try-on again with two try-ons already
-  // there) would never reach the new page.
+  // state apart. The page is reported live as the finger crosses each midpoint,
+  // so the caption follows the swipe instead of waiting for the snap to end;
+  // that only works because the effect below recognises pages it was told
+  // about by the scroll listener and leaves the scroll position alone for
+  // them. Without `target`, every page a smooth scroll passes through would be
+  // reported as a page change, and a multi-page jump (tapping try-on again
+  // with two try-ons already there) would stall on the first one.
+  const reported = useRef<number | null>(null);
   const target = useRef<number | null>(null);
-  const settleTimer = useRef(0);
-
-  useEffect(() => () => window.clearTimeout(settleTimer.current), []);
 
   // State → scroll position: bring the new page into view when a try-on starts.
   useEffect(() => {
+    if (page === reported.current) return;
     const track = trackRef.current;
     if (track === null || track.clientWidth === 0) return;
     const left = page * track.clientWidth;
@@ -65,15 +63,10 @@ export function TryonPager(
       target.current = null;
     }
 
-    // Only report once it settles. Changing state while a finger is still
-    // dragging would ask the effect above to fire a programmatic scroll
-    // mid-swipe — exactly the thing that fights the finger.
-    window.clearTimeout(settleTimer.current);
-    settleTimer.current = window.setTimeout(() => {
-      const settled = trackRef.current;
-      if (settled === null || settled.clientWidth === 0) return;
-      onPageChange(Math.round(settled.scrollLeft / settled.clientWidth));
-    }, SETTLE_MS);
+    const next = nearestPage(track.scrollLeft, track.clientWidth, track.childElementCount);
+    if (next === reported.current) return;
+    reported.current = next;
+    onPageChange(next);
   }
 
   // Any touch invalidates the programmatic scroll target: once the user takes

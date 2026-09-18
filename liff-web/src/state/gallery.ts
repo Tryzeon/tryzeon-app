@@ -115,9 +115,8 @@ export function galleryReducer(
       const id = index >= 0 && index < state.entries.length
         ? state.entries[index].id
         : null;
-      // The same page must return the same object: the scroll listener fires
-      // setPage every frame, and a fresh object would re-run the
-      // state → scroll position effect forever.
+      // The same page must return the same object: a fresh one would re-run the
+      // state → scroll position effect and scroll to where we already are.
       return state.currentId === id ? state : { ...state, currentId: id };
     }
 
