@@ -32,13 +32,10 @@ export function PersonIcon() {
   );
 }
 
-export function GridIcon() {
+export function ShirtIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" {...STROKE}>
-      <rect x="4" y="4" width="6.5" height="6.5" rx="1.5" />
-      <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5" />
-      <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5" />
-      <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5" />
+      <path d="M8.5 3.5 4 6l1.5 4.5L8 9.5V20h8V9.5l2.5 1L20 6l-4.5-2.5a3.5 3.5 0 0 1-7 0Z" />
     </svg>
   );
 }
