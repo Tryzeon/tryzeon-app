@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
 import 'package:tryzeon/feature/store/product/presentation/sheets/product_sort_sheet.dart';
 import 'package:tryzeon/feature/store/product/presentation/widgets/product_list_section.dart';
 import 'package:tryzeon/feature/store/product/presentation/widgets/product_search_bar.dart';
@@ -83,7 +84,10 @@ class StoreProductsPage extends HookConsumerWidget {
             const SizedBox(height: AppSpacing.md),
             Expanded(
               child: RefreshIndicator(
-                onRefresh: () => ref.read(productsProvider.notifier).refresh(),
+                onRefresh: () => Future.wait([
+                  ref.read(productsProvider.notifier).refresh(),
+                  ref.read(productAnalyticsSummariesProvider.notifier).refresh(),
+                ]),
                 child: const ProductListSection(),
               ),
             ),
