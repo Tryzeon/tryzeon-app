@@ -19,6 +19,7 @@ const noop = () => {};
 function LiffGate() {
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const [avatarPath, setAvatarPath] = useState<string | null>(null);
+  const { pathname } = useLocation();
 
   useEffect(() => {
     initAndLogin()
@@ -36,9 +37,22 @@ function LiffGate() {
       );
   }, []);
 
-  // The same chrome the catalog renders while it fetches, so opening the gate
-  // swaps the placeholders for products without the page jumping.
+  // The same chrome the destination renders once it is up — the catalog's
+  // placeholders, or home's dark stage — so opening the gate fills the screen
+  // in rather than flashing the wrong page first.
   if (state === "loading") {
+    if (pathname === "/home") {
+      return (
+        <div className="app home">
+          <div className="home__top">
+            <span className="home__mark">Tryzeon</span>
+          </div>
+          <div className="home__boot">
+            <span className="spinner" aria-hidden="true" />
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="app">
         <Header />

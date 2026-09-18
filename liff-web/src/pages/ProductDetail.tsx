@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { fetchProduct, type CatalogItem } from "../api/catalog";
-import { AvatarUploadPrompt } from "../components/AvatarUploadPrompt";
+import { AvatarUploadButton, AvatarUploadTip } from "../components/AvatarUpload";
 import { Header } from "../components/Header";
+import { ChevronLeftIcon } from "../components/icons";
+import { ProductGallery } from "../components/ProductGallery";
 import { useTryonCoordinator } from "../hooks/useTryonCoordinator";
 import { isExternalUrl, openExternal } from "../lib/liff";
 import { useAvatar } from "../state/AvatarProvider";
@@ -59,32 +61,51 @@ export function ProductDetail() {
     else navigate(-1);
   }
 
+  const back = (
+    <button type="button" className="pdp__back" onClick={goBack} aria-label="返回">
+      <ChevronLeftIcon />
+    </button>
+  );
+
   return (
-    <div className="app">
+    <div className="app pdp-app">
       <Header title={load.status === "ready" ? load.item.storeName : null} />
-      <main className="main pdp">
-        <button type="button" className="pdp__back" onClick={goBack}>← 返回</button>
 
-        {load.status === "loading" && <DetailSkeleton />}
+      {load.status === "ready"
+        ? <Detail item={load.item} back={back} />
+        : (
+          <main className="main pdp">
+            <div className="pdp__media">
+              {back}
+              <div
+                className={`pdp__skgallery ${load.status === "loading" ? "sk" : "pdp__media--blank"}`}
+              />
+            </div>
 
-        {load.status === "missing" && (
-          <p className="empty">找不到這件商品，它可能已經下架了。</p>
+            {load.status === "loading" && (
+              <>
+                <div className="sk pdp__skline pdp__skline--short" />
+                <div className="sk pdp__skline" />
+              </>
+            )}
+
+            {load.status === "missing" && (
+              <p className="empty">找不到這件商品，它可能已經下架了。</p>
+            )}
+
+            {load.status === "error" && (
+              <>
+                <div className="errorcard">商品載入失敗，請稍後再試。</div>
+                <button className="loadmore" onClick={() => navigate(0)}>重新載入</button>
+              </>
+            )}
+          </main>
         )}
-
-        {load.status === "error" && (
-          <>
-            <div className="errorcard">商品載入失敗，請稍後再試。</div>
-            <button className="loadmore" onClick={() => navigate(0)}>重新載入</button>
-          </>
-        )}
-
-        {load.status === "ready" && <Detail item={load.item} />}
-      </main>
     </div>
   );
 }
 
-function Detail({ item }: { item: CatalogItem }) {
+function Detail({ item, back }: { item: CatalogItem; back: ReactNode }) {
   const avatar = useAvatar();
   const tryon = useTryonCoordinator();
 
@@ -99,42 +120,45 @@ function Detail({ item }: { item: CatalogItem }) {
 
   return (
     <>
-      <div className="gallery">
-        {hasPhotos
-          ? item.imageUrls.map((url) => (
-            <img key={url} className="gallery__img" src={url} alt="" />
-          ))
-          : <div className="gallery__img gallery__img--empty">暫無照片</div>}
-      </div>
+      <main className="main pdp">
+        <div className="pdp__media">
+          {back}
+          <ProductGallery imageUrls={item.imageUrls} />
+        </div>
 
-      <h1 className="pdp__name">{item.name}</h1>
-      {item.storeName && <p className="sheet__store">{item.storeName}</p>}
-      {item.price != null && <p className="sheet__price">NT${item.price}</p>}
-      {item.description && <p className="pdp__description">{item.description}</p>}
+        {item.storeName && <p className="pdp__store">{item.storeName}</p>}
+        <h1 className="pdp__name">{item.name}</h1>
+        {item.price != null && <p className="pdp__price">NT${item.price}</p>}
+        {item.description && <p className="pdp__description">{item.description}</p>}
 
-      {!hasPhotos
-        ? <p className="sheet__note">這件商品還沒有照片，無法試穿。</p>
-        : avatar.hasAvatar
-        ? (
+        {hasPhotos && !avatar.hasAvatar && <AvatarUploadTip />}
+      </main>
+
+      <div className="actionbar">
+        {!hasPhotos
+          ? <p className="pdp__note">這件商品還沒有照片，無法試穿。</p>
+          : avatar.hasAvatar
+          ? (
+            <button
+              type="button"
+              className="cta"
+              onClick={() => tryon.fromProduct(item)}
+            >
+              開始試穿
+            </button>
+          )
+          : <AvatarUploadButton busy={avatar.busy} onPick={pickAvatarAndTryon} />}
+
+        {buyUrl && (
           <button
             type="button"
-            className="cta"
-            onClick={() => tryon.fromProduct(item)}
+            className="btn-outline actionbar__secondary"
+            onClick={() => openExternal(buyUrl)}
           >
-            開始試穿
+            前往購買
           </button>
-        )
-        : <AvatarUploadPrompt busy={avatar.busy} onPick={pickAvatarAndTryon} />}
-
-      {buyUrl && (
-        <button
-          type="button"
-          className="btn-outline sheet__buy"
-          onClick={() => openExternal(buyUrl)}
-        >
-          前往購買
-        </button>
-      )}
+        )}
+      </div>
     </>
   );
 }
@@ -146,14 +170,4 @@ function seededItem(state: unknown): CatalogItem | null {
   return typeof (item as CatalogItem).productId === "string"
     ? item as CatalogItem
     : null;
-}
-
-function DetailSkeleton() {
-  return (
-    <>
-      <div className="sk pdp__skgallery" />
-      <div className="sk pdp__skline" />
-      <div className="sk pdp__skline pdp__skline--short" />
-    </>
-  );
 }

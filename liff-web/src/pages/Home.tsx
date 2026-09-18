@@ -155,7 +155,7 @@ export function Home() {
         <span className="home__mark">Tryzeon</span>
         <div className="home__topright">
           {isCurrentTheAvatar(state) && (
-            <span className="home__badge" aria-label="目前的試穿形象">★</span>
+            <span className="home__badge">★ 我的形象</span>
           )}
           <button
             type="button"
@@ -168,22 +168,23 @@ export function Home() {
         </div>
       </div>
 
-      {!isAvatarPage(state) && (
-        <div className="home__bottomleft">
-          {product !== null && (
-            <p className="home__caption"><b>{product.name}</b></p>
+      <div className="home__bottomleft">
+        {isAvatarPage(state)
+          ? avatar.hasAvatar && (
+            <p className="home__caption">我的 model 照 · 點一下更換</p>
+          )
+          : (
+            <>
+              {product !== null && (
+                <p className="home__caption"><b>{product.name}</b></p>
+              )}
+              <PageIndicator count={state.entries.length} index={page - 1} />
+              {entry?.kind === "pending"
+                ? <p className="home__status">生成中…</p>
+                : <p className="home__disclaimer">AI 生成試穿結果，僅供參考</p>}
+            </>
           )}
-          <div className="dots">
-            {state.entries.map((e, i) => (
-              <span
-                key={e.id}
-                className={`dots__dot${page - 1 === i ? " is-active" : ""}`}
-              />
-            ))}
-          </div>
-          <p className="home__disclaimer">AI 生成試穿結果，僅供參考</p>
-        </div>
-      )}
+      </div>
 
       <div className="home__actions">
         <button
@@ -193,7 +194,7 @@ export function Home() {
           onClick={() =>
             avatar.hasAvatar ? garmentInput.current?.click() : avatarInput.current?.click()}
         >
-          {avatar.hasAvatar ? "虛擬試穿" : "上傳照片"}
+          {avatar.hasAvatar ? "選衣服試穿" : "上傳全身照"}
         </button>
       </div>
 
@@ -232,6 +233,23 @@ export function Home() {
           onCancel={() => setPopup(CLOSED)}
         />
       )}
+    </div>
+  );
+}
+
+/** Past this many try-ons the dots no longer fit beside the caption, so the
+ * position is written out instead. */
+const MAX_DOTS = 10;
+
+function PageIndicator({ count, index }: { count: number; index: number }) {
+  if (count > MAX_DOTS) {
+    return <p className="home__count">{index + 1} / {count}</p>;
+  }
+  return (
+    <div className="dots" aria-hidden="true">
+      {Array.from({ length: count }, (_, i) => (
+        <span key={i} className={`dots__dot${i === index ? " is-active" : ""}`} />
+      ))}
     </div>
   );
 }

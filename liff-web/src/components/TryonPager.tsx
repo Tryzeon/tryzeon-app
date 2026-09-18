@@ -1,11 +1,16 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { nextLoadingVideo } from "../lib/loadingVideos";
 import { nearestPage } from "../lib/pager";
 import type { GalleryEntry } from "../state/gallery";
+import { FadeImage } from "./FadeImage";
 
 /** Tolerance for deciding we are already on a page; snapping often leaves a
  * sub-pixel remainder. */
 const TOLERANCE_PX = 2;
+
+/** How long the loading clip stays underneath a result while it fades in.
+ * A timer rather than transitionend, which never fires under reduced motion. */
+const REVEAL_MS = 500;
 
 interface Props {
   entries: GalleryEntry[];
@@ -92,7 +97,7 @@ export function TryonPager(
               <p className="page__emptyhint">點一下上傳一張清楚的全身照</p>
             </div>
           )
-          : <img className="page__img" src={avatarUrl} alt="你的 model 照" />}
+          : <FadeImage className="page__img" src={avatarUrl} alt="你的 model 照" />}
         {avatarBusy && (
           <div className="page__veil">
             <span className="spinner" aria-hidden="true" />
@@ -100,28 +105,56 @@ export function TryonPager(
         )}
       </div>
 
-      {entries.map((entry) =>
-        entry.kind === "pending"
-          ? <LoadingPage key={entry.id} />
-          : (
-            <div
-              className="page"
-              key={entry.id}
-              onClick={() => onResultTap(entry.imageUrl)}
-            >
-              <img className="page__img" src={entry.imageUrl} alt="試穿結果" />
-            </div>
-          )
-      )}
+      {entries.map((entry) => (
+        <TryonPage key={entry.id} entry={entry} onResultTap={onResultTap} />
+      ))}
     </div>
   );
 }
 
-function LoadingPage() {
-  const src = useMemo(nextLoadingVideo, []);
+type Reveal = "waiting" | "fading" | "done";
+
+/** One page for the whole life of a try-on: the loading clip keeps playing
+ * under the result until the photo has faded in, so the switch is a crossfade
+ * rather than a cut to grey. */
+function TryonPage(
+  { entry, onResultTap }: { entry: GalleryEntry; onResultTap(imageUrl: string): void },
+) {
+  const clip = useMemo(nextLoadingVideo, []);
+  const [reveal, setReveal] = useState<Reveal>("waiting");
+
+  useEffect(() => {
+    if (reveal !== "fading") return;
+    const timer = setTimeout(() => setReveal("done"), REVEAL_MS);
+    return () => clearTimeout(timer);
+  }, [reveal]);
+
+  const finished = entry.kind === "finished";
+
   return (
-    <div className="page page--loading">
-      <video className="page__img" src={src} muted loop playsInline autoPlay preload="auto" />
+    <div
+      className="page"
+      onClick={finished ? () => onResultTap(entry.imageUrl) : undefined}
+    >
+      {reveal !== "done" && (
+        <video
+          className={`page__img page__clip${reveal === "fading" ? " is-out" : ""}`}
+          src={clip}
+          muted
+          loop
+          playsInline
+          autoPlay
+          preload="auto"
+        />
+      )}
+      {finished && (
+        <FadeImage
+          className="page__img page__result"
+          src={entry.imageUrl}
+          alt="試穿結果"
+          onLoaded={() => setReveal((r) => (r === "waiting" ? "fading" : r))}
+        />
+      )}
     </div>
   );
 }

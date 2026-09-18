@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { GridIcon, PersonIcon } from "./icons";
 
 export type ActiveTab = "home" | "shop" | null;
 
@@ -15,8 +16,14 @@ export type ActiveTab = "home" | "shop" | null;
 export function TabBar({ shopPath, active }: { shopPath: string; active: ActiveTab }) {
   return (
     <nav className="tabbar">
-      <Link to="/home" replace className={tabClass(active === "home")}>首頁</Link>
-      <Link to={shopPath} replace className={tabClass(active === "shop")}>試衣間</Link>
+      <Link to="/home" replace className={tabClass(active === "home")}>
+        <PersonIcon />
+        首頁
+      </Link>
+      <Link to={shopPath} replace className={tabClass(active === "shop")}>
+        <GridIcon />
+        試衣間
+      </Link>
     </nav>
   );
 }

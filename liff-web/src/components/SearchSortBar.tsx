@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { SortOption } from "../api/catalog";
+import { SearchIcon } from "./icons";
 
 const SORTS: { value: SortOption; label: string }[] = [
   { value: "latest", label: "最新" },
@@ -36,6 +37,7 @@ export function SearchSortBar({ sort, onSearch, onSortChange, disabled = false }
           <input
             className="searchbar__input"
             type="text"
+            enterKeyHint="search"
             value={draft}
             placeholder="搜尋商品"
             disabled={disabled}
@@ -55,8 +57,10 @@ export function SearchSortBar({ sort, onSearch, onSortChange, disabled = false }
               ✕
             </button>
           )}
+          <button className="searchbar__submit" type="submit" aria-label="搜尋" disabled={disabled}>
+            <SearchIcon />
+          </button>
         </div>
-        <button className="searchbar__submit" type="submit" disabled={disabled}>搜尋</button>
       </form>
       <div className="chiprow">
         {SORTS.map((option) => (
