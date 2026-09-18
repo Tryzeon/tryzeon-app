@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
@@ -135,6 +136,8 @@ class ShopRemoteDataSource {
   }
 
   Future<ShopProductModel> getProduct(final String productId) async {
+    if (!_uuidPattern.hasMatch(productId)) throw const NotFoundException();
+
     final response = await _supabaseClient
         .from(_productsTable)
         .select('''

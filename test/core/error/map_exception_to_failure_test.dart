@@ -38,12 +38,15 @@ void main() {
       );
     });
 
-    test('PostgrestException 22P02 (invalid uuid) maps to NotFoundFailure', () {
+    test('PostgrestException 22P02 (malformed input) maps to ServerFailure', () {
       expect(
         mapExceptionToFailure(
-          const PostgrestException(message: 'invalid input', code: '22P02'),
+          const PostgrestException(
+            message: 'invalid input value for enum garment_type: "onePiece"',
+            code: '22P02',
+          ),
         ),
-        isA<NotFoundFailure>(),
+        isA<ServerFailure>(),
       );
     });
 

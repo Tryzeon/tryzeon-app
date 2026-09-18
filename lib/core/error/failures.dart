@@ -72,8 +72,8 @@ Failure mapExceptionToFailure(final Object e) {
     return const AuthFailure('驗證碼錯誤或過期');
   }
 
-  // PGRST116 = no rows, 22P02 = invalid uuid syntax — both surface as `.code`.
-  if (e is PostgrestException && (e.code == 'PGRST116' || e.code == '22P02')) {
+  // PGRST116 = `.single()` matched no rows.
+  if (e is PostgrestException && e.code == 'PGRST116') {
     return const NotFoundFailure();
   }
 
