@@ -122,10 +122,10 @@ export function Home() {
         onSelect: () => notify("長按畫面上的照片，就能儲存到相簿。"),
       },
       {
-        title: isCurrentTheAvatar(state) ? "取消我的形象" : "設為我的形象",
+        title: isCurrentTheAvatar(state) ? "取消沿用穿搭" : "沿用這套穿搭",
         subtitle: isCurrentTheAvatar(state)
-          ? "取消使用此照片作為試穿形象"
-          : "使用此照片作為試穿形象",
+          ? "下次試穿不再帶上這套衣服"
+          : "下次試穿在這套衣服上繼續搭配",
         onSelect: () => dispatch({ type: "toggleAvatar" }),
       },
       replace,
@@ -155,7 +155,7 @@ export function Home() {
         <span className="home__mark">Tryzeon</span>
         <div className="home__topright">
           {isCurrentTheAvatar(state) && (
-            <span className="home__badge">★ 我的形象</span>
+            <span className="home__badge">★ 沿用中</span>
           )}
           <button
             type="button"

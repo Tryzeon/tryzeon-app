@@ -11,7 +11,7 @@ import { useGallery } from "../state/GalleryProvider";
 
 class SetupError extends Error {}
 
-const SETUP_FALLBACK = "讀取試穿形象失敗，請稍後再試。";
+const SETUP_FALLBACK = "讀取沿用的穿搭失敗，請稍後再試。";
 
 /** The single entry point for every try-on: those started from the product page
  * and from home all land in the same gallery. */

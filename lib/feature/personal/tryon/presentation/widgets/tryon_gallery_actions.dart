@@ -160,8 +160,8 @@ class TryonGalleryActions extends ConsumerWidget {
             icon: isCurrentTheAvatar
                 ? Icons.person_off_outlined
                 : Icons.person_outline_rounded,
-            title: isCurrentTheAvatar ? '取消我的形象' : '設為我的形象',
-            subtitle: isCurrentTheAvatar ? '取消使用此照片作為試穿形象' : '使用此照片作為試穿形象',
+            title: isCurrentTheAvatar ? '取消沿用穿搭' : '沿用這套穿搭',
+            subtitle: isCurrentTheAvatar ? '下次試穿不再帶上這套衣服' : '下次試穿在這套衣服上繼續搭配',
             onTap: ref.read(tryonGalleryProvider.notifier).toggleAvatarForCurrent,
           ),
         replaceAvatar,
