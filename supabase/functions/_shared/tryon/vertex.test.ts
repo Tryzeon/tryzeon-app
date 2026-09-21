@@ -167,7 +167,7 @@ Deno.test("generateTryonVideo keeps the experimental engine on Veo", async () =>
   }
 });
 
-Deno.test("generateTryonImage asks for a 2K portrait image", async () => {
+Deno.test("generateTryonImage asks for a 2K JPEG portrait", async () => {
   await installServiceAccount();
   const { captured, restore } = stubFetch(() => ({
     candidates: [{
@@ -190,6 +190,7 @@ Deno.test("generateTryonImage asks for a 2K portrait image", async () => {
     assertEquals(config.imageConfig, {
       aspectRatio: "9:16",
       imageSize: "2K",
+      imageOutputOptions: { mimeType: "image/jpeg", compressionQuality: 95 },
     });
   } finally {
     restore();
