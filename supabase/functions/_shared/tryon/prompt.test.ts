@@ -21,7 +21,15 @@ Deno.test("buildTaskPrompt omits the scene section when no scene is given", () =
   assertEquals(prompt.includes("SCENE CONTEXT"), false);
   assertStringIncludes(
     prompt,
-    "Do not change the background from the first image.",
+    "never garbled or invented.",
+  );
+});
+
+Deno.test("buildTaskPrompt makes background text a hard invariant", () => {
+  const prompt = buildTaskPrompt([["a"]]);
+  assertStringIncludes(
+    prompt,
+    "Do not change the background from the first image, and reproduce any text, lettering, signage, logos, or numbers visible in it character-for-character — same wording, same font, same placement, fully legible, never garbled or invented",
   );
 });
 
@@ -34,7 +42,10 @@ Deno.test("buildTaskPrompt adds the scene section and its invariant caveat", () 
     prompt,
     "Place the person in this scene: a rooftop at dusk",
   );
-  assertStringIncludes(prompt, "(unless overridden by SCENE CONTEXT below)");
+  assertStringIncludes(
+    prompt,
+    "never garbled or invented (unless overridden by SCENE CONTEXT below).",
+  );
 });
 
 Deno.test("buildTaskPrompt includes only non-blank garment details", () => {

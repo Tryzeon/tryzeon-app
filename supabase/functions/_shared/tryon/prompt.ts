@@ -61,7 +61,7 @@ First classify each garment's category (top / bottom / full-body / outerwear) us
 HARD INVARIANTS — DO NOT CHANGE THESE
 - Person's face, expression, hair (color, length, style), skin tone, age, body shape, pose, camera angle, and framing must be identical to the first image.
 - All visible skin (arms, neck, legs, hands, fingers) must be reproduced exactly as in the first image: same tone, same texture. Skin that is plain in the first image stays plain — introduce NO tattoos, body art, marks, or piercings. Existing tattoos, jewelry, and accessories stay exactly as they are.
-- Do not change the background from the first image${
+- Do not change the background from the first image, and reproduce any text, lettering, signage, logos, or numbers visible in it character-for-character — same wording, same font, same placement, fully legible, never garbled or invented${
     scenePrompt ? " (unless overridden by SCENE CONTEXT below)" : ""
   }.
 
