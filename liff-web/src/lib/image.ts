@@ -1,6 +1,8 @@
 export const JPEG_MIME = "image/jpeg";
 export const JPEG_EXTENSION = "jpg";
 
+export const UPLOAD_MAX_DIM = 2048;
+
 export function downscaleDimensions(
   width: number,
   height: number,
@@ -12,7 +14,7 @@ export function downscaleDimensions(
   return { width: Math.round(width * scale), height: Math.round(height * scale) };
 }
 
-export function downscaleToBlob(file: File, maxDim = 1024): Promise<Blob> {
+export function downscaleToBlob(file: File, maxDim = UPLOAD_MAX_DIM): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
     const img = new Image();
@@ -63,7 +65,7 @@ export function blobToBase64(blob: Blob): Promise<string> {
   });
 }
 
-export async function downscaleToBase64(file: File, maxDim = 1024): Promise<string> {
+export async function downscaleToBase64(file: File, maxDim = UPLOAD_MAX_DIM): Promise<string> {
   return blobToBase64(await downscaleToBlob(file, maxDim));
 }
 
