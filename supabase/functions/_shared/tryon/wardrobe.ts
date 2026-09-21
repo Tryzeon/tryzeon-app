@@ -1,6 +1,6 @@
 import { isUuid, textArrayValues } from "../text.ts";
 import { ValidationError } from "./errors.ts";
-import { LIMITS } from "./types.ts";
+import { garmentCategoryOf, LIMITS } from "./types.ts";
 import type { ResolvedGarment } from "./types.ts";
 import type { Tables } from "../database.types.ts";
 import type { DbClient } from "../supabase.ts";
@@ -68,5 +68,11 @@ export async function resolveWardrobeGarment(
     );
   }
 
-  return { images: [{ path }], detail: buildWardrobeGarmentDetail(data) };
+  const garment: ResolvedGarment = {
+    images: [{ path }],
+    detail: buildWardrobeGarmentDetail(data),
+  };
+  const category = garmentCategoryOf(data.garment_type);
+  if (category !== undefined) garment.category = category;
+  return garment;
 }

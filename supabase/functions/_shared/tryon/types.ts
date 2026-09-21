@@ -1,8 +1,40 @@
 import type { DailyUsage, UsageCounter } from "../quota.ts";
+import { GARMENT_TYPE_VALUES } from "../vocabularies.ts";
+import type { Enums } from "../database.types.ts";
 import type { ImagePromptOptions, VideoPromptOptions } from "./prompt.ts";
 import type { DbClient } from "../supabase.ts";
 
 export type { UsageCounter };
+
+export type GarmentType = Enums<"garment_type">;
+
+/**
+ * What the prompt reasons about, which is narrower than what a store or a
+ * shopper tags a garment with: `pants` and `skirt` are one replacement scope,
+ * and `others` names no scope at all, so it maps to nothing rather than to a
+ * category the model would then apply.
+ */
+export type GarmentCategory = "top" | "bottom" | "full_body" | "outerwear";
+
+const CATEGORY_BY_TYPE: Record<GarmentType, GarmentCategory | undefined> = {
+  top: "top",
+  outerwear: "outerwear",
+  pants: "bottom",
+  skirt: "bottom",
+  one_piece: "full_body",
+  others: undefined,
+};
+
+export function garmentCategoryOf(
+  garmentType: GarmentType,
+): GarmentCategory | undefined {
+  return CATEGORY_BY_TYPE[garmentType];
+}
+
+export function isGarmentType(value: unknown): value is GarmentType {
+  return typeof value === "string" &&
+    (GARMENT_TYPE_VALUES as readonly string[]).includes(value);
+}
 
 /**
  * Server-side only: what a resolver produces after reading a row it checked
@@ -59,6 +91,7 @@ export interface GarmentMaterial {
  */
 export interface ResolvedGarment {
   images: ImageSource[];
+  category?: GarmentCategory;
   detail?: string;
 }
 

@@ -1,7 +1,25 @@
+import type { GarmentCategory } from "./types.ts";
+
 export const SYSTEM_INSTRUCTION =
   `You are a photorealistic virtual try-on image editor. Preserve the target person's identity and follow only the garment-replacement, garment-styling, and optional scene-edit instructions explicitly authorized by the task. Do not alter anything else.`;
 
-function buildGarmentManifest(garmentGroups: string[][]): string {
+/** Index-aligned with the garment groups it is passed alongside. */
+export interface GarmentBrief {
+  category?: GarmentCategory;
+  detail?: string;
+}
+
+const CATEGORY_LABELS: Record<GarmentCategory, string> = {
+  top: "TOP",
+  bottom: "BOTTOM",
+  full_body: "FULL-BODY",
+  outerwear: "OUTERWEAR",
+};
+
+function buildGarmentManifest(
+  garmentGroups: string[][],
+  garments: GarmentBrief[],
+): string {
   const lines: string[] = [];
   let cursor = 2; // image 1 is the person
   garmentGroups.forEach((group, i) => {
@@ -10,19 +28,20 @@ function buildGarmentManifest(garmentGroups: string[][]): string {
     const range = group.length === 1
       ? `image ${start}`
       : `images ${start}-${end}`;
-    lines.push(`   - Garment ${i + 1}: ${range}`);
+    const category = garments[i]?.category;
+    const scope = category
+      ? CATEGORY_LABELS[category]
+      : "category: classify it yourself using GARMENT SCOPE below";
+    lines.push(`   - Garment ${i + 1}: ${range} — ${scope}`);
     cursor = end + 1;
   });
   return lines.join("\n");
 }
 
-function buildGarmentDetailsSection(
-  garmentDetails?: (string | undefined)[],
-): string {
-  if (!garmentDetails) return "";
+function buildGarmentDetailsSection(garments: GarmentBrief[]): string {
   const lines: string[] = [];
-  garmentDetails.forEach((detail, i) => {
-    const text = detail?.trim();
+  garments.forEach((garment, i) => {
+    const text = garment.detail?.trim();
     if (text) lines.push(`   - Garment ${i + 1}: ${text}`);
   });
   if (lines.length === 0) return "";
@@ -39,7 +58,7 @@ ${lines.join("\n")}`;
  * silently drop that input.
  */
 export interface ImagePromptOptions {
-  garmentDetails?: (string | undefined)[];
+  garments?: GarmentBrief[];
   scenePrompt?: string;
   stylingPrompt?: string;
 }
@@ -48,15 +67,17 @@ export function buildTaskPrompt(
   garmentGroups: string[][],
   opts: ImagePromptOptions = {},
 ): string {
-  const { garmentDetails, scenePrompt, stylingPrompt } = opts;
+  const { garments = [], scenePrompt, stylingPrompt } = opts;
+  const hasFullBody = garments.some((g) => g.category === "full_body");
+
   const totalGarmentImages = garmentGroups.reduce((a, g) => a + g.length, 0);
   let prompt = `You will receive ${
     totalGarmentImages + 1
   } images after this message:
 1) FIRST image: the PERSON photo — this is the target person.
 2) ALL SUBSEQUENT IMAGES are grouped by garment. Each group is the SAME garment from different angles — use a group's images together to understand that garment's 3D structure, front/back designs, and patterns. The garment groups are:
-${buildGarmentManifest(garmentGroups)}
-First classify each garment's category (top / bottom / full-body / outerwear) using the rules below, then apply ALL garments to the person simultaneously.
+${buildGarmentManifest(garmentGroups, garments)}
+A category stated above is final — do NOT reclassify it. Classify only a garment whose category is left open (top / bottom / full-body / outerwear) using the rules below, then apply ALL garments to the person simultaneously.
 
 HARD INVARIANTS — DO NOT CHANGE THESE
 - Person's face, expression, hair (color, length, style), skin tone, age, body shape, pose, camera angle, and framing must be identical to the first image.
@@ -79,9 +100,12 @@ REPLACEMENT SCOPE RULES — STRICT
   }. Never redesign or recolor it — e.g., do NOT touch the original pants when the reference is a top${
     stylingPrompt ? ", unless STYLING below requires it" : ""
   }.
-- FULL-BODY reference → replaces both upper and lower body (the dress/jumpsuit covers everything).
-- OUTERWEAR reference → add or swap the outer layer ONLY. KEEP the original inner top and bottom unchanged and visible where appropriate.
-- If the original lower garment is partially occluded in the first image (e.g., by the original top), reconstruct it faithfully based on what IS visible — same color, same type — do NOT invent a different style.
+- FULL-BODY reference → replaces BOTH the original top and the original bottom. Nothing of either remains — no collar, sleeve, waistband, or trouser leg at the neckline, wrists, or below the hem; what shows there is the person's bare skin from the first image plus preserved footwear. Never paint an original lower garment back beneath it.
+- OUTERWEAR reference → add or swap the outer layer ONLY. KEEP the original inner top and bottom unchanged and visible where appropriate.${
+    hasFullBody
+      ? ""
+      : "\n- If the original lower garment is partially occluded in the first image (e.g., by the original top), reconstruct it faithfully based on what IS visible — same color, same type — do NOT invent a different style."
+  }
 
 GARMENT TRANSFER
 - Copy the garment precisely: cut and construction — neckline shape, sleeve length, hem length, seams, stitching, closures (buttons/zippers), pockets — and any logos or text.
@@ -108,7 +132,7 @@ LIGHTING & REALISM
 OUTPUT
 - Return ONE photorealistic image with sharp garment detail, accurate color reproduction, and clean e-commerce catalog photography quality.`;
 
-  prompt += buildGarmentDetailsSection(garmentDetails);
+  prompt += buildGarmentDetailsSection(garments);
 
   if (stylingPrompt) {
     prompt += `

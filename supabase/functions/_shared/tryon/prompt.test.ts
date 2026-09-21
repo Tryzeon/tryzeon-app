@@ -11,9 +11,38 @@ Deno.test("buildTaskPrompt counts the person image plus every garment image", ()
 });
 
 Deno.test("buildTaskPrompt numbers garment groups from image 2 onward", () => {
-  const prompt = buildTaskPrompt([["a", "b"], ["c"]]);
-  assertStringIncludes(prompt, "- Garment 1: images 2-3");
-  assertStringIncludes(prompt, "- Garment 2: image 4");
+  const prompt = buildTaskPrompt([["a", "b"], ["c"]], {
+    garments: [{ category: "full_body" }, { category: "outerwear" }],
+  });
+  assertStringIncludes(prompt, "- Garment 1: images 2-3 — FULL-BODY");
+  assertStringIncludes(prompt, "- Garment 2: image 4 — OUTERWEAR");
+});
+
+Deno.test("buildTaskPrompt asks the model to classify only an uncategorized garment", () => {
+  const prompt = buildTaskPrompt([["a"], ["b"]], {
+    garments: [{ category: "top" }, {}],
+  });
+  assertStringIncludes(prompt, "- Garment 1: image 2 — TOP");
+  assertStringIncludes(
+    prompt,
+    "- Garment 2: image 3 — category: classify it yourself using GARMENT SCOPE below",
+  );
+  assertStringIncludes(prompt, "A category stated above is final — do NOT reclassify it.");
+});
+
+Deno.test("a full-body garment drops the rule that would paint the original bottom back", () => {
+  const withDress = buildTaskPrompt([["a"], ["b"]], {
+    garments: [{ category: "full_body" }, {}],
+  });
+  const occluded = "If the original lower garment is partially occluded";
+  assertEquals(withDress.includes(occluded), false);
+  assertStringIncludes(withDress, "Never paint an original lower garment back beneath it.");
+
+  const topOnly = buildTaskPrompt([["a"]], { garments: [{ category: "top" }] });
+  assertStringIncludes(topOnly, occluded);
+
+  const unknown = buildTaskPrompt([["a"]]);
+  assertStringIncludes(unknown, occluded);
 });
 
 Deno.test("buildTaskPrompt omits the scene section when no scene is given", () => {
@@ -50,7 +79,7 @@ Deno.test("buildTaskPrompt adds the scene section and its invariant caveat", () 
 
 Deno.test("buildTaskPrompt includes only non-blank garment details", () => {
   const prompt = buildTaskPrompt([["a"], ["b"], ["c"]], {
-    garmentDetails: ["Material: Linen", "   ", undefined],
+    garments: [{ detail: "Material: Linen" }, { detail: "   " }, {}],
   });
   assertStringIncludes(prompt, "GARMENT DETAILS");
   assertStringIncludes(prompt, "- Garment 1: Material: Linen");
@@ -58,7 +87,7 @@ Deno.test("buildTaskPrompt includes only non-blank garment details", () => {
 });
 
 Deno.test("buildTaskPrompt omits the details section when all details are blank", () => {
-  const prompt = buildTaskPrompt([["a"]], { garmentDetails: [undefined] });
+  const prompt = buildTaskPrompt([["a"]], { garments: [{}] });
   assertEquals(prompt.includes("GARMENT DETAILS"), false);
 });
 
@@ -73,7 +102,7 @@ Deno.test("buildVideoPrompt embeds a custom transition style", () => {
 
 Deno.test("buildTaskPrompt never describes how a size sits on the body", () => {
   const prompt = buildTaskPrompt([["a"]], {
-    garmentDetails: ["Material: Linen"],
+    garments: [{ detail: "Material: Linen" }],
     scenePrompt: "a rooftop at dusk",
   });
   assertEquals(prompt.includes("GARMENT FIT"), false);
@@ -81,7 +110,7 @@ Deno.test("buildTaskPrompt never describes how a size sits on the body", () => {
 
 Deno.test("buildTaskPrompt keeps details before scene", () => {
   const prompt = buildTaskPrompt([["a"]], {
-    garmentDetails: ["Material: Linen"],
+    garments: [{ detail: "Material: Linen" }],
     scenePrompt: "a rooftop at dusk",
   });
 
@@ -141,7 +170,7 @@ Deno.test("buildTaskPrompt keeps the styling override scoped to the replaced gar
 
 Deno.test("buildTaskPrompt places styling after details and before scene", () => {
   const prompt = buildTaskPrompt([["a"]], {
-    garmentDetails: ["Material: Linen"],
+    garments: [{ detail: "Material: Linen" }],
     stylingPrompt: "hem tucked in",
     scenePrompt: "a rooftop at dusk",
   });

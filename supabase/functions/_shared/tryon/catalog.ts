@@ -1,11 +1,12 @@
 import { isUuid } from "../text.ts";
 import { ValidationError } from "./errors.ts";
-import { LIMITS } from "./types.ts";
+import { garmentCategoryOf, isGarmentType, LIMITS } from "./types.ts";
 import type { ProductRef, ResolvedGarment } from "./types.ts";
 import { asJsonObject, type DbClient } from "../supabase.ts";
 
 export interface ProductGarmentRow {
   image_paths: unknown;
+  garment_type: unknown;
   name: unknown;
   material: unknown;
   fit: unknown;
@@ -74,9 +75,13 @@ export async function resolveProductGarment(
   // photo instead of describing the garment.
   const images = [{ path: paths[0] }];
 
+  const category = isGarmentType(row.garment_type)
+    ? garmentCategoryOf(row.garment_type)
+    : undefined;
   const detail = buildProductGarmentDetail(row);
 
   const garment: ResolvedGarment = { images };
+  if (category !== undefined) garment.category = category;
   if (detail !== undefined) garment.detail = detail;
   return garment;
 }

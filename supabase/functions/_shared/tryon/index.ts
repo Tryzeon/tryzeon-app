@@ -8,6 +8,7 @@
 export { runTryonJob, type RunTryonJobDeps } from "./run.ts";
 export { supabaseQuota } from "./quota.ts";
 export { supabaseTryonRecorder } from "./analytics.ts";
+export type { GarmentBrief } from "./prompt.ts";
 export type {
   AvatarResolver,
   ImageGenerationOptions,
@@ -26,6 +27,7 @@ export type {
 export { LIMITS } from "./types.ts";
 export type {
   AvatarOverride,
+  GarmentCategory,
   BaseImage,
   GarmentInput,
   GarmentMaterial,

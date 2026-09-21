@@ -6,6 +6,7 @@ import {
   ValidationError,
 } from "./errors.ts";
 import { type DailyUsage, QuotaExceededError } from "../quota.ts";
+import type { GarmentBrief } from "./prompt.ts";
 import type {
   QuotaFactory,
   TryonMode,
@@ -339,31 +340,42 @@ Deno.test("product-ref garments are resolved before loading", async () => {
   assertEquals(seenGarmentB64, ["PRODUCTB64"]);
 });
 
-Deno.test("resolved product detail reaches the generator", async () => {
+Deno.test("the resolvers' category and detail reach the generator, garment by garment", async () => {
   const quota = fakeQuota();
-  let seenDetails: (string | undefined)[] | undefined;
+  let seenGarments: GarmentBrief[] | undefined;
   await runTryonJob(
     client,
     {
       userId: "u1",
       avatar: { base64: "AVATAR" },
-      garments: [{ productId: "11111111-1111-1111-1111-111111111111" }],
+      garments: [
+        { productId: "11111111-1111-1111-1111-111111111111" },
+        { wardrobeItemId: "44444444-4444-4444-4444-444444444444" },
+      ],
       mode: "image",
     },
     {
       quota: quota.factory,
       recordTryon: ignoreTryons,
       resolveProduct: () =>
-        Promise.resolve({ images: [{ base64: "P" }], detail: "Product: X" }),
+        Promise.resolve({
+          images: [{ base64: "P" }],
+          category: "full_body",
+          detail: "Product: X",
+        }),
+      resolveWardrobe: () => Promise.resolve({ images: [{ base64: "W" }] }),
       generate: (_avatar, _groups, opts) => {
-        seenDetails = opts?.garmentDetails;
+        seenGarments = opts?.garments;
         return Promise.resolve("GENERATEDB64");
       },
       upload: () => Promise.resolve("https://img/result.png"),
       now: () => 123,
     },
   );
-  assertEquals(seenDetails, ["Product: X"]);
+  assertEquals(seenGarments, [
+    { category: "full_body", detail: "Product: X" },
+    { category: undefined, detail: undefined },
+  ]);
 });
 
 Deno.test("product resolution failure refunds quota", async () => {

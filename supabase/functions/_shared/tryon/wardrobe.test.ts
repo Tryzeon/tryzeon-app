@@ -113,15 +113,28 @@ Deno.test("resolveWardrobeGarment binds the read to the asking user", async () =
   assertEquals(filters, [["id", ID], ["user_id", "u1"]]);
 });
 
-Deno.test("resolveWardrobeGarment yields one image source and the detail", async () => {
+Deno.test("resolveWardrobeGarment yields one image source, the category, and the detail", async () => {
   const { admin } = fakeAdmin({
-    row: { id: ID, user_id: "u1", image_path: "u1/top/a.png", garment_type: "top", tags: ["寬鬆"] },
+    row: { id: ID, user_id: "u1", image_path: "u1/top/a.png", garment_type: "one_piece", tags: ["寬鬆"] },
   });
   const garment = await resolveWardrobeGarment(admin, "u1", ID);
 
   assertEquals(garment, {
     images: [{ path: "u1/top/a.png" }],
-    detail: "Garment type: top. Tags: 寬鬆",
+    category: "full_body",
+    detail: "Garment type: one_piece. Tags: 寬鬆",
+  });
+});
+
+Deno.test("resolveWardrobeGarment leaves a scopeless row uncategorized", async () => {
+  const { admin } = fakeAdmin({
+    row: { id: ID, user_id: "u1", image_path: "u1/top/a.png", garment_type: "others", tags: [] },
+  });
+  const garment = await resolveWardrobeGarment(admin, "u1", ID);
+
+  assertEquals(garment, {
+    images: [{ path: "u1/top/a.png" }],
+    detail: "Garment type: others",
   });
 });
 
@@ -133,6 +146,7 @@ Deno.test("resolveWardrobeGarment still describes a row with no tags", async () 
 
   assertEquals(garment, {
     images: [{ path: "u1/top/a.png" }],
+    category: "top",
     detail: "Garment type: top",
   });
 });

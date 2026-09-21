@@ -46,6 +46,7 @@ const PRODUCT_ROW = {
   id: PRODUCT_ID,
   status: "active",
   image_paths: ["stores/a.jpg"],
+  garment_type: "top",
   name: "Shirt",
   material: null,
   fit: null,
@@ -56,6 +57,7 @@ const PRODUCT_ROW = {
 Deno.test("buildProductGarmentDetail joins present fields in fixed order", () => {
   const detail = buildProductGarmentDetail({
     image_paths: ["stores/x.jpg"],
+    garment_type: "top",
     name: "Linen Shirt",
     material: "100% Linen",
     fit: "regular",
@@ -71,6 +73,7 @@ Deno.test("buildProductGarmentDetail joins present fields in fixed order", () =>
 Deno.test("buildProductGarmentDetail skips empty and missing fields", () => {
   const detail = buildProductGarmentDetail({
     image_paths: [],
+    garment_type: "top",
     name: "  Tee  ",
     material: "",
     fit: null,
@@ -83,6 +86,7 @@ Deno.test("buildProductGarmentDetail skips empty and missing fields", () => {
 Deno.test("buildProductGarmentDetail returns undefined when all empty", () => {
   const detail = buildProductGarmentDetail({
     image_paths: [],
+    garment_type: "top",
     name: null,
     material: null,
     fit: null,
@@ -95,6 +99,7 @@ Deno.test("buildProductGarmentDetail returns undefined when all empty", () => {
 Deno.test("buildProductGarmentDetail caps overlong detail at the limit", () => {
   const detail = buildProductGarmentDetail({
     image_paths: [],
+    garment_type: "top",
     name: "x".repeat(LIMITS.MAX_GARMENT_DETAIL_LENGTH + 200),
     material: null,
     fit: null,
@@ -138,4 +143,35 @@ Deno.test("resolveProductGarment sends only the product's first image", async ()
   const garment = await resolveProductGarment(admin, { productId: PRODUCT_ID });
 
   assertEquals(garment.images, [{ path: "stores/main.jpg" }]);
+});
+
+Deno.test("resolveProductGarment carries the product's garment type as a category", async () => {
+  const { admin } = fakeAdmin({
+    products: { row: { ...PRODUCT_ROW, garment_type: "one_piece" } },
+  });
+
+  const garment = await resolveProductGarment(admin, { productId: PRODUCT_ID });
+
+  assertEquals(garment.category, "full_body");
+});
+
+Deno.test("resolveProductGarment leaves a scopeless garment type uncategorized", async () => {
+  const { admin } = fakeAdmin({
+    products: { row: { ...PRODUCT_ROW, garment_type: "others" } },
+  });
+
+  const garment = await resolveProductGarment(admin, { productId: PRODUCT_ID });
+
+  assertEquals("category" in garment, false);
+});
+
+Deno.test("resolveProductGarment ignores a garment type outside the vocabulary", async () => {
+  // The column is an enum, but the row arrives as untyped jsonb from the RPC.
+  const { admin } = fakeAdmin({
+    products: { row: { ...PRODUCT_ROW, garment_type: "dress" } },
+  });
+
+  const garment = await resolveProductGarment(admin, { productId: PRODUCT_ID });
+
+  assertEquals("category" in garment, false);
 });
