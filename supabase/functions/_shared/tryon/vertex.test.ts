@@ -167,6 +167,35 @@ Deno.test("generateTryonVideo keeps the experimental engine on Veo", async () =>
   }
 });
 
+Deno.test("generateTryonImage asks for a 2K portrait image", async () => {
+  await installServiceAccount();
+  const { captured, restore } = stubFetch(() => ({
+    candidates: [{
+      content: {
+        role: "model",
+        parts: [{ inlineData: { mimeType: "image/png", data: IMAGE_BASE64 } }],
+      },
+      finishReason: "STOP",
+    }],
+  }));
+  try {
+    const image = await generateTryonImage(IMAGE_BASE64, [[IMAGE_BASE64]]);
+
+    assertEquals(image, IMAGE_BASE64);
+    assertEquals(captured.length, 1);
+    const [{ url, body }] = captured;
+    assertStringIncludes(url, `/models/${IMAGE_MODEL}:generateContent`);
+    const config = body.generationConfig as Record<string, unknown>;
+    assertEquals(config.responseModalities, ["IMAGE"]);
+    assertEquals(config.imageConfig, {
+      aspectRatio: "9:16",
+      imageSize: "2K",
+    });
+  } finally {
+    restore();
+  }
+});
+
 // A quota refusal that asks for no wait, so the test observes the attempt
 // count without sitting through the backoff.
 function quotaRefusal(): Response {

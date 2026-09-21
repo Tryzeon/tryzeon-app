@@ -69,7 +69,7 @@ export async function generateTryonImage(
     providerOptions: {
       vertex: {
         responseModalities: ["IMAGE"],
-        imageConfig: { aspectRatio: "9:16" },
+        imageConfig: { aspectRatio: "9:16", imageSize: "2K" },
       },
     },
     maxRetries: QUOTA_WINDOW_RETRIES,
