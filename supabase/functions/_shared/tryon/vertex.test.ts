@@ -233,3 +233,139 @@ Deno.test("generateTryonVideo retries a quota refusal enough to reach the next m
     restore();
   }
 });
+
+const LITE_MODEL = "gemini-3.1-flash-lite-image";
+const PRO_MODEL = "gemini-3-pro-image";
+
+function imageAnswer(): unknown {
+  return {
+    candidates: [{
+      content: {
+        role: "model",
+        parts: [{ inlineData: { mimeType: "image/png", data: IMAGE_BASE64 } }],
+      },
+      finishReason: "STOP",
+    }],
+  };
+}
+
+Deno.test("generateTryonImage moves to the next model when one refuses for quota", async () => {
+  await installServiceAccount();
+  Deno.env.set("TRYON_MODEL", `${IMAGE_MODEL}, ${LITE_MODEL}`);
+  const { captured, restore } = stubFetch((url) =>
+    url.includes(`/models/${IMAGE_MODEL}:`) ? quotaRefusal() : imageAnswer()
+  );
+  try {
+    const image = await generateTryonImage(IMAGE_BASE64, [[IMAGE_BASE64]]);
+
+    assertEquals(image, IMAGE_BASE64);
+    assertEquals(captured.length, 2);
+    assertStringIncludes(
+      captured[0].url,
+      `/models/${IMAGE_MODEL}:generateContent`,
+    );
+    assertStringIncludes(
+      captured[1].url,
+      `/models/${LITE_MODEL}:generateContent`,
+    );
+  } finally {
+    Deno.env.set("TRYON_MODEL", IMAGE_MODEL);
+    restore();
+  }
+});
+
+Deno.test("generateTryonImage sweeps every model on each attempt", async () => {
+  await installServiceAccount();
+  Deno.env.set("TRYON_MODEL", `${IMAGE_MODEL},${LITE_MODEL},${PRO_MODEL}`);
+  const { captured, restore } = stubFetch(quotaRefusal);
+  try {
+    await assertRejects(
+      () => generateTryonImage(IMAGE_BASE64, [[IMAGE_BASE64]]),
+      ServiceBusyError,
+    );
+    assertEquals(captured.length, 18);
+    assertEquals(
+      captured.slice(0, 3).map(({ url }) =>
+        url.split("/models/")[1].split(":")[0]
+      ),
+      [IMAGE_MODEL, LITE_MODEL, PRO_MODEL],
+    );
+  } finally {
+    Deno.env.set("TRYON_MODEL", IMAGE_MODEL);
+    restore();
+  }
+});
+
+Deno.test("generateTryonImage stops sweeping at a refusal that is not about capacity", async () => {
+  await installServiceAccount();
+  Deno.env.set("TRYON_MODEL", `${IMAGE_MODEL},${LITE_MODEL}`);
+  const { captured, restore } = stubFetch(() =>
+    Response.json({ error: { code: 400, status: "INVALID_ARGUMENT" } }, {
+      status: 400,
+    })
+  );
+  try {
+    await assertRejects(() =>
+      generateTryonImage(IMAGE_BASE64, [[IMAGE_BASE64]])
+    );
+    assertEquals(captured.length, 1);
+  } finally {
+    Deno.env.set("TRYON_MODEL", IMAGE_MODEL);
+    restore();
+  }
+});
+
+Deno.test("generateTryonImage names the model that served the request", async () => {
+  await installServiceAccount();
+  Deno.env.set("TRYON_MODEL", `${IMAGE_MODEL},${LITE_MODEL}`);
+  const { restore } = stubFetch((url) =>
+    url.includes(`/models/${IMAGE_MODEL}:`) ? quotaRefusal() : imageAnswer()
+  );
+  const logged: string[] = [];
+  const { info, warn } = console;
+  console.info = (message: string) => logged.push(message);
+  console.warn = (message: string) => logged.push(message);
+  try {
+    await generateTryonImage(IMAGE_BASE64, [[IMAGE_BASE64]]);
+
+    assertEquals(
+      logged.filter((line) => line.startsWith("vertex:")),
+      [
+        `vertex: model=${IMAGE_MODEL} region=global refused for capacity`,
+        `vertex: model=${LITE_MODEL} region=global served`,
+      ],
+    );
+  } finally {
+    console.info = info;
+    console.warn = warn;
+    Deno.env.set("TRYON_MODEL", IMAGE_MODEL);
+    restore();
+  }
+});
+
+Deno.test("generateTryonImage keeps the experimental engine on its one model", async () => {
+  await installServiceAccount();
+  Deno.env.set("TRYON_MODEL", `${IMAGE_MODEL},${LITE_MODEL}`);
+  Deno.env.set("TRYON_MODEL_EXPERIMENTAL", PRO_MODEL);
+  const { captured, restore } = stubFetch(quotaRefusal);
+  try {
+    await assertRejects(
+      () =>
+        generateTryonImage(IMAGE_BASE64, [[IMAGE_BASE64]], {
+          engine: "experimental",
+        }),
+      ServiceBusyError,
+    );
+    assertEquals(captured.length, 6);
+    assertEquals(
+      new Set(
+        captured.map(({ url }) => url.split("/models/")[1].split(":")[0]),
+      ),
+      new Set([PRO_MODEL]),
+    );
+  } finally {
+    Deno.env.set("TRYON_MODEL", IMAGE_MODEL);
+    Deno.env.delete("TRYON_MODEL_EXPERIMENTAL");
+    restore();
+  }
+});

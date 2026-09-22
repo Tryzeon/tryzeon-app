@@ -27,7 +27,7 @@ export function rethrowAsBusy(err: unknown): never {
  * nests every attempt in one `RetryError`, and the last one is the verdict — a
  * 429 that later turned into a 500 is a 500.
  */
-function isBusy(err: unknown): boolean {
+export function isBusy(err: unknown): boolean {
   if (RetryError.isInstance(err)) return isBusy(err.lastError);
   if (!APICallError.isInstance(err)) return false;
   return err.statusCode === 429 || err.statusCode === 503;

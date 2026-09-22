@@ -20,6 +20,13 @@
  *
  * `GOOGLE_SERVICE_ACCOUNT` is the downloaded key file, pasted whole.
  *
+ * `TRYON_MODEL` is an ordered, comma-separated list: the first entry is the
+ * engine's model, the rest are tried in turn when it refuses for quota (see
+ * `provider.ts`). Vertex meters image generation per model, so every entry
+ * adds its own allowance. The 2026-09-21 side-by-side on 15 store products
+ * found `gemini-3.1-flash-lite-image` indistinguishable from the standard
+ * model in this use, which is what earns it a place in the list.
+ *
  * `CHAT_MODEL` naming three unrelated features is a known wart: changing the
  * chat model also changes how wardrobe photos and size recordings are read.
  *
@@ -87,7 +94,16 @@ export const vertexLocation = (): string => Deno.env.get("VERTEX_LOCATION") ?? "
 
 export const chatModel = (): string => requireEnv("CHAT_MODEL");
 
-export const tryonImageModel = (): string => requireEnv("TRYON_MODEL"); // gemini-3.1-flash-image
+export function tryonImageModels(): string[] {
+  const models = requireEnv("TRYON_MODEL")
+    .split(",")
+    .map((model) => model.trim())
+    .filter((model) => model.length > 0);
+  if (models.length === 0) {
+    throw new Error("TRYON_MODEL names no model");
+  }
+  return models;
+} // gemini-3.1-flash-image,gemini-3.1-flash-lite-image,gemini-3-pro-image
 export const tryonExperimentalImageModel = (): string => requireEnv("TRYON_MODEL_EXPERIMENTAL"); // gemini-3-pro-image
 
 export const tryonVideoModel = (): string => requireEnv("VIDEO_MODEL"); // gemini-omni-1.1-flash-preview

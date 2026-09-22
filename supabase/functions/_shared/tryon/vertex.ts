@@ -7,7 +7,7 @@ import { base64ToUint8Array, detectMimeType } from "../image-utils.ts";
 import {
   tryonExperimentalImageModel,
   tryonExperimentalVideoModel,
-  tryonImageModel,
+  tryonImageModels,
   tryonVideoModel,
 } from "../vertex/config.ts";
 import { rethrowAsBusy } from "../vertex/errors.ts";
@@ -16,6 +16,7 @@ import { GenerationFailedError } from "./errors.ts";
 import {
   vertexInteractionsModel,
   vertexModel,
+  vertexModelSweep,
   vertexVideoModel,
 } from "../vertex/provider.ts";
 import {
@@ -47,13 +48,14 @@ export async function generateTryonImage(
   console.log("[tryon] task prompt:\n" + taskPrompt);
 
   // Read at call time, not at module load: a deployment missing the
-  // experimental model must still serve standard jobs.
-  const modelName = opts.engine === "experimental"
-    ? tryonExperimentalImageModel()
-    : tryonImageModel();
+  // experimental model must still serve standard jobs. Only the standard
+  // engine sweeps models: the experimental engine is the one model it names.
+  const model = opts.engine === "experimental"
+    ? vertexModel(tryonExperimentalImageModel())
+    : vertexModelSweep(tryonImageModels());
 
   const { files, finishReason } = await generateText({
-    model: vertexModel(modelName),
+    model,
     system: SYSTEM_INSTRUCTION,
     messages: [{
       role: "user",
