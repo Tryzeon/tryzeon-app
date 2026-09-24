@@ -1,8 +1,20 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
 
 part 'app_subscription_entitlement.freezed.dart';
 
-enum AppSubscriptionTier { free, pro, max }
+@JsonEnum(valueField: 'value')
+enum AppSubscriptionTier {
+  free(AppConstants.entitlementFreeId),
+  pro(AppConstants.entitlementProId),
+  max(AppConstants.entitlementMaxId);
+
+  const AppSubscriptionTier(this.value);
+  final String value;
+
+  static AppSubscriptionTier? tryFromString(final String? value) =>
+      AppSubscriptionTier.values.where((final e) => e.value == value).firstOrNull;
+}
 
 @freezed
 sealed class AppSubscriptionEntitlement with _$AppSubscriptionEntitlement {
