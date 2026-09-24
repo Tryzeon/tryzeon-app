@@ -1,4 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 
 part 'product_category_model.g.dart';
 
@@ -22,10 +24,12 @@ class ProductCategoryModel {
   final String id;
   final String code;
   final String name;
-  final String defaultGarmentType;
+  @JsonKey(unknownEnumValue: GarmentType.others)
+  final GarmentType defaultGarmentType;
 
-  /// Applicability (raw value): `male`/`female`/`unisex`. `unisex` = both.
-  final String? gender;
+  /// Applicability. `unisex` = both.
+  @JsonKey(unknownEnumValue: JsonKey.nullForUndefinedEnumValue)
+  final ProductGender? gender;
 
   /// Per-gender model imagery (R2 paths).
   final String? imageMale;

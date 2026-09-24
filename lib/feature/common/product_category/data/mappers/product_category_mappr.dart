@@ -1,4 +1,5 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
+import 'package:tryzeon/core/data/cache/cached_enum_converters.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 
@@ -9,19 +10,25 @@ import 'product_category_mappr.auto_mappr.dart';
 
 @AutoMappr([
   MapType<ProductCategoryModel, ProductCategory>(
-    fields: [
-      Field(
-        'defaultGarmentType',
-        custom: ProductCategoryMapprHelper.stringToDefaultGarmentType,
-      ),
-      Field('gender', custom: ProductCategoryMapprHelper.stringToGender),
-    ],
+    fields: [Field('gender', custom: ProductCategoryMapprHelper.genderToEntity)],
   ),
   MapType<ProductCategoryModel, ProductCategoryCache>(
     fields: [Field('categoryId', from: 'id')],
+    converters: [
+      TypeConverter<GarmentType, String>(CachedEnumConverters.garmentTypeToCache),
+      TypeConverter<ProductGender?, String?>(
+        CachedEnumConverters.productGenderToCache,
+      ),
+    ],
   ),
   MapType<ProductCategoryCache, ProductCategoryModel>(
     fields: [Field('id', from: 'categoryId')],
+    converters: [
+      TypeConverter<String, GarmentType>(CachedEnumConverters.garmentTypeFromCache),
+      TypeConverter<String?, ProductGender?>(
+        CachedEnumConverters.productGenderFromCache,
+      ),
+    ],
   ),
 ])
 class ProductCategoryMappr extends $ProductCategoryMappr {
@@ -29,9 +36,6 @@ class ProductCategoryMappr extends $ProductCategoryMappr {
 }
 
 class ProductCategoryMapprHelper {
-  static GarmentType stringToDefaultGarmentType(final ProductCategoryModel source) =>
-      GarmentType.tryFromString(source.defaultGarmentType) ?? GarmentType.others;
-
-  static ProductGender stringToGender(final ProductCategoryModel source) =>
-      ProductGender.tryFromString(source.gender) ?? ProductGender.unisex;
+  static ProductGender genderToEntity(final ProductCategoryModel source) =>
+      source.gender ?? ProductGender.unisex;
 }
