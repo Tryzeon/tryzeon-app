@@ -22,3 +22,7 @@ class UserCanceledException extends AppException {
 class NotFoundException extends AppException {
   const NotFoundException([super.message]);
 }
+
+class CacheDecodeException extends AppException {
+  const CacheDecodeException([super.message]);
+}

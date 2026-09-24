@@ -106,6 +106,7 @@ Failure mapExceptionToFailure(final Object e) {
     UnauthenticatedException(message: final msg) => AuthFailure(msg),
     UserCanceledException(message: final msg) => UserCanceledFailure(msg),
     NotFoundException(message: final msg) => NotFoundFailure(msg),
+    CacheDecodeException(message: final msg) => UnknownFailure(msg),
 
     PostgrestException() => const ServerFailure(),
     StorageException() => const ServerFailure(),

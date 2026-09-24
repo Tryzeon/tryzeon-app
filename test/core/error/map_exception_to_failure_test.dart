@@ -218,5 +218,13 @@ void main() {
       expect(failure, isA<AuthFailure>());
       expect(failure.message, '驗證失敗，請重新登入');
     });
+
+    test('CacheDecodeException maps to UnknownFailure carrying its message', () {
+      final failure = mapExceptionToFailure(
+        const CacheDecodeException('Cached garmentType holds an unknown value: dress'),
+      );
+      expect(failure, isA<UnknownFailure>());
+      expect(failure.message, contains('garmentType'));
+    });
   });
 }
