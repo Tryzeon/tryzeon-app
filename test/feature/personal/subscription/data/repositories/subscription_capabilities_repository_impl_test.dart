@@ -52,9 +52,9 @@ void main() {
       SubscriptionTierCache()
         ..tier = tier
         ..wardrobeLimit = 10
-        ..tryonLimit = 2
-        ..videoLimit = 0
-        ..chatLimit = 5,
+        ..dailyTryonLimit = 2
+        ..dailyVideoLimit = 0
+        ..dailyChatLimit = 5,
     );
     await harness.isar.cacheEntrys.putByCacheKey(
       CacheEntry()

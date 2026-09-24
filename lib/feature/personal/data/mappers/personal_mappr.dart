@@ -82,20 +82,8 @@ import 'personal_mappr.auto_mappr.dart';
         Field('dailyVideoLimit', from: 'videoLimit'),
       ],
     ),
-    MapType<SubscriptionCapabilities, SubscriptionTierCache>(
-      fields: [
-        Field('tryonLimit', from: 'dailyTryonLimit'),
-        Field('chatLimit', from: 'dailyChatLimit'),
-        Field('videoLimit', from: 'dailyVideoLimit'),
-      ],
-    ),
-    MapType<SubscriptionTierCache, SubscriptionCapabilities>(
-      fields: [
-        Field('dailyTryonLimit', from: 'tryonLimit'),
-        Field('dailyChatLimit', from: 'chatLimit'),
-        Field('dailyVideoLimit', from: 'videoLimit'),
-      ],
-    ),
+    MapType<SubscriptionCapabilities, SubscriptionTierCache>(),
+    MapType<SubscriptionTierCache, SubscriptionCapabilities>(),
   ],
   includes: [
     BodyMeasurementsMappr(), // UserProfile.measurements
