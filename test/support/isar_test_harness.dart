@@ -9,6 +9,7 @@ import 'package:tryzeon/feature/common/product_category/data/collections/product
 import 'package:tryzeon/feature/personal/profile/data/collections/user_profile_cache.dart';
 import 'package:tryzeon/feature/personal/subscription/data/collections/subscription_tier_cache.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/collections/wardrobe_item_cache.dart';
+import 'package:tryzeon/feature/store/analytics/data/collections/product_analytics_cache.dart';
 import 'package:tryzeon/feature/store/product/data/collections/product_cache.dart';
 import 'package:tryzeon/feature/store/profile/data/collections/store_profile_cache.dart';
 
@@ -46,6 +47,7 @@ Future<TestIsar> openTestIsar() async {
       ProductCacheSchema,
       SubscriptionTierCacheSchema,
       StoreProfileCacheSchema,
+      ProductAnalyticsCacheSchema,
     ],
     directory: dir.path,
     name: p.basename(dir.path),

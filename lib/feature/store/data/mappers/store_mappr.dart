@@ -139,8 +139,8 @@ import 'store_mappr.auto_mappr.dart';
     ),
 
     MapType<ProductAnalyticsSummaryDto, ProductAnalyticsSummary>(),
-    MapType<ProductAnalyticsSummaryDto, ProductAnalyticsCache>(),
-    MapType<ProductAnalyticsCache, ProductAnalyticsSummaryDto>(),
+    MapType<ProductAnalyticsSummary, ProductAnalyticsCache>(),
+    MapType<ProductAnalyticsCache, ProductAnalyticsSummary>(),
   ],
   includes: [GarmentMeasurementsMappr(), BodyMeasurementRangesMappr()],
 )

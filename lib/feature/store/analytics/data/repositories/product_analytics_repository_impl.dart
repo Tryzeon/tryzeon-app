@@ -31,8 +31,11 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
       final isAllTime = year == null || month == null;
 
       if (isAllTime) {
-        final models = await _remoteDataSource.getAllProductAnalyticsSummaries(storeId);
-        return Ok(_aggregateByProduct(models));
+        final summaries = _mappr
+            .convertList<ProductAnalyticsSummaryDto, ProductAnalyticsSummary>(
+              await _remoteDataSource.getAllProductAnalyticsSummaries(storeId),
+            );
+        return Ok(_aggregateByProduct(summaries));
       }
 
       final isPastMonth = year < now.year || (year == now.year && month < now.month);
@@ -44,49 +47,38 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
           month,
         );
         switch (cached) {
-          case CacheHit<List<ProductAnalyticsSummaryDto>>(:final data):
-            return Ok(
-              data
-                  .map(
-                    (final m) => _mappr
-                        .convert<ProductAnalyticsSummaryDto, ProductAnalyticsSummary>(m),
-                  )
-                  .toList(),
-            );
-          case CacheEmpty<List<ProductAnalyticsSummaryDto>>():
+          case CacheHit<List<ProductAnalyticsSummary>>(:final data):
+            return Ok(data);
+          case CacheEmpty<List<ProductAnalyticsSummary>>():
             return const Ok([]);
-          case CacheMiss<List<ProductAnalyticsSummaryDto>>():
+          case CacheMiss<List<ProductAnalyticsSummary>>():
             break;
         }
       }
 
-      final remoteModels = await _remoteDataSource.getProductAnalyticsSummaries(
-        storeId,
-        year: year,
-        month: month,
-      );
+      final summaries = _mappr
+          .convertList<ProductAnalyticsSummaryDto, ProductAnalyticsSummary>(
+            await _remoteDataSource.getProductAnalyticsSummaries(
+              storeId,
+              year: year,
+              month: month,
+            ),
+          );
 
       if (isPastMonth) {
-        if (remoteModels.isEmpty) {
+        if (summaries.isEmpty) {
           await _localDataSource.markProductAnalyticsSummariesEmpty(storeId, year, month);
         } else {
           await _localDataSource.saveProductAnalyticsSummaries(
             storeId,
             year,
             month,
-            remoteModels,
+            summaries,
           );
         }
       }
 
-      return Ok(
-        remoteModels
-            .map(
-              (final m) =>
-                  _mappr.convert<ProductAnalyticsSummaryDto, ProductAnalyticsSummary>(m),
-            )
-            .toList(),
-      );
+      return Ok(summaries);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to get product analytics summaries', e, stackTrace);
       return Err(mapExceptionToFailure(e));
@@ -94,26 +86,18 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
   }
 
   List<ProductAnalyticsSummary> _aggregateByProduct(
-    final List<ProductAnalyticsSummaryDto> models,
+    final List<ProductAnalyticsSummary> summaries,
   ) {
     final Map<String, ProductAnalyticsSummary> map = {};
-    for (final m in models) {
-      final existing = map[m.productId];
-      if (existing != null) {
-        map[m.productId] = ProductAnalyticsSummary(
-          productId: m.productId,
-          viewCount: existing.viewCount + m.viewCount,
-          tryonCount: existing.tryonCount + m.tryonCount,
-          purchaseClickCount: existing.purchaseClickCount + m.purchaseClickCount,
-        );
-      } else {
-        map[m.productId] = ProductAnalyticsSummary(
-          productId: m.productId,
-          viewCount: m.viewCount,
-          tryonCount: m.tryonCount,
-          purchaseClickCount: m.purchaseClickCount,
-        );
-      }
+    for (final s in summaries) {
+      final existing = map[s.productId];
+      map[s.productId] = existing == null
+          ? s
+          : existing.copyWith(
+              viewCount: existing.viewCount + s.viewCount,
+              tryonCount: existing.tryonCount + s.tryonCount,
+              purchaseClickCount: existing.purchaseClickCount + s.purchaseClickCount,
+            );
     }
     return map.values.toList();
   }
