@@ -1,4 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/product_size/data/models/product_size_model.dart';
 
 export 'package:tryzeon/feature/common/product_size/data/models/product_size_model.dart';
@@ -37,22 +40,30 @@ class ProductModel {
   final String storeId;
   final String name;
   final String categoryId;
-  final String garmentType;
+  @JsonKey(unknownEnumValue: GarmentType.others)
+  final GarmentType garmentType;
   final double price;
   final List<String> imagePaths;
   @JsonKey(includeToJson: false)
   final List<String> imageUrls;
   final String id;
-  final String? status;
-  final String? gender;
+  @JsonKey(unknownEnumValue: ProductStatus.active)
+  final ProductStatus? status;
+  @JsonKey(unknownEnumValue: JsonKey.nullForUndefinedEnumValue)
+  final ProductGender? gender;
   final String? purchaseLink;
   final String? description;
   final String? material;
-  final String? elasticity;
-  final String? fit;
-  final String? thickness;
-  final List<String>? styles;
-  final List<String>? seasons;
+  @JsonKey(unknownEnumValue: JsonKey.nullForUndefinedEnumValue)
+  final ProductElasticity? elasticity;
+  @JsonKey(unknownEnumValue: JsonKey.nullForUndefinedEnumValue)
+  final ProductFit? fit;
+  @JsonKey(unknownEnumValue: JsonKey.nullForUndefinedEnumValue)
+  final ProductThickness? thickness;
+  @JsonKey(fromJson: _stylesFromJson)
+  final List<ClothingStyle>? styles;
+  @JsonKey(fromJson: _seasonsFromJson)
+  final List<ProductSeason>? seasons;
   @JsonKey(name: 'product_sizes', includeToJson: false)
   final List<ProductSizeModel>? sizes;
   @JsonKey(includeToJson: false)
@@ -62,3 +73,9 @@ class ProductModel {
 
   Map<String, dynamic> toJson() => _$ProductModelToJson(this);
 }
+
+List<ClothingStyle>? _stylesFromJson(final List<dynamic>? json) =>
+    ClothingStyle.listFromStrings(json?.cast<String>());
+
+List<ProductSeason>? _seasonsFromJson(final List<dynamic>? json) =>
+    ProductSeason.listFromStrings(json?.cast<String>());

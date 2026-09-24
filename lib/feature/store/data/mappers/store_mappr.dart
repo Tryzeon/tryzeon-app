@@ -1,4 +1,5 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
+import 'package:tryzeon/core/data/cache/cached_enum_converters.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/store/data/collections/store_order_contact_embedded.dart';
 import 'package:tryzeon/feature/common/store/data/models/store_order_contact_model.dart';
@@ -30,31 +31,69 @@ import 'store_mappr.auto_mappr.dart';
 
     MapType<ProductModel, Product>(
       fields: [
-        Field('garmentType', custom: StoreMapprHelper.stringToGarmentType),
-        Field('status', custom: StoreMapprHelper.stringToStatus),
-        Field('gender', custom: StoreMapprHelper.stringToGender),
-        Field('elasticity', custom: StoreMapprHelper.stringToElasticity),
-        Field('fit', custom: StoreMapprHelper.stringToFit),
-        Field('thickness', custom: StoreMapprHelper.stringToThickness),
-        Field('styles', custom: StoreMapprHelper.stringsToStyles),
-        Field('seasons', custom: StoreMapprHelper.stringsToSeasons),
+        Field('status', custom: StoreMapprHelper.statusToEntity),
+        Field('gender', custom: StoreMapprHelper.genderToEntity),
+        Field('styles', custom: StoreMapprHelper.stylesToEntity),
+        Field('seasons', custom: StoreMapprHelper.seasonsToEntity),
       ],
     ),
     MapType<Product, ProductModel>(
       fields: [
-        Field('garmentType', custom: StoreMapprHelper.garmentTypeToString),
-        Field('status', custom: StoreMapprHelper.statusToString),
-        Field('gender', custom: StoreMapprHelper.genderToString),
-        Field('elasticity', custom: StoreMapprHelper.elasticityToString),
-        Field('fit', custom: StoreMapprHelper.fitToString),
-        Field('thickness', custom: StoreMapprHelper.thicknessToString),
-        Field('styles', custom: StoreMapprHelper.stylesToStrings),
-        Field('seasons', custom: StoreMapprHelper.seasonsToStrings),
+        Field('styles', custom: StoreMapprHelper.stylesToModel),
+        Field('seasons', custom: StoreMapprHelper.seasonsToModel),
       ],
     ),
 
-    MapType<ProductModel, ProductCache>(fields: [Field('productId', from: 'id')]),
-    MapType<ProductCache, ProductModel>(fields: [Field('id', from: 'productId')]),
+    MapType<ProductModel, ProductCache>(
+      fields: [Field('productId', from: 'id')],
+      converters: [
+        TypeConverter<GarmentType, String>(CachedEnumConverters.garmentTypeToCache),
+        TypeConverter<ProductStatus?, String?>(
+          CachedEnumConverters.productStatusToCache,
+        ),
+        TypeConverter<ProductGender?, String?>(
+          CachedEnumConverters.productGenderToCache,
+        ),
+        TypeConverter<ProductElasticity?, String?>(
+          CachedEnumConverters.productElasticityToCache,
+        ),
+        TypeConverter<ProductFit?, String?>(CachedEnumConverters.productFitToCache),
+        TypeConverter<ProductThickness?, String?>(
+          CachedEnumConverters.productThicknessToCache,
+        ),
+        TypeConverter<List<ClothingStyle>?, List<String>?>(
+          CachedEnumConverters.clothingStylesToCache,
+        ),
+        TypeConverter<List<ProductSeason>?, List<String>?>(
+          CachedEnumConverters.productSeasonsToCache,
+        ),
+      ],
+    ),
+    MapType<ProductCache, ProductModel>(
+      fields: [Field('id', from: 'productId')],
+      converters: [
+        TypeConverter<String, GarmentType>(CachedEnumConverters.garmentTypeFromCache),
+        TypeConverter<String?, ProductStatus?>(
+          CachedEnumConverters.productStatusFromCache,
+        ),
+        TypeConverter<String?, ProductGender?>(
+          CachedEnumConverters.productGenderFromCache,
+        ),
+        TypeConverter<String?, ProductElasticity?>(
+          CachedEnumConverters.productElasticityFromCache,
+        ),
+        TypeConverter<String?, ProductFit?>(CachedEnumConverters.productFitFromCache),
+        TypeConverter<String?, ProductThickness?>(
+          CachedEnumConverters.productThicknessFromCache,
+        ),
+        TypeConverter<List<String>?, List<ClothingStyle>?>(
+          CachedEnumConverters.clothingStylesFromCache,
+        ),
+        TypeConverter<List<String>?, List<ProductSeason>?>(
+          CachedEnumConverters.productSeasonsFromCache,
+        ),
+      ],
+    ),
 
     MapType<StoreOrderContactModel, StoreOrderContact>(
       fields: [Field('type', custom: StoreMapprHelper.codeToOrderContactType)],
@@ -85,51 +124,23 @@ class StoreMappr extends $StoreMappr {
 }
 
 class StoreMapprHelper {
-  static GarmentType stringToGarmentType(final ProductModel source) =>
-      GarmentType.tryFromString(source.garmentType) ?? GarmentType.others;
+  static ProductStatus statusToEntity(final ProductModel source) =>
+      source.status ?? ProductStatus.active;
 
-  static ProductStatus stringToStatus(final ProductModel source) =>
-      ProductStatus.tryFromString(source.status) ?? ProductStatus.active;
+  static ProductGender genderToEntity(final ProductModel source) =>
+      source.gender ?? ProductGender.unisex;
 
-  static ProductGender stringToGender(final ProductModel source) =>
-      ProductGender.tryFromString(source.gender) ?? ProductGender.unisex;
+  static Set<ClothingStyle>? stylesToEntity(final ProductModel source) =>
+      source.styles?.toSet();
 
-  static ProductElasticity? stringToElasticity(final ProductModel source) =>
-      ProductElasticity.tryFromString(source.elasticity);
+  static Set<ProductSeason>? seasonsToEntity(final ProductModel source) =>
+      source.seasons?.toSet();
 
-  static ProductFit? stringToFit(final ProductModel source) =>
-      ProductFit.tryFromString(source.fit);
+  static List<ClothingStyle>? stylesToModel(final Product source) =>
+      source.styles?.toList();
 
-  static ProductThickness? stringToThickness(final ProductModel source) =>
-      ProductThickness.tryFromString(source.thickness);
-
-  static Set<ClothingStyle>? stringsToStyles(final ProductModel source) =>
-      ClothingStyle.listFromStrings(source.styles)?.toSet();
-
-  static Set<ProductSeason>? stringsToSeasons(final ProductModel source) =>
-      ProductSeason.listFromStrings(source.seasons)?.toSet();
-
-  static String garmentTypeToString(final Product source) => source.garmentType.value;
-
-  static String statusToString(final Product source) => source.status.value;
-
-  static String genderToString(final Product source) => source.gender.value;
-
-  static String? elasticityToString(final Product source) => source.elasticity?.value;
-
-  static String? fitToString(final Product source) => source.fit?.value;
-
-  static String? thicknessToString(final Product source) => source.thickness?.value;
-
-  static List<String>? stylesToStrings(final Product source) {
-    final styles = source.styles;
-    return styles == null ? null : ClothingStyle.stringsFromSet(styles);
-  }
-
-  static List<String>? seasonsToStrings(final Product source) {
-    final seasons = source.seasons;
-    return seasons == null ? null : ProductSeason.stringsFromSet(seasons);
-  }
+  static List<ProductSeason>? seasonsToModel(final Product source) =>
+      source.seasons?.toList();
 
   static Set<StoreChannel> codesToChannelSet(final StoreProfileModel source) =>
       StoreChannel.setFromCodes(source.channels);

@@ -4,7 +4,6 @@ import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type
 
 import '../../../../feature/common/body_measurements/data/mappers/body_measurements_mappr.dart';
 import '../../../../feature/common/clothing_style/domain/entities/clothing_style.dart';
-import '../../../../feature/common/product_attributes/domain/entities/product_attributes.dart';
 import '../../../../feature/common/product_size/data/mappers/body_measurement_ranges_mappr.dart';
 import '../../../../feature/common/product_size/data/mappers/garment_measurements_mappr.dart';
 import '../../../../feature/common/product_size/domain/entities/product_size.dart';
@@ -61,16 +60,7 @@ import 'personal_mappr.auto_mappr.dart';
       fields: [Field('id', from: 'itemId')],
       converters: [TypeConverter<String, GarmentType>(CachedEnumConverters.garmentTypeFromCache)],
     ),
-    MapType<ShopProductModel, ShopProduct>(
-      fields: [
-        Field('garmentType', custom: ShopProductMapprHelper.garmentTypeFromString),
-        Field('elasticity', custom: ShopProductMapprHelper.elasticityFromString),
-        Field('fit', custom: ShopProductMapprHelper.fitFromString),
-        Field('thickness', custom: ShopProductMapprHelper.thicknessFromString),
-        Field('seasons', custom: ShopProductMapprHelper.seasonsFromStrings),
-        Field('styles', custom: ShopProductMapprHelper.stylesFromProductModelStrings),
-      ],
-    ),
+    MapType<ShopProductModel, ShopProduct>(),
 
     MapType<StoreOrderContactModel, StoreOrderContact>(
       fields: [Field('type', custom: ShopStoreInfoMapprHelper.codeToOrderContactType)],
@@ -97,27 +87,6 @@ import 'personal_mappr.auto_mappr.dart';
 )
 class PersonalMappr extends $PersonalMappr {
   const PersonalMappr();
-}
-
-class ShopProductMapprHelper {
-  static GarmentType garmentTypeFromString(final ShopProductModel source) =>
-      GarmentType.tryFromString(source.garmentType) ?? GarmentType.others;
-
-  static ProductElasticity? elasticityFromString(final ShopProductModel source) =>
-      ProductElasticity.tryFromString(source.elasticity);
-
-  static ProductFit? fitFromString(final ShopProductModel source) =>
-      ProductFit.tryFromString(source.fit);
-
-  static ProductThickness? thicknessFromString(final ShopProductModel source) =>
-      ProductThickness.tryFromString(source.thickness);
-
-  static List<ProductSeason>? seasonsFromStrings(final ShopProductModel source) =>
-      ProductSeason.listFromStrings(source.seasons);
-
-  static List<ClothingStyle>? stylesFromProductModelStrings(
-    final ShopProductModel source,
-  ) => ClothingStyle.listFromStrings(source.styles);
 }
 
 class ShopStoreInfoMapprHelper {

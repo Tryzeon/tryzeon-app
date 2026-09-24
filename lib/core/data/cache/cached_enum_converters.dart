@@ -16,6 +16,42 @@ class CachedEnumConverters {
   static ProductGender? productGenderFromCache(final String? source) =>
       decodeCachedEnumOrNull(source, ProductGender.tryFromString, field: 'gender');
 
+  static String? productStatusToCache(final ProductStatus? source) => source?.value;
+
+  static ProductStatus? productStatusFromCache(final String? source) =>
+      decodeCachedEnumOrNull(source, ProductStatus.tryFromString, field: 'status');
+
+  static String? productElasticityToCache(final ProductElasticity? source) =>
+      source?.value;
+
+  static ProductElasticity? productElasticityFromCache(final String? source) =>
+      decodeCachedEnumOrNull(
+        source,
+        ProductElasticity.tryFromString,
+        field: 'elasticity',
+      );
+
+  static String? productFitToCache(final ProductFit? source) => source?.value;
+
+  static ProductFit? productFitFromCache(final String? source) =>
+      decodeCachedEnumOrNull(source, ProductFit.tryFromString, field: 'fit');
+
+  static String? productThicknessToCache(final ProductThickness? source) =>
+      source?.value;
+
+  static ProductThickness? productThicknessFromCache(final String? source) =>
+      decodeCachedEnumOrNull(
+        source,
+        ProductThickness.tryFromString,
+        field: 'thickness',
+      );
+
+  static List<String>? productSeasonsToCache(final List<ProductSeason>? source) =>
+      source?.map((final e) => e.value).toList();
+
+  static List<ProductSeason>? productSeasonsFromCache(final List<String>? source) =>
+      decodeCachedEnumList(source, ProductSeason.tryFromString, field: 'season');
+
   static String? genderToCache(final Gender? source) => source?.value;
 
   static Gender? genderFromCache(final String? source) =>
