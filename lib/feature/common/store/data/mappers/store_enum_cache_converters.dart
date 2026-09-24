@@ -6,12 +6,11 @@ class StoreEnumCacheConverters {
   static List<String> channelsToCache(final List<StoreChannel> source) =>
       source.map((final e) => e.code).toList();
 
-  static List<StoreChannel> channelsFromCache(final List<String> source) => source
-      .map((final e) => decodeCachedEnum(e, StoreChannel.fromCode, field: 'storeChannel'))
-      .toList();
+  static List<StoreChannel> channelsFromCache(final List<String> source) =>
+      source.map((final e) => decodeCachedEnum(e, StoreChannel.fromCode)).toList();
 
   static String orderContactTypeToCache(final OrderContactType source) => source.code;
 
   static OrderContactType orderContactTypeFromCache(final String source) =>
-      decodeCachedEnum(source, OrderContactType.fromCode, field: 'orderContactType');
+      decodeCachedEnum(source, OrderContactType.fromCode);
 }

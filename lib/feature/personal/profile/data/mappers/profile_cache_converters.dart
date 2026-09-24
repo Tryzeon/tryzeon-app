@@ -6,10 +6,10 @@ class ProfileCacheConverters {
   static String? genderToCache(final Gender? source) => source?.value;
 
   static Gender? genderFromCache(final String? source) =>
-      decodeCachedEnumOrNull(source, Gender.tryFromString, field: 'gender');
+      decodeCachedEnumOrNull(source, Gender.tryFromString);
 
   static String? ageRangeToCache(final AgeRange? source) => source?.value;
 
   static AgeRange? ageRangeFromCache(final String? source) =>
-      decodeCachedEnumOrNull(source, AgeRange.tryFromString, field: 'ageRange');
+      decodeCachedEnumOrNull(source, AgeRange.tryFromString);
 }

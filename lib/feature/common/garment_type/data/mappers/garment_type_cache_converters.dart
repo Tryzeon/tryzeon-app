@@ -5,5 +5,5 @@ class GarmentTypeCacheConverters {
   static String toCache(final GarmentType source) => source.value;
 
   static GarmentType fromCache(final String source) =>
-      decodeCachedEnum(source, GarmentType.tryFromString, field: 'garmentType');
+      decodeCachedEnum(source, GarmentType.tryFromString);
 }

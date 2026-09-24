@@ -5,5 +5,5 @@ class SubscriptionTierCacheConverters {
   static String toCache(final AppSubscriptionTier source) => source.value;
 
   static AppSubscriptionTier fromCache(final String source) =>
-      decodeCachedEnum(source, AppSubscriptionTier.tryFromString, field: 'tier');
+      decodeCachedEnum(source, AppSubscriptionTier.tryFromString);
 }
