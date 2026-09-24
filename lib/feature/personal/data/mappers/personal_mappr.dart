@@ -1,4 +1,5 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
+import 'package:tryzeon/core/data/cache/cached_enum_converters.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 
 import '../../../../feature/common/body_measurements/data/mappers/body_measurements_mappr.dart';
@@ -52,14 +53,16 @@ import 'personal_mappr.auto_mappr.dart';
     MapType<UserProfileModel, UserProfileCache>(),
     MapType<UserProfileCache, UserProfileModel>(),
 
-    MapType<WardrobeItemModel, WardrobeItem>(
-      fields: [Field('garmentType', custom: WardrobeItemMapprHelper.stringToGarmentType)],
+    MapType<WardrobeItemModel, WardrobeItem>(),
+    MapType<WardrobeItem, WardrobeItemModel>(),
+    MapType<WardrobeItemModel, WardrobeItemCache>(
+      fields: [Field('itemId', from: 'id')],
+      converters: [TypeConverter<GarmentType, String>(CachedEnumConverters.garmentTypeToCache)],
     ),
-    MapType<WardrobeItem, WardrobeItemModel>(
-      fields: [Field('garmentType', custom: WardrobeItemMapprHelper.garmentTypeToString)],
+    MapType<WardrobeItemCache, WardrobeItemModel>(
+      fields: [Field('id', from: 'itemId')],
+      converters: [TypeConverter<String, GarmentType>(CachedEnumConverters.garmentTypeFromCache)],
     ),
-    MapType<WardrobeItemModel, WardrobeItemCache>(fields: [Field('itemId', from: 'id')]),
-    MapType<WardrobeItemCache, WardrobeItemModel>(fields: [Field('id', from: 'itemId')]),
     MapType<ShopProductModel, ShopProduct>(
       fields: [
         Field('garmentType', custom: ShopProductMapprHelper.garmentTypeFromString),
@@ -96,14 +99,6 @@ import 'personal_mappr.auto_mappr.dart';
 )
 class PersonalMappr extends $PersonalMappr {
   const PersonalMappr();
-}
-
-class WardrobeItemMapprHelper {
-  static GarmentType stringToGarmentType(final WardrobeItemModel source) =>
-      GarmentType.tryFromString(source.garmentType) ?? GarmentType.others;
-
-  static String garmentTypeToString(final WardrobeItem source) =>
-      source.garmentType.value;
 }
 
 class ShopProductMapprHelper {

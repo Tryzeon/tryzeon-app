@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 
 part 'wardrobe_item_model.g.dart';
 
@@ -18,7 +19,8 @@ class WardrobeItemModel {
 
   final String id;
   final String imagePath;
-  final String garmentType;
+  @JsonKey(unknownEnumValue: GarmentType.others)
+  final GarmentType garmentType;
   final List<String> tags;
   final DateTime createdAt;
   final DateTime updatedAt;
