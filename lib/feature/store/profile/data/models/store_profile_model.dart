@@ -57,7 +57,11 @@ List<StoreChannel> _channelsFromJson(final List<dynamic>? json) =>
 List<StoreOrderContactModel> _orderContactsFromJson(final List<dynamic>? json) =>
     json
         ?.whereType<Map<String, dynamic>>()
-        .where((final e) => OrderContactType.fromCode(e['type'] as String?) != null)
+        .where(
+          (final e) =>
+              e['value'] is String &&
+              OrderContactType.fromCode(e['type'] as String?) != null,
+        )
         .map(StoreOrderContactModel.fromJson)
         .toList() ??
     const [];

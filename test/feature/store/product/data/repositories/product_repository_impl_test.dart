@@ -1,15 +1,20 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:tryzeon/core/data/collections/cache_entry.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/domain/services/cache_service.dart';
+import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/store/product/data/collections/product_cache.dart';
 import 'package:tryzeon/feature/store/product/data/datasources/product_local_datasource.dart';
 import 'package:tryzeon/feature/store/product/data/datasources/product_remote_datasource.dart';
+import 'package:tryzeon/feature/store/product/data/models/create_product_request.dart';
 import 'package:tryzeon/feature/store/product/data/models/product_model.dart';
 import 'package:tryzeon/feature/store/product/data/repositories/product_repository_impl.dart';
+import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:typed_result/typed_result.dart';
 
 import '../../../../../support/isar_test_harness.dart';
@@ -20,11 +25,24 @@ class _FakeRemote implements ProductRemoteDataSource {
   final ProductModel product;
   int listCalls = 0;
   int getCalls = 0;
+  CreateProductRequest? inserted;
 
   @override
   Future<List<ProductModel>> listProducts({required final String storeId}) async {
     listCalls++;
     return [product];
+  }
+
+  @override
+  Future<List<String>> uploadProductImages({
+    required final String storeId,
+    required final String productId,
+    required final List<File> images,
+  }) async => const [];
+
+  @override
+  Future<void> insertProduct(final CreateProductRequest request) async {
+    inserted = request;
   }
 
   @override
@@ -199,5 +217,29 @@ void main() {
     expect(products.single.seasons, isNull);
     expect(products.single.status, ProductStatus.active);
     expect(products.single.gender, ProductGender.unisex);
+  });
+
+  test('createProduct sends styles and seasons in enum declaration order', () async {
+    final remote = _FakeRemote(remoteProduct);
+
+    final result = await buildRepository(remote).createProduct(
+      const CreateProductParams(
+        storeId: 's1',
+        draft: ProductDraft(
+          name: '碎花洋裝',
+          categoryId: 'c1',
+          garmentType: GarmentType.onePiece,
+          price: 1280,
+          styles: {ClothingStyle.western, ClothingStyle.japanese},
+          seasons: {ProductSeason.winter, ProductSeason.spring},
+        ),
+        images: [],
+        sizes: [],
+      ),
+    );
+
+    expect(result.isSuccess, isTrue);
+    expect(remote.inserted!.styles, [ClothingStyle.japanese, ClothingStyle.western]);
+    expect(remote.inserted!.seasons, [ProductSeason.spring, ProductSeason.winter]);
   });
 }

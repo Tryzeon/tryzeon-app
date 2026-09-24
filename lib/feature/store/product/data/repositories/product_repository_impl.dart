@@ -4,6 +4,7 @@ import 'package:tryzeon/core/data/utils/json_diff.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/product_size/data/mappers/body_measurement_ranges_mappr.dart';
 import 'package:tryzeon/feature/common/product_size/data/mappers/garment_measurements_mappr.dart';
@@ -142,8 +143,14 @@ class ProductRepositoryImpl implements ProductRepository {
         elasticity: draft.elasticity,
         fit: draft.fit,
         thickness: draft.thickness,
-        styles: draft.styles?.toList(),
-        seasons: draft.seasons?.toList(),
+        styles: switch (draft.styles) {
+          final styles? => ClothingStyle.listFromSet(styles),
+          null => null,
+        },
+        seasons: switch (draft.seasons) {
+          final seasons? => ProductSeason.listFromSet(seasons),
+          null => null,
+        },
       );
 
       await _remoteDataSource.insertProduct(request);
