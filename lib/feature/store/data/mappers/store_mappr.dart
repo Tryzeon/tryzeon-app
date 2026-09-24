@@ -100,14 +100,14 @@ import 'store_mappr.auto_mappr.dart';
 
     MapType<StoreOrderContactDto, StoreOrderContact>(),
     MapType<StoreOrderContact, StoreOrderContactDto>(),
-    MapType<StoreOrderContactDto, StoreOrderContactEmbedded>(
+    MapType<StoreOrderContact, StoreOrderContactEmbedded>(
       converters: [
         TypeConverter<OrderContactType, String>(
           StoreEnumCacheConverters.orderContactTypeToCache,
         ),
       ],
     ),
-    MapType<StoreOrderContactEmbedded, StoreOrderContactDto>(
+    MapType<StoreOrderContactEmbedded, StoreOrderContact>(
       converters: [
         TypeConverter<String, OrderContactType>(
           StoreEnumCacheConverters.orderContactTypeFromCache,
@@ -121,18 +121,18 @@ import 'store_mappr.auto_mappr.dart';
     MapType<StoreProfile, StoreProfileDto>(
       fields: [Field('channels', custom: StoreMapprHelper.channelsToDto)],
     ),
-    MapType<StoreProfileDto, StoreProfileCache>(
+    MapType<StoreProfile, StoreProfileCache>(
       fields: [Field('storeId', from: 'id')],
       converters: [
-        TypeConverter<List<StoreChannel>, List<String>>(
+        TypeConverter<Set<StoreChannel>, List<String>>(
           StoreEnumCacheConverters.channelsToCache,
         ),
       ],
     ),
-    MapType<StoreProfileCache, StoreProfileDto>(
+    MapType<StoreProfileCache, StoreProfile>(
       fields: [Field('id', from: 'storeId')],
       converters: [
-        TypeConverter<List<String>, List<StoreChannel>>(
+        TypeConverter<List<String>, Set<StoreChannel>>(
           StoreEnumCacheConverters.channelsFromCache,
         ),
       ],

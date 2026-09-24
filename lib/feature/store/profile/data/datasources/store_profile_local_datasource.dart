@@ -9,7 +9,7 @@ import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/domain/services/cache_service.dart';
 import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:tryzeon/feature/store/profile/data/collections/store_profile_cache.dart';
-import 'package:tryzeon/feature/store/profile/data/dtos/store_profile_dto.dart';
+import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 
 class StoreProfileLocalDataSource {
   StoreProfileLocalDataSource(
@@ -24,7 +24,7 @@ class StoreProfileLocalDataSource {
   static const _mappr = StoreMappr();
   static const cacheKey = 'store_profile';
 
-  Future<CacheLookup<StoreProfileDto>> getStoreProfile() async {
+  Future<CacheLookup<StoreProfile>> getStoreProfile() async {
     final isar = await _isarService.db;
     final cacheStatus = await _cacheEntryLocalDataSource.getEntryStatus(
       cacheKey,
@@ -39,15 +39,14 @@ class StoreProfileLocalDataSource {
     final collection = await isar.storeProfileCaches.where().findFirst();
     if (collection == null) return const CacheMiss();
 
-    final model = _mappr.convert<StoreProfileCache, StoreProfileDto>(collection);
-    return CacheHit(model);
+    return CacheHit(_mappr.convert<StoreProfileCache, StoreProfile>(collection));
   }
 
-  Future<void> saveStoreProfile(final StoreProfileDto profile) async {
+  Future<void> saveStoreProfile(final StoreProfile profile) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
       await isar.storeProfileCaches.clear();
-      final collection = _mappr.convert<StoreProfileDto, StoreProfileCache>(profile);
+      final collection = _mappr.convert<StoreProfile, StoreProfileCache>(profile);
       await isar.storeProfileCaches.put(collection);
     });
     await _cacheEntryLocalDataSource.markHasData(cacheKey);

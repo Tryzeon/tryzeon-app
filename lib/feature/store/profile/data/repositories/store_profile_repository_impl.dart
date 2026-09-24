@@ -31,11 +31,10 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
         try {
           final cachedProfile = await _localDataSource.getStoreProfile();
           switch (cachedProfile) {
-            case CacheHit<StoreProfileDto>(:final data):
-              final profile = _mappr.convert<StoreProfileDto, StoreProfile>(data);
-              return Ok(profile);
-            case CacheEmpty<StoreProfileDto>():
-            case CacheMiss<StoreProfileDto>():
+            case CacheHit<StoreProfile>(:final data):
+              return Ok(data);
+            case CacheEmpty<StoreProfile>():
+            case CacheMiss<StoreProfile>():
               break;
           }
         } catch (e, stackTrace) {
@@ -58,14 +57,15 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
         return const Ok(null);
       }
 
+      final profile = _mappr.convert<StoreProfileDto, StoreProfile>(remoteProfile);
+
       // 3. Update Cache
       try {
-        await _localDataSource.saveStoreProfile(remoteProfile);
+        await _localDataSource.saveStoreProfile(profile);
       } catch (e, stackTrace) {
         AppLogger.warning('Failed to save store profile to cache', e, stackTrace);
       }
 
-      final profile = _mappr.convert<StoreProfileDto, StoreProfile>(remoteProfile);
       return Ok(profile);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to load store profile', e, stackTrace);
@@ -112,7 +112,9 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
 
       final updatedProfile = await _remoteDataSource.updateStoreProfile(changes);
 
-      await _localDataSource.saveStoreProfile(updatedProfile);
+      await _localDataSource.saveStoreProfile(
+        _mappr.convert<StoreProfileDto, StoreProfile>(updatedProfile),
+      );
 
       return const Ok(null);
     } catch (e, stackTrace) {
