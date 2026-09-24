@@ -48,7 +48,6 @@ class _FakeCapabilitiesRepository implements SubscriptionCapabilitiesRepository 
     final videoLimit = tier == AppSubscriptionTier.max ? 3 : 0;
     return Ok(
       SubscriptionCapabilities(
-        hasVideoAccess: videoLimit > 0,
         wardrobeLimit: 10,
         dailyTryonLimit: 5,
         dailyChatLimit: 5,

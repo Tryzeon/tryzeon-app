@@ -1,10 +1,8 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
-import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/feature/common/clothing_style/data/mappers/clothing_style_cache_converters.dart';
 import 'package:tryzeon/feature/common/garment_type/data/mappers/garment_type_cache_converters.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/personal/profile/data/mappers/profile_cache_converters.dart';
-import 'package:tryzeon/feature/personal/subscription/data/mappers/subscription_tier_cache_converters.dart';
 
 import '../../../../feature/common/body_measurements/data/mappers/body_measurements_mappr.dart';
 import '../../../../feature/common/clothing_style/domain/entities/clothing_style.dart';
@@ -26,6 +24,7 @@ import '../../shop/domain/entities/shop_product.dart';
 import '../../shop/domain/entities/shop_store_info.dart';
 import '../../subscription/data/collections/subscription_tier_cache.dart';
 import '../../subscription/data/dtos/subscription_tier_dto.dart';
+import '../../subscription/domain/entities/subscription_capabilities.dart';
 import '../../wardrobe/data/collections/wardrobe_item_cache.dart';
 import '../../wardrobe/data/dtos/wardrobe_item_dto.dart';
 import '../../wardrobe/domain/entities/wardrobe_item.dart';
@@ -76,20 +75,25 @@ import 'personal_mappr.auto_mappr.dart';
 
     MapType<ProductSizeDto, ProductSize>(),
 
-    MapType<SubscriptionTierDto, SubscriptionTierCache>(
-      fields: [Field('tier', from: 'id')],
-      converters: [
-        TypeConverter<AppSubscriptionTier, String>(
-          SubscriptionTierCacheConverters.toCache,
-        ),
+    MapType<SubscriptionTierDto, SubscriptionCapabilities>(
+      fields: [
+        Field('dailyTryonLimit', from: 'tryonLimit'),
+        Field('dailyChatLimit', from: 'chatLimit'),
+        Field('dailyVideoLimit', from: 'videoLimit'),
       ],
     ),
-    MapType<SubscriptionTierCache, SubscriptionTierDto>(
-      fields: [Field('id', from: 'tier')],
-      converters: [
-        TypeConverter<String, AppSubscriptionTier>(
-          SubscriptionTierCacheConverters.fromCache,
-        ),
+    MapType<SubscriptionCapabilities, SubscriptionTierCache>(
+      fields: [
+        Field('tryonLimit', from: 'dailyTryonLimit'),
+        Field('chatLimit', from: 'dailyChatLimit'),
+        Field('videoLimit', from: 'dailyVideoLimit'),
+      ],
+    ),
+    MapType<SubscriptionTierCache, SubscriptionCapabilities>(
+      fields: [
+        Field('dailyTryonLimit', from: 'tryonLimit'),
+        Field('dailyChatLimit', from: 'chatLimit'),
+        Field('dailyVideoLimit', from: 'videoLimit'),
       ],
     ),
   ],

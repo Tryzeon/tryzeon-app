@@ -2,9 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:tryzeon/core/data/collections/cache_entry.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
-import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
-import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/subscription/data/collections/subscription_tier_cache.dart';
 import 'package:tryzeon/feature/personal/subscription/data/datasources/subscription_capabilities_local_datasource.dart';
 import 'package:tryzeon/feature/personal/subscription/data/datasources/subscription_capabilities_remote_datasource.dart';
@@ -77,20 +75,6 @@ void main() {
         ),
       );
 
-  test('decoding a cached row whose tier is unknown throws', () {
-    expect(
-      () => const PersonalMappr().convert<SubscriptionTierCache, SubscriptionTierDto>(
-        SubscriptionTierCache()
-          ..tier = 'plus'
-          ..wardrobeLimit = 10
-          ..tryonLimit = 2
-          ..videoLimit = 0
-          ..chatLimit = 5,
-      ),
-      throwsA(isA<CacheDecodeException>()),
-    );
-  });
-
   test('a row stored under an unknown tier is never read back', () async {
     await seedCache('plus');
 
@@ -116,5 +100,6 @@ void main() {
 
     expect(remote.calls, 0);
     expect(capabilities.wardrobeLimit, 10);
+    expect(capabilities.hasVideoAccess, isFalse);
   });
 }

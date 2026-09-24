@@ -2,6 +2,7 @@ import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/subscription/data/datasources/subscription_capabilities_local_datasource.dart';
 import 'package:tryzeon/feature/personal/subscription/data/datasources/subscription_capabilities_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/subscription/data/dtos/subscription_tier_dto.dart';
@@ -19,6 +20,7 @@ class SubscriptionCapabilitiesRepositoryImpl
 
   final SubscriptionCapabilitiesRemoteDataSource _remoteDataSource;
   final SubscriptionCapabilitiesLocalDataSource _localDataSource;
+  static const _mappr = PersonalMappr();
 
   @override
   Future<Result<SubscriptionCapabilities, Failure>> getCapabilitiesForTier(
@@ -29,10 +31,10 @@ class SubscriptionCapabilitiesRepositoryImpl
       try {
         final cached = await _localDataSource.getTierCapabilities(tier);
         switch (cached) {
-          case CacheHit<SubscriptionTierDto>(:final data):
-            return Ok(_toCapabilities(data));
-          case CacheEmpty<SubscriptionTierDto>():
-          case CacheMiss<SubscriptionTierDto>():
+          case CacheHit<SubscriptionCapabilities>(:final data):
+            return Ok(data);
+          case CacheEmpty<SubscriptionCapabilities>():
+          case CacheMiss<SubscriptionCapabilities>():
             break;
         }
       } catch (e, stackTrace) {
@@ -44,11 +46,13 @@ class SubscriptionCapabilitiesRepositoryImpl
       }
 
       // 2. Fetch from remote
-      final tierConfig = await _remoteDataSource.getTierCapabilities(tier);
+      final capabilities = _mappr.convert<SubscriptionTierDto, SubscriptionCapabilities>(
+        await _remoteDataSource.getTierCapabilities(tier),
+      );
 
       // 3. Persist to local cache
       try {
-        await _localDataSource.saveTierCapabilities(tierConfig);
+        await _localDataSource.saveTierCapabilities(tier, capabilities);
       } catch (e, stackTrace) {
         AppLogger.warning(
           'Failed to save subscription tier capabilities to cache',
@@ -57,7 +61,7 @@ class SubscriptionCapabilitiesRepositoryImpl
         );
       }
 
-      return Ok(_toCapabilities(tierConfig));
+      return Ok(capabilities);
     } catch (e, stackTrace) {
       AppLogger.error(
         'Failed to load subscription capabilities for ${tier.value}',
@@ -68,15 +72,5 @@ class SubscriptionCapabilitiesRepositoryImpl
         ServerFailure('Failed to load subscription capabilities for ${tier.value}'),
       );
     }
-  }
-
-  SubscriptionCapabilities _toCapabilities(final SubscriptionTierDto tierConfig) {
-    return SubscriptionCapabilities(
-      hasVideoAccess: tierConfig.videoLimit > 0,
-      wardrobeLimit: tierConfig.wardrobeLimit,
-      dailyTryonLimit: tierConfig.tryonLimit,
-      dailyChatLimit: tierConfig.chatLimit,
-      dailyVideoLimit: tierConfig.videoLimit,
-    );
   }
 }

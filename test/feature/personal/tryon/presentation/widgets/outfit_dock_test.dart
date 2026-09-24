@@ -50,7 +50,6 @@ void main() {
         ),
         subscriptionCapabilitiesProvider.overrideWith(
           (final ref) async => const SubscriptionCapabilities(
-            hasVideoAccess: true,
             wardrobeLimit: 100,
             dailyTryonLimit: 100,
             dailyChatLimit: 100,
