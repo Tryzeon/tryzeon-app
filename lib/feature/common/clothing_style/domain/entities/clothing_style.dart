@@ -1,3 +1,6 @@
+import 'package:json_annotation/json_annotation.dart';
+
+@JsonEnum(valueField: 'value')
 enum ClothingStyle {
   // 🌍 Regional / national styles
   japanese('japanese'),

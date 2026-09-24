@@ -1,3 +1,6 @@
+import 'package:json_annotation/json_annotation.dart';
+
+@JsonEnum(valueField: 'value')
 enum ProductGender {
   male('male'),
   female('female'),
@@ -10,6 +13,7 @@ enum ProductGender {
       ProductGender.values.where((final e) => e.value == value).firstOrNull;
 }
 
+@JsonEnum(valueField: 'value')
 enum ProductStatus {
   active('active'),
   archived('archived');
@@ -21,6 +25,7 @@ enum ProductStatus {
       ProductStatus.values.where((final e) => e.value == value).firstOrNull;
 }
 
+@JsonEnum(valueField: 'value')
 enum ProductFit {
   slim('slim'),
   regular('regular'),
@@ -34,6 +39,7 @@ enum ProductFit {
       ProductFit.values.where((final e) => e.value == value).firstOrNull;
 }
 
+@JsonEnum(valueField: 'value')
 enum ProductElasticity {
   none('none'),
   low('low'),
@@ -47,6 +53,7 @@ enum ProductElasticity {
       ProductElasticity.values.where((final e) => e.value == value).firstOrNull;
 }
 
+@JsonEnum(valueField: 'value')
 enum ProductThickness {
   low('low'),
   medium('medium'),
@@ -59,6 +66,7 @@ enum ProductThickness {
       ProductThickness.values.where((final e) => e.value == value).firstOrNull;
 }
 
+@JsonEnum(valueField: 'value')
 enum ProductSeason {
   spring('spring'),
   summer('summer'),

@@ -1,3 +1,6 @@
+import 'package:json_annotation/json_annotation.dart';
+
+@JsonEnum(valueField: 'value')
 enum AgeRange {
   under12('under_12'),
   age13to17('13_17'),
