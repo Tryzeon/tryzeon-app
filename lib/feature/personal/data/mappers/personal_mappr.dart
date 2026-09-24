@@ -34,8 +34,7 @@ import 'personal_mappr.auto_mappr.dart';
 @AutoMappr(
   [
     MapType<UserProfileDto, UserProfile>(),
-    MapType<UserProfile, UserProfileDto>(),
-    MapType<UserProfileDto, UserProfileCache>(
+    MapType<UserProfile, UserProfileCache>(
       converters: [
         TypeConverter<Gender?, String?>(ProfileCacheConverters.genderToCache),
         TypeConverter<AgeRange?, String?>(ProfileCacheConverters.ageRangeToCache),
@@ -44,7 +43,7 @@ import 'personal_mappr.auto_mappr.dart';
         ),
       ],
     ),
-    MapType<UserProfileCache, UserProfileDto>(
+    MapType<UserProfileCache, UserProfile>(
       converters: [
         TypeConverter<String?, Gender?>(ProfileCacheConverters.genderFromCache),
         TypeConverter<String?, AgeRange?>(ProfileCacheConverters.ageRangeFromCache),

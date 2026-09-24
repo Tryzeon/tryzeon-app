@@ -8,8 +8,10 @@ import 'body_measurements_mappr.auto_mappr.dart';
 @AutoMappr([
   MapType<BodyMeasurementsDto, BodyMeasurements>(whenSourceIsNull: BodyMeasurements()),
   MapType<BodyMeasurements, BodyMeasurementsDto>(),
-  MapType<BodyMeasurementsDto, BodyMeasurementsEmbedded>(),
-  MapType<BodyMeasurementsEmbedded, BodyMeasurementsDto>(),
+  MapType<BodyMeasurements, BodyMeasurementsEmbedded>(),
+  MapType<BodyMeasurementsEmbedded, BodyMeasurements>(
+    whenSourceIsNull: BodyMeasurements(),
+  ),
 ])
 class BodyMeasurementsMappr extends $BodyMeasurementsMappr {
   const BodyMeasurementsMappr();

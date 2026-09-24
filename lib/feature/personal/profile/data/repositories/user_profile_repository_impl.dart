@@ -39,11 +39,10 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
         try {
           final cachedProfile = await _localDataSource.getUserProfile();
           switch (cachedProfile) {
-            case CacheHit<UserProfileDto>(:final data):
-              final profile = _mappr.convert<UserProfileDto, UserProfile>(data);
-              return Ok(profile);
-            case CacheEmpty<UserProfileDto>():
-            case CacheMiss<UserProfileDto>():
+            case CacheHit<UserProfile>(:final data):
+              return Ok(data);
+            case CacheEmpty<UserProfile>():
+            case CacheMiss<UserProfile>():
               break;
           }
         } catch (e, stackTrace) {
@@ -56,16 +55,17 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       }
 
       // 2. Fetch from API
-      final remoteProfile = await _remoteDataSource.getUserProfile();
+      final profile = _mappr.convert<UserProfileDto, UserProfile>(
+        await _remoteDataSource.getUserProfile(),
+      );
 
       // 3. Update Cache
       try {
-        await _localDataSource.saveUserProfile(remoteProfile);
+        await _localDataSource.saveUserProfile(profile);
       } catch (e, stackTrace) {
         AppLogger.warning('Failed to save user profile to cache', e, stackTrace);
       }
 
-      final profile = _mappr.convert<UserProfileDto, UserProfile>(remoteProfile);
       return Ok(profile);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to load user profile', e, stackTrace);
@@ -85,7 +85,9 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
         gender: gender?.value,
         ageRange: ageRange?.value,
       );
-      await _localDataSource.saveUserProfile(updatedProfile);
+      await _localDataSource.saveUserProfile(
+        _mappr.convert<UserProfileDto, UserProfile>(updatedProfile),
+      );
 
       return const Ok(null);
     } catch (e, stackTrace) {
@@ -102,7 +104,9 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       final updatedProfile = await _remoteDataSource.updateStylePreferences(
         stylePreferences.map((final style) => style.value).toList(),
       );
-      await _localDataSource.saveUserProfile(updatedProfile);
+      await _localDataSource.saveUserProfile(
+        _mappr.convert<UserProfileDto, UserProfile>(updatedProfile),
+      );
 
       return const Ok(null);
     } catch (e, stackTrace) {
@@ -116,13 +120,15 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
     required final BodyMeasurements measurements,
   }) async {
     try {
-      final measurementsModel = _measurementsMappr
+      final measurementsDto = _measurementsMappr
           .convert<BodyMeasurements, BodyMeasurementsDto>(measurements);
       final updatedProfile = await _remoteDataSource.updateUserBodyMeasurements(
-        measurementsModel,
+        measurementsDto,
       );
 
-      await _localDataSource.saveUserProfile(updatedProfile);
+      await _localDataSource.saveUserProfile(
+        _mappr.convert<UserProfileDto, UserProfile>(updatedProfile),
+      );
 
       return const Ok(null);
     } catch (e, stackTrace) {
@@ -144,7 +150,9 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
         stylePreferences: stylePreferences?.map((final style) => style.value).toList(),
       );
 
-      await _localDataSource.saveUserProfile(updatedProfile);
+      await _localDataSource.saveUserProfile(
+        _mappr.convert<UserProfileDto, UserProfile>(updatedProfile),
+      );
 
       return const Ok(null);
     } catch (e, stackTrace) {
@@ -166,7 +174,9 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
 
       final updatedProfile = await _remoteDataSource.updateUserAvatarPath(newAvatarPath);
 
-      await _localDataSource.saveUserProfile(updatedProfile);
+      await _localDataSource.saveUserProfile(
+        _mappr.convert<UserProfileDto, UserProfile>(updatedProfile),
+      );
 
       if (previousAvatarPath != null && previousAvatarPath.isNotEmpty) {
         try {
