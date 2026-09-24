@@ -25,11 +25,11 @@ class ProductCategoryRepositoryImpl implements ProductCategoryRepository {
         try {
           final cachedCategories = await _localDataSource.getProductCategories();
           switch (cachedCategories) {
-            case CacheHit<List<ProductCategoryDto>>(:final data):
-              return Ok(_mappr.convertList<ProductCategoryDto, ProductCategory>(data));
-            case CacheEmpty<List<ProductCategoryDto>>():
+            case CacheHit<List<ProductCategory>>(:final data):
+              return Ok(data);
+            case CacheEmpty<List<ProductCategory>>():
               return const Ok([]);
-            case CacheMiss<List<ProductCategoryDto>>():
+            case CacheMiss<List<ProductCategory>>():
               break;
           }
         } catch (e, stackTrace) {
@@ -42,18 +42,18 @@ class ProductCategoryRepositoryImpl implements ProductCategoryRepository {
       }
 
       // 2. Fetch from API
-      final remoteCategories = await _remoteDataSource.getProductCategories();
+      final categories = _mappr.convertList<ProductCategoryDto, ProductCategory>(
+        await _remoteDataSource.getProductCategories(),
+      );
 
       // 3. Update Cache
       try {
-        await _localDataSource.saveProductCategories(remoteCategories);
+        await _localDataSource.saveProductCategories(categories);
       } catch (e, stackTrace) {
         AppLogger.warning('Failed to save product categories to cache', e, stackTrace);
       }
 
-      return Ok(
-        _mappr.convertList<ProductCategoryDto, ProductCategory>(remoteCategories),
-      );
+      return Ok(categories);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to get product categories', e, stackTrace);
       return Err(mapExceptionToFailure(e));

@@ -17,10 +17,6 @@ class ProductCategoryCache {
 
   String? gender;
 
-  String? imageMale;
-
-  String? imageFemale;
-
   String? imageMaleUrl;
 
   String? imageFemaleUrl;

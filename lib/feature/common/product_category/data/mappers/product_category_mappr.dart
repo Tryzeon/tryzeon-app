@@ -11,9 +11,9 @@ import 'product_category_mappr.auto_mappr.dart';
 
 @AutoMappr([
   MapType<ProductCategoryDto, ProductCategory>(
-    fields: [Field('gender', custom: ProductCategoryMapprHelper.genderToEntity)],
+    fields: [Field('gender', custom: ProductCategoryMapprHelper.genderFromDto)],
   ),
-  MapType<ProductCategoryDto, ProductCategoryCache>(
+  MapType<ProductCategory, ProductCategoryCache>(
     fields: [Field('categoryId', from: 'id')],
     converters: [
       TypeConverter<GarmentType, String>(GarmentTypeCacheConverters.toCache),
@@ -22,13 +22,13 @@ import 'product_category_mappr.auto_mappr.dart';
       ),
     ],
   ),
-  MapType<ProductCategoryCache, ProductCategoryDto>(
-    fields: [Field('id', from: 'categoryId')],
+  MapType<ProductCategoryCache, ProductCategory>(
+    fields: [
+      Field('id', from: 'categoryId'),
+      Field('gender', custom: ProductCategoryMapprHelper.genderFromCache),
+    ],
     converters: [
       TypeConverter<String, GarmentType>(GarmentTypeCacheConverters.fromCache),
-      TypeConverter<String?, ProductGender?>(
-        ProductAttributesCacheConverters.genderFromCache,
-      ),
     ],
   ),
 ])
@@ -37,6 +37,10 @@ class ProductCategoryMappr extends $ProductCategoryMappr {
 }
 
 class ProductCategoryMapprHelper {
-  static ProductGender genderToEntity(final ProductCategoryDto source) =>
+  static ProductGender genderFromDto(final ProductCategoryDto source) =>
       source.gender ?? ProductGender.unisex;
+
+  static ProductGender genderFromCache(final ProductCategoryCache source) =>
+      ProductAttributesCacheConverters.genderFromCache(source.gender) ??
+      ProductGender.unisex;
 }
