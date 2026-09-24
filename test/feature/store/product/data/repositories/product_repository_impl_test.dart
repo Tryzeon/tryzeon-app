@@ -219,6 +219,23 @@ void main() {
     expect(products.single.gender, ProductGender.unisex);
   });
 
+  test('listProducts serves an empty cache without calling remote', () async {
+    await harness.isar.writeTxn(() async {
+      await harness.isar.cacheEntrys.putByCacheKey(
+        CacheEntry()
+          ..cacheKey = ProductLocalDataSource.cacheKeyForStore('s1')
+          ..status = CacheEntryStatus.empty.name
+          ..fetchedAt = DateTime.now(),
+      );
+    });
+
+    final remote = _FakeRemote(remoteProduct);
+    final products = (await buildRepository(remote).listProducts(storeId: 's1')).get()!;
+
+    expect(remote.listCalls, 0);
+    expect(products, isEmpty);
+  });
+
   test('createProduct sends styles and seasons in enum declaration order', () async {
     final remote = _FakeRemote(remoteProduct);
 

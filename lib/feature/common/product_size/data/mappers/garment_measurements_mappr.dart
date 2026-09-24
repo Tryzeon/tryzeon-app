@@ -8,8 +8,8 @@ import 'garment_measurements_mappr.auto_mappr.dart';
 @AutoMappr([
   MapType<GarmentMeasurementsDto, GarmentMeasurements>(),
   MapType<GarmentMeasurements, GarmentMeasurementsDto>(),
-  MapType<GarmentMeasurementsDto, GarmentMeasurementsEmbedded>(),
-  MapType<GarmentMeasurementsEmbedded, GarmentMeasurementsDto>(),
+  MapType<GarmentMeasurements, GarmentMeasurementsEmbedded>(),
+  MapType<GarmentMeasurementsEmbedded, GarmentMeasurements>(),
 ])
 class GarmentMeasurementsMappr extends $GarmentMeasurementsMappr {
   const GarmentMeasurementsMappr();

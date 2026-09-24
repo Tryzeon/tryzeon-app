@@ -29,15 +29,15 @@ import 'store_mappr.auto_mappr.dart';
   [
     MapType<ProductSizeDto, ProductSize>(),
     MapType<ProductSize, ProductSizeDto>(),
-    MapType<ProductSizeDto, ProductSizeEmbedded>(),
-    MapType<ProductSizeEmbedded, ProductSizeDto>(),
+    MapType<ProductSize, ProductSizeEmbedded>(),
+    MapType<ProductSizeEmbedded, ProductSize>(),
 
     MapType<ProductDto, Product>(
       fields: [
-        Field('status', custom: StoreMapprHelper.statusToEntity),
-        Field('gender', custom: StoreMapprHelper.genderToEntity),
-        Field('styles', custom: StoreMapprHelper.stylesToEntity),
-        Field('seasons', custom: StoreMapprHelper.seasonsToEntity),
+        Field('status', custom: StoreMapprHelper.statusFromDto),
+        Field('gender', custom: StoreMapprHelper.genderFromDto),
+        Field('styles', custom: StoreMapprHelper.stylesFromDto),
+        Field('seasons', custom: StoreMapprHelper.seasonsFromDto),
       ],
     ),
     MapType<Product, ProductDto>(
@@ -47,7 +47,7 @@ import 'store_mappr.auto_mappr.dart';
       ],
     ),
 
-    MapType<ProductDto, ProductCache>(
+    MapType<Product, ProductCache>(
       fields: [Field('productId', from: 'id')],
       converters: [
         TypeConverter<GarmentType, String>(GarmentTypeCacheConverters.toCache),
@@ -64,24 +64,22 @@ import 'store_mappr.auto_mappr.dart';
         TypeConverter<ProductThickness?, String?>(
           ProductAttributesCacheConverters.thicknessToCache,
         ),
-        TypeConverter<List<ClothingStyle>?, List<String>?>(
-          ClothingStyleCacheConverters.listToCache,
+        TypeConverter<Set<ClothingStyle>?, List<String>?>(
+          ClothingStyleCacheConverters.setToCache,
         ),
-        TypeConverter<List<ProductSeason>?, List<String>?>(
+        TypeConverter<Set<ProductSeason>?, List<String>?>(
           ProductAttributesCacheConverters.seasonsToCache,
         ),
       ],
     ),
-    MapType<ProductCache, ProductDto>(
-      fields: [Field('id', from: 'productId')],
+    MapType<ProductCache, Product>(
+      fields: [
+        Field('id', from: 'productId'),
+        Field('status', custom: StoreMapprHelper.statusFromCache),
+        Field('gender', custom: StoreMapprHelper.genderFromCache),
+      ],
       converters: [
         TypeConverter<String, GarmentType>(GarmentTypeCacheConverters.fromCache),
-        TypeConverter<String?, ProductStatus?>(
-          ProductAttributesCacheConverters.statusFromCache,
-        ),
-        TypeConverter<String?, ProductGender?>(
-          ProductAttributesCacheConverters.genderFromCache,
-        ),
         TypeConverter<String?, ProductElasticity?>(
           ProductAttributesCacheConverters.elasticityFromCache,
         ),
@@ -91,10 +89,10 @@ import 'store_mappr.auto_mappr.dart';
         TypeConverter<String?, ProductThickness?>(
           ProductAttributesCacheConverters.thicknessFromCache,
         ),
-        TypeConverter<List<String>?, List<ClothingStyle>?>(
-          ClothingStyleCacheConverters.listFromCache,
+        TypeConverter<List<String>?, Set<ClothingStyle>?>(
+          ClothingStyleCacheConverters.setFromCache,
         ),
-        TypeConverter<List<String>?, List<ProductSeason>?>(
+        TypeConverter<List<String>?, Set<ProductSeason>?>(
           ProductAttributesCacheConverters.seasonsFromCache,
         ),
       ],
@@ -151,17 +149,25 @@ class StoreMappr extends $StoreMappr {
 }
 
 class StoreMapprHelper {
-  static ProductStatus statusToEntity(final ProductDto source) =>
+  static ProductStatus statusFromDto(final ProductDto source) =>
       source.status ?? ProductStatus.active;
 
-  static ProductGender genderToEntity(final ProductDto source) =>
+  static ProductGender genderFromDto(final ProductDto source) =>
       source.gender ?? ProductGender.unisex;
 
-  static Set<ClothingStyle>? stylesToEntity(final ProductDto source) =>
+  static Set<ClothingStyle>? stylesFromDto(final ProductDto source) =>
       source.styles?.toSet();
 
-  static Set<ProductSeason>? seasonsToEntity(final ProductDto source) =>
+  static Set<ProductSeason>? seasonsFromDto(final ProductDto source) =>
       source.seasons?.toSet();
+
+  static ProductStatus statusFromCache(final ProductCache source) =>
+      ProductAttributesCacheConverters.statusFromCache(source.status) ??
+      ProductStatus.active;
+
+  static ProductGender genderFromCache(final ProductCache source) =>
+      ProductAttributesCacheConverters.genderFromCache(source.gender) ??
+      ProductGender.unisex;
 
   static List<ClothingStyle>? stylesToDto(final Product source) {
     final styles = source.styles;

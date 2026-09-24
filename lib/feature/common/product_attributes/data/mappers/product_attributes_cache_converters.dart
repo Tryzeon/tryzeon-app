@@ -27,9 +27,10 @@ class ProductAttributesCacheConverters {
   static ProductThickness? thicknessFromCache(final String? source) =>
       decodeCachedEnumOrNull(source, ProductThickness.tryFromString);
 
-  static List<String>? seasonsToCache(final List<ProductSeason>? source) =>
-      source?.map((final e) => e.value).toList();
+  static List<String>? seasonsToCache(final Set<ProductSeason>? source) => source == null
+      ? null
+      : ProductSeason.listFromSet(source).map((final e) => e.value).toList();
 
-  static List<ProductSeason>? seasonsFromCache(final List<String>? source) =>
-      decodeCachedEnumList(source, ProductSeason.tryFromString);
+  static Set<ProductSeason>? seasonsFromCache(final List<String>? source) =>
+      decodeCachedEnumList(source, ProductSeason.tryFromString)?.toSet();
 }

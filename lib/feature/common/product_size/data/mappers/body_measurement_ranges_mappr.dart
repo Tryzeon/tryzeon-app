@@ -10,12 +10,12 @@ import 'body_measurement_ranges_mappr.auto_mappr.dart';
 @AutoMappr([
   MapType<MeasurementRangeDto, MeasurementRange>(),
   MapType<MeasurementRange, MeasurementRangeDto>(),
-  MapType<MeasurementRangeDto, MeasurementRangeEmbedded>(),
-  MapType<MeasurementRangeEmbedded, MeasurementRangeDto>(),
+  MapType<MeasurementRange, MeasurementRangeEmbedded>(),
+  MapType<MeasurementRangeEmbedded, MeasurementRange>(),
   MapType<BodyMeasurementRangesDto, BodyMeasurementRanges>(),
   MapType<BodyMeasurementRanges, BodyMeasurementRangesDto>(),
-  MapType<BodyMeasurementRangesDto, BodyMeasurementRangesEmbedded>(),
-  MapType<BodyMeasurementRangesEmbedded, BodyMeasurementRangesDto>(),
+  MapType<BodyMeasurementRanges, BodyMeasurementRangesEmbedded>(),
+  MapType<BodyMeasurementRangesEmbedded, BodyMeasurementRanges>(),
 ])
 class BodyMeasurementRangesMappr extends $BodyMeasurementRangesMappr {
   const BodyMeasurementRangesMappr();

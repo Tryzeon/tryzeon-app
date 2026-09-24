@@ -7,4 +7,11 @@ class ClothingStyleCacheConverters {
 
   static List<ClothingStyle>? listFromCache(final List<String>? source) =>
       decodeCachedEnumList(source, ClothingStyle.tryFromString);
+
+  static List<String>? setToCache(final Set<ClothingStyle>? source) => source == null
+      ? null
+      : ClothingStyle.listFromSet(source).map((final e) => e.value).toList();
+
+  static Set<ClothingStyle>? setFromCache(final List<String>? source) =>
+      decodeCachedEnumList(source, ClothingStyle.tryFromString)?.toSet();
 }

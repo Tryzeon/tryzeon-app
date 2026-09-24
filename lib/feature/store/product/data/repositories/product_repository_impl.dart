@@ -36,7 +36,7 @@ class ProductRepositoryImpl implements ProductRepository {
   static const _mappr = StoreMappr();
   static const _uuid = Uuid();
 
-  static GarmentMeasurementsDto? _toMeasurementsModel(
+  static GarmentMeasurementsDto? _toMeasurementsDto(
     final GarmentMeasurements? measurements,
   ) {
     if (measurements == null) return null;
@@ -44,7 +44,7 @@ class ProductRepositoryImpl implements ProductRepository {
         .convert<GarmentMeasurements, GarmentMeasurementsDto>(measurements);
   }
 
-  static BodyMeasurementRangesDto? _toBodyMeasurementRangesModel(
+  static BodyMeasurementRangesDto? _toBodyMeasurementRangesDto(
     final BodyMeasurementRanges? bodyMeasurementRanges,
   ) {
     if (bodyMeasurementRanges == null) return null;
@@ -59,8 +59,8 @@ class ProductRepositoryImpl implements ProductRepository {
     return CreateProductSizeRequest(
       productId: productId,
       name: size.name,
-      garmentMeasurements: _toMeasurementsModel(size.garmentMeasurements),
-      bodyMeasurementRanges: _toBodyMeasurementRangesModel(size.bodyMeasurementRanges),
+      garmentMeasurements: _toMeasurementsDto(size.garmentMeasurements),
+      bodyMeasurementRanges: _toBodyMeasurementRangesDto(size.bodyMeasurementRanges),
     );
   }
 
@@ -75,11 +75,11 @@ class ProductRepositoryImpl implements ProductRepository {
         try {
           final cachedProducts = await _localDataSource.listProducts(storeId: storeId);
           switch (cachedProducts) {
-            case CacheHit<List<ProductDto>>(:final data):
-              return Ok(_mappr.convertList<ProductDto, Product>(data));
-            case CacheEmpty<List<ProductDto>>():
+            case CacheHit<List<Product>>(:final data):
+              return Ok(data);
+            case CacheEmpty<List<Product>>():
               return const Ok([]);
-            case CacheMiss<List<ProductDto>>():
+            case CacheMiss<List<Product>>():
               break;
           }
         } catch (e, stackTrace) {
@@ -92,16 +92,17 @@ class ProductRepositoryImpl implements ProductRepository {
       }
 
       // 2. Try Remote
-      final remoteProducts = await _remoteDataSource.listProducts(storeId: storeId);
+      final products = _mappr.convertList<ProductDto, Product>(
+        await _remoteDataSource.listProducts(storeId: storeId),
+      );
 
       // 3. Update Cache
       try {
-        await _localDataSource.saveProducts(storeId, remoteProducts);
+        await _localDataSource.saveProducts(storeId, products);
       } catch (e, stackTrace) {
         AppLogger.warning('Failed to save products to cache', e, stackTrace);
       }
 
-      final products = _mappr.convertList<ProductDto, Product>(remoteProducts);
       return Ok(products);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to load product list', e, stackTrace);
@@ -159,8 +160,11 @@ class ProductRepositoryImpl implements ProductRepository {
         );
       }
 
-      final model = await _remoteDataSource.getProduct(productId);
-      await _localDataSource.saveProduct(model);
+      await _localDataSource.saveProduct(
+        _mappr.convert<ProductDto, Product>(
+          await _remoteDataSource.getProduct(productId),
+        ),
+      );
 
       return const Ok(null);
     } catch (e, stackTrace) {
@@ -176,10 +180,10 @@ class ProductRepositoryImpl implements ProductRepository {
       try {
         final cachedProduct = await _localDataSource.getProductById(productId);
         switch (cachedProduct) {
-          case CacheHit<ProductDto>(:final data):
-            return Ok(_mappr.convert<ProductDto, Product>(data));
-          case CacheEmpty<ProductDto>():
-          case CacheMiss<ProductDto>():
+          case CacheHit<Product>(:final data):
+            return Ok(data);
+          case CacheEmpty<Product>():
+          case CacheMiss<Product>():
             break;
         }
       } catch (e, stackTrace) {
@@ -187,16 +191,18 @@ class ProductRepositoryImpl implements ProductRepository {
       }
 
       // 2. Try Remote
-      final model = await _remoteDataSource.getProduct(productId);
+      final product = _mappr.convert<ProductDto, Product>(
+        await _remoteDataSource.getProduct(productId),
+      );
 
       // 3. Update Cache
       try {
-        await _localDataSource.saveProduct(model);
+        await _localDataSource.saveProduct(product);
       } catch (e, stackTrace) {
         AppLogger.warning('Failed to save product to cache', e, stackTrace);
       }
 
-      return Ok(_mappr.convert<ProductDto, Product>(model));
+      return Ok(product);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to get product by ID', e, stackTrace);
       return Err(mapExceptionToFailure(e));
@@ -315,8 +321,11 @@ class ProductRepositoryImpl implements ProductRepository {
       }
 
       // 9. Update local cache
-      final model = await _remoteDataSource.getProduct(original.id);
-      await _localDataSource.saveProduct(model);
+      await _localDataSource.saveProduct(
+        _mappr.convert<ProductDto, Product>(
+          await _remoteDataSource.getProduct(original.id),
+        ),
+      );
 
       return const Ok(null);
     } catch (e, stackTrace) {
@@ -333,8 +342,11 @@ class ProductRepositoryImpl implements ProductRepository {
     try {
       await _remoteDataSource.updateProduct(product.id, {'status': status.value});
 
-      final model = await _remoteDataSource.getProduct(product.id);
-      await _localDataSource.saveProduct(model);
+      await _localDataSource.saveProduct(
+        _mappr.convert<ProductDto, Product>(
+          await _remoteDataSource.getProduct(product.id),
+        ),
+      );
 
       return const Ok(null);
     } catch (e, stackTrace) {
