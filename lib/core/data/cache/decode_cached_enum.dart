@@ -12,7 +12,7 @@ T decodeCachedEnum<T>(final String raw, final T? Function(String?) parse) {
 }
 
 T? decodeCachedEnumOrNull<T>(final String? raw, final T? Function(String?) parse) =>
-    raw == null ? null : decodeCachedEnum(raw, parse);
+    raw == null ? null : decodeCachedEnum<T>(raw, parse);
 
 List<T>? decodeCachedEnumList<T>(
   final List<String>? raw,
