@@ -1,10 +1,10 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
-import 'package:tryzeon/core/modules/revenue_cat/data/mappers/subscription_tier_cache_converters.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/feature/common/clothing_style/data/mappers/clothing_style_cache_converters.dart';
 import 'package:tryzeon/feature/common/garment_type/data/mappers/garment_type_cache_converters.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/personal/profile/data/mappers/profile_cache_converters.dart';
+import 'package:tryzeon/feature/personal/subscription/data/mappers/subscription_tier_cache_converters.dart';
 
 import '../../../../feature/common/body_measurements/data/mappers/body_measurements_mappr.dart';
 import '../../../../feature/common/clothing_style/domain/entities/clothing_style.dart';
