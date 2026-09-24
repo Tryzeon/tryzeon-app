@@ -1,7 +1,10 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
-import 'package:tryzeon/core/data/cache/cached_enum_converters.dart';
+import 'package:tryzeon/core/modules/revenue_cat/data/mappers/subscription_tier_cache_converters.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
+import 'package:tryzeon/feature/common/clothing_style/data/mappers/clothing_style_cache_converters.dart';
+import 'package:tryzeon/feature/common/garment_type/data/mappers/garment_type_cache_converters.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/personal/profile/data/mappers/profile_cache_converters.dart';
 
 import '../../../../feature/common/body_measurements/data/mappers/body_measurements_mappr.dart';
 import '../../../../feature/common/clothing_style/domain/entities/clothing_style.dart';
@@ -34,19 +37,19 @@ import 'personal_mappr.auto_mappr.dart';
     MapType<UserProfile, UserProfileModel>(),
     MapType<UserProfileModel, UserProfileCache>(
       converters: [
-        TypeConverter<Gender?, String?>(CachedEnumConverters.genderToCache),
-        TypeConverter<AgeRange?, String?>(CachedEnumConverters.ageRangeToCache),
+        TypeConverter<Gender?, String?>(ProfileCacheConverters.genderToCache),
+        TypeConverter<AgeRange?, String?>(ProfileCacheConverters.ageRangeToCache),
         TypeConverter<List<ClothingStyle>?, List<String>?>(
-          CachedEnumConverters.clothingStylesToCache,
+          ClothingStyleCacheConverters.listToCache,
         ),
       ],
     ),
     MapType<UserProfileCache, UserProfileModel>(
       converters: [
-        TypeConverter<String?, Gender?>(CachedEnumConverters.genderFromCache),
-        TypeConverter<String?, AgeRange?>(CachedEnumConverters.ageRangeFromCache),
+        TypeConverter<String?, Gender?>(ProfileCacheConverters.genderFromCache),
+        TypeConverter<String?, AgeRange?>(ProfileCacheConverters.ageRangeFromCache),
         TypeConverter<List<String>?, List<ClothingStyle>?>(
-          CachedEnumConverters.clothingStylesFromCache,
+          ClothingStyleCacheConverters.listFromCache,
         ),
       ],
     ),
@@ -56,13 +59,13 @@ import 'personal_mappr.auto_mappr.dart';
     MapType<WardrobeItemModel, WardrobeItemCache>(
       fields: [Field('itemId', from: 'id')],
       converters: [
-        TypeConverter<GarmentType, String>(CachedEnumConverters.garmentTypeToCache),
+        TypeConverter<GarmentType, String>(GarmentTypeCacheConverters.toCache),
       ],
     ),
     MapType<WardrobeItemCache, WardrobeItemModel>(
       fields: [Field('id', from: 'itemId')],
       converters: [
-        TypeConverter<String, GarmentType>(CachedEnumConverters.garmentTypeFromCache),
+        TypeConverter<String, GarmentType>(GarmentTypeCacheConverters.fromCache),
       ],
     ),
     MapType<ShopProductModel, ShopProduct>(),
@@ -79,7 +82,7 @@ import 'personal_mappr.auto_mappr.dart';
       fields: [Field('tier', from: 'id')],
       converters: [
         TypeConverter<AppSubscriptionTier, String>(
-          CachedEnumConverters.subscriptionTierToCache,
+          SubscriptionTierCacheConverters.toCache,
         ),
       ],
     ),
@@ -87,7 +90,7 @@ import 'personal_mappr.auto_mappr.dart';
       fields: [Field('id', from: 'tier')],
       converters: [
         TypeConverter<String, AppSubscriptionTier>(
-          CachedEnumConverters.subscriptionTierFromCache,
+          SubscriptionTierCacheConverters.fromCache,
         ),
       ],
     ),

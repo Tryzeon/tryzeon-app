@@ -1,6 +1,7 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
-import 'package:tryzeon/core/data/cache/cached_enum_converters.dart';
+import 'package:tryzeon/feature/common/garment_type/data/mappers/garment_type_cache_converters.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/common/product_attributes/data/mappers/product_attributes_cache_converters.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 
 import '../../domain/entities/product_category.dart';
@@ -15,15 +16,19 @@ import 'product_category_mappr.auto_mappr.dart';
   MapType<ProductCategoryModel, ProductCategoryCache>(
     fields: [Field('categoryId', from: 'id')],
     converters: [
-      TypeConverter<GarmentType, String>(CachedEnumConverters.garmentTypeToCache),
-      TypeConverter<ProductGender?, String?>(CachedEnumConverters.productGenderToCache),
+      TypeConverter<GarmentType, String>(GarmentTypeCacheConverters.toCache),
+      TypeConverter<ProductGender?, String?>(
+        ProductAttributesCacheConverters.genderToCache,
+      ),
     ],
   ),
   MapType<ProductCategoryCache, ProductCategoryModel>(
     fields: [Field('id', from: 'categoryId')],
     converters: [
-      TypeConverter<String, GarmentType>(CachedEnumConverters.garmentTypeFromCache),
-      TypeConverter<String?, ProductGender?>(CachedEnumConverters.productGenderFromCache),
+      TypeConverter<String, GarmentType>(GarmentTypeCacheConverters.fromCache),
+      TypeConverter<String?, ProductGender?>(
+        ProductAttributesCacheConverters.genderFromCache,
+      ),
     ],
   ),
 ])

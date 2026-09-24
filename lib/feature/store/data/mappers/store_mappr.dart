@@ -1,7 +1,10 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
-import 'package:tryzeon/core/data/cache/cached_enum_converters.dart';
+import 'package:tryzeon/feature/common/clothing_style/data/mappers/clothing_style_cache_converters.dart';
+import 'package:tryzeon/feature/common/garment_type/data/mappers/garment_type_cache_converters.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/common/product_attributes/data/mappers/product_attributes_cache_converters.dart';
 import 'package:tryzeon/feature/common/store/data/collections/store_order_contact_embedded.dart';
+import 'package:tryzeon/feature/common/store/data/mappers/store_enum_cache_converters.dart';
 import 'package:tryzeon/feature/common/store/data/models/store_order_contact_model.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
@@ -47,46 +50,52 @@ import 'store_mappr.auto_mappr.dart';
     MapType<ProductModel, ProductCache>(
       fields: [Field('productId', from: 'id')],
       converters: [
-        TypeConverter<GarmentType, String>(CachedEnumConverters.garmentTypeToCache),
-        TypeConverter<ProductStatus?, String?>(CachedEnumConverters.productStatusToCache),
-        TypeConverter<ProductGender?, String?>(CachedEnumConverters.productGenderToCache),
-        TypeConverter<ProductElasticity?, String?>(
-          CachedEnumConverters.productElasticityToCache,
+        TypeConverter<GarmentType, String>(GarmentTypeCacheConverters.toCache),
+        TypeConverter<ProductStatus?, String?>(
+          ProductAttributesCacheConverters.statusToCache,
         ),
-        TypeConverter<ProductFit?, String?>(CachedEnumConverters.productFitToCache),
+        TypeConverter<ProductGender?, String?>(
+          ProductAttributesCacheConverters.genderToCache,
+        ),
+        TypeConverter<ProductElasticity?, String?>(
+          ProductAttributesCacheConverters.elasticityToCache,
+        ),
+        TypeConverter<ProductFit?, String?>(ProductAttributesCacheConverters.fitToCache),
         TypeConverter<ProductThickness?, String?>(
-          CachedEnumConverters.productThicknessToCache,
+          ProductAttributesCacheConverters.thicknessToCache,
         ),
         TypeConverter<List<ClothingStyle>?, List<String>?>(
-          CachedEnumConverters.clothingStylesToCache,
+          ClothingStyleCacheConverters.listToCache,
         ),
         TypeConverter<List<ProductSeason>?, List<String>?>(
-          CachedEnumConverters.productSeasonsToCache,
+          ProductAttributesCacheConverters.seasonsToCache,
         ),
       ],
     ),
     MapType<ProductCache, ProductModel>(
       fields: [Field('id', from: 'productId')],
       converters: [
-        TypeConverter<String, GarmentType>(CachedEnumConverters.garmentTypeFromCache),
+        TypeConverter<String, GarmentType>(GarmentTypeCacheConverters.fromCache),
         TypeConverter<String?, ProductStatus?>(
-          CachedEnumConverters.productStatusFromCache,
+          ProductAttributesCacheConverters.statusFromCache,
         ),
         TypeConverter<String?, ProductGender?>(
-          CachedEnumConverters.productGenderFromCache,
+          ProductAttributesCacheConverters.genderFromCache,
         ),
         TypeConverter<String?, ProductElasticity?>(
-          CachedEnumConverters.productElasticityFromCache,
+          ProductAttributesCacheConverters.elasticityFromCache,
         ),
-        TypeConverter<String?, ProductFit?>(CachedEnumConverters.productFitFromCache),
+        TypeConverter<String?, ProductFit?>(
+          ProductAttributesCacheConverters.fitFromCache,
+        ),
         TypeConverter<String?, ProductThickness?>(
-          CachedEnumConverters.productThicknessFromCache,
+          ProductAttributesCacheConverters.thicknessFromCache,
         ),
         TypeConverter<List<String>?, List<ClothingStyle>?>(
-          CachedEnumConverters.clothingStylesFromCache,
+          ClothingStyleCacheConverters.listFromCache,
         ),
         TypeConverter<List<String>?, List<ProductSeason>?>(
-          CachedEnumConverters.productSeasonsFromCache,
+          ProductAttributesCacheConverters.seasonsFromCache,
         ),
       ],
     ),
@@ -96,14 +105,14 @@ import 'store_mappr.auto_mappr.dart';
     MapType<StoreOrderContactModel, StoreOrderContactEmbedded>(
       converters: [
         TypeConverter<OrderContactType, String>(
-          CachedEnumConverters.orderContactTypeToCache,
+          StoreEnumCacheConverters.orderContactTypeToCache,
         ),
       ],
     ),
     MapType<StoreOrderContactEmbedded, StoreOrderContactModel>(
       converters: [
         TypeConverter<String, OrderContactType>(
-          CachedEnumConverters.orderContactTypeFromCache,
+          StoreEnumCacheConverters.orderContactTypeFromCache,
         ),
       ],
     ),
@@ -118,7 +127,7 @@ import 'store_mappr.auto_mappr.dart';
       fields: [Field('storeId', from: 'id')],
       converters: [
         TypeConverter<List<StoreChannel>, List<String>>(
-          CachedEnumConverters.storeChannelsToCache,
+          StoreEnumCacheConverters.channelsToCache,
         ),
       ],
     ),
@@ -126,7 +135,7 @@ import 'store_mappr.auto_mappr.dart';
       fields: [Field('id', from: 'storeId')],
       converters: [
         TypeConverter<List<String>, List<StoreChannel>>(
-          CachedEnumConverters.storeChannelsFromCache,
+          StoreEnumCacheConverters.channelsFromCache,
         ),
       ],
     ),
