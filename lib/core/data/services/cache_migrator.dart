@@ -8,6 +8,11 @@ import 'package:tryzeon/core/data/collections/cache_schema.dart';
 /// [AppConstants.cacheSchemaVersion] wipes every collection once, before any
 /// repository reads, so no per-release list of affected caches is needed —
 /// every cache is refetchable.
+///
+/// A renamed enum value needs no bump: `decodeCachedEnum` rejects the stale
+/// string and the repository refetches that row on its own. The wipe is the
+/// only remedy for changes no decoder can detect, and it costs every user
+/// their cached auth settings too.
 class CacheMigrator {
   CacheMigrator._();
 
