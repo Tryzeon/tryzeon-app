@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 
 part 'subscription_tier_model.g.dart';
 
@@ -15,7 +16,7 @@ class SubscriptionTierModel {
   factory SubscriptionTierModel.fromJson(final Map<String, dynamic> json) =>
       _$SubscriptionTierModelFromJson(json);
 
-  final String id;
+  final AppSubscriptionTier id;
   final int wardrobeLimit;
   final int tryonLimit;
   final int videoLimit;

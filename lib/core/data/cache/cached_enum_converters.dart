@@ -1,4 +1,5 @@
 import 'package:tryzeon/core/data/cache/decode_cached_enum.dart';
+import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
@@ -6,6 +7,12 @@ import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart'
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 
 class CachedEnumConverters {
+  static String subscriptionTierToCache(final AppSubscriptionTier source) =>
+      source.value;
+
+  static AppSubscriptionTier subscriptionTierFromCache(final String source) =>
+      decodeCachedEnum(source, AppSubscriptionTier.tryFromString, field: 'tier');
+
   static String garmentTypeToCache(final GarmentType source) => source.value;
 
   static GarmentType garmentTypeFromCache(final String source) =>

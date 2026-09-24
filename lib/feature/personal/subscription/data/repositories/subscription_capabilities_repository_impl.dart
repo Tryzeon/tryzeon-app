@@ -1,4 +1,3 @@
-import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
@@ -25,12 +24,10 @@ class SubscriptionCapabilitiesRepositoryImpl
   Future<Result<SubscriptionCapabilities, Failure>> getCapabilitiesForTier(
     final AppSubscriptionTier tier,
   ) async {
-    final capabilityTier = _resolveCapabilityTier(tier);
-
     try {
       // 1. Try local cache
       try {
-        final cached = await _localDataSource.getTierCapabilities(capabilityTier);
+        final cached = await _localDataSource.getTierCapabilities(tier);
         switch (cached) {
           case CacheHit<SubscriptionTierModel>(:final data):
             return Ok(_toCapabilities(data));
@@ -47,7 +44,7 @@ class SubscriptionCapabilitiesRepositoryImpl
       }
 
       // 2. Fetch from remote
-      final tierConfig = await _remoteDataSource.getTierCapabilities(capabilityTier);
+      final tierConfig = await _remoteDataSource.getTierCapabilities(tier);
 
       // 3. Persist to local cache
       try {
@@ -63,22 +60,14 @@ class SubscriptionCapabilitiesRepositoryImpl
       return Ok(_toCapabilities(tierConfig));
     } catch (e, stackTrace) {
       AppLogger.error(
-        'Failed to load subscription capabilities for $capabilityTier',
+        'Failed to load subscription capabilities for ${tier.value}',
         e,
         stackTrace,
       );
       return Err(
-        ServerFailure('Failed to load subscription capabilities for $capabilityTier'),
+        ServerFailure('Failed to load subscription capabilities for ${tier.value}'),
       );
     }
-  }
-
-  String _resolveCapabilityTier(final AppSubscriptionTier tier) {
-    return switch (tier) {
-      AppSubscriptionTier.max => AppConstants.entitlementMaxId,
-      AppSubscriptionTier.pro => AppConstants.entitlementProId,
-      AppSubscriptionTier.free => AppConstants.entitlementFreeId,
-    };
   }
 
   SubscriptionCapabilities _toCapabilities(final SubscriptionTierModel tierConfig) {

@@ -1,5 +1,6 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
 import 'package:tryzeon/core/data/cache/cached_enum_converters.dart';
+import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 
 import '../../../../feature/common/body_measurements/data/mappers/body_measurements_mappr.dart';
@@ -74,9 +75,19 @@ import 'personal_mappr.auto_mappr.dart';
 
     MapType<SubscriptionTierModel, SubscriptionTierCache>(
       fields: [Field('tier', from: 'id')],
+      converters: [
+        TypeConverter<AppSubscriptionTier, String>(
+          CachedEnumConverters.subscriptionTierToCache,
+        ),
+      ],
     ),
     MapType<SubscriptionTierCache, SubscriptionTierModel>(
       fields: [Field('id', from: 'tier')],
+      converters: [
+        TypeConverter<String, AppSubscriptionTier>(
+          CachedEnumConverters.subscriptionTierFromCache,
+        ),
+      ],
     ),
   ],
   includes: [
