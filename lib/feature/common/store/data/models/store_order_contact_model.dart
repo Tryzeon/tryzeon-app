@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
 
 part 'store_order_contact_model.g.dart';
 
@@ -9,7 +10,7 @@ class StoreOrderContactModel {
   factory StoreOrderContactModel.fromJson(final Map<String, dynamic> json) =>
       _$StoreOrderContactModelFromJson(json);
 
-  final String type;
+  final OrderContactType type;
   final String value;
 
   Map<String, dynamic> toJson() => _$StoreOrderContactModelToJson(this);

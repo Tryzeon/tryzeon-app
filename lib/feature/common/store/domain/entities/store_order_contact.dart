@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'store_order_contact.freezed.dart';
 
+@JsonEnum(valueField: 'code')
 enum OrderContactType {
   line('line', 'LINE'),
   facebook('facebook', 'Facebook'),
@@ -12,7 +13,7 @@ enum OrderContactType {
   final String code;
   final String label;
 
-  static OrderContactType? fromCode(final String code) {
+  static OrderContactType? fromCode(final String? code) {
     for (final type in values) {
       if (type.code == code) return type;
     }

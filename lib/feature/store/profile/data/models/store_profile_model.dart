@@ -1,5 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:tryzeon/feature/common/store/data/models/store_order_contact_model.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
 
 part 'store_profile_model.g.dart';
 
@@ -34,7 +36,8 @@ class StoreProfileModel {
   final DateTime createdAt;
   @JsonKey(includeToJson: false)
   final DateTime updatedAt;
-  final List<String> channels;
+  @JsonKey(fromJson: _channelsFromJson)
+  final List<StoreChannel> channels;
   final String? slug;
   final String? address;
   final double? latitude;
@@ -42,7 +45,19 @@ class StoreProfileModel {
   final String? logoPath;
   @JsonKey(includeToJson: false)
   final String? logoUrl;
+  @JsonKey(fromJson: _orderContactsFromJson)
   final List<StoreOrderContactModel> orderContacts;
 
   Map<String, dynamic> toJson() => _$StoreProfileModelToJson(this);
 }
+
+List<StoreChannel> _channelsFromJson(final List<dynamic>? json) =>
+    StoreChannel.listFromCodes(json?.whereType<String>());
+
+List<StoreOrderContactModel> _orderContactsFromJson(final List<dynamic>? json) =>
+    json
+        ?.whereType<Map<String, dynamic>>()
+        .where((final e) => OrderContactType.fromCode(e['type'] as String?) != null)
+        .map(StoreOrderContactModel.fromJson)
+        .toList() ??
+    const [];

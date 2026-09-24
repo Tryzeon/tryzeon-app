@@ -55,20 +55,22 @@ import 'personal_mappr.auto_mappr.dart';
     MapType<WardrobeItem, WardrobeItemModel>(),
     MapType<WardrobeItemModel, WardrobeItemCache>(
       fields: [Field('itemId', from: 'id')],
-      converters: [TypeConverter<GarmentType, String>(CachedEnumConverters.garmentTypeToCache)],
+      converters: [
+        TypeConverter<GarmentType, String>(CachedEnumConverters.garmentTypeToCache),
+      ],
     ),
     MapType<WardrobeItemCache, WardrobeItemModel>(
       fields: [Field('id', from: 'itemId')],
-      converters: [TypeConverter<String, GarmentType>(CachedEnumConverters.garmentTypeFromCache)],
+      converters: [
+        TypeConverter<String, GarmentType>(CachedEnumConverters.garmentTypeFromCache),
+      ],
     ),
     MapType<ShopProductModel, ShopProduct>(),
 
-    MapType<StoreOrderContactModel, StoreOrderContact>(
-      fields: [Field('type', custom: ShopStoreInfoMapprHelper.codeToOrderContactType)],
-    ),
+    MapType<StoreOrderContactModel, StoreOrderContact>(),
 
     MapType<ShopStoreInfoModel, ShopStoreInfo>(
-      fields: [Field('channels', custom: ShopStoreInfoMapprHelper.codesToChannelSet)],
+      fields: [Field('channels', custom: ShopStoreInfoMapprHelper.channelsToEntity)],
     ),
 
     MapType<ProductSizeModel, ProductSize>(),
@@ -101,9 +103,6 @@ class PersonalMappr extends $PersonalMappr {
 }
 
 class ShopStoreInfoMapprHelper {
-  static Set<StoreChannel> codesToChannelSet(final ShopStoreInfoModel source) =>
-      StoreChannel.setFromCodes(source.channels);
-
-  static OrderContactType codeToOrderContactType(final StoreOrderContactModel source) =>
-      OrderContactType.fromCode(source.type) ?? OrderContactType.line;
+  static Set<StoreChannel> channelsToEntity(final ShopStoreInfoModel source) =>
+      source.channels.toSet();
 }

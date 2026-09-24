@@ -91,23 +91,45 @@ import 'store_mappr.auto_mappr.dart';
       ],
     ),
 
-    MapType<StoreOrderContactModel, StoreOrderContact>(
-      fields: [Field('type', custom: StoreMapprHelper.codeToOrderContactType)],
+    MapType<StoreOrderContactModel, StoreOrderContact>(),
+    MapType<StoreOrderContact, StoreOrderContactModel>(),
+    MapType<StoreOrderContactModel, StoreOrderContactEmbedded>(
+      converters: [
+        TypeConverter<OrderContactType, String>(
+          CachedEnumConverters.orderContactTypeToCache,
+        ),
+      ],
     ),
-    MapType<StoreOrderContact, StoreOrderContactModel>(
-      fields: [Field('type', custom: StoreMapprHelper.orderContactTypeToCode)],
+    MapType<StoreOrderContactEmbedded, StoreOrderContactModel>(
+      converters: [
+        TypeConverter<String, OrderContactType>(
+          CachedEnumConverters.orderContactTypeFromCache,
+        ),
+      ],
     ),
-    MapType<StoreOrderContactModel, StoreOrderContactEmbedded>(),
-    MapType<StoreOrderContactEmbedded, StoreOrderContactModel>(),
 
     MapType<StoreProfileModel, StoreProfile>(
-      fields: [Field('channels', custom: StoreMapprHelper.codesToChannelSet)],
+      fields: [Field('channels', custom: StoreMapprHelper.channelsToEntity)],
     ),
     MapType<StoreProfile, StoreProfileModel>(
-      fields: [Field('channels', custom: StoreMapprHelper.channelSetToCodes)],
+      fields: [Field('channels', custom: StoreMapprHelper.channelsToModel)],
     ),
-    MapType<StoreProfileModel, StoreProfileCache>(fields: [Field('storeId', from: 'id')]),
-    MapType<StoreProfileCache, StoreProfileModel>(fields: [Field('id', from: 'storeId')]),
+    MapType<StoreProfileModel, StoreProfileCache>(
+      fields: [Field('storeId', from: 'id')],
+      converters: [
+        TypeConverter<List<StoreChannel>, List<String>>(
+          CachedEnumConverters.storeChannelsToCache,
+        ),
+      ],
+    ),
+    MapType<StoreProfileCache, StoreProfileModel>(
+      fields: [Field('id', from: 'storeId')],
+      converters: [
+        TypeConverter<List<String>, List<StoreChannel>>(
+          CachedEnumConverters.storeChannelsFromCache,
+        ),
+      ],
+    ),
 
     MapType<ProductAnalyticsSummaryModel, ProductAnalyticsSummary>(),
     MapType<ProductAnalyticsSummaryModel, ProductAnalyticsCache>(),
@@ -142,15 +164,9 @@ class StoreMapprHelper {
     return seasons == null ? null : ProductSeason.listFromSet(seasons);
   }
 
-  static Set<StoreChannel> codesToChannelSet(final StoreProfileModel source) =>
-      StoreChannel.setFromCodes(source.channels);
+  static Set<StoreChannel> channelsToEntity(final StoreProfileModel source) =>
+      source.channels.toSet();
 
-  static List<String> channelSetToCodes(final StoreProfile source) =>
-      StoreChannel.codesFromSet(source.channels);
-
-  static OrderContactType codeToOrderContactType(final StoreOrderContactModel source) =>
-      OrderContactType.fromCode(source.type) ?? OrderContactType.line;
-
-  static String orderContactTypeToCode(final StoreOrderContact source) =>
-      source.type.code;
+  static List<StoreChannel> channelsToModel(final StoreProfile source) =>
+      StoreChannel.listFromSet(source.channels);
 }

@@ -3,12 +3,13 @@ import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscriptio
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 
 class CachedEnumConverters {
-  static String subscriptionTierToCache(final AppSubscriptionTier source) =>
-      source.value;
+  static String subscriptionTierToCache(final AppSubscriptionTier source) => source.value;
 
   static AppSubscriptionTier subscriptionTierFromCache(final String source) =>
       decodeCachedEnum(source, AppSubscriptionTier.tryFromString, field: 'tier');
@@ -43,15 +44,10 @@ class CachedEnumConverters {
   static ProductFit? productFitFromCache(final String? source) =>
       decodeCachedEnumOrNull(source, ProductFit.tryFromString, field: 'fit');
 
-  static String? productThicknessToCache(final ProductThickness? source) =>
-      source?.value;
+  static String? productThicknessToCache(final ProductThickness? source) => source?.value;
 
   static ProductThickness? productThicknessFromCache(final String? source) =>
-      decodeCachedEnumOrNull(
-        source,
-        ProductThickness.tryFromString,
-        field: 'thickness',
-      );
+      decodeCachedEnumOrNull(source, ProductThickness.tryFromString, field: 'thickness');
 
   static List<String>? productSeasonsToCache(final List<ProductSeason>? source) =>
       source?.map((final e) => e.value).toList();
@@ -74,4 +70,16 @@ class CachedEnumConverters {
 
   static List<ClothingStyle>? clothingStylesFromCache(final List<String>? source) =>
       decodeCachedEnumList(source, ClothingStyle.tryFromString, field: 'clothingStyle');
+
+  static List<String> storeChannelsToCache(final List<StoreChannel> source) =>
+      source.map((final e) => e.code).toList();
+
+  static List<StoreChannel> storeChannelsFromCache(final List<String> source) => source
+      .map((final e) => decodeCachedEnum(e, StoreChannel.fromCode, field: 'storeChannel'))
+      .toList();
+
+  static String orderContactTypeToCache(final OrderContactType source) => source.code;
+
+  static OrderContactType orderContactTypeFromCache(final String source) =>
+      decodeCachedEnum(source, OrderContactType.fromCode, field: 'orderContactType');
 }

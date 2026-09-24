@@ -10,6 +10,7 @@ import 'package:tryzeon/feature/personal/profile/data/collections/user_profile_c
 import 'package:tryzeon/feature/personal/subscription/data/collections/subscription_tier_cache.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/collections/wardrobe_item_cache.dart';
 import 'package:tryzeon/feature/store/product/data/collections/product_cache.dart';
+import 'package:tryzeon/feature/store/profile/data/collections/store_profile_cache.dart';
 
 class TestIsar {
   TestIsar(this.isar, this.service, this._dir);
@@ -35,15 +36,21 @@ class _FixedIsarService extends IsarService {
 
 Future<TestIsar> openTestIsar() async {
   final dir = await Directory.systemTemp.createTemp('tryzeon_cache_test');
-  final isar = await Isar.open([
-    CacheSchemaSchema,
-    CacheEntrySchema,
-    ProductCategoryCacheSchema,
-    UserProfileCacheSchema,
-    WardrobeItemCacheSchema,
-    ProductCacheSchema,
-    SubscriptionTierCacheSchema,
-  ], directory: dir.path, name: p.basename(dir.path), inspector: false);
+  final isar = await Isar.open(
+    [
+      CacheSchemaSchema,
+      CacheEntrySchema,
+      ProductCategoryCacheSchema,
+      UserProfileCacheSchema,
+      WardrobeItemCacheSchema,
+      ProductCacheSchema,
+      SubscriptionTierCacheSchema,
+      StoreProfileCacheSchema,
+    ],
+    directory: dir.path,
+    name: p.basename(dir.path),
+    inspector: false,
+  );
 
   return TestIsar(isar, _FixedIsarService(isar), dir);
 }
