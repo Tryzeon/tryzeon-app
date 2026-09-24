@@ -4,8 +4,8 @@ import 'package:tryzeon/feature/common/garment_type/data/mappers/garment_type_ca
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/data/mappers/product_attributes_cache_converters.dart';
 import 'package:tryzeon/feature/common/store/data/collections/store_order_contact_embedded.dart';
+import 'package:tryzeon/feature/common/store/data/dtos/store_order_contact_dto.dart';
 import 'package:tryzeon/feature/common/store/data/mappers/store_enum_cache_converters.dart';
-import 'package:tryzeon/feature/common/store/data/models/store_order_contact_model.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
 
@@ -15,24 +15,24 @@ import '../../../../feature/common/product_size/data/collections/product_size_em
 import '../../../../feature/common/product_size/data/mappers/body_measurement_ranges_mappr.dart';
 import '../../../../feature/common/product_size/data/mappers/garment_measurements_mappr.dart';
 import '../../analytics/data/collections/product_analytics_cache.dart';
-import '../../analytics/data/models/product_analytics_summary_model.dart';
+import '../../analytics/data/dtos/product_analytics_summary_dto.dart';
 import '../../analytics/domain/entities/product_analytics_summary.dart';
 import '../../product/data/collections/product_cache.dart';
-import '../../product/data/models/product_model.dart';
+import '../../product/data/dtos/product_dto.dart';
 import '../../product/domain/entities/product.dart';
 import '../../profile/data/collections/store_profile_cache.dart';
-import '../../profile/data/models/store_profile_model.dart';
+import '../../profile/data/dtos/store_profile_dto.dart';
 import '../../profile/domain/entities/store_profile.dart';
 import 'store_mappr.auto_mappr.dart';
 
 @AutoMappr(
   [
-    MapType<ProductSizeModel, ProductSize>(),
-    MapType<ProductSize, ProductSizeModel>(),
-    MapType<ProductSizeModel, ProductSizeEmbedded>(),
-    MapType<ProductSizeEmbedded, ProductSizeModel>(),
+    MapType<ProductSizeDto, ProductSize>(),
+    MapType<ProductSize, ProductSizeDto>(),
+    MapType<ProductSizeDto, ProductSizeEmbedded>(),
+    MapType<ProductSizeEmbedded, ProductSizeDto>(),
 
-    MapType<ProductModel, Product>(
+    MapType<ProductDto, Product>(
       fields: [
         Field('status', custom: StoreMapprHelper.statusToEntity),
         Field('gender', custom: StoreMapprHelper.genderToEntity),
@@ -40,14 +40,14 @@ import 'store_mappr.auto_mappr.dart';
         Field('seasons', custom: StoreMapprHelper.seasonsToEntity),
       ],
     ),
-    MapType<Product, ProductModel>(
+    MapType<Product, ProductDto>(
       fields: [
-        Field('styles', custom: StoreMapprHelper.stylesToModel),
-        Field('seasons', custom: StoreMapprHelper.seasonsToModel),
+        Field('styles', custom: StoreMapprHelper.stylesToDto),
+        Field('seasons', custom: StoreMapprHelper.seasonsToDto),
       ],
     ),
 
-    MapType<ProductModel, ProductCache>(
+    MapType<ProductDto, ProductCache>(
       fields: [Field('productId', from: 'id')],
       converters: [
         TypeConverter<GarmentType, String>(GarmentTypeCacheConverters.toCache),
@@ -72,7 +72,7 @@ import 'store_mappr.auto_mappr.dart';
         ),
       ],
     ),
-    MapType<ProductCache, ProductModel>(
+    MapType<ProductCache, ProductDto>(
       fields: [Field('id', from: 'productId')],
       converters: [
         TypeConverter<String, GarmentType>(GarmentTypeCacheConverters.fromCache),
@@ -100,16 +100,16 @@ import 'store_mappr.auto_mappr.dart';
       ],
     ),
 
-    MapType<StoreOrderContactModel, StoreOrderContact>(),
-    MapType<StoreOrderContact, StoreOrderContactModel>(),
-    MapType<StoreOrderContactModel, StoreOrderContactEmbedded>(
+    MapType<StoreOrderContactDto, StoreOrderContact>(),
+    MapType<StoreOrderContact, StoreOrderContactDto>(),
+    MapType<StoreOrderContactDto, StoreOrderContactEmbedded>(
       converters: [
         TypeConverter<OrderContactType, String>(
           StoreEnumCacheConverters.orderContactTypeToCache,
         ),
       ],
     ),
-    MapType<StoreOrderContactEmbedded, StoreOrderContactModel>(
+    MapType<StoreOrderContactEmbedded, StoreOrderContactDto>(
       converters: [
         TypeConverter<String, OrderContactType>(
           StoreEnumCacheConverters.orderContactTypeFromCache,
@@ -117,13 +117,13 @@ import 'store_mappr.auto_mappr.dart';
       ],
     ),
 
-    MapType<StoreProfileModel, StoreProfile>(
+    MapType<StoreProfileDto, StoreProfile>(
       fields: [Field('channels', custom: StoreMapprHelper.channelsToEntity)],
     ),
-    MapType<StoreProfile, StoreProfileModel>(
-      fields: [Field('channels', custom: StoreMapprHelper.channelsToModel)],
+    MapType<StoreProfile, StoreProfileDto>(
+      fields: [Field('channels', custom: StoreMapprHelper.channelsToDto)],
     ),
-    MapType<StoreProfileModel, StoreProfileCache>(
+    MapType<StoreProfileDto, StoreProfileCache>(
       fields: [Field('storeId', from: 'id')],
       converters: [
         TypeConverter<List<StoreChannel>, List<String>>(
@@ -131,7 +131,7 @@ import 'store_mappr.auto_mappr.dart';
         ),
       ],
     ),
-    MapType<StoreProfileCache, StoreProfileModel>(
+    MapType<StoreProfileCache, StoreProfileDto>(
       fields: [Field('id', from: 'storeId')],
       converters: [
         TypeConverter<List<String>, List<StoreChannel>>(
@@ -140,9 +140,9 @@ import 'store_mappr.auto_mappr.dart';
       ],
     ),
 
-    MapType<ProductAnalyticsSummaryModel, ProductAnalyticsSummary>(),
-    MapType<ProductAnalyticsSummaryModel, ProductAnalyticsCache>(),
-    MapType<ProductAnalyticsCache, ProductAnalyticsSummaryModel>(),
+    MapType<ProductAnalyticsSummaryDto, ProductAnalyticsSummary>(),
+    MapType<ProductAnalyticsSummaryDto, ProductAnalyticsCache>(),
+    MapType<ProductAnalyticsCache, ProductAnalyticsSummaryDto>(),
   ],
   includes: [GarmentMeasurementsMappr(), BodyMeasurementRangesMappr()],
 )
@@ -151,31 +151,31 @@ class StoreMappr extends $StoreMappr {
 }
 
 class StoreMapprHelper {
-  static ProductStatus statusToEntity(final ProductModel source) =>
+  static ProductStatus statusToEntity(final ProductDto source) =>
       source.status ?? ProductStatus.active;
 
-  static ProductGender genderToEntity(final ProductModel source) =>
+  static ProductGender genderToEntity(final ProductDto source) =>
       source.gender ?? ProductGender.unisex;
 
-  static Set<ClothingStyle>? stylesToEntity(final ProductModel source) =>
+  static Set<ClothingStyle>? stylesToEntity(final ProductDto source) =>
       source.styles?.toSet();
 
-  static Set<ProductSeason>? seasonsToEntity(final ProductModel source) =>
+  static Set<ProductSeason>? seasonsToEntity(final ProductDto source) =>
       source.seasons?.toSet();
 
-  static List<ClothingStyle>? stylesToModel(final Product source) {
+  static List<ClothingStyle>? stylesToDto(final Product source) {
     final styles = source.styles;
     return styles == null ? null : ClothingStyle.listFromSet(styles);
   }
 
-  static List<ProductSeason>? seasonsToModel(final Product source) {
+  static List<ProductSeason>? seasonsToDto(final Product source) {
     final seasons = source.seasons;
     return seasons == null ? null : ProductSeason.listFromSet(seasons);
   }
 
-  static Set<StoreChannel> channelsToEntity(final StoreProfileModel source) =>
+  static Set<StoreChannel> channelsToEntity(final StoreProfileDto source) =>
       source.channels.toSet();
 
-  static List<StoreChannel> channelsToModel(final StoreProfile source) =>
+  static List<StoreChannel> channelsToDto(final StoreProfile source) =>
       StoreChannel.listFromSet(source.channels);
 }

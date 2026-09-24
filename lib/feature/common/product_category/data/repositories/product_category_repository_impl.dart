@@ -3,8 +3,8 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/product_category/data/datasources/product_category_local_datasource.dart';
 import 'package:tryzeon/feature/common/product_category/data/datasources/product_category_remote_datasource.dart';
+import 'package:tryzeon/feature/common/product_category/data/dtos/product_category_dto.dart';
 import 'package:tryzeon/feature/common/product_category/data/mappers/product_category_mappr.dart';
-import 'package:tryzeon/feature/common/product_category/data/models/product_category_model.dart';
 import 'package:tryzeon/feature/common/product_category/domain/entities/product_category.dart';
 import 'package:tryzeon/feature/common/product_category/domain/repositories/product_category_repository.dart';
 import 'package:typed_result/typed_result.dart';
@@ -25,11 +25,11 @@ class ProductCategoryRepositoryImpl implements ProductCategoryRepository {
         try {
           final cachedCategories = await _localDataSource.getProductCategories();
           switch (cachedCategories) {
-            case CacheHit<List<ProductCategoryModel>>(:final data):
-              return Ok(_mappr.convertList<ProductCategoryModel, ProductCategory>(data));
-            case CacheEmpty<List<ProductCategoryModel>>():
+            case CacheHit<List<ProductCategoryDto>>(:final data):
+              return Ok(_mappr.convertList<ProductCategoryDto, ProductCategory>(data));
+            case CacheEmpty<List<ProductCategoryDto>>():
               return const Ok([]);
-            case CacheMiss<List<ProductCategoryModel>>():
+            case CacheMiss<List<ProductCategoryDto>>():
               break;
           }
         } catch (e, stackTrace) {
@@ -52,7 +52,7 @@ class ProductCategoryRepositoryImpl implements ProductCategoryRepository {
       }
 
       return Ok(
-        _mappr.convertList<ProductCategoryModel, ProductCategory>(remoteCategories),
+        _mappr.convertList<ProductCategoryDto, ProductCategory>(remoteCategories),
       );
     } catch (e, stackTrace) {
       AppLogger.error('Failed to get product categories', e, stackTrace);

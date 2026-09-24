@@ -5,8 +5,8 @@ import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
-import 'package:tryzeon/feature/common/body_measurements/data/models/body_measurements_model.dart';
-import 'package:tryzeon/feature/personal/profile/data/models/user_profile_model.dart';
+import 'package:tryzeon/feature/common/body_measurements/data/dtos/body_measurements_dto.dart';
+import 'package:tryzeon/feature/personal/profile/data/dtos/user_profile_dto.dart';
 
 class UserProfileRemoteDataSource {
   UserProfileRemoteDataSource(this._supabaseClient);
@@ -15,7 +15,7 @@ class UserProfileRemoteDataSource {
   static const _userProfileTable = AppConstants.tableUserProfiles;
   static const _avatarBucket = AppConstants.bucketUserAvatars;
 
-  Future<UserProfileModel> getUserProfile() async {
+  Future<UserProfileDto> getUserProfile() async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();
 
@@ -27,11 +27,11 @@ class UserProfileRemoteDataSource {
         .eq('user_id', user.id)
         .single();
 
-    return UserProfileModel.fromJson(response);
+    return UserProfileDto.fromJson(response);
   }
 
-  Future<UserProfileModel> updateUserBodyMeasurements(
-    final BodyMeasurementsModel measurements,
+  Future<UserProfileDto> updateUserBodyMeasurements(
+    final BodyMeasurementsDto measurements,
   ) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();
@@ -43,10 +43,10 @@ class UserProfileRemoteDataSource {
         .select()
         .single();
 
-    return UserProfileModel.fromJson(response);
+    return UserProfileDto.fromJson(response);
   }
 
-  Future<UserProfileModel> updateUserProfile({
+  Future<UserProfileDto> updateUserProfile({
     required final String name,
     final String? gender,
     final String? ageRange,
@@ -61,10 +61,10 @@ class UserProfileRemoteDataSource {
         .select()
         .single();
 
-    return UserProfileModel.fromJson(response);
+    return UserProfileDto.fromJson(response);
   }
 
-  Future<UserProfileModel> updateStylePreferences(
+  Future<UserProfileDto> updateStylePreferences(
     final List<String> stylePreferences,
   ) async {
     final user = _supabaseClient.auth.currentUser;
@@ -77,10 +77,10 @@ class UserProfileRemoteDataSource {
         .select()
         .single();
 
-    return UserProfileModel.fromJson(response);
+    return UserProfileDto.fromJson(response);
   }
 
-  Future<UserProfileModel> completeUserOnboarding({
+  Future<UserProfileDto> completeUserOnboarding({
     final String? gender,
     final String? ageRange,
     final List<String>? stylePreferences,
@@ -100,10 +100,10 @@ class UserProfileRemoteDataSource {
         .select()
         .single();
 
-    return UserProfileModel.fromJson(response);
+    return UserProfileDto.fromJson(response);
   }
 
-  Future<UserProfileModel> updateUserAvatarPath(final String avatarPath) async {
+  Future<UserProfileDto> updateUserAvatarPath(final String avatarPath) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();
 
@@ -114,7 +114,7 @@ class UserProfileRemoteDataSource {
         .select()
         .single();
 
-    return UserProfileModel.fromJson(response);
+    return UserProfileDto.fromJson(response);
   }
 
   Future<String> uploadAvatar(final File image) async {

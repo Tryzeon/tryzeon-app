@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/data/services/store_images_api.dart';
-import 'package:tryzeon/feature/store/product/data/models/create_product_request.dart';
-import 'package:tryzeon/feature/store/product/data/models/create_product_size_request.dart';
-import 'package:tryzeon/feature/store/product/data/models/product_model.dart';
+import 'package:tryzeon/feature/store/product/data/dtos/create_product_request.dart';
+import 'package:tryzeon/feature/store/product/data/dtos/create_product_size_request.dart';
+import 'package:tryzeon/feature/store/product/data/dtos/product_dto.dart';
 
 class ProductRemoteDataSource {
   ProductRemoteDataSource(this._supabaseClient, this._storeImagesApi);
@@ -15,14 +15,14 @@ class ProductRemoteDataSource {
   static const _productsTable = AppConstants.tableProducts;
   static const _productSizesTable = AppConstants.tableProductSizes;
 
-  Future<List<ProductModel>> listProducts({required final String storeId}) async {
+  Future<List<ProductDto>> listProducts({required final String storeId}) async {
     final response = await _supabaseClient
         .from(_productsTable)
         .select('*, product_sizes(*)')
         .eq('store_id', storeId);
 
     return (response as List<dynamic>).map((final e) {
-      return ProductModel.fromJson(_withProductImageUrl(e as Map<String, dynamic>));
+      return ProductDto.fromJson(_withProductImageUrl(e as Map<String, dynamic>));
     }).toList();
   }
 
@@ -35,14 +35,14 @@ class ProductRemoteDataSource {
     await _supabaseClient.from(_productSizesTable).insert(sizesData);
   }
 
-  Future<ProductModel> getProduct(final String productId) async {
+  Future<ProductDto> getProduct(final String productId) async {
     final response = await _supabaseClient
         .from(_productsTable)
         .select('*, product_sizes(*)')
         .eq('id', productId)
         .single();
 
-    return ProductModel.fromJson(_withProductImageUrl(response));
+    return ProductDto.fromJson(_withProductImageUrl(response));
   }
 
   Future<void> updateProduct(

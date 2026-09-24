@@ -1,13 +1,13 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
-import 'package:tryzeon/core/modules/analytics/data/models/analytics_event_model.dart';
+import 'package:tryzeon/core/modules/analytics/data/dtos/analytics_event_dto.dart';
 
 class AnalyticsRemoteDataSource {
   AnalyticsRemoteDataSource(this._supabaseClient);
 
   final SupabaseClient _supabaseClient;
 
-  Future<void> uploadAnalyticsEvents(final List<AnalyticsEventModel> events) async {
+  Future<void> uploadAnalyticsEvents(final List<AnalyticsEventDto> events) async {
     if (events.isEmpty) {
       return;
     }

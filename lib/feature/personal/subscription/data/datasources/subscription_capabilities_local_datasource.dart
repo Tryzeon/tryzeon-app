@@ -5,7 +5,7 @@ import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/subscription/data/collections/subscription_tier_cache.dart';
-import 'package:tryzeon/feature/personal/subscription/data/models/subscription_tier_model.dart';
+import 'package:tryzeon/feature/personal/subscription/data/dtos/subscription_tier_dto.dart';
 
 class SubscriptionCapabilitiesLocalDataSource {
   SubscriptionCapabilitiesLocalDataSource(
@@ -22,7 +22,7 @@ class SubscriptionCapabilitiesLocalDataSource {
   static String cacheKeyForTier(final AppSubscriptionTier tier) =>
       '${_baseCacheKey}_${tier.value}';
 
-  Future<CacheLookup<SubscriptionTierModel>> getTierCapabilities(
+  Future<CacheLookup<SubscriptionTierDto>> getTierCapabilities(
     final AppSubscriptionTier tier,
   ) async {
     final cacheStatus = await _cacheEntryLocalDataSource.getEntryStatus(
@@ -38,16 +38,14 @@ class SubscriptionCapabilitiesLocalDataSource {
     if (collection == null) return const CacheMiss();
 
     return CacheHit(
-      _mappr.convert<SubscriptionTierCache, SubscriptionTierModel>(collection),
+      _mappr.convert<SubscriptionTierCache, SubscriptionTierDto>(collection),
     );
   }
 
-  Future<void> saveTierCapabilities(final SubscriptionTierModel tier) async {
+  Future<void> saveTierCapabilities(final SubscriptionTierDto tier) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
-      final collection = _mappr.convert<SubscriptionTierModel, SubscriptionTierCache>(
-        tier,
-      );
+      final collection = _mappr.convert<SubscriptionTierDto, SubscriptionTierCache>(tier);
       await isar.subscriptionTierCaches.putByTier(collection);
     });
     await _cacheEntryLocalDataSource.markHasData(cacheKeyForTier(tier.id));

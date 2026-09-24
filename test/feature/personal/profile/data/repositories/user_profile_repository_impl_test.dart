@@ -7,7 +7,7 @@ import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_s
 import 'package:tryzeon/feature/personal/profile/data/collections/user_profile_cache.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_local_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_remote_datasource.dart';
-import 'package:tryzeon/feature/personal/profile/data/models/user_profile_model.dart';
+import 'package:tryzeon/feature/personal/profile/data/dtos/user_profile_dto.dart';
 import 'package:tryzeon/feature/personal/profile/data/repositories/user_profile_repository_impl.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
@@ -18,11 +18,11 @@ import '../../../../../support/isar_test_harness.dart';
 class _FakeRemote implements UserProfileRemoteDataSource {
   _FakeRemote(this.profile);
 
-  final UserProfileModel profile;
+  final UserProfileDto profile;
   int calls = 0;
 
   @override
-  Future<UserProfileModel> getUserProfile() async {
+  Future<UserProfileDto> getUserProfile() async {
     calls++;
     return profile;
   }
@@ -77,7 +77,7 @@ void main() {
     );
   });
 
-  final remoteProfile = UserProfileModel(
+  final remoteProfile = UserProfileDto(
     userId: 'u1',
     name: 'Eric',
     createdAt: DateTime(2026),

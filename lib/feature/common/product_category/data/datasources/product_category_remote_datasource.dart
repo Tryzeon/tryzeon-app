@@ -1,7 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/config/env.dart';
-import 'package:tryzeon/feature/common/product_category/data/models/product_category_model.dart';
+import 'package:tryzeon/feature/common/product_category/data/dtos/product_category_dto.dart';
 
 class ProductCategoryRemoteDataSource {
   ProductCategoryRemoteDataSource(this._supabaseClient);
@@ -9,7 +9,7 @@ class ProductCategoryRemoteDataSource {
   final SupabaseClient _supabaseClient;
   static const _productCategoryTable = AppConstants.tableProductCategories;
 
-  Future<List<ProductCategoryModel>> getProductCategories() async {
+  Future<List<ProductCategoryDto>> getProductCategories() async {
     final response = await _supabaseClient
         .from(_productCategoryTable)
         .select('id, code, name, gender, default_garment_type, image_male, image_female')
@@ -17,7 +17,7 @@ class ProductCategoryRemoteDataSource {
 
     return (response as List<dynamic>)
         .map(
-          (final e) => ProductCategoryModel.fromJson(
+          (final e) => ProductCategoryDto.fromJson(
             _withCategoryImageUrls(e as Map<String, dynamic>),
           ),
         )

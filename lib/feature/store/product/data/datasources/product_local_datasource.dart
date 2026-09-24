@@ -7,7 +7,7 @@ import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/domain/services/cache_service.dart';
 import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:tryzeon/feature/store/product/data/collections/product_cache.dart';
-import 'package:tryzeon/feature/store/product/data/models/product_model.dart';
+import 'package:tryzeon/feature/store/product/data/dtos/product_dto.dart';
 
 class ProductLocalDataSource {
   ProductLocalDataSource(
@@ -23,7 +23,7 @@ class ProductLocalDataSource {
   static String cacheKeyForStore(final String storeId) => 'store_products:$storeId';
   static String cacheKeyForProduct(final String productId) => 'store_product:$productId';
 
-  Future<CacheLookup<ProductModel>> getProductById(final String productId) async {
+  Future<CacheLookup<ProductDto>> getProductById(final String productId) async {
     final isar = await _isarService.db;
     final cacheStatus = await _cacheEntryLocalDataSource.getEntryStatus(
       cacheKeyForProduct(productId),
@@ -33,12 +33,12 @@ class ProductLocalDataSource {
     final collection = await isar.productCaches.getByProductId(productId);
     if (collection == null) return const CacheMiss();
 
-    return CacheHit(_mappr.convert<ProductCache, ProductModel>(collection));
+    return CacheHit(_mappr.convert<ProductCache, ProductDto>(collection));
   }
 
-  Future<void> saveProduct(final ProductModel model) async {
+  Future<void> saveProduct(final ProductDto model) async {
     final isar = await _isarService.db;
-    final collection = _mappr.convert<ProductModel, ProductCache>(model);
+    final collection = _mappr.convert<ProductDto, ProductCache>(model);
 
     await isar.writeTxn(() async {
       await isar.productCaches.putByProductId(collection);
@@ -50,7 +50,7 @@ class ProductLocalDataSource {
     await _cacheEntryLocalDataSource.markHasData(cacheKeyForProduct(model.id));
   }
 
-  Future<CacheLookup<List<ProductModel>>> listProducts({
+  Future<CacheLookup<List<ProductDto>>> listProducts({
     required final String storeId,
   }) async {
     final isar = await _isarService.db;
@@ -69,11 +69,11 @@ class ProductLocalDataSource {
 
     if (collections.isEmpty) return const CacheMiss();
 
-    final models = _mappr.convertList<ProductCache, ProductModel>(collections);
+    final models = _mappr.convertList<ProductCache, ProductDto>(collections);
     return CacheHit(models);
   }
 
-  Future<void> saveProducts(final String storeId, final List<ProductModel> models) async {
+  Future<void> saveProducts(final String storeId, final List<ProductDto> models) async {
     final isar = await _isarService.db;
     final existingCollections = await isar.productCaches
         .filter()
@@ -84,7 +84,7 @@ class ProductLocalDataSource {
       await isar.productCaches.deleteAll(
         existingCollections.map((final e) => e.id).toList(),
       );
-      final collections = _mappr.convertList<ProductModel, ProductCache>(models);
+      final collections = _mappr.convertList<ProductDto, ProductCache>(models);
 
       await isar.productCaches.putAll(collections);
     });

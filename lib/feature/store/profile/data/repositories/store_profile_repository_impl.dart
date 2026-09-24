@@ -5,7 +5,7 @@ import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_local_datasource.dart';
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_remote_datasource.dart';
-import 'package:tryzeon/feature/store/profile/data/models/store_profile_model.dart';
+import 'package:tryzeon/feature/store/profile/data/dtos/store_profile_dto.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 import 'package:tryzeon/feature/store/profile/domain/repositories/store_profile_repository.dart';
 import 'package:typed_result/typed_result.dart';
@@ -31,11 +31,11 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
         try {
           final cachedProfile = await _localDataSource.getStoreProfile();
           switch (cachedProfile) {
-            case CacheHit<StoreProfileModel>(:final data):
-              final profile = _mappr.convert<StoreProfileModel, StoreProfile>(data);
+            case CacheHit<StoreProfileDto>(:final data):
+              final profile = _mappr.convert<StoreProfileDto, StoreProfile>(data);
               return Ok(profile);
-            case CacheEmpty<StoreProfileModel>():
-            case CacheMiss<StoreProfileModel>():
+            case CacheEmpty<StoreProfileDto>():
+            case CacheMiss<StoreProfileDto>():
               break;
           }
         } catch (e, stackTrace) {
@@ -65,7 +65,7 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
         AppLogger.warning('Failed to save store profile to cache', e, stackTrace);
       }
 
-      final profile = _mappr.convert<StoreProfileModel, StoreProfile>(remoteProfile);
+      final profile = _mappr.convert<StoreProfileDto, StoreProfile>(remoteProfile);
       return Ok(profile);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to load store profile', e, stackTrace);
@@ -102,8 +102,8 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
       // Diff against the original so an untouched column keeps whatever value
       // the server has — `original` is the snapshot the user edited.
       final changes = jsonDiff(
-        _mappr.convert<StoreProfile, StoreProfileModel>(original).toJson(),
-        _mappr.convert<StoreProfile, StoreProfileModel>(target).toJson(),
+        _mappr.convert<StoreProfile, StoreProfileDto>(original).toJson(),
+        _mappr.convert<StoreProfile, StoreProfileDto>(target).toJson(),
       );
 
       if (changes.isEmpty) {

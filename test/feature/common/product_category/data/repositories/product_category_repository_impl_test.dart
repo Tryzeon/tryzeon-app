@@ -7,7 +7,7 @@ import 'package:tryzeon/feature/common/product_attributes/domain/entities/produc
 import 'package:tryzeon/feature/common/product_category/data/collections/product_category_cache.dart';
 import 'package:tryzeon/feature/common/product_category/data/datasources/product_category_local_datasource.dart';
 import 'package:tryzeon/feature/common/product_category/data/datasources/product_category_remote_datasource.dart';
-import 'package:tryzeon/feature/common/product_category/data/models/product_category_model.dart';
+import 'package:tryzeon/feature/common/product_category/data/dtos/product_category_dto.dart';
 import 'package:tryzeon/feature/common/product_category/data/repositories/product_category_repository_impl.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -16,11 +16,11 @@ import '../../../../../support/isar_test_harness.dart';
 class _FakeRemote implements ProductCategoryRemoteDataSource {
   _FakeRemote(this.categories);
 
-  final List<ProductCategoryModel> categories;
+  final List<ProductCategoryDto> categories;
   int calls = 0;
 
   @override
-  Future<List<ProductCategoryModel>> getProductCategories() async {
+  Future<List<ProductCategoryDto>> getProductCategories() async {
     calls++;
     return categories;
   }
@@ -74,7 +74,7 @@ void main() {
         ),
       );
 
-  final remoteCategory = const ProductCategoryModel(
+  final remoteCategory = const ProductCategoryDto(
     id: 'c1',
     code: 'one_piece',
     name: '洋裝·連身裙',

@@ -5,8 +5,8 @@ import 'package:tryzeon/feature/common/product_attributes/domain/entities/produc
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_remote_datasource.dart';
-import 'package:tryzeon/feature/personal/shop/data/models/shop_product_model.dart';
-import 'package:tryzeon/feature/personal/shop/data/models/shop_store_info_model.dart';
+import 'package:tryzeon/feature/personal/shop/data/dtos/shop_product_dto.dart';
+import 'package:tryzeon/feature/personal/shop/data/dtos/shop_store_info_dto.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_sort.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
@@ -60,7 +60,7 @@ class ProductRepositoryImpl implements ProductRepository {
         offset: offset,
       );
 
-      return Ok(_mappr.convertList<ShopProductModel, ShopProduct>(result));
+      return Ok(_mappr.convertList<ShopProductDto, ShopProduct>(result));
     } catch (e, stackTrace) {
       AppLogger.error('Failed to get product list', e, stackTrace);
       return Err(mapExceptionToFailure(e));
@@ -71,7 +71,7 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<Result<ShopProduct, Failure>> getProduct(final String productId) async {
     try {
       final model = await _remoteDataSource.getProduct(productId);
-      return Ok(_mappr.convert<ShopProductModel, ShopProduct>(model));
+      return Ok(_mappr.convert<ShopProductDto, ShopProduct>(model));
     } catch (e, stackTrace) {
       AppLogger.error('Failed to get product by id $productId', e, stackTrace);
       return Err(mapExceptionToFailure(e));
@@ -82,8 +82,8 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<Result<ShopStoreInfo, Failure>> getStoreInfo(final String storeId) async {
     try {
       final responseMap = await _remoteDataSource.getStoreProfile(storeId);
-      final model = ShopStoreInfoModel.fromJson(responseMap);
-      final entity = _mappr.convert<ShopStoreInfoModel, ShopStoreInfo>(model);
+      final model = ShopStoreInfoDto.fromJson(responseMap);
+      final entity = _mappr.convert<ShopStoreInfoDto, ShopStoreInfo>(model);
       return Ok(entity);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to fetch store info for $storeId', e, stackTrace);

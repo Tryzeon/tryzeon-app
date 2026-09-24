@@ -4,8 +4,8 @@ import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
-import 'package:tryzeon/feature/personal/shop/data/models/product_row_mapper.dart';
-import 'package:tryzeon/feature/personal/shop/data/models/shop_product_model.dart';
+import 'package:tryzeon/feature/personal/shop/data/dtos/shop_product_dto.dart';
+import 'package:tryzeon/feature/personal/shop/data/mappers/product_row_mapper.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_sort.dart';
 
 class ShopRemoteDataSource {
@@ -14,7 +14,7 @@ class ShopRemoteDataSource {
   static const _productsTable = AppConstants.tableProducts;
   static const _storeProfileTable = AppConstants.tableStoreProfiles;
 
-  Future<List<ShopProductModel>> listProducts({
+  Future<List<ShopProductDto>> listProducts({
     final String? storeId,
     final String? searchQuery,
     final ShopSort sort = const ShopSort.latest(),
@@ -67,7 +67,7 @@ class ShopRemoteDataSource {
       final map = productRowWithImageUrls(
         Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
       );
-      return ShopProductModel.fromJson(map);
+      return ShopProductDto.fromJson(map);
     }).toList();
   }
 
@@ -135,7 +135,7 @@ class ShopRemoteDataSource {
     return StoreChannel.codesFromSet(channels);
   }
 
-  Future<ShopProductModel> getProduct(final String productId) async {
+  Future<ShopProductDto> getProduct(final String productId) async {
     if (!_uuidPattern.hasMatch(productId)) throw const NotFoundException();
 
     final response = await _supabaseClient
@@ -149,7 +149,7 @@ class ShopRemoteDataSource {
         .single();
 
     final map = productRowWithImageUrls(Map<String, dynamic>.from(response));
-    return ShopProductModel.fromJson(map);
+    return ShopProductDto.fromJson(map);
   }
 
   /// Both the uuid and the slug form back the same `/store/...` deep link, so

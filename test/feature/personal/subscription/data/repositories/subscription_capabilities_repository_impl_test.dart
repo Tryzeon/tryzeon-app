@@ -8,7 +8,7 @@ import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/subscription/data/collections/subscription_tier_cache.dart';
 import 'package:tryzeon/feature/personal/subscription/data/datasources/subscription_capabilities_local_datasource.dart';
 import 'package:tryzeon/feature/personal/subscription/data/datasources/subscription_capabilities_remote_datasource.dart';
-import 'package:tryzeon/feature/personal/subscription/data/models/subscription_tier_model.dart';
+import 'package:tryzeon/feature/personal/subscription/data/dtos/subscription_tier_dto.dart';
 import 'package:tryzeon/feature/personal/subscription/data/repositories/subscription_capabilities_repository_impl.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -18,11 +18,9 @@ class _FakeRemote implements SubscriptionCapabilitiesRemoteDataSource {
   int calls = 0;
 
   @override
-  Future<SubscriptionTierModel> getTierCapabilities(
-    final AppSubscriptionTier tier,
-  ) async {
+  Future<SubscriptionTierDto> getTierCapabilities(final AppSubscriptionTier tier) async {
     calls++;
-    return SubscriptionTierModel(
+    return SubscriptionTierDto(
       id: tier,
       wardrobeLimit: 100,
       tryonLimit: 20,
@@ -81,7 +79,7 @@ void main() {
 
   test('decoding a cached row whose tier is unknown throws', () {
     expect(
-      () => const PersonalMappr().convert<SubscriptionTierCache, SubscriptionTierModel>(
+      () => const PersonalMappr().convert<SubscriptionTierCache, SubscriptionTierDto>(
         SubscriptionTierCache()
           ..tier = 'plus'
           ..wardrobeLimit = 10

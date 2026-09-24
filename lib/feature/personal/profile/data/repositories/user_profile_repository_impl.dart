@@ -3,14 +3,14 @@ import 'dart:io';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/common/body_measurements/data/dtos/body_measurements_dto.dart';
 import 'package:tryzeon/feature/common/body_measurements/data/mappers/body_measurements_mappr.dart';
-import 'package:tryzeon/feature/common/body_measurements/data/models/body_measurements_model.dart';
 import 'package:tryzeon/feature/common/body_measurements/domain/entities/body_measurements.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_local_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_remote_datasource.dart';
-import 'package:tryzeon/feature/personal/profile/data/models/user_profile_model.dart';
+import 'package:tryzeon/feature/personal/profile/data/dtos/user_profile_dto.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
@@ -39,11 +39,11 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
         try {
           final cachedProfile = await _localDataSource.getUserProfile();
           switch (cachedProfile) {
-            case CacheHit<UserProfileModel>(:final data):
-              final profile = _mappr.convert<UserProfileModel, UserProfile>(data);
+            case CacheHit<UserProfileDto>(:final data):
+              final profile = _mappr.convert<UserProfileDto, UserProfile>(data);
               return Ok(profile);
-            case CacheEmpty<UserProfileModel>():
-            case CacheMiss<UserProfileModel>():
+            case CacheEmpty<UserProfileDto>():
+            case CacheMiss<UserProfileDto>():
               break;
           }
         } catch (e, stackTrace) {
@@ -65,7 +65,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
         AppLogger.warning('Failed to save user profile to cache', e, stackTrace);
       }
 
-      final profile = _mappr.convert<UserProfileModel, UserProfile>(remoteProfile);
+      final profile = _mappr.convert<UserProfileDto, UserProfile>(remoteProfile);
       return Ok(profile);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to load user profile', e, stackTrace);
@@ -117,7 +117,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
   }) async {
     try {
       final measurementsModel = _measurementsMappr
-          .convert<BodyMeasurements, BodyMeasurementsModel>(measurements);
+          .convert<BodyMeasurements, BodyMeasurementsDto>(measurements);
       final updatedProfile = await _remoteDataSource.updateUserBodyMeasurements(
         measurementsModel,
       );

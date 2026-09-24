@@ -11,8 +11,8 @@ import 'package:tryzeon/feature/common/product_attributes/domain/entities/produc
 import 'package:tryzeon/feature/store/product/data/collections/product_cache.dart';
 import 'package:tryzeon/feature/store/product/data/datasources/product_local_datasource.dart';
 import 'package:tryzeon/feature/store/product/data/datasources/product_remote_datasource.dart';
-import 'package:tryzeon/feature/store/product/data/models/create_product_request.dart';
-import 'package:tryzeon/feature/store/product/data/models/product_model.dart';
+import 'package:tryzeon/feature/store/product/data/dtos/create_product_request.dart';
+import 'package:tryzeon/feature/store/product/data/dtos/product_dto.dart';
 import 'package:tryzeon/feature/store/product/data/repositories/product_repository_impl.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:typed_result/typed_result.dart';
@@ -22,13 +22,13 @@ import '../../../../../support/isar_test_harness.dart';
 class _FakeRemote implements ProductRemoteDataSource {
   _FakeRemote(this.product);
 
-  final ProductModel product;
+  final ProductDto product;
   int listCalls = 0;
   int getCalls = 0;
   CreateProductRequest? inserted;
 
   @override
-  Future<List<ProductModel>> listProducts({required final String storeId}) async {
+  Future<List<ProductDto>> listProducts({required final String storeId}) async {
     listCalls++;
     return [product];
   }
@@ -46,7 +46,7 @@ class _FakeRemote implements ProductRemoteDataSource {
   }
 
   @override
-  Future<ProductModel> getProduct(final String productId) async {
+  Future<ProductDto> getProduct(final String productId) async {
     getCalls++;
     return product;
   }
@@ -117,7 +117,7 @@ void main() {
     );
   });
 
-  final remoteProduct = ProductModel(
+  final remoteProduct = ProductDto(
     id: 'p1',
     storeId: 's1',
     name: '碎花洋裝',

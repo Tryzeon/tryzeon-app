@@ -6,16 +6,16 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/product_size/data/dtos/body_measurement_ranges_dto.dart';
+import 'package:tryzeon/feature/common/product_size/data/dtos/garment_measurements_dto.dart';
 import 'package:tryzeon/feature/common/product_size/data/mappers/body_measurement_ranges_mappr.dart';
 import 'package:tryzeon/feature/common/product_size/data/mappers/garment_measurements_mappr.dart';
-import 'package:tryzeon/feature/common/product_size/data/models/body_measurement_ranges_model.dart';
-import 'package:tryzeon/feature/common/product_size/data/models/garment_measurements_model.dart';
 import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:tryzeon/feature/store/product/data/datasources/product_local_datasource.dart';
 import 'package:tryzeon/feature/store/product/data/datasources/product_remote_datasource.dart';
-import 'package:tryzeon/feature/store/product/data/models/create_product_request.dart';
-import 'package:tryzeon/feature/store/product/data/models/create_product_size_request.dart';
-import 'package:tryzeon/feature/store/product/data/models/product_model.dart';
+import 'package:tryzeon/feature/store/product/data/dtos/create_product_request.dart';
+import 'package:tryzeon/feature/store/product/data/dtos/create_product_size_request.dart';
+import 'package:tryzeon/feature/store/product/data/dtos/product_dto.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/domain/repositories/product_repository.dart';
 import 'package:tryzeon/feature/store/product/domain/services/product_size_diff.dart';
@@ -36,22 +36,20 @@ class ProductRepositoryImpl implements ProductRepository {
   static const _mappr = StoreMappr();
   static const _uuid = Uuid();
 
-  static GarmentMeasurementsModel? _toMeasurementsModel(
+  static GarmentMeasurementsDto? _toMeasurementsModel(
     final GarmentMeasurements? measurements,
   ) {
     if (measurements == null) return null;
     return const GarmentMeasurementsMappr()
-        .convert<GarmentMeasurements, GarmentMeasurementsModel>(measurements);
+        .convert<GarmentMeasurements, GarmentMeasurementsDto>(measurements);
   }
 
-  static BodyMeasurementRangesModel? _toBodyMeasurementRangesModel(
+  static BodyMeasurementRangesDto? _toBodyMeasurementRangesModel(
     final BodyMeasurementRanges? bodyMeasurementRanges,
   ) {
     if (bodyMeasurementRanges == null) return null;
     return const BodyMeasurementRangesMappr()
-        .convert<BodyMeasurementRanges, BodyMeasurementRangesModel>(
-          bodyMeasurementRanges,
-        );
+        .convert<BodyMeasurementRanges, BodyMeasurementRangesDto>(bodyMeasurementRanges);
   }
 
   static CreateProductSizeRequest _toSizeRequest(
@@ -77,11 +75,11 @@ class ProductRepositoryImpl implements ProductRepository {
         try {
           final cachedProducts = await _localDataSource.listProducts(storeId: storeId);
           switch (cachedProducts) {
-            case CacheHit<List<ProductModel>>(:final data):
-              return Ok(_mappr.convertList<ProductModel, Product>(data));
-            case CacheEmpty<List<ProductModel>>():
+            case CacheHit<List<ProductDto>>(:final data):
+              return Ok(_mappr.convertList<ProductDto, Product>(data));
+            case CacheEmpty<List<ProductDto>>():
               return const Ok([]);
-            case CacheMiss<List<ProductModel>>():
+            case CacheMiss<List<ProductDto>>():
               break;
           }
         } catch (e, stackTrace) {
@@ -103,7 +101,7 @@ class ProductRepositoryImpl implements ProductRepository {
         AppLogger.warning('Failed to save products to cache', e, stackTrace);
       }
 
-      final products = _mappr.convertList<ProductModel, Product>(remoteProducts);
+      final products = _mappr.convertList<ProductDto, Product>(remoteProducts);
       return Ok(products);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to load product list', e, stackTrace);
@@ -178,10 +176,10 @@ class ProductRepositoryImpl implements ProductRepository {
       try {
         final cachedProduct = await _localDataSource.getProductById(productId);
         switch (cachedProduct) {
-          case CacheHit<ProductModel>(:final data):
-            return Ok(_mappr.convert<ProductModel, Product>(data));
-          case CacheEmpty<ProductModel>():
-          case CacheMiss<ProductModel>():
+          case CacheHit<ProductDto>(:final data):
+            return Ok(_mappr.convert<ProductDto, Product>(data));
+          case CacheEmpty<ProductDto>():
+          case CacheMiss<ProductDto>():
             break;
         }
       } catch (e, stackTrace) {
@@ -198,7 +196,7 @@ class ProductRepositoryImpl implements ProductRepository {
         AppLogger.warning('Failed to save product to cache', e, stackTrace);
       }
 
-      return Ok(_mappr.convert<ProductModel, Product>(model));
+      return Ok(_mappr.convert<ProductDto, Product>(model));
     } catch (e, stackTrace) {
       AppLogger.error('Failed to get product by ID', e, stackTrace);
       return Err(mapExceptionToFailure(e));
@@ -266,8 +264,8 @@ class ProductRepositoryImpl implements ProductRepository {
       // 5. Diff against the original so an untouched column keeps whatever
       // value the server has — `original` is the snapshot the user edited.
       final productChanges = jsonDiff(
-        _mappr.convert<Product, ProductModel>(original).toJson(),
-        _mappr.convert<Product, ProductModel>(targetProduct).toJson(),
+        _mappr.convert<Product, ProductDto>(original).toJson(),
+        _mappr.convert<Product, ProductDto>(targetProduct).toJson(),
       );
       final sizeDiff = computeSizeDiff(original.sizes, targetSizes);
 
@@ -310,8 +308,8 @@ class ProductRepositoryImpl implements ProductRepository {
           updatedAt: update.original.updatedAt,
         );
         final sizeChanges = jsonDiff(
-          _mappr.convert<ProductSize, ProductSizeModel>(update.original).toJson(),
-          _mappr.convert<ProductSize, ProductSizeModel>(targetSize).toJson(),
+          _mappr.convert<ProductSize, ProductSizeDto>(update.original).toJson(),
+          _mappr.convert<ProductSize, ProductSizeDto>(targetSize).toJson(),
         );
         await _remoteDataSource.updateProductSize(update.original.id, sizeChanges);
       }

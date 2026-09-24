@@ -1,7 +1,7 @@
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_remote_data_source.dart';
-import 'package:tryzeon/feature/personal/tryon/data/models/tryon_request_model.dart';
+import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_request_dto.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_request.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_repository.dart';
@@ -17,9 +17,7 @@ class TryonRepositoryImpl implements TryonRepository {
   @override
   Future<Result<TryonResult, Failure>> tryon(final TryonRequest request) async {
     try {
-      final response = await _remoteDataSource.tryon(
-        TryonRequestModel.fromDomain(request),
-      );
+      final response = await _remoteDataSource.tryon(TryonRequestDto.fromDomain(request));
       final usageJson = response.usage;
       return Ok(
         TryonResult(

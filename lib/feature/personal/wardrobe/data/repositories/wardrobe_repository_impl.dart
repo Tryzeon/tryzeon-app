@@ -11,8 +11,8 @@ import '../../domain/entities/wardrobe_item.dart';
 import '../../domain/repositories/wardrobe_repository.dart';
 import '../datasources/wardrobe_local_datasource.dart';
 import '../datasources/wardrobe_remote_datasource.dart';
-import '../models/create_wardrobe_item_request.dart';
-import '../models/wardrobe_item_model.dart';
+import '../dtos/create_wardrobe_item_request.dart';
+import '../dtos/wardrobe_item_dto.dart';
 
 class WardrobeRepositoryImpl implements WardrobeRepository {
   WardrobeRepositoryImpl({
@@ -35,12 +35,12 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
         try {
           final cachedItems = await _localDataSource.getWardrobeItems();
           switch (cachedItems) {
-            case CacheHit<List<WardrobeItemModel>>(:final data):
-              final items = _mappr.convertList<WardrobeItemModel, WardrobeItem>(data);
+            case CacheHit<List<WardrobeItemDto>>(:final data):
+              final items = _mappr.convertList<WardrobeItemDto, WardrobeItem>(data);
               return Ok(items);
-            case CacheEmpty<List<WardrobeItemModel>>():
+            case CacheEmpty<List<WardrobeItemDto>>():
               return const Ok([]);
-            case CacheMiss<List<WardrobeItemModel>>():
+            case CacheMiss<List<WardrobeItemDto>>():
               break;
           }
         } catch (e, stackTrace) {
@@ -62,7 +62,7 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
         AppLogger.warning('Failed to save wardrobe items to cache', e, stackTrace);
       }
 
-      final items = _mappr.convertList<WardrobeItemModel, WardrobeItem>(remoteItems);
+      final items = _mappr.convertList<WardrobeItemDto, WardrobeItem>(remoteItems);
       return Ok(items);
     } catch (e, stackTrace) {
       AppLogger.error('Wardrobe fetch failed', e, stackTrace);
@@ -132,7 +132,7 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
         tags: tags,
       );
       await _localDataSource.saveWardrobeItem(updatedModel);
-      final updatedItem = _mappr.convert<WardrobeItemModel, WardrobeItem>(updatedModel);
+      final updatedItem = _mappr.convert<WardrobeItemDto, WardrobeItem>(updatedModel);
       return Ok(updatedItem);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to update wardrobe item tags', e, stackTrace);

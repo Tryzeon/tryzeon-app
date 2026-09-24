@@ -11,31 +11,31 @@ import '../../../../feature/common/clothing_style/domain/entities/clothing_style
 import '../../../../feature/common/product_size/data/mappers/body_measurement_ranges_mappr.dart';
 import '../../../../feature/common/product_size/data/mappers/garment_measurements_mappr.dart';
 import '../../../../feature/common/product_size/domain/entities/product_size.dart';
-import '../../../../feature/store/product/data/models/product_model.dart';
-import '../../../common/store/data/models/store_order_contact_model.dart';
+import '../../../../feature/store/product/data/dtos/product_dto.dart';
+import '../../../common/store/data/dtos/store_order_contact_dto.dart';
 import '../../../common/store/domain/entities/store_channel.dart';
 import '../../../common/store/domain/entities/store_order_contact.dart';
 import '../../profile/data/collections/user_profile_cache.dart';
-import '../../profile/data/models/user_profile_model.dart';
+import '../../profile/data/dtos/user_profile_dto.dart';
 import '../../profile/domain/entities/age_range.dart';
 import '../../profile/domain/entities/gender.dart';
 import '../../profile/domain/entities/user_profile.dart';
-import '../../shop/data/models/shop_product_model.dart';
-import '../../shop/data/models/shop_store_info_model.dart';
+import '../../shop/data/dtos/shop_product_dto.dart';
+import '../../shop/data/dtos/shop_store_info_dto.dart';
 import '../../shop/domain/entities/shop_product.dart';
 import '../../shop/domain/entities/shop_store_info.dart';
 import '../../subscription/data/collections/subscription_tier_cache.dart';
-import '../../subscription/data/models/subscription_tier_model.dart';
+import '../../subscription/data/dtos/subscription_tier_dto.dart';
 import '../../wardrobe/data/collections/wardrobe_item_cache.dart';
-import '../../wardrobe/data/models/wardrobe_item_model.dart';
+import '../../wardrobe/data/dtos/wardrobe_item_dto.dart';
 import '../../wardrobe/domain/entities/wardrobe_item.dart';
 import 'personal_mappr.auto_mappr.dart';
 
 @AutoMappr(
   [
-    MapType<UserProfileModel, UserProfile>(),
-    MapType<UserProfile, UserProfileModel>(),
-    MapType<UserProfileModel, UserProfileCache>(
+    MapType<UserProfileDto, UserProfile>(),
+    MapType<UserProfile, UserProfileDto>(),
+    MapType<UserProfileDto, UserProfileCache>(
       converters: [
         TypeConverter<Gender?, String?>(ProfileCacheConverters.genderToCache),
         TypeConverter<AgeRange?, String?>(ProfileCacheConverters.ageRangeToCache),
@@ -44,7 +44,7 @@ import 'personal_mappr.auto_mappr.dart';
         ),
       ],
     ),
-    MapType<UserProfileCache, UserProfileModel>(
+    MapType<UserProfileCache, UserProfileDto>(
       converters: [
         TypeConverter<String?, Gender?>(ProfileCacheConverters.genderFromCache),
         TypeConverter<String?, AgeRange?>(ProfileCacheConverters.ageRangeFromCache),
@@ -54,31 +54,31 @@ import 'personal_mappr.auto_mappr.dart';
       ],
     ),
 
-    MapType<WardrobeItemModel, WardrobeItem>(),
-    MapType<WardrobeItem, WardrobeItemModel>(),
-    MapType<WardrobeItemModel, WardrobeItemCache>(
+    MapType<WardrobeItemDto, WardrobeItem>(),
+    MapType<WardrobeItem, WardrobeItemDto>(),
+    MapType<WardrobeItemDto, WardrobeItemCache>(
       fields: [Field('itemId', from: 'id')],
       converters: [
         TypeConverter<GarmentType, String>(GarmentTypeCacheConverters.toCache),
       ],
     ),
-    MapType<WardrobeItemCache, WardrobeItemModel>(
+    MapType<WardrobeItemCache, WardrobeItemDto>(
       fields: [Field('id', from: 'itemId')],
       converters: [
         TypeConverter<String, GarmentType>(GarmentTypeCacheConverters.fromCache),
       ],
     ),
-    MapType<ShopProductModel, ShopProduct>(),
+    MapType<ShopProductDto, ShopProduct>(),
 
-    MapType<StoreOrderContactModel, StoreOrderContact>(),
+    MapType<StoreOrderContactDto, StoreOrderContact>(),
 
-    MapType<ShopStoreInfoModel, ShopStoreInfo>(
+    MapType<ShopStoreInfoDto, ShopStoreInfo>(
       fields: [Field('channels', custom: ShopStoreInfoMapprHelper.channelsToEntity)],
     ),
 
-    MapType<ProductSizeModel, ProductSize>(),
+    MapType<ProductSizeDto, ProductSize>(),
 
-    MapType<SubscriptionTierModel, SubscriptionTierCache>(
+    MapType<SubscriptionTierDto, SubscriptionTierCache>(
       fields: [Field('tier', from: 'id')],
       converters: [
         TypeConverter<AppSubscriptionTier, String>(
@@ -86,7 +86,7 @@ import 'personal_mappr.auto_mappr.dart';
         ),
       ],
     ),
-    MapType<SubscriptionTierCache, SubscriptionTierModel>(
+    MapType<SubscriptionTierCache, SubscriptionTierDto>(
       fields: [Field('id', from: 'tier')],
       converters: [
         TypeConverter<String, AppSubscriptionTier>(
@@ -106,6 +106,6 @@ class PersonalMappr extends $PersonalMappr {
 }
 
 class ShopStoreInfoMapprHelper {
-  static Set<StoreChannel> channelsToEntity(final ShopStoreInfoModel source) =>
+  static Set<StoreChannel> channelsToEntity(final ShopStoreInfoDto source) =>
       source.channels.toSet();
 }

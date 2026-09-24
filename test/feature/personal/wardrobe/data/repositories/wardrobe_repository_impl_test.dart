@@ -7,7 +7,7 @@ import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type
 import 'package:tryzeon/feature/personal/wardrobe/data/collections/wardrobe_item_cache.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_local_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_remote_datasource.dart';
-import 'package:tryzeon/feature/personal/wardrobe/data/models/wardrobe_item_model.dart';
+import 'package:tryzeon/feature/personal/wardrobe/data/dtos/wardrobe_item_dto.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/repositories/wardrobe_repository_impl.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -16,11 +16,11 @@ import '../../../../../support/isar_test_harness.dart';
 class _FakeRemote implements WardrobeRemoteDataSource {
   _FakeRemote(this.items);
 
-  final List<WardrobeItemModel> items;
+  final List<WardrobeItemDto> items;
   int calls = 0;
 
   @override
-  Future<List<WardrobeItemModel>> getWardrobeItems() async {
+  Future<List<WardrobeItemDto>> getWardrobeItems() async {
     calls++;
     return items;
   }
@@ -82,7 +82,7 @@ void main() {
     await seedCache('dress');
 
     final remote = _FakeRemote([
-      WardrobeItemModel(
+      WardrobeItemDto(
         id: 'w1',
         imagePath: 'w1.jpg',
         garmentType: GarmentType.onePiece,

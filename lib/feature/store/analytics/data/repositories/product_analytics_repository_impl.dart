@@ -3,7 +3,7 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/store/analytics/data/datasources/product_analytics_local_datasource.dart';
 import 'package:tryzeon/feature/store/analytics/data/datasources/product_analytics_remote_datasource.dart';
-import 'package:tryzeon/feature/store/analytics/data/models/product_analytics_summary_model.dart';
+import 'package:tryzeon/feature/store/analytics/data/dtos/product_analytics_summary_dto.dart';
 import 'package:tryzeon/feature/store/analytics/domain/entities/product_analytics_summary.dart';
 import 'package:tryzeon/feature/store/analytics/domain/repositories/product_analytics_repository.dart';
 import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
@@ -44,20 +44,18 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
           month,
         );
         switch (cached) {
-          case CacheHit<List<ProductAnalyticsSummaryModel>>(:final data):
+          case CacheHit<List<ProductAnalyticsSummaryDto>>(:final data):
             return Ok(
               data
                   .map(
                     (final m) => _mappr
-                        .convert<ProductAnalyticsSummaryModel, ProductAnalyticsSummary>(
-                          m,
-                        ),
+                        .convert<ProductAnalyticsSummaryDto, ProductAnalyticsSummary>(m),
                   )
                   .toList(),
             );
-          case CacheEmpty<List<ProductAnalyticsSummaryModel>>():
+          case CacheEmpty<List<ProductAnalyticsSummaryDto>>():
             return const Ok([]);
-          case CacheMiss<List<ProductAnalyticsSummaryModel>>():
+          case CacheMiss<List<ProductAnalyticsSummaryDto>>():
             break;
         }
       }
@@ -84,8 +82,8 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
       return Ok(
         remoteModels
             .map(
-              (final m) => _mappr
-                  .convert<ProductAnalyticsSummaryModel, ProductAnalyticsSummary>(m),
+              (final m) =>
+                  _mappr.convert<ProductAnalyticsSummaryDto, ProductAnalyticsSummary>(m),
             )
             .toList(),
       );
@@ -96,7 +94,7 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
   }
 
   List<ProductAnalyticsSummary> _aggregateByProduct(
-    final List<ProductAnalyticsSummaryModel> models,
+    final List<ProductAnalyticsSummaryDto> models,
   ) {
     final Map<String, ProductAnalyticsSummary> map = {};
     for (final m in models) {

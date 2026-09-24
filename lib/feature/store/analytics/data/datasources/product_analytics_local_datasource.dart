@@ -3,7 +3,7 @@ import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart'
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/feature/store/analytics/data/collections/product_analytics_cache.dart';
-import 'package:tryzeon/feature/store/analytics/data/models/product_analytics_summary_model.dart';
+import 'package:tryzeon/feature/store/analytics/data/dtos/product_analytics_summary_dto.dart';
 import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 
 class ProductAnalyticsLocalDataSource {
@@ -16,7 +16,7 @@ class ProductAnalyticsLocalDataSource {
   static String cacheKeyForMonth(final String storeId, final int year, final int month) =>
       'product_analytics:$storeId:$year:$month';
 
-  Future<CacheLookup<List<ProductAnalyticsSummaryModel>>> getProductAnalyticsSummaries(
+  Future<CacheLookup<List<ProductAnalyticsSummaryDto>>> getProductAnalyticsSummaries(
     final String storeId,
     final int year,
     final int month,
@@ -43,7 +43,7 @@ class ProductAnalyticsLocalDataSource {
       collections
           .map(
             (final c) =>
-                _mappr.convert<ProductAnalyticsCache, ProductAnalyticsSummaryModel>(c),
+                _mappr.convert<ProductAnalyticsCache, ProductAnalyticsSummaryDto>(c),
           )
           .toList(),
     );
@@ -53,7 +53,7 @@ class ProductAnalyticsLocalDataSource {
     final String storeId,
     final int year,
     final int month,
-    final List<ProductAnalyticsSummaryModel> summaries,
+    final List<ProductAnalyticsSummaryDto> summaries,
   ) async {
     final isar = await _isarService.db;
     final cacheKey = cacheKeyForMonth(storeId, year, month);
@@ -61,7 +61,7 @@ class ProductAnalyticsLocalDataSource {
     await isar.writeTxn(() async {
       for (final summary in summaries) {
         final collection = _mappr
-            .convert<ProductAnalyticsSummaryModel, ProductAnalyticsCache>(summary);
+            .convert<ProductAnalyticsSummaryDto, ProductAnalyticsCache>(summary);
 
         final existing = await isar.productAnalyticsCaches
             .filter()

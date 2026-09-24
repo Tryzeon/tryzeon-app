@@ -4,13 +4,13 @@ import 'package:tryzeon/core/data/collections/cache_entry.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/domain/services/cache_service.dart';
 import 'package:tryzeon/feature/common/store/data/collections/store_order_contact_embedded.dart';
-import 'package:tryzeon/feature/common/store/data/models/store_order_contact_model.dart';
+import 'package:tryzeon/feature/common/store/data/dtos/store_order_contact_dto.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
 import 'package:tryzeon/feature/store/profile/data/collections/store_profile_cache.dart';
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_local_datasource.dart';
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_remote_datasource.dart';
-import 'package:tryzeon/feature/store/profile/data/models/store_profile_model.dart';
+import 'package:tryzeon/feature/store/profile/data/dtos/store_profile_dto.dart';
 import 'package:tryzeon/feature/store/profile/data/repositories/store_profile_repository_impl.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -19,11 +19,11 @@ import '../../../../../support/isar_test_harness.dart';
 class _FakeRemote implements StoreProfileRemoteDataSource {
   _FakeRemote(this.profile);
 
-  final StoreProfileModel profile;
+  final StoreProfileDto profile;
   int calls = 0;
 
   @override
-  Future<StoreProfileModel?> getStoreProfile() async {
+  Future<StoreProfileDto?> getStoreProfile() async {
     calls++;
     return profile;
   }
@@ -80,13 +80,13 @@ void main() {
     );
   });
 
-  final remoteProfile = StoreProfileModel(
+  final remoteProfile = StoreProfileDto(
     id: 's1',
     ownerId: 'o1',
     name: '測試店家',
     channels: const [StoreChannel.physical],
     orderContacts: const [
-      StoreOrderContactModel(type: OrderContactType.line, value: '@shop'),
+      StoreOrderContactDto(type: OrderContactType.line, value: '@shop'),
     ],
     createdAt: DateTime(2026),
     updatedAt: DateTime(2026),

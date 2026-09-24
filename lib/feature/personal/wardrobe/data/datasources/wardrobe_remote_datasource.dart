@@ -5,8 +5,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
 
-import '../models/create_wardrobe_item_request.dart';
-import '../models/wardrobe_item_model.dart';
+import '../dtos/create_wardrobe_item_request.dart';
+import '../dtos/wardrobe_item_dto.dart';
 
 class WardrobeRemoteDataSource {
   WardrobeRemoteDataSource(this._supabaseClient);
@@ -15,7 +15,7 @@ class WardrobeRemoteDataSource {
   static const _wardrobeItemTable = AppConstants.tableWardrobeItems;
   static const _bucket = AppConstants.bucketWardrobeImages;
 
-  Future<List<WardrobeItemModel>> getWardrobeItems() async {
+  Future<List<WardrobeItemDto>> getWardrobeItems() async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();
 
@@ -26,13 +26,13 @@ class WardrobeRemoteDataSource {
         .order('created_at', ascending: false);
 
     return (response as List<dynamic>).map((final e) {
-      return WardrobeItemModel.fromJson(
+      return WardrobeItemDto.fromJson(
         Map<String, dynamic>.from(e as Map<dynamic, dynamic>),
       );
     }).toList();
   }
 
-  Future<WardrobeItemModel> createWardrobeItem(
+  Future<WardrobeItemDto> createWardrobeItem(
     final CreateWardrobeItemRequest request,
   ) async {
     final user = _supabaseClient.auth.currentUser;
@@ -47,7 +47,7 @@ class WardrobeRemoteDataSource {
         .select()
         .single();
 
-    return WardrobeItemModel.fromJson(response);
+    return WardrobeItemDto.fromJson(response);
   }
 
   Future<void> deleteWardrobeItem(final String id) async {
@@ -61,7 +61,7 @@ class WardrobeRemoteDataSource {
         .eq('user_id', user.id);
   }
 
-  Future<WardrobeItemModel> updateWardrobeItemTags({
+  Future<WardrobeItemDto> updateWardrobeItemTags({
     required final String id,
     required final List<String> tags,
   }) async {
@@ -76,7 +76,7 @@ class WardrobeRemoteDataSource {
         .select()
         .single();
 
-    return WardrobeItemModel.fromJson(response);
+    return WardrobeItemDto.fromJson(response);
   }
 
   Future<String> uploadImage({

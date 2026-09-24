@@ -4,8 +4,8 @@ import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart'
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/feature/common/product_category/data/collections/product_category_cache.dart';
+import 'package:tryzeon/feature/common/product_category/data/dtos/product_category_dto.dart';
 import 'package:tryzeon/feature/common/product_category/data/mappers/product_category_mappr.dart';
-import 'package:tryzeon/feature/common/product_category/data/models/product_category_model.dart';
 
 class ProductCategoryLocalDataSource {
   ProductCategoryLocalDataSource(this._isarService, this._cacheEntryLocalDataSource);
@@ -14,7 +14,7 @@ class ProductCategoryLocalDataSource {
   static const _mappr = ProductCategoryMappr();
   static const cacheKey = 'product_categories';
 
-  Future<CacheLookup<List<ProductCategoryModel>>> getProductCategories() async {
+  Future<CacheLookup<List<ProductCategoryDto>>> getProductCategories() async {
     final isar = await _isarService.db;
     final cacheStatus = await _cacheEntryLocalDataSource.getEntryStatus(
       cacheKey,
@@ -29,18 +29,18 @@ class ProductCategoryLocalDataSource {
     final collections = await isar.productCategoryCaches.where().findAll();
     if (collections.isEmpty) return const CacheMiss();
 
-    final models = _mappr.convertList<ProductCategoryCache, ProductCategoryModel>(
+    final models = _mappr.convertList<ProductCategoryCache, ProductCategoryDto>(
       collections,
     );
     return CacheHit(models);
   }
 
-  Future<void> saveProductCategories(final List<ProductCategoryModel> categories) async {
+  Future<void> saveProductCategories(final List<ProductCategoryDto> categories) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
       await isar.productCategoryCaches.clear();
       final collections = _mappr
-          .convertList<ProductCategoryModel, ProductCategoryCache>(categories)
+          .convertList<ProductCategoryDto, ProductCategoryCache>(categories)
           .toList();
       await isar.productCategoryCaches.putAll(collections);
     });
