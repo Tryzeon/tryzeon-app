@@ -8,7 +8,7 @@ import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/domain/services/cache_service.dart';
 import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/collections/wardrobe_item_cache.dart';
-import 'package:tryzeon/feature/personal/wardrobe/data/dtos/wardrobe_item_dto.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 
 class WardrobeLocalDataSource {
   WardrobeLocalDataSource(
@@ -23,7 +23,7 @@ class WardrobeLocalDataSource {
   static const _mappr = PersonalMappr();
   static const cacheKey = 'wardrobe_items';
 
-  Future<CacheLookup<List<WardrobeItemDto>>> getWardrobeItems() async {
+  Future<CacheLookup<List<WardrobeItem>>> getWardrobeItems() async {
     final isar = await _isarService.db;
     final cacheStatus = await _cacheEntryLocalDataSource.getEntryStatus(cacheKey);
     if (cacheStatus == null) return const CacheMiss();
@@ -39,24 +39,23 @@ class WardrobeLocalDataSource {
 
     if (collections.isEmpty) return const CacheMiss();
 
-    final models = _mappr.convertList<WardrobeItemCache, WardrobeItemDto>(collections);
-    return CacheHit(models);
+    return CacheHit(_mappr.convertList<WardrobeItemCache, WardrobeItem>(collections));
   }
 
-  Future<void> saveWardrobeItems(final List<WardrobeItemDto> items) async {
+  Future<void> saveWardrobeItems(final List<WardrobeItem> items) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
       await isar.wardrobeItemCaches.clear();
-      final collections = _mappr.convertList<WardrobeItemDto, WardrobeItemCache>(items);
+      final collections = _mappr.convertList<WardrobeItem, WardrobeItemCache>(items);
       await isar.wardrobeItemCaches.putAll(collections);
     });
     await _cacheEntryLocalDataSource.markListState(cacheKey, isEmpty: items.isEmpty);
   }
 
-  Future<void> saveWardrobeItem(final WardrobeItemDto item) async {
+  Future<void> saveWardrobeItem(final WardrobeItem item) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
-      final collection = _mappr.convert<WardrobeItemDto, WardrobeItemCache>(item);
+      final collection = _mappr.convert<WardrobeItem, WardrobeItemCache>(item);
       await isar.wardrobeItemCaches.put(collection);
     });
     await _cacheEntryLocalDataSource.markListState(cacheKey, isEmpty: false);

@@ -54,14 +54,13 @@ import 'personal_mappr.auto_mappr.dart';
     ),
 
     MapType<WardrobeItemDto, WardrobeItem>(),
-    MapType<WardrobeItem, WardrobeItemDto>(),
-    MapType<WardrobeItemDto, WardrobeItemCache>(
+    MapType<WardrobeItem, WardrobeItemCache>(
       fields: [Field('itemId', from: 'id')],
       converters: [
         TypeConverter<GarmentType, String>(GarmentTypeCacheConverters.toCache),
       ],
     ),
-    MapType<WardrobeItemCache, WardrobeItemDto>(
+    MapType<WardrobeItemCache, WardrobeItem>(
       fields: [Field('id', from: 'itemId')],
       converters: [
         TypeConverter<String, GarmentType>(GarmentTypeCacheConverters.fromCache),

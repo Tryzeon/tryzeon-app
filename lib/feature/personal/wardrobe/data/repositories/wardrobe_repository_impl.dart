@@ -35,12 +35,11 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
         try {
           final cachedItems = await _localDataSource.getWardrobeItems();
           switch (cachedItems) {
-            case CacheHit<List<WardrobeItemDto>>(:final data):
-              final items = _mappr.convertList<WardrobeItemDto, WardrobeItem>(data);
-              return Ok(items);
-            case CacheEmpty<List<WardrobeItemDto>>():
+            case CacheHit<List<WardrobeItem>>(:final data):
+              return Ok(data);
+            case CacheEmpty<List<WardrobeItem>>():
               return const Ok([]);
-            case CacheMiss<List<WardrobeItemDto>>():
+            case CacheMiss<List<WardrobeItem>>():
               break;
           }
         } catch (e, stackTrace) {
@@ -54,15 +53,15 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
 
       // 2. Try Remote
       final remoteItems = await _remoteDataSource.getWardrobeItems();
+      final items = _mappr.convertList<WardrobeItemDto, WardrobeItem>(remoteItems);
 
       // 3. Update Cache
       try {
-        await _localDataSource.saveWardrobeItems(remoteItems);
+        await _localDataSource.saveWardrobeItems(items);
       } catch (e, stackTrace) {
         AppLogger.warning('Failed to save wardrobe items to cache', e, stackTrace);
       }
 
-      final items = _mappr.convertList<WardrobeItemDto, WardrobeItem>(remoteItems);
       return Ok(items);
     } catch (e, stackTrace) {
       AppLogger.error('Wardrobe fetch failed', e, stackTrace);
@@ -95,7 +94,9 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
         tags: params.tags,
       );
 
-      final newItem = await _remoteDataSource.createWardrobeItem(request);
+      final newItem = _mappr.convert<WardrobeItemDto, WardrobeItem>(
+        await _remoteDataSource.createWardrobeItem(request),
+      );
 
       await _localDataSource.saveWardrobeItem(newItem);
 
@@ -127,12 +128,10 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
     required final List<String> tags,
   }) async {
     try {
-      final updatedModel = await _remoteDataSource.updateWardrobeItemTags(
-        id: item.id,
-        tags: tags,
+      final updatedItem = _mappr.convert<WardrobeItemDto, WardrobeItem>(
+        await _remoteDataSource.updateWardrobeItemTags(id: item.id, tags: tags),
       );
-      await _localDataSource.saveWardrobeItem(updatedModel);
-      final updatedItem = _mappr.convert<WardrobeItemDto, WardrobeItem>(updatedModel);
+      await _localDataSource.saveWardrobeItem(updatedItem);
       return Ok(updatedItem);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to update wardrobe item tags', e, stackTrace);
