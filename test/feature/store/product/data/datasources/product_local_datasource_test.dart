@@ -93,10 +93,9 @@ void main() {
 
     await local.saveProducts('s1', [product]);
 
-    expect(
-      (await local.listProducts(storeId: 's1') as CacheHit<List<Product>>).data,
-      [product],
-    );
+    expect((await local.listProducts(storeId: 's1') as CacheHit<List<Product>>).data, [
+      product,
+    ]);
   });
 
   test('styles and seasons are cached in declaration order', () async {

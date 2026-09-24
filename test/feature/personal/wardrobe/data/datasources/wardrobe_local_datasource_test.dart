@@ -74,9 +74,8 @@ void main() {
     await local.saveWardrobeItem(item.copyWith(tags: const ['cotton']));
 
     final lookup = await local.getWardrobeItems();
-    expect(
-      (lookup as CacheHit<List<WardrobeItem>>).data,
-      [item.copyWith(tags: const ['cotton'])],
-    );
+    expect((lookup as CacheHit<List<WardrobeItem>>).data, [
+      item.copyWith(tags: const ['cotton']),
+    ]);
   });
 }

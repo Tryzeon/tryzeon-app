@@ -48,9 +48,9 @@ class SubscriptionCapabilitiesLocalDataSource {
   ) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
-      final collection =
-          _mappr.convert<SubscriptionCapabilities, SubscriptionTierCache>(capabilities)
-            ..tier = tier.value;
+      final collection = _mappr.convert<SubscriptionCapabilities, SubscriptionTierCache>(
+        capabilities,
+      )..tier = tier.value;
       await isar.subscriptionTierCaches.putByTier(collection);
     });
     await _cacheEntryLocalDataSource.markHasData(cacheKeyForTier(tier));
