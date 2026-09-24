@@ -1,5 +1,8 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:tryzeon/feature/common/body_measurements/data/models/body_measurements_model.dart';
+import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 
 part 'user_profile_model.g.dart';
 
@@ -29,11 +32,17 @@ class UserProfileModel {
   final String? email;
   final BodyMeasurementsModel? measurements;
   final String? avatarPath;
-  final String? gender;
-  final String? ageRange;
-  final List<String>? stylePreferences;
+  @JsonKey(unknownEnumValue: JsonKey.nullForUndefinedEnumValue)
+  final Gender? gender;
+  @JsonKey(unknownEnumValue: JsonKey.nullForUndefinedEnumValue)
+  final AgeRange? ageRange;
+  @JsonKey(fromJson: _stylePreferencesFromJson)
+  final List<ClothingStyle>? stylePreferences;
   @JsonKey(defaultValue: false)
   final bool isOnboarded;
 
   Map<String, dynamic> toJson() => _$UserProfileModelToJson(this);
 }
+
+List<ClothingStyle>? _stylePreferencesFromJson(final List<dynamic>? json) =>
+    ClothingStyle.listFromStrings(json?.cast<String>());

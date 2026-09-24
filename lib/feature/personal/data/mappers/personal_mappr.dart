@@ -30,28 +30,26 @@ import 'personal_mappr.auto_mappr.dart';
 
 @AutoMappr(
   [
-    MapType<UserProfileModel, UserProfile>(
-      fields: [
-        Field('gender', custom: UserProfileMapprHelper.genderFromString),
-        Field('ageRange', custom: UserProfileMapprHelper.ageRangeFromString),
-        Field(
-          'stylePreferences',
-          custom: UserProfileMapprHelper.stylePreferencesFromStrings,
+    MapType<UserProfileModel, UserProfile>(),
+    MapType<UserProfile, UserProfileModel>(),
+    MapType<UserProfileModel, UserProfileCache>(
+      converters: [
+        TypeConverter<Gender?, String?>(CachedEnumConverters.genderToCache),
+        TypeConverter<AgeRange?, String?>(CachedEnumConverters.ageRangeToCache),
+        TypeConverter<List<ClothingStyle>?, List<String>?>(
+          CachedEnumConverters.clothingStylesToCache,
         ),
       ],
     ),
-    MapType<UserProfile, UserProfileModel>(
-      fields: [
-        Field('gender', custom: UserProfileMapprHelper.genderToString),
-        Field('ageRange', custom: UserProfileMapprHelper.ageRangeToString),
-        Field(
-          'stylePreferences',
-          custom: UserProfileMapprHelper.stylePreferencesToStrings,
+    MapType<UserProfileCache, UserProfileModel>(
+      converters: [
+        TypeConverter<String?, Gender?>(CachedEnumConverters.genderFromCache),
+        TypeConverter<String?, AgeRange?>(CachedEnumConverters.ageRangeFromCache),
+        TypeConverter<List<String>?, List<ClothingStyle>?>(
+          CachedEnumConverters.clothingStylesFromCache,
         ),
       ],
     ),
-    MapType<UserProfileModel, UserProfileCache>(),
-    MapType<UserProfileCache, UserProfileModel>(),
 
     MapType<WardrobeItemModel, WardrobeItem>(),
     MapType<WardrobeItem, WardrobeItemModel>(),
@@ -128,23 +126,4 @@ class ShopStoreInfoMapprHelper {
 
   static OrderContactType codeToOrderContactType(final StoreOrderContactModel source) =>
       OrderContactType.fromCode(source.type) ?? OrderContactType.line;
-}
-
-class UserProfileMapprHelper {
-  static Gender? genderFromString(final UserProfileModel source) =>
-      Gender.tryFromString(source.gender);
-
-  static String? genderToString(final UserProfile source) => source.gender?.value;
-
-  static AgeRange? ageRangeFromString(final UserProfileModel source) =>
-      AgeRange.tryFromString(source.ageRange);
-
-  static String? ageRangeToString(final UserProfile source) => source.ageRange?.value;
-
-  static List<ClothingStyle>? stylePreferencesFromStrings(
-    final UserProfileModel source,
-  ) => ClothingStyle.listFromStrings(source.stylePreferences);
-
-  static List<String>? stylePreferencesToStrings(final UserProfile source) =>
-      source.stylePreferences?.map((final e) => e.value).toList();
 }

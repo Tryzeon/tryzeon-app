@@ -1,0 +1,160 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:isar_community/isar.dart';
+import 'package:tryzeon/core/data/collections/cache_entry.dart';
+import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
+import 'package:tryzeon/core/domain/services/cache_service.dart';
+import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
+import 'package:tryzeon/feature/personal/profile/data/collections/user_profile_cache.dart';
+import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_local_datasource.dart';
+import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_remote_datasource.dart';
+import 'package:tryzeon/feature/personal/profile/data/models/user_profile_model.dart';
+import 'package:tryzeon/feature/personal/profile/data/repositories/user_profile_repository_impl.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
+import 'package:typed_result/typed_result.dart';
+
+import '../../../../../support/isar_test_harness.dart';
+
+class _FakeRemote implements UserProfileRemoteDataSource {
+  _FakeRemote(this.profile);
+
+  final UserProfileModel profile;
+  int calls = 0;
+
+  @override
+  Future<UserProfileModel> getUserProfile() async {
+    calls++;
+    return profile;
+  }
+
+  @override
+  dynamic noSuchMethod(final Invocation invocation) =>
+      throw UnimplementedError(invocation.memberName.toString());
+}
+
+class _NoopCacheService implements CacheService {
+  @override
+  dynamic noSuchMethod(final Invocation invocation) =>
+      throw UnimplementedError(invocation.memberName.toString());
+}
+
+void main() {
+  setUpAll(() async {
+    await Isar.initializeIsarCore(download: true);
+  });
+
+  late TestIsar harness;
+
+  setUp(() async {
+    harness = await openTestIsar();
+  });
+
+  tearDown(() async {
+    await harness.dispose();
+  });
+
+  Future<void> seedCache({
+    final String? gender = 'female',
+    final String? ageRange = '25_34',
+    final List<String>? stylePreferences = const ['korean'],
+  }) => harness.isar.writeTxn(() async {
+    await harness.isar.userProfileCaches.putByUserId(
+      UserProfileCache()
+        ..userId = 'u1'
+        ..name = 'Eric'
+        ..createdAt = DateTime(2026)
+        ..updatedAt = DateTime(2026)
+        ..gender = gender
+        ..ageRange = ageRange
+        ..stylePreferences = stylePreferences
+        ..isOnboarded = true,
+    );
+    await harness.isar.cacheEntrys.putByCacheKey(
+      CacheEntry()
+        ..cacheKey = UserProfileLocalDataSource.cacheKey
+        ..status = CacheEntryStatus.hasData.name
+        ..fetchedAt = DateTime.now(),
+    );
+  });
+
+  final remoteProfile = UserProfileModel(
+    userId: 'u1',
+    name: 'Eric',
+    createdAt: DateTime(2026),
+    updatedAt: DateTime(2026),
+    gender: Gender.female,
+    ageRange: AgeRange.age25to34,
+    stylePreferences: const [ClothingStyle.korean],
+    isOnboarded: true,
+  );
+
+  UserProfileRepositoryImpl buildRepository(final _FakeRemote remote) =>
+      UserProfileRepositoryImpl(
+        remoteDataSource: remote,
+        localDataSource: UserProfileLocalDataSource(
+          harness.service,
+          _NoopCacheService(),
+          CacheEntryLocalDataSource(harness.service),
+        ),
+      );
+
+  test('re-fetches when a cached age range no longer decodes', () async {
+    await seedCache(ageRange: '18_25');
+
+    final remote = _FakeRemote(remoteProfile);
+    final profile = (await buildRepository(remote).getUserProfile()).get()!;
+
+    expect(remote.calls, 1);
+    expect(profile.ageRange, AgeRange.age25to34);
+
+    final cached = await harness.isar.userProfileCaches.getByUserId('u1');
+    expect(cached!.ageRange, '25_34');
+  });
+
+  test('re-fetches when a cached style preference no longer decodes', () async {
+    await seedCache(stylePreferences: const ['korean', 'y2k']);
+
+    final remote = _FakeRemote(remoteProfile);
+    final profile = (await buildRepository(remote).getUserProfile()).get()!;
+
+    expect(remote.calls, 1);
+    expect(profile.stylePreferences, [ClothingStyle.korean]);
+
+    final cached = await harness.isar.userProfileCaches.getByUserId('u1');
+    expect(cached!.stylePreferences, ['korean']);
+  });
+
+  test('re-fetches when a cached gender no longer decodes', () async {
+    await seedCache(gender: 'nonbinary');
+
+    final remote = _FakeRemote(remoteProfile);
+    final profile = (await buildRepository(remote).getUserProfile()).get()!;
+
+    expect(remote.calls, 1);
+    expect(profile.gender, Gender.female);
+  });
+
+  test('serves the cache untouched when every cached value decodes', () async {
+    await seedCache();
+
+    final remote = _FakeRemote(remoteProfile);
+    final profile = (await buildRepository(remote).getUserProfile()).get()!;
+
+    expect(remote.calls, 0);
+    expect(profile.gender, Gender.female);
+    expect(profile.ageRange, AgeRange.age25to34);
+    expect(profile.stylePreferences, [ClothingStyle.korean]);
+  });
+
+  test('null cached enums stay null instead of counting as undecodable', () async {
+    await seedCache(gender: null, ageRange: null, stylePreferences: null);
+
+    final remote = _FakeRemote(remoteProfile);
+    final profile = (await buildRepository(remote).getUserProfile()).get()!;
+
+    expect(remote.calls, 0);
+    expect(profile.gender, isNull);
+    expect(profile.ageRange, isNull);
+    expect(profile.stylePreferences, isNull);
+  });
+}
