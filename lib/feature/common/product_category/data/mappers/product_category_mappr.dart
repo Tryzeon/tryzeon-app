@@ -16,18 +16,14 @@ import 'product_category_mappr.auto_mappr.dart';
     fields: [Field('categoryId', from: 'id')],
     converters: [
       TypeConverter<GarmentType, String>(CachedEnumConverters.garmentTypeToCache),
-      TypeConverter<ProductGender?, String?>(
-        CachedEnumConverters.productGenderToCache,
-      ),
+      TypeConverter<ProductGender?, String?>(CachedEnumConverters.productGenderToCache),
     ],
   ),
   MapType<ProductCategoryCache, ProductCategoryModel>(
     fields: [Field('id', from: 'categoryId')],
     converters: [
       TypeConverter<String, GarmentType>(CachedEnumConverters.garmentTypeFromCache),
-      TypeConverter<String?, ProductGender?>(
-        CachedEnumConverters.productGenderFromCache,
-      ),
+      TypeConverter<String?, ProductGender?>(CachedEnumConverters.productGenderFromCache),
     ],
   ),
 ])

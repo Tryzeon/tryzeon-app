@@ -45,4 +45,4 @@ class UserProfileModel {
 }
 
 List<ClothingStyle>? _stylePreferencesFromJson(final List<dynamic>? json) =>
-    ClothingStyle.listFromStrings(json?.cast<String>());
+    ClothingStyle.listFromStrings(json?.whereType<String>());

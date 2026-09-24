@@ -48,12 +48,8 @@ import 'store_mappr.auto_mappr.dart';
       fields: [Field('productId', from: 'id')],
       converters: [
         TypeConverter<GarmentType, String>(CachedEnumConverters.garmentTypeToCache),
-        TypeConverter<ProductStatus?, String?>(
-          CachedEnumConverters.productStatusToCache,
-        ),
-        TypeConverter<ProductGender?, String?>(
-          CachedEnumConverters.productGenderToCache,
-        ),
+        TypeConverter<ProductStatus?, String?>(CachedEnumConverters.productStatusToCache),
+        TypeConverter<ProductGender?, String?>(CachedEnumConverters.productGenderToCache),
         TypeConverter<ProductElasticity?, String?>(
           CachedEnumConverters.productElasticityToCache,
         ),
@@ -136,11 +132,15 @@ class StoreMapprHelper {
   static Set<ProductSeason>? seasonsToEntity(final ProductModel source) =>
       source.seasons?.toSet();
 
-  static List<ClothingStyle>? stylesToModel(final Product source) =>
-      source.styles?.toList();
+  static List<ClothingStyle>? stylesToModel(final Product source) {
+    final styles = source.styles;
+    return styles == null ? null : ClothingStyle.listFromSet(styles);
+  }
 
-  static List<ProductSeason>? seasonsToModel(final Product source) =>
-      source.seasons?.toList();
+  static List<ProductSeason>? seasonsToModel(final Product source) {
+    final seasons = source.seasons;
+    return seasons == null ? null : ProductSeason.listFromSet(seasons);
+  }
 
   static Set<StoreChannel> codesToChannelSet(final StoreProfileModel source) =>
       StoreChannel.setFromCodes(source.channels);

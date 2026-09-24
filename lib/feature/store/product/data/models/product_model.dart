@@ -75,7 +75,7 @@ class ProductModel {
 }
 
 List<ClothingStyle>? _stylesFromJson(final List<dynamic>? json) =>
-    ClothingStyle.listFromStrings(json?.cast<String>());
+    ClothingStyle.listFromStrings(json?.whereType<String>());
 
 List<ProductSeason>? _seasonsFromJson(final List<dynamic>? json) =>
-    ProductSeason.listFromStrings(json?.cast<String>());
+    ProductSeason.listFromStrings(json?.whereType<String>());
