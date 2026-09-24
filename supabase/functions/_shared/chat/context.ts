@@ -1,4 +1,5 @@
 import { getUserProfile } from "../user-profile.ts";
+import { STYLING_GUIDE } from "./styling-guide.ts";
 import type { ContextLoader } from "./types.ts";
 
 const AGE_RANGE_LABELS: Record<string, string> = {
@@ -65,7 +66,9 @@ export const buildChatContext: ContextLoader = async (client, userId) => {
 - 一個 product/wardrobe block 只放一件；要推薦多件就放多個。
 - 整套穿搭：用「text 描述部位（如：上身…）→ 該部位的 product 或 wardrobe」交錯排列。
 - 搜尋可能回 0 筆。某條件找不到時，放寬條件（移除精確過濾或簡化 query）再搜一次；仍找不到就用 text 說明並追問。
-- 商店單品用 product、衣櫃單品用 wardrobe，type 與 id 來源要對應；嚴禁編造 id。每一回合都必須有輸出，絕不空白。${userContextBlock}
+- 商店單品用 product、衣櫃單品用 wardrobe，type 與 id 來源要對應；嚴禁編造 id。每一回合都必須有輸出，絕不空白。
+
+${STYLING_GUIDE}${userContextBlock}
 
 【可用商品分類清單】（search_products 的 category_code 請從這裡選 code）
 ${categoryLines}`;
