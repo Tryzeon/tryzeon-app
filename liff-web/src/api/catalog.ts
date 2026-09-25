@@ -126,3 +126,7 @@ export async function fetchProduct(productId: string): Promise<CatalogItem | nul
   if (error) throw error;
   return data === null ? null : buildCatalogItem(data, IMAGES_BASE_URL);
 }
+
+export function catalogItemFromRow(row: unknown): CatalogItem {
+  return buildCatalogItem(row, IMAGES_BASE_URL);
+}

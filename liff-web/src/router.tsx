@@ -7,11 +7,13 @@ import { CatalogSkeleton } from "./components/CatalogSkeleton";
 import { Header } from "./components/Header";
 import { SearchSortBar } from "./components/SearchSortBar";
 import { Shop } from "./pages/Shop";
+import { Chat } from "./pages/Chat";
 import { Home } from "./pages/Home";
 import { ProductDetail } from "./pages/ProductDetail";
 import { Onboard } from "./pages/Onboard";
 import { TabBar, type ActiveTab } from "./components/TabBar";
 import { AvatarProvider } from "./state/AvatarProvider";
+import { paneOf } from "./lib/pane";
 import { GalleryProvider } from "./state/GalleryProvider";
 
 const noop = () => {};
@@ -41,7 +43,8 @@ function LiffGate() {
   // placeholders, or home's dark stage — so opening the gate fills the screen
   // in rather than flashing the wrong page first.
   if (state === "loading") {
-    if (pathname === "/home") {
+    const pane = paneOf(pathname);
+    if (pane === "home") {
       return (
         <div className="app home">
           <div className="home__top">
@@ -50,6 +53,16 @@ function LiffGate() {
           <div className="home__boot">
             <span className="spinner" aria-hidden="true" />
           </div>
+        </div>
+      );
+    }
+    if (pane === "chat") {
+      return (
+        <div className="app">
+          <Header />
+          <main className="main chat__boot">
+            <span className="spinner spinner--ink" aria-hidden="true" />
+          </main>
         </div>
       );
     }
@@ -98,9 +111,11 @@ function LiffGate() {
 function TabShell() {
   const { pathname } = useLocation();
 
-  const isHome = pathname === "/home";
-  const isProduct = pathname.startsWith("/product/");
-  const isShop = !isHome && !isProduct;
+  const pane = paneOf(pathname);
+  const isChat = pane === "chat";
+  const isHome = pane === "home";
+  const isProduct = pane === "product";
+  const isShop = pane === "shop";
 
   const lastShopPath = useRef("/");
   if (isShop) lastShopPath.current = pathname;
@@ -111,12 +126,13 @@ function TabShell() {
   const storeId =
     matchPath("/store/:storeId", lastShopPath.current)?.params.storeId;
 
-  const active: ActiveTab = isHome ? "home" : isProduct ? null : "shop";
+  const active: ActiveTab = isHome ? "home" : isChat ? "chat" : isProduct ? null : "shop";
 
   return (
     <div className="tabshell">
       <div className={paneClass(isShop)}><Shop storeId={storeId} /></div>
       <div className={paneClass(isHome)}><Home /></div>
+      <div className={paneClass(isChat)}><Chat /></div>
       <div className={paneClass(isProduct)}><Outlet /></div>
       <TabBar shopPath={lastShopPath.current} active={active} />
     </div>
@@ -131,7 +147,7 @@ export function AppRouter() {
   return (
     <Routes>
       <Route element={<LiffGate />}>
-        {/* TabShell mounts both tabs itself, so these routes only keep the
+        {/* TabShell mounts every tab itself, so these routes only keep the
             paths legal (not swallowed by *) and feed TabShell's useLocation /
             matchPath; the Outlet renders the product page only. */}
         <Route element={<TabShell />}>
@@ -139,6 +155,7 @@ export function AppRouter() {
           {/* Where a store QR lands: resolve-link 302s to
               ${LIFF_URL}/store/{store_id}. */}
           <Route path="/store/:storeId" element={<></>} />
+          <Route path="/chat" element={<></>} />
           <Route path="/home" element={<></>} />
           <Route path="/product/:id" element={<ProductDetail />} />
         </Route>

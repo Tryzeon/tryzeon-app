@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
-import { PersonIcon, ShirtIcon } from "./icons";
+import { ChatIcon, PersonIcon, ShirtIcon } from "./icons";
 
-export type ActiveTab = "home" | "shop" | null;
+export type ActiveTab = "home" | "shop" | "chat" | null;
 
 /**
  * The tab shell decides which tab is active rather than letting NavLink match
@@ -13,7 +13,9 @@ export type ActiveTab = "home" | "shop" | null;
  * button would bounce between tabs instead of leaving the screen, and
  * re-tapping the current tab would stack yet another.
  */
-export function TabBar({ shopPath, active }: { shopPath: string; active: ActiveTab }) {
+export function TabBar(
+  { shopPath, active }: { shopPath: string; active: ActiveTab },
+) {
   return (
     <nav className="tabbar">
       <Link to="/home" replace className={tabClass(active === "home")}>
@@ -23,6 +25,10 @@ export function TabBar({ shopPath, active }: { shopPath: string; active: ActiveT
       <Link to={shopPath} replace className={tabClass(active === "shop")}>
         <ShirtIcon />
         試衣間
+      </Link>
+      <Link to="/chat" replace className={tabClass(active === "chat")}>
+        <ChatIcon />
+        AI 顧問
       </Link>
     </nav>
   );
