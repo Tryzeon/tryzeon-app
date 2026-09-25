@@ -43,7 +43,7 @@ ProductRepository productRepository(final Ref ref) {
 
 @riverpod
 ProductAnalyticsRepository productAnalyticsRepository(final Ref ref) {
-  final analyticsQueue = ref.watch(analyticsEventQueueServiceProvider);
+  final analyticsQueue = ref.watch(analyticsEventQueueProvider);
   return ProductAnalyticsRepositoryImpl(analyticsQueue);
 }
 

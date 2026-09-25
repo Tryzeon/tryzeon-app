@@ -7,8 +7,9 @@ import 'package:tryzeon/core/domain/services/cache_service.dart';
 import 'package:tryzeon/core/modules/analytics/data/datasources/analytics_remote_datasource.dart';
 import 'package:tryzeon/core/modules/analytics/data/dtos/analytics_event_dto.dart';
 import 'package:tryzeon/core/modules/analytics/data/mappers/analytics_mappr.dart';
-import 'package:tryzeon/core/modules/analytics/data/services/analytics_event_queue_service.dart';
+import 'package:tryzeon/core/modules/analytics/data/services/analytics_event_queue_impl.dart';
 import 'package:tryzeon/core/modules/analytics/domain/entities/analytics_event.dart';
+import 'package:tryzeon/core/modules/analytics/domain/services/analytics_event_queue.dart';
 import 'package:tryzeon/core/modules/auth_identity/data/services/auth_identity_service_impl.dart';
 import 'package:tryzeon/core/modules/auth_identity/domain/services/auth_identity_service.dart';
 import 'package:tryzeon/core/modules/location/data/services/geocoding_service_impl.dart';
@@ -26,10 +27,10 @@ AnalyticsRemoteDataSource analyticsRemoteDataSource(final Ref ref) {
 }
 
 @Riverpod(keepAlive: true)
-AnalyticsEventQueueService analyticsEventQueueService(final Ref ref) {
+AnalyticsEventQueue analyticsEventQueue(final Ref ref) {
   final analyticsDataSource = ref.watch(analyticsRemoteDataSourceProvider);
 
-  return AnalyticsEventQueueService(
+  return AnalyticsEventQueueImpl(
     uploadCallback: (final events) {
       final models = _mappr.convertList<AnalyticsEvent, AnalyticsEventDto>(events);
       return analyticsDataSource.uploadAnalyticsEvents(models);

@@ -58,7 +58,7 @@ AuthRepository authRepository(final Ref ref) {
   final localDataSource = ref.watch(authLocalDataSourceProvider);
 
   final cacheService = ref.watch(cacheServiceProvider);
-  final analyticsEventQueueService = ref.watch(analyticsEventQueueServiceProvider);
+  final analyticsEventQueueService = ref.watch(analyticsEventQueueProvider);
   final settingsRepository = ref.watch(settingsRepositoryProvider);
 
   return AuthRepositoryImpl(

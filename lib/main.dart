@@ -91,7 +91,7 @@ class Tryzeon extends HookConsumerWidget {
     // Analytics Lifecycle Observer
     useOnAppLifecycleStateChange((final previous, final current) {
       if (current == AppLifecycleState.paused || current == AppLifecycleState.detached) {
-        ref.read(analyticsEventQueueServiceProvider).forceFlush();
+        ref.read(analyticsEventQueueProvider).forceFlush();
       }
     });
 

@@ -1,7 +1,7 @@
 import 'package:tryzeon/core/error/failures.dart';
-import 'package:tryzeon/core/modules/analytics/data/services/analytics_event_queue_service.dart';
 import 'package:tryzeon/core/modules/analytics/domain/entities/analytics_event.dart';
 import 'package:tryzeon/core/modules/analytics/domain/entities/analytics_event_type.dart';
+import 'package:tryzeon/core/modules/analytics/domain/services/analytics_event_queue.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/shop/domain/repositories/product_analytics_repository.dart';
 import 'package:typed_result/typed_result.dart';
@@ -9,7 +9,7 @@ import 'package:typed_result/typed_result.dart';
 class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
   ProductAnalyticsRepositoryImpl(this._analyticsQueueService);
 
-  final AnalyticsEventQueueService _analyticsQueueService;
+  final AnalyticsEventQueue _analyticsQueueService;
 
   @override
   Future<Result<void, Failure>> trackView({

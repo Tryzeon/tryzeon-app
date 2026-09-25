@@ -1,10 +1,11 @@
 import 'dart:async';
 
 import 'package:tryzeon/core/modules/analytics/domain/entities/analytics_event.dart';
+import 'package:tryzeon/core/modules/analytics/domain/services/analytics_event_queue.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 
-class AnalyticsEventQueueService {
-  AnalyticsEventQueueService({
+class AnalyticsEventQueueImpl implements AnalyticsEventQueue {
+  AnalyticsEventQueueImpl({
     required this.uploadCallback,
     this.batchSize = 10,
     this.flushDelay = const Duration(seconds: 5),
@@ -20,6 +21,7 @@ class AnalyticsEventQueueService {
   final List<AnalyticsEvent> _queue = [];
   Timer? _flushTimer;
 
+  @override
   void enqueue(final AnalyticsEvent event) {
     if (_queue.length >= maxQueueSize) {
       AppLogger.warning('Analytics queue full, dropping oldest event');
@@ -55,10 +57,12 @@ class AnalyticsEventQueueService {
     }
   }
 
+  @override
   Future<void> forceFlush() async {
     await _flush();
   }
 
+  @override
   void dispose() {
     _flushTimer?.cancel();
     _queue.clear();
