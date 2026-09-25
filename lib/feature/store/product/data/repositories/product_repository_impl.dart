@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:tryzeon/core/data/utils/json_diff.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
@@ -18,11 +16,9 @@ import 'package:tryzeon/feature/store/product/data/dtos/create_product_size_requ
 import 'package:tryzeon/feature/store/product/data/dtos/product_dto.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/domain/repositories/product_repository.dart';
-import 'package:tryzeon/feature/store/product/domain/services/product_size_diff.dart';
-import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.dart';
+import 'package:tryzeon/feature/store/product/domain/services/product_update_plan.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/size_item.dart';
 import 'package:typed_result/typed_result.dart';
-import 'package:uuid/uuid.dart';
 
 class ProductRepositoryImpl implements ProductRepository {
   ProductRepositoryImpl({
@@ -34,7 +30,6 @@ class ProductRepositoryImpl implements ProductRepository {
   final ProductRemoteDataSource _remoteDataSource;
   final ProductLocalDataSource _localDataSource;
   static const _mappr = StoreMappr();
-  static const _uuid = Uuid();
 
   static GarmentMeasurementsDto? _toMeasurementsDto(
     final GarmentMeasurements? measurements,
@@ -111,69 +106,6 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<Result<void, Failure>> createProduct(final CreateProductParams params) async {
-    try {
-      final productId = _uuid.v4();
-      final draft = params.draft;
-
-      final imagePaths = await _remoteDataSource.uploadProductImages(
-        storeId: params.storeId,
-        productId: productId,
-        images: params.images,
-      );
-
-      for (int i = 0; i < params.images.length; i++) {
-        final bytes = await params.images[i].readAsBytes();
-        await _localDataSource.saveProductImage(bytes, imagePaths[i]);
-      }
-
-      final request = CreateProductRequest(
-        id: productId,
-        storeId: params.storeId,
-        name: draft.name,
-        categoryId: draft.categoryId,
-        garmentType: draft.garmentType,
-        price: draft.price,
-        imagePaths: imagePaths,
-        gender: draft.gender,
-        purchaseLink: draft.purchaseLink,
-        description: draft.description,
-        material: draft.material,
-        elasticity: draft.elasticity,
-        fit: draft.fit,
-        thickness: draft.thickness,
-        styles: switch (draft.styles) {
-          final styles? => ClothingStyle.listFromSet(styles),
-          null => null,
-        },
-        seasons: switch (draft.seasons) {
-          final seasons? => ProductSeason.listFromSet(seasons),
-          null => null,
-        },
-      );
-
-      await _remoteDataSource.insertProduct(request);
-
-      if (params.sizes.isNotEmpty) {
-        await _remoteDataSource.insertProductSizes(
-          params.sizes.map((final size) => _toSizeRequest(productId, size)).toList(),
-        );
-      }
-
-      await _localDataSource.saveProduct(
-        _mappr.convert<ProductDto, Product>(
-          await _remoteDataSource.getProduct(productId),
-        ),
-      );
-
-      return const Ok(null);
-    } catch (e, stackTrace) {
-      AppLogger.error('Fail to create product', e, stackTrace);
-      return Err(mapExceptionToFailure(e));
-    }
-  }
-
-  @override
   Future<Result<Product, Failure>> getProductById(final String productId) async {
     try {
       // 1. Try Local Cache
@@ -210,91 +142,58 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<Result<void, Failure>> updateProduct(final UpdateProductParams params) async {
+  Future<Result<void, Failure>> createProduct(final NewProduct product) async {
     try {
-      final original = params.original;
-      final target = original.applyDraft(params.draft);
-      final targetImages = params.images;
-      final targetSizes = params.sizes;
-
-      // 1. Separate existing paths and new files from final order
-      final existingPaths = <String>[];
-      final newFiles = <File>[];
-
-      for (int i = 0; i < targetImages.length; i++) {
-        final item = targetImages[i];
-        switch (item) {
-          case ExistingImageItem(:final path):
-            existingPaths.add(path);
-          case NewImageItem(:final file):
-            newFiles.add(file);
-        }
-      }
-
-      // 2. Upload new images if any
-      List<String> uploadedPaths = [];
-      if (newFiles.isNotEmpty) {
-        uploadedPaths = await _remoteDataSource.uploadProductImages(
-          storeId: original.storeId,
-          productId: original.id,
-          images: newFiles,
-        );
-
-        for (int i = 0; i < newFiles.length; i++) {
-          final bytes = await newFiles[i].readAsBytes();
-          await _localDataSource.saveProductImage(bytes, uploadedPaths[i]);
-        }
-      }
-
-      // 3. Build final image paths in correct order
-      final finalImagePaths = <String>[];
-      int existingIndex = 0;
-      int newIndex = 0;
-
-      for (final item in targetImages) {
-        switch (item) {
-          case ExistingImageItem():
-            finalImagePaths.add(existingPaths[existingIndex++]);
-          case NewImageItem():
-            finalImagePaths.add(uploadedPaths[newIndex++]);
-        }
-      }
-
-      // 4. Compute removed images via diff
-      final removedPaths = original.imagePaths
-          .where((final p) => !finalImagePaths.contains(p))
-          .toList();
-
-      final targetProduct = target.copyWith(imagePaths: finalImagePaths);
-
-      // 5. Diff against the original so an untouched column keeps whatever
-      // value the server has — `original` is the snapshot the user edited.
-      final productChanges = jsonDiff(
-        _mappr.convert<Product, ProductDto>(original).toJson(),
-        _mappr.convert<Product, ProductDto>(targetProduct).toJson(),
+      final draft = product.draft;
+      await _remoteDataSource.insertProduct(
+        CreateProductRequest(
+          id: product.id,
+          storeId: product.storeId,
+          name: draft.name,
+          categoryId: draft.categoryId,
+          garmentType: draft.garmentType,
+          price: draft.price,
+          imagePaths: product.imagePaths,
+          gender: draft.gender,
+          purchaseLink: draft.purchaseLink,
+          description: draft.description,
+          material: draft.material,
+          elasticity: draft.elasticity,
+          fit: draft.fit,
+          thickness: draft.thickness,
+          styles: switch (draft.styles) {
+            final styles? => ClothingStyle.listFromSet(styles),
+            null => null,
+          },
+          seasons: switch (draft.seasons) {
+            final seasons? => ProductSeason.listFromSet(seasons),
+            null => null,
+          },
+        ),
       );
-      final sizeDiff = computeSizeDiff(original.sizes, targetSizes);
 
-      if (productChanges.isEmpty && sizeDiff.isEmpty) {
-        return const Ok(null);
+      if (product.sizes.isNotEmpty) {
+        await _remoteDataSource.insertProductSizes(
+          product.sizes.map((final size) => _toSizeRequest(product.id, size)).toList(),
+        );
       }
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to create product', e, stackTrace);
+      return Err(mapExceptionToFailure(e));
+    }
 
-      // 6. Update product in DB
-      if (productChanges.isNotEmpty) {
-        await _remoteDataSource.updateProduct(original.id, productChanges);
-      }
+    await _refreshProduct(storeId: product.storeId, productId: product.id);
+    return const Ok(null);
+  }
 
-      // 7. Drop removed images locally and on R2.
-      if (removedPaths.isNotEmpty) {
-        _localDataSource.deleteProductImages(removedPaths).ignore();
-        _remoteDataSource
-            .deleteProductImages(storeId: original.storeId, keys: removedPaths)
-            .onError((final e, final s) {
-              AppLogger.warning('R2 delete failed for removed images', e, s);
-            });
-      }
+  @override
+  Future<Result<void, Failure>> updateProduct({
+    required final Product original,
+    required final ProductUpdatePlan plan,
+  }) async {
+    try {
+      final sizeDiff = plan.sizeDiff;
 
-      // 8. Handle size changes
       for (final sizeId in sizeDiff.idsToDelete) {
         await _remoteDataSource.deleteProductSize(sizeId);
       }
@@ -304,34 +203,29 @@ class ProductRepositoryImpl implements ProductRepository {
       }
 
       for (final update in sizeDiff.toUpdate) {
-        final targetSize = ProductSize(
-          id: update.original.id,
-          productId: update.original.productId,
-          name: update.target.name,
-          garmentMeasurements: update.target.garmentMeasurements,
-          bodyMeasurementRanges: update.target.bodyMeasurementRanges,
-          createdAt: update.original.createdAt,
-          updatedAt: update.original.updatedAt,
-        );
         final sizeChanges = jsonDiff(
           _mappr.convert<ProductSize, ProductSizeDto>(update.original).toJson(),
-          _mappr.convert<ProductSize, ProductSizeDto>(targetSize).toJson(),
+          _mappr.convert<ProductSize, ProductSizeDto>(update.targetSize).toJson(),
         );
         await _remoteDataSource.updateProductSize(update.original.id, sizeChanges);
       }
 
-      // 9. Update local cache
-      await _localDataSource.saveProduct(
-        _mappr.convert<ProductDto, Product>(
-          await _remoteDataSource.getProduct(original.id),
-        ),
-      );
-
-      return const Ok(null);
+      if (plan.hasProductChanges) {
+        final productChanges = jsonDiff(
+          _mappr.convert<Product, ProductDto>(original).toJson(),
+          _mappr.convert<Product, ProductDto>(plan.target).toJson(),
+        );
+        if (productChanges.isNotEmpty) {
+          await _remoteDataSource.updateProduct(original.id, productChanges);
+        }
+      }
     } catch (e, stackTrace) {
-      AppLogger.error('Fail to update product', e, stackTrace);
+      AppLogger.error('Failed to update product', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
+
+    await _refreshProduct(storeId: original.storeId, productId: original.id);
+    return const Ok(null);
   }
 
   @override
@@ -341,43 +235,52 @@ class ProductRepositoryImpl implements ProductRepository {
   }) async {
     try {
       await _remoteDataSource.updateProduct(product.id, {'status': status.value});
-
-      await _localDataSource.saveProduct(
-        _mappr.convert<ProductDto, Product>(
-          await _remoteDataSource.getProduct(product.id),
-        ),
-      );
-
-      return const Ok(null);
     } catch (e, stackTrace) {
-      AppLogger.error('Fail to set product status', e, stackTrace);
+      AppLogger.error('Failed to set product status', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
+
+    await _refreshProduct(storeId: product.storeId, productId: product.id);
+    return const Ok(null);
   }
 
   @override
-  Future<Result<void, Failure>> deleteProduct(final Product product) async {
+  Future<Result<void, Failure>> deleteProduct({
+    required final String storeId,
+    required final String productId,
+  }) async {
     try {
-      await _remoteDataSource.deleteProduct(product.id);
-
-      if (product.imagePaths.isNotEmpty) {
-        _localDataSource.deleteProductImages(product.imagePaths).ignore();
-        _remoteDataSource
-            .deleteProductImages(storeId: product.storeId, keys: product.imagePaths)
-            .onError((final e, final s) {
-              AppLogger.warning('R2 delete failed for product images', e, s);
-            });
-      }
-
-      await _localDataSource.deleteProduct(
-        storeId: product.storeId,
-        productId: product.id,
-      );
-
-      return const Ok(null);
+      await _remoteDataSource.deleteProduct(productId);
     } catch (e, stackTrace) {
-      AppLogger.error('Fail to delete product', e, stackTrace);
+      AppLogger.error('Failed to delete product', e, stackTrace);
       return Err(mapExceptionToFailure(e));
+    }
+
+    try {
+      await _localDataSource.deleteProduct(storeId: storeId, productId: productId);
+    } catch (e, stackTrace) {
+      AppLogger.warning('Failed to evict deleted product from cache', e, stackTrace);
+    }
+    return const Ok(null);
+  }
+
+  Future<void> _refreshProduct({
+    required final String storeId,
+    required final String productId,
+  }) async {
+    try {
+      await _localDataSource.saveProduct(
+        _mappr.convert<ProductDto, Product>(
+          await _remoteDataSource.getProduct(productId),
+        ),
+      );
+    } catch (e, stackTrace) {
+      AppLogger.warning('Product refresh failed, invalidating cache', e, stackTrace);
+      try {
+        await _localDataSource.invalidateProduct(storeId: storeId, productId: productId);
+      } catch (e, stackTrace) {
+        AppLogger.error('Failed to invalidate product cache', e, stackTrace);
+      }
     }
   }
 }

@@ -1,11 +1,8 @@
-import 'dart:io';
-
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/product_size.dart';
-import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/size_item.dart';
 
 export 'package:tryzeon/feature/common/product_size/domain/entities/product_size.dart';
@@ -32,23 +29,14 @@ sealed class ProductDraft with _$ProductDraft {
 }
 
 @freezed
-sealed class CreateProductParams with _$CreateProductParams {
-  const factory CreateProductParams({
+sealed class NewProduct with _$NewProduct {
+  const factory NewProduct({
+    required final String id,
     required final String storeId,
     required final ProductDraft draft,
-    required final List<File> images,
+    required final List<String> imagePaths,
     required final List<NewSizeItem> sizes,
-  }) = _CreateProductParams;
-}
-
-@freezed
-sealed class UpdateProductParams with _$UpdateProductParams {
-  const factory UpdateProductParams({
-    required final Product original,
-    required final ProductDraft draft,
-    required final List<ImageItem> images,
-    required final List<SizeItem> sizes,
-  }) = _UpdateProductParams;
+  }) = _NewProduct;
 }
 
 @freezed

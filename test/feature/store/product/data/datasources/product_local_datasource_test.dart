@@ -106,4 +106,38 @@ void main() {
     expect(cached!.styles, ['japanese', 'minimalist']);
     expect(cached.seasons, ['spring', 'summer']);
   });
+
+  group('store list entry', () {
+    CacheEntryLocalDataSource entries() => CacheEntryLocalDataSource(harness.service);
+    final storeKey = ProductLocalDataSource.cacheKeyForStore('s1');
+
+    test('saveProduct leaves an absent list entry absent', () async {
+      await build().saveProduct(product);
+
+      expect(await entries().getEntryStatus(storeKey), isNull);
+      expect(
+        await entries().getEntryStatus(ProductLocalDataSource.cacheKeyForProduct('p1')),
+        CacheEntryStatus.hasData,
+      );
+    });
+
+    test('saveProduct keeps a cached list complete', () async {
+      final local = build();
+      await local.saveProducts('s1', [product]);
+      final other = product.copyWith(id: 'p2', name: 'Wool coat');
+
+      await local.saveProduct(other);
+
+      expect(await entries().getEntryStatus(storeKey), CacheEntryStatus.hasData);
+      final listed =
+          (await local.listProducts(storeId: 's1') as CacheHit<List<Product>>).data;
+      expect(listed.map((final p) => p.id), unorderedEquals(['p1', 'p2']));
+    });
+
+    test('deleteProduct leaves an absent list entry absent', () async {
+      await build().deleteProduct(storeId: 's1', productId: 'p1');
+
+      expect(await entries().getEntryStatus(storeKey), isNull);
+    });
+  });
 }

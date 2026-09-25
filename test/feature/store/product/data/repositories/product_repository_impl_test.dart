@@ -2,9 +2,11 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/data/collections/cache_entry.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/domain/services/cache_service.dart';
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
@@ -12,9 +14,13 @@ import 'package:tryzeon/feature/store/product/data/collections/product_cache.dar
 import 'package:tryzeon/feature/store/product/data/datasources/product_local_datasource.dart';
 import 'package:tryzeon/feature/store/product/data/datasources/product_remote_datasource.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/create_product_request.dart';
+import 'package:tryzeon/feature/store/product/data/dtos/create_product_size_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/product_dto.dart';
 import 'package:tryzeon/feature/store/product/data/repositories/product_repository_impl.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
+import 'package:tryzeon/feature/store/product/domain/services/product_update_plan.dart';
+import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.dart';
+import 'package:tryzeon/feature/store/product/domain/value_objects/size_item.dart';
 import 'package:typed_result/typed_result.dart';
 
 import '../../../../../support/isar_test_harness.dart';
@@ -26,6 +32,9 @@ class _FakeRemote implements ProductRemoteDataSource {
   int listCalls = 0;
   int getCalls = 0;
   CreateProductRequest? inserted;
+  Object? getError;
+  Object? updateError;
+  final List<String> writes = [];
 
   @override
   Future<List<ProductDto>> listProducts({required final String storeId}) async {
@@ -34,21 +43,33 @@ class _FakeRemote implements ProductRemoteDataSource {
   }
 
   @override
-  Future<List<String>> uploadProductImages({
-    required final String storeId,
-    required final String productId,
-    required final List<File> images,
-  }) async => const [];
-
-  @override
   Future<void> insertProduct(final CreateProductRequest request) async {
     inserted = request;
+    writes.add('insertProduct');
   }
 
   @override
   Future<ProductDto> getProduct(final String productId) async {
     getCalls++;
+    if (getError case final error?) throw error;
     return product;
+  }
+
+  @override
+  Future<void> deleteProductSize(final String sizeId) async =>
+      writes.add('deleteSize:$sizeId');
+
+  @override
+  Future<void> insertProductSize(final CreateProductSizeRequest request) async =>
+      writes.add('insertSize:${request.name}');
+
+  @override
+  Future<void> updateProduct(
+    final String productId,
+    final Map<String, dynamic> changes,
+  ) async {
+    if (updateError case final error?) throw error;
+    writes.add('updateProduct');
   }
 
   @override
@@ -240,7 +261,8 @@ void main() {
     final remote = _FakeRemote(remoteProduct);
 
     final result = await buildRepository(remote).createProduct(
-      const CreateProductParams(
+      const NewProduct(
+        id: 'p1',
         storeId: 's1',
         draft: ProductDraft(
           name: '碎花洋裝',
@@ -250,7 +272,7 @@ void main() {
           styles: {ClothingStyle.western, ClothingStyle.japanese},
           seasons: {ProductSeason.winter, ProductSeason.spring},
         ),
-        images: [],
+        imagePaths: ['p1.jpg'],
         sizes: [],
       ),
     );
@@ -258,5 +280,93 @@ void main() {
     expect(result.isSuccess, isTrue);
     expect(remote.inserted!.styles, [ClothingStyle.japanese, ClothingStyle.western]);
     expect(remote.inserted!.seasons, [ProductSeason.spring, ProductSeason.winter]);
+  });
+
+  final original = Product(
+    id: 'p1',
+    storeId: 's1',
+    name: '碎花洋裝',
+    categoryId: 'c1',
+    garmentType: GarmentType.onePiece,
+    price: 1280,
+    imagePaths: const ['p1.jpg'],
+    imageUrls: const ['https://cdn/p1.jpg'],
+    sizes: [
+      ProductSize(
+        id: 'm',
+        productId: 'p1',
+        name: 'M',
+        createdAt: DateTime(2026),
+        updatedAt: DateTime(2026),
+      ),
+    ],
+    createdAt: DateTime(2026),
+    updatedAt: DateTime(2026),
+  );
+
+  ProductUpdatePlan planFor(final List<String> imagePaths, final List<SizeItem> sizes) =>
+      planProductUpdate(
+        original: original,
+        draft: const ProductDraft(
+          name: '碎花洋裝',
+          categoryId: 'c1',
+          garmentType: GarmentType.onePiece,
+          price: 1280,
+        ),
+        images: [
+          for (final path in imagePaths) ImageItem.existing(path: path, url: path),
+        ],
+        uploadedPaths: const [],
+        sizes: sizes,
+      );
+
+  test(
+    'updateProduct writes sizes before the product row that references images',
+    () async {
+      final remote = _FakeRemote(remoteProduct);
+
+      final result = await buildRepository(remote).updateProduct(
+        original: original,
+        plan: planFor(const [], const [SizeItem.newSize(name: 'L')]),
+      );
+
+      expect(result.isSuccess, isTrue);
+      expect(remote.writes, ['deleteSize:m', 'insertSize:L', 'updateProduct']);
+    },
+  );
+
+  test('updateProduct succeeds and drops the cache when the refresh fails', () async {
+    await seedCache();
+    final remote = _FakeRemote(remoteProduct)
+      ..getError = const SocketException('offline');
+
+    final result = await buildRepository(remote).updateProduct(
+      original: original,
+      plan: planFor(const [], const [SizeItem.existing(id: 'm', name: 'M')]),
+    );
+
+    final entries = CacheEntryLocalDataSource(harness.service);
+    expect(result.isSuccess, isTrue);
+    expect(
+      await entries.getEntryStatus(ProductLocalDataSource.cacheKeyForStore('s1')),
+      isNull,
+    );
+    expect(
+      await entries.getEntryStatus(ProductLocalDataSource.cacheKeyForProduct('p1')),
+      isNull,
+    );
+    expect(await harness.isar.productCaches.getByProductId('p1'), isNull);
+  });
+
+  test('setProductStatus fails without refreshing when no row was updated', () async {
+    final remote = _FakeRemote(remoteProduct)
+      ..updateError = const PostgrestException(message: 'no rows', code: 'PGRST116');
+
+    final result = await buildRepository(
+      remote,
+    ).setProductStatus(product: original, status: ProductStatus.archived);
+
+    expect(result.getError(), const NotFoundFailure());
+    expect(remote.getCalls, 0);
   });
 }

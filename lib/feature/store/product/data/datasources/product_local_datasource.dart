@@ -43,10 +43,12 @@ class ProductLocalDataSource {
     await isar.writeTxn(() async {
       await isar.productCaches.putByProductId(collection);
     });
-    await _cacheEntryLocalDataSource.markListState(
-      cacheKeyForStore(product.storeId),
-      isEmpty: false,
-    );
+    if (await _isStoreListCached(product.storeId)) {
+      await _cacheEntryLocalDataSource.markListState(
+        cacheKeyForStore(product.storeId),
+        isEmpty: false,
+      );
+    }
     await _cacheEntryLocalDataSource.markHasData(cacheKeyForProduct(product.id));
   }
 
@@ -99,6 +101,7 @@ class ProductLocalDataSource {
       await isar.productCaches.deleteByProductId(productId);
     });
 
+    if (!await _isStoreListCached(storeId)) return;
     final remainingCount = await isar.productCaches
         .filter()
         .storeIdEqualTo(storeId)
@@ -108,6 +111,21 @@ class ProductLocalDataSource {
       isEmpty: remainingCount == 0,
     );
   }
+
+  Future<void> invalidateProduct({
+    required final String storeId,
+    required final String productId,
+  }) async {
+    final isar = await _isarService.db;
+    await isar.writeTxn(() async {
+      await isar.productCaches.deleteByProductId(productId);
+    });
+    await _cacheEntryLocalDataSource.remove(cacheKeyForStore(storeId));
+    await _cacheEntryLocalDataSource.remove(cacheKeyForProduct(productId));
+  }
+
+  Future<bool> _isStoreListCached(final String storeId) async =>
+      await _cacheEntryLocalDataSource.getEntryStatus(cacheKeyForStore(storeId)) != null;
 
   Future<void> saveProductImage(final Uint8List bytes, final String path) async {
     await _cacheService.saveImage(bytes, path);

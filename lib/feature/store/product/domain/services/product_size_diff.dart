@@ -6,6 +6,12 @@ class ProductSizeUpdate {
 
   final ProductSize original;
   final ExistingSizeItem target;
+
+  ProductSize get targetSize => original.copyWith(
+    name: target.name,
+    garmentMeasurements: target.garmentMeasurements,
+    bodyMeasurementRanges: target.bodyMeasurementRanges,
+  );
 }
 
 class ProductSizeDiff {

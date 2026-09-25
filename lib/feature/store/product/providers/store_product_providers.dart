@@ -15,11 +15,13 @@ import 'package:tryzeon/feature/store/product/data/datasources/product_remote_da
 import 'package:tryzeon/feature/store/product/data/repositories/product_repository_impl.dart';
 import 'package:tryzeon/feature/store/product/data/services/audio_recorder_service_impl.dart';
 import 'package:tryzeon/feature/store/product/data/services/product_image_analyzer_impl.dart';
+import 'package:tryzeon/feature/store/product/data/services/product_image_storage_impl.dart';
 import 'package:tryzeon/feature/store/product/data/services/size_voice_parser.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/domain/repositories/product_repository.dart';
 import 'package:tryzeon/feature/store/product/domain/services/audio_recorder_service.dart';
 import 'package:tryzeon/feature/store/product/domain/services/product_image_analyzer.dart';
+import 'package:tryzeon/feature/store/product/domain/services/product_image_storage.dart';
 import 'package:tryzeon/feature/store/product/domain/usecases/analyze_product_image.dart';
 import 'package:tryzeon/feature/store/product/domain/usecases/create_product.dart';
 import 'package:tryzeon/feature/store/product/domain/usecases/delete_product.dart';
@@ -38,9 +40,14 @@ part 'store_product_providers.g.dart';
 
 @riverpod
 ProductRemoteDataSource productRemoteDataSource(final Ref ref) {
-  return ProductRemoteDataSource(
-    Supabase.instance.client,
+  return ProductRemoteDataSource(Supabase.instance.client);
+}
+
+@riverpod
+ProductImageStorage productImageStorage(final Ref ref) {
+  return ProductImageStorageImpl(
     ref.watch(storeImagesApiProvider),
+    ref.watch(productLocalDataSourceProvider),
   );
 }
 
@@ -67,12 +74,18 @@ ListProducts listProductsUseCase(final Ref ref) {
 
 @riverpod
 CreateProduct createProductUseCase(final Ref ref) {
-  return CreateProduct(ref.watch(productRepositoryProvider));
+  return CreateProduct(
+    repository: ref.watch(productRepositoryProvider),
+    imageStorage: ref.watch(productImageStorageProvider),
+  );
 }
 
 @riverpod
 UpdateProduct updateProductUseCase(final Ref ref) {
-  return UpdateProduct(ref.watch(productRepositoryProvider));
+  return UpdateProduct(
+    repository: ref.watch(productRepositoryProvider),
+    imageStorage: ref.watch(productImageStorageProvider),
+  );
 }
 
 @riverpod
@@ -82,7 +95,10 @@ SetProductStatus setProductStatusUseCase(final Ref ref) {
 
 @riverpod
 DeleteProduct deleteProductUseCase(final Ref ref) {
-  return DeleteProduct(ref.watch(productRepositoryProvider));
+  return DeleteProduct(
+    repository: ref.watch(productRepositoryProvider),
+    imageStorage: ref.watch(productImageStorageProvider),
+  );
 }
 
 @riverpod
