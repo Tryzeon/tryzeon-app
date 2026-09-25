@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
-import 'package:tryzeon/core/domain/services/cache_service.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
 import 'package:tryzeon/feature/store/profile/data/collections/store_profile_cache.dart';
@@ -10,12 +9,6 @@ import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_loc
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 
 import '../../../../../support/isar_test_harness.dart';
-
-class _NoopCacheService implements CacheService {
-  @override
-  dynamic noSuchMethod(final Invocation invocation) =>
-      throw UnimplementedError(invocation.memberName.toString());
-}
 
 void main() {
   setUpAll(() async {
@@ -32,11 +25,8 @@ void main() {
     await harness.dispose();
   });
 
-  StoreProfileLocalDataSource build() => StoreProfileLocalDataSource(
-    harness.service,
-    _NoopCacheService(),
-    CacheEntryLocalDataSource(harness.service),
-  );
+  StoreProfileLocalDataSource build() =>
+      StoreProfileLocalDataSource(harness.service, CacheEntryLocalDataSource(harness.service));
 
   final profile = StoreProfile(
     id: 's1',

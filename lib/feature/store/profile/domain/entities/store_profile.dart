@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
@@ -35,15 +33,6 @@ sealed class StoreProfile with _$StoreProfile {
     final String? logoUrl,
     @Default(<StoreOrderContact>[]) final List<StoreOrderContact> orderContacts,
   }) = _StoreProfile;
-}
-
-@freezed
-sealed class UpdateStoreProfileParams with _$UpdateStoreProfileParams {
-  const factory UpdateStoreProfileParams({
-    required final StoreProfile original,
-    required final StoreProfileDraft draft,
-    final File? logoFile,
-  }) = _UpdateStoreProfileParams;
 }
 
 extension StoreProfileApplyDraft on StoreProfile {

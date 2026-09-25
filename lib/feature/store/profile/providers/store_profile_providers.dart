@@ -12,8 +12,10 @@ import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_local_datasource.dart';
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_remote_datasource.dart';
 import 'package:tryzeon/feature/store/profile/data/repositories/store_profile_repository_impl.dart';
+import 'package:tryzeon/feature/store/profile/data/services/store_logo_storage_impl.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 import 'package:tryzeon/feature/store/profile/domain/repositories/store_profile_repository.dart';
+import 'package:tryzeon/feature/store/profile/domain/services/store_logo_storage.dart';
 import 'package:tryzeon/feature/store/profile/domain/usecases/get_store_profile.dart';
 import 'package:tryzeon/feature/store/profile/domain/usecases/update_store_profile.dart';
 import 'package:typed_result/typed_result.dart';
@@ -22,22 +24,19 @@ part 'store_profile_providers.g.dart';
 
 @riverpod
 StoreProfileRemoteDataSource storeProfileRemoteDataSource(final Ref ref) {
-  return StoreProfileRemoteDataSource(
-    Supabase.instance.client,
-    ref.watch(storeImagesApiProvider),
-  );
+  return StoreProfileRemoteDataSource(Supabase.instance.client);
+}
+
+@riverpod
+StoreLogoStorage storeLogoStorage(final Ref ref) {
+  return StoreLogoStorageImpl(ref.watch(storeImagesApiProvider));
 }
 
 @riverpod
 StoreProfileLocalDataSource storeProfileLocalDataSource(final Ref ref) {
   final isarService = ref.watch(isarServiceProvider);
-  final cacheService = ref.watch(cacheServiceProvider);
   final cacheEntryLocalDataSource = ref.watch(cacheEntryLocalDataSourceProvider);
-  return StoreProfileLocalDataSource(
-    isarService,
-    cacheService,
-    cacheEntryLocalDataSource,
-  );
+  return StoreProfileLocalDataSource(isarService, cacheEntryLocalDataSource);
 }
 
 @riverpod
@@ -55,7 +54,10 @@ GetStoreProfile getStoreProfileUseCase(final Ref ref) {
 
 @riverpod
 UpdateStoreProfile updateStoreProfileUseCase(final Ref ref) {
-  return UpdateStoreProfile(ref.watch(storeProfileRepositoryProvider));
+  return UpdateStoreProfile(
+    repository: ref.watch(storeProfileRepositoryProvider),
+    logoStorage: ref.watch(storeLogoStorageProvider),
+  );
 }
 
 @riverpod

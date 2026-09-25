@@ -74,52 +74,44 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
   }
 
   @override
-  Future<Result<void, Failure>> updateStoreProfile(
-    final UpdateStoreProfileParams params,
-  ) async {
+  Future<Result<void, Failure>> updateStoreProfile({
+    required final StoreProfile original,
+    required final StoreProfile target,
+  }) async {
     try {
-      final original = params.original;
-      StoreProfile target = original.applyDraft(params.draft);
-
-      if (params.logoFile != null) {
-        final newLogoPath = await _remoteDataSource.uploadLogo(
-          storeId: original.id,
-          image: params.logoFile!,
-        );
-        target = target.copyWith(logoPath: newLogoPath);
-
-        final oldLogoPath = original.logoPath;
-        if (oldLogoPath != null && oldLogoPath.isNotEmpty && oldLogoPath != newLogoPath) {
-          _remoteDataSource.deleteLogo(storeId: original.id, key: oldLogoPath).onError((
-            final e,
-            final s,
-          ) {
-            AppLogger.warning('delete failed for old store logo', e, s);
-          });
-        }
-      }
-
-      // Diff against the original so an untouched column keeps whatever value
-      // the server has — `original` is the snapshot the user edited.
       final changes = jsonDiff(
         _mappr.convert<StoreProfile, StoreProfileDto>(original).toJson(),
         _mappr.convert<StoreProfile, StoreProfileDto>(target).toJson(),
       );
+      if (changes.isEmpty) return const Ok(null);
 
-      if (changes.isEmpty) {
-        return const Ok(null);
-      }
-
-      final updatedProfile = await _remoteDataSource.updateStoreProfile(changes);
-
-      await _localDataSource.saveStoreProfile(
-        _mappr.convert<StoreProfileDto, StoreProfile>(updatedProfile),
-      );
-
-      return const Ok(null);
+      await _remoteDataSource.updateStoreProfile(changes);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to update store profile', e, stackTrace);
       return Err(mapExceptionToFailure(e));
+    }
+
+    await _refreshCache();
+    return const Ok(null);
+  }
+
+  Future<void> _refreshCache() async {
+    try {
+      final remoteProfile = await _remoteDataSource.getStoreProfile();
+      if (remoteProfile == null) {
+        await _localDataSource.invalidateStoreProfile();
+        return;
+      }
+      await _localDataSource.saveStoreProfile(
+        _mappr.convert<StoreProfileDto, StoreProfile>(remoteProfile),
+      );
+    } catch (e, stackTrace) {
+      AppLogger.warning('Store profile refresh failed, invalidating cache', e, stackTrace);
+      try {
+        await _localDataSource.invalidateStoreProfile();
+      } catch (e, stackTrace) {
+        AppLogger.error('Failed to invalidate store profile cache', e, stackTrace);
+      }
     }
   }
 }

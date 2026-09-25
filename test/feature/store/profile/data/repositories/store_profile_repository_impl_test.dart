@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/data/collections/cache_entry.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
-import 'package:tryzeon/core/domain/services/cache_service.dart';
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/store/data/collections/store_order_contact_embedded.dart';
 import 'package:tryzeon/feature/common/store/data/dtos/store_order_contact_dto.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
@@ -12,6 +15,7 @@ import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_loc
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_remote_datasource.dart';
 import 'package:tryzeon/feature/store/profile/data/dtos/store_profile_dto.dart';
 import 'package:tryzeon/feature/store/profile/data/repositories/store_profile_repository_impl.dart';
+import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 import 'package:typed_result/typed_result.dart';
 
 import '../../../../../support/isar_test_harness.dart';
@@ -21,19 +25,23 @@ class _FakeRemote implements StoreProfileRemoteDataSource {
 
   final StoreProfileDto profile;
   int calls = 0;
+  int updateCalls = 0;
+  Object? updateError;
+  Object? getError;
 
   @override
   Future<StoreProfileDto?> getStoreProfile() async {
     calls++;
+    if (getError case final error?) throw error;
     return profile;
   }
 
   @override
-  dynamic noSuchMethod(final Invocation invocation) =>
-      throw UnimplementedError(invocation.memberName.toString());
-}
+  Future<void> updateStoreProfile(final Map<String, dynamic> changes) async {
+    updateCalls++;
+    if (updateError case final error?) throw error;
+  }
 
-class _NoopCacheService implements CacheService {
   @override
   dynamic noSuchMethod(final Invocation invocation) =>
       throw UnimplementedError(invocation.memberName.toString());
@@ -97,7 +105,6 @@ void main() {
         remoteDataSource: remote,
         localDataSource: StoreProfileLocalDataSource(
           harness.service,
-          _NoopCacheService(),
           CacheEntryLocalDataSource(harness.service),
         ),
       );
@@ -137,5 +144,70 @@ void main() {
     expect(remote.calls, 0);
     expect(profile.channels, {StoreChannel.physical});
     expect(profile.orderContacts.single.type, OrderContactType.line);
+  });
+
+  final originalProfile = StoreProfile(
+    id: 's1',
+    ownerId: 'o1',
+    name: '測試店家',
+    createdAt: DateTime(2026),
+    updatedAt: DateTime(2026),
+    channels: const {StoreChannel.physical},
+  );
+
+  test('updateStoreProfile skips the remote write when nothing changed', () async {
+    final remote = _FakeRemote(remoteProfile);
+
+    final result = await buildRepository(remote).updateStoreProfile(
+      original: originalProfile,
+      target: originalProfile,
+    );
+
+    expect(result.isSuccess, isTrue);
+    expect(remote.updateCalls, 0);
+  });
+
+  test('updateStoreProfile returns the write failure', () async {
+    final remote = _FakeRemote(remoteProfile)
+      ..updateError = const PostgrestException(message: 'rejected');
+
+    final result = await buildRepository(remote).updateStoreProfile(
+      original: originalProfile,
+      target: originalProfile.copyWith(name: '新店名'),
+    );
+
+    expect(result.getError(), const ServerFailure());
+  });
+
+  test('updateStoreProfile returns not-found and skips the refresh when no row matched', () async {
+    final remote = _FakeRemote(remoteProfile)
+      ..updateError = const PostgrestException(message: 'no rows', code: 'PGRST116');
+
+    final result = await buildRepository(remote).updateStoreProfile(
+      original: originalProfile,
+      target: originalProfile.copyWith(name: '新店名'),
+    );
+
+    expect(result.getError(), const NotFoundFailure());
+    expect(remote.calls, 0);
+  });
+
+  test('updateStoreProfile succeeds and drops the cache when the refresh fails', () async {
+    await seedCache();
+    final remote = _FakeRemote(remoteProfile)
+      ..getError = const SocketException('offline');
+
+    final result = await buildRepository(remote).updateStoreProfile(
+      original: originalProfile,
+      target: originalProfile.copyWith(name: '新店名'),
+    );
+
+    expect(result.isSuccess, isTrue);
+    expect(
+      await CacheEntryLocalDataSource(
+        harness.service,
+      ).getEntryStatus(StoreProfileLocalDataSource.cacheKey),
+      isNull,
+    );
   });
 }
