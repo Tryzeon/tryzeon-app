@@ -7,9 +7,9 @@ import 'package:tryzeon/feature/personal/shop/domain/repositories/product_analyt
 import 'package:typed_result/typed_result.dart';
 
 class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
-  ProductAnalyticsRepositoryImpl(this._analyticsQueueService);
+  ProductAnalyticsRepositoryImpl(this._analyticsQueue);
 
-  final AnalyticsEventQueue _analyticsQueueService;
+  final AnalyticsEventQueue _analyticsQueue;
 
   @override
   Future<Result<void, Failure>> trackView({
@@ -17,7 +17,7 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
     required final String storeId,
   }) async {
     try {
-      _analyticsQueueService.enqueue(
+      _analyticsQueue.enqueue(
         AnalyticsEvent(
           productId: productId,
           storeId: storeId,
@@ -37,7 +37,7 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
     required final String storeId,
   }) async {
     try {
-      _analyticsQueueService.enqueue(
+      _analyticsQueue.enqueue(
         AnalyticsEvent(
           productId: productId,
           storeId: storeId,
