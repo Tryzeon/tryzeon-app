@@ -17,6 +17,9 @@ class StoreImagesApi {
 
   static String publicUrl(final String key) => '${Env.r2PublicImagesBaseUrl}/$key';
 
+  static String? publicUrlOrNull(final String? key) =>
+      key == null || key.isEmpty ? null : publicUrl(key);
+
   Future<String> uploadStoreLogo({
     required final String storeId,
     required final File logo,

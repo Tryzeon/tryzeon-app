@@ -20,7 +20,6 @@ class ProductCache {
   late String garmentType;
   late double price;
   late List<String> imagePaths;
-  late List<String> imageUrls;
   String? status;
   String? gender;
   String? purchaseLink;

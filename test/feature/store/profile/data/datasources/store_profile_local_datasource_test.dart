@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
+import 'package:tryzeon/core/data/services/store_images_api.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
@@ -42,7 +43,7 @@ void main() {
     latitude: 25.03,
     longitude: 121.56,
     logoPath: 's1/logo.png',
-    logoUrl: 'https://cdn/s1/logo.png',
+    logoUrl: StoreImagesApi.publicUrl('s1/logo.png'),
     orderContacts: const [
       StoreOrderContact(type: OrderContactType.instagram, value: '@shop'),
       StoreOrderContact(type: OrderContactType.line, value: '@shopline'),

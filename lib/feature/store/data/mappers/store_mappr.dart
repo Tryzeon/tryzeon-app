@@ -1,4 +1,5 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
+import 'package:tryzeon/core/data/services/store_images_api.dart';
 import 'package:tryzeon/feature/common/clothing_style/data/mappers/clothing_style_cache_converters.dart';
 import 'package:tryzeon/feature/common/garment_type/data/mappers/garment_type_cache_converters.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
@@ -34,6 +35,7 @@ import 'store_mappr.auto_mappr.dart';
 
     MapType<ProductDto, Product>(
       fields: [
+        Field('imageUrls', custom: StoreMapprHelper.imageUrlsFromDto),
         Field('status', custom: StoreMapprHelper.statusFromDto),
         Field('gender', custom: StoreMapprHelper.genderFromDto),
         Field('styles', custom: StoreMapprHelper.stylesFromDto),
@@ -75,6 +77,7 @@ import 'store_mappr.auto_mappr.dart';
     MapType<ProductCache, Product>(
       fields: [
         Field('id', from: 'productId'),
+        Field('imageUrls', custom: StoreMapprHelper.imageUrlsFromCache),
         Field('status', custom: StoreMapprHelper.statusFromCache),
         Field('gender', custom: StoreMapprHelper.genderFromCache),
       ],
@@ -116,7 +119,10 @@ import 'store_mappr.auto_mappr.dart';
     ),
 
     MapType<StoreProfileDto, StoreProfile>(
-      fields: [Field('channels', custom: StoreMapprHelper.channelsToEntity)],
+      fields: [
+        Field('channels', custom: StoreMapprHelper.channelsToEntity),
+        Field('logoUrl', custom: StoreMapprHelper.logoUrlFromDto),
+      ],
     ),
     MapType<StoreProfile, StoreProfileDto>(
       fields: [Field('channels', custom: StoreMapprHelper.channelsToDto)],
@@ -130,7 +136,10 @@ import 'store_mappr.auto_mappr.dart';
       ],
     ),
     MapType<StoreProfileCache, StoreProfile>(
-      fields: [Field('id', from: 'storeId')],
+      fields: [
+        Field('id', from: 'storeId'),
+        Field('logoUrl', custom: StoreMapprHelper.logoUrlFromCache),
+      ],
       converters: [
         TypeConverter<List<String>, Set<StoreChannel>>(
           StoreEnumCacheConverters.channelsFromCache,
@@ -149,6 +158,18 @@ class StoreMappr extends $StoreMappr {
 }
 
 class StoreMapprHelper {
+  static List<String> imageUrlsFromDto(final ProductDto source) =>
+      source.imagePaths.map(StoreImagesApi.publicUrl).toList();
+
+  static List<String> imageUrlsFromCache(final ProductCache source) =>
+      source.imagePaths.map(StoreImagesApi.publicUrl).toList();
+
+  static String? logoUrlFromDto(final StoreProfileDto source) =>
+      StoreImagesApi.publicUrlOrNull(source.logoPath);
+
+  static String? logoUrlFromCache(final StoreProfileCache source) =>
+      StoreImagesApi.publicUrlOrNull(source.logoPath);
+
   static ProductStatus statusFromDto(final ProductDto source) =>
       source.status ?? ProductStatus.active;
 

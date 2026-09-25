@@ -22,7 +22,6 @@ class StoreProfileDto {
     this.latitude,
     this.longitude,
     this.logoPath,
-    this.logoUrl,
     this.orderContacts = const [],
   });
 
@@ -43,8 +42,6 @@ class StoreProfileDto {
   final double? latitude;
   final double? longitude;
   final String? logoPath;
-  @JsonKey(includeToJson: false)
-  final String? logoUrl;
   @JsonKey(fromJson: _orderContactsFromJson)
   final List<StoreOrderContactDto> orderContacts;
 

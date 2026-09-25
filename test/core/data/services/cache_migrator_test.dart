@@ -70,7 +70,6 @@ void main() {
         ..garmentType = ''
         ..price = 1
         ..imagePaths = []
-        ..imageUrls = []
         ..createdAt = DateTime(2026)
         ..updatedAt = DateTime(2026),
     );

@@ -17,7 +17,6 @@ class ProductDto {
     required this.garmentType,
     required this.price,
     required this.imagePaths,
-    required this.imageUrls,
     required this.id,
     required this.createdAt,
     required this.updatedAt,
@@ -43,9 +42,8 @@ class ProductDto {
   @JsonKey(unknownEnumValue: GarmentType.others)
   final GarmentType garmentType;
   final double price;
+  @JsonKey(defaultValue: <String>[])
   final List<String> imagePaths;
-  @JsonKey(includeToJson: false)
-  final List<String> imageUrls;
   final String id;
   @JsonKey(unknownEnumValue: ProductStatus.active)
   final ProductStatus? status;

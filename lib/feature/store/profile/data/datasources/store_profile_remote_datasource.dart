@@ -1,6 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
-import 'package:tryzeon/core/data/services/store_images_api.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/feature/store/profile/data/dtos/store_profile_dto.dart';
 
@@ -23,7 +22,7 @@ class StoreProfileRemoteDataSource {
         .maybeSingle();
 
     if (response == null) return null;
-    return StoreProfileDto.fromJson(_withLogoUrl(response));
+    return StoreProfileDto.fromJson(response);
   }
 
   Future<void> updateStoreProfile(final Map<String, dynamic> changes) async {
@@ -34,8 +33,7 @@ class StoreProfileRemoteDataSource {
       ..remove('id')
       ..remove('owner_id')
       ..remove('created_at')
-      ..remove('updated_at')
-      ..remove('logo_url');
+      ..remove('updated_at');
 
     await _supabaseClient
         .from(_storeProfileTable)
@@ -43,14 +41,5 @@ class StoreProfileRemoteDataSource {
         .eq('owner_id', user.id)
         .select('id')
         .single();
-  }
-
-  Map<String, dynamic> _withLogoUrl(final Map<String, dynamic> json) {
-    final map = Map<String, dynamic>.from(json);
-    final logoPath = map['logo_path'] as String?;
-    if (logoPath != null && logoPath.isNotEmpty) {
-      map['logo_url'] = StoreImagesApi.publicUrl(logoPath);
-    }
-    return map;
   }
 }

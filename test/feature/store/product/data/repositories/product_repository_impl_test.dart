@@ -5,6 +5,7 @@ import 'package:isar_community/isar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/data/collections/cache_entry.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
+import 'package:tryzeon/core/data/services/store_images_api.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
@@ -108,7 +109,6 @@ void main() {
         ..garmentType = garmentType
         ..price = 1280
         ..imagePaths = ['p1.jpg']
-        ..imageUrls = ['https://cdn/p1.jpg']
         ..status = status
         ..gender = gender
         ..fit = fit
@@ -139,7 +139,6 @@ void main() {
     garmentType: GarmentType.onePiece,
     price: 1280,
     imagePaths: const ['p1.jpg'],
-    imageUrls: const ['https://cdn/p1.jpg'],
     status: ProductStatus.active,
     gender: ProductGender.female,
     fit: ProductFit.regular,
@@ -213,6 +212,7 @@ void main() {
     final products = (await buildRepository(remote).listProducts(storeId: 's1')).get()!;
 
     expect(remote.listCalls, 0);
+    expect(products.single.imageUrls, [StoreImagesApi.publicUrl('p1.jpg')]);
     expect(products.single.garmentType, GarmentType.onePiece);
     expect(products.single.gender, ProductGender.female);
     expect(products.single.fit, ProductFit.regular);

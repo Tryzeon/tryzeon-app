@@ -1,6 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
-import 'package:tryzeon/core/data/services/store_images_api.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/create_product_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/create_product_size_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/product_dto.dart';
@@ -18,9 +17,9 @@ class ProductRemoteDataSource {
         .select('*, product_sizes(*)')
         .eq('store_id', storeId);
 
-    return (response as List<dynamic>).map((final e) {
-      return ProductDto.fromJson(_withProductImageUrl(e as Map<String, dynamic>));
-    }).toList();
+    return (response as List<dynamic>)
+        .map((final e) => ProductDto.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<void> insertProduct(final CreateProductRequest request) async {
@@ -39,7 +38,7 @@ class ProductRemoteDataSource {
         .eq('id', productId)
         .single();
 
-    return ProductDto.fromJson(_withProductImageUrl(response));
+    return ProductDto.fromJson(response);
   }
 
   Future<void> updateProduct(
@@ -84,16 +83,5 @@ class ProductRemoteDataSource {
       ..remove('updated_at');
 
     await _supabaseClient.from(_productSizesTable).update(json).eq('id', sizeId);
-  }
-
-  Map<String, dynamic> _withProductImageUrl(final Map<String, dynamic> json) {
-    final map = Map<String, dynamic>.from(json);
-    final rawPaths = map['image_paths'];
-    final imagePaths = rawPaths != null
-        ? List<String>.from(rawPaths as Iterable<dynamic>)
-        : <String>[];
-    map['image_paths'] = imagePaths;
-    map['image_urls'] = imagePaths.map(StoreImagesApi.publicUrl).toList();
-    return map;
   }
 }

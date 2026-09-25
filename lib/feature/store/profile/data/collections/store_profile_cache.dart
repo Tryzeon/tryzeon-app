@@ -18,7 +18,6 @@ class StoreProfileCache {
   double? latitude;
   double? longitude;
   String? logoPath;
-  String? logoUrl;
   List<StoreOrderContactEmbedded> orderContacts = [];
 
   @Index()
