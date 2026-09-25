@@ -39,6 +39,13 @@ class CacheEntryLocalDataSource {
     );
   }
 
+  Future<void> remove(final String cacheKey) async {
+    final isar = await _isarService.db;
+    await isar.writeTxn(() async {
+      await isar.cacheEntrys.deleteByCacheKey(cacheKey);
+    });
+  }
+
   Future<void> _saveEntry(final String cacheKey, final CacheEntryStatus status) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {

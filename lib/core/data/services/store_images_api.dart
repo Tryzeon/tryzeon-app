@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide MultipartFile;
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/config/env.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 
 class StoreImagesApi {
   StoreImagesApi(this._supabaseClient, [final Dio? dio]) : _dio = dio ?? Dio();
@@ -74,17 +75,29 @@ class StoreImagesApi {
       );
     }
 
-    final keys = await Future.wait(
-      List.generate(images.length, (final i) async {
-        await _putToR2(
-          uploadUrl: items[i]['uploadUrl'] as String,
-          bytes: allBytes[i],
-          contentType: contentTypes[i],
-        );
-        return items[i]['key'] as String;
-      }),
-    );
-    return keys;
+    final uploadedKeys = <String>[];
+    try {
+      return await Future.wait(
+        List.generate(images.length, (final i) async {
+          await _putToR2(
+            uploadUrl: items[i]['uploadUrl'] as String,
+            bytes: allBytes[i],
+            contentType: contentTypes[i],
+          );
+          return items[i]['key'] as String;
+        }),
+        cleanUp: uploadedKeys.add,
+      );
+    } catch (e) {
+      if (uploadedKeys.isNotEmpty) {
+        try {
+          await deleteImages(storeId: storeId, keys: uploadedKeys);
+        } catch (e, stackTrace) {
+          AppLogger.warning('Failed to delete partially uploaded images', e, stackTrace);
+        }
+      }
+      rethrow;
+    }
   }
 
   Future<void> deleteImages({
