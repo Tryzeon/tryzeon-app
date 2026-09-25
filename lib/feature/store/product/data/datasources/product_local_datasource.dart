@@ -1,23 +1,15 @@
-import 'dart:typed_data';
-
 import 'package:isar_community/isar.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
-import 'package:tryzeon/core/domain/services/cache_service.dart';
 import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:tryzeon/feature/store/product/data/collections/product_cache.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 
 class ProductLocalDataSource {
-  ProductLocalDataSource(
-    this._isarService,
-    this._cacheService,
-    this._cacheEntryLocalDataSource,
-  );
+  ProductLocalDataSource(this._isarService, this._cacheEntryLocalDataSource);
 
   final IsarService _isarService;
-  final CacheService _cacheService;
   final CacheEntryLocalDataSource _cacheEntryLocalDataSource;
   static const _mappr = StoreMappr();
   static String cacheKeyForStore(final String storeId) => 'store_products:$storeId';
@@ -126,12 +118,4 @@ class ProductLocalDataSource {
 
   Future<bool> _isStoreListCached(final String storeId) async =>
       await _cacheEntryLocalDataSource.getEntryStatus(cacheKeyForStore(storeId)) != null;
-
-  Future<void> saveProductImage(final Uint8List bytes, final String path) async {
-    await _cacheService.saveImage(bytes, path);
-  }
-
-  Future<void> deleteProductImages(final List<String> paths) async {
-    await _cacheService.deleteImages(paths);
-  }
 }

@@ -5,7 +5,6 @@ import 'package:isar_community/isar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/data/collections/cache_entry.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
-import 'package:tryzeon/core/domain/services/cache_service.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
@@ -72,12 +71,6 @@ class _FakeRemote implements ProductRemoteDataSource {
     writes.add('updateProduct');
   }
 
-  @override
-  dynamic noSuchMethod(final Invocation invocation) =>
-      throw UnimplementedError(invocation.memberName.toString());
-}
-
-class _NoopCacheService implements CacheService {
   @override
   dynamic noSuchMethod(final Invocation invocation) =>
       throw UnimplementedError(invocation.memberName.toString());
@@ -160,7 +153,6 @@ void main() {
         remoteDataSource: remote,
         localDataSource: ProductLocalDataSource(
           harness.service,
-          _NoopCacheService(),
           CacheEntryLocalDataSource(harness.service),
         ),
       );

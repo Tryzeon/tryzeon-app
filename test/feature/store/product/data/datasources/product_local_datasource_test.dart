@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
-import 'package:tryzeon/core/domain/services/cache_service.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
@@ -11,12 +10,6 @@ import 'package:tryzeon/feature/store/product/data/datasources/product_local_dat
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 
 import '../../../../../support/isar_test_harness.dart';
-
-class _NoopCacheService implements CacheService {
-  @override
-  dynamic noSuchMethod(final Invocation invocation) =>
-      throw UnimplementedError(invocation.memberName.toString());
-}
 
 void main() {
   setUpAll(() async {
@@ -33,11 +26,8 @@ void main() {
     await harness.dispose();
   });
 
-  ProductLocalDataSource build() => ProductLocalDataSource(
-    harness.service,
-    _NoopCacheService(),
-    CacheEntryLocalDataSource(harness.service),
-  );
+  ProductLocalDataSource build() =>
+      ProductLocalDataSource(harness.service, CacheEntryLocalDataSource(harness.service));
 
   final product = Product(
     id: 'p1',

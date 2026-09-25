@@ -45,18 +45,14 @@ ProductRemoteDataSource productRemoteDataSource(final Ref ref) {
 
 @riverpod
 ProductImageStorage productImageStorage(final Ref ref) {
-  return ProductImageStorageImpl(
-    ref.watch(storeImagesApiProvider),
-    ref.watch(productLocalDataSourceProvider),
-  );
+  return ProductImageStorageImpl(ref.watch(storeImagesApiProvider));
 }
 
 @riverpod
 ProductLocalDataSource productLocalDataSource(final Ref ref) {
   final isarService = ref.watch(isarServiceProvider);
-  final cacheService = ref.watch(cacheServiceProvider);
   final cacheEntryLocalDataSource = ref.watch(cacheEntryLocalDataSourceProvider);
-  return ProductLocalDataSource(isarService, cacheService, cacheEntryLocalDataSource);
+  return ProductLocalDataSource(isarService, cacheEntryLocalDataSource);
 }
 
 @riverpod
