@@ -162,36 +162,27 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
   }
 
   @override
-  Future<Result<void, Failure>> updateUserAvatar({
-    required final File avatarFile,
-    final String? previousAvatarPath,
-  }) async {
+  Future<Result<void, Failure>> updateAvatarPath(final String path) async {
     try {
-      final newAvatarPath = await _remoteDataSource.uploadAvatar(avatarFile);
-
-      final bytes = await avatarFile.readAsBytes();
-      await _localDataSource.saveAvatar(bytes, newAvatarPath);
-
-      final updatedProfile = await _remoteDataSource.updateUserAvatarPath(newAvatarPath);
-
-      await _localDataSource.saveUserProfile(
-        _mappr.convert<UserProfileDto, UserProfile>(updatedProfile),
-      );
-
-      if (previousAvatarPath != null && previousAvatarPath.isNotEmpty) {
-        try {
-          await _remoteDataSource.deleteAvatar(previousAvatarPath);
-          await _localDataSource.deleteAvatar(previousAvatarPath);
-        } catch (e, stackTrace) {
-          AppLogger.warning('Failed to delete previous avatar', e, stackTrace);
-        }
-      }
-
-      return const Ok(null);
+      await _remoteDataSource.updateUserAvatarPath(path);
     } catch (e, stackTrace) {
-      AppLogger.error('Failed to update user avatar', e, stackTrace);
+      AppLogger.error('Failed to update avatar path', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
+
+    try {
+      await _localDataSource.saveUserProfile(
+        _mappr.convert<UserProfileDto, UserProfile>(await _remoteDataSource.getUserProfile()),
+      );
+    } catch (e, stackTrace) {
+      AppLogger.warning('User profile refresh failed, invalidating cache', e, stackTrace);
+      try {
+        await _localDataSource.invalidateUserProfile();
+      } catch (e, stackTrace) {
+        AppLogger.error('Failed to invalidate user profile cache', e, stackTrace);
+      }
+    }
+    return const Ok(null);
   }
 
   @override

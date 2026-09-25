@@ -1,8 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/data/collections/cache_entry.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/domain/services/cache_service.dart';
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/personal/profile/data/collections/user_profile_cache.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_local_datasource.dart';
@@ -20,11 +24,21 @@ class _FakeRemote implements UserProfileRemoteDataSource {
 
   final UserProfileDto profile;
   int calls = 0;
+  int updateAvatarPathCalls = 0;
+  Object? getError;
+  Object? updateAvatarPathError;
 
   @override
   Future<UserProfileDto> getUserProfile() async {
     calls++;
+    if (getError case final error?) throw error;
     return profile;
+  }
+
+  @override
+  Future<void> updateUserAvatarPath(final String avatarPath) async {
+    updateAvatarPathCalls++;
+    if (updateAvatarPathError case final error?) throw error;
   }
 
   @override
@@ -156,5 +170,35 @@ void main() {
     expect(profile.gender, isNull);
     expect(profile.ageRange, isNull);
     expect(profile.stylePreferences, isNull);
+  });
+
+  test('updateAvatarPath succeeds and drops the cache when the refresh fails', () async {
+    await seedCache();
+    final remote = _FakeRemote(remoteProfile)
+      ..getError = const SocketException('offline');
+
+    final result = await buildRepository(remote).updateAvatarPath('u1/avatar/new.jpg');
+
+    expect(result.isSuccess, isTrue);
+    expect(
+      await CacheEntryLocalDataSource(
+        harness.service,
+      ).getEntryStatus(UserProfileLocalDataSource.cacheKey),
+      isNull,
+    );
+    expect(await harness.isar.userProfileCaches.count(), 0);
+  });
+
+  test('updateAvatarPath returns not-found and skips the refresh when no row matched', () async {
+    final remote = _FakeRemote(remoteProfile)
+      ..updateAvatarPathError = const PostgrestException(
+        message: 'no rows',
+        code: 'PGRST116',
+      );
+
+    final result = await buildRepository(remote).updateAvatarPath('u1/avatar/new.jpg');
+
+    expect(result.getError(), const NotFoundFailure());
+    expect(remote.calls, 0);
   });
 }

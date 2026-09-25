@@ -103,18 +103,16 @@ class UserProfileRemoteDataSource {
     return UserProfileDto.fromJson(response);
   }
 
-  Future<UserProfileDto> updateUserAvatarPath(final String avatarPath) async {
+  Future<void> updateUserAvatarPath(final String avatarPath) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();
 
-    final response = await _supabaseClient
+    await _supabaseClient
         .from(_userProfileTable)
         .update({'avatar_path': avatarPath})
         .eq('user_id', user.id)
-        .select()
+        .select('user_id')
         .single();
-
-    return UserProfileDto.fromJson(response);
   }
 
   Future<String> uploadAvatar(final File image) async {

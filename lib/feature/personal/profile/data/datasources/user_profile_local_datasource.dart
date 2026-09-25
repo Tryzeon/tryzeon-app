@@ -47,6 +47,14 @@ class UserProfileLocalDataSource {
     await _cacheEntryLocalDataSource.markHasData(cacheKey);
   }
 
+  Future<void> invalidateUserProfile() async {
+    final isar = await _isarService.db;
+    await isar.writeTxn(() async {
+      await isar.userProfileCaches.clear();
+    });
+    await _cacheEntryLocalDataSource.remove(cacheKey);
+  }
+
   Future<File?> getAvatar(final String path) {
     return _cacheService.getImage(path);
   }

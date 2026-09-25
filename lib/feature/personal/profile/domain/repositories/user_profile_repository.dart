@@ -27,10 +27,7 @@ abstract class UserProfileRepository {
     required final BodyMeasurements measurements,
   });
 
-  Future<Result<void, Failure>> updateUserAvatar({
-    required final File avatarFile,
-    final String? previousAvatarPath,
-  });
+  Future<Result<void, Failure>> updateAvatarPath(final String path);
 
   Future<Result<void, Failure>> completeUserOnboarding({
     final Gender? gender,
