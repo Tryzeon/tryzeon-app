@@ -209,5 +209,6 @@ void main() {
       ).getEntryStatus(StoreProfileLocalDataSource.cacheKey),
       isNull,
     );
+    expect(await harness.isar.storeProfileCaches.count(), 0);
   });
 }

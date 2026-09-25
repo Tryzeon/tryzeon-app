@@ -51,5 +51,11 @@ class StoreProfileLocalDataSource {
     await _cacheEntryLocalDataSource.markEmpty(cacheKey);
   }
 
-  Future<void> invalidateStoreProfile() => _cacheEntryLocalDataSource.remove(cacheKey);
+  Future<void> invalidateStoreProfile() async {
+    final isar = await _isarService.db;
+    await isar.writeTxn(() async {
+      await isar.storeProfileCaches.clear();
+    });
+    await _cacheEntryLocalDataSource.remove(cacheKey);
+  }
 }
