@@ -22,7 +22,10 @@ class DeleteWardrobeItem {
 
     final imageDeleted = await _imageStorage.delete(item.imagePath);
     if (imageDeleted.isFailure) {
-      AppLogger.warning('Failed to delete wardrobe image ${item.imagePath}');
+      AppLogger.warning(
+        'Failed to delete wardrobe image ${item.imagePath}',
+        imageDeleted.getError(),
+      );
     }
     return const Ok(null);
   }

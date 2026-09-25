@@ -28,7 +28,10 @@ class DeleteProduct {
         paths: product.imagePaths,
       );
       if (imagesDeleted.isFailure) {
-        AppLogger.warning('Failed to delete images of product ${product.id}');
+        AppLogger.warning(
+          'Failed to delete images of product ${product.id}',
+          imagesDeleted.getError(),
+        );
       }
     }
     return const Ok(null);

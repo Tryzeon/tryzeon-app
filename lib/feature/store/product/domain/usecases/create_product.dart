@@ -61,7 +61,10 @@ class CreateProduct {
       productId: productId,
     );
     if (rolledBack.isFailure) {
-      AppLogger.warning('Rollback of product $productId failed, keeping its images');
+      AppLogger.warning(
+        'Rollback of product $productId failed, keeping its images',
+        rolledBack.getError(),
+      );
       return Err(failure);
     }
 
@@ -71,7 +74,10 @@ class CreateProduct {
         paths: imagePaths,
       );
       if (deleted.isFailure) {
-        AppLogger.warning('Failed to delete images of rolled-back product $productId');
+        AppLogger.warning(
+          'Failed to delete images of rolled-back product $productId',
+          deleted.getError(),
+        );
       }
     }
     return Err(failure);
