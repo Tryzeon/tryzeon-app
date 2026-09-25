@@ -11,11 +11,17 @@ import {
 } from "../_shared/chat/index.ts";
 import { parseChatParams } from "./request.ts";
 import { encodeEvent, errorEvent } from "./stream.ts";
+import { makeCors } from "../_shared/cors.ts";
+
+const cors = makeCors({ methods: "POST" });
 
 Deno.serve(async (req) => {
+  const guarded = cors.guard(req);
+  if (guarded) return guarded;
+
   try {
     const { userClient, user, errorResponse } = await getAuthenticatedUserClient(req);
-    if (errorResponse) return errorResponse;
+    if (errorResponse) return cors.wrap(errorResponse);
 
     const params = parseChatParams(await req.text(), user!.id);
     // The turn runs on the requester's own client, so RLS bounds what its
@@ -47,16 +53,16 @@ Deno.serve(async (req) => {
       },
     });
 
-    return new Response(stream, {
+    return cors.wrap(new Response(stream, {
       headers: {
         "Content-Type": "application/x-ndjson",
         "Cache-Control": "no-cache",
       },
-    });
+    }));
   } catch (err) {
     const info = classifyCoreError(err);
-    if (info) return coreErrorResponse(info);
+    if (info) return cors.wrap(coreErrorResponse(info));
     console.error("Unexpected error:", err);
-    return jsonError("Internal server error", "INTERNAL_ERROR", 500);
+    return cors.wrap(jsonError("Internal server error", "INTERNAL_ERROR", 500));
   }
 });
