@@ -2,8 +2,9 @@
  * Owns what is provider-specific; builds no prompts (see `prompt.ts`) and
  * persists nothing.
  */
+import { decodeBase64 } from "@std/encoding/base64";
 import { experimental_generateVideo, generateText } from "ai";
-import { base64ToUint8Array, detectMimeType } from "../image-utils.ts";
+import { detectMimeType } from "../image-utils.ts";
 import {
   tryonExperimentalImageModel,
   tryonExperimentalVideoModel,
@@ -96,6 +97,11 @@ export async function generateTryonImage(
  * One synchronous Interactions call with the video inline in the response. A
  * `file` part rather than `image` here: the Interactions API drops inline data
  * without a concrete media type, so it is sniffed from the bytes.
+ *
+ * The video is decoded from `base64`, never read through `uint8Array`: the
+ * SDK's getter decodes via `Uint8Array.from(string)`, which peaks at dozens of
+ * bytes of heap per video byte and runs a multi-megabyte clip past the edge
+ * function's memory limit.
  */
 async function generateInteractionsVideo(
   tryonImageBase64: string,
@@ -128,7 +134,7 @@ async function generateInteractionsVideo(
       `No video in Vertex response, finishReason: ${finishReason}`,
     );
   }
-  return video.uint8Array;
+  return decodeBase64(video.base64);
 }
 
 /**
@@ -142,6 +148,10 @@ const POLL_INTERVAL_MS = 5000;
  * Veo is long-running and this waits it out inside the request: a job outlives
  * a dropped connection but its result does not, so a caller that goes away
  * cannot pick it up again.
+ *
+ * The image goes in as bytes because the SDK would otherwise decode the base64
+ * itself, with the same heap-hungry `Uint8Array.from(string)` as above, only
+ * to re-encode it for the request.
  */
 async function generateVeoVideo(
   tryonImageBase64: string,
@@ -150,7 +160,7 @@ async function generateVeoVideo(
   const { video } = await experimental_generateVideo({
     model: vertexVideoModel(tryonExperimentalVideoModel()),
     prompt: {
-      image: tryonImageBase64,
+      image: decodeBase64(tryonImageBase64),
       text: buildVideoPrompt(opts),
     },
     aspectRatio: "9:16",
@@ -158,7 +168,7 @@ async function generateVeoVideo(
     maxRetries: QUOTA_WINDOW_RETRIES,
   }).catch(rethrowAsBusy);
 
-  return base64ToUint8Array(video.base64);
+  return decodeBase64(video.base64);
 }
 
 export function generateTryonVideo(

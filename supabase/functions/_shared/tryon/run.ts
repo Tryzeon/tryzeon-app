@@ -1,8 +1,5 @@
-import {
-  base64ToUint8Array,
-  detectMimeType,
-  mimeTypeToExtension,
-} from "../image-utils.ts";
+import { decodeBase64 } from "@std/encoding/base64";
+import { detectMimeType, mimeTypeToExtension } from "../image-utils.ts";
 import { uploadTryonImageToR2, uploadTryonVideoToR2 } from "../r2.ts";
 import { USER_AVATARS_BUCKET, WARDROBE_IMAGES_BUCKET } from "../storage.ts";
 import { resolveStoredAvatar } from "./avatar.ts";
@@ -159,7 +156,7 @@ export async function runTryonJob<M extends TryonMode>(
     } else {
       const mimeType = detectMimeType(generated);
       const imageUrl = await upload(
-        base64ToUint8Array(generated),
+        decodeBase64(generated),
         assetKey(job.userId, now(), mimeTypeToExtension(mimeType)),
         mimeType,
       );

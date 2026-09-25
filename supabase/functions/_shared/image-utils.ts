@@ -1,10 +1,7 @@
+import { encodeBase64 } from "@std/encoding/base64";
 import { downloadPublicImageFromR2 } from "./r2.ts";
 import { isR2PublicKey, type SupabaseImageBucket } from "./storage.ts";
 import type { DbClient } from "./supabase.ts";
-
-export function uint8ToBase64(bytes: Uint8Array): string {
-  return btoa(Array.from(bytes, (b) => String.fromCharCode(b)).join(""));
-}
 
 export async function fetchImageAsBase64(
   supabase: DbClient,
@@ -13,7 +10,7 @@ export async function fetchImageAsBase64(
 ): Promise<string> {
   if (isR2PublicKey(path)) {
     const bytes = await downloadPublicImageFromR2(path);
-    return uint8ToBase64(bytes);
+    return encodeBase64(bytes);
   }
 
   const { data, error } = await supabase.storage.from(bucket).download(path);
@@ -27,7 +24,7 @@ export async function fetchImageAsBase64(
   }
 
   const arrayBuffer = await data.arrayBuffer();
-  return uint8ToBase64(new Uint8Array(arrayBuffer));
+  return encodeBase64(arrayBuffer);
 }
 
 export function detectMimeType(base64Data: string): string {
@@ -50,14 +47,4 @@ export function mimeTypeToExtension(mimeType: string): string {
     default:
       return "jpg";
   }
-}
-
-/** Input must be clean base64 — a data-URI prefix is not stripped. */
-export function base64ToUint8Array(base64: string): Uint8Array {
-  const binaryString = atob(base64);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes;
 }

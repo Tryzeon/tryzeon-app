@@ -1,3 +1,4 @@
+import { encodeBase64 } from "@std/encoding/base64";
 import { getOrCreateUserId as defaultGetOrCreateUserId } from "../_shared/line-user.ts";
 import {
   classifyTryonError,
@@ -6,7 +7,6 @@ import {
   supabaseTryonRecorder,
 } from "../_shared/tryon/index.ts";
 import type { GarmentInput } from "../_shared/tryon/types.ts";
-import { uint8ToBase64 } from "../_shared/image-utils.ts";
 import { getAvatarPath as defaultGetAvatarPath } from "../_shared/user-profile.ts";
 import { fetchProductInfo } from "./product-card.ts";
 import { fetchWardrobeItemInfo } from "./wardrobe-card.ts";
@@ -136,7 +136,7 @@ export async function handleImageTryon(
     return;
   }
 
-  const base64 = uint8ToBase64(bytes);
+  const base64 = encodeBase64(bytes);
 
   const described = describeGarment(userId, base64).catch((err) => {
     console.warn("line-webhook garment description failed:", err);
