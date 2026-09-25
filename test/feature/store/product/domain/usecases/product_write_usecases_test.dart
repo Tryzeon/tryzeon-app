@@ -202,6 +202,22 @@ void main() {
 
       expect(imageStorage.deleted, ['p1/new-0.jpg']);
     });
+
+    test('a failed upload never touches the database', () async {
+      imageStorage.uploadResult = const Err(NetworkFailure());
+
+      final result = await build()(
+        UpdateProductParams(
+          original: original,
+          draft: draft,
+          images: [ImageItem.newImage(file: File('x.jpg'))],
+          sizes: const [],
+        ),
+      );
+
+      expect(result.getError(), const NetworkFailure());
+      expect(repository.appliedPlan, isNull);
+    });
   });
 
   group('DeleteProduct', () {
