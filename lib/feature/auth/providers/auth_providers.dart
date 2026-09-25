@@ -54,19 +54,9 @@ AuthLocalDataSource authLocalDataSource(final Ref ref) {
 
 @riverpod
 AuthRepository authRepository(final Ref ref) {
-  final remoteDataSource = ref.watch(authRemoteDataSourceProvider);
-  final localDataSource = ref.watch(authLocalDataSourceProvider);
-
-  final cacheService = ref.watch(cacheServiceProvider);
-  final analyticsEventQueueService = ref.watch(analyticsEventQueueProvider);
-  final settingsRepository = ref.watch(settingsRepositoryProvider);
-
   return AuthRepositoryImpl(
-    remoteDataSource: remoteDataSource,
-    localDataSource: localDataSource,
-    cacheService: cacheService,
-    analyticsEventQueueService: analyticsEventQueueService,
-    settingsRepository: settingsRepository,
+    remoteDataSource: ref.watch(authRemoteDataSourceProvider),
+    localDataSource: ref.watch(authLocalDataSourceProvider),
   );
 }
 
@@ -90,8 +80,13 @@ VerifyEmailOtp verifyEmailOtpUseCase(final Ref ref) {
 
 @riverpod
 SignOut signOutUseCase(final Ref ref) {
-  final repository = ref.watch(authRepositoryProvider);
-  return SignOut(repository);
+  return SignOut(
+    authRepository: ref.watch(authRepositoryProvider),
+    analyticsQueue: ref.watch(analyticsEventQueueProvider),
+    cacheService: ref.watch(cacheServiceProvider),
+    localDatabase: ref.watch(localDatabaseProvider),
+    settingsRepository: ref.watch(settingsRepositoryProvider),
+  );
 }
 
 @riverpod
@@ -108,6 +103,9 @@ SetLastLoginType setLastLoginTypeUseCase(final Ref ref) {
 
 @riverpod
 DeleteAccount deleteAccountUseCase(final Ref ref) {
-  final repository = ref.watch(authRepositoryProvider);
-  return DeleteAccount(repository);
+  return DeleteAccount(
+    authRepository: ref.watch(authRepositoryProvider),
+    analyticsQueue: ref.watch(analyticsEventQueueProvider),
+    signOut: ref.watch(signOutUseCaseProvider),
+  );
 }

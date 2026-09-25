@@ -21,22 +21,4 @@ class AuthLocalDataSource {
       await isar.authSettingsCaches.put(settings);
     });
   }
-
-  Future<void> clearLoginType() async {
-    final isar = await _isarService.db;
-    await isar.writeTxn(() async {
-      final settings = await isar.authSettingsCaches.where().findFirst();
-      if (settings != null) {
-        settings.lastLoginType = null;
-        await isar.authSettingsCaches.put(settings);
-      }
-    });
-  }
-
-  Future<void> clearAll() async {
-    final isar = await _isarService.db;
-    await isar.writeTxn(() async {
-      await isar.clear();
-    });
-  }
 }
