@@ -5,7 +5,6 @@ import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_s
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/shop/data/dtos/shop_product_dto.dart';
-import 'package:tryzeon/feature/personal/shop/data/mappers/product_row_mapper.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_sort.dart';
 
 class ShopRemoteDataSource {
@@ -63,12 +62,13 @@ class ShopRemoteDataSource {
       ),
     );
 
-    return response.map((final item) {
-      final map = productRowWithImageUrls(
-        Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
-      );
-      return ShopProductDto.fromJson(map);
-    }).toList();
+    return response
+        .map(
+          (final item) => ShopProductDto.fromJson(
+            Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
+          ),
+        )
+        .toList();
   }
 
   static ({String column, bool ascending}) sortParams(final ShopSort sort) {
@@ -148,8 +148,7 @@ class ShopRemoteDataSource {
         .eq('id', productId)
         .single();
 
-    final map = productRowWithImageUrls(Map<String, dynamic>.from(response));
-    return ShopProductDto.fromJson(map);
+    return ShopProductDto.fromJson(response);
   }
 
   /// Both the uuid and the slug form back the same `/store/...` deep link, so
@@ -161,7 +160,7 @@ class ShopRemoteDataSource {
         .select('id, name, slug, address, logo_path, channels')
         .eq(column, storeIdOrSlug)
         .single();
-    return withStoreLogoUrl(response);
+    return response;
   }
 
   static final _uuidPattern = RegExp(

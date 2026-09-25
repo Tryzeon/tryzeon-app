@@ -1,4 +1,5 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
+import 'package:tryzeon/core/data/services/store_images_api.dart';
 import 'package:tryzeon/feature/common/clothing_style/data/mappers/clothing_style_cache_converters.dart';
 import 'package:tryzeon/feature/common/garment_type/data/mappers/garment_type_cache_converters.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
@@ -65,12 +66,17 @@ import 'personal_mappr.auto_mappr.dart';
         TypeConverter<String, GarmentType>(GarmentTypeCacheConverters.fromCache),
       ],
     ),
-    MapType<ShopProductDto, ShopProduct>(),
+    MapType<ShopProductDto, ShopProduct>(
+      fields: [Field('imageUrls', custom: ShopMapprHelper.imageUrlsToEntity)],
+    ),
 
     MapType<StoreOrderContactDto, StoreOrderContact>(),
 
     MapType<ShopStoreInfoDto, ShopStoreInfo>(
-      fields: [Field('channels', custom: ShopStoreInfoMapprHelper.channelsToEntity)],
+      fields: [
+        Field('channels', custom: ShopMapprHelper.channelsToEntity),
+        Field('logoUrl', custom: ShopMapprHelper.logoUrlToEntity),
+      ],
     ),
 
     MapType<ProductSizeDto, ProductSize>(),
@@ -95,7 +101,13 @@ class PersonalMappr extends $PersonalMappr {
   const PersonalMappr();
 }
 
-class ShopStoreInfoMapprHelper {
+class ShopMapprHelper {
+  static List<String> imageUrlsToEntity(final ShopProductDto source) =>
+      source.imagePaths.map(StoreImagesApi.publicUrl).toList();
+
   static Set<StoreChannel> channelsToEntity(final ShopStoreInfoDto source) =>
       source.channels.toSet();
+
+  static String? logoUrlToEntity(final ShopStoreInfoDto source) =>
+      StoreImagesApi.publicUrlOrNull(source.logoPath);
 }

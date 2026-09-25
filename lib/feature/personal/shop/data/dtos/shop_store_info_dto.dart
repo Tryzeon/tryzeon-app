@@ -13,7 +13,7 @@ class ShopStoreInfoDto {
     required this.channels,
     this.slug,
     this.address,
-    this.logoUrl,
+    this.logoPath,
     this.orderContacts = const [],
   });
 
@@ -26,7 +26,7 @@ class ShopStoreInfoDto {
   final List<StoreChannel> channels;
   final String? slug;
   final String? address;
-  final String? logoUrl;
+  final String? logoPath;
   @JsonKey(fromJson: _orderContactsFromJson)
   final List<StoreOrderContactDto> orderContacts;
 
