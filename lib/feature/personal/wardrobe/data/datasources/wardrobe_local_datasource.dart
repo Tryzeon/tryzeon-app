@@ -58,7 +58,9 @@ class WardrobeLocalDataSource {
       final collection = _mappr.convert<WardrobeItem, WardrobeItemCache>(item);
       await isar.wardrobeItemCaches.put(collection);
     });
-    await _cacheEntryLocalDataSource.markListState(cacheKey, isEmpty: false);
+    if (await _cacheEntryLocalDataSource.getEntryStatus(cacheKey) != null) {
+      await _cacheEntryLocalDataSource.markListState(cacheKey, isEmpty: false);
+    }
   }
 
   Future<void> deleteWardrobeItem(final String id) async {
@@ -67,11 +69,21 @@ class WardrobeLocalDataSource {
       await isar.wardrobeItemCaches.deleteByItemId(id);
     });
 
+    if (await _cacheEntryLocalDataSource.getEntryStatus(cacheKey) == null) return;
+
     if (await isar.wardrobeItemCaches.count() == 0) {
       await _cacheEntryLocalDataSource.markListState(cacheKey, isEmpty: true);
     } else {
       await _cacheEntryLocalDataSource.markListState(cacheKey, isEmpty: false);
     }
+  }
+
+  Future<void> invalidateWardrobeItems() async {
+    final isar = await _isarService.db;
+    await isar.writeTxn(() async {
+      await isar.wardrobeItemCaches.clear();
+    });
+    await _cacheEntryLocalDataSource.remove(cacheKey);
   }
 
   Future<void> saveImage(final Uint8List bytes, final String path) {

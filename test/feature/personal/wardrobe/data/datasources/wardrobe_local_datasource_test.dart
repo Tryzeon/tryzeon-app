@@ -70,12 +70,64 @@ void main() {
     );
     final local = build();
 
-    await local.saveWardrobeItem(item);
+    await local.saveWardrobeItems([item]);
     await local.saveWardrobeItem(item.copyWith(tags: const ['cotton']));
 
     final lookup = await local.getWardrobeItems();
     expect((lookup as CacheHit<List<WardrobeItem>>).data, [
       item.copyWith(tags: const ['cotton']),
     ]);
+  });
+
+  group('list entry', () {
+    CacheEntryLocalDataSource entries() => CacheEntryLocalDataSource(harness.service);
+
+    test('saveWardrobeItem leaves an absent list entry absent', () async {
+      final item = WardrobeItem(
+        id: 'w1',
+        imagePath: 'w1.jpg',
+        garmentType: GarmentType.top,
+        createdAt: DateTime(2026),
+        updatedAt: DateTime(2026),
+      );
+
+      await build().saveWardrobeItem(item);
+
+      expect(await entries().getEntryStatus(WardrobeLocalDataSource.cacheKey), isNull);
+    });
+
+    test('saveWardrobeItem keeps a cached list complete', () async {
+      final w1 = WardrobeItem(
+        id: 'w1',
+        imagePath: 'w1.jpg',
+        garmentType: GarmentType.top,
+        createdAt: DateTime(2026),
+        updatedAt: DateTime(2026),
+      );
+      final w2 = WardrobeItem(
+        id: 'w2',
+        imagePath: 'w2.jpg',
+        garmentType: GarmentType.pants,
+        createdAt: DateTime(2026, 2),
+        updatedAt: DateTime(2026, 2),
+      );
+      final local = build();
+      await local.saveWardrobeItems([w1]);
+
+      await local.saveWardrobeItem(w2);
+
+      expect(
+        await entries().getEntryStatus(WardrobeLocalDataSource.cacheKey),
+        CacheEntryStatus.hasData,
+      );
+      final lookup = await local.getWardrobeItems();
+      expect((lookup as CacheHit<List<WardrobeItem>>).data, unorderedEquals([w1, w2]));
+    });
+
+    test('deleteWardrobeItem leaves an absent list entry absent', () async {
+      await build().deleteWardrobeItem('w1');
+
+      expect(await entries().getEntryStatus(WardrobeLocalDataSource.cacheKey), isNull);
+    });
   });
 }

@@ -7,6 +7,7 @@ import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type
 import 'package:tryzeon/feature/personal/wardrobe/data/collections/wardrobe_item_cache.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_local_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_remote_datasource.dart';
+import 'package:tryzeon/feature/personal/wardrobe/data/dtos/create_wardrobe_item_request.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/dtos/wardrobe_item_dto.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/repositories/wardrobe_repository_impl.dart';
 import 'package:typed_result/typed_result.dart';
@@ -23,6 +24,20 @@ class _FakeRemote implements WardrobeRemoteDataSource {
   Future<List<WardrobeItemDto>> getWardrobeItems() async {
     calls++;
     return items;
+  }
+
+  @override
+  dynamic noSuchMethod(final Invocation invocation) =>
+      throw UnimplementedError(invocation.memberName.toString());
+}
+
+class _FakeRemoteFailingRefresh implements WardrobeRemoteDataSource {
+  @override
+  Future<void> createWardrobeItem(final CreateWardrobeItemRequest request) async {}
+
+  @override
+  Future<List<WardrobeItemDto>> getWardrobeItems() async {
+    throw Exception('refresh failed');
   }
 
   @override
@@ -68,7 +83,7 @@ void main() {
     );
   });
 
-  WardrobeRepositoryImpl buildRepository(final _FakeRemote remote) =>
+  WardrobeRepositoryImpl buildRepository(final WardrobeRemoteDataSource remote) =>
       WardrobeRepositoryImpl(
         remoteDataSource: remote,
         localDataSource: WardrobeLocalDataSource(
@@ -109,5 +124,25 @@ void main() {
 
     expect(remote.calls, 0);
     expect(items.single.garmentType, GarmentType.top);
+  });
+
+  test('createWardrobeItem invalidates the cache when the refresh fails', () async {
+    await seedCache('top');
+
+    final result = await buildRepository(_FakeRemoteFailingRefresh()).createWardrobeItem(
+      id: 'w2',
+      imagePath: 'w2.jpg',
+      garmentType: GarmentType.top,
+      tags: const [],
+    );
+
+    expect(result.isSuccess, isTrue);
+    expect(
+      await CacheEntryLocalDataSource(
+        harness.service,
+      ).getEntryStatus(WardrobeLocalDataSource.cacheKey),
+      isNull,
+    );
+    expect(await harness.isar.wardrobeItemCaches.count(), 0);
   });
 }

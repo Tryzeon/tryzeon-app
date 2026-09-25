@@ -7,11 +7,13 @@ part 'create_wardrobe_item_request.g.dart';
 @JsonSerializable(fieldRename: FieldRename.snake)
 class CreateWardrobeItemRequest {
   const CreateWardrobeItemRequest({
+    required this.id,
     required this.imagePath,
     required this.garmentType,
     this.tags = const [],
   });
 
+  final String id;
   final String imagePath;
   final GarmentType garmentType;
   final List<String> tags;

@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:path/path.dart' as p;
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -70,56 +70,58 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
   }
 
   @override
-  Future<Result<void, Failure>> uploadWardrobeItem(
-    final CreateWardrobeItemParams params,
-  ) async {
+  Future<Result<void, Failure>> createWardrobeItem({
+    required final String id,
+    required final String imagePath,
+    required final GarmentType garmentType,
+    required final List<String> tags,
+  }) async {
     try {
-      final garmentTypeString = params.garmentType.value;
-      final imageName = p.basename(params.image.path);
-      final bytes = await params.image.readAsBytes();
-
-      // 1. Upload Image first
-      final imagePath = await _remoteDataSource.uploadImage(
-        garmentType: garmentTypeString,
-        fileName: imageName,
-        bytes: bytes,
+      await _remoteDataSource.createWardrobeItem(
+        CreateWardrobeItemRequest(
+          id: id,
+          imagePath: imagePath,
+          garmentType: garmentType,
+          tags: tags,
+        ),
       );
-
-      await _localDataSource.saveImage(bytes, imagePath);
-
-      // 2. Create Request DTO
-      final request = CreateWardrobeItemRequest(
-        imagePath: imagePath,
-        garmentType: params.garmentType,
-        tags: params.tags,
-      );
-
-      final newItem = _mappr.convert<WardrobeItemDto, WardrobeItem>(
-        await _remoteDataSource.createWardrobeItem(request),
-      );
-
-      await _localDataSource.saveWardrobeItem(newItem);
-
-      return const Ok(null);
     } catch (e, stackTrace) {
-      AppLogger.error('Failed to upload wardrobe item', e, stackTrace);
+      AppLogger.error('Failed to create wardrobe item', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
+
+    try {
+      await _localDataSource.saveWardrobeItems(
+        _mappr.convertList<WardrobeItemDto, WardrobeItem>(
+          await _remoteDataSource.getWardrobeItems(),
+        ),
+      );
+    } catch (e, stackTrace) {
+      AppLogger.warning('Wardrobe refresh failed, invalidating cache', e, stackTrace);
+      try {
+        await _localDataSource.invalidateWardrobeItems();
+      } catch (e, stackTrace) {
+        AppLogger.error('Failed to invalidate wardrobe cache', e, stackTrace);
+      }
+    }
+    return const Ok(null);
   }
 
   @override
-  Future<Result<void, Failure>> deleteWardrobeItem(final WardrobeItem item) async {
+  Future<Result<void, Failure>> deleteWardrobeItem(final String id) async {
     try {
-      await _remoteDataSource.deleteWardrobeItem(item.id);
-      _remoteDataSource.deleteImage(item.imagePath).ignore();
-      _localDataSource.deleteImage(item.imagePath).ignore();
-      await _localDataSource.deleteWardrobeItem(item.id);
-
-      return const Ok(null);
+      await _remoteDataSource.deleteWardrobeItem(id);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to delete wardrobe item', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
+
+    try {
+      await _localDataSource.deleteWardrobeItem(id);
+    } catch (e, stackTrace) {
+      AppLogger.warning('Failed to evict deleted wardrobe item from cache', e, stackTrace);
+    }
+    return const Ok(null);
   }
 
   @override

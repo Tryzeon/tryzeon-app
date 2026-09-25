@@ -16,10 +16,12 @@ import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_remo
 import 'package:tryzeon/feature/personal/wardrobe/data/repositories/wardrobe_repository_impl.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/services/background_remover_impl.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/services/label_tagger_impl.dart';
+import 'package:tryzeon/feature/personal/wardrobe/data/services/wardrobe_image_storage_impl.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/repositories/wardrobe_repository.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/services/background_remover.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/services/label_tagger.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/services/wardrobe_image_storage.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/analyze_wardrobe_image.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/delete_wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/get_wardrobe_item_image.dart';
@@ -57,13 +59,27 @@ GetWardrobeItems getWardrobeItemsUseCase(final Ref ref) {
 }
 
 @riverpod
+WardrobeImageStorage wardrobeImageStorage(final Ref ref) {
+  return WardrobeImageStorageImpl(
+    ref.watch(wardrobeRemoteDataSourceProvider),
+    ref.watch(wardrobeLocalDataSourceProvider),
+  );
+}
+
+@riverpod
 UploadWardrobeItem uploadWardrobeItemUseCase(final Ref ref) {
-  return UploadWardrobeItem(ref.watch(wardrobeRepositoryProvider));
+  return UploadWardrobeItem(
+    repository: ref.watch(wardrobeRepositoryProvider),
+    imageStorage: ref.watch(wardrobeImageStorageProvider),
+  );
 }
 
 @riverpod
 DeleteWardrobeItem deleteWardrobeItemUseCase(final Ref ref) {
-  return DeleteWardrobeItem(ref.watch(wardrobeRepositoryProvider));
+  return DeleteWardrobeItem(
+    repository: ref.watch(wardrobeRepositoryProvider),
+    imageStorage: ref.watch(wardrobeImageStorageProvider),
+  );
 }
 
 @riverpod

@@ -5,10 +5,12 @@ import 'package:tryzeon/feature/personal/wardrobe/data/dtos/create_wardrobe_item
 void main() {
   test('serializes garment_type with the database enum label', () {
     const request = CreateWardrobeItemRequest(
+      id: 'w1',
       imagePath: 'u/one_piece/a.jpg',
       garmentType: GarmentType.onePiece,
     );
 
     expect(request.toJson()['garment_type'], 'one_piece');
+    expect(request.toJson()['id'], 'w1');
   });
 }
