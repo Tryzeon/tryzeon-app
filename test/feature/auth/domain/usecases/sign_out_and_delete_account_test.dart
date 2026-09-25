@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tryzeon/core/domain/services/cache_service.dart';
+import 'package:tryzeon/core/domain/services/image_file_cache.dart';
 import 'package:tryzeon/core/domain/services/local_database.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/analytics/domain/entities/analytics_event.dart';
@@ -57,13 +57,13 @@ class _FakeQueue implements AnalyticsEventQueue {
   void dispose() {}
 }
 
-class _FakeCacheService implements CacheService {
-  _FakeCacheService(this._journal);
+class _FakeImageFileCache implements ImageFileCache {
+  _FakeImageFileCache(this._journal);
 
   final _Journal _journal;
 
   @override
-  Future<void> clearCache() async => _journal.steps.add('clearCache');
+  Future<void> clear() async => _journal.steps.add('clearImageFileCache');
 
   @override
   dynamic noSuchMethod(final Invocation invocation) =>
@@ -108,7 +108,7 @@ void main() {
     signOut = SignOut(
       authRepository: authRepository,
       analyticsQueue: queue,
-      cacheService: _FakeCacheService(journal),
+      imageFileCache: _FakeImageFileCache(journal),
       localDatabase: _FakeLocalDatabase(journal),
       settingsRepository: _FakeSettingsRepository(journal),
     );
@@ -122,7 +122,7 @@ void main() {
       expect(journal.steps, [
         'flush',
         'signOut',
-        'clearCache',
+        'clearImageFileCache',
         'clearLocalDatabase',
         'clearPreferences',
       ]);
@@ -145,7 +145,7 @@ void main() {
       expect(result.getError(), const NetworkFailure());
       expect(
         journal.steps,
-        containsAll(['clearCache', 'clearLocalDatabase', 'clearPreferences']),
+        containsAll(['clearImageFileCache', 'clearLocalDatabase', 'clearPreferences']),
       );
     });
   });

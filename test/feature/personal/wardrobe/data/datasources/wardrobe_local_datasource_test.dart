@@ -2,14 +2,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
-import 'package:tryzeon/core/domain/services/cache_service.dart';
+import 'package:tryzeon/core/domain/services/image_file_cache.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_local_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 
 import '../../../../../support/isar_test_harness.dart';
 
-class _NoopCacheService implements CacheService {
+class _NoopImageFileCache implements ImageFileCache {
   @override
   dynamic noSuchMethod(final Invocation invocation) =>
       throw UnimplementedError(invocation.memberName.toString());
@@ -32,7 +32,7 @@ void main() {
 
   WardrobeLocalDataSource build() => WardrobeLocalDataSource(
     harness.service,
-    _NoopCacheService(),
+    _NoopImageFileCache(),
     CacheEntryLocalDataSource(harness.service),
   );
 

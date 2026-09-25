@@ -1,4 +1,4 @@
-import 'package:tryzeon/core/domain/services/cache_service.dart';
+import 'package:tryzeon/core/domain/services/image_file_cache.dart';
 import 'package:tryzeon/core/domain/services/local_database.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/analytics/domain/services/analytics_event_queue.dart';
@@ -11,18 +11,18 @@ class SignOut {
   SignOut({
     required final AuthRepository authRepository,
     required final AnalyticsEventQueue analyticsQueue,
-    required final CacheService cacheService,
+    required final ImageFileCache imageFileCache,
     required final LocalDatabase localDatabase,
     required final SettingsRepository settingsRepository,
   }) : _authRepository = authRepository,
        _analyticsQueue = analyticsQueue,
-       _cacheService = cacheService,
+       _imageFileCache = imageFileCache,
        _localDatabase = localDatabase,
        _settingsRepository = settingsRepository;
 
   final AuthRepository _authRepository;
   final AnalyticsEventQueue _analyticsQueue;
-  final CacheService _cacheService;
+  final ImageFileCache _imageFileCache;
   final LocalDatabase _localDatabase;
   final SettingsRepository _settingsRepository;
 
@@ -36,7 +36,7 @@ class SignOut {
     final signedOut = await _authRepository.signOut();
 
     try {
-      await _cacheService.clearCache();
+      await _imageFileCache.clear();
     } catch (e, stackTrace) {
       AppLogger.error('Failed to clear cache (ignored)', e, stackTrace);
     }

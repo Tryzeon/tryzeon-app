@@ -35,9 +35,13 @@ UserProfileRemoteDataSource userProfileRemoteDataSource(final Ref ref) {
 @riverpod
 UserProfileLocalDataSource userProfileLocalDataSource(final Ref ref) {
   final isarService = ref.watch(isarServiceProvider);
-  final cacheService = ref.watch(cacheServiceProvider);
+  final imageFileCache = ref.watch(imageFileCacheProvider);
   final cacheEntryLocalDataSource = ref.watch(cacheEntryLocalDataSourceProvider);
-  return UserProfileLocalDataSource(isarService, cacheService, cacheEntryLocalDataSource);
+  return UserProfileLocalDataSource(
+    isarService,
+    imageFileCache,
+    cacheEntryLocalDataSource,
+  );
 }
 
 @riverpod

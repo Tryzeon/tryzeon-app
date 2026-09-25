@@ -1,10 +1,10 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
-import 'package:tryzeon/core/data/services/cache_service_impl.dart';
+import 'package:tryzeon/core/data/services/image_file_cache_impl.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/data/services/local_database_impl.dart';
-import 'package:tryzeon/core/domain/services/cache_service.dart';
+import 'package:tryzeon/core/domain/services/image_file_cache.dart';
 import 'package:tryzeon/core/domain/services/local_database.dart';
 import 'package:tryzeon/core/modules/analytics/data/datasources/analytics_remote_datasource.dart';
 import 'package:tryzeon/core/modules/analytics/data/dtos/analytics_event_dto.dart';
@@ -51,8 +51,8 @@ GeocodingService geocodingService(final Ref ref) {
 }
 
 @Riverpod(keepAlive: true)
-CacheService cacheService(final Ref ref) {
-  return CacheServiceImpl();
+ImageFileCache imageFileCache(final Ref ref) {
+  return ImageFileCacheImpl();
 }
 
 @Riverpod(keepAlive: true)

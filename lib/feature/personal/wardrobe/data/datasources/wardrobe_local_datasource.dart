@@ -5,7 +5,7 @@ import 'package:isar_community/isar.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
-import 'package:tryzeon/core/domain/services/cache_service.dart';
+import 'package:tryzeon/core/domain/services/image_file_cache.dart';
 import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/collections/wardrobe_item_cache.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
@@ -13,12 +13,12 @@ import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.
 class WardrobeLocalDataSource {
   WardrobeLocalDataSource(
     this._isarService,
-    this._cacheService,
+    this._imageFileCache,
     this._cacheEntryLocalDataSource,
   );
 
   final IsarService _isarService;
-  final CacheService _cacheService;
+  final ImageFileCache _imageFileCache;
   final CacheEntryLocalDataSource _cacheEntryLocalDataSource;
   static const _mappr = PersonalMappr();
   static const cacheKey = 'wardrobe_items';
@@ -87,14 +87,14 @@ class WardrobeLocalDataSource {
   }
 
   Future<void> saveImage(final Uint8List bytes, final String path) {
-    return _cacheService.saveImage(bytes, path);
+    return _imageFileCache.saveImage(bytes, path);
   }
 
   Future<File?> getImage(final String path, {final String? downloadUrl}) {
-    return _cacheService.getImage(path, downloadUrl: downloadUrl);
+    return _imageFileCache.getImage(path, downloadUrl: downloadUrl);
   }
 
   Future<void> deleteImage(final String path) {
-    return _cacheService.deleteImage(path);
+    return _imageFileCache.deleteImage(path);
   }
 }

@@ -40,9 +40,9 @@ WardrobeRemoteDataSource wardrobeRemoteDataSource(final Ref ref) {
 @riverpod
 WardrobeLocalDataSource wardrobeLocalDataSource(final Ref ref) {
   final isarService = ref.watch(isarServiceProvider);
-  final cacheService = ref.watch(cacheServiceProvider);
+  final imageFileCache = ref.watch(imageFileCacheProvider);
   final cacheEntryLocalDataSource = ref.watch(cacheEntryLocalDataSourceProvider);
-  return WardrobeLocalDataSource(isarService, cacheService, cacheEntryLocalDataSource);
+  return WardrobeLocalDataSource(isarService, imageFileCache, cacheEntryLocalDataSource);
 }
 
 @riverpod

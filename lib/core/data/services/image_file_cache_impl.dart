@@ -2,10 +2,10 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_cache_manager/flutter_cache_manager.dart' as fcm;
-import 'package:tryzeon/core/domain/services/cache_service.dart';
+import 'package:tryzeon/core/domain/services/image_file_cache.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 
-class CacheServiceImpl implements CacheService {
+class ImageFileCacheImpl implements ImageFileCache {
   @override
   Future<File> saveImage(final Uint8List bytes, final String filePath) async {
     try {
@@ -42,20 +42,7 @@ class CacheServiceImpl implements CacheService {
   }
 
   @override
-  Future<void> deleteImages(final List<String> filePaths) async {
-    try {
-      final futures = filePaths.map(
-        (final path) => fcm.DefaultCacheManager().removeFile(path),
-      );
-      await Future.wait(futures);
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to delete images', e, stackTrace);
-      rethrow;
-    }
-  }
-
-  @override
-  Future<void> clearCache() async {
+  Future<void> clear() async {
     try {
       await fcm.DefaultCacheManager().emptyCache();
     } catch (e, stackTrace) {
