@@ -25,6 +25,16 @@ class TryonMediaRepositoryImpl implements TryonMediaRepository {
   }
 
   @override
+  Future<Result<Uint8List, Failure>> loadLocalImageBytes(final String path) async {
+    try {
+      return Ok(await _dataSource.readLocalFile(path));
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to read picked garment image', e, stackTrace);
+      return Err(mapExceptionToFailure(e));
+    }
+  }
+
+  @override
   Future<Result<void, Failure>> saveToGallery(final TryonResult result) {
     return _process(
       result,

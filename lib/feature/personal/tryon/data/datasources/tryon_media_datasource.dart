@@ -22,6 +22,8 @@ class TryonMediaDataSource {
     return file.readAsBytes();
   }
 
+  Future<Uint8List> readLocalFile(final String path) => File(path).readAsBytes();
+
   /// The caller owns cleanup via [deleteTempFile].
   Future<String> downloadToTempFile(final String url, final TryonMode type) async {
     final tempDir = await getTemporaryDirectory();

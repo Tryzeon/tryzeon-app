@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -19,7 +17,6 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_subject.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_media_repository.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_repository.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/usecases/load_image_as_base64.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/usecases/tryon.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/controllers/tryon_controller.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
@@ -51,6 +48,10 @@ class _UncalledTryonMediaRepository implements TryonMediaRepository {
   @override
   Future<Result<void, Failure>> share(final TryonResult result) =>
       throw UnimplementedError();
+
+  @override
+  Future<Result<Uint8List, Failure>> loadLocalImageBytes(final String path) =>
+      throw UnimplementedError('wardrobe garments never read a local file');
 }
 
 class _FakeUserProfileNotifier extends UserProfileNotifier {
@@ -94,9 +95,8 @@ void main() {
         userProfileProvider.overrideWith(_FakeUserProfileNotifier.new),
         tryonPreferencesProvider.overrideWith(_FakeTryonPreferencesNotifier.new),
         dailyUsageTodayProvider.overrideWith(_FakeDailyUsageToday.new),
-        tryonUseCaseProvider.overrideWithValue(Tryon(tryonRepository: repository)),
-        loadImageAsBase64UseCaseProvider.overrideWithValue(
-          LoadImageAsBase64(mediaRepository: _UncalledTryonMediaRepository()),
+        tryonUseCaseProvider.overrideWithValue(
+          Tryon(tryonRepository: repository, mediaRepository: _UncalledTryonMediaRepository()),
         ),
       ],
     );
@@ -135,25 +135,6 @@ void main() {
       TryonGarment.wardrobe(wardrobeItemId: 'w2'),
     ]);
     expect(request.mode, TryonMode.image);
-  });
-
-  test('a local piece is sent as inline image bytes', () async {
-    final dir = await Directory.systemTemp.createTemp('outfit');
-    addTearDown(() => dir.delete(recursive: true));
-    final file = File('${dir.path}/g.jpg')..writeAsBytesSync([1, 2, 3]);
-
-    await container.read(tryonControllerProvider.notifier).tryonFromOutfit([
-      OutfitPiece.local(path: file.path),
-    ]);
-
-    final request = repository.requests.single as TryonGenerateRequest;
-    expect(request.garments, [
-      TryonGarment.images(
-        base64Images: [
-          base64Encode([1, 2, 3]),
-        ],
-      ),
-    ]);
   });
 
   test('the finished gallery entry keeps its pieces and subject', () async {

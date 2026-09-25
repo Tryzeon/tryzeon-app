@@ -7,6 +7,8 @@ import 'package:typed_result/typed_result.dart';
 abstract class TryonMediaRepository {
   Future<Result<Uint8List, Failure>> loadImageBytes(final String url);
 
+  Future<Result<Uint8List, Failure>> loadLocalImageBytes(final String path);
+
   Future<Result<void, Failure>> saveToGallery(final TryonResult result);
 
   Future<Result<void, Failure>> share(final TryonResult result);

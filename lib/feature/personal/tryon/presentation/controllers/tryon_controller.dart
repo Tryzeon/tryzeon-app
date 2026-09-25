@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
@@ -9,10 +6,9 @@ import 'package:tryzeon/feature/personal/profile/providers/personal_profile_prov
 import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_preferences.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_garment.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_request.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_subject.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/usecases/tryon.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_outcome.dart';
@@ -97,19 +93,14 @@ class TryonController extends _$TryonController {
     // Past the placeholder everything recovers the same way. A `removeById`
     // that finds nothing means the user cancelled, so that run stays silent.
     try {
-      final request = await _buildRequest(
-        id: id,
-        subject: subject,
-        preferences: preferences,
-        customAvatarUrl: customAvatarUrl,
+      final result = await ref.read(tryonUseCaseProvider)(
+        TryonParams(
+          requestId: id,
+          subject: subject,
+          preferences: preferences,
+          customAvatarUrl: customAvatarUrl,
+        ),
       );
-      if (request.isFailure) {
-        if (!galleryNotifier.removeById(id)) return;
-        state = TryonFailed(request.getError()!);
-        return;
-      }
-
-      final result = await ref.read(tryonUseCaseProvider)(request.get()!);
 
       // Usage syncs even for a cancelled run — the generation was still spent.
       final usageCache = ref.read(dailyUsageTodayProvider.notifier);
@@ -135,79 +126,5 @@ class TryonController extends _$TryonController {
       if (!galleryNotifier.removeById(id)) return;
       state = TryonFailed(mapExceptionToFailure(e));
     }
-  }
-
-  Future<Result<TryonRequest, Failure>> _buildRequest({
-    required final String id,
-    required final TryonSubject subject,
-    required final TryonPreferences preferences,
-    required final String? customAvatarUrl,
-  }) async {
-    final loadImage = ref.read(loadImageAsBase64UseCaseProvider);
-
-    switch (subject) {
-      case TryonSubjectAnimated(:final baseImageUrl):
-        final image = await loadImage(baseImageUrl);
-        if (image.isFailure) return Err(image.getError()!);
-
-        return Ok(
-          TryonRequest.animate(
-            requestId: id,
-            baseImageBase64: image.get()!,
-            transitionPrompt: preferences.transitionPrompt,
-            engine: preferences.engine,
-          ),
-        );
-
-      case TryonSubjectGenerate(:final pieces, :final mode):
-        final garments = await _garmentsFor(pieces);
-        if (garments.isFailure) return Err(garments.getError()!);
-
-        // Sending none makes the backend fall back to the profile photo.
-        String? avatarBase64;
-        if (customAvatarUrl != null && customAvatarUrl.isNotEmpty) {
-          final loaded = await loadImage(customAvatarUrl);
-          if (loaded.isFailure) return Err(loaded.getError()!);
-          avatarBase64 = loaded.get();
-        }
-
-        return Ok(
-          TryonRequest.generate(
-            requestId: id,
-            garments: garments.get()!,
-            mode: mode,
-            avatarBase64: avatarBase64,
-            scenePrompt: preferences.scenePrompt,
-            stylingPrompt: preferences.stylingPrompt,
-            transitionPrompt: mode == TryonMode.video
-                ? preferences.transitionPrompt
-                : null,
-            engine: preferences.engine,
-          ),
-        );
-    }
-  }
-
-  /// Local photos are read here, at launch, so a regenerate re-reads the file
-  /// instead of every gallery entry holding a base64 copy.
-  Future<Result<List<TryonGarment>, Failure>> _garmentsFor(
-    final List<OutfitPiece> pieces,
-  ) async {
-    final garments = <TryonGarment>[];
-    for (final piece in pieces) {
-      switch (piece) {
-        case OutfitPieceWardrobe() || OutfitPieceProduct():
-          garments.add(piece.garment!);
-        case OutfitPieceLocal(:final path):
-          try {
-            final bytes = await File(path).readAsBytes();
-            garments.add(TryonGarment.images(base64Images: [base64Encode(bytes)]));
-          } catch (e, stackTrace) {
-            AppLogger.error('Failed to read picked garment image', e, stackTrace);
-            return Err(mapExceptionToFailure(e));
-          }
-      }
-    }
-    return Ok(garments);
   }
 }

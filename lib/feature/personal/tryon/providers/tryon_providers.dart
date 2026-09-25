@@ -6,7 +6,6 @@ import 'package:tryzeon/feature/personal/tryon/data/repositories/tryon_media_rep
 import 'package:tryzeon/feature/personal/tryon/data/repositories/tryon_repository_impl.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_media_repository.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_repository.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/usecases/load_image_as_base64.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/usecases/save_tryon_media.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/usecases/share_tryon_media.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/usecases/tryon.dart';
@@ -27,12 +26,10 @@ TryonRepository tryonRepository(final Ref ref) {
 
 @riverpod
 Tryon tryonUseCase(final Ref ref) {
-  return Tryon(tryonRepository: ref.watch(tryonRepositoryProvider));
-}
-
-@riverpod
-LoadImageAsBase64 loadImageAsBase64UseCase(final Ref ref) {
-  return LoadImageAsBase64(mediaRepository: ref.watch(tryonMediaRepositoryProvider));
+  return Tryon(
+    tryonRepository: ref.watch(tryonRepositoryProvider),
+    mediaRepository: ref.watch(tryonMediaRepositoryProvider),
+  );
 }
 
 @riverpod
