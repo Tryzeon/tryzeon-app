@@ -119,7 +119,11 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
     try {
       await _localDataSource.deleteWardrobeItem(id);
     } catch (e, stackTrace) {
-      AppLogger.warning('Failed to evict deleted wardrobe item from cache', e, stackTrace);
+      AppLogger.warning(
+        'Failed to evict deleted wardrobe item from cache',
+        e,
+        stackTrace,
+      );
     }
     return const Ok(null);
   }

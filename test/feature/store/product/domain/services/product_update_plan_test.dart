@@ -45,7 +45,10 @@ void main() {
     ImageItem.existing(path: 'a.jpg', url: 'https://cdn/a.jpg'),
     ImageItem.existing(path: 'b.jpg', url: 'https://cdn/b.jpg'),
   ];
-  const keptSizes = [SizeItem.existing(id: 'm', name: 'M'), SizeItem.existing(id: 'l', name: 'L')];
+  const keptSizes = [
+    SizeItem.existing(id: 'm', name: 'M'),
+    SizeItem.existing(id: 'l', name: 'L'),
+  ];
 
   test('an untouched form produces an empty plan', () {
     final plan = planProductUpdate(
@@ -98,7 +101,10 @@ void main() {
       draft: unchangedDraft,
       images: keptImages,
       uploadedPaths: const [],
-      sizes: const [SizeItem.existing(id: 'm', name: 'M'), SizeItem.newSize(name: 'XL')],
+      sizes: const [
+        SizeItem.existing(id: 'm', name: 'M'),
+        SizeItem.newSize(name: 'XL'),
+      ],
     );
 
     expect(plan.hasProductChanges, isFalse);
@@ -113,7 +119,10 @@ void main() {
       draft: unchangedDraft,
       images: keptImages,
       uploadedPaths: const [],
-      sizes: const [...keptSizes, SizeItem.existing(id: 'gone', name: 'S')],
+      sizes: const [
+        ...keptSizes,
+        SizeItem.existing(id: 'gone', name: 'S'),
+      ],
     );
 
     expect(plan.sizeDiff.isEmpty, isTrue);

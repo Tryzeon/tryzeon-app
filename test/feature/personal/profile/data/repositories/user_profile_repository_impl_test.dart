@@ -189,16 +189,19 @@ void main() {
     expect(await harness.isar.userProfileCaches.count(), 0);
   });
 
-  test('updateAvatarPath returns not-found and skips the refresh when no row matched', () async {
-    final remote = _FakeRemote(remoteProfile)
-      ..updateAvatarPathError = const PostgrestException(
-        message: 'no rows',
-        code: 'PGRST116',
-      );
+  test(
+    'updateAvatarPath returns not-found and skips the refresh when no row matched',
+    () async {
+      final remote = _FakeRemote(remoteProfile)
+        ..updateAvatarPathError = const PostgrestException(
+          message: 'no rows',
+          code: 'PGRST116',
+        );
 
-    final result = await buildRepository(remote).updateAvatarPath('u1/avatar/new.jpg');
+      final result = await buildRepository(remote).updateAvatarPath('u1/avatar/new.jpg');
 
-    expect(result.getError(), const NotFoundFailure());
-    expect(remote.calls, 0);
-  });
+      expect(result.getError(), const NotFoundFailure());
+      expect(remote.calls, 0);
+    },
+  );
 }

@@ -79,7 +79,9 @@ class Tryon {
             avatarBase64: avatarBase64,
             scenePrompt: preferences.scenePrompt,
             stylingPrompt: preferences.stylingPrompt,
-            transitionPrompt: mode == TryonMode.video ? preferences.transitionPrompt : null,
+            transitionPrompt: mode == TryonMode.video
+                ? preferences.transitionPrompt
+                : null,
             engine: preferences.engine,
           ),
         );

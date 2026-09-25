@@ -22,7 +22,8 @@ class _FakeFunctions implements FunctionsClient {
         status: 200,
         data: {
           'items': [
-            for (var i = 0; i < files.length; i++) {'key': 'k$i', 'uploadUrl': 'https://r2/$i'},
+            for (var i = 0; i < files.length; i++)
+              {'key': 'k$i', 'uploadUrl': 'https://r2/$i'},
           ],
         },
       ),
@@ -45,7 +46,9 @@ class _FailingSecondPutDio implements Dio {
   @override
   dynamic noSuchMethod(final Invocation invocation) {
     final url = invocation.positionalArguments.first as String;
-    if (url.endsWith('/1')) return Future<Response<void>>.error(const SocketException('lost'));
+    if (url.endsWith('/1')) {
+      return Future<Response<void>>.error(const SocketException('lost'));
+    }
     return Future.value(Response<void>(requestOptions: RequestOptions(path: url)));
   }
 }

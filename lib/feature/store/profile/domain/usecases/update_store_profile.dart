@@ -42,7 +42,10 @@ class UpdateStoreProfile {
       target = target.copyWith(logoPath: uploadedLogoPath);
     }
 
-    final saved = await _repository.updateStoreProfile(original: original, target: target);
+    final saved = await _repository.updateStoreProfile(
+      original: original,
+      target: target,
+    );
     if (saved.isFailure) {
       final failure = saved.getError()!;
       if (uploadedLogoPath != null) {

@@ -18,13 +18,17 @@ class _FailingDeleteAccount implements DeleteAccount {
 void main() {
   test('a failed account deletion surfaces as an error state', () async {
     final container = ProviderContainer(
-      overrides: [deleteAccountUseCaseProvider.overrideWithValue(_FailingDeleteAccount())],
+      overrides: [
+        deleteAccountUseCaseProvider.overrideWithValue(_FailingDeleteAccount()),
+      ],
     );
     addTearDown(container.dispose);
     container.listen(settingsControllerProvider, (final _, final _) {});
     await container.read(settingsControllerProvider.future);
 
-    final result = await container.read(settingsControllerProvider.notifier).deleteAccount();
+    final result = await container
+        .read(settingsControllerProvider.notifier)
+        .deleteAccount();
 
     expect(result.getError(), const ServerFailure());
     expect(container.read(settingsControllerProvider).hasError, isTrue);

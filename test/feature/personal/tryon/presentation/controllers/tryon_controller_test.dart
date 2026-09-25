@@ -96,7 +96,10 @@ void main() {
         tryonPreferencesProvider.overrideWith(_FakeTryonPreferencesNotifier.new),
         dailyUsageTodayProvider.overrideWith(_FakeDailyUsageToday.new),
         tryonUseCaseProvider.overrideWithValue(
-          Tryon(tryonRepository: repository, mediaRepository: _UncalledTryonMediaRepository()),
+          Tryon(
+            tryonRepository: repository,
+            mediaRepository: _UncalledTryonMediaRepository(),
+          ),
         ),
       ],
     );

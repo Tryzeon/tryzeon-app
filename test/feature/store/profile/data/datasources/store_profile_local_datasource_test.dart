@@ -25,8 +25,10 @@ void main() {
     await harness.dispose();
   });
 
-  StoreProfileLocalDataSource build() =>
-      StoreProfileLocalDataSource(harness.service, CacheEntryLocalDataSource(harness.service));
+  StoreProfileLocalDataSource build() => StoreProfileLocalDataSource(
+    harness.service,
+    CacheEntryLocalDataSource(harness.service),
+  );
 
   final profile = StoreProfile(
     id: 's1',

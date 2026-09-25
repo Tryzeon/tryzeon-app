@@ -158,10 +158,9 @@ void main() {
   test('updateStoreProfile skips the remote write when nothing changed', () async {
     final remote = _FakeRemote(remoteProfile);
 
-    final result = await buildRepository(remote).updateStoreProfile(
-      original: originalProfile,
-      target: originalProfile,
-    );
+    final result = await buildRepository(
+      remote,
+    ).updateStoreProfile(original: originalProfile, target: originalProfile);
 
     expect(result.isSuccess, isTrue);
     expect(remote.updateCalls, 0);
@@ -179,36 +178,42 @@ void main() {
     expect(result.getError(), const ServerFailure());
   });
 
-  test('updateStoreProfile returns not-found and skips the refresh when no row matched', () async {
-    final remote = _FakeRemote(remoteProfile)
-      ..updateError = const PostgrestException(message: 'no rows', code: 'PGRST116');
+  test(
+    'updateStoreProfile returns not-found and skips the refresh when no row matched',
+    () async {
+      final remote = _FakeRemote(remoteProfile)
+        ..updateError = const PostgrestException(message: 'no rows', code: 'PGRST116');
 
-    final result = await buildRepository(remote).updateStoreProfile(
-      original: originalProfile,
-      target: originalProfile.copyWith(name: '新店名'),
-    );
+      final result = await buildRepository(remote).updateStoreProfile(
+        original: originalProfile,
+        target: originalProfile.copyWith(name: '新店名'),
+      );
 
-    expect(result.getError(), const NotFoundFailure());
-    expect(remote.calls, 0);
-  });
+      expect(result.getError(), const NotFoundFailure());
+      expect(remote.calls, 0);
+    },
+  );
 
-  test('updateStoreProfile succeeds and drops the cache when the refresh fails', () async {
-    await seedCache();
-    final remote = _FakeRemote(remoteProfile)
-      ..getError = const SocketException('offline');
+  test(
+    'updateStoreProfile succeeds and drops the cache when the refresh fails',
+    () async {
+      await seedCache();
+      final remote = _FakeRemote(remoteProfile)
+        ..getError = const SocketException('offline');
 
-    final result = await buildRepository(remote).updateStoreProfile(
-      original: originalProfile,
-      target: originalProfile.copyWith(name: '新店名'),
-    );
+      final result = await buildRepository(remote).updateStoreProfile(
+        original: originalProfile,
+        target: originalProfile.copyWith(name: '新店名'),
+      );
 
-    expect(result.isSuccess, isTrue);
-    expect(
-      await CacheEntryLocalDataSource(
-        harness.service,
-      ).getEntryStatus(StoreProfileLocalDataSource.cacheKey),
-      isNull,
-    );
-    expect(await harness.isar.storeProfileCaches.count(), 0);
-  });
+      expect(result.isSuccess, isTrue);
+      expect(
+        await CacheEntryLocalDataSource(
+          harness.service,
+        ).getEntryStatus(StoreProfileLocalDataSource.cacheKey),
+        isNull,
+      );
+      expect(await harness.isar.storeProfileCaches.count(), 0);
+    },
+  );
 }

@@ -143,13 +143,19 @@ void main() {
       final result = await signOut();
 
       expect(result.getError(), const NetworkFailure());
-      expect(journal.steps, containsAll(['clearCache', 'clearLocalDatabase', 'clearPreferences']));
+      expect(
+        journal.steps,
+        containsAll(['clearCache', 'clearLocalDatabase', 'clearPreferences']),
+      );
     });
   });
 
   group('DeleteAccount', () {
-    DeleteAccount build() =>
-        DeleteAccount(authRepository: authRepository, analyticsQueue: queue, signOut: signOut);
+    DeleteAccount build() => DeleteAccount(
+      authRepository: authRepository,
+      analyticsQueue: queue,
+      signOut: signOut,
+    );
 
     test('a failed server deletion returns the error and stays signed in', () async {
       authRepository.deleteAccountResult = const Err(ServerFailure());

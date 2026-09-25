@@ -36,14 +36,18 @@ void main() {
       overrides: [
         userProfileProvider.overrideWith(_FakeUserProfileNotifier.new),
         updateUserAvatarUseCaseProvider.overrideWithValue(_SucceedingUpdateUserAvatar()),
-        avatarFileProvider.overrideWith((final ref) async => throw const NetworkFailure()),
+        avatarFileProvider.overrideWith(
+          (final ref) async => throw const NetworkFailure(),
+        ),
       ],
     );
     addTearDown(container.dispose);
     container.listen(avatarUploadProvider, (final _, final _) {});
     container.listen(avatarFileProvider, (final _, final _) {});
 
-    final result = await container.read(avatarUploadProvider.notifier).upload(File('a.jpg'));
+    final result = await container
+        .read(avatarUploadProvider.notifier)
+        .upload(File('a.jpg'));
 
     expect(result.isSuccess, isTrue);
     expect(container.read(avatarUploadProvider).hasError, isFalse);

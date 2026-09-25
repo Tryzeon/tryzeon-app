@@ -115,7 +115,11 @@ void main() {
 
     final request = tryonRepository.requests.single as TryonGenerateRequest;
     expect(request.garments, [
-      TryonGarment.images(base64Images: [base64Encode([1, 2, 3])]),
+      TryonGarment.images(
+        base64Images: [
+          base64Encode([1, 2, 3]),
+        ],
+      ),
     ]);
     expect(request.avatarBase64, base64Encode([4, 5]));
   });

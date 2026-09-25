@@ -8,5 +8,6 @@ class GetUserAvatar {
   GetUserAvatar(this._repository);
   final UserProfileRepository _repository;
 
-  Future<Result<File, Failure>> call(final String path) => _repository.getUserAvatar(path);
+  Future<Result<File, Failure>> call(final String path) =>
+      _repository.getUserAvatar(path);
 }

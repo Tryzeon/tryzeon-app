@@ -172,7 +172,9 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
 
     try {
       await _localDataSource.saveUserProfile(
-        _mappr.convert<UserProfileDto, UserProfile>(await _remoteDataSource.getUserProfile()),
+        _mappr.convert<UserProfileDto, UserProfile>(
+          await _remoteDataSource.getUserProfile(),
+        ),
       );
     } catch (e, stackTrace) {
       AppLogger.warning('User profile refresh failed, invalidating cache', e, stackTrace);

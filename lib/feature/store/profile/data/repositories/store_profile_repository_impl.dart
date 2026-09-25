@@ -106,7 +106,11 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
         _mappr.convert<StoreProfileDto, StoreProfile>(remoteProfile),
       );
     } catch (e, stackTrace) {
-      AppLogger.warning('Store profile refresh failed, invalidating cache', e, stackTrace);
+      AppLogger.warning(
+        'Store profile refresh failed, invalidating cache',
+        e,
+        stackTrace,
+      );
       try {
         await _localDataSource.invalidateStoreProfile();
       } catch (e, stackTrace) {

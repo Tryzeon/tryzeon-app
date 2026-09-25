@@ -68,14 +68,20 @@ void main() {
     UploadWardrobeItem build() =>
         UploadWardrobeItem(repository: repository, imageStorage: imageStorage);
     Future<Result<void, Failure>> upload() => build()(
-      params: CreateWardrobeItemParams(image: File('a.jpg'), garmentType: GarmentType.top),
+      params: CreateWardrobeItemParams(
+        image: File('a.jpg'),
+        garmentType: GarmentType.top,
+      ),
       currentItemCount: 0,
       wardrobeLimit: 10,
     );
 
     test('a full wardrobe uploads nothing', () async {
       final result = await build()(
-        params: CreateWardrobeItemParams(image: File('a.jpg'), garmentType: GarmentType.top),
+        params: CreateWardrobeItemParams(
+          image: File('a.jpg'),
+          garmentType: GarmentType.top,
+        ),
         currentItemCount: 10,
         wardrobeLimit: 10,
       );
@@ -98,7 +104,6 @@ void main() {
 
       expect(imageStorage.deleted, ['u1/top/new.jpg']);
     });
-
   });
 
   group('DeleteWardrobeItem', () {
