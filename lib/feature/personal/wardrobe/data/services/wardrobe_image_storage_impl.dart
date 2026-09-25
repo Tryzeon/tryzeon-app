@@ -23,13 +23,13 @@ class WardrobeImageStorageImpl implements WardrobeImageStorage {
     required final GarmentType garmentType,
   }) async {
     final String path;
-    final List<int> bytes;
+    final Uint8List bytes;
     try {
       bytes = await image.readAsBytes();
       path = await _remoteDataSource.uploadImage(
         garmentType: garmentType.value,
         fileName: p.basename(image.path),
-        bytes: Uint8List.fromList(bytes),
+        bytes: bytes,
       );
     } catch (e, stackTrace) {
       AppLogger.error('Failed to upload wardrobe image', e, stackTrace);
@@ -37,7 +37,7 @@ class WardrobeImageStorageImpl implements WardrobeImageStorage {
     }
 
     try {
-      await _localDataSource.saveImage(Uint8List.fromList(bytes), path);
+      await _localDataSource.saveImage(bytes, path);
     } catch (e, stackTrace) {
       AppLogger.warning('Failed to cache uploaded wardrobe image', e, stackTrace);
     }
