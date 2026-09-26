@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/extensions/refresh_feedback_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_overlay.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
@@ -35,7 +36,9 @@ class StoreOnboardingPage extends HookConsumerWidget {
       child: Scaffold(
         body: SafeArea(
           child: RefreshIndicator(
-            onRefresh: () => ref.read(storeProfileProvider.notifier).refresh(),
+            onRefresh: () => [
+              ref.read(storeProfileProvider.notifier).refresh(),
+            ].showFirstFailure(context),
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.zero,

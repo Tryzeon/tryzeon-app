@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/extensions/refresh_feedback_extension.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
 import 'package:tryzeon/feature/store/product/presentation/sheets/product_sort_sheet.dart';
@@ -84,10 +85,10 @@ class StoreProductsPage extends HookConsumerWidget {
             const SizedBox(height: AppSpacing.md),
             Expanded(
               child: RefreshIndicator(
-                onRefresh: () => Future.wait([
+                onRefresh: () => [
                   ref.read(productsProvider.notifier).refresh(),
                   ref.read(productAnalyticsSummariesProvider.notifier).refresh(),
-                ]),
+                ].showFirstFailure(context),
                 child: const ProductListSection(),
               ),
             ),

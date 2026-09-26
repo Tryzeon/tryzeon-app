@@ -1,13 +1,15 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
-import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
 import 'package:tryzeon/feature/store/analytics/data/datasources/product_analytics_local_datasource.dart';
 import 'package:tryzeon/feature/store/analytics/data/datasources/product_analytics_remote_datasource.dart';
 import 'package:tryzeon/feature/store/analytics/data/repositories/product_analytics_repository_impl.dart';
 import 'package:tryzeon/feature/store/analytics/domain/entities/product_analytics_summary.dart';
 import 'package:tryzeon/feature/store/analytics/domain/repositories/product_analytics_repository.dart';
 import 'package:tryzeon/feature/store/analytics/domain/usecases/get_product_analytics_summaries.dart';
+import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -55,33 +57,41 @@ GetProductAnalyticsSummaries getProductAnalyticsSummaries(final Ref ref) {
 }
 
 @riverpod
-class ProductAnalyticsSummariesNotifier extends _$ProductAnalyticsSummariesNotifier {
+class ProductAnalyticsSummariesNotifier extends _$ProductAnalyticsSummariesNotifier
+    with PullToRefresh<List<ProductAnalyticsSummary>> {
   @override
   Future<List<ProductAnalyticsSummary>> build() async {
-    final profile = await ref.watch(storeProfileProvider.future);
-    if (profile == null) return [];
-
-    final filter = ref.watch(storeAnalyticsFilterProvider);
-    final useCase = ref.watch(getProductAnalyticsSummariesProvider);
-    final result = await useCase(
-      storeId: profile.id,
-      year: filter.year,
-      month: filter.month,
+    final result = await _fetch(
+      profile: await ref.watch(storeProfileProvider.future),
+      filter: ref.watch(storeAnalyticsFilterProvider),
+      useCase: ref.watch(getProductAnalyticsSummariesProvider),
     );
-
     if (result.isFailure) {
       throw result.getError()!;
     }
-
     return result.get()!;
   }
 
-  Future<void> refresh() async {
-    ref.invalidateSelf();
+  Future<Result<void, Failure>> refresh() => applyRefresh(() async {
+    final StoreProfile? profile;
     try {
-      await future;
-    } catch (e, st) {
-      AppLogger.warning('Failed to refresh analytics', e, st);
+      profile = await ref.read(storeProfileProvider.future);
+    } on Failure catch (e) {
+      return Err(e);
     }
+    return _fetch(
+      profile: profile,
+      filter: ref.read(storeAnalyticsFilterProvider),
+      useCase: ref.read(getProductAnalyticsSummariesProvider),
+    );
+  });
+
+  Future<Result<List<ProductAnalyticsSummary>, Failure>> _fetch({
+    required final StoreProfile? profile,
+    required final ({int year, int month}) filter,
+    required final GetProductAnalyticsSummaries useCase,
+  }) async {
+    if (profile == null) return const Ok([]);
+    return useCase(storeId: profile.id, year: filter.year, month: filter.month);
   }
 }

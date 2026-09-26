@@ -6,6 +6,7 @@ import 'package:tryzeon/core/data/services/image_analysis_api.dart';
 import 'package:tryzeon/core/data/services/store_images_api_provider.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/store/analytics/domain/entities/product_analytics_summary.dart';
@@ -33,6 +34,7 @@ import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.da
 import 'package:tryzeon/feature/store/product/domain/value_objects/size_item.dart';
 import 'package:tryzeon/feature/store/product/presentation/state/product_query_state.dart';
 import 'package:tryzeon/feature/store/product/presentation/state/product_sort_condition.dart';
+import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -123,12 +125,14 @@ class ProductQuery extends _$ProductQuery {
 }
 
 @riverpod
-class ProductsNotifier extends _$ProductsNotifier {
+class ProductsNotifier extends _$ProductsNotifier with PullToRefresh<List<Product>> {
+  static const _missingProfile = UnknownFailure('Store profile not found');
+
   @override
   Future<List<Product>> build() async {
     final profile = await ref.watch(storeProfileProvider.future);
     if (profile == null || profile.id.isEmpty) {
-      throw const UnknownFailure('Store profile not found');
+      throw _missingProfile;
     }
 
     final listProductsUseCase = ref.watch(listProductsUseCaseProvider);
@@ -140,23 +144,25 @@ class ProductsNotifier extends _$ProductsNotifier {
     return result.get()!;
   }
 
-  Future<void> refresh() async {
-    try {
-      if (ref.read(storeProfileProvider).hasError) {
-        ref.invalidate(storeProfileProvider);
+  Future<Result<void, Failure>> refresh() {
+    if (ref.read(storeProfileProvider).hasError) {
+      ref.invalidate(storeProfileProvider);
+    }
+    return applyRefresh(() async {
+      final StoreProfile? profile;
+      try {
+        profile = await ref.read(storeProfileProvider.future);
+      } on Failure catch (e) {
+        return Err(e);
       }
-      final profile = await ref.read(storeProfileProvider.future);
-      if (profile == null) return;
-
-      await ref.read(listProductsUseCaseProvider)(
+      if (profile == null || profile.id.isEmpty) {
+        return const Err(_missingProfile);
+      }
+      return ref.read(listProductsUseCaseProvider)(
         storeId: profile.id,
         forceRefresh: true,
       );
-      ref.invalidateSelf();
-      await future;
-    } catch (e, st) {
-      AppLogger.warning('Failed to refresh products', e, st);
-    }
+    });
   }
 }
 

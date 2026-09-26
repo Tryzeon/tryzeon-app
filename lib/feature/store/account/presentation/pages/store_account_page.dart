@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/extensions/refresh_feedback_extension.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/store/account/presentation/widgets/store_account_header.dart';
 import 'package:tryzeon/feature/store/account/presentation/widgets/unlist_reminder_section.dart';
@@ -23,12 +24,10 @@ class StoreAccountPage extends HookConsumerWidget {
       body: SafeArea(
         bottom: false,
         child: RefreshIndicator(
-          onRefresh: () async {
-            await Future.wait([
-              ref.read(storeProfileProvider.notifier).refresh(),
-              ref.read(productAnalyticsSummariesProvider.notifier).refresh(),
-            ]);
-          },
+          onRefresh: () => [
+            ref.read(storeProfileProvider.notifier).refresh(),
+            ref.read(productAnalyticsSummariesProvider.notifier).refresh(),
+          ].showFirstFailure(context),
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.zero,

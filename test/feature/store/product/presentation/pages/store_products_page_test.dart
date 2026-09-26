@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/store/analytics/domain/entities/product_analytics_summary.dart';
 import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
@@ -8,6 +9,7 @@ import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/presentation/pages/store_products_page.dart';
 import 'package:tryzeon/feature/store/product/presentation/widgets/product_list_section.dart';
 import 'package:tryzeon/feature/store/product/providers/store_product_providers.dart';
+import 'package:typed_result/typed_result.dart';
 
 class _FakeProducts extends ProductsNotifier {
   int refreshCount = 0;
@@ -16,18 +18,22 @@ class _FakeProducts extends ProductsNotifier {
   Future<List<Product>> build() async => const [];
 
   @override
-  Future<void> refresh() async {
+  Future<Result<void, Failure>> refresh() async {
     refreshCount++;
+    return const Ok(null);
   }
 }
 
 class _FakeAnalytics extends ProductAnalyticsSummariesNotifier {
-  int buildCount = 0;
+  int refreshCount = 0;
 
   @override
-  Future<List<ProductAnalyticsSummary>> build() async {
-    buildCount++;
-    return const [];
+  Future<List<ProductAnalyticsSummary>> build() async => const [];
+
+  @override
+  Future<Result<void, Failure>> refresh() async {
+    refreshCount++;
+    return const Ok(null);
   }
 }
 
@@ -59,11 +65,10 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(analytics.buildCount, 1);
 
     await _pullToRefresh(tester);
 
     expect(products.refreshCount, 1);
-    expect(analytics.buildCount, 2);
+    expect(analytics.refreshCount, 1);
   });
 }

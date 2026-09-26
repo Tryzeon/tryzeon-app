@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/data/services/store_images_api_provider.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
@@ -61,7 +62,8 @@ UpdateStoreProfile updateStoreProfileUseCase(final Ref ref) {
 }
 
 @riverpod
-class StoreProfileNotifier extends _$StoreProfileNotifier {
+class StoreProfileNotifier extends _$StoreProfileNotifier
+    with PullToRefresh<StoreProfile?> {
   @override
   Future<StoreProfile?> build() async {
     final isLoggedIn = ref.watch(isAuthenticatedProvider);
@@ -75,15 +77,8 @@ class StoreProfileNotifier extends _$StoreProfileNotifier {
     return result.get();
   }
 
-  Future<void> refresh() async {
-    await ref.read(getStoreProfileUseCaseProvider)(forceRefresh: true);
-    ref.invalidateSelf();
-    try {
-      await future;
-    } catch (e, st) {
-      AppLogger.warning('Failed to refresh store profile', e, st);
-    }
-  }
+  Future<Result<void, Failure>> refresh() =>
+      applyRefresh(() => ref.read(getStoreProfileUseCaseProvider)(forceRefresh: true));
 }
 
 @riverpod
