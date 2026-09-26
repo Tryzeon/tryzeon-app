@@ -7,7 +7,6 @@ class GetProductCategories {
   GetProductCategories(this._repository);
   final ProductCategoryRepository _repository;
 
-  Future<Result<List<ProductCategory>, Failure>> call({
-    final bool forceRefresh = false,
-  }) => _repository.getProductCategories(forceRefresh: forceRefresh);
+  Future<Result<List<ProductCategory>, Failure>> call() =>
+      _repository.getProductCategories();
 }

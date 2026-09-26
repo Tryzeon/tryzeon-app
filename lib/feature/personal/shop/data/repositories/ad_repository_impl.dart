@@ -10,9 +10,9 @@ class AdRepositoryImpl implements AdRepository {
   final AdLocalDataSource _adLocalDataSource;
 
   @override
-  Future<Result<List<String>, Failure>> getAds({final bool forceRefresh = false}) async {
+  Future<Result<List<String>, Failure>> getAds() async {
     try {
-      final ads = await _adLocalDataSource.getAdImages(forceRefresh: forceRefresh);
+      final ads = await _adLocalDataSource.getAdImages();
       return Ok(ads);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to get advertisements', e, stackTrace);

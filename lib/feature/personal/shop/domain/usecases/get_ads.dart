@@ -6,7 +6,7 @@ class GetAds {
   GetAds(this._repository);
   final AdRepository _repository;
 
-  Future<Result<List<String>, Failure>> call({final bool forceRefresh = false}) {
-    return _repository.getAds(forceRefresh: forceRefresh);
+  Future<Result<List<String>, Failure>> call() {
+    return _repository.getAds();
   }
 }

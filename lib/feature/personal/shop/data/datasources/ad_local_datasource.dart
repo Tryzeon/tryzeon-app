@@ -1,5 +1,5 @@
 class AdLocalDataSource {
-  Future<List<String>> getAdImages({final bool forceRefresh = false}) async {
+  Future<List<String>> getAdImages() async {
     return [
       'assets/images/ads/1.jpg',
       'assets/images/ads/2.jpg',

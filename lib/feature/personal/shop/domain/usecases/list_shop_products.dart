@@ -13,7 +13,6 @@ class ListShopProducts {
     required final ShopFilter filter,
     final int? limit,
     final int? offset,
-    final bool forceRefresh = false,
   }) async {
     return _repository.listProducts(
       storeId: filter.storeId,
@@ -32,7 +31,6 @@ class ListShopProducts {
       seasons: filter.seasons,
       limit: limit,
       offset: offset,
-      forceRefresh: forceRefresh,
     );
   }
 }

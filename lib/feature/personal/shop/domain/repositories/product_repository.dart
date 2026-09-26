@@ -25,7 +25,6 @@ abstract class ProductRepository {
     final Set<ProductSeason>? seasons,
     final int? limit,
     final int? offset,
-    final bool forceRefresh = false,
   });
 
   Future<Result<ShopProduct, Failure>> getProduct(final String productId);

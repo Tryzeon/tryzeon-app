@@ -38,7 +38,6 @@ class ProductRepositoryImpl implements ProductRepository {
     final Set<ProductSeason>? seasons,
     final int? limit,
     final int? offset,
-    final bool forceRefresh = false,
   }) async {
     try {
       final result = await _remoteDataSource.listProducts(
