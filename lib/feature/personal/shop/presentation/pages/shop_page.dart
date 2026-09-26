@@ -3,11 +3,11 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
+import 'package:tryzeon/core/extensions/refresh_feedback_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/router/shells/personal_tab.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/product_category/domain/entities/product_category.dart';
 import 'package:tryzeon/feature/common/product_category/providers/product_category_providers.dart';
@@ -213,14 +213,9 @@ class ShopPage extends HookConsumerWidget {
       body: SafeArea(
         bottom: false,
         child: RefreshIndicator(
-          onRefresh: () async {
-            try {
-              ref.invalidate(shopProductsProvider(filter));
-              await ref.read(shopProductsProvider(filter).future);
-            } catch (e, stackTrace) {
-              AppLogger.warning('Failed to refresh shop products', e, stackTrace);
-            }
-          },
+          onRefresh: () => [
+            ref.read(shopProductsProvider(filter).notifier).refresh(),
+          ].showFirstFailure(context),
           child: NotificationListener<ScrollNotification>(
             onNotification: (final notification) {
               final metrics = notification.metrics;

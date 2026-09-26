@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/data/services/image_analysis_api.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
@@ -110,7 +111,8 @@ AnalyzeWardrobeImage analyzeWardrobeImageUseCase(final Ref ref) {
 /// Keyed on the signed-in user, not on who is listening: a keepAlive holder
 /// (the outfit tray) must never carry one account's list into the next.
 @riverpod
-class WardrobeItemsNotifier extends _$WardrobeItemsNotifier {
+class WardrobeItemsNotifier extends _$WardrobeItemsNotifier
+    with PullToRefresh<List<WardrobeItem>> {
   @override
   Future<List<WardrobeItem>> build() async {
     if (ref.watch(currentUserIdProvider) == null) return const [];
@@ -123,17 +125,8 @@ class WardrobeItemsNotifier extends _$WardrobeItemsNotifier {
     return result.get()!;
   }
 
-  /// Swallows errors — the provider drops into an error state and the UI shows
-  /// an `ErrorView` or the previous data.
-  Future<void> refresh() async {
-    await ref.read(getWardrobeItemsUseCaseProvider)(forceRefresh: true);
-    ref.invalidateSelf();
-    try {
-      await future;
-    } catch (e, st) {
-      AppLogger.warning('Failed to refresh wardrobe items', e, st);
-    }
-  }
+  Future<Result<void, Failure>> refresh() =>
+      applyRefresh(() => ref.read(getWardrobeItemsUseCaseProvider)(forceRefresh: true));
 }
 
 /// Exposes progress via [state] so a sheet can drive its save button without a

@@ -5,6 +5,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
+import 'package:tryzeon/core/extensions/refresh_feedback_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
@@ -214,7 +215,9 @@ class WardrobePage extends HookConsumerWidget {
               // Grid Content
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: () => ref.read(wardrobeItemsProvider.notifier).refresh(),
+                  onRefresh: () => [
+                    ref.read(wardrobeItemsProvider.notifier).refresh(),
+                  ].showFirstFailure(context),
                   child: wardrobeItemsAsync.when(
                     skipLoadingOnReload: true,
                     skipError: true,

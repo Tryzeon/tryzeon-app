@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/common/body_measurements/domain/entities/body_measurements.dart';
@@ -94,7 +95,7 @@ UpdateStylePreferences updateStylePreferencesUseCase(final Ref ref) {
 }
 
 @riverpod
-class UserProfileNotifier extends _$UserProfileNotifier {
+class UserProfileNotifier extends _$UserProfileNotifier with PullToRefresh<UserProfile?> {
   @override
   Future<UserProfile?> build() async {
     final isLoggedIn = ref.watch(isAuthenticatedProvider);
@@ -108,15 +109,8 @@ class UserProfileNotifier extends _$UserProfileNotifier {
     return result.get()!;
   }
 
-  Future<void> refresh() async {
-    await ref.read(getUserProfileUseCaseProvider)(forceRefresh: true);
-    ref.invalidateSelf();
-    try {
-      await future;
-    } catch (e, st) {
-      AppLogger.warning('Failed to refresh user profile', e, st);
-    }
-  }
+  Future<Result<void, Failure>> refresh() =>
+      applyRefresh(() => ref.read(getUserProfileUseCaseProvider)(forceRefresh: true));
 }
 
 @riverpod

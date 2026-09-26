@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/extensions/refresh_feedback_extension.dart';
 import 'package:tryzeon/core/modules/revenue_cat/providers/revenue_cat_providers.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_overlay.dart';
 import 'package:tryzeon/core/presentation/widgets/nav_row.dart';
@@ -15,6 +17,7 @@ import 'package:tryzeon/feature/personal/subscription/presentation/utils/subscri
 import 'package:tryzeon/feature/personal/subscription/presentation/widgets/subscription_usage_card.dart';
 import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/usage/providers/daily_usage_providers.dart';
+import 'package:typed_result/typed_result.dart';
 
 class AccountPage extends HookConsumerWidget {
   const AccountPage({super.key});
@@ -22,29 +25,29 @@ class AccountPage extends HookConsumerWidget {
   /// The entitlement re-emits on its own whenever RevenueCat reports a change
   /// (capabilities follow from it), but the usage cache is `keepAlive` and a
   /// day rollover reaches us only on a re-read, which is what this is.
-  Future<void> _refresh(final WidgetRef ref) async {
+  List<Future<Result<void, Failure>>> _refresh(final WidgetRef ref) {
     ref
       ..invalidate(dailyUsageTodayProvider)
       ..invalidate(appSubscriptionEntitlementProvider);
 
-    await Future.wait([
-      // Guards its own failures internally.
+    return [
       ref.read(userProfileProvider.notifier).refresh(),
       _settle(ref.read(dailyUsageTodayProvider.future)),
       _settle(ref.read(appSubscriptionEntitlementProvider.future)),
       _settle(ref.read(subscriptionCapabilitiesProvider.future)),
-    ]);
+    ];
   }
 
-  /// Awaits [future] without letting it reject: each provider's own `AsyncError`
-  /// already renders in the section that watches it, and an unhandled rejection
-  /// would leave [RefreshIndicator] spinning.
-  Future<void> _settle(final Future<Object?> future) async {
+  /// Awaits [future] without letting it reject or report: each provider's own
+  /// `AsyncError` already renders in the section that watches it, and an
+  /// unhandled rejection would leave the refresh indicator spinning.
+  Future<Result<void, Failure>> _settle(final Future<Object?> future) async {
     try {
       await future;
     } catch (e, stackTrace) {
       AppLogger.warning('Account pull-to-refresh: a source failed', e, stackTrace);
     }
+    return const Ok(null);
   }
 
   @override
@@ -57,7 +60,7 @@ class AccountPage extends HookConsumerWidget {
         body: SafeArea(
           bottom: false,
           child: RefreshIndicator(
-            onRefresh: () => _refresh(ref),
+            onRefresh: () => _refresh(ref).showFirstFailure(context),
             edgeOffset: MediaQuery.of(context).padding.top,
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),

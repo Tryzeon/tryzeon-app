@@ -5,11 +5,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:share_plus/share_plus.dart' as share_plus;
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
+import 'package:tryzeon/core/extensions/refresh_feedback_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/state/shop_products_notifier.dart';
@@ -80,16 +80,10 @@ class StorePage extends HookConsumerWidget {
           final filter = ShopFilter(storeId: storeInfo.id);
           final productsAsync = ref.watch(shopProductsProvider(filter));
           return RefreshIndicator(
-            onRefresh: () async {
-              try {
-                await Future.wait([
-                  ref.refresh(storeInfoProvider(storeId).future),
-                  ref.refresh(shopProductsProvider(filter).future),
-                ]);
-              } catch (e, stackTrace) {
-                AppLogger.warning('Failed to refresh store page', e, stackTrace);
-              }
-            },
+            onRefresh: () => [
+              ref.read(storeInfoProvider(storeId).notifier).refresh(),
+              ref.read(shopProductsProvider(filter).notifier).refresh(),
+            ].showFirstFailure(context),
             child: NotificationListener<ScrollNotification>(
               onNotification: (final notification) {
                 final metrics = notification.metrics;

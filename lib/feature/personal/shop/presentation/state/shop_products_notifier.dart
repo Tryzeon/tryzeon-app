@@ -1,8 +1,11 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
+import 'package:tryzeon/feature/personal/shop/domain/usecases/list_shop_products.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -19,18 +22,30 @@ sealed class ShopProductsState with _$ShopProductsState {
 }
 
 @riverpod
-class ShopProductsNotifier extends _$ShopProductsNotifier {
+class ShopProductsNotifier extends _$ShopProductsNotifier
+    with PullToRefresh<ShopProductsState> {
   static const _pageSize = 20;
 
   @override
   Future<ShopProductsState> build(final ShopFilter filter) async {
-    final useCase = ref.watch(listShopProductsProvider);
-    final result = await useCase(filter: filter, limit: _pageSize, offset: 0);
+    final result = await _fetchFirstPage(ref.watch(listShopProductsProvider));
     if (result.isFailure) {
       throw result.getError()!;
     }
-    final items = result.get()!;
-    return ShopProductsState(items: items, hasMore: items.length == _pageSize);
+    return result.get()!;
+  }
+
+  Future<Result<void, Failure>> refresh() =>
+      applyRefresh(() => _fetchFirstPage(ref.read(listShopProductsProvider)));
+
+  Future<Result<ShopProductsState, Failure>> _fetchFirstPage(
+    final ListShopProducts useCase,
+  ) async {
+    final result = await useCase(filter: filter, limit: _pageSize, offset: 0);
+    return result.map(
+      (final items) =>
+          ShopProductsState(items: items, hasMore: items.length == _pageSize),
+    );
   }
 
   Future<void> loadMore() async {
@@ -38,7 +53,8 @@ class ShopProductsNotifier extends _$ShopProductsNotifier {
     final current = state.value;
     if (current == null || !current.hasMore || current.isLoadingMore) return;
 
-    state = AsyncData(current.copyWith(isLoadingMore: true));
+    final loading = current.copyWith(isLoadingMore: true);
+    state = AsyncData(loading);
 
     final useCase = ref.read(listShopProductsProvider);
     final result = await useCase(
@@ -47,7 +63,8 @@ class ShopProductsNotifier extends _$ShopProductsNotifier {
       offset: current.items.length,
     );
 
-    if (!ref.mounted) return;
+    // A refresh that landed meanwhile replaced the list this page would extend.
+    if (!ref.mounted || !identical(state.value, loading)) return;
 
     if (result.isFailure) {
       AppLogger.warning('Failed to load more shop products', result.getError());

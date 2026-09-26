@@ -1,6 +1,8 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
+import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/ad_local_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/repositories/ad_repository_impl.dart';
@@ -108,11 +110,16 @@ Future<List<String>> shopAds(final Ref ref) async {
 }
 
 @riverpod
-Future<ShopStoreInfo> storeInfo(final Ref ref, final String storeId) async {
-  final getUseCase = ref.watch(getStoreInfoProvider);
-  final result = await getUseCase(storeId);
-  if (result.isFailure) {
-    throw result.getError()!;
+class StoreInfoNotifier extends _$StoreInfoNotifier with PullToRefresh<ShopStoreInfo> {
+  @override
+  Future<ShopStoreInfo> build(final String storeId) async {
+    final result = await ref.watch(getStoreInfoProvider)(storeId);
+    if (result.isFailure) {
+      throw result.getError()!;
+    }
+    return result.get()!;
   }
-  return result.get()!;
+
+  Future<Result<void, Failure>> refresh() =>
+      applyRefresh(() => ref.read(getStoreInfoProvider)(storeId));
 }
