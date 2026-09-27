@@ -1,6 +1,5 @@
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Roles are assigned in [AppTheme]'s `ColorScheme`; widgets read
 /// `Theme.of(context).colorScheme`, not this class.
@@ -197,7 +196,7 @@ class AppTheme {
         elevation: 0,
         centerTitle: true,
         foregroundColor: colorScheme.onSurface,
-        titleTextStyle: GoogleFonts.outfit(
+        titleTextStyle: TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: colorScheme.onSurface,
@@ -295,7 +294,7 @@ class AppTheme {
           foregroundColor: colorScheme.onPrimary,
           shape: buttonShape,
           padding: buttonPadding,
-          textStyle: GoogleFonts.outfit(
+          textStyle: const TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w700,
             letterSpacing: 1.2,
@@ -308,7 +307,7 @@ class AppTheme {
           side: BorderSide(color: colorScheme.onSurface, width: AppStroke.regular),
           shape: buttonShape,
           padding: buttonPadding,
-          textStyle: GoogleFonts.outfit(
+          textStyle: const TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w700,
             letterSpacing: 1.2,
@@ -320,7 +319,7 @@ class AppTheme {
           foregroundColor: colorScheme.primary,
           shape: buttonShape,
           padding: buttonPadding,
-          textStyle: GoogleFonts.outfit(
+          textStyle: const TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w700,
             letterSpacing: 1.2,
@@ -355,10 +354,7 @@ class AppTheme {
           borderRadius: AppRadius.inputAll,
           borderSide: BorderSide(color: colorScheme.error, width: AppStroke.regular),
         ),
-        hintStyle: GoogleFonts.notoSansTc(
-          fontSize: 13,
-          color: colorScheme.onSurfaceVariant,
-        ),
+        hintStyle: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
       ),
 
       bottomSheetTheme: BottomSheetThemeData(
@@ -370,7 +366,7 @@ class AppTheme {
 
       snackBarTheme: SnackBarThemeData(
         backgroundColor: colorScheme.inverseSurface,
-        contentTextStyle: GoogleFonts.notoSansTc(
+        contentTextStyle: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w500,
           color: colorScheme.onInverseSurface,
@@ -397,11 +393,8 @@ class AppTheme {
         dividerColor: colorScheme.outline,
         dividerHeight: AppStroke.thin,
         overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-        labelStyle: GoogleFonts.notoSansTc(fontSize: 14, fontWeight: FontWeight.w600),
-        unselectedLabelStyle: GoogleFonts.notoSansTc(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
+        labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        unselectedLabelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
       ),
 
       dialogTheme: DialogThemeData(
@@ -430,41 +423,34 @@ class AppTheme {
         ),
       ),
 
-      textTheme: TextTheme(
-        displayLarge: GoogleFonts.playfairDisplay(
-          fontSize: 48,
-          fontWeight: FontWeight.w400,
-        ),
-        displayMedium: GoogleFonts.playfairDisplay(
-          fontSize: 36,
-          fontWeight: FontWeight.w400,
-        ),
-        displaySmall: GoogleFonts.playfairDisplay(
+      textTheme: const TextTheme(
+        displayLarge: TextStyle(fontSize: 48, fontWeight: FontWeight.w400),
+        displayMedium: TextStyle(fontSize: 36, fontWeight: FontWeight.w400),
+        displaySmall: TextStyle(
           fontSize: 28,
           fontWeight: FontWeight.w400,
           fontStyle: FontStyle.italic,
         ),
-        headlineLarge: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w600),
-        headlineMedium: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w600),
-        headlineSmall: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600),
-        titleLarge: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w600),
-        titleMedium: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w500),
-        titleSmall: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w500),
-        // Body — Noto Sans TC (Chinese-compatible)
-        bodyLarge: GoogleFonts.notoSansTc(fontSize: 15, fontWeight: FontWeight.w400),
-        bodyMedium: GoogleFonts.notoSansTc(fontSize: 13, fontWeight: FontWeight.w400),
-        bodySmall: GoogleFonts.notoSansTc(fontSize: 11, fontWeight: FontWeight.w400),
-        labelLarge: GoogleFonts.outfit(
+        headlineLarge: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+        headlineMedium: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        headlineSmall: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        titleLarge: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+        titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        titleSmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        bodyLarge: TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
+        bodyMedium: TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
+        bodySmall: TextStyle(fontSize: 11, fontWeight: FontWeight.w400),
+        labelLarge: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w700,
           letterSpacing: 1.2,
         ),
-        labelMedium: GoogleFonts.outfit(
+        labelMedium: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.w700,
           letterSpacing: 1.5,
         ),
-        labelSmall: GoogleFonts.outfit(
+        labelSmall: TextStyle(
           fontSize: 9,
           fontWeight: FontWeight.w700,
           letterSpacing: 1.5,
