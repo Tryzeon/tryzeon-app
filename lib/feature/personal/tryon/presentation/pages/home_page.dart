@@ -20,7 +20,6 @@ import 'package:tryzeon/feature/personal/tryon/presentation/actions/edit_outfit.
 import 'package:tryzeon/feature/personal/tryon/presentation/controllers/tryon_controller.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/coordinators/tryon_coordinator.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/sheets/tryon_mode_sheet.dart';
-import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_outcome.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/home_primary_action_button.dart';
@@ -229,7 +228,7 @@ class HomePage extends HookConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (galleryState.currentEntry case final FinishedTryonEntry entry
+                    if (galleryState.currentEntry case final entry?
                         when entry.pieces.isNotEmpty) ...[
                       TryonOutfitStrip(
                         pieces: entry.pieces,
