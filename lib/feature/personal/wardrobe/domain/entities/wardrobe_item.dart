@@ -13,4 +13,10 @@ sealed class WardrobeItem with _$WardrobeItem {
     required final DateTime updatedAt,
     @Default([]) final List<String> tags,
   }) = _WardrobeItem;
+
+  const WardrobeItem._();
+
+  /// Only background-removed uploads are stored as PNG; picked photos are
+  /// always re-encoded to JPEG.
+  bool get isCutout => imagePath.toLowerCase().endsWith('.png');
 }

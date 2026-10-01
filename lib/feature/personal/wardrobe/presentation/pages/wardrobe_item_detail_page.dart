@@ -196,20 +196,30 @@ class _WardrobeItemDetailContent extends ConsumerWidget {
                 fit: StackFit.expand,
                 children: [
                   imageFileAsync.when(
-                    data: (final file) => Image.file(
-                      file,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      errorBuilder: (final context, final error, final stackTrace) {
-                        return Container(
-                          color: colorScheme.surfaceContainerLow,
-                          child: Icon(
-                            Icons.image_not_supported_outlined,
-                            size: AppSpacing.xxl,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        );
-                      },
+                    data: (final file) => ColoredBox(
+                      color: colorScheme.surfaceContainerLow,
+                      child: Padding(
+                        padding: item.isCutout
+                            ? EdgeInsets.fromLTRB(
+                                AppSpacing.lg,
+                                MediaQuery.paddingOf(context).top + kToolbarHeight,
+                                AppSpacing.lg,
+                                AppSpacing.xxl,
+                              )
+                            : EdgeInsets.zero,
+                        child: Image.file(
+                          file,
+                          fit: item.isCutout ? BoxFit.contain : BoxFit.cover,
+                          width: double.infinity,
+                          errorBuilder: (final context, final error, final stackTrace) {
+                            return Icon(
+                              Icons.image_not_supported_outlined,
+                              size: AppSpacing.xxl,
+                              color: colorScheme.onSurfaceVariant,
+                            );
+                          },
+                        ),
+                      ),
                     ),
                     loading: () => const Center(child: CircularProgressIndicator()),
                     error: (final error, final stack) => Container(
