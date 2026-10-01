@@ -7,6 +7,7 @@ import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type
 import 'package:typed_result/typed_result.dart';
 import 'package:uuid/uuid.dart';
 
+import '../entities/wardrobe_capacity.dart';
 import '../repositories/wardrobe_repository.dart';
 import '../services/wardrobe_image_storage.dart';
 
@@ -34,10 +35,9 @@ class UploadWardrobeItem {
 
   Future<Result<void, Failure>> call({
     required final CreateWardrobeItemParams params,
-    required final int currentItemCount,
-    required final int wardrobeLimit,
+    required final WardrobeCapacity capacity,
   }) async {
-    if (currentItemCount >= wardrobeLimit) {
+    if (capacity.isFull) {
       return const Err(ValidationFailure());
     }
 

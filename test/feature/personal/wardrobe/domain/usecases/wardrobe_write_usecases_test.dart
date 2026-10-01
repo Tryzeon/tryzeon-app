@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_capacity.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/repositories/wardrobe_repository.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/services/wardrobe_image_storage.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/delete_wardrobe_item.dart';
@@ -72,8 +73,7 @@ void main() {
         image: File('a.jpg'),
         garmentType: GarmentType.top,
       ),
-      currentItemCount: 0,
-      wardrobeLimit: 10,
+      capacity: const WardrobeCapacity(used: 0, limit: 10),
     );
 
     test('a full wardrobe uploads nothing', () async {
@@ -82,8 +82,7 @@ void main() {
           image: File('a.jpg'),
           garmentType: GarmentType.top,
         ),
-        currentItemCount: 10,
-        wardrobeLimit: 10,
+        capacity: const WardrobeCapacity(used: 10, limit: 10),
       );
 
       expect(result.getError(), isA<ValidationFailure>());

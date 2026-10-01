@@ -18,6 +18,7 @@ import 'package:tryzeon/feature/personal/wardrobe/data/repositories/wardrobe_rep
 import 'package:tryzeon/feature/personal/wardrobe/data/services/background_remover_impl.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/services/label_tagger_impl.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/services/wardrobe_image_storage_impl.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_capacity.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/repositories/wardrobe_repository.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/services/background_remover.dart';
@@ -129,6 +130,13 @@ class WardrobeItemsNotifier extends _$WardrobeItemsNotifier
       applyRefresh(() => ref.read(getWardrobeItemsUseCaseProvider)(forceRefresh: true));
 }
 
+@riverpod
+Future<WardrobeCapacity> wardrobeCapacity(final Ref ref) async {
+  final capabilities = await ref.watch(subscriptionCapabilitiesProvider.future);
+  final items = await ref.watch(wardrobeItemsProvider.future);
+  return WardrobeCapacity(used: items.length, limit: capabilities.wardrobeLimit);
+}
+
 /// Exposes progress via [state] so a sheet can drive its save button without a
 /// hand-rolled flag, and also returns the [Result] so the caller can surface a
 /// one-shot failure.
@@ -144,8 +152,7 @@ class WardrobeEditNotifier extends _$WardrobeEditNotifier {
     final Uint8List? replacementBytes,
   }) {
     return _write(() async {
-      final capabilities = await ref.read(subscriptionCapabilitiesProvider.future);
-      final items = await ref.read(wardrobeItemsProvider.future);
+      final capacity = await ref.read(wardrobeCapacityProvider.future);
 
       final tempFile = replacementBytes == null
           ? null
@@ -158,8 +165,7 @@ class WardrobeEditNotifier extends _$WardrobeEditNotifier {
             garmentType: garmentType,
             tags: tags,
           ),
-          currentItemCount: items.length,
-          wardrobeLimit: capabilities.wardrobeLimit,
+          capacity: capacity,
         );
       } finally {
         try {

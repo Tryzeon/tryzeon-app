@@ -6,19 +6,21 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
-import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_button.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/garment_type/presentation/garment_type_display.dart';
-import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
+import 'package:tryzeon/feature/personal/wardrobe/presentation/dialogs/wardrobe_full_dialog.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 class UploadWardrobeItemSheet extends HookConsumerWidget {
   const UploadWardrobeItemSheet({super.key, required this.image});
   final File image;
+
+  static const double _previewSize = 80;
+  static const double _capacityBarHeight = 6;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
@@ -91,11 +93,7 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
         final failure = result.getError()!;
 
         if (failure is ValidationFailure) {
-          UpgradeDialog.show(
-            context,
-            title: '衣櫃已達上限',
-            content: '您的衣櫃容量已達上限\n升級至更高方案以獲得更多儲存空間！',
-          );
+          showWardrobeFullDialog(context);
         } else {
           TopNotification.show(context, message: failure.displayMessage(context));
         }
@@ -103,51 +101,44 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
     }
 
     Widget buildCapacityIndicator() {
-      final capabilitiesAsync = ref.watch(subscriptionCapabilitiesProvider);
-      final itemsAsync = ref.watch(wardrobeItemsProvider);
+      final capacity = ref.watch(wardrobeCapacityProvider).value;
+      if (capacity == null) return const SizedBox.shrink();
 
-      return switch ((capabilitiesAsync, itemsAsync)) {
-        (AsyncData(value: final capabilities), AsyncData(value: final items)) => () {
-          final limit = capabilities.wardrobeLimit;
-          final current = items.length;
-          final percentage = current / limit;
+      final barColor = capacity.isNearLimit ? colorScheme.error : colorScheme.onSurface;
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '衣櫃容量',
-                    style: textTheme.labelMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  Text(
-                    '$current / $limit 件',
-                    style: textTheme.labelMedium?.copyWith(
-                      color: percentage >= 0.9 ? colorScheme.error : null,
-                    ),
-                  ),
-                ],
+              Text(
+                '衣櫃容量',
+                style: textTheme.labelMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
-              const SizedBox(height: AppSpacing.xs),
-              ClipRRect(
-                borderRadius: AppRadius.buttonAll,
-                child: LinearProgressIndicator(
-                  value: percentage,
-                  minHeight: 6,
-                  backgroundColor: colorScheme.surfaceContainerHighest,
-                  color: percentage >= 0.9 ? colorScheme.error : colorScheme.onSurface,
+              Text(
+                '${capacity.used} / ${capacity.limit} 件',
+                style: textTheme.labelMedium?.copyWith(
+                  color: capacity.isNearLimit ? colorScheme.error : null,
                 ),
               ),
             ],
-          );
-        }(),
-        _ => const SizedBox.shrink(),
-      };
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          ClipRRect(
+            borderRadius: AppRadius.buttonAll,
+            child: LinearProgressIndicator(
+              value: capacity.usage,
+              minHeight: _capacityBarHeight,
+              backgroundColor: colorScheme.surfaceContainerHighest,
+              color: barColor,
+            ),
+          ),
+        ],
+      );
     }
 
     Widget buildImagePreviewRow() {
@@ -158,11 +149,16 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
             child: useRemovedBg.value && removedBgImage.value != null
                 ? Image.memory(
                     removedBgImage.value!,
-                    width: 80,
-                    height: 80,
+                    width: _previewSize,
+                    height: _previewSize,
                     fit: BoxFit.cover,
                   )
-                : Image.file(image, width: 80, height: 80, fit: BoxFit.cover),
+                : Image.file(
+                    image,
+                    width: _previewSize,
+                    height: _previewSize,
+                    fit: BoxFit.cover,
+                  ),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(child: buildCapacityIndicator()),
@@ -253,7 +249,7 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
               children: [
                 for (final entry in tags.value.asMap().entries)
                   Chip(
-                    label: Text('#${entry.value}'.toUpperCase()),
+                    label: Text('#${entry.value}'),
                     onDeleted: () => removeTag(entry.key),
                   ),
               ],
