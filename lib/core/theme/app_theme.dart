@@ -70,6 +70,9 @@ class AppSpacing {
   static const double bottomNavBarHorizontalMargin = md;
   static const double bottomNavBarBottomMargin = smMd;
 
+  // Scroll-end padding that clears a FAB (56) and its margin (16)
+  static const double fabClearance = 80;
+
   /// Height the floating bottom navigation covers above the safe-area inset;
   /// pages add this (plus the inset) so content scrolls clear of the bar.
   static double get bottomNavBarOverlap => PlatformInfo.isIOS26OrHigher()

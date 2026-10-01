@@ -39,7 +39,7 @@ class ProductListSection extends HookConsumerWidget {
 
       final bottomInset =
           MediaQuery.of(context).padding.bottom +
-          80 + // FAB clearance
+          AppSpacing.fabClearance +
           AppSpacing.bottomNavBarOverlap;
 
       return GridView.builder(
