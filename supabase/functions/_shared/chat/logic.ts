@@ -10,6 +10,7 @@ import {
   SEASON_VALUES,
   THICKNESS_VALUES,
 } from "../vocabularies.ts";
+import { LIMITS } from "./types.ts";
 import type { JSONValue, ModelMessage, TextPart, ToolCallPart } from "ai";
 import type { Database } from "../database.types.ts";
 import type {
@@ -202,6 +203,22 @@ export function toSearchResultItem(row: Record<string, unknown>): Record<string,
 // depending on whether it survived a round trip through conversation storage.
 export const blockItemId = (block: ContentBlock): string | null =>
   nonEmptyStr(block.id) ?? nonEmptyStr(asRecord(block.item)?.id);
+
+const isTurnStart = (m: ChatMessage): boolean =>
+  m.role === "user" && !m.content.some((b) => b?.type === "tool_result");
+
+// Drops the oldest whole turns until at most `max` messages remain. The cut
+// lands only on a turn start, so no tool_result outlives the tool_use it
+// answers. Empty when the tail holds no turn start at all.
+export function windowHistory(
+  messages: ChatMessage[],
+  max: number = LIMITS.MAX_MESSAGES,
+): ChatMessage[] {
+  if (messages.length <= max) return messages;
+  const tail = messages.slice(-max);
+  const start = tail.findIndex(isTurnStart);
+  return start === -1 ? [] : tail.slice(start);
+}
 
 // The whole history is replayed verbatim and uncompressed: assistant tool_use →
 // a `tool-call` part, the paired user tool_result → a `tool` message with a

@@ -8,7 +8,9 @@ import {
   toModelMessages,
   toSearchResultItem,
   validateVocabularyFilters,
+  windowHistory,
 } from "./logic.ts";
+import type { ChatMessage } from "./types.ts";
 
 const CATEGORIES = new Map([["tops", "cat-1"], ["dresses", "cat-2"]]);
 
@@ -315,4 +317,37 @@ Deno.test("validateVocabularyFilters rejects a filter mixing valid and invalid v
   assertEquals(r.ok, false);
   if (r.ok) throw new Error("expected a rejection");
   assertStringIncludes(r.error, "tight");
+});
+
+const userText = (text: string): ChatMessage => ({
+  role: "user",
+  content: [{ type: "text", text }],
+});
+
+const toolTurn = (n: number): ChatMessage[] => [
+  userText(`q${n}`),
+  {
+    role: "assistant",
+    content: [{ type: "tool_use", id: `t${n}`, name: "search_products", input: {} }],
+  },
+  {
+    role: "user",
+    content: [{ type: "tool_result", tool_use_id: `t${n}`, content: { items: [] } }],
+  },
+  { role: "assistant", content: [{ type: "text", text: `a${n}` }] },
+];
+
+Deno.test("windowHistory leaves a history within the window untouched", () => {
+  const messages = [...toolTurn(1), ...toolTurn(2)];
+  assertEquals(windowHistory(messages, 8), messages);
+});
+
+Deno.test("windowHistory drops the oldest whole turns, never half a tool round", () => {
+  const messages = [...toolTurn(1), ...toolTurn(2), userText("q3")];
+  // A cut at 6 would start on turn 1's tool_result, orphaned from its tool_use.
+  assertEquals(windowHistory(messages, 6), [...toolTurn(2), userText("q3")]);
+});
+
+Deno.test("windowHistory is empty when the window holds no turn start", () => {
+  assertEquals(windowHistory(toolTurn(1), 3), []);
 });

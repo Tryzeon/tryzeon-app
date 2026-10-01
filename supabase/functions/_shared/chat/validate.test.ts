@@ -50,15 +50,24 @@ Deno.test("rejects an empty or non-array history", () => {
   );
 });
 
-Deno.test("rejects a history past MAX_MESSAGES", () => {
+Deno.test("windows a history past MAX_MESSAGES instead of rejecting it", () => {
   const messages = Array.from(
-    { length: LIMITS.MAX_MESSAGES + 1 },
-    () => message("hi"),
+    { length: LIMITS.MAX_MESSAGES + 5 },
+    (_, i) => message(`m${i}`),
   );
+  assertEquals(validateChatParams(params({ messages })).messages, messages.slice(5));
+});
+
+Deno.test("rejects a history whose window holds no user turn", () => {
+  const toolResult: ChatMessage = {
+    role: "user",
+    content: [{ type: "tool_result", tool_use_id: "t", content: {} }],
+  };
+  const messages = Array.from({ length: LIMITS.MAX_MESSAGES + 1 }, () => toolResult);
   assertThrows(
     () => validateChatParams(params({ messages })),
     ValidationError,
-    `too many messages (max ${LIMITS.MAX_MESSAGES})`,
+    `no user turn within the last ${LIMITS.MAX_MESSAGES} messages`,
   );
 });
 

@@ -1,5 +1,5 @@
 export { runChatAgent, type RunChatAgentDeps } from "./run.ts";
-export { blockItemId } from "./logic.ts";
+export { blockItemId, windowHistory } from "./logic.ts";
 export { supabaseChatQuota } from "./quota.ts";
 export type {
   AgentAnswer,

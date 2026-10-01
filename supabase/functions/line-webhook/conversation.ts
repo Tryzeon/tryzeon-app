@@ -1,4 +1,4 @@
-import { blockItemId } from "../_shared/chat/index.ts";
+import { blockItemId, windowHistory } from "../_shared/chat/index.ts";
 import type { ChatMessage, ContentBlock } from "../_shared/chat/index.ts";
 import { clampProductName, type ProductInfo } from "./product-card.ts";
 import { tagLine, type WardrobeItemInfo } from "./wardrobe-card.ts";
@@ -39,7 +39,7 @@ export function redisConversations(client: RedisLike = redis()): ConversationSto
     },
     async save(lineUserId, messages) {
       try {
-        await client.set(KEY_PREFIX + lineUserId, messages, { ex: IDLE_TTL_SECONDS });
+        await client.set(KEY_PREFIX + lineUserId, windowHistory(messages), { ex: IDLE_TTL_SECONDS });
       } catch (err) {
         console.warn("line-webhook conversation save failed:", err);
       }

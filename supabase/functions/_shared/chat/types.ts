@@ -42,11 +42,11 @@ export interface ChatResult {
 
 export const LIMITS = {
   /**
-   * Cap on replayed history: `toModelMessages` replays every turn verbatim, so
-   * an unbounded conversation is an unbounded per-request cost. Generous enough
-   * that no real session in the app reaches it — it exists so a server-side
-   * conversation store, which has no client deciding when to forget, cannot
-   * grow without one.
+   * Window on replayed history: `toModelMessages` replays every turn verbatim,
+   * so an unbounded conversation is an unbounded per-request cost. A longer
+   * history is not refused — `windowHistory` drops its oldest whole turns, so
+   * the conversation keeps working and forgets its beginning. The LINE
+   * conversation store saves under the same window.
    */
   MAX_MESSAGES: 400,
   MAX_TEXT_LENGTH: 2000,

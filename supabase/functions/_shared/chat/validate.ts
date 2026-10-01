@@ -4,10 +4,11 @@
  * mapping for, and a guard that rejected unknown types would have to be edited
  * every time the answer format grows a case, breaking stored conversations
  * written by an older deploy. Size is the exception: replay cost is unbounded
- * without a cap, so `MAX_MESSAGES` and `MAX_TEXT_LENGTH` are enforced here and
- * nowhere else.
+ * without a cap, so an over-long text block is rejected and an over-long
+ * history is cut to its latest `MAX_MESSAGES` by `windowHistory`.
  */
 import { requireString, ValidationError } from "../validation.ts";
+import { windowHistory } from "./logic.ts";
 import { LIMITS } from "./types.ts";
 import type { ChatMessage, ChatParams } from "./types.ts";
 
@@ -48,12 +49,14 @@ export function validateChatParams(params: ChatParams): ChatParams {
   if (!Array.isArray(params.messages) || params.messages.length === 0) {
     throw new ValidationError("messages must be a non-empty array");
   }
-  if (params.messages.length > LIMITS.MAX_MESSAGES) {
-    throw new ValidationError(
-      `too many messages (max ${LIMITS.MAX_MESSAGES})`,
-    );
-  }
   params.messages.forEach(checkMessage);
 
-  return params;
+  const messages = windowHistory(params.messages);
+  if (messages.length === 0) {
+    throw new ValidationError(
+      `no user turn within the last ${LIMITS.MAX_MESSAGES} messages`,
+    );
+  }
+
+  return { ...params, messages };
 }

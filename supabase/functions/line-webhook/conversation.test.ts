@@ -193,6 +193,18 @@ Deno.test("a write carries the idle window as the key's TTL", async () => {
   }]);
 });
 
+Deno.test("a write keeps only the latest window of the conversation", async () => {
+  const { client, sets } = fakeRedis();
+  const messages: ChatMessage[] = Array.from(
+    { length: LIMITS.MAX_MESSAGES + 3 },
+    (_, i) => ({ role: "user", content: [{ type: "text", text: `m${i}` }] }),
+  );
+
+  await redisConversations(client).save("Uline123", messages);
+
+  assertEquals(sets[0].value, messages.slice(3));
+});
+
 Deno.test("a store that is down costs continuity, not the turn", async () => {
   const store = redisConversations(fakeRedis({ fails: true }).client);
 
