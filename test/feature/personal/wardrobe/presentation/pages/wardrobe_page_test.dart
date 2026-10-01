@@ -8,6 +8,7 @@ import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_capacity.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/pages/wardrobe_page.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/widgets/wardrobe_item_card.dart';
@@ -15,11 +16,17 @@ import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.d
 
 import '../../../../../support/wardrobe_test_doubles.dart';
 
-ProviderContainer _makeContainer(final List<WardrobeItem> items) {
+ProviderContainer _makeContainer(
+  final List<WardrobeItem> items, {
+  required final int limit,
+}) {
   return ProviderContainer(
     overrides: [
       isAuthenticatedProvider.overrideWithValue(true),
       wardrobeItemsProvider.overrideWith(() => FakeWardrobeItems(items)),
+      wardrobeCapacityProvider.overrideWith(
+        (final ref) async => WardrobeCapacity(used: items.length, limit: limit),
+      ),
       for (final item in items)
         wardrobeItemImageProvider(
           item.imagePath,
@@ -45,7 +52,10 @@ Widget _harness(final ProviderContainer container) {
   );
 }
 
-Future<ProviderContainer> pumpPage(final WidgetTester tester) async {
+Future<ProviderContainer> pumpPage(
+  final WidgetTester tester, {
+  final int limit = 100,
+}) async {
   tester.view.physicalSize = const Size(800, 1400);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.resetPhysicalSize);
@@ -54,7 +64,7 @@ Future<ProviderContainer> pumpPage(final WidgetTester tester) async {
   final items = [
     for (final id in ['a', 'b', 'c', 'd']) wardrobeItem(id),
   ];
-  final container = _makeContainer(items);
+  final container = _makeContainer(items, limit: limit);
   addTearDown(container.dispose);
   await tester.pumpWidget(_harness(container));
   await tester.pump(AppDuration.slow);
@@ -68,18 +78,40 @@ Future<void> pumpDockTransition(final WidgetTester tester) async {
 }
 
 void main() {
-  testWidgets('header chip enters and leaves compose mode', (final tester) async {
+  testWidgets('header button enters compose mode and cancel leaves it', (
+    final tester,
+  ) async {
     await pumpPage(tester);
 
-    await tester.tap(find.byKey(const Key('wardrobe-compose-chip')));
+    await tester.tap(find.byKey(const Key('wardrobe-compose-start')));
     await tester.pump(AppDuration.standard);
-    expect(find.text('搭配中'), findsOneWidget);
+    expect(find.byKey(const Key('wardrobe-compose-cancel')), findsOneWidget);
     expect(find.byKey(const Key('outfit-dock')), findsOneWidget);
 
-    await tester.tap(find.byKey(const Key('wardrobe-compose-chip')));
+    await tester.tap(find.byKey(const Key('wardrobe-compose-cancel')));
     await pumpDockTransition(tester);
-    expect(find.text('搭配試穿'), findsOneWidget);
+    expect(find.byKey(const Key('wardrobe-compose-start')), findsOneWidget);
     expect(find.byKey(const Key('outfit-dock')), findsNothing);
+  });
+
+  testWidgets('the count reads as used / limit once the wardrobe is nearly full', (
+    final tester,
+  ) async {
+    await pumpPage(tester, limit: 4);
+
+    expect(find.text('4 / 4 件'), findsOneWidget);
+  });
+
+  testWidgets('a full wardrobe offers the upgrade instead of the picker', (
+    final tester,
+  ) async {
+    await pumpPage(tester, limit: 4);
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pump();
+    await tester.pump(AppDuration.slow);
+
+    expect(find.text('衣櫃已達上限'), findsOneWidget);
   });
 
   testWidgets('long-press adds the card and opens the dock; tap toggles', (
@@ -126,7 +158,7 @@ void main() {
     await tester.pump(AppDuration.standard);
 
     expect(find.byKey(const Key('wardrobe-card-selected-badge')), findsNothing);
-    expect(find.text('搭配試穿'), findsOneWidget);
+    expect(find.byKey(const Key('wardrobe-compose-start')), findsOneWidget);
     final fab = tester.widget<AnimatedScale>(
       find.ancestor(
         of: find.byType(FloatingActionButton),

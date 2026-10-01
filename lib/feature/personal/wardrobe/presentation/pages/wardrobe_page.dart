@@ -14,6 +14,7 @@ import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type
 import 'package:tryzeon/feature/common/garment_type/presentation/garment_type_display.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/actions/wardrobe_outfit_actions.dart';
+import 'package:tryzeon/feature/personal/wardrobe/presentation/dialogs/wardrobe_full_dialog.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 
 import '../sheets/upload_wardrobe_item_sheet.dart';
@@ -26,6 +27,7 @@ class WardrobePage extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     // 1. Data Providers
     final wardrobeItemsAsync = ref.watch(wardrobeItemsProvider);
+    final capacity = ref.watch(wardrobeCapacityProvider).value;
     final isComposing = ref.watch(outfitTrayProvider.select((final s) => s.isOpen));
     final selectedIds = ref.watch(
       outfitTrayProvider.select((final s) => s.pieces.map((final p) => p.id).toSet()),
@@ -41,6 +43,11 @@ class WardrobePage extends HookConsumerWidget {
 
     // 4. Actions
     Future<void> showUploadSheet() async {
+      if (capacity?.isFull ?? false) {
+        await showWardrobeFullDialog(context);
+        return;
+      }
+
       final File? image = await ImagePickerHelper.pickImage(context);
 
       if (image != null && context.mounted) {
@@ -64,10 +71,9 @@ class WardrobePage extends HookConsumerWidget {
       }
     }
 
-    void exitCompose() => ref.read(outfitTrayProvider.notifier).close();
+    void enterCompose() => ref.read(outfitTrayProvider.notifier).open();
 
-    void toggleCompose() =>
-        isComposing ? exitCompose() : ref.read(outfitTrayProvider.notifier).open();
+    void exitCompose() => ref.read(outfitTrayProvider.notifier).close();
 
     // 5. Widget Helpers
     Widget buildGarmentTypeChip(final GarmentType? type) {
@@ -83,20 +89,38 @@ class WardrobePage extends HookConsumerWidget {
     }
 
     Widget buildGarmentTypeBar() {
-      final chipTypes = [null, ...GarmentType.values];
-      return Container(
-        height: 40,
-        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-        child: ListView.builder(
+      return Padding(
+        padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+        child: SingleChildScrollView(
           controller: garmentTypeScrollController,
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-          itemCount: chipTypes.length,
-          itemBuilder: (final context, final index) {
-            return buildGarmentTypeChip(chipTypes[index]);
-          },
+          child: Row(
+            children: [
+              for (final type in [null, ...GarmentType.values])
+                buildGarmentTypeChip(type),
+            ],
+          ),
         ),
       );
+    }
+
+    Widget buildComposeButton() {
+      return isComposing
+          ? TextButton.icon(
+              key: const Key('wardrobe-compose-cancel'),
+              style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+              onPressed: exitCompose,
+              icon: const Icon(Icons.close_rounded),
+              label: const Text('取消'),
+            )
+          : TextButton.icon(
+              key: const Key('wardrobe-compose-start'),
+              style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+              onPressed: enterCompose,
+              icon: const Icon(Icons.auto_awesome_outlined),
+              label: const Text('搭配'),
+            );
     }
 
     Widget buildEmptyState() {
@@ -141,6 +165,10 @@ class WardrobePage extends HookConsumerWidget {
     }
 
     final totalCount = wardrobeItemsAsync.value?.length ?? 0;
+    final isNearLimit = capacity?.isNearLimit ?? false;
+    final countLabel = isNearLimit
+        ? '${capacity!.used} / ${capacity.limit} 件'
+        : '$totalCount 件衣物';
 
     return PopScope(
       canPop: !isComposing,
@@ -165,7 +193,6 @@ class WardrobePage extends HookConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Layer (Typography driven)
               Padding(
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.lg,
@@ -173,39 +200,27 @@ class WardrobePage extends HookConsumerWidget {
                   AppSpacing.lg,
                   AppSpacing.sm,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: [
-                    Text(
-                      'MY WARDROBE',
-                      style: textTheme.labelSmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text('我的衣櫃', style: textTheme.headlineMedium),
-                        const SizedBox(width: AppSpacing.sm),
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: AppSpacing.xxs),
-                          child: Text(
-                            '$totalCount 件衣物',
+                    Expanded(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
+                        children: [
+                          Text('我的衣櫃', style: textTheme.headlineMedium),
+                          const SizedBox(width: AppSpacing.sm),
+                          Text(
+                            countLabel,
                             style: textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
+                              color: isNearLimit
+                                  ? colorScheme.error
+                                  : colorScheme.onSurfaceVariant,
                             ),
                           ),
-                        ),
-                        const Spacer(),
-                        ChoiceChip(
-                          key: const Key('wardrobe-compose-chip'),
-                          label: Text(isComposing ? '搭配中' : '搭配試穿'),
-                          selected: isComposing,
-                          onSelected: (final _) => toggleCompose(),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
+                    buildComposeButton(),
                   ],
                 ),
               ),
@@ -238,7 +253,7 @@ class WardrobePage extends HookConsumerWidget {
                           AppSpacing.sm,
                           AppSpacing.md,
                           MediaQuery.of(context).padding.bottom +
-                              90 + // FAB
+                              AppSpacing.fabClearance +
                               AppSpacing.bottomNavBarOverlap,
                         ),
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
