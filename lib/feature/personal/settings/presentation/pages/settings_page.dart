@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:simple_icons/simple_icons.dart';
 import 'package:tryzeon/core/presentation/widgets/app_action_sheet.dart';
@@ -8,12 +7,10 @@ import 'package:tryzeon/core/presentation/widgets/nav_row.dart';
 import 'package:tryzeon/core/presentation/widgets/section_label.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/presentation/widgets/version_info.dart';
-import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/common/settings/presentation/actions/account_actions.dart';
 import 'package:tryzeon/feature/common/settings/providers/settings_controller.dart';
-import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class PersonalSettingsPage extends HookConsumerWidget {
@@ -23,7 +20,6 @@ class PersonalSettingsPage extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final isBusy = ref.watch(settingsControllerProvider).isLoading;
-    final profile = ref.watch(userProfileProvider).value;
 
     Future<void> openContactLink(final String url, final String label) async {
       final uri = Uri.parse(url);
@@ -67,29 +63,18 @@ class PersonalSettingsPage extends HookConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SectionLabel('個人'),
-                NavRow(
-                  icon: Icons.person_outline,
-                  title: '個人資料',
-                  trailingValue: profile?.name,
-                  isFirst: true,
-                  onTap: () => context.push(AppRoutes.personalSettingsProfile),
-                ),
-                NavRow(
-                  icon: Icons.palette_outlined,
-                  title: '風格偏好',
-                  onTap: () => context.push(AppRoutes.personalSettingsStyle),
-                ),
-                const SectionLabel('支援'),
+                const SectionLabel('帳號'),
                 NavRow(
                   icon: Icons.storefront_outlined,
                   title: '切換到店家帳號',
                   isFirst: true,
                   onTap: () => confirmAndSwitchTo(context, UserType.store),
                 ),
+                const SectionLabel('支援'),
                 NavRow(
                   icon: Icons.chat_bubble_outline,
                   title: '聯絡我們',
+                  isFirst: true,
                   onTap: handleContactUs,
                 ),
                 SectionLabel('危險區域', color: colorScheme.error),

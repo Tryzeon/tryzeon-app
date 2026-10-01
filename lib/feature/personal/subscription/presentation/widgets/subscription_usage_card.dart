@@ -2,23 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription_capabilities.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/utils/subscription_format.dart';
+import 'package:tryzeon/feature/personal/usage/domain/entities/daily_usage.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_capacity.dart';
 
 class SubscriptionUsageCard extends StatelessWidget {
   const SubscriptionUsageCard({
     required this.entitlement,
-    required this.formattedRenewalLine,
-    required this.dailyTryonUsed,
-    required this.dailyTryonLimit,
+    required this.capabilities,
+    required this.usage,
+    required this.wardrobeCapacity,
     required this.onTap,
+    required this.onUpgrade,
     super.key,
   });
 
   final AppSubscriptionEntitlement entitlement;
-  final String? formattedRenewalLine;
-  final int? dailyTryonUsed;
-  final int? dailyTryonLimit;
+  final SubscriptionCapabilities? capabilities;
+  final DailyUsage? usage;
+  final WardrobeCapacity? wardrobeCapacity;
   final VoidCallback onTap;
+  final VoidCallback onUpgrade;
 
   @override
   Widget build(final BuildContext context) {
@@ -34,10 +39,9 @@ class SubscriptionUsageCard extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.md),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
                     planName(entitlement.tier),
@@ -46,34 +50,55 @@ class SubscriptionUsageCard extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  if (entitlement.hasActiveSubscription) _ActivePill(),
-                ],
-              ),
-              if (formattedRenewalLine != null) ...[
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  formattedRenewalLine!,
-                  style: textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-              const SizedBox(height: AppSpacing.md),
-              _UsageStat(label: '今日試穿', used: dailyTryonUsed, limit: dailyTryonLimit),
-              const SizedBox(height: AppSpacing.md),
-              const Divider(),
-              const SizedBox(height: AppSpacing.smMd),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
                   Text(
-                    '查看訂閱詳情',
+                    '管理',
                     style: textTheme.labelMedium?.copyWith(color: colorScheme.primary),
                   ),
-                  const SizedBox(width: AppSpacing.xs),
-                  Icon(Icons.arrow_forward_rounded, size: 14, color: colorScheme.primary),
+                  Icon(Icons.chevron_right_rounded, size: 18, color: colorScheme.primary),
                 ],
               ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                formatRenewalLine(entitlement),
+                style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Row(
+                children: [
+                  _QuotaStat(
+                    label: '試穿剩餘',
+                    value: formatRemaining(
+                      used: usage?.tryonCount,
+                      limit: capabilities?.dailyTryonLimit,
+                    ),
+                  ),
+                  _QuotaStat(
+                    label: '聊天剩餘',
+                    value: formatRemaining(
+                      used: usage?.chatCount,
+                      limit: capabilities?.dailyChatLimit,
+                    ),
+                  ),
+                  _QuotaStat(
+                    label: '影片剩餘',
+                    value: formatRemaining(
+                      used: usage?.videoCount,
+                      limit: capabilities?.dailyVideoLimit,
+                    ),
+                  ),
+                  _QuotaStat(
+                    label: '衣櫃空位',
+                    value: formatRemaining(
+                      used: wardrobeCapacity?.used,
+                      limit: wardrobeCapacity?.limit,
+                    ),
+                  ),
+                ],
+              ),
+              if (entitlement.isFree) ...[
+                const SizedBox(height: AppSpacing.md),
+                FilledButton(onPressed: onUpgrade, child: const Text('升級方案')),
+              ],
             ],
           ),
         ),
@@ -83,7 +108,7 @@ class SubscriptionUsageCard extends StatelessWidget {
 }
 
 /// Mirrors [SubscriptionUsageCard]'s layout so the real card swaps in without
-/// a height jump; keep the two in sync (covered by golden tests).
+/// a height jump; keep the two in sync.
 class SubscriptionUsageCardSkeleton extends StatelessWidget {
   const SubscriptionUsageCardSkeleton({super.key});
 
@@ -99,33 +124,28 @@ class SubscriptionUsageCardSkeleton extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.md),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Plan', style: textTheme.headlineLarge),
+              Row(
+                children: [
+                  Text('Plan', style: textTheme.headlineLarge),
+                  const Spacer(),
+                  Text('管理', style: textTheme.labelMedium),
+                ],
+              ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                'Renewing on YYYY-MM-DD',
+                'YYYY/MM/DD 續訂',
                 style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
               ),
               const SizedBox(height: AppSpacing.md),
-              Text('0 / 00', style: textTheme.titleMedium),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                '今日試穿',
-                style: textTheme.labelSmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Container(height: 2, color: colorScheme.surfaceContainerHighest),
-              const SizedBox(height: AppSpacing.md),
-              const Divider(),
-              const SizedBox(height: AppSpacing.smMd),
-              Center(
-                child: Text(
-                  '查看訂閱詳情',
-                  style: textTheme.labelMedium?.copyWith(color: colorScheme.primary),
-                ),
+              const Row(
+                children: [
+                  _QuotaStat(label: '試穿剩餘', value: '00'),
+                  _QuotaStat(label: '聊天剩餘', value: '00'),
+                  _QuotaStat(label: '影片剩餘', value: '00'),
+                  _QuotaStat(label: '衣櫃空位', value: '00'),
+                ],
               ),
             ],
           ),
@@ -135,31 +155,11 @@ class SubscriptionUsageCardSkeleton extends StatelessWidget {
   }
 }
 
-class _ActivePill extends StatelessWidget {
-  @override
-  Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-    return Chip(
-      label: Text(
-        '啟用中',
-        style: theme.textTheme.labelSmall?.copyWith(
-          color: theme.colorScheme.onPrimaryContainer,
-        ),
-      ),
-      backgroundColor: theme.colorScheme.primaryContainer,
-      side: BorderSide.none,
-      visualDensity: VisualDensity.compact,
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-    );
-  }
-}
-
-class _UsageStat extends StatelessWidget {
-  const _UsageStat({required this.label, required this.used, required this.limit});
+class _QuotaStat extends StatelessWidget {
+  const _QuotaStat({required this.label, required this.value});
 
   final String label;
-  final int? used;
-  final int? limit;
+  final String value;
 
   @override
   Widget build(final BuildContext context) {
@@ -167,46 +167,25 @@ class _UsageStat extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    final canShowProgress = limit != null && used != null;
-    final progress = canShowProgress ? (used! / limit!).clamp(0.0, 1.0) : 0.0;
-
-    final Widget valueText = RichText(
-      text: TextSpan(
-        style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextSpan(text: used?.toString() ?? '—'),
-          TextSpan(
-            text: ' / ${limit?.toString() ?? '—'}',
-            style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+          Text(
+            value,
+            style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: AppSpacing.xxs),
+          Text(
+            label,
+            style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
-    );
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        valueText,
-        const SizedBox(height: AppSpacing.xs),
-        Text(
-          label,
-          style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(1),
-          child: LinearProgressIndicator(
-            value: progress,
-            minHeight: 2,
-            backgroundColor: colorScheme.surfaceContainerHighest,
-            valueColor: AlwaysStoppedAnimation<Color>(
-              canShowProgress
-                  ? colorScheme.onSurface
-                  : colorScheme.surfaceContainerHighest,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

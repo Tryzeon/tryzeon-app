@@ -13,6 +13,12 @@ String formatUsage({required final int? used, required final int? limit}) {
   return '$usedText / $limit';
 }
 
+String formatRemaining({required final int? used, required final int? limit}) {
+  if (limit == 0) return '未開通';
+  if (used == null || limit == null) return '—';
+  return (limit - used).clamp(0, limit).toString();
+}
+
 String formatBenefit({required final bool? value}) {
   if (value == null) return '—';
   return value ? '✓' : '✗';

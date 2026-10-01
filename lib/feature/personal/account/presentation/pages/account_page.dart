@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/refresh_feedback_extension.dart';
+import 'package:tryzeon/core/modules/revenue_cat/presentation/utils/revenue_cat_ui_utils.dart';
 import 'package:tryzeon/core/modules/revenue_cat/providers/revenue_cat_providers.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_overlay.dart';
 import 'package:tryzeon/core/presentation/widgets/nav_row.dart';
@@ -13,10 +14,10 @@ import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/body_measurements/domain/entities/body_measurements.dart';
 import 'package:tryzeon/feature/common/settings/providers/settings_controller.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
-import 'package:tryzeon/feature/personal/subscription/presentation/utils/subscription_format.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/widgets/subscription_usage_card.dart';
 import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/usage/providers/daily_usage_providers.dart';
+import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 class AccountPage extends HookConsumerWidget {
@@ -32,6 +33,7 @@ class AccountPage extends HookConsumerWidget {
 
     return [
       ref.read(userProfileProvider.notifier).refresh(),
+      ref.read(wardrobeItemsProvider.notifier).refresh(),
       _settle(ref.read(dailyUsageTodayProvider.future)),
       _settle(ref.read(appSubscriptionEntitlementProvider.future)),
       _settle(ref.read(subscriptionCapabilitiesProvider.future)),
@@ -73,14 +75,12 @@ class AccountPage extends HookConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(height: AppSpacing.md),
                         _ProfileHeader(),
-                        SizedBox(height: AppSpacing.lg),
-                        Divider(),
                         SectionLabel('訂閱方案'),
                         _SubscriptionSection(),
-                        SectionLabel('身形'),
+                        SectionLabel('個人化'),
                         _BodyMeasurementsRow(),
+                        _StylePreferencesRow(),
                       ],
                     ),
                   ),
@@ -105,47 +105,14 @@ class _TopBar extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-    final textTheme = theme.textTheme;
-    final colorScheme = theme.colorScheme;
-
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.lg,
-        AppSpacing.lg,
-        AppSpacing.sm,
-      ),
-      child: SizedBox(
-        width: double.infinity,
-        child: Stack(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'MY ACCOUNT',
-                  style: textTheme.labelSmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text('我的帳戶', style: textTheme.headlineMedium),
-              ],
-            ),
-            Positioned(
-              right: 0,
-              bottom: 0,
-              child: IconButton(
-                icon: Icon(Icons.settings_outlined, color: colorScheme.onSurface),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                tooltip: '設定',
-                onPressed: () => context.push(AppRoutes.personalSettings),
-              ),
-            ),
-          ],
+      padding: const EdgeInsets.only(top: AppSpacing.sm, right: AppSpacing.smMd),
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: IconButton(
+          icon: const Icon(Icons.settings_outlined),
+          tooltip: '設定',
+          onPressed: () => context.push(AppRoutes.personalSettings),
         ),
       ),
     );
@@ -208,7 +175,12 @@ class _ProfileHeader extends HookConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(profile.name, style: theme.textTheme.titleMedium),
+          Text(
+            profile.name,
+            style: theme.textTheme.headlineMedium,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
           if (email != null && email.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.xxs),
             Text(
@@ -224,34 +196,35 @@ class _ProfileHeader extends HookConsumerWidget {
       );
     }
 
-    return Row(
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: colorScheme.surfaceContainerHighest,
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: buildAvatar(),
-        ),
-        const SizedBox(width: AppSpacing.smMd),
-        Expanded(child: buildInfo()),
-        OutlinedButton(
-          onPressed: () => context.push(AppRoutes.personalSettingsProfile),
-          style: OutlinedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(
-              vertical: AppSpacing.sm,
-              horizontal: AppSpacing.smMd,
+    return InkWell(
+      onTap: () => context.push(AppRoutes.personalSettingsProfile),
+      borderRadius: AppRadius.cardAll,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+        child: Row(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: colorScheme.surfaceContainerHighest,
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: buildAvatar(),
             ),
-            minimumSize: Size.zero,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            textStyle: theme.textTheme.labelMedium,
-          ),
-          child: const Text('編輯'),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(child: buildInfo()),
+            const SizedBox(width: AppSpacing.sm),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 18,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
@@ -264,10 +237,12 @@ class _SubscriptionSection extends HookConsumerWidget {
     final entitlementAsync = ref.watch(appSubscriptionEntitlementProvider);
     final capabilitiesAsync = ref.watch(subscriptionCapabilitiesProvider);
     final usageAsync = ref.watch(dailyUsageTodayProvider);
+    final wardrobeCapacityAsync = ref.watch(wardrobeCapacityProvider);
 
     void openSubscription() => context.push(AppRoutes.personalSubscription);
     // Entitlement is structural (defines plan identity); without it the card
-    // has no meaning. Capabilities and usage degrade per-stat inside the card.
+    // has no meaning. Capabilities, usage and wardrobe degrade per-stat inside
+    // the card.
     final entitlement = entitlementAsync.value;
     if (entitlement == null) {
       return entitlementAsync.hasError
@@ -277,10 +252,11 @@ class _SubscriptionSection extends HookConsumerWidget {
 
     return SubscriptionUsageCard(
       entitlement: entitlement,
-      formattedRenewalLine: formatRenewalLine(entitlement),
-      dailyTryonUsed: usageAsync.value?.tryonCount,
-      dailyTryonLimit: capabilitiesAsync.value?.dailyTryonLimit,
+      capabilities: capabilitiesAsync.value,
+      usage: usageAsync.value,
+      wardrobeCapacity: wardrobeCapacityAsync.value,
       onTap: openSubscription,
+      onUpgrade: () => RevenueCatUiUtils.presentPaywall(context),
     );
   }
 }
@@ -344,6 +320,34 @@ class _BodyMeasurementsRow extends HookConsumerWidget {
       trailingValue: trailing,
       isFirst: true,
       onTap: () => context.push(AppRoutes.personalSettingsBodyMeasurements),
+    );
+  }
+}
+
+class _StylePreferencesRow extends HookConsumerWidget {
+  const _StylePreferencesRow();
+
+  @override
+  Widget build(final BuildContext context, final WidgetRef ref) {
+    final profileAsync = ref.watch(userProfileProvider);
+
+    final String? trailing;
+    if (profileAsync.isLoading && !profileAsync.hasValue) {
+      trailing = null;
+    } else {
+      final styles = profileAsync.value?.stylePreferences ?? const [];
+      trailing = switch (styles) {
+        [] => '未設定',
+        [final only] => only.label,
+        [final first, ...] => '${first.label} +${styles.length - 1}',
+      };
+    }
+
+    return NavRow(
+      icon: Icons.palette_outlined,
+      title: '風格偏好',
+      trailingValue: trailing,
+      onTap: () => context.push(AppRoutes.personalSettingsStyle),
     );
   }
 }
