@@ -12,6 +12,7 @@ import '../../domain/repositories/wardrobe_repository.dart';
 import '../datasources/wardrobe_local_datasource.dart';
 import '../datasources/wardrobe_remote_datasource.dart';
 import '../dtos/create_wardrobe_item_request.dart';
+import '../dtos/update_wardrobe_item_request.dart';
 import '../dtos/wardrobe_item_dto.dart';
 
 class WardrobeRepositoryImpl implements WardrobeRepository {
@@ -129,18 +130,22 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
   }
 
   @override
-  Future<Result<WardrobeItem, Failure>> updateWardrobeItemTags({
-    required final WardrobeItem item,
-    required final List<String> tags,
+  Future<Result<WardrobeItem, Failure>> updateWardrobeItem({
+    required final String id,
+    final GarmentType? garmentType,
+    final List<String>? tags,
   }) async {
     try {
       final updatedItem = _mappr.convert<WardrobeItemDto, WardrobeItem>(
-        await _remoteDataSource.updateWardrobeItemTags(id: item.id, tags: tags),
+        await _remoteDataSource.updateWardrobeItem(
+          id: id,
+          request: UpdateWardrobeItemRequest(garmentType: garmentType, tags: tags),
+        ),
       );
       await _localDataSource.saveWardrobeItem(updatedItem);
       return Ok(updatedItem);
     } catch (e, stackTrace) {
-      AppLogger.error('Failed to update wardrobe item tags', e, stackTrace);
+      AppLogger.error('Failed to update wardrobe item', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
   }

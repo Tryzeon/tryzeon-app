@@ -6,6 +6,7 @@ import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
 
 import '../dtos/create_wardrobe_item_request.dart';
+import '../dtos/update_wardrobe_item_request.dart';
 import '../dtos/wardrobe_item_dto.dart';
 
 class WardrobeRemoteDataSource {
@@ -53,16 +54,16 @@ class WardrobeRemoteDataSource {
         .eq('user_id', user.id);
   }
 
-  Future<WardrobeItemDto> updateWardrobeItemTags({
+  Future<WardrobeItemDto> updateWardrobeItem({
     required final String id,
-    required final List<String> tags,
+    required final UpdateWardrobeItemRequest request,
   }) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();
 
     final response = await _supabaseClient
         .from(_wardrobeItemTable)
-        .update({'tags': tags})
+        .update(request.toJson())
         .eq('id', id)
         .eq('user_id', user.id)
         .select()

@@ -27,7 +27,7 @@ import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/analyze_wardro
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/delete_wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/get_wardrobe_item_image.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/get_wardrobe_items.dart';
-import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/update_wardrobe_item_tags.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/update_wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/upload_wardrobe_item.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -84,8 +84,8 @@ DeleteWardrobeItem deleteWardrobeItemUseCase(final Ref ref) {
 }
 
 @riverpod
-UpdateWardrobeItemTags updateWardrobeItemTagsUseCase(final Ref ref) {
-  return UpdateWardrobeItemTags(ref.watch(wardrobeRepositoryProvider));
+UpdateWardrobeItem updateWardrobeItemUseCase(final Ref ref) {
+  return UpdateWardrobeItem(ref.watch(wardrobeRepositoryProvider));
 }
 
 @riverpod
@@ -171,13 +171,10 @@ class WardrobeEditNotifier extends _$WardrobeEditNotifier {
     });
   }
 
-  Future<Result<void, Failure>> updateTags({
-    required final WardrobeItem item,
-    required final List<String> tags,
-  }) {
+  Future<Result<void, Failure>> update(final UpdateWardrobeItemParams params) {
     return _write(
       () async => ref
-          .read(updateWardrobeItemTagsUseCaseProvider)(item: item, tags: tags)
+          .read(updateWardrobeItemUseCaseProvider)(params)
           .then((final result) => result.map((final _) {})),
     );
   }

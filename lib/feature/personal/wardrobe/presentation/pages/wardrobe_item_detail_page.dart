@@ -9,10 +9,12 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/garment_type/presentation/garment_type_display.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/update_wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/actions/wardrobe_outfit_actions.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
+import '../sheets/wardrobe_garment_type_sheet.dart';
 import '../sheets/wardrobe_tag_editor_sheet.dart';
 
 class WardrobeItemDetailPage extends HookConsumerWidget {
@@ -98,11 +100,26 @@ class _WardrobeItemDetailContent extends ConsumerWidget {
     Future<String?> handleSaveTags(final List<String> tags) async {
       final result = await ref
           .read(wardrobeEditProvider.notifier)
-          .updateTags(item: item, tags: tags);
+          .update(UpdateWardrobeItemParams(id: item.id, tags: tags));
 
       if (!context.mounted) return null;
 
       return result.isFailure ? result.getError()!.displayMessage(context) : null;
+    }
+
+    Future<void> handleEditGarmentType() async {
+      final picked = await WardrobeGarmentTypeSheet.show(
+        context: context,
+        selected: item.garmentType,
+      );
+      if (picked == null || picked == item.garmentType || !context.mounted) return;
+
+      final result = await ref
+          .read(wardrobeEditProvider.notifier)
+          .update(UpdateWardrobeItemParams(id: item.id, garmentType: picked));
+
+      if (!context.mounted || result.isSuccess) return;
+      TopNotification.show(context, message: result.getError()!.displayMessage(context));
     }
 
     Future<void> handleEditTags() async {
@@ -223,7 +240,13 @@ class _WardrobeItemDetailContent extends ConsumerWidget {
                 children: [
                   Row(
                     children: [
-                      Chip(label: Text(item.garmentType.displayName)),
+                      ActionChip(
+                        key: const Key('wardrobe-detail-garment-type'),
+                        avatar: const Icon(Icons.edit_outlined),
+                        label: Text(item.garmentType.displayName),
+                        tooltip: '更改類別',
+                        onPressed: handleEditGarmentType,
+                      ),
                       const Spacer(),
                       Text(
                         dateStr,

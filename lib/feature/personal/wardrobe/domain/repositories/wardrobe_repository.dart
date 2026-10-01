@@ -18,9 +18,10 @@ abstract class WardrobeRepository {
 
   Future<Result<void, Failure>> deleteWardrobeItem(final String id);
 
-  Future<Result<WardrobeItem, Failure>> updateWardrobeItemTags({
-    required final WardrobeItem item,
-    required final List<String> tags,
+  Future<Result<WardrobeItem, Failure>> updateWardrobeItem({
+    required final String id,
+    final GarmentType? garmentType,
+    final List<String>? tags,
   });
 
   Future<Result<File, Failure>> getWardrobeItemImage(final String imagePath);
