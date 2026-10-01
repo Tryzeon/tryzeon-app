@@ -117,12 +117,14 @@ ChatStreamEvent? parseStreamLine(final String line) {
         usage: usageJson == null ? null : parseDailyUsagePayload(usageJson),
       );
     case 'error':
-      if (decoded['code'] == 'RATE_LIMIT_EXCEEDED') {
-        return ChatStreamEvent.failed(
-          RateLimitFailure(usagePayload: decoded['usage'] as Map<String, dynamic>?),
-        );
-      }
-      return const ChatStreamEvent.failed(ServerFailure());
+      return ChatStreamEvent.failed(switch (decoded['code']) {
+        'RATE_LIMIT_EXCEEDED' => RateLimitFailure(
+          usagePayload: decoded['usage'] as Map<String, dynamic>?,
+        ),
+        'SERVICE_BUSY' => const ServiceBusyFailure(),
+        'VALIDATION_ERROR' => ValidationFailure(decoded['message'] as String?),
+        _ => const ServerFailure(),
+      });
     default:
       return null;
   }
