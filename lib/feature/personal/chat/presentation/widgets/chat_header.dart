@@ -2,62 +2,45 @@ import 'package:flutter/material.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
 class ChatHeader extends StatelessWidget {
-  const ChatHeader({super.key, required this.onRefresh});
+  const ChatHeader({super.key, required this.canReset, required this.onReset});
 
-  final VoidCallback onRefresh;
+  final bool canReset;
+  final VoidCallback onReset;
 
   @override
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        border: Border(bottom: BorderSide(color: theme.colorScheme.outline)),
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.sm,
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm,
-        ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Center(
-              child: IgnorePointer(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '穿搭顧問',
-                      style: theme.textTheme.titleMedium,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: AppSpacing.xxs),
-                    Text(
-                      'STYLE ADVISOR',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'STYLE ADVISOR',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
-              ),
+                const SizedBox(height: AppSpacing.xs),
+                Text('穿搭顧問', style: theme.textTheme.headlineMedium),
+              ],
             ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: IconButton(
-                icon: Icon(
-                  Icons.refresh_rounded,
-                  size: AppSpacing.lg,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-                onPressed: onRefresh,
-                padding: EdgeInsets.zero,
-              ),
-            ),
-          ],
-        ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.add_comment_outlined),
+            tooltip: '新對話',
+            onPressed: canReset ? onReset : null,
+          ),
+        ],
       ),
     );
   }
