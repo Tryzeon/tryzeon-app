@@ -18,8 +18,8 @@ sealed class ContentBlock with _$ContentBlock {
     @Default(<String, dynamic>{}) final Map<String, dynamic> input,
   }) = ToolUseBlock;
 
-  /// Not rendered; replayed as a function response so the model sees exactly
-  /// what each search returned.
+  /// The UI shows only the count of its `items`; the full content is replayed
+  /// as a function response so the model sees exactly what each search returned.
   const factory ContentBlock.toolResult({
     required final String toolUseId,
     @Default(<String, dynamic>{}) final Map<String, dynamic> content,
