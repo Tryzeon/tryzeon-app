@@ -66,6 +66,7 @@ dependencies:
   simple_icons: ^16.23.0
   collection: ^1.19.0
   flutter_line_sdk: ^2.7.2
+  intl: ^0.20.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
