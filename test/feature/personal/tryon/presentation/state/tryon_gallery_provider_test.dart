@@ -81,4 +81,18 @@ void main() {
 
     expect(notifier.state.entries.single.pieces, const [piece]);
   });
+
+  test('avatarReplaced drops the carried-over outfit and returns to the avatar page', () {
+    final notifier = makeNotifier()..addPending(id: 'a', subject: imageSubject);
+    notifier
+      ..complete(const TryonResult(id: 'a', mode: TryonMode.image, imageUrl: 'u'))
+      ..toggleAvatarForCurrent();
+    expect(notifier.state.customAvatarId, 'a');
+
+    notifier.avatarReplaced();
+
+    expect(notifier.state.customAvatarId, isNull);
+    expect(notifier.state.isAvatarPage, isTrue);
+    expect(notifier.state.entries.single.id, 'a');
+  });
 }

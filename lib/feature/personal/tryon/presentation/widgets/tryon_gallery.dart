@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -17,19 +15,15 @@ class TryonGallery extends HookWidget {
     required this.pageController,
     required this.onPageChanged,
     required this.entries,
-    required this.avatarFile,
-    required this.isAvatarBusy,
-    required this.onReplaceAvatar,
+    required this.avatarPage,
+    this.showScrims = true,
   });
 
   final PageController pageController;
   final ValueChanged<int> onPageChanged;
   final List<TryonGalleryEntry> entries;
-  final File? avatarFile;
-
-  final bool isAvatarBusy;
-
-  final VoidCallback onReplaceAvatar;
+  final Widget avatarPage;
+  final bool showScrims;
 
   @override
   Widget build(final BuildContext context) {
@@ -43,19 +37,7 @@ class TryonGallery extends HookWidget {
           onPageChanged: onPageChanged,
           itemCount: entries.length + 1,
           itemBuilder: (final context, final index) {
-            if (index == 0) {
-              // Original Avatar
-              final ImageProvider imageProvider = avatarFile != null
-                  ? FileImage(avatarFile!)
-                  : const AssetImage(AppConstants.defaultProfileImage);
-              return GestureDetector(
-                onTap: onReplaceAvatar,
-                child: _AvatarImageItem(
-                  imageProvider: imageProvider,
-                  isBusy: isAvatarBusy,
-                ),
-              );
-            }
+            if (index == 0) return avatarPage;
 
             switch (entries[index - 1]) {
               case PendingTryonEntry():
@@ -84,49 +66,51 @@ class TryonGallery extends HookWidget {
           },
         ),
         // Top Dark Gradient — ensures white logo/icons are legible
-        Positioned(
-          left: 0,
-          right: 0,
-          top: 0,
-          height: 200,
-          child: IgnorePointer(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    colorScheme.scrim.withValues(alpha: AppOpacity.strong),
-                    colorScheme.scrim.withValues(alpha: 0),
-                  ],
-                  stops: const [0.0, 1.0],
+        if (showScrims)
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            height: 200,
+            child: IgnorePointer(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      colorScheme.scrim.withValues(alpha: AppOpacity.strong),
+                      colorScheme.scrim.withValues(alpha: 0),
+                    ],
+                    stops: const [0.0, 1.0],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
         // Bottom Dark Gradient — ensures white indicator/button are legible
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: 250,
-          child: IgnorePointer(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [
-                    colorScheme.scrim.withValues(alpha: AppOpacity.strong),
-                    colorScheme.scrim.withValues(alpha: 0),
-                  ],
-                  stops: const [0.0, 1.0],
+        if (showScrims)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 250,
+            child: IgnorePointer(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      colorScheme.scrim.withValues(alpha: AppOpacity.strong),
+                      colorScheme.scrim.withValues(alpha: 0),
+                    ],
+                    stops: const [0.0, 1.0],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
       ],
     );
   }
@@ -165,41 +149,6 @@ class _LoadingAnimationItem extends HookWidget {
     return ColoredBox(
       color: colorScheme.surface,
       child: isInitialized.value ? _coverVideoFill(controller) : const SizedBox.expand(),
-    );
-  }
-}
-
-class _AvatarImageItem extends HookWidget {
-  const _AvatarImageItem({required this.imageProvider, required this.isBusy});
-
-  final ImageProvider imageProvider;
-  final bool isBusy;
-
-  @override
-  Widget build(final BuildContext context) {
-    useAutomaticKeepAlive();
-
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        Image(image: imageProvider, fit: BoxFit.cover, gaplessPlayback: true),
-        if (isBusy)
-          ColoredBox(
-            color: colorScheme.scrim.withValues(alpha: AppOpacity.overlay),
-            child: Center(
-              child: SizedBox(
-                width: 44,
-                height: 44,
-                child: CircularProgressIndicator(
-                  strokeWidth: AppStroke.medium,
-                  color: colorScheme.onPrimary,
-                ),
-              ),
-            ),
-          ),
-      ],
     );
   }
 }

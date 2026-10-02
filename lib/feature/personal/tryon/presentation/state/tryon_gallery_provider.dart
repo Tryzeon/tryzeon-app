@@ -56,6 +56,10 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
 
   void showAvatarPage() => setCurrentPage(0);
 
+  void avatarReplaced() {
+    state = state.copyWith(currentId: null, customAvatarId: null);
+  }
+
   void addPending({required final String id, required final TryonSubject subject}) {
     state = state.copyWith(
       entries: [
