@@ -207,11 +207,15 @@ class HomePage extends HookConsumerWidget {
                 children: [
                   Image.asset(AppConstants.logoMark, height: 28, fit: BoxFit.contain),
                   const SizedBox(width: AppSpacing.xs),
-                  Image.asset(
-                    AppConstants.logoWordmarkText,
-                    height: 28,
-                    fit: BoxFit.contain,
-                    color: isBlankAvatarPage ? colorScheme.onSurface : null,
+                  Text(
+                    'Tryzeon',
+                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.5,
+                      color: isBlankAvatarPage
+                          ? colorScheme.onSurface
+                          : colorScheme.onPrimary,
+                    ),
                   ),
                 ],
               ),
