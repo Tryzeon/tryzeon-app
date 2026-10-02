@@ -179,7 +179,11 @@ class ShopPage extends HookConsumerWidget {
 
       return buildSortButton(
         label: '價格',
-        icon: !isActive || isAscending ? Icons.arrow_upward : Icons.arrow_downward,
+        icon: !isActive
+            ? Icons.sell_outlined
+            : isAscending
+            ? Icons.arrow_upward
+            : Icons.arrow_downward,
         isActive: isActive,
         onTap: handleSortByPrice,
       );
@@ -215,6 +219,7 @@ class ShopPage extends HookConsumerWidget {
         child: RefreshIndicator(
           onRefresh: () => [
             ref.read(shopProductsProvider(filter).notifier).refresh(),
+            ref.read(productCategoriesProvider.notifier).refresh(),
           ].showFirstFailure(context),
           child: NotificationListener<ScrollNotification>(
             onNotification: (final notification) {
@@ -281,38 +286,44 @@ class ShopPage extends HookConsumerWidget {
                         ),
                         const SizedBox(height: AppSpacing.lg),
 
-                        // Recommended heading and sorting
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'RECOMMENDED',
-                                style: textTheme.labelLarge?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                              const SizedBox(height: AppSpacing.smMd),
-                              Row(
-                                children: [
-                                  buildComprehensiveSortButton(),
-                                  const SizedBox(width: AppSpacing.sm),
-                                  buildPriceSortButton(),
-                                  const SizedBox(width: AppSpacing.sm),
-                                  buildProximitySortButton(),
-                                  const Spacer(),
-                                  buildFilterButton(),
-                                ],
-                              ),
-                            ],
+                          child: Text(
+                            'RECOMMENDED',
+                            style: textTheme.labelLarge?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                           ),
                         ),
-                        const SizedBox(height: AppSpacing.md),
+                        const SizedBox(height: AppSpacing.xs),
                       ],
                     ),
                   ),
                 ),
+
+                PinnedHeaderSliver(
+                  child: ColoredBox(
+                    color: colorScheme.surface,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.sm,
+                      ),
+                      child: Row(
+                        children: [
+                          buildComprehensiveSortButton(),
+                          const SizedBox(width: AppSpacing.sm),
+                          buildPriceSortButton(),
+                          const SizedBox(width: AppSpacing.sm),
+                          buildProximitySortButton(),
+                          const Spacer(),
+                          buildFilterButton(),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.sm)),
 
                 // Product grid (lazily loaded)
                 ProductSliverGrid(

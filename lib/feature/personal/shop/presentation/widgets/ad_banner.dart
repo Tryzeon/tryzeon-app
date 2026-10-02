@@ -10,6 +10,8 @@ class AdBanner extends HookConsumerWidget {
   const AdBanner({super.key, required this.adsAsync});
   final AsyncValue<List<String>> adsAsync;
 
+  static const _aspectRatio = 2.0;
+
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -50,10 +52,11 @@ class AdBanner extends HookConsumerWidget {
           LayoutBuilder(
             builder: (final context, final constraints) {
               // Size the viewport so each page — inset by its horizontal
-              // margin — is exactly 16:9, matching the ad artwork.
+              // margin — is exactly 2:1; the 16:9 artwork is cropped top and
+              // bottom to keep the banner short.
               final pageWidth = constraints.maxWidth - AppSpacing.md * 2;
               return SizedBox(
-                height: pageWidth * 9 / 16,
+                height: pageWidth / _aspectRatio,
                 child: PageView.builder(
                   controller: pageController,
                   onPageChanged: (final index) => currentPage.value = index,
@@ -111,7 +114,7 @@ class AdBanner extends HookConsumerWidget {
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: AspectRatio(
-              aspectRatio: 16 / 9,
+              aspectRatio: _aspectRatio,
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   borderRadius: AppRadius.cardAll,
