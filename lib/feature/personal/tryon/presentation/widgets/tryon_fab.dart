@@ -18,46 +18,61 @@ class TryonFab extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
-      child: ClipRRect(
-        borderRadius: AppRadius.pillAll,
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-          child: Container(
-            padding: label == null
-                ? const EdgeInsets.all(AppSpacing.sm)
-                : const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.smMd,
-                    vertical: AppSpacing.sm,
-                  ),
-            decoration: BoxDecoration(
-              color: colorScheme.onSurface.withValues(alpha: AppOpacity.overlay),
-              border: Border.all(
-                color: colorScheme.onPrimary.withValues(alpha: AppOpacity.medium),
-                width: AppStroke.thin,
-              ),
-              borderRadius: AppRadius.pillAll,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          minWidth: kMinInteractiveDimension,
+          minHeight: kMinInteractiveDimension,
+        ),
+        child: Center(
+          widthFactor: 1,
+          heightFactor: 1,
+          child: _buildPill(colorScheme, textTheme),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPill(final ColorScheme colorScheme, final TextTheme textTheme) {
+    return ClipRRect(
+      borderRadius: AppRadius.pillAll,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: label == null
+              ? const EdgeInsets.all(AppSpacing.sm)
+              : const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.smMd,
+                  vertical: AppSpacing.sm,
+                ),
+          decoration: BoxDecoration(
+            color: colorScheme.onSurface.withValues(alpha: AppOpacity.overlay),
+            border: Border.all(
+              color: colorScheme.onPrimary.withValues(alpha: AppOpacity.medium),
+              width: AppStroke.thin,
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                icon == null
-                    ? Image.asset(
-                        AppConstants.logoMark,
-                        width: size,
-                        height: size,
-                        fit: BoxFit.contain,
-                      )
-                    : Icon(icon, size: size, color: colorScheme.onPrimary),
-                if (label != null) ...[
-                  const SizedBox(width: AppSpacing.xs),
-                  Text(
-                    label!,
-                    style: textTheme.labelLarge?.copyWith(color: colorScheme.onPrimary),
-                  ),
-                ],
+            borderRadius: AppRadius.pillAll,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              icon == null
+                  ? Image.asset(
+                      AppConstants.logoMark,
+                      width: size,
+                      height: size,
+                      fit: BoxFit.contain,
+                    )
+                  : Icon(icon, size: size, color: colorScheme.onPrimary),
+              if (label != null) ...[
+                const SizedBox(width: AppSpacing.xs),
+                Text(
+                  label!,
+                  style: textTheme.labelLarge?.copyWith(color: colorScheme.onPrimary),
+                ),
               ],
-            ),
+            ],
           ),
         ),
       ),
