@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
@@ -13,13 +15,17 @@ import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_l
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/repositories/user_profile_repository_impl.dart';
 import 'package:tryzeon/feature/personal/profile/data/services/avatar_storage_impl.dart';
+import 'package:tryzeon/feature/personal/profile/data/services/preset_avatar_source_impl.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/preset_avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
 import 'package:tryzeon/feature/personal/profile/domain/services/avatar_storage.dart';
+import 'package:tryzeon/feature/personal/profile/domain/services/preset_avatar_source.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/get_user_avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/get_user_profile.dart';
+import 'package:tryzeon/feature/personal/profile/domain/usecases/prepare_preset_avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/update_style_preferences.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/update_user_avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/update_user_body_measurements.dart';
@@ -72,6 +78,19 @@ UpdateUserAvatar updateUserAvatarUseCase(final Ref ref) {
     repository: ref.watch(userProfileRepositoryProvider),
     avatarStorage: ref.watch(avatarStorageProvider),
   );
+}
+
+@riverpod
+PresetAvatarSource presetAvatarSource(final Ref ref) {
+  return PresetAvatarSourceImpl(
+    bundle: rootBundle,
+    temporaryDirectory: getTemporaryDirectory,
+  );
+}
+
+@riverpod
+PreparePresetAvatar preparePresetAvatarUseCase(final Ref ref) {
+  return PreparePresetAvatar(ref.watch(presetAvatarSourceProvider));
 }
 
 @riverpod
@@ -192,24 +211,28 @@ class ProfileEditNotifier extends _$ProfileEditNotifier {
   }
 }
 
+/// Holds the photo being uploaded, so it can be shown before it is saved.
 @riverpod
 class AvatarUploadNotifier extends _$AvatarUploadNotifier {
   @override
-  AsyncValue<void> build() => const AsyncData(null);
+  File? build() => null;
 
+  Future<Result<void, Failure>> applyPreset(final PresetAvatar preset) async {
+    if (state != null) return const Err(ValidationFailure());
+    final file = await ref.read(preparePresetAvatarUseCaseProvider)(preset);
+    if (file.isFailure) return Err(file.getError()!);
+    return upload(file.get()!);
+  }
+
+  /// Exclusive through the reload: interleaved replacements would each keep
+  /// the same previous path, orphaning one upload in storage.
   Future<Result<void, Failure>> upload(final File image) async {
-    final link = ref.keepAlive();
-    state = const AsyncLoading();
-    try {
-      final profile = await ref.read(userProfileProvider.future);
-      if (profile == null) {
-        state = const AsyncData(null);
-        return const Ok(null);
-      }
+    if (state != null) return const Err(ValidationFailure());
 
-      final result = await ref.read(updateUserAvatarUseCaseProvider)(
-        UpdateUserAvatarParams(avatarFile: image, previousAvatarPath: profile.avatarPath),
-      );
+    final link = ref.keepAlive();
+    state = image;
+    try {
+      final result = await ref.read(updateUserAvatarUseCaseProvider)(image);
 
       if (result.isSuccess) {
         ref.invalidate(userProfileProvider);
@@ -220,15 +243,12 @@ class AvatarUploadNotifier extends _$AvatarUploadNotifier {
           AppLogger.warning('Avatar saved but reloading it failed', e, stackTrace);
         }
       }
-      state = result.isFailure
-          ? AsyncError(result.getError()!, StackTrace.current)
-          : const AsyncData(null);
       return result;
     } catch (e, stackTrace) {
-      AppLogger.error('Failed to upload avatar', e, stackTrace);
-      state = AsyncError(e, stackTrace);
+      AppLogger.error('Failed to replace avatar', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     } finally {
+      state = null;
       link.close();
     }
   }
