@@ -23,6 +23,7 @@ import 'package:tryzeon/feature/personal/tryon/presentation/sheets/tryon_mode_sh
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_outcome.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/home_primary_action_button.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/widgets/page_linked_reveal.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_avatar_badge.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_avatar_page.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_disclaimer.dart';
@@ -139,24 +140,28 @@ class HomePage extends HookConsumerWidget {
     final bottomOffset =
         MediaQuery.paddingOf(context).bottom + AppSpacing.bottomNavBarOverlap;
 
-    final isAvatarPage = galleryState.isAvatarPage;
-
     return Scaffold(
       extendBody: true,
       extendBodyBehindAppBar: true,
-      floatingActionButton: hasAvatar && isAvatarPage
+      floatingActionButtonAnimator: FloatingActionButtonAnimator.noAnimation,
+      floatingActionButton: hasAvatar
           ? Padding(
               padding: EdgeInsets.only(bottom: AppSpacing.bottomNavBarOverlap),
-              child: HomePrimaryActionButton(
-                label: '虛擬試穿',
-                icon: Image.asset(
-                  AppConstants.logoMark,
-                  width: 20,
-                  height: 20,
-                  fit: BoxFit.contain,
+              child: PageLinkedReveal(
+                controller: pageController,
+                interval: const Interval(0, 0.5),
+                showOnAvatarPage: true,
+                child: HomePrimaryActionButton(
+                  label: '虛擬試穿',
+                  icon: Image.asset(
+                    AppConstants.logoMark,
+                    width: 20,
+                    height: 20,
+                    fit: BoxFit.contain,
+                  ),
+                  isDisabled: uploadingAvatarFile != null,
+                  onTap: startTryon,
                 ),
-                isDisabled: uploadingAvatarFile != null,
-                onTap: startTryon,
               ),
             )
           : null,
@@ -242,28 +247,36 @@ class HomePage extends HookConsumerWidget {
               Positioned(
                 right: AppSpacing.lg,
                 bottom: bottomOffset + AppSpacing.md,
-                child: TryonOutfitRail(pieces: entry.pieces),
+                child: PageLinkedReveal(
+                  controller: pageController,
+                  interval: const Interval(0.5, 1),
+                  child: TryonOutfitRail(pieces: entry.pieces),
+                ),
               ),
 
             // 4. Bottom Left — Indicator (white floating lines) with the AI
             // disclaimer as the last element on the page, so it reads as a
             // footnote rather than a caption for the indicator. The group hangs
             // from a lower anchor to leave the indicator where it was.
-            if (!isAvatarPage)
+            if (galleryState.entries.isNotEmpty)
               Positioned(
                 bottom: bottomOffset + AppSpacing.smMd,
                 left: AppSpacing.xxl,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TryonIndicator(
-                      currentTryonIndex: galleryState.currentIndex,
-                      tryonImagesCount: galleryState.entries.length,
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    const TryonDisclaimer(),
-                  ],
+                child: PageLinkedReveal(
+                  controller: pageController,
+                  interval: const Interval(0.5, 1),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TryonIndicator(
+                        currentTryonIndex: galleryState.currentIndex,
+                        tryonImagesCount: galleryState.entries.length,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      const TryonDisclaimer(),
+                    ],
+                  ),
                 ),
               ),
           ],
