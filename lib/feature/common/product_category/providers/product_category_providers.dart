@@ -1,6 +1,8 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
+import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
 import 'package:tryzeon/feature/common/product_category/data/datasources/product_category_local_datasource.dart';
 import 'package:tryzeon/feature/common/product_category/data/datasources/product_category_remote_datasource.dart';
 import 'package:tryzeon/feature/common/product_category/data/repositories/product_category_repository_impl.dart';
@@ -37,12 +39,18 @@ GetProductCategories getProductCategoriesUseCase(final Ref ref) {
 }
 
 @riverpod
-Future<List<ProductCategory>> productCategories(final Ref ref) async {
-  final result = await ref.watch(getProductCategoriesUseCaseProvider).call();
-
-  if (result.isSuccess) {
+class ProductCategoriesNotifier extends _$ProductCategoriesNotifier
+    with PullToRefresh<List<ProductCategory>> {
+  @override
+  Future<List<ProductCategory>> build() async {
+    final result = await ref.watch(getProductCategoriesUseCaseProvider).call();
+    if (result.isFailure) {
+      throw result.getError()!;
+    }
     return result.get()!;
-  } else {
-    throw result.getError()!;
   }
+
+  Future<Result<void, Failure>> refresh() => applyRefresh(
+    () => ref.read(getProductCategoriesUseCaseProvider)(forceRefresh: true),
+  );
 }

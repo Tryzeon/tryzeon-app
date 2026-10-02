@@ -119,6 +119,21 @@ void main() {
     expect(categories.single.gender, ProductGender.female);
   });
 
+  test('force refresh bypasses a valid cache and rewrites it from remote', () async {
+    await seedCache(defaultGarmentType: 'top');
+
+    final remote = _FakeRemote([remoteCategory]);
+    final categories = (await buildRepository(
+      remote,
+    ).getProductCategories(forceRefresh: true)).get()!;
+
+    expect(remote.calls, 1);
+    expect(categories.single.defaultGarmentType, GarmentType.onePiece);
+
+    final cached = await harness.isar.productCategoryCaches.getByCategoryId('c1');
+    expect(cached!.defaultGarmentType, 'one_piece');
+  });
+
   test('a null cached gender stays null and falls back to unisex', () async {
     await seedCache(defaultGarmentType: 'top', gender: null);
 
