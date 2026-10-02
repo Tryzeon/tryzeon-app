@@ -231,9 +231,3 @@ Future<File> wardrobeItemImage(final Ref ref, final String imagePath) async {
   }
   return result.get()!;
 }
-
-/// Null while the wardrobe has not loaded, so callers can tell "unknown" from
-/// "empty".
-@riverpod
-Set<String>? wardrobeItemIds(final Ref ref) =>
-    ref.watch(wardrobeItemsProvider).value?.map((final i) => i.id).toSet();

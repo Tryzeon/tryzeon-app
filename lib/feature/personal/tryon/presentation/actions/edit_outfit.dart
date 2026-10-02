@@ -7,9 +7,6 @@ import 'package:tryzeon/feature/personal/tryon/presentation/coordinators/tryon_c
 import 'package:tryzeon/feature/personal/tryon/presentation/state/outfit_tray_controller.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
 
-bool outfitHasLivePiece(final Set<String>? wardrobeIds, final TryonGalleryEntry entry) =>
-    entry.pieces.any((final p) => p.isLiveIn(wardrobeIds));
-
 Future<void> editOutfit(
   final BuildContext context,
   final WidgetRef ref,

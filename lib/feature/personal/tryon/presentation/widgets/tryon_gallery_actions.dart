@@ -11,7 +11,6 @@ import 'package:tryzeon/feature/personal/tryon/presentation/controllers/tryon_co
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/providers/tryon_providers.dart';
-import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 
 /// Owns its own handlers so the home page stays a layout — the only action it
 /// cannot own is [onReplaceAvatar], which the home CTA offers as well.
@@ -77,10 +76,7 @@ class TryonGalleryActions extends ConsumerWidget {
 
     final targetId = gallery.currentId;
 
-    final canEditOutfit =
-        entry != null &&
-        entry.pieces.isNotEmpty &&
-        outfitHasLivePiece(ref.watch(wardrobeItemIdsProvider), entry);
+    final canEditOutfit = entry != null && entry.pieces.isNotEmpty;
 
     Future<void> confirmCancelGeneration() async {
       if (targetId == null) return;

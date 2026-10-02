@@ -3,7 +3,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart';
-import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 
 part 'outfit_tray_controller.freezed.dart';
 part 'outfit_tray_controller.g.dart';
@@ -30,10 +29,6 @@ class OutfitTrayController extends _$OutfitTrayController {
   @override
   OutfitTrayState build() {
     ref.watch(isAuthenticatedProvider);
-    ref.listen(wardrobeItemIdsProvider, (final _, final ids) {
-      final kept = _liveIn(state.pieces, ids);
-      if (kept.length != state.pieces.length) state = state.copyWith(pieces: kept);
-    });
     return const OutfitTrayState();
   }
 
@@ -58,10 +53,9 @@ class OutfitTrayController extends _$OutfitTrayController {
       state.contains(piece.id) ? remove(piece.id) : add(piece);
 
   void replaceWith(final List<OutfitPiece> pieces) {
-    final live = _liveIn(pieces, ref.read(wardrobeItemIdsProvider));
     state = state.copyWith(
       isOpen: true,
-      pieces: live.take(AppConstants.maxTryonGarments).toList(),
+      pieces: pieces.take(AppConstants.maxTryonGarments).toList(),
     );
   }
 
@@ -70,9 +64,4 @@ class OutfitTrayController extends _$OutfitTrayController {
     state = state.copyWith(isOpen: false, pieces: const []);
     return pieces;
   }
-
-  static List<OutfitPiece> _liveIn(
-    final List<OutfitPiece> pieces,
-    final Set<String>? ids,
-  ) => pieces.where((final p) => p.isLiveIn(ids)).toList();
 }

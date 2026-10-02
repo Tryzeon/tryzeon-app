@@ -43,9 +43,4 @@ sealed class OutfitPiece with _$OutfitPiece {
     ),
     OutfitPieceLocal() => null,
   };
-
-  /// An unknown wardrobe (still loading) counts as live: nothing is dropped on
-  /// a guess. Only wardrobe pieces can go stale.
-  bool isLiveIn(final Set<String>? wardrobeIds) =>
-      this is! OutfitPieceWardrobe || (wardrobeIds?.contains(id) ?? true);
 }

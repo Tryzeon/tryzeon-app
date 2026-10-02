@@ -50,9 +50,6 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          wardrobeItemsProvider.overrideWith(
-            () => FakeWardrobeItems([wardrobeItem('a')]),
-          ),
           wardrobeItemImageProvider.overrideWith(
             (final ref, final imagePath) => Completer<File>().future,
           ),
@@ -94,14 +91,5 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('wardrobe a'), findsOneWidget);
-  });
-
-  testWidgets('a tile removed from the wardrobe goes nowhere', (final tester) async {
-    await pumpRail(tester, [wardrobePiece('gone')]);
-
-    await tester.tap(find.byKey(const Key('outfit-rail-gone')));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(TryonOutfitRail), findsOneWidget);
   });
 }

@@ -21,7 +21,7 @@ void main() {
   final entry = FinishedTryonEntry(
     const TryonResult(id: 'r', mode: TryonMode.image, imageUrl: 'u'),
     TryonSubject.generate(
-      pieces: [wardrobePiece('a'), wardrobePiece('gone')],
+      pieces: [wardrobePiece('a'), wardrobePiece('b')],
       mode: TryonMode.image,
     ),
   );
@@ -60,7 +60,7 @@ void main() {
     ),
   );
 
-  testWidgets('loads the live pieces into the dock and goes to the wardrobe', (
+  testWidgets('loads the pieces into the dock and goes to the wardrobe', (
     final tester,
   ) async {
     await pump(tester);
@@ -70,7 +70,7 @@ void main() {
 
     final tray = container.read(outfitTrayProvider);
     expect(tray.isOpen, isTrue);
-    expect(tray.pieces.map((final p) => p.id), ['a']);
+    expect(tray.pieces.map((final p) => p.id), ['a', 'b']);
     expect(navigations, [PersonalTab.wardrobe]);
   });
 
@@ -113,15 +113,5 @@ void main() {
     await tester.pump();
 
     expect(navigations, [PersonalTab.shop]);
-  });
-
-  test('outfitHasLivePiece is false when every wardrobe piece is gone', () {
-    final ids = container.read(wardrobeItemIdsProvider);
-    final gone = FinishedTryonEntry(
-      entry.result,
-      TryonSubject.generate(pieces: [wardrobePiece('gone')], mode: TryonMode.image),
-    );
-    expect(outfitHasLivePiece(ids, gone), isFalse);
-    expect(outfitHasLivePiece(ids, entry), isTrue);
   });
 }

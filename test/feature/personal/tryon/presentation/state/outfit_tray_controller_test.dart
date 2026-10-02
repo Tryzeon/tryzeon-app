@@ -101,25 +101,10 @@ void main() {
     expect(state().isOpen, isFalse);
   });
 
-  test('replaceWith drops wardrobe pieces whose item is gone and opens', () async {
-    await container.read(wardrobeItemsProvider.future);
-
-    tray().replaceWith([wardrobePiece('a'), wardrobePiece('zzz'), _product]);
+  test('replaceWith loads the pieces and opens', () {
+    tray().replaceWith([wardrobePiece('a'), _product]);
 
     expect(state().isOpen, isTrue);
     expect(state().pieces.map((final p) => p.id), ['a', 'p1']);
-  });
-
-  test('a wardrobe piece whose item disappears is pruned', () async {
-    tray()
-      ..add(wardrobePiece('a'))
-      ..add(wardrobePiece('b'))
-      ..add(_product);
-    await container.read(wardrobeItemsProvider.future);
-
-    items.setItems([wardrobeItem('b')]);
-    await Future<void>.delayed(Duration.zero);
-
-    expect(state().pieces.map((final p) => p.id), ['b', 'p1']);
   });
 }
