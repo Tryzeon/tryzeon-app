@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type_measurements.dart';
@@ -47,7 +48,26 @@ class ProductFormData {
   final ValueNotifier<Set<ProductSeason>?> selectedSeasons;
 
   bool validate(final BuildContext context) {
-    return formKey.currentState?.validate() ?? false;
+    final form = formKey.currentState;
+    if (form == null) return false;
+
+    final invalidFields = form.validateGranularly();
+    if (invalidFields.isEmpty) return true;
+
+    // Fields register in build order, not layout order (the advanced section
+    // can expand after the size table built), so pick the topmost on screen.
+    double top(final FormFieldState<dynamic> field) =>
+        (field.context.findRenderObject() as RenderBox?)?.localToGlobal(Offset.zero).dy ??
+        double.infinity;
+    final firstInvalid = invalidFields.reduce(
+      (final a, final b) => top(a) <= top(b) ? a : b,
+    );
+    Scrollable.ensureVisible(
+      firstInvalid.context,
+      duration: AppDuration.slow,
+      curve: AppCurves.standard,
+    );
+    return false;
   }
 
   List<File> get newImageFiles =>
