@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/extensions/price_format_extension.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
@@ -103,15 +104,15 @@ class FilterSheet extends HookConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            '\$${priceRange.value.start.round()}',
+                            priceRange.value.start.round().asTwd,
                             style: textTheme.labelLarge?.copyWith(
                               color: colorScheme.primary,
                             ),
                           ),
                           Text(
                             priceRange.value.end.round() >= kMaxPrice
-                                ? '\$${kMaxPrice.round()}+'
-                                : '\$${priceRange.value.end.round()}',
+                                ? '${kMaxPrice.round().asTwd}+'
+                                : priceRange.value.end.round().asTwd,
                             style: textTheme.labelLarge?.copyWith(
                               color: colorScheme.primary,
                             ),

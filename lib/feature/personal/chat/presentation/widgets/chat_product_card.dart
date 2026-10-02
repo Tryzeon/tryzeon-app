@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/extensions/price_format_extension.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_card_frame.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
@@ -37,7 +38,7 @@ class ChatProductCard extends ConsumerWidget {
           overflow: TextOverflow.ellipsis,
         ),
         Text(
-          'NT\$${product.price.toStringAsFixed(0)}',
+          product.price.asTwd,
           style: textTheme.titleSmall?.copyWith(color: colorScheme.primary),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,

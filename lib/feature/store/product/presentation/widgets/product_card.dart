@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/extensions/price_format_extension.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/product_category/providers/product_category_providers.dart';
@@ -85,7 +86,7 @@ class StoreProductCard extends HookConsumerWidget {
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
-                    '\$${product.price.toStringAsFixed(0)}',
+                    product.price.asTwd,
                     style: textTheme.headlineSmall?.copyWith(color: colorScheme.primary),
                   ),
                 ],

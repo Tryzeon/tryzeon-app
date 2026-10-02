@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
+import 'package:tryzeon/core/extensions/price_format_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
@@ -147,7 +148,7 @@ class _ProductDetailContent extends HookConsumerWidget {
                           Text(product.name, style: textTheme.headlineLarge),
                           const SizedBox(height: AppSpacing.sm),
                           Text(
-                            '\$${product.price}',
+                            product.price.asTwd,
                             style: textTheme.titleLarge?.copyWith(
                               color: colorScheme.primary,
                             ),
