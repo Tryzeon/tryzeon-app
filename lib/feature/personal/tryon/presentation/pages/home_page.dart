@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/extensions/refresh_feedback_extension.dart';
 import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
@@ -24,6 +25,7 @@ import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_outcome.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/home_primary_action_button.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_avatar_badge.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_avatar_page.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_disclaimer.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_gallery.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_gallery_actions.dart';
@@ -45,10 +47,15 @@ class HomePage extends HookConsumerWidget {
         ref.watch(userProfileProvider).value?.avatarPath?.isNotEmpty ?? false;
     final galleryState = ref.watch(tryonGalleryProvider);
     final galleryNotifier = ref.read(tryonGalleryProvider.notifier);
-    final isUploadingAvatar = ref.watch(avatarUploadProvider).isLoading;
+    final uploadingAvatarFile = ref.watch(avatarUploadProvider);
     final pageController = usePageController(initialPage: 0);
 
     final colorScheme = Theme.of(context).colorScheme;
+
+    // The scrims and white chrome are for photos; a page with no photo sits
+    // on the plain surface instead.
+    final isBlankAvatarPage =
+        galleryState.isAvatarPage && (uploadingAvatarFile ?? avatarAsync.value) == null;
 
     final currentPage = galleryState.currentPage;
     final isCurrentTheAvatar = galleryState.isCurrentTheAvatar;
@@ -64,16 +71,7 @@ class HomePage extends HookConsumerWidget {
       return null;
     }, [currentPage]);
 
-    Future<void> uploadAvatar() async {
-      final File? imageFile = await ImagePickerHelper.pickImage(
-        context,
-        title: '選擇模特來源',
-        hint: '建議上傳短袖短褲的正面全身照，雙手自然下垂、手上不要拿手機等物品。',
-        crop: const LockedCrop(ratio: AppConstants.avatarAspectRatio, title: '框出全身'),
-      );
-      if (imageFile == null) return;
-
-      final result = await ref.read(avatarUploadProvider.notifier).upload(imageFile);
+    void onAvatarReplaced(final Result<void, Failure> result) {
       if (!context.mounted) return;
       if (result.isFailure) {
         TopNotification.show(
@@ -82,7 +80,19 @@ class HomePage extends HookConsumerWidget {
         );
         return;
       }
-      galleryNotifier.showAvatarPage();
+      galleryNotifier.avatarReplaced();
+    }
+
+    Future<void> uploadAvatar() async {
+      if (ref.read(avatarUploadProvider) != null) return;
+      final File? imageFile = await ImagePickerHelper.pickImage(
+        context,
+        title: '選擇模特來源',
+        hint: '建議上傳短袖短褲的正面全身照，雙手自然下垂、手上不要拿手機等物品。',
+        crop: const LockedCrop(ratio: AppConstants.avatarAspectRatio, title: '框出全身'),
+      );
+      if (imageFile == null) return;
+      onAvatarReplaced(await ref.read(avatarUploadProvider.notifier).upload(imageFile));
     }
 
     void handleTryonOutcome(final TryonOutcome outcome) {
@@ -91,7 +101,7 @@ class HomePage extends HookConsumerWidget {
         case TryonSucceeded():
           HapticFeedback.heavyImpact();
         case TryonAvatarMissing():
-          TopNotification.show(context, message: '請先上傳個人照片才能開始試穿呦！');
+          TopNotification.show(context, message: '請先選擇試穿模特才能開始試穿呦！');
         case TryonRateLimited(:final isVideo):
           UpgradeDialog.show(
             context,
@@ -135,22 +145,22 @@ class HomePage extends HookConsumerWidget {
     return Scaffold(
       extendBody: true,
       extendBodyBehindAppBar: true,
-      floatingActionButton: Padding(
-        padding: EdgeInsets.only(bottom: AppSpacing.bottomNavBarOverlap),
-        child: HomePrimaryActionButton(
-          label: hasAvatar ? '虛擬試穿' : '上傳照片',
-          icon: hasAvatar
-              ? Image.asset(
+      floatingActionButton: hasAvatar
+          ? Padding(
+              padding: EdgeInsets.only(bottom: AppSpacing.bottomNavBarOverlap),
+              child: HomePrimaryActionButton(
+                label: '虛擬試穿',
+                icon: Image.asset(
                   AppConstants.logoMark,
                   width: 20,
                   height: 20,
                   fit: BoxFit.contain,
-                )
-              : Icon(Icons.upload_rounded, size: 20, color: colorScheme.primaryContainer),
-          isDisabled: isUploadingAvatar,
-          onTap: hasAvatar ? startTryon : uploadAvatar,
-        ),
-      ),
+                ),
+                isDisabled: uploadingAvatarFile != null,
+                onTap: startTryon,
+              ),
+            )
+          : null,
       body: RefreshIndicator(
         onRefresh: () =>
             [ref.read(userProfileProvider.notifier).refresh()].showFirstFailure(context),
@@ -174,9 +184,15 @@ class HomePage extends HookConsumerWidget {
                         pageController: pageController,
                         onPageChanged: galleryNotifier.setCurrentPage,
                         entries: galleryState.entries,
-                        avatarFile: avatarAsync.value,
-                        isAvatarBusy: avatarAsync.isLoading || isUploadingAvatar,
-                        onReplaceAvatar: uploadAvatar,
+                        avatarPage: TryonAvatarPage(
+                          onUploadOwnPhoto: uploadAvatar,
+                          onPresetSelected: (final preset) async => onAvatarReplaced(
+                            await ref
+                                .read(avatarUploadProvider.notifier)
+                                .applyPreset(preset),
+                          ),
+                        ),
+                        showScrims: !isBlankAvatarPage,
                       ),
               ),
             ),
@@ -195,6 +211,7 @@ class HomePage extends HookConsumerWidget {
                     AppConstants.logoWordmarkText,
                     height: 28,
                     fit: BoxFit.contain,
+                    color: isBlankAvatarPage ? colorScheme.onSurface : null,
                   ),
                 ],
               ),
@@ -209,9 +226,11 @@ class HomePage extends HookConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  TryonAvatarBadge(isVisible: isCurrentTheAvatar),
-                  const SizedBox(width: AppSpacing.sm),
-                  TryonGalleryActions(onReplaceAvatar: uploadAvatar),
+                  if (!isBlankAvatarPage) ...[
+                    TryonAvatarBadge(isVisible: isCurrentTheAvatar),
+                    const SizedBox(width: AppSpacing.sm),
+                    TryonGalleryActions(onReplaceAvatar: uploadAvatar),
+                  ],
                 ],
               ),
             ),
