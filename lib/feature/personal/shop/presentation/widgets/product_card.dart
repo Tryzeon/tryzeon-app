@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/extensions/price_format_extension.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
@@ -65,25 +66,19 @@ class ProductCard extends HookConsumerWidget {
                       Positioned.fill(
                         child: product.imageUrls.isEmpty
                             ? const _ImagePlaceholder()
-                            : PageView.builder(
-                                itemCount: product.imageUrls.length,
-                                itemBuilder: (final context, final index) {
-                                  return CachedNetworkImage(
-                                    imageUrl: product.imageUrls[index],
-                                    cacheKey: product.imagePaths[index],
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
-                                    fadeInDuration: Duration.zero,
-                                    fadeOutDuration: Duration.zero,
-                                    placeholder: (final context, final url) =>
-                                        Container(color: colorScheme.surfaceContainerLow),
-                                    errorWidget:
-                                        (final context, final url, final error) =>
-                                            const Center(
-                                              child: Icon(Icons.broken_image_outlined),
-                                            ),
-                                  );
-                                },
+                            : CachedNetworkImage(
+                                imageUrl: product.imageUrls.first,
+                                cacheKey: product.imagePaths.first,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                fadeInDuration: Duration.zero,
+                                fadeOutDuration: Duration.zero,
+                                placeholder: (final context, final url) =>
+                                    Container(color: colorScheme.surfaceContainerLow),
+                                errorWidget: (final context, final url, final error) =>
+                                    const Center(
+                                      child: Icon(Icons.broken_image_outlined),
+                                    ),
                               ),
                       ),
                       Positioned(
@@ -91,6 +86,7 @@ class ProductCard extends HookConsumerWidget {
                         right: AppSpacing.sm,
                         child: Skeleton.ignore(
                           child: TryonFab(
+                            label: '試穿',
                             onTap: () => triggerProductTryon(context, ref, product),
                           ),
                         ),
@@ -117,16 +113,24 @@ class ProductCard extends HookConsumerWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: AppSpacing.xs),
-                          Text(
-                            product.name,
-                            style: textTheme.titleSmall,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          // The invisible two-line text reserves the height of
+                          // a wrapped name, so images in the same grid row
+                          // stay the same size whatever the name length.
+                          Stack(
+                            children: [
+                              Text('\n', style: textTheme.titleSmall),
+                              Text(
+                                product.name,
+                                style: textTheme.titleSmall,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ),
                           const SizedBox(height: AppSpacing.xs),
                           Text(
-                            '\$${product.price}',
-                            style: textTheme.headlineSmall?.copyWith(
+                            product.price.asTwd,
+                            style: textTheme.titleSmall?.copyWith(
                               color: colorScheme.primary,
                             ),
                           ),
