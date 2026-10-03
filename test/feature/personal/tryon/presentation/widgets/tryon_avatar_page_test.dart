@@ -83,10 +83,10 @@ void main() {
     expect(find.text('選擇你的試穿模特'), findsOneWidget);
     expect(find.text(PresetAvatar.male.label), findsNothing);
 
-    await tester.tap(find.text(PresetAvatar.female.label));
+    await tester.tap(find.widgetWithText(ModelChoiceTile, PresetAvatar.female.label));
     expect(picked, PresetAvatar.female);
 
-    await tester.tap(find.text('上傳自己的照片'));
+    await tester.tap(find.widgetWithText(ModelChoiceTile, '上傳全身照'));
     expect(choseUpload, isTrue);
   });
 
