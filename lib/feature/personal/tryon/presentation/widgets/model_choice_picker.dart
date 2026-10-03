@@ -1,3 +1,4 @@
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
@@ -23,13 +24,15 @@ class ModelChoicePicker extends StatelessWidget {
     final tiles = [
       for (final preset in presets)
         ModelChoiceTile(
-          image: AssetImage(preset.assetPath),
-          label: preset.label,
+          frame: _PresetFrame(image: AssetImage(preset.assetPath)),
+          title: preset.label,
+          caption: '立即開始試穿',
           onTap: () => onPresetSelected(preset),
         ),
       ModelChoiceTile(
-        image: const AssetImage(AppConstants.ownPhotoPlaceholder),
-        label: '上傳自己的照片',
+        frame: const _UploadFrame(),
+        title: '上傳全身照',
+        caption: '穿在自己身上',
         onTap: onUploadOwnPhoto,
       ),
     ];
@@ -54,13 +57,15 @@ class ModelChoicePicker extends StatelessWidget {
 class ModelChoiceTile extends StatelessWidget {
   const ModelChoiceTile({
     super.key,
-    required this.image,
-    required this.label,
+    required this.frame,
+    required this.title,
+    required this.caption,
     required this.onTap,
   });
 
-  final ImageProvider image;
-  final String label;
+  final Widget frame;
+  final String title;
+  final String caption;
   final VoidCallback onTap;
 
   @override
@@ -68,25 +73,83 @@ class ModelChoiceTile extends StatelessWidget {
     final theme = Theme.of(context);
     const ratio = AppConstants.avatarAspectRatio;
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.selectionClick();
-          onTap();
-        },
-        child: Column(
+    return Stack(
+      children: [
+        Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            AspectRatio(
-              aspectRatio: ratio.x / ratio.y,
-              child: Ink.image(image: image, fit: BoxFit.cover),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-              child: Text(label, style: theme.textTheme.titleSmall),
+            AspectRatio(aspectRatio: ratio.x / ratio.y, child: frame),
+            const SizedBox(height: AppSpacing.smMd),
+            Text(title, style: theme.textTheme.titleSmall),
+            const SizedBox(height: AppSpacing.xxs),
+            Text(
+              caption,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
+        ),
+        Positioned.fill(
+          child: Material(
+            type: MaterialType.transparency,
+            child: InkWell(
+              borderRadius: AppRadius.cardAll,
+              onTap: () {
+                HapticFeedback.selectionClick();
+                onTap();
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PresetFrame extends StatelessWidget {
+  const _PresetFrame({required this.image});
+
+  final ImageProvider image;
+
+  @override
+  Widget build(final BuildContext context) {
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Image(image: image, fit: BoxFit.cover),
+    );
+  }
+}
+
+class _UploadFrame extends StatelessWidget {
+  const _UploadFrame();
+
+  static const List<double> _dashPattern = [6, 4];
+
+  @override
+  Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return DottedBorder(
+      options: RoundedRectDottedBorderOptions(
+        radius: const Radius.circular(AppRadius.card),
+        padding: EdgeInsets.zero,
+        strokeWidth: AppStroke.regular,
+        color: colorScheme.outline,
+        dashPattern: _dashPattern,
+        stackFit: StackFit.expand,
+      ),
+      child: ClipRRect(
+        borderRadius: AppRadius.cardAll,
+        child: ColoredBox(
+          color: colorScheme.surfaceContainerLow,
+          child: Center(
+            child: Icon(
+              Icons.add_a_photo_outlined,
+              size: 32,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
         ),
       ),
     );

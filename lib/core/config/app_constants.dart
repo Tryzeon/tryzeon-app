@@ -43,7 +43,6 @@ class AppConstants {
 
   static const String presetAvatarFemale = 'assets/images/tryon/preset_model_female.jpg';
   static const String presetAvatarMale = 'assets/images/tryon/preset_model_male.jpg';
-  static const String ownPhotoPlaceholder = 'assets/images/tryon/upload_own_photo.png';
   static const List<String> tryonLoadingAnimations = [
     'assets/videos/tryon-loading-animation-1.mp4',
     'assets/videos/tryon-loading-animation-2.mp4',
