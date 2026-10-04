@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/presentation/widgets/pinch_to_zoom.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
@@ -60,7 +61,7 @@ class TryonGallery extends HookWidget {
                     context,
                     imageProvider: CachedNetworkImageProvider(imageUrl),
                   ),
-                  child: _TryonImageItem(imageUrl: imageUrl),
+                  child: PinchToZoom(child: _TryonImageItem(imageUrl: imageUrl)),
                 );
             }
           },
