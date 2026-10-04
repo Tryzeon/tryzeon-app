@@ -10,7 +10,6 @@ import { Shop } from "./pages/Shop";
 import { Chat } from "./pages/Chat";
 import { Home } from "./pages/Home";
 import { ProductDetail } from "./pages/ProductDetail";
-import { Onboard } from "./pages/Onboard";
 import { TabBar, type ActiveTab } from "./components/TabBar";
 import { AvatarProvider } from "./state/AvatarProvider";
 import { paneOf } from "./lib/pane";
@@ -159,9 +158,6 @@ export function AppRouter() {
           <Route path="/home" element={<></>} />
           <Route path="/product/:id" element={<ProductDetail />} />
         </Route>
-        {/* Onboarding is a full-screen flow that sits outside the tab shell,
-            same as in the app. */}
-        <Route path="/onboard" element={<Onboard />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

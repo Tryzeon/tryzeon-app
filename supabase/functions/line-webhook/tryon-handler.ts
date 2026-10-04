@@ -12,7 +12,7 @@ import { fetchProductInfo } from "./product-card.ts";
 import { fetchWardrobeItemInfo } from "./wardrobe-card.ts";
 import { describeGarment as defaultDescribeGarment } from "./garment-analysis.ts";
 import {
-  onboardingMessage,
+  chooseModelMessage,
   processingMessage,
   productProcessingMessage,
   productResultMessage,
@@ -121,7 +121,7 @@ export async function handleImageTryon(
   const { userId, hasAvatar } = await resolveActor(deps, event.sourceUserId);
 
   if (!hasAvatar) {
-    await deps.line.reply(event.replyToken, [onboardingMessage(deps.liffUrl)]);
+    await deps.line.reply(event.replyToken, [chooseModelMessage(deps.liffUrl)]);
     return;
   }
 
@@ -183,7 +183,7 @@ export async function handleProductTryon(
   const { userId, hasAvatar } = await resolveActor(deps, event.sourceUserId);
 
   if (!hasAvatar) {
-    await deps.line.reply(event.replyToken, [onboardingMessage(deps.liffUrl)]);
+    await deps.line.reply(event.replyToken, [chooseModelMessage(deps.liffUrl)]);
     return;
   }
 
@@ -241,7 +241,7 @@ export async function handleWardrobeTryon(
   const { userId, hasAvatar } = await resolveActor(deps, event.sourceUserId);
 
   if (!hasAvatar) {
-    await deps.line.reply(event.replyToken, [onboardingMessage(deps.liffUrl)]);
+    await deps.line.reply(event.replyToken, [chooseModelMessage(deps.liffUrl)]);
     return;
   }
 

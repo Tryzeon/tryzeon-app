@@ -1,7 +1,7 @@
 import { assertEquals } from "@std/assert";
 import {
   chatErrorMessage,
-  onboardingMessage,
+  chooseModelMessage,
   productTryonErrorMessage,
   productUnavailableMessage,
   tryonErrorMessage,
@@ -41,10 +41,10 @@ const chipActions = (message: object): object[] =>
 const templateUri = (message: object): string =>
   (message as { template: { actions: { uri: string }[] } }).template.actions[0].uri;
 
-Deno.test("onboarding reaches both liff-web screens from one base URL", () => {
-  const message = onboardingMessage("https://liff.example");
+Deno.test("the model prompt reaches both liff-web screens from one base URL", () => {
+  const message = chooseModelMessage("https://liff.example");
 
-  assertEquals(templateUri(message), "https://liff.example/onboard");
+  assertEquals(templateUri(message), "https://liff.example/home");
   assertEquals(chipActions(message), [
     { type: "uri", label: "先逛逛商品", uri: "https://liff.example" },
     { type: "message", label: "這是什麼服務", text: "你是誰，你能幫我做什麼" },

@@ -31,7 +31,7 @@ const LIFF_HOME_PATH = "/home";
  * before any try-on, and someone not ready for it can still go see what there is
  * to try on rather than leaving.
  */
-export function onboardingMessage(liffUrl: string): object {
+export function chooseModelMessage(liffUrl: string): object {
   return withQuickReply({
     type: "template",
     altText: "先選擇你的試穿模特",

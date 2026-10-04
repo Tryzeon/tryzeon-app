@@ -66,20 +66,24 @@ export function Home() {
     if (!avatar.busy) avatarInput.current?.click();
   }
 
-  async function replaceAvatar(file: File) {
-    if (!await avatar.replace(file)) {
-      notify("照片上傳失敗，換一張清楚的全身照再試。");
+  // The first model is where a LINE user sent here by the chat lands, so the
+  // confirmation also points back to the chat their garment photo came from.
+  async function chooseModel(choose: () => Promise<boolean>, failure: string) {
+    const isFirst = !avatar.hasAvatar;
+    if (!await choose()) {
+      notify(failure);
       return;
     }
     dispatch({ type: "setPage", page: 0 });
+    if (isFirst) notify("模特設定完成！選衣服就能試穿，也可以回聊天室再傳一次衣服圖。");
   }
 
-  async function applyPreset(preset: PresetAvatar) {
-    if (!await avatar.applyPreset(preset)) {
-      notify("模特套用失敗，請稍後再試。");
-      return;
-    }
-    dispatch({ type: "setPage", page: 0 });
+  function replaceAvatar(file: File) {
+    return chooseModel(() => avatar.replace(file), "照片上傳失敗，換一張清楚的全身照再試。");
+  }
+
+  function applyPreset(preset: PresetAvatar) {
+    return chooseModel(() => avatar.applyPreset(preset), "模特套用失敗，請稍後再試。");
   }
 
   async function share() {

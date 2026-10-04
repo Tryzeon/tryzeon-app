@@ -89,7 +89,7 @@ const chipActions = (message: object): object[] =>
   // deno-lint-ignore no-explicit-any
   ((message as any).quickReply?.items ?? []).map((i: any) => i.action);
 
-Deno.test("a sender with no model photo is asked to onboard, and nothing is generated", async () => {
+Deno.test("a sender with no model is asked to choose one, and nothing is generated", async () => {
   const { line, sent } = fakeLine();
   let ran = false;
   await handleImageTryon(
@@ -288,7 +288,7 @@ Deno.test("a product that is gone is said so, and no quota is spent", async () =
   assertEquals(textOf(sent.replies[0][0]), "這件商品已經下架了，換一件再試試。");
 });
 
-Deno.test("tapping try-on with no model photo asks to onboard first", async () => {
+Deno.test("tapping try-on with no model asks to choose one first", async () => {
   const { line, sent } = fakeLine();
   await handleProductTryon(
     makeProductDeps({ line, getAvatarPath: () => Promise.resolve(null) }),

@@ -115,13 +115,6 @@ button, label { touch-action: manipulation; }
 
 .main { flex: 1; padding: 16px; }
 
-.eyebrow {
-  font-size: 11px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin: 0 0 14px;
-}
 
 /* ── Catalog grid ──────────────────────────────────────────────────────── */
 /* Bleeds past the page padding to an 8px gutter, matching the app's grid —
@@ -372,7 +365,6 @@ button, label { touch-action: manipulation; }
 }
 .spinner--ink { border-color: var(--line); border-top-color: var(--ink); }
 @keyframes spin { to { transform: rotate(360deg); } }
-.cta__hint { display: block; font-size: 11px; color: var(--muted); margin-top: 6px; text-align: center; letter-spacing: 0.04em; }
 
 .btn-outline {
   display: block;
@@ -387,58 +379,6 @@ button, label { touch-action: manipulation; }
   text-align: center;
   cursor: pointer;
 }
-
-/* ── Photo frame (onboard preview) ─────────────────────────────────────── */
-.frame {
-  position: relative;
-  width: min(64%, 240px);
-  margin: 0 auto;
-  aspect-ratio: 9 / 16;
-  border-radius: var(--r-card);
-  overflow: hidden;
-  background: var(--surface-2);
-}
-.frame__img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  animation: reveal 0.45s var(--ease-out) both;
-}
-.frame__veil {
-  position: absolute;
-  inset: 0;
-  background: rgba(26, 26, 26, 0.42);
-  display: grid;
-  place-items: center;
-}
-.frame__badge {
-  position: absolute;
-  top: 10px; right: 10px;
-  width: 26px; height: 26px;
-  border-radius: var(--r-pill);
-  background: var(--ink);
-  color: #fff;
-  display: grid;
-  place-items: center;
-  font-size: 14px;
-}
-.frame__caption {
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-  text-align: center;
-  margin-top: 12px;
-}
-
-@keyframes reveal {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* ── Onboard ───────────────────────────────────────────────────────────── */
-.preview { margin: 0 0 16px; }
-.onboard__picker { margin: 20px 0; }
 
 /* ── Model choice (preset models + own photo) ──────────────────────────── */
 .models {
