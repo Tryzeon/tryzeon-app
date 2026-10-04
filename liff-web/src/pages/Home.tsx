@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ActionSheet, type SheetAction } from "../components/ActionSheet";
+import { AvatarPage } from "../components/AvatarPage";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { FullscreenViewer } from "../components/FullscreenViewer";
 import { Overlay } from "../components/Overlay";
@@ -7,6 +8,7 @@ import { StyleSheet } from "../components/StyleSheet";
 import { TryonPager } from "../components/TryonPager";
 import { useTryonCoordinator } from "../hooks/useTryonCoordinator";
 import { canShareToChat, shareImageToChat } from "../lib/liff";
+import type { PresetAvatar } from "../lib/presetAvatars";
 import {
   currentEntry,
   currentImageUrl,
@@ -56,9 +58,25 @@ export function Home() {
 
   const product = entry?.product ?? null;
 
+  // Scrims and white chrome are for photos; the model picker sits on the plain
+  // surface instead.
+  const isBlankAvatarPage = isAvatarPage(state) && !avatar.hasAvatar && avatar.url === null;
+
+  function pickAvatar() {
+    if (!avatar.busy) avatarInput.current?.click();
+  }
+
   async function replaceAvatar(file: File) {
     if (!await avatar.replace(file)) {
       notify("照片上傳失敗，換一張清楚的全身照再試。");
+      return;
+    }
+    dispatch({ type: "setPage", page: 0 });
+  }
+
+  async function applyPreset(preset: PresetAvatar) {
+    if (!await avatar.applyPreset(preset)) {
+      notify("模特套用失敗，請稍後再試。");
       return;
     }
     dispatch({ type: "setPage", page: 0 });
@@ -94,7 +112,7 @@ export function Home() {
   const replace: SheetAction = {
     title: "更換模特圖片",
     subtitle: "上傳照片更換試穿模特",
-    onSelect: () => avatarInput.current?.click(),
+    onSelect: pickAvatar,
   };
 
   function menuActions(): SheetAction[] {
@@ -140,32 +158,38 @@ export function Home() {
   }
 
   return (
-    <div className="app home">
+    <div className={`app home${isBlankAvatarPage ? " home--blank" : ""}`}>
       <TryonPager
         entries={state.entries}
-        avatarUrl={avatar.url}
-        avatarBusy={avatar.status === "loading" || avatar.busy}
+        avatarPage={
+          <AvatarPage
+            onReplaceTap={pickAvatar}
+            onPreset={applyPreset}
+            onUpload={replaceAvatar}
+          />
+        }
         page={page}
         onPageChange={(next) => dispatch({ type: "setPage", page: next })}
-        onAvatarTap={() => avatarInput.current?.click()}
         onResultTap={(url) => setPopup({ kind: "viewer", imageUrl: url })}
       />
 
       <div className="home__top">
         <span className="home__mark">Tryzeon</span>
-        <div className="home__topright">
-          {isCurrentTheAvatar(state) && (
-            <span className="home__badge">★ 沿用中</span>
-          )}
-          <button
-            type="button"
-            className="home__more"
-            aria-label="更多選項"
-            onClick={() => setPopup({ kind: "menu" })}
-          >
-            ⋮
-          </button>
-        </div>
+        {!isBlankAvatarPage && (
+          <div className="home__topright">
+            {isCurrentTheAvatar(state) && (
+              <span className="home__badge">★ 沿用中</span>
+            )}
+            <button
+              type="button"
+              className="home__more"
+              aria-label="更多選項"
+              onClick={() => setPopup({ kind: "menu" })}
+            >
+              ⋮
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="home__bottomleft">
@@ -186,17 +210,18 @@ export function Home() {
           )}
       </div>
 
-      <div className="home__actions">
-        <button
-          type="button"
-          className="home__cta"
-          disabled={avatar.busy}
-          onClick={() =>
-            avatar.hasAvatar ? garmentInput.current?.click() : avatarInput.current?.click()}
-        >
-          {avatar.hasAvatar ? "選衣服試穿" : "上傳全身照"}
-        </button>
-      </div>
+      {avatar.hasAvatar && (
+        <div className="home__actions">
+          <button
+            type="button"
+            className="home__cta"
+            disabled={avatar.busy}
+            onClick={() => garmentInput.current?.click()}
+          >
+            選衣服試穿
+          </button>
+        </div>
+      )}
 
       {avatar.status === "error" && (
         <p className="home__loadfail">模特照載入失敗，重新整理再試。</p>

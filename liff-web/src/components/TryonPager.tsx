@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { nextLoadingVideo } from "../lib/loadingVideos";
 import { nearestPage } from "../lib/pager";
 import type { GalleryEntry } from "../state/gallery";
@@ -14,11 +14,9 @@ const REVEAL_MS = 500;
 
 interface Props {
   entries: GalleryEntry[];
-  avatarUrl: string | null;
-  avatarBusy: boolean;
+  avatarPage: ReactNode;
   page: number;
   onPageChange(page: number): void;
-  onAvatarTap(): void;
   onResultTap(imageUrl: string): void;
 }
 
@@ -28,7 +26,7 @@ interface Props {
  * gestures, and handling touch events ourselves would only break them.
  */
 export function TryonPager(
-  { entries, avatarUrl, avatarBusy, page, onPageChange, onAvatarTap, onResultTap }: Props,
+  { entries, avatarPage, page, onPageChange, onResultTap }: Props,
 ) {
   const trackRef = useRef<HTMLDivElement>(null);
 
@@ -89,21 +87,7 @@ export function TryonPager(
       onPointerDown={releaseTarget}
       onTouchStart={releaseTarget}
     >
-      <div className="page" onClick={onAvatarTap}>
-        {avatarUrl === null
-          ? (
-            <div className="page__empty">
-              <p className="page__emptytitle">還沒有 model 照</p>
-              <p className="page__emptyhint">點一下上傳一張清楚的全身照</p>
-            </div>
-          )
-          : <FadeImage className="page__img" src={avatarUrl} alt="你的 model 照" />}
-        {avatarBusy && (
-          <div className="page__veil">
-            <span className="spinner" aria-hidden="true" />
-          </div>
-        )}
-      </div>
+      {avatarPage}
 
       {entries.map((entry) => (
         <TryonPage key={entry.id} entry={entry} onResultTap={onResultTap} />

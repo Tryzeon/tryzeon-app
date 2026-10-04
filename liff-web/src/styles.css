@@ -301,6 +301,7 @@ button, label { touch-action: manipulation; }
 .sheet__panel--menu { padding-top: 8px; }
 .sheet__body { padding: 16px 20px 0; }
 .sheet__name { font-size: 17px; font-weight: 600; line-height: 1.4; margin: 0; }
+.sheet__hint { margin: 4px 0 20px; font-size: 13px; color: var(--muted); }
 .sheet__body .cta { margin-top: 20px; }
 
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
@@ -392,7 +393,7 @@ button, label { touch-action: manipulation; }
   position: relative;
   width: min(64%, 240px);
   margin: 0 auto;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 9 / 16;
   border-radius: var(--r-card);
   overflow: hidden;
   background: var(--surface-2);
@@ -435,12 +436,56 @@ button, label { touch-action: manipulation; }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Onboard preview ───────────────────────────────────────────────────── */
-.preview { margin: 0 -12px 16px; }
-.preview .frame { width: auto; }
+/* ── Onboard ───────────────────────────────────────────────────────────── */
+.preview { margin: 0 0 16px; }
+.onboard__picker { margin: 20px 0; }
+
+/* ── Model choice (preset models + own photo) ──────────────────────────── */
+.models {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+}
+.models__tile {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 168px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+  transition: opacity 0.12s ease;
+}
+.models__tile:active:not(:disabled):not(.is-disabled) { opacity: 0.7; }
+.models__tile:disabled,
+.models__tile.is-disabled { opacity: 0.55; cursor: default; }
+.models__frame {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  border-radius: var(--r-card);
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.models__frame--upload {
+  border: 1.5px dashed var(--muted);
+  background: var(--surface);
+  color: var(--muted);
+}
+.models__frame--upload svg { width: 32px; height: 32px; }
+.models__img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.models__title { margin-top: 10px; font-size: 14px; font-weight: 600; }
+.models__caption { margin-top: 2px; font-size: 12px; color: var(--muted); }
 
 /* ── Tip (photo guidance) ──────────────────────────────────────────────── */
-.avatarprompt { margin-top: 20px; }
 .tipcard {
   display: flex;
   gap: 10px;
@@ -606,22 +651,26 @@ button, label { touch-action: manipulation; }
   place-items: center;
   background: rgba(26, 26, 26, 0.42);
 }
-.page__empty {
+.page--blank { background: var(--bg); }
+.page__choice {
   height: 100%;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  background: var(--surface);
+  padding:
+    calc(64px + env(safe-area-inset-top)) 20px
+    calc(var(--tabbar) + 24px + env(safe-area-inset-bottom));
+  text-align: center;
 }
-.page__emptytitle {
+.page__choicetitle {
   margin: 0;
   font-family: var(--serif);
-  font-size: 20px;
+  font-size: 22px;
   color: var(--ink);
 }
-.page__emptyhint { margin: 0; font-size: 13px; color: var(--muted); }
+.page__choicehint { margin: 8px 0 24px; font-size: 13px; color: var(--muted); }
 
 /* Scrims: the white chrome sits over an arbitrary photo. */
 .home::before,
@@ -643,6 +692,10 @@ button, label { touch-action: manipulation; }
   height: 240px;
   background: linear-gradient(0deg, rgba(26, 26, 26, 0.55), transparent);
 }
+
+.home--blank::before,
+.home--blank::after { display: none; }
+.home--blank .home__mark { color: var(--ink); }
 
 .home__top {
   position: absolute;

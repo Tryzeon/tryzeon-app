@@ -1,9 +1,9 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { fetchProduct, type CatalogItem } from "../api/catalog";
-import { AvatarUploadButton, AvatarUploadTip } from "../components/AvatarUpload";
 import { Header } from "../components/Header";
 import { ChevronLeftIcon } from "../components/icons";
+import { ModelChoiceSheet } from "../components/ModelChoiceSheet";
 import { ProductGallery } from "../components/ProductGallery";
 import { useTryonCoordinator } from "../hooks/useTryonCoordinator";
 import { isExternalUrl, openExternal } from "../lib/liff";
@@ -108,14 +108,21 @@ export function ProductDetail() {
 function Detail({ item, back }: { item: CatalogItem; back: ReactNode }) {
   const avatar = useAvatar();
   const tryon = useTryonCoordinator();
+  const [choosingModel, setChoosingModel] = useState(false);
+  const [choiceFailed, setChoiceFailed] = useState(false);
 
   const buyUrl = item.purchaseLink && isExternalUrl(item.purchaseLink)
     ? item.purchaseLink
     : null;
   const hasPhotos = item.imageUrls.length > 0;
 
-  async function pickAvatarAndTryon(file: File) {
-    if (await avatar.replace(file)) await tryon.fromProduct(item);
+  async function chooseModelAndTryon(choose: () => Promise<boolean>) {
+    setChoiceFailed(false);
+    if (!await choose()) {
+      setChoiceFailed(true);
+      return;
+    }
+    await tryon.fromProduct(item);
   }
 
   return (
@@ -131,23 +138,32 @@ function Detail({ item, back }: { item: CatalogItem; back: ReactNode }) {
         {item.price != null && <p className="pdp__price">NT${item.price}</p>}
         {item.description && <p className="pdp__description">{item.description}</p>}
 
-        {hasPhotos && !avatar.hasAvatar && <AvatarUploadTip />}
+        {choiceFailed && (
+          <div className="errorcard">模特設定失敗，請稍後再試或換一張清楚的全身照。</div>
+        )}
       </main>
 
       <div className="actionbar">
         {!hasPhotos
           ? <p className="pdp__note">這件商品還沒有照片，無法試穿。</p>
-          : avatar.hasAvatar
-          ? (
+          : (
             <button
               type="button"
-              className="cta"
-              onClick={() => tryon.fromProduct(item)}
+              className={`cta${avatar.busy ? " is-loading" : ""}`}
+              disabled={avatar.busy}
+              onClick={() =>
+                avatar.hasAvatar ? tryon.fromProduct(item) : setChoosingModel(true)}
             >
-              開始試穿
+              {avatar.busy
+                ? (
+                  <span className="cta__spin">
+                    <span className="spinner" aria-hidden="true" />
+                    設定模特中…
+                  </span>
+                )
+                : "開始試穿"}
             </button>
-          )
-          : <AvatarUploadButton busy={avatar.busy} onPick={pickAvatarAndTryon} />}
+          )}
 
         {buyUrl && (
           <button
@@ -159,6 +175,15 @@ function Detail({ item, back }: { item: CatalogItem; back: ReactNode }) {
           </button>
         )}
       </div>
+
+      {choosingModel && (
+        <ModelChoiceSheet
+          presets={avatar.presets}
+          onPreset={(preset) => chooseModelAndTryon(() => avatar.applyPreset(preset))}
+          onUpload={(file) => chooseModelAndTryon(() => avatar.replace(file))}
+          onClose={() => setChoosingModel(false)}
+        />
+      )}
     </>
   );
 }
