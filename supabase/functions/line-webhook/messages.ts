@@ -24,24 +24,24 @@ export function processingMessage(): object {
   return { type: "text", text: "收到，正在試穿，請稍等！" };
 }
 
-const LIFF_ONBOARD_PATH = "/onboard";
+const LIFF_HOME_PATH = "/home";
 
 /**
- * The catalog chip matters more than it looks — uploading a photo of yourself is
- * a real ask, and someone not ready for it can still go see what there is to try
- * on rather than leaving.
+ * The catalog chip matters more than it looks — picking a model is still a step
+ * before any try-on, and someone not ready for it can still go see what there is
+ * to try on rather than leaving.
  */
 export function onboardingMessage(liffUrl: string): object {
   return withQuickReply({
     type: "template",
-    altText: "先建立你的 model 照",
+    altText: "先選擇你的試穿模特",
     template: {
       type: "buttons",
-      text: "想要試穿嗎？先花 3 秒上傳你的 model 照",
+      text: "想要試穿嗎？先選一位預設模特，或上傳自己的全身照",
       actions: [{
         type: "uri",
-        label: "上傳我的 model 照",
-        uri: `${liffUrl}${LIFF_ONBOARD_PATH}`,
+        label: "選擇試穿模特",
+        uri: `${liffUrl}${LIFF_HOME_PATH}`,
       }],
     },
   }, [
