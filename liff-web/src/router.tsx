@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { matchPath, Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
 import { initAndLogin } from "./lib/liff";
 import { ensureSession } from "./lib/auth";
-import { fetchAvatarPath } from "./api/profile";
+import { type AvatarProfile, fetchAvatarProfile } from "./api/profile";
 import { CatalogSkeleton } from "./components/CatalogSkeleton";
 import { Header } from "./components/Header";
 import { SearchSortBar } from "./components/SearchSortBar";
@@ -20,16 +20,16 @@ const noop = () => {};
 
 function LiffGate() {
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
-  const [avatarPath, setAvatarPath] = useState<string | null>(null);
+  const [profile, setProfile] = useState<AvatarProfile>({ avatarPath: null, gender: null });
   const { pathname } = useLocation();
 
   useEffect(() => {
     initAndLogin()
       .then(ensureSession)
-      .then(fetchAvatarPath)
+      .then(fetchAvatarProfile)
       .then(
-        (path) => {
-          setAvatarPath(path);
+        (fetched) => {
+          setProfile(fetched);
           setState("ready");
         },
         (err) => {
@@ -93,7 +93,7 @@ function LiffGate() {
   // both tabs must see the same one, and a trip through the shop and back must
   // leave the try-ons that were just made intact.
   return (
-    <AvatarProvider initialPath={avatarPath}>
+    <AvatarProvider initialPath={profile.avatarPath} gender={profile.gender}>
       <GalleryProvider>
         <Outlet />
       </GalleryProvider>
