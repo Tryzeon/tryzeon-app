@@ -11,7 +11,7 @@
 
 ## Engineering principles
 
-- **No backward-compatibility cruft:** delete the obsolete path outright instead of stacking a compatibility layer on top of it.
+- **No backward-compatibility cruft:** delete the obsolete path outright instead of stacking a compatibility layer on top of it. This includes removed routes and URLs: no redirect or fallback for old links (e.g. links already sent in LINE messages) — update every in-repo reference and drop the route.
 - **Grow in layers:** build the smallest working end-to-end version first, then add layers on top. Never replace something that works with a half-finished version.
 - **Stay modular:** keep component responsibilities cleanly separated.
 - **Prefer mature wheels:** if an existing library reduces complexity, use it instead of reinventing it.
