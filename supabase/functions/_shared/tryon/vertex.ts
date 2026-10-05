@@ -8,16 +8,16 @@ import { detectMimeType } from "../image-utils.ts";
 import {
   tryonExperimentalImageModel,
   tryonExperimentalVideoModel,
-  tryonImageModels,
+  tryonImageModel,
   tryonVideoModel,
 } from "../vertex/config.ts";
+import { ServiceBusyError } from "../errors.ts";
 import { rethrowAsBusy } from "../vertex/errors.ts";
 import { QUOTA_WINDOW_RETRIES } from "../vertex/retry.ts";
 import { GenerationFailedError } from "./errors.ts";
 import {
   vertexInteractionsModel,
   vertexModel,
-  vertexModelSweep,
   vertexVideoModel,
 } from "../vertex/provider.ts";
 import {
@@ -36,10 +36,14 @@ function imagePart(base64: string) {
   return { type: "image" as const, image: base64 };
 }
 
-/**
- * `responseModalities` and `imageConfig` are Gemini's own settings, so they
- * travel under `providerOptions.vertex` rather than as call options.
- */
+// Healthy flash answers in 9–17 s; 45 s cuts a stall while leaving pro
+// (20–28 s) most of the deadline.
+const PRIMARY_ATTEMPT_TIMEOUT_MS = 45_000;
+
+// Under the platform's 150 s kill, which skips the quota refund, with room for
+// loading sources and the R2 upload around generation.
+const GENERATION_DEADLINE_MS = 135_000;
+
 export async function generateTryonImage(
   avatarImage: string,
   garmentGroups: string[][],
@@ -48,15 +52,61 @@ export async function generateTryonImage(
   const taskPrompt = buildTaskPrompt(garmentGroups, opts);
   console.log("[tryon] task prompt:\n" + taskPrompt);
 
-  // Read at call time, not at module load: a deployment missing the
-  // experimental model must still serve standard jobs. Only the standard
-  // engine sweeps models: the experimental engine is the one model it names.
-  const model = opts.engine === "experimental"
-    ? vertexModel(tryonExperimentalImageModel())
-    : vertexModelSweep(tryonImageModels());
+  const images = [avatarImage, ...garmentGroups.flat()];
+  const generate = (
+    modelId: string,
+    maxRetries: number,
+    abortSignal: AbortSignal,
+  ) => generateWithModel(modelId, taskPrompt, images, maxRetries, abortSignal);
 
+  // Our own signal, not the SDK's `timeout`: the SDK aborts a retry backoff with
+  // a plain `AbortError`, so only the signal can tell the deadline fired.
+  const deadline = AbortSignal.timeout(GENERATION_DEADLINE_MS);
+  try {
+    if (opts.engine !== "experimental") {
+      const primaryModel = tryonImageModel();
+      const attempt = AbortSignal.timeout(PRIMARY_ATTEMPT_TIMEOUT_MS);
+      try {
+        const image = await generate(
+          primaryModel,
+          0,
+          AbortSignal.any([deadline, attempt]),
+        );
+        if (image) return image;
+      } catch (err) {
+        if (deadline.aborted) throw err;
+        console.warn(
+          attempt.aborted
+            ? `vertex: model=${primaryModel} timed out after ${PRIMARY_ATTEMPT_TIMEOUT_MS}ms`
+            : `vertex: model=${primaryModel} failed: ${err}`,
+        );
+      }
+    }
+    return await generate(
+      tryonExperimentalImageModel(),
+      QUOTA_WINDOW_RETRIES,
+      deadline,
+    );
+  } catch (err) {
+    if (!deadline.aborted) return rethrowAsBusy(err);
+    console.warn(`vertex: no answer within ${GENERATION_DEADLINE_MS}ms`);
+    throw new ServiceBusyError("vertex missed the deadline", { cause: err });
+  }
+}
+
+/**
+ * `responseModalities` and `imageConfig` are Gemini's own settings, so they
+ * travel under `providerOptions.vertex` rather than as call options.
+ */
+async function generateWithModel(
+  modelId: string,
+  taskPrompt: string,
+  images: string[],
+  maxRetries: number,
+  abortSignal: AbortSignal,
+): Promise<string | null> {
   const { files, finishReason } = await generateText({
-    model,
+    model: vertexModel(modelId),
     system: SYSTEM_INSTRUCTION,
     messages: [{
       role: "user",
@@ -65,8 +115,7 @@ export async function generateTryonImage(
           type: "text",
           text: taskPrompt,
         },
-        imagePart(avatarImage),
-        ...garmentGroups.flat().map(imagePart),
+        ...images.map(imagePart),
       ],
     }],
     providerOptions: {
@@ -82,12 +131,16 @@ export async function generateTryonImage(
         },
       },
     },
-    maxRetries: QUOTA_WINDOW_RETRIES,
-  }).catch(rethrowAsBusy);
+    maxRetries,
+    abortSignal,
+  });
 
   const image = files.find((file) => file.mediaType.startsWith("image/"));
   if (!image) {
-    console.error("No image in Vertex response, finishReason:", finishReason);
+    console.error(
+      `No image in Vertex response, model=${modelId} finishReason:`,
+      finishReason,
+    );
     return null;
   }
   return image.base64;

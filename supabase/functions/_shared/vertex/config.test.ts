@@ -1,5 +1,5 @@
 import { assertEquals, assertThrows } from "@std/assert";
-import { parseServiceAccount, tryonImageModels } from "./config.ts";
+import { parseServiceAccount } from "./config.ts";
 
 const KEY_FILE = JSON.stringify({
   type: "service_account",
@@ -54,35 +54,4 @@ Deno.test("parseServiceAccount rejects anything that is not JSON", () => {
   for (const raw of ["not json at all", "{ oops", ""]) {
     assertThrows(() => parseServiceAccount(raw), Error, "is not valid JSON");
   }
-});
-
-Deno.test("tryonImageModels reads an ordered comma-separated list", () => {
-  Deno.env.set("TRYON_MODEL", " gemini-3.1-flash-image, gemini-3.1-flash-lite-image ,,gemini-3-pro-image ");
-  try {
-    assertEquals(tryonImageModels(), [
-      "gemini-3.1-flash-image",
-      "gemini-3.1-flash-lite-image",
-      "gemini-3-pro-image",
-    ]);
-  } finally {
-    Deno.env.delete("TRYON_MODEL");
-  }
-});
-
-Deno.test("tryonImageModels accepts a single model", () => {
-  Deno.env.set("TRYON_MODEL", "gemini-3.1-flash-image");
-  try {
-    assertEquals(tryonImageModels(), ["gemini-3.1-flash-image"]);
-  } finally {
-    Deno.env.delete("TRYON_MODEL");
-  }
-});
-
-Deno.test("tryonImageModels rejects an empty list", () => {
-  for (const raw of [undefined, "", " , "]) {
-    if (raw === undefined) Deno.env.delete("TRYON_MODEL");
-    else Deno.env.set("TRYON_MODEL", raw);
-    assertThrows(() => tryonImageModels(), Error, "TRYON_MODEL");
-  }
-  Deno.env.delete("TRYON_MODEL");
 });

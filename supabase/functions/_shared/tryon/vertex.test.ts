@@ -4,6 +4,7 @@ import { GenerationFailedError } from "./errors.ts";
 import { generateTryonImage, generateTryonVideo } from "./vertex.ts";
 
 const IMAGE_MODEL = "gemini-3.1-flash-image";
+const PRO_MODEL = "gemini-3-pro-image";
 const STANDARD_MODEL = "gemini-omni-1.1-flash-preview";
 const EXPERIMENTAL_MODEL = "veo-3.1-fast-generate-001";
 const VIDEO_BASE64 = btoa("mp4-bytes");
@@ -39,6 +40,7 @@ async function installServiceAccount() {
     }),
   );
   Deno.env.set("TRYON_MODEL", IMAGE_MODEL);
+  Deno.env.set("TRYON_MODEL_EXPERIMENTAL", PRO_MODEL);
   Deno.env.set("VIDEO_MODEL", STANDARD_MODEL);
   Deno.env.set("VIDEO_MODEL_EXPERIMENTAL", EXPERIMENTAL_MODEL);
 }
@@ -73,6 +75,10 @@ function stubFetch(
     );
   }) as typeof fetch;
   return { captured, restore: () => (globalThis.fetch = original) };
+}
+
+function modelOf({ url }: Captured): string {
+  return url.split("/models/")[1].split(":")[0];
 }
 
 function interaction(content: unknown[]) {
@@ -206,7 +212,7 @@ function quotaRefusal(): Response {
   );
 }
 
-Deno.test("generateTryonImage retries a quota refusal enough to reach the next minute", async () => {
+Deno.test("generateTryonImage asks the standard model once, then retries the fallback enough to reach the next minute", async () => {
   await installServiceAccount();
   const { captured, restore } = stubFetch(quotaRefusal);
   try {
@@ -214,7 +220,10 @@ Deno.test("generateTryonImage retries a quota refusal enough to reach the next m
       () => generateTryonImage(IMAGE_BASE64, [[IMAGE_BASE64]]),
       ServiceBusyError,
     );
-    assertEquals(captured.length, 6);
+    assertEquals(captured.map(modelOf), [
+      IMAGE_MODEL,
+      ...Array(6).fill(PRO_MODEL),
+    ]);
   } finally {
     restore();
   }
@@ -234,9 +243,6 @@ Deno.test("generateTryonVideo retries a quota refusal enough to reach the next m
   }
 });
 
-const LITE_MODEL = "gemini-3.1-flash-lite-image";
-const PRO_MODEL = "gemini-3-pro-image";
-
 function imageAnswer(): unknown {
   return {
     candidates: [{
@@ -249,9 +255,14 @@ function imageAnswer(): unknown {
   };
 }
 
-Deno.test("generateTryonImage moves to the next model when one refuses for quota", async () => {
+function badRequest(): Response {
+  return Response.json({ error: { code: 400, status: "INVALID_ARGUMENT" } }, {
+    status: 400,
+  });
+}
+
+Deno.test("generateTryonImage falls back to the experimental model when the standard one refuses for quota", async () => {
   await installServiceAccount();
-  Deno.env.set("TRYON_MODEL", `${IMAGE_MODEL}, ${LITE_MODEL}`);
   const { captured, restore } = stubFetch((url) =>
     url.includes(`/models/${IMAGE_MODEL}:`) ? quotaRefusal() : imageAnswer()
   );
@@ -259,65 +270,64 @@ Deno.test("generateTryonImage moves to the next model when one refuses for quota
     const image = await generateTryonImage(IMAGE_BASE64, [[IMAGE_BASE64]]);
 
     assertEquals(image, IMAGE_BASE64);
-    assertEquals(captured.length, 2);
-    assertStringIncludes(
-      captured[0].url,
-      `/models/${IMAGE_MODEL}:generateContent`,
-    );
-    assertStringIncludes(
-      captured[1].url,
-      `/models/${LITE_MODEL}:generateContent`,
-    );
+    assertEquals(captured.map(modelOf), [IMAGE_MODEL, PRO_MODEL]);
   } finally {
-    Deno.env.set("TRYON_MODEL", IMAGE_MODEL);
     restore();
   }
 });
 
-Deno.test("generateTryonImage sweeps every model on each attempt", async () => {
+Deno.test("generateTryonImage falls back to the experimental model when the standard one answers without an image", async () => {
   await installServiceAccount();
-  Deno.env.set("TRYON_MODEL", `${IMAGE_MODEL},${LITE_MODEL},${PRO_MODEL}`);
-  const { captured, restore } = stubFetch(quotaRefusal);
-  try {
-    await assertRejects(
-      () => generateTryonImage(IMAGE_BASE64, [[IMAGE_BASE64]]),
-      ServiceBusyError,
-    );
-    assertEquals(captured.length, 18);
-    assertEquals(
-      captured.slice(0, 3).map(({ url }) =>
-        url.split("/models/")[1].split(":")[0]
-      ),
-      [IMAGE_MODEL, LITE_MODEL, PRO_MODEL],
-    );
-  } finally {
-    Deno.env.set("TRYON_MODEL", IMAGE_MODEL);
-    restore();
-  }
-});
-
-Deno.test("generateTryonImage stops sweeping at a refusal that is not about capacity", async () => {
-  await installServiceAccount();
-  Deno.env.set("TRYON_MODEL", `${IMAGE_MODEL},${LITE_MODEL}`);
-  const { captured, restore } = stubFetch(() =>
-    Response.json({ error: { code: 400, status: "INVALID_ARGUMENT" } }, {
-      status: 400,
-    })
+  const { captured, restore } = stubFetch((url) =>
+    url.includes(`/models/${IMAGE_MODEL}:`)
+      ? {
+        candidates: [{
+          content: { role: "model", parts: [{ text: "No image this time." }] },
+          finishReason: "STOP",
+        }],
+      }
+      : imageAnswer()
   );
+  try {
+    const image = await generateTryonImage(IMAGE_BASE64, [[IMAGE_BASE64]]);
+
+    assertEquals(image, IMAGE_BASE64);
+    assertEquals(captured.map(modelOf), [IMAGE_MODEL, PRO_MODEL]);
+  } finally {
+    restore();
+  }
+});
+
+Deno.test("generateTryonImage falls back to the experimental model on a failure that is not about capacity", async () => {
+  await installServiceAccount();
+  const { captured, restore } = stubFetch((url) =>
+    url.includes(`/models/${IMAGE_MODEL}:`) ? badRequest() : imageAnswer()
+  );
+  try {
+    const image = await generateTryonImage(IMAGE_BASE64, [[IMAGE_BASE64]]);
+
+    assertEquals(image, IMAGE_BASE64);
+    assertEquals(captured.map(modelOf), [IMAGE_MODEL, PRO_MODEL]);
+  } finally {
+    restore();
+  }
+});
+
+Deno.test("generateTryonImage stops at a fallback failure that is not about capacity", async () => {
+  await installServiceAccount();
+  const { captured, restore } = stubFetch(badRequest);
   try {
     await assertRejects(() =>
       generateTryonImage(IMAGE_BASE64, [[IMAGE_BASE64]])
     );
-    assertEquals(captured.length, 1);
+    assertEquals(captured.map(modelOf), [IMAGE_MODEL, PRO_MODEL]);
   } finally {
-    Deno.env.set("TRYON_MODEL", IMAGE_MODEL);
     restore();
   }
 });
 
-Deno.test("generateTryonImage names the model that served the request", async () => {
+Deno.test("generateTryonImage logs why the standard model was passed over", async () => {
   await installServiceAccount();
-  Deno.env.set("TRYON_MODEL", `${IMAGE_MODEL},${LITE_MODEL}`);
   const { restore } = stubFetch((url) =>
     url.includes(`/models/${IMAGE_MODEL}:`) ? quotaRefusal() : imageAnswer()
   );
@@ -329,24 +339,24 @@ Deno.test("generateTryonImage names the model that served the request", async ()
     await generateTryonImage(IMAGE_BASE64, [[IMAGE_BASE64]]);
 
     assertEquals(
-      logged.filter((line) => line.startsWith("vertex:")),
+      logged
+        .filter((line) => line.startsWith("vertex:"))
+        .map((line) => line.split(":").slice(0, 2).join(":")),
       [
-        `vertex: model=${IMAGE_MODEL} region=global refused for capacity`,
-        `vertex: model=${LITE_MODEL} region=global served`,
+        `vertex: model=${IMAGE_MODEL} region=global`,
+        `vertex: model=${IMAGE_MODEL} failed`,
+        `vertex: model=${PRO_MODEL} region=global`,
       ],
     );
   } finally {
     console.info = info;
     console.warn = warn;
-    Deno.env.set("TRYON_MODEL", IMAGE_MODEL);
     restore();
   }
 });
 
 Deno.test("generateTryonImage keeps the experimental engine on its one model", async () => {
   await installServiceAccount();
-  Deno.env.set("TRYON_MODEL", `${IMAGE_MODEL},${LITE_MODEL}`);
-  Deno.env.set("TRYON_MODEL_EXPERIMENTAL", PRO_MODEL);
   const { captured, restore } = stubFetch(quotaRefusal);
   try {
     await assertRejects(
@@ -357,15 +367,8 @@ Deno.test("generateTryonImage keeps the experimental engine on its one model", a
       ServiceBusyError,
     );
     assertEquals(captured.length, 6);
-    assertEquals(
-      new Set(
-        captured.map(({ url }) => url.split("/models/")[1].split(":")[0]),
-      ),
-      new Set([PRO_MODEL]),
-    );
+    assertEquals(new Set(captured.map(modelOf)), new Set([PRO_MODEL]));
   } finally {
-    Deno.env.set("TRYON_MODEL", IMAGE_MODEL);
-    Deno.env.delete("TRYON_MODEL_EXPERIMENTAL");
     restore();
   }
 });
