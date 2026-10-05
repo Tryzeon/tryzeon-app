@@ -5,7 +5,6 @@ import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
-import 'package:tryzeon/feature/personal/tryon/presentation/actions/edit_outfit.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/controllers/tryon_controller.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
@@ -62,8 +61,6 @@ class TryonGalleryActions extends ConsumerWidget {
         entry != null && (entry.mode != TryonMode.video || hasVideoAccess);
 
     final targetId = gallery.currentId;
-
-    final canEditOutfit = entry != null && entry.pieces.isNotEmpty;
 
     Future<void> confirmCancelGeneration() async {
       if (targetId == null) return;
@@ -124,12 +121,6 @@ class TryonGalleryActions extends ConsumerWidget {
             icon: Icons.movie_creation_outlined,
             title: '轉成影片',
             onTap: animateToVideo,
-          ),
-        if (canEditOutfit)
-          AppMenuAction(
-            icon: Icons.checkroom_outlined,
-            title: '編輯搭配',
-            onTap: () => editOutfit(context, ref, entry),
           ),
         if (result?.mode == TryonMode.image)
           AppMenuAction(

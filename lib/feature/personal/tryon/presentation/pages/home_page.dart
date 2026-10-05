@@ -17,6 +17,7 @@ import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/actions/edit_outfit.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/controllers/tryon_controller.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/coordinators/tryon_coordinator.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/sheets/tryon_mode_sheet.dart';
@@ -250,7 +251,10 @@ class HomePage extends HookConsumerWidget {
                 child: PageLinkedReveal(
                   controller: pageController,
                   interval: const Interval(0.5, 1),
-                  child: TryonOutfitRail(pieces: entry.pieces),
+                  child: TryonOutfitRail(
+                    pieces: entry.pieces,
+                    onEdit: () => editOutfit(context, ref, entry),
+                  ),
                 ),
               ),
 

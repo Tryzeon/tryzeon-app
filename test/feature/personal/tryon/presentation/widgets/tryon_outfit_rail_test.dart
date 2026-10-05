@@ -22,7 +22,11 @@ void main() {
     garmentType: GarmentType.top,
   );
 
-  Future<void> pumpRail(final WidgetTester tester, final List<OutfitPiece> pieces) async {
+  Future<void> pumpRail(
+    final WidgetTester tester,
+    final List<OutfitPiece> pieces, {
+    final VoidCallback? onEdit,
+  }) async {
     final router = GoRouter(
       routes: [
         GoRoute(
@@ -30,7 +34,7 @@ void main() {
           builder: (final _, final _) => Scaffold(
             body: ColoredBox(
               color: Colors.black,
-              child: TryonOutfitRail(pieces: pieces),
+              child: TryonOutfitRail(pieces: pieces, onEdit: onEdit ?? () {}),
             ),
           ),
         ),
@@ -105,5 +109,27 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('photo /tmp/none.jpg'), findsOneWidget);
+  });
+
+  testWidgets('only the last tile carries the edit badge', (final tester) async {
+    await pumpRail(tester, [product, wardrobePiece('a')]);
+
+    final badge = tester.getCenter(find.byIcon(Icons.edit_outlined));
+    final lastTile = tester.getRect(find.byKey(const Key('outfit-rail-a')));
+
+    expect(find.byIcon(Icons.edit_outlined), findsOneWidget);
+    expect(badge.dy, greaterThan(lastTile.center.dy));
+    expect(badge.dx, greaterThan(lastTile.center.dx));
+  });
+
+  testWidgets('the edit badge hands the outfit back for editing', (final tester) async {
+    var edits = 0;
+    await pumpRail(tester, [product], onEdit: () => edits++);
+
+    await tester.tap(find.byTooltip('編輯搭配'));
+    await tester.pumpAndSettle();
+
+    expect(edits, 1);
+    expect(find.text('product p1'), findsNothing);
   });
 }

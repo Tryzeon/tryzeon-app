@@ -6,9 +6,10 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/outfit_piece_thumbnail.dart';
 
 class TryonOutfitRail extends StatelessWidget {
-  const TryonOutfitRail({super.key, required this.pieces});
+  const TryonOutfitRail({super.key, required this.pieces, required this.onEdit});
 
   final List<OutfitPiece> pieces;
+  final VoidCallback onEdit;
 
   @override
   Widget build(final BuildContext context) {
@@ -17,7 +18,7 @@ class TryonOutfitRail extends StatelessWidget {
       children: [
         for (var i = 0; i < pieces.length; i++) ...[
           if (i > 0) const SizedBox(height: AppSpacing.sm),
-          _RailTile(piece: pieces[i]),
+          _RailTile(piece: pieces[i], onEdit: i == pieces.length - 1 ? onEdit : null),
         ],
       ],
     );
@@ -25,12 +26,16 @@ class TryonOutfitRail extends StatelessWidget {
 }
 
 class _RailTile extends StatelessWidget {
-  const _RailTile({required this.piece});
+  const _RailTile({required this.piece, this.onEdit});
 
   static const double _size = 52;
-  static const double _badgeSize = 20;
+
+  // A hit area outside the tile never receives taps, and a larger one would
+  // swallow the tile's own tap at its centre.
+  static const double _editHitSize = 28;
 
   final OutfitPiece piece;
+  final VoidCallback? onEdit;
 
   @override
   Widget build(final BuildContext context) {
@@ -79,26 +84,51 @@ class _RailTile extends StatelessWidget {
           ),
         ),
         if (piece is OutfitPieceProduct)
-          Positioned(
+          const Positioned(
             top: -AppSpacing.xs,
             right: -AppSpacing.xs,
-            child: IgnorePointer(
-              child: Container(
-                width: _badgeSize,
-                height: _badgeSize,
-                decoration: BoxDecoration(
-                  color: colorScheme.surface,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.shopping_bag_outlined,
-                  size: 12,
-                  color: colorScheme.onSurface,
+            child: IgnorePointer(child: _CornerBadge(icon: Icons.shopping_bag_outlined)),
+          ),
+        if (onEdit case final onEdit?)
+          Positioned(
+            right: -AppSpacing.xs,
+            bottom: -AppSpacing.xs,
+            child: Tooltip(
+              message: '編輯搭配',
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: onEdit,
+                child: const SizedBox.square(
+                  dimension: _editHitSize,
+                  child: Align(
+                    alignment: Alignment.bottomRight,
+                    child: _CornerBadge(icon: Icons.edit_outlined),
+                  ),
                 ),
               ),
             ),
           ),
       ],
+    );
+  }
+}
+
+class _CornerBadge extends StatelessWidget {
+  const _CornerBadge({required this.icon});
+
+  static const double _size = 20;
+
+  final IconData icon;
+
+  @override
+  Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      width: _size,
+      height: _size,
+      decoration: BoxDecoration(color: colorScheme.surface, shape: BoxShape.circle),
+      child: Icon(icon, size: 12, color: colorScheme.onSurface),
     );
   }
 }
