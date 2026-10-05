@@ -38,20 +38,29 @@ void main() {
     ProviderScope(
       child: MaterialApp(
         home: Scaffold(
-          body: ChatAssistantTurn(key: key, entry: entry, gutter: EdgeInsets.zero),
+          body: ChatAssistantTurn(
+            key: key,
+            entry: entry,
+            gutter: EdgeInsets.zero,
+          ),
         ),
       ),
     ),
   );
 
   double opacityAbove(final WidgetTester tester, final Finder finder) => tester
-      .widget<Opacity>(find.ancestor(of: finder, matching: find.byType(Opacity)).first)
+      .widget<Opacity>(
+        find.ancestor(of: finder, matching: find.byType(Opacity)).first,
+      )
       .opacity;
 
   testWidgets('a reply landing on a pending turn fades its text and cards in', (
     final tester,
   ) async {
-    await pumpTurn(tester, const ChatAssistantEntry(status: ChatTurnStatus.thinking));
+    await pumpTurn(
+      tester,
+      const ChatAssistantEntry(status: ChatTurnStatus.thinking),
+    );
     await pumpTurn(tester, _reply);
 
     expect(opacityAbove(tester, find.text('reply')), lessThan(1));

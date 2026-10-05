@@ -27,7 +27,10 @@ class LoginPage extends HookConsumerWidget {
     Future<void> handleSocialLogin(final LoginProvider provider) async {
       isLoading.value = true;
       final signInUseCase = ref.read(signInWithProviderUseCaseProvider);
-      final result = await signInUseCase(provider: provider, userType: userType.value);
+      final result = await signInUseCase(
+        provider: provider,
+        userType: userType.value,
+      );
 
       if (!context.mounted) return;
       isLoading.value = false;
@@ -96,9 +99,8 @@ class LoginPage extends HookConsumerWidget {
                         const SizedBox(height: AppSpacing.md),
                         Text(
                           'Tryzeon',
-                          style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                            color: colorScheme.onSurface,
-                          ),
+                          style: Theme.of(context).textTheme.displayMedium
+                              ?.copyWith(color: colorScheme.onSurface),
                         ),
                       ],
                     ),
@@ -113,7 +115,9 @@ class LoginPage extends HookConsumerWidget {
                   const SizedBox(height: AppSpacing.lg),
                   Center(
                     child: Text(
-                      userType.value == UserType.personal ? '開啟您的虛擬試衣間' : '開始您的商店管理之旅',
+                      userType.value == UserType.personal
+                          ? '開啟您的虛擬試衣間'
+                          : '開始您的商店管理之旅',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),
@@ -135,12 +139,13 @@ class LoginPage extends HookConsumerWidget {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                        ),
                         child: Text(
                           '或',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: colorScheme.onSurfaceVariant),
                         ),
                       ),
                       Expanded(

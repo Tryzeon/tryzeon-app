@@ -4,7 +4,8 @@ import 'package:tryzeon/feature/common/product_size/domain/entities/garment_meas
 void main() {
   test('fromValues and getValue round-trip every dimension', () {
     final values = {
-      for (final (i, type) in GarmentMeasurementType.values.indexed) type: 10.0 + i,
+      for (final (i, type) in GarmentMeasurementType.values.indexed)
+        type: 10.0 + i,
     };
     final measurements = GarmentMeasurements.fromValues(values);
     for (final type in GarmentMeasurementType.values) {

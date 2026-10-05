@@ -77,7 +77,9 @@ Future<void> showAppActionSheet(
                       ? TextStyle(color: colorScheme.error)
                       : null,
                 ),
-                subtitle: action.subtitle != null ? Text(action.subtitle!) : null,
+                subtitle: action.subtitle != null
+                    ? Text(action.subtitle!)
+                    : null,
                 onTap: () {
                   Navigator.pop(context);
                   action.onTap();

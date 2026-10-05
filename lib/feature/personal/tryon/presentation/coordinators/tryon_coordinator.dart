@@ -32,6 +32,8 @@ class TryonCoordinator {
     final TryonMode mode = TryonMode.image,
   }) async {
     navigateTo(PersonalTab.home);
-    await _ref.read(tryonControllerProvider.notifier).tryonFromOutfit(pieces, mode: mode);
+    await _ref
+        .read(tryonControllerProvider.notifier)
+        .tryonFromOutfit(pieces, mode: mode);
   }
 }

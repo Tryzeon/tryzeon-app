@@ -11,6 +11,8 @@ class UpdateStylePreferences {
   Future<Result<void, Failure>> call({
     required final List<ClothingStyle> stylePreferences,
   }) {
-    return _repository.updateStylePreferences(stylePreferences: stylePreferences);
+    return _repository.updateStylePreferences(
+      stylePreferences: stylePreferences,
+    );
   }
 }

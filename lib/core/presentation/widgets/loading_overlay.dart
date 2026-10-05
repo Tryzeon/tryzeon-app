@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
 class LoadingOverlay extends StatelessWidget {
-  const LoadingOverlay({required this.isLoading, required this.child, super.key});
+  const LoadingOverlay({
+    required this.isLoading,
+    required this.child,
+    super.key,
+  });
 
   final bool isLoading;
   final Widget child;

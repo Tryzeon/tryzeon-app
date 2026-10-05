@@ -5,8 +5,10 @@ part 'measurement_range.freezed.dart';
 /// An inclusive `[min, max]` band, in the unit of whatever dimension it bounds.
 @freezed
 sealed class MeasurementRange with _$MeasurementRange {
-  const factory MeasurementRange({required final double min, required final double max}) =
-      _MeasurementRange;
+  const factory MeasurementRange({
+    required final double min,
+    required final double max,
+  }) = _MeasurementRange;
   const MeasurementRange._();
 
   double get center => (min + max) / 2;

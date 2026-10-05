@@ -26,7 +26,8 @@ sealed class FitResult with _$FitResult {
 
     /// Only includes types compared on both sides, so subtitles like
     /// "{type} fits" stay accurate.
-    @Default(<BodyMeasurementType>[]) final List<BodyMeasurementType> matchedTypes,
+    @Default(<BodyMeasurementType>[])
+    final List<BodyMeasurementType> matchedTypes,
     final String? alternativeSize,
     @Default(false) final bool outOfRange,
     @Default(false) final bool noUserData,

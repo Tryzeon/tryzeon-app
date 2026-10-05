@@ -128,7 +128,10 @@ class ShopPage extends HookConsumerWidget {
           return;
         }
         filterNotifier.setSort(
-          ShopSort.proximity(latitude: coords.latitude, longitude: coords.longitude),
+          ShopSort.proximity(
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+          ),
         );
       } finally {
         if (context.mounted) isLocating.value = false;
@@ -152,7 +155,9 @@ class ShopPage extends HookConsumerWidget {
             ? const SizedBox(
                 width: 16,
                 height: 16,
-                child: CircularProgressIndicator(strokeWidth: AppStroke.regular),
+                child: CircularProgressIndicator(
+                  strokeWidth: AppStroke.regular,
+                ),
               )
             : Icon(icon, size: 16),
         selected: isActive,
@@ -242,7 +247,9 @@ class ShopPage extends HookConsumerWidget {
                       children: [
                         // 🔍 Search bar
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.md,
+                          ),
                           child: ShopSearchBar(
                             onSearch: (final query) async {
                               filterNotifier.setSearch(query);
@@ -257,7 +264,9 @@ class ShopPage extends HookConsumerWidget {
 
                         // Menswear/womenswear filter
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.md,
+                          ),
                           child: ShopGenderFilter(
                             selected: filterState.gender,
                             onChanged: filterNotifier.setGender,
@@ -274,10 +283,15 @@ class ShopPage extends HookConsumerWidget {
                             final current = filterState.categories ?? {};
                             if (current.contains(categoryId)) {
                               filterNotifier.setCategories(
-                                current.where((final id) => id != categoryId).toSet(),
+                                current
+                                    .where((final id) => id != categoryId)
+                                    .toSet(),
                               );
                             } else {
-                              filterNotifier.setCategories({...current, categoryId});
+                              filterNotifier.setCategories({
+                                ...current,
+                                categoryId,
+                              });
                             }
                           },
                           onRetry: () {
@@ -287,7 +301,9 @@ class ShopPage extends HookConsumerWidget {
                         const SizedBox(height: AppSpacing.lg),
 
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.md,
+                          ),
                           child: Text(
                             'RECOMMENDED',
                             style: textTheme.labelLarge?.copyWith(
@@ -323,7 +339,9 @@ class ShopPage extends HookConsumerWidget {
                     ),
                   ),
                 ),
-                const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.sm)),
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: AppSpacing.sm),
+                ),
 
                 // Product grid (lazily loaded)
                 ProductSliverGrid(

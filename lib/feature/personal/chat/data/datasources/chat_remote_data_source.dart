@@ -18,7 +18,9 @@ class ChatRemoteDataSource {
 
   /// Rate-limit and other run failures arrive in-stream as an error event
   /// (handled in [parseStreamLine]); a non-200 status is auth/bad-request only.
-  Stream<ChatStreamEvent> sendMessageStream(final List<ChatMessage> history) async* {
+  Stream<ChatStreamEvent> sendMessageStream(
+    final List<ChatMessage> history,
+  ) async* {
     final url = '${Env.supabaseUrl}/functions/v1/${AppConstants.functionChat}';
     final accessToken = _supabase.auth.currentSession?.accessToken ?? '';
     final body = jsonEncode({

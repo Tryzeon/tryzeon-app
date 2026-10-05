@@ -28,8 +28,9 @@ class ProductStatusTabs extends HookConsumerWidget {
 
     return TabBar(
       controller: controller,
-      onTap: (final index) =>
-          ref.read(productQueryProvider.notifier).updateStatus(_statuses[index]),
+      onTap: (final index) => ref
+          .read(productQueryProvider.notifier)
+          .updateStatus(_statuses[index]),
       tabs: [
         for (final status in _statuses)
           Tab(

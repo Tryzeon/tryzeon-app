@@ -24,7 +24,9 @@ class PaywallPage extends HookConsumerWidget {
       body: SafeArea(
         child: PaywallView(
           onPurchaseCompleted: (final customerInfo, final storeTransaction) {
-            AppLogger.info('Purchase completed: ${storeTransaction.productIdentifier}');
+            AppLogger.info(
+              'Purchase completed: ${storeTransaction.productIdentifier}',
+            );
             safePop();
           },
           onRestoreCompleted: (final customerInfo) {

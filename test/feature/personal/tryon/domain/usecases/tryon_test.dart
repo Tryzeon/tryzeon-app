@@ -22,7 +22,9 @@ class _CapturingTryonRepository implements TryonRepository {
   @override
   Future<Result<TryonResult, Failure>> tryon(final TryonRequest request) async {
     requests.add(request);
-    return Ok(TryonResult(id: request.requestId, mode: request.mode, imageUrl: 'u'));
+    return Ok(
+      TryonResult(id: request.requestId, mode: request.mode, imageUrl: 'u'),
+    );
   }
 }
 
@@ -35,9 +37,13 @@ class _FakeMediaRepository implements TryonMediaRepository {
       Ok(Uint8List.fromList(remote[url]!));
 
   @override
-  Future<Result<Uint8List, Failure>> loadLocalImageBytes(final String path) async {
+  Future<Result<Uint8List, Failure>> loadLocalImageBytes(
+    final String path,
+  ) async {
     final bytes = local[path];
-    return bytes == null ? const Err(UnknownFailure()) : Ok(Uint8List.fromList(bytes));
+    return bytes == null
+        ? const Err(UnknownFailure())
+        : Ok(Uint8List.fromList(bytes));
   }
 
   @override
@@ -71,13 +77,18 @@ void main() {
     await tryon(
       const TryonParams(
         requestId: 'r1',
-        subject: TryonSubject.generate(pieces: [wardrobe], mode: TryonMode.image),
+        subject: TryonSubject.generate(
+          pieces: [wardrobe],
+          mode: TryonMode.image,
+        ),
         preferences: preferences,
       ),
     );
 
     final request = tryonRepository.requests.single as TryonGenerateRequest;
-    expect(request.garments, const [TryonGarment.wardrobe(wardrobeItemId: 'w1')]);
+    expect(request.garments, const [
+      TryonGarment.wardrobe(wardrobeItemId: 'w1'),
+    ]);
     expect(request.scenePrompt, 'beach');
     expect(request.transitionPrompt, isNull);
     expect(request.avatarBase64, isNull);
@@ -87,7 +98,10 @@ void main() {
     await tryon(
       const TryonParams(
         requestId: 'r1',
-        subject: TryonSubject.generate(pieces: [wardrobe], mode: TryonMode.video),
+        subject: TryonSubject.generate(
+          pieces: [wardrobe],
+          mode: TryonMode.video,
+        ),
         preferences: preferences,
       ),
     );
@@ -132,7 +146,10 @@ void main() {
         requestId: 'r1',
         subject: TryonSubject.animated(
           baseImageUrl: 'https://x/base.jpg',
-          origin: TryonSubject.generate(pieces: [wardrobe], mode: TryonMode.image),
+          origin: TryonSubject.generate(
+            pieces: [wardrobe],
+            mode: TryonMode.image,
+          ),
         ),
         preferences: preferences,
       ),

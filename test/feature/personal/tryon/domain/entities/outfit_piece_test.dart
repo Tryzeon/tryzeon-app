@@ -26,7 +26,10 @@ void main() {
 
   test('garment maps referenced pieces and leaves local for the launcher', () {
     expect(wardrobe.garment, const TryonGarment.wardrobe(wardrobeItemId: 'w1'));
-    expect(product.garment, const TryonGarment.product(productId: 'p1', sizeId: 'M'));
+    expect(
+      product.garment,
+      const TryonGarment.product(productId: 'p1', sizeId: 'M'),
+    );
     expect(local.garment, isNull);
   });
 }

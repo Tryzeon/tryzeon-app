@@ -17,8 +17,14 @@ class SizeAdvisorBanner extends StatelessWidget {
     if (state == FitDisplayState.noUserData) return const _NoUserDataBanner();
 
     final (Color color, Color onContainer) = switch (state) {
-      FitDisplayState.match => (AppColors.fitMatch, AppColors.onFitMatchContainer),
-      FitDisplayState.caveats => (AppColors.fitCaveat, AppColors.onFitCaveatContainer),
+      FitDisplayState.match => (
+        AppColors.fitMatch,
+        AppColors.onFitMatchContainer,
+      ),
+      FitDisplayState.caveats => (
+        AppColors.fitCaveat,
+        AppColors.onFitCaveatContainer,
+      ),
       FitDisplayState.outOfRange => (
         AppColors.fitOutOfRange,
         AppColors.onFitOutOfRangeContainer,
@@ -101,7 +107,9 @@ class _NoUserDataBanner extends StatelessWidget {
               Expanded(
                 child: Text(
                   '輸入您的身形即可自動計算合身尺寸呦',
-                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                  ),
                 ),
               ),
               Icon(

@@ -109,18 +109,21 @@ void main() {
         ),
       );
 
-  test('re-fetches when a cached order contact type no longer decodes', () async {
-    await seedCache(contactType: 'line_oa');
+  test(
+    're-fetches when a cached order contact type no longer decodes',
+    () async {
+      await seedCache(contactType: 'line_oa');
 
-    final remote = _FakeRemote(remoteProfile);
-    final profile = (await buildRepository(remote).getStoreProfile()).get()!;
+      final remote = _FakeRemote(remoteProfile);
+      final profile = (await buildRepository(remote).getStoreProfile()).get()!;
 
-    expect(remote.calls, 1);
-    expect(profile.orderContacts.single.type, OrderContactType.line);
+      expect(remote.calls, 1);
+      expect(profile.orderContacts.single.type, OrderContactType.line);
 
-    final cached = await harness.isar.storeProfileCaches.getByStoreId('s1');
-    expect(cached!.orderContacts.single.type, 'line');
-  });
+      final cached = await harness.isar.storeProfileCaches.getByStoreId('s1');
+      expect(cached!.orderContacts.single.type, 'line');
+    },
+  );
 
   test('re-fetches when a cached channel no longer decodes', () async {
     await seedCache(channels: const ['physical', 'popup']);
@@ -155,16 +158,19 @@ void main() {
     channels: const {StoreChannel.physical},
   );
 
-  test('updateStoreProfile skips the remote write when nothing changed', () async {
-    final remote = _FakeRemote(remoteProfile);
+  test(
+    'updateStoreProfile skips the remote write when nothing changed',
+    () async {
+      final remote = _FakeRemote(remoteProfile);
 
-    final result = await buildRepository(
-      remote,
-    ).updateStoreProfile(original: originalProfile, target: originalProfile);
+      final result = await buildRepository(
+        remote,
+      ).updateStoreProfile(original: originalProfile, target: originalProfile);
 
-    expect(result.isSuccess, isTrue);
-    expect(remote.updateCalls, 0);
-  });
+      expect(result.isSuccess, isTrue);
+      expect(remote.updateCalls, 0);
+    },
+  );
 
   test('updateStoreProfile returns the write failure', () async {
     final remote = _FakeRemote(remoteProfile)
@@ -182,7 +188,10 @@ void main() {
     'updateStoreProfile returns not-found and skips the refresh when no row matched',
     () async {
       final remote = _FakeRemote(remoteProfile)
-        ..updateError = const PostgrestException(message: 'no rows', code: 'PGRST116');
+        ..updateError = const PostgrestException(
+          message: 'no rows',
+          code: 'PGRST116',
+        );
 
       final result = await buildRepository(remote).updateStoreProfile(
         original: originalProfile,

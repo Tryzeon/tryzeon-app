@@ -29,7 +29,9 @@ Raw<GoRouter> appRouter(final Ref ref) {
     navigatorKey: navigatorKey,
     initialLocation: AppRoutes.login,
     refreshListenable: refreshListenable,
-    observers: [FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance)],
+    observers: [
+      FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance),
+    ],
     redirect: (final context, final state) {
       final isLoggedIn = supabase.auth.currentSession != null;
       final path = state.matchedLocation;

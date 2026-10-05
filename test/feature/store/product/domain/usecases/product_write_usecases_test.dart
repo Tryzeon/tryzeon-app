@@ -163,7 +163,9 @@ void main() {
         UpdateProductParams(
           original: original,
           draft: draft,
-          images: const [ImageItem.existing(path: 'a.jpg', url: 'https://cdn/a.jpg')],
+          images: const [
+            ImageItem.existing(path: 'a.jpg', url: 'https://cdn/a.jpg'),
+          ],
           sizes: const [],
         ),
       );

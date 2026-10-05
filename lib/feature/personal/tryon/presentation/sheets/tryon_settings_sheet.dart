@@ -107,7 +107,11 @@ class _TryonSettingsForm extends HookConsumerWidget {
       transitionController.text = loaded.transitionPrompt ?? '';
       engine.value = loaded.engine;
 
-      final controllers = [stylingController, sceneController, transitionController];
+      final controllers = [
+        stylingController,
+        sceneController,
+        transitionController,
+      ];
       for (final controller in controllers) {
         controller.addListener(commit);
       }
@@ -150,7 +154,11 @@ class _TryonSettingsForm extends HookConsumerWidget {
               padding: const EdgeInsets.only(bottom: AppSpacing.mdLg),
               child: Row(
                 children: [
-                  Icon(Icons.tune_rounded, color: colorScheme.onSurface, size: 24),
+                  Icon(
+                    Icons.tune_rounded,
+                    color: colorScheme.onSurface,
+                    size: 24,
+                  ),
                   const SizedBox(width: AppSpacing.smMd),
                   Text('試穿設定', style: textTheme.titleLarge),
                 ],

@@ -56,14 +56,20 @@ void main() {
   late _FakeUpdateUserAvatar updateUserAvatar;
   late _FakePreparePresetAvatar preparePresetAvatar;
 
-  ProviderContainer makeContainer({final Future<File?> Function(Ref ref)? avatarFile}) {
+  ProviderContainer makeContainer({
+    final Future<File?> Function(Ref ref)? avatarFile,
+  }) {
     final container = ProviderContainer(
       retry: (final _, final _) => null,
       overrides: [
         userProfileProvider.overrideWith(_FakeUserProfileNotifier.new),
         updateUserAvatarUseCaseProvider.overrideWithValue(updateUserAvatar),
-        preparePresetAvatarUseCaseProvider.overrideWithValue(preparePresetAvatar),
-        avatarFileProvider.overrideWith(avatarFile ?? (final ref) async => null),
+        preparePresetAvatarUseCaseProvider.overrideWithValue(
+          preparePresetAvatar,
+        ),
+        avatarFileProvider.overrideWith(
+          avatarFile ?? (final ref) async => null,
+        ),
       ],
     );
     addTearDown(container.dispose);
@@ -77,18 +83,21 @@ void main() {
     preparePresetAvatar = _FakePreparePresetAvatar();
   });
 
-  test('a failed avatar reload does not turn a saved upload into a failure', () async {
-    final container = makeContainer(
-      avatarFile: (final ref) async => throw const NetworkFailure(),
-    );
+  test(
+    'a failed avatar reload does not turn a saved upload into a failure',
+    () async {
+      final container = makeContainer(
+        avatarFile: (final ref) async => throw const NetworkFailure(),
+      );
 
-    final result = await container
-        .read(avatarUploadProvider.notifier)
-        .upload(File('a.jpg'));
+      final result = await container
+          .read(avatarUploadProvider.notifier)
+          .upload(File('a.jpg'));
 
-    expect(result.isSuccess, isTrue);
-    expect(container.read(avatarUploadProvider), isNull);
-  });
+      expect(result.isSuccess, isTrue);
+      expect(container.read(avatarUploadProvider), isNull);
+    },
+  );
 
   test('an own photo is uploaded as the avatar', () async {
     final container = makeContainer();

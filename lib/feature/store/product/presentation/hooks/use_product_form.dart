@@ -57,7 +57,9 @@ class ProductFormData {
     // Fields register in build order, not layout order (the advanced section
     // can expand after the size table built), so pick the topmost on screen.
     double top(final FormFieldState<dynamic> field) =>
-        (field.context.findRenderObject() as RenderBox?)?.localToGlobal(Offset.zero).dy ??
+        (field.context.findRenderObject() as RenderBox?)
+            ?.localToGlobal(Offset.zero)
+            .dy ??
         double.infinity;
     final firstInvalid = invalidFields.reduce(
       (final a, final b) => top(a) <= top(b) ? a : b,
@@ -79,7 +81,8 @@ class ProductFormData {
   }
 
   List<GarmentMeasurementType> get visibleMeasurementTypes =>
-      selectedGarmentType.value?.measurementTypes ?? GarmentMeasurementType.values;
+      selectedGarmentType.value?.measurementTypes ??
+      GarmentMeasurementType.values;
 
   ProductDraft toDraft() {
     return ProductDraft(
@@ -111,7 +114,9 @@ class ProductFormData {
       nameController.text = r.name!;
     }
     if (selectedCategoryId.value == null && r.categoryId != null) {
-      final category = categories.where((final c) => c.id == r.categoryId).firstOrNull;
+      final category = categories
+          .where((final c) => c.id == r.categoryId)
+          .firstOrNull;
       if (category != null) selectCategory(category);
     }
     if (selectedGender.value == null && r.gender != null) {
@@ -129,7 +134,8 @@ class ProductFormData {
     if ((selectedSeasons.value?.isEmpty ?? true) && r.seasons.isNotEmpty) {
       selectedSeasons.value = r.seasons.toSet();
     }
-    if ((selectedMaterial.value?.isEmpty ?? true) && (r.material?.isNotEmpty ?? false)) {
+    if ((selectedMaterial.value?.isEmpty ?? true) &&
+        (r.material?.isNotEmpty ?? false)) {
       selectedMaterial.value = r.material;
     }
     if (selectedFit.value == null && r.fit != null) {
@@ -150,7 +156,9 @@ ProductFormData useProductForm({final Product? initialProduct}) {
   final descriptionController = useTextEditingController(
     text: initialProduct?.description,
   );
-  final selectedGender = useValueNotifier<ProductGender?>(initialProduct?.gender);
+  final selectedGender = useValueNotifier<ProductGender?>(
+    initialProduct?.gender,
+  );
   final selectedMaterial = useValueNotifier<String?>(initialProduct?.material);
   final selectedFit = useValueNotifier<ProductFit?>(initialProduct?.fit);
 
@@ -166,16 +174,24 @@ ProductFormData useProductForm({final Product? initialProduct}) {
 
   final images = useState<List<ImageItem>>(initialImages);
 
-  final selectedCategoryId = useValueNotifier<String?>(initialProduct?.categoryId);
-  final selectedGarmentType = useValueNotifier<GarmentType?>(initialProduct?.garmentType);
+  final selectedCategoryId = useValueNotifier<String?>(
+    initialProduct?.categoryId,
+  );
+  final selectedGarmentType = useValueNotifier<GarmentType?>(
+    initialProduct?.garmentType,
+  );
   final selectedElasticity = useValueNotifier<ProductElasticity?>(
     initialProduct?.elasticity,
   );
   final selectedThickness = useValueNotifier<ProductThickness?>(
     initialProduct?.thickness,
   );
-  final selectedStyles = useValueNotifier<Set<ClothingStyle>?>(initialProduct?.styles);
-  final selectedSeasons = useValueNotifier<Set<ProductSeason>?>(initialProduct?.seasons);
+  final selectedStyles = useValueNotifier<Set<ClothingStyle>?>(
+    initialProduct?.styles,
+  );
+  final selectedSeasons = useValueNotifier<Set<ProductSeason>?>(
+    initialProduct?.seasons,
+  );
 
   return ProductFormData(
     formKey: formKey,

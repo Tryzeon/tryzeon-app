@@ -9,7 +9,11 @@ class ImageFileCacheImpl implements ImageFileCache {
   @override
   Future<File> saveImage(final Uint8List bytes, final String filePath) async {
     try {
-      return await fcm.DefaultCacheManager().putFile(filePath, bytes, key: filePath);
+      return await fcm.DefaultCacheManager().putFile(
+        filePath,
+        bytes,
+        key: filePath,
+      );
     } catch (e, stackTrace) {
       AppLogger.error('Failed to save image to $filePath', e, stackTrace);
       rethrow;
@@ -17,13 +21,21 @@ class ImageFileCacheImpl implements ImageFileCache {
   }
 
   @override
-  Future<File?> getImage(final String filePath, {final String? downloadUrl}) async {
+  Future<File?> getImage(
+    final String filePath, {
+    final String? downloadUrl,
+  }) async {
     try {
       if (downloadUrl != null && downloadUrl.isNotEmpty) {
-        return await fcm.DefaultCacheManager().getSingleFile(downloadUrl, key: filePath);
+        return await fcm.DefaultCacheManager().getSingleFile(
+          downloadUrl,
+          key: filePath,
+        );
       }
 
-      final fileInfo = await fcm.DefaultCacheManager().getFileFromCache(filePath);
+      final fileInfo = await fcm.DefaultCacheManager().getFileFromCache(
+        filePath,
+      );
       return fileInfo?.file;
     } catch (e, stackTrace) {
       AppLogger.error('Failed to get image from $filePath', e, stackTrace);

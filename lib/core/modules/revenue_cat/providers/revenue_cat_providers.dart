@@ -17,8 +17,12 @@ RevenueCatRepository revenueCatRepository(final Ref ref) {
 }
 
 @riverpod
-WatchAppSubscriptionEntitlement watchAppSubscriptionEntitlementUseCase(final Ref ref) {
-  return WatchAppSubscriptionEntitlement(ref.watch(revenueCatRepositoryProvider));
+WatchAppSubscriptionEntitlement watchAppSubscriptionEntitlementUseCase(
+  final Ref ref,
+) {
+  return WatchAppSubscriptionEntitlement(
+    ref.watch(revenueCatRepositoryProvider),
+  );
 }
 
 @riverpod

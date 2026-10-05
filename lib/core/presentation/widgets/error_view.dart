@@ -3,7 +3,12 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
 class ErrorView extends HookConsumerWidget {
-  const ErrorView({super.key, this.onRetry, this.isCompact = false, this.message});
+  const ErrorView({
+    super.key,
+    this.onRetry,
+    this.isCompact = false,
+    this.message,
+  });
 
   final VoidCallback? onRetry;
   final bool isCompact;
@@ -22,9 +27,13 @@ class ErrorView extends HookConsumerWidget {
           mainAxisSize: isCompact ? MainAxisSize.min : MainAxisSize.max,
           children: [
             Container(
-              padding: EdgeInsets.all(isCompact ? AppSpacing.smMd : AppSpacing.mdLg),
+              padding: EdgeInsets.all(
+                isCompact ? AppSpacing.smMd : AppSpacing.mdLg,
+              ),
               decoration: BoxDecoration(
-                color: colorScheme.errorContainer.withValues(alpha: AppOpacity.medium),
+                color: colorScheme.errorContainer.withValues(
+                  alpha: AppOpacity.medium,
+                ),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -41,7 +50,11 @@ class ErrorView extends HookConsumerWidget {
             ),
             if (message != null && !isCompact) ...[
               const SizedBox(height: AppSpacing.sm),
-              Text(message!, style: textTheme.bodyMedium, textAlign: TextAlign.center),
+              Text(
+                message!,
+                style: textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
             ],
             if (onRetry != null) ...[
               SizedBox(height: isCompact ? AppSpacing.sm : AppSpacing.lg),

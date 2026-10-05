@@ -34,7 +34,9 @@ AnalyticsEventQueue analyticsEventQueue(final Ref ref) {
 
   return AnalyticsEventQueueImpl(
     uploadCallback: (final events) {
-      final models = _mappr.convertList<AnalyticsEvent, AnalyticsEventDto>(events);
+      final models = _mappr.convertList<AnalyticsEvent, AnalyticsEventDto>(
+        events,
+      );
       return analyticsDataSource.uploadAnalyticsEvents(models);
     },
   );

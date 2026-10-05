@@ -12,11 +12,14 @@ void main() {
       expect(range.contains(170.1), isFalse);
     });
 
-    test('distanceOutside is zero inside and the gap to the nearer bound outside', () {
-      expect(range.distanceOutside(165), 0);
-      expect(range.distanceOutside(157), 3);
-      expect(range.distanceOutside(174), 4);
-    });
+    test(
+      'distanceOutside is zero inside and the gap to the nearer bound outside',
+      () {
+        expect(range.distanceOutside(165), 0);
+        expect(range.distanceOutside(157), 3);
+        expect(range.distanceOutside(174), 4);
+      },
+    );
 
     test('center is the midpoint', () {
       expect(range.center, 165);
@@ -34,7 +37,10 @@ void main() {
         range[BodyMeasurementType.height],
         const MeasurementRange(min: 160, max: 170),
       );
-      expect(range[BodyMeasurementType.weight], const MeasurementRange(min: 50, max: 60));
+      expect(
+        range[BodyMeasurementType.weight],
+        const MeasurementRange(min: 50, max: 60),
+      );
       expect(range[BodyMeasurementType.chest], isNull);
       expect(range.isEmpty, isFalse);
     });

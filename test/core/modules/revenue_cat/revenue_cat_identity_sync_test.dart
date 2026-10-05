@@ -78,33 +78,39 @@ void main() {
     addTearDown(authUserIds.close);
   });
 
-  test('repeated events for the same user id do not call logIn again', () async {
-    repository = _FakeRevenueCatRepository();
-    build();
+  test(
+    'repeated events for the same user id do not call logIn again',
+    () async {
+      repository = _FakeRevenueCatRepository();
+      build();
 
-    authUserIds.add('user-a');
-    await settle();
-    authUserIds.add('user-a');
-    await settle();
+      authUserIds.add('user-a');
+      await settle();
+      authUserIds.add('user-a');
+      await settle();
 
-    expect(repository.loggedInUserIds, ['user-a']);
-  });
+      expect(repository.loggedInUserIds, ['user-a']);
+    },
+  );
 
-  test('a failed logIn retries on the next auth event with the same user id', () async {
-    repository = _FakeRevenueCatRepository(logInFailures: 1);
-    build();
+  test(
+    'a failed logIn retries on the next auth event with the same user id',
+    () async {
+      repository = _FakeRevenueCatRepository(logInFailures: 1);
+      build();
 
-    authUserIds.add('user-a');
-    await settle();
-    expect(repository.loggedInUserIds, ['user-a']);
+      authUserIds.add('user-a');
+      await settle();
+      expect(repository.loggedInUserIds, ['user-a']);
 
-    // A single token refresh is enough to recover, without waiting for the user
-    // to sign in again.
-    authUserIds.add('user-a');
-    await settle();
+      // A single token refresh is enough to recover, without waiting for the user
+      // to sign in again.
+      authUserIds.add('user-a');
+      await settle();
 
-    expect(repository.loggedInUserIds, ['user-a', 'user-a']);
-  });
+      expect(repository.loggedInUserIds, ['user-a', 'user-a']);
+    },
+  );
 
   test('retrying stops once it succeeds', () async {
     repository = _FakeRevenueCatRepository(logInFailures: 1);
@@ -120,41 +126,50 @@ void main() {
     expect(repository.loggedInUserIds, ['user-a', 'user-a']);
   });
 
-  test('signing out and back in to the same account calls logIn again', () async {
-    repository = _FakeRevenueCatRepository();
-    build();
+  test(
+    'signing out and back in to the same account calls logIn again',
+    () async {
+      repository = _FakeRevenueCatRepository();
+      build();
 
-    authUserIds.add('user-a');
-    await settle();
-    authUserIds.add(null);
-    await settle();
-    authUserIds.add('user-a');
-    await settle();
+      authUserIds.add('user-a');
+      await settle();
+      authUserIds.add(null);
+      await settle();
+      authUserIds.add('user-a');
+      await settle();
 
-    expect(repository.logOutCount, 1);
-    expect(repository.loggedInUserIds, ['user-a', 'user-a']);
-  });
+      expect(repository.logOutCount, 1);
+      expect(repository.loggedInUserIds, ['user-a', 'user-a']);
+    },
+  );
 
-  test('starting up signed out does not logOut an anonymous RevenueCat', () async {
-    repository = _FakeRevenueCatRepository();
-    build();
+  test(
+    'starting up signed out does not logOut an anonymous RevenueCat',
+    () async {
+      repository = _FakeRevenueCatRepository();
+      build();
 
-    authUserIds.add(null);
-    await settle();
+      authUserIds.add(null);
+      await settle();
 
-    expect(repository.logOutCount, 0);
-  });
+      expect(repository.logOutCount, 0);
+    },
+  );
 
-  test('switching accounts does not drop the user that arrives later', () async {
-    repository = _FakeRevenueCatRepository();
-    build();
+  test(
+    'switching accounts does not drop the user that arrives later',
+    () async {
+      repository = _FakeRevenueCatRepository();
+      build();
 
-    authUserIds
-      ..add('user-a')
-      ..add('user-b');
-    await settle();
-    await settle();
+      authUserIds
+        ..add('user-a')
+        ..add('user-b');
+      await settle();
+      await settle();
 
-    expect(repository.loggedInUserIds, ['user-a', 'user-b']);
-  });
+      expect(repository.loggedInUserIds, ['user-a', 'user-b']);
+    },
+  );
 }

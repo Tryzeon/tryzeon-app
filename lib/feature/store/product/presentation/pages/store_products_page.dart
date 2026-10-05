@@ -87,7 +87,9 @@ class StoreProductsPage extends HookConsumerWidget {
               child: RefreshIndicator(
                 onRefresh: () => [
                   ref.read(productsProvider.notifier).refresh(),
-                  ref.read(productAnalyticsSummariesProvider.notifier).refresh(),
+                  ref
+                      .read(productAnalyticsSummariesProvider.notifier)
+                      .refresh(),
                 ].showFirstFailure(context),
                 child: const ProductListSection(),
               ),

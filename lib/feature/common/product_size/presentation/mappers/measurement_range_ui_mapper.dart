@@ -5,5 +5,6 @@ import '../../domain/entities/measurement_range.dart';
 export '../../domain/entities/measurement_range.dart';
 
 extension MeasurementRangeUiMapper on MeasurementRange {
-  String get display => '${formatMeasurementValue(min)}–${formatMeasurementValue(max)}';
+  String get display =>
+      '${formatMeasurementValue(min)}–${formatMeasurementValue(max)}';
 }

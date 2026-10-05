@@ -68,7 +68,8 @@ class ProductSizeEntryController {
   final String? id;
   final String label;
 
-  final Map<GarmentMeasurementType, TextEditingController> measurementControllers = {};
+  final Map<GarmentMeasurementType, TextEditingController>
+  measurementControllers = {};
 
   /// Body measurement ranges are body values in the body type's own unit (cm or kg), so
   /// they stay out of the cm/寸/吋 conversion the garment cells go through.
@@ -76,7 +77,10 @@ class ProductSizeEntryController {
 
   String get matchKey => StandardSizeLabel.matchKeyOf(label);
 
-  void applyParsed(final ParsedSize parsed, {required final MeasurementUnit targetUnit}) {
+  void applyParsed(
+    final ParsedSize parsed, {
+    required final MeasurementUnit targetUnit,
+  }) {
     for (final entry in parsed.garmentMeasurements.entries) {
       final m = entry.value;
       final factor = m.unit.toCmFactor / targetUnit.toCmFactor;
@@ -106,7 +110,8 @@ class ProductSizeEntryController {
 
   BodyMeasurementRanges? _buildBodyMeasurementRanges() {
     final range = BodyMeasurementRanges.fromValues({
-      for (final entry in rangeControllers.entries) entry.key: entry.value.toRange(),
+      for (final entry in rangeControllers.entries)
+        entry.key: entry.value.toRange(),
     });
     return range.isEmpty ? null : range;
   }

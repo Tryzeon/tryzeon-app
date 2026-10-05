@@ -39,7 +39,9 @@ Future<void> main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(!kDebugMode);
+  await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
+    !kDebugMode,
+  );
   await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(!kDebugMode);
 
   FlutterError.onError = (final FlutterErrorDetails details) {
@@ -54,7 +56,9 @@ Future<void> main() async {
   await Supabase.initialize(
     url: Env.supabaseUrl,
     anonKey: Env.supabaseAnonKey,
-    authOptions: const FlutterAuthClientOptions(authFlowType: AuthFlowType.pkce),
+    authOptions: const FlutterAuthClientOptions(
+      authFlowType: AuthFlowType.pkce,
+    ),
   );
 
   // LINE SDK initialization
@@ -90,7 +94,8 @@ class Tryzeon extends HookConsumerWidget {
 
     // Analytics Lifecycle Observer
     useOnAppLifecycleStateChange((final previous, final current) {
-      if (current == AppLifecycleState.paused || current == AppLifecycleState.detached) {
+      if (current == AppLifecycleState.paused ||
+          current == AppLifecycleState.detached) {
         ref.read(analyticsEventQueueProvider).forceFlush();
       }
     });

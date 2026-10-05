@@ -23,13 +23,16 @@ class StoreProductCard extends HookConsumerWidget {
 
     final categoriesAsync = ref.watch(productCategoriesProvider);
     final categoryName = categoriesAsync.maybeWhen(
-      data: (final categories) =>
-          categories.where((final c) => c.id == product.categoryId).firstOrNull?.name,
+      data: (final categories) => categories
+          .where((final c) => c.id == product.categoryId)
+          .firstOrNull
+          ?.name,
       orElse: () => null,
     );
 
     return GestureDetector(
-      onTap: () => context.push(AppRoutes.dashboardProductDetailPath(product.id)),
+      onTap: () =>
+          context.push(AppRoutes.dashboardProductDetailPath(product.id)),
       child: Card(
         color: colorScheme.surface,
         clipBehavior: Clip.antiAlias,
@@ -53,7 +56,9 @@ class StoreProductCard extends HookConsumerWidget {
                         placeholder: (final context, final url) =>
                             Container(color: colorScheme.surfaceContainerLow),
                         errorWidget: (final context, final url, final error) =>
-                            const Center(child: Icon(Icons.broken_image_outlined)),
+                            const Center(
+                              child: Icon(Icons.broken_image_outlined),
+                            ),
                       ),
               ),
             ),
@@ -87,7 +92,9 @@ class StoreProductCard extends HookConsumerWidget {
                   const SizedBox(height: AppSpacing.xs),
                   Text(
                     product.price.asTwd,
-                    style: textTheme.headlineSmall?.copyWith(color: colorScheme.primary),
+                    style: textTheme.headlineSmall?.copyWith(
+                      color: colorScheme.primary,
+                    ),
                   ),
                 ],
               ),
@@ -153,8 +160,9 @@ class _AnalyticsRow extends ConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final analytics = ref.watch(
       productAnalyticsSummariesProvider.select(
-        (final async) =>
-            async.value?.where((final s) => s.productId == productId).firstOrNull,
+        (final async) => async.value
+            ?.where((final s) => s.productId == productId)
+            .firstOrNull,
       ),
     );
 
@@ -199,7 +207,9 @@ class _AnalyticsBadge extends StatelessWidget {
         const SizedBox(width: AppSpacing.xs),
         Text(
           count.toString(),
-          style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
+          style: textTheme.labelSmall?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
         ),
       ],
     );

@@ -4,8 +4,10 @@ part 'wardrobe_capacity.freezed.dart';
 
 @freezed
 sealed class WardrobeCapacity with _$WardrobeCapacity {
-  const factory WardrobeCapacity({required final int used, required final int limit}) =
-      _WardrobeCapacity;
+  const factory WardrobeCapacity({
+    required final int used,
+    required final int limit,
+  }) = _WardrobeCapacity;
 
   const WardrobeCapacity._();
 

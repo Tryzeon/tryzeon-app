@@ -60,12 +60,17 @@ class ProductCategorySelector extends HookWidget {
               child: Text(
                 selectedName ?? '選擇商品分類',
                 style: textTheme.bodyMedium?.copyWith(
-                  color: selectedName == null ? colorScheme.onSurfaceVariant : null,
+                  color: selectedName == null
+                      ? colorScheme.onSurfaceVariant
+                      : null,
                 ),
               ),
             ),
             const SizedBox(width: AppSpacing.sm),
-            Icon(Icons.keyboard_arrow_down_rounded, color: colorScheme.onSurfaceVariant),
+            Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: colorScheme.onSurfaceVariant,
+            ),
           ],
         ),
       ),

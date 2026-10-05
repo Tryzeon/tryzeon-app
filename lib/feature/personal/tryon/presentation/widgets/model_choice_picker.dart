@@ -39,7 +39,8 @@ class ModelChoicePicker extends StatelessWidget {
 
     return ConstrainedBox(
       constraints: BoxConstraints(
-        maxWidth: _maxTileWidth * tiles.length + AppSpacing.md * (tiles.length - 1),
+        maxWidth:
+            _maxTileWidth * tiles.length + AppSpacing.md * (tiles.length - 1),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

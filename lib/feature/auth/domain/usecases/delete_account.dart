@@ -22,7 +22,11 @@ class DeleteAccount {
     try {
       await _analyticsQueue.forceFlush();
     } catch (e, stackTrace) {
-      AppLogger.error('Failed to flush analytics events (ignored)', e, stackTrace);
+      AppLogger.error(
+        'Failed to flush analytics events (ignored)',
+        e,
+        stackTrace,
+      );
     }
 
     final deleted = await _authRepository.deleteAccount();
@@ -30,7 +34,10 @@ class DeleteAccount {
 
     final signedOut = await _signOut();
     if (signedOut.isFailure) {
-      AppLogger.error('Sign-out after account deletion failed', signedOut.getError());
+      AppLogger.error(
+        'Sign-out after account deletion failed',
+        signedOut.getError(),
+      );
     }
     return const Ok(null);
   }

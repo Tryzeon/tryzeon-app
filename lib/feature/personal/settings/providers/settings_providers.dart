@@ -34,7 +34,9 @@ class TryonPreferencesNotifier extends _$TryonPreferencesNotifier {
   /// confirm and closing the sheet cannot drop an edit.
   Future<void> apply(final TryonPreferences preferences) async {
     state = AsyncData(preferences);
-    final result = await ref.read(setTryonPreferencesUseCaseProvider)(preferences);
+    final result = await ref.read(setTryonPreferencesUseCaseProvider)(
+      preferences,
+    );
     if (result.isFailure) {
       AppLogger.error('Failed to persist tryon preferences', result.getError());
     }

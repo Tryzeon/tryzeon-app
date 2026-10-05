@@ -41,7 +41,9 @@ void main() {
     await tester.pumpWidget(
       _table(
         size: _size(
-          garmentMeasurements: const GarmentMeasurements(chestCircumference: 100),
+          garmentMeasurements: const GarmentMeasurements(
+            chestCircumference: 100,
+          ),
           bodyMeasurementRanges: const BodyMeasurementRanges(
             weight: MeasurementRange(min: 50, max: 60),
           ),
@@ -56,7 +58,9 @@ void main() {
     expect(find.text('50–60 kg'), findsOneWidget);
   });
 
-  testWidgets('labels the length column by the garment type', (final tester) async {
+  testWidgets('labels the length column by the garment type', (
+    final tester,
+  ) async {
     await tester.pumpWidget(
       _table(
         size: _size(garmentMeasurements: const GarmentMeasurements(length: 98)),
@@ -69,31 +73,34 @@ void main() {
     expect(find.text('長度'), findsNothing);
   });
 
-  testWidgets('offers the measurement guide only for garment types that have one', (
-    final tester,
-  ) async {
-    final size = _size(garmentMeasurements: const GarmentMeasurements(length: 60));
+  testWidgets(
+    'offers the measurement guide only for garment types that have one',
+    (final tester) async {
+      final size = _size(
+        garmentMeasurements: const GarmentMeasurements(length: 60),
+      );
 
-    await tester.pumpWidget(
-      _table(
-        size: size,
-        columnTypes: const [GarmentMeasurementType.length],
-        garmentType: GarmentType.others,
-      ),
-    );
-    expect(find.text('測量方式'), findsNothing);
+      await tester.pumpWidget(
+        _table(
+          size: size,
+          columnTypes: const [GarmentMeasurementType.length],
+          garmentType: GarmentType.others,
+        ),
+      );
+      expect(find.text('測量方式'), findsNothing);
 
-    await tester.pumpWidget(
-      _table(
-        size: size,
-        columnTypes: const [GarmentMeasurementType.length],
-        garmentType: GarmentType.top,
-      ),
-    );
-    await tester.tap(find.text('測量方式'));
-    await tester.pump(const Duration(seconds: 1));
+      await tester.pumpWidget(
+        _table(
+          size: size,
+          columnTypes: const [GarmentMeasurementType.length],
+          garmentType: GarmentType.top,
+        ),
+      );
+      await tester.tap(find.text('測量方式'));
+      await tester.pump(const Duration(seconds: 1));
 
-    expect(find.byType(MeasurementGuideSheet), findsOneWidget);
-    expect(find.text('上衣測量方式'), findsOneWidget);
-  });
+      expect(find.byType(MeasurementGuideSheet), findsOneWidget);
+      expect(find.text('上衣測量方式'), findsOneWidget);
+    },
+  );
 }

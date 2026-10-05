@@ -10,7 +10,8 @@ part 'chat_stream_event.freezed.dart';
 /// ends with exactly one terminal event — [ChatReplied] or [ChatFailed].
 @freezed
 sealed class ChatStreamEvent with _$ChatStreamEvent {
-  const factory ChatStreamEvent.toolStarted(final ToolUseBlock block) = ChatToolStarted;
+  const factory ChatStreamEvent.toolStarted(final ToolUseBlock block) =
+      ChatToolStarted;
   const factory ChatStreamEvent.toolFinished(final ToolResultBlock block) =
       ChatToolFinished;
   const factory ChatStreamEvent.replied({

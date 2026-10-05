@@ -38,7 +38,9 @@ class StoreAccountPage extends HookConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 child: Row(
                   children: [
-                    Expanded(child: Text('數據儀表板', style: textTheme.headlineMedium)),
+                    Expanded(
+                      child: Text('數據儀表板', style: textTheme.headlineMedium),
+                    ),
                     const MonthFilterWidget(),
                   ],
                 ),

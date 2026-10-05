@@ -29,14 +29,19 @@ class UpdateStoreProfile {
   final StoreProfileRepository _repository;
   final StoreLogoStorage _logoStorage;
 
-  Future<Result<void, Failure>> call(final UpdateStoreProfileParams params) async {
+  Future<Result<void, Failure>> call(
+    final UpdateStoreProfileParams params,
+  ) async {
     final original = params.original;
     var target = original.applyDraft(params.draft);
 
     String? uploadedLogoPath;
     final logoFile = params.logoFile;
     if (logoFile != null) {
-      final uploaded = await _logoStorage.upload(storeId: original.id, logo: logoFile);
+      final uploaded = await _logoStorage.upload(
+        storeId: original.id,
+        logo: logoFile,
+      );
       if (uploaded.isFailure) return Err(uploaded.getError()!);
       uploadedLogoPath = uploaded.get()!;
       target = target.copyWith(logoPath: uploadedLogoPath);
@@ -67,7 +72,10 @@ class UpdateStoreProfile {
   Future<void> _deleteLogo(final String storeId, final String path) async {
     final deleted = await _logoStorage.delete(storeId: storeId, path: path);
     if (deleted.isFailure) {
-      AppLogger.warning('Failed to delete store logo $path', deleted.getError());
+      AppLogger.warning(
+        'Failed to delete store logo $path',
+        deleted.getError(),
+      );
     }
   }
 }

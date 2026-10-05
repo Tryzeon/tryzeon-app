@@ -55,7 +55,10 @@ void main() {
 
     await local.saveStoreProfile(profile);
 
-    expect((await local.getStoreProfile() as CacheHit<StoreProfile>).data, profile);
+    expect(
+      (await local.getStoreProfile() as CacheHit<StoreProfile>).data,
+      profile,
+    );
   });
 
   test('channels are cached in declaration order', () async {

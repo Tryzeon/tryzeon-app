@@ -27,7 +27,10 @@ class ChatStepRail extends HookConsumerWidget {
 
     final expanded = useState(false);
     final isExpanded = isLive || expanded.value;
-    final foundCount = steps.fold(0, (final n, final step) => n + step.itemCount);
+    final foundCount = steps.fold(
+      0,
+      (final n, final step) => n + step.itemCount,
+    );
 
     return AnimatedSize(
       duration: AppDuration.standard,
@@ -76,7 +79,10 @@ class ChatStepRail extends HookConsumerWidget {
               padding: const EdgeInsets.only(left: AppSpacing.smMd),
               decoration: BoxDecoration(
                 border: Border(
-                  left: BorderSide(color: colorScheme.outline, width: AppStroke.thin),
+                  left: BorderSide(
+                    color: colorScheme.outline,
+                    width: AppStroke.thin,
+                  ),
                 ),
               ),
               child: Column(
@@ -84,7 +90,9 @@ class ChatStepRail extends HookConsumerWidget {
                 children: [
                   for (final step in steps)
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.xs,
+                      ),
                       child: Row(
                         children: [
                           SizedBox.square(
@@ -104,7 +112,9 @@ class ChatStepRail extends HookConsumerWidget {
                           Expanded(
                             child: Text(
                               toolStepLabel(step.use, categoryNameByCode) +
-                                  (step.isRunning ? '' : ' · 找到 ${step.itemCount} 件'),
+                                  (step.isRunning
+                                      ? ''
+                                      : ' · 找到 ${step.itemCount} 件'),
                               style: textStyle,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,

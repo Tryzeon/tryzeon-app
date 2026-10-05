@@ -30,7 +30,10 @@ void main() {
   group('toSizeItem', () {
     test('with no id it produces a NewSizeItem named after the label', () {
       final entry = ProductSizeEntryController(label: '4XL');
-      entry.measurementControllers[GarmentMeasurementType.chestCircumference]!.text =
+      entry
+              .measurementControllers[GarmentMeasurementType
+                  .chestCircumference]!
+              .text =
           '100';
       final item = entry.toSizeItem(
         unit: MeasurementUnit.centimeter,
@@ -39,7 +42,9 @@ void main() {
       expect(item, isA<NewSizeItem>());
       expect((item as NewSizeItem).name, '4XL');
       expect(
-        item.garmentMeasurements?.getValue(GarmentMeasurementType.chestCircumference),
+        item.garmentMeasurements?.getValue(
+          GarmentMeasurementType.chestCircumference,
+        ),
         100,
       );
     });
@@ -93,13 +98,22 @@ void main() {
           height: MeasurementRange(min: 160, max: 170.5),
         ),
       );
-      expect(entry.rangeControllers[BodyMeasurementType.height]!.min.text, '160');
-      expect(entry.rangeControllers[BodyMeasurementType.height]!.max.text, '170.5');
+      expect(
+        entry.rangeControllers[BodyMeasurementType.height]!.min.text,
+        '160',
+      );
+      expect(
+        entry.rangeControllers[BodyMeasurementType.height]!.max.text,
+        '170.5',
+      );
     });
 
     test('is not rescaled when the garment unit changes', () {
       final entry = ProductSizeEntryController(label: 'M');
-      entry.measurementControllers[GarmentMeasurementType.chestCircumference]!.text =
+      entry
+              .measurementControllers[GarmentMeasurementType
+                  .chestCircumference]!
+              .text =
           '100';
       entry.rangeControllers[BodyMeasurementType.height]!.min.text = '160';
       entry.rangeControllers[BodyMeasurementType.height]!.max.text = '170';
@@ -110,11 +124,19 @@ void main() {
       );
 
       expect(
-        entry.measurementControllers[GarmentMeasurementType.chestCircumference]!.text,
+        entry
+            .measurementControllers[GarmentMeasurementType.chestCircumference]!
+            .text,
         isNot('100'),
       );
-      expect(entry.rangeControllers[BodyMeasurementType.height]!.min.text, '160');
-      expect(entry.rangeControllers[BodyMeasurementType.height]!.max.text, '170');
+      expect(
+        entry.rangeControllers[BodyMeasurementType.height]!.min.text,
+        '160',
+      );
+      expect(
+        entry.rangeControllers[BodyMeasurementType.height]!.max.text,
+        '170',
+      );
     });
 
     test('applies a parsed body measurement range', () {
@@ -128,8 +150,14 @@ void main() {
         ),
         targetUnit: MeasurementUnit.centimeter,
       );
-      expect(entry.rangeControllers[BodyMeasurementType.weight]!.min.text, '50');
-      expect(entry.rangeControllers[BodyMeasurementType.weight]!.max.text, '60');
+      expect(
+        entry.rangeControllers[BodyMeasurementType.weight]!.min.text,
+        '50',
+      );
+      expect(
+        entry.rangeControllers[BodyMeasurementType.weight]!.max.text,
+        '60',
+      );
     });
   });
 }

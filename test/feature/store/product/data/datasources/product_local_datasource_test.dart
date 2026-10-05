@@ -27,8 +27,10 @@ void main() {
     await harness.dispose();
   });
 
-  ProductLocalDataSource build() =>
-      ProductLocalDataSource(harness.service, CacheEntryLocalDataSource(harness.service));
+  ProductLocalDataSource build() => ProductLocalDataSource(
+    harness.service,
+    CacheEntryLocalDataSource(harness.service),
+  );
 
   final product = Product(
     id: 'p1',
@@ -79,7 +81,10 @@ void main() {
 
     await local.saveProduct(product);
 
-    expect((await local.getProductById('p1') as CacheHit<Product>).data, product);
+    expect(
+      (await local.getProductById('p1') as CacheHit<Product>).data,
+      product,
+    );
   });
 
   test('listProducts reads back exactly the products it saved', () async {
@@ -87,9 +92,10 @@ void main() {
 
     await local.saveProducts('s1', [product]);
 
-    expect((await local.listProducts(storeId: 's1') as CacheHit<List<Product>>).data, [
-      product,
-    ]);
+    expect(
+      (await local.listProducts(storeId: 's1') as CacheHit<List<Product>>).data,
+      [product],
+    );
   });
 
   test('styles and seasons are cached in declaration order', () async {
@@ -102,7 +108,8 @@ void main() {
   });
 
   group('store list entry', () {
-    CacheEntryLocalDataSource entries() => CacheEntryLocalDataSource(harness.service);
+    CacheEntryLocalDataSource entries() =>
+        CacheEntryLocalDataSource(harness.service);
     final storeKey = ProductLocalDataSource.cacheKeyForStore('s1');
 
     test('saveProduct leaves an absent list entry absent', () async {
@@ -110,7 +117,9 @@ void main() {
 
       expect(await entries().getEntryStatus(storeKey), isNull);
       expect(
-        await entries().getEntryStatus(ProductLocalDataSource.cacheKeyForProduct('p1')),
+        await entries().getEntryStatus(
+          ProductLocalDataSource.cacheKeyForProduct('p1'),
+        ),
         CacheEntryStatus.hasData,
       );
     });
@@ -122,9 +131,13 @@ void main() {
 
       await local.saveProduct(other);
 
-      expect(await entries().getEntryStatus(storeKey), CacheEntryStatus.hasData);
+      expect(
+        await entries().getEntryStatus(storeKey),
+        CacheEntryStatus.hasData,
+      );
       final listed =
-          (await local.listProducts(storeId: 's1') as CacheHit<List<Product>>).data;
+          (await local.listProducts(storeId: 's1') as CacheHit<List<Product>>)
+              .data;
       expect(listed.map((final p) => p.id), unorderedEquals(['p1', 'p2']));
     });
 

@@ -13,7 +13,8 @@ class AppSnackBar {
     final String? actionLabel,
     final VoidCallback? onAction,
   }) {
-    final liftsItself = Scaffold.maybeOf(context)?.hasFloatingActionButton ?? false;
+    final liftsItself =
+        Scaffold.maybeOf(context)?.hasFloatingActionButton ?? false;
 
     final navBarOffset = liftsItself ? 0.0 : BottomNavBarInset.of(context);
 
@@ -29,7 +30,9 @@ class AppSnackBar {
             : null,
 
         persist: false,
-        duration: hasAction ? const Duration(seconds: 6) : const Duration(seconds: 4),
+        duration: hasAction
+            ? const Duration(seconds: 6)
+            : const Duration(seconds: 4),
         margin: EdgeInsets.only(
           left: AppSpacing.md,
           right: AppSpacing.md,

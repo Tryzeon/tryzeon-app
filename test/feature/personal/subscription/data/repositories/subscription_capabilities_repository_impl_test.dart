@@ -16,7 +16,9 @@ class _FakeRemote implements SubscriptionCapabilitiesRemoteDataSource {
   int calls = 0;
 
   @override
-  Future<SubscriptionTierDto> getTierCapabilities(final AppSubscriptionTier tier) async {
+  Future<SubscriptionTierDto> getTierCapabilities(
+    final AppSubscriptionTier tier,
+  ) async {
     calls++;
     return SubscriptionTierDto(
       id: tier,
@@ -66,14 +68,15 @@ void main() {
     );
   });
 
-  SubscriptionCapabilitiesRepositoryImpl buildRepository(final _FakeRemote remote) =>
-      SubscriptionCapabilitiesRepositoryImpl(
-        remoteDataSource: remote,
-        localDataSource: SubscriptionCapabilitiesLocalDataSource(
-          harness.service,
-          CacheEntryLocalDataSource(harness.service),
-        ),
-      );
+  SubscriptionCapabilitiesRepositoryImpl buildRepository(
+    final _FakeRemote remote,
+  ) => SubscriptionCapabilitiesRepositoryImpl(
+    remoteDataSource: remote,
+    localDataSource: SubscriptionCapabilitiesLocalDataSource(
+      harness.service,
+      CacheEntryLocalDataSource(harness.service),
+    ),
+  );
 
   test('a row stored under an unknown tier is never read back', () async {
     await seedCache('plus');

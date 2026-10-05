@@ -11,11 +11,15 @@ class MeasurementGuideButton extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
-    if (garmentType.measurementGuideAssets.isEmpty) return const SizedBox.shrink();
+    if (garmentType.measurementGuideAssets.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return TextButton.icon(
-      onPressed: () =>
-          MeasurementGuideSheet.show(context: context, garmentType: garmentType),
+      onPressed: () => MeasurementGuideSheet.show(
+        context: context,
+        garmentType: garmentType,
+      ),
       style: TextButton.styleFrom(
         visualDensity: VisualDensity.compact,
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),

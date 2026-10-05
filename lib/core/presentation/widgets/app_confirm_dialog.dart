@@ -26,7 +26,8 @@ Future<OkCancelResult> showAppOkCancelDialog({
     actions: [
       AlertDialogAction(
         key: OkCancelResult.cancel,
-        label: cancelLabel ?? MaterialLocalizations.of(context).cancelButtonLabel,
+        label:
+            cancelLabel ?? MaterialLocalizations.of(context).cancelButtonLabel,
         textStyle: neutral,
       ),
       AlertDialogAction(

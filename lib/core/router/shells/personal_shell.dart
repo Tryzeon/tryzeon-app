@@ -22,7 +22,8 @@ class PersonalShell extends HookConsumerWidget {
     final coordinator = ref.read(tryonCoordinatorProvider);
 
     useEffect(() {
-      void navigateTo(final PersonalTab tab) => navigationShell.goBranch(tab.index);
+      void navigateTo(final PersonalTab tab) =>
+          navigationShell.goBranch(tab.index);
       coordinator.bindNavigation(navigateTo);
       return () => coordinator.unbindNavigation(navigateTo);
     }, [coordinator, navigationShell]);
@@ -65,7 +66,9 @@ class PersonalShell extends HookConsumerWidget {
     final topLocation =
         navigationShell.shellRouteContext.match.matches.last.matchedLocation;
     final showsDock = OutfitDock.isHostedAt(topLocation);
-    final dockIsOpen = ref.watch(outfitTrayProvider.select((final s) => s.isOpen));
+    final dockIsOpen = ref.watch(
+      outfitTrayProvider.select((final s) => s.isOpen),
+    );
     final dockInset = showsDock && dockIsOpen
         ? OutfitDock.reservedHeight + AppSpacing.md
         : 0.0;
@@ -102,7 +105,9 @@ class PersonalShell extends HookConsumerWidget {
     );
 
     return MediaQuery(
-      data: mediaQuery.copyWith(viewInsets: mediaQuery.viewInsets.copyWith(bottom: 0)),
+      data: mediaQuery.copyWith(
+        viewInsets: mediaQuery.viewInsets.copyWith(bottom: 0),
+      ),
       child: PlatformInfo.isIOS26OrHigher()
           ? AdaptiveScaffold(
               minimizeBehavior: TabBarMinimizeBehavior.never,

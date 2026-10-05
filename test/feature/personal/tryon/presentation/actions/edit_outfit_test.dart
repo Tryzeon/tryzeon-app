@@ -36,7 +36,9 @@ void main() {
     container = ProviderContainer(
       overrides: [
         isAuthenticatedProvider.overrideWithValue(true),
-        wardrobeItemsProvider.overrideWith(() => FakeWardrobeItems([wardrobeItem('a')])),
+        wardrobeItemsProvider.overrideWith(
+          () => FakeWardrobeItems([wardrobeItem('a')]),
+        ),
       ],
     );
     addTearDown(container.dispose);

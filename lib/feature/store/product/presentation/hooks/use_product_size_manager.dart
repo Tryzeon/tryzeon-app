@@ -38,7 +38,9 @@ class ProductSizeManager {
       .map((final e) => e.label)
       .toList();
 
-  List<SizeItem> toSizeItems({required final List<GarmentMeasurementType> visibleTypes}) {
+  List<SizeItem> toSizeItems({
+    required final List<GarmentMeasurementType> visibleTypes,
+  }) {
     return sizeEntries
         .map(
           (final entry) =>
@@ -49,10 +51,13 @@ class ProductSizeManager {
 
   List<NewSizeItem> toNewSizeItems({
     required final List<GarmentMeasurementType> visibleTypes,
-  }) => toSizeItems(visibleTypes: visibleTypes).whereType<NewSizeItem>().toList();
+  }) =>
+      toSizeItems(visibleTypes: visibleTypes).whereType<NewSizeItem>().toList();
 }
 
-ProductSizeManager useProductSizeManager({final List<ProductSize>? initialSizes}) {
+ProductSizeManager useProductSizeManager({
+  final List<ProductSize>? initialSizes,
+}) {
   final sizeEntries = useState<List<ProductSizeEntryController>>([]);
   final selectedUnit = useState(MeasurementUnit.centimeter);
 
@@ -123,7 +128,8 @@ ProductSizeManager useProductSizeManager({final List<ProductSize>? initialSizes}
 
   void applyParsedSizes(final List<ParsedSize> parsed) {
     for (final p in parsed) {
-      final label = StandardSizeLabel.tryParse(p.name)?.display ?? p.name.trim();
+      final label =
+          StandardSizeLabel.tryParse(p.name)?.display ?? p.name.trim();
       if (label.isEmpty) continue;
       var entry = findByLabel(label);
       if (entry == null) {

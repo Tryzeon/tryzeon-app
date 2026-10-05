@@ -13,7 +13,9 @@ enum AppSubscriptionTier {
   final String value;
 
   static AppSubscriptionTier? tryFromString(final String? value) =>
-      AppSubscriptionTier.values.where((final e) => e.value == value).firstOrNull;
+      AppSubscriptionTier.values
+          .where((final e) => e.value == value)
+          .firstOrNull;
 }
 
 @freezed

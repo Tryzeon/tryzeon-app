@@ -6,8 +6,16 @@ import 'package:tryzeon/core/presentation/widgets/bottom_nav_bar_inset.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
 const _items = [
-  AppBottomNavItem(icon: Icons.home_outlined, selectedIcon: Icons.home, label: '首頁'),
-  AppBottomNavItem(icon: Icons.person_outline, selectedIcon: Icons.person, label: '我的'),
+  AppBottomNavItem(
+    icon: Icons.home_outlined,
+    selectedIcon: Icons.home,
+    label: '首頁',
+  ),
+  AppBottomNavItem(
+    icon: Icons.person_outline,
+    selectedIcon: Icons.person,
+    label: '我的',
+  ),
 ];
 
 const _fabKey = ValueKey('fab');
@@ -35,7 +43,11 @@ Widget _shell({required final bool withFab}) => MaterialApp(
   theme: AppTheme.lightTheme,
   home: Scaffold(
     extendBody: true,
-    bottomNavigationBar: AppBottomNavBar(items: _items, selectedIndex: 0, onTap: (_) {}),
+    bottomNavigationBar: AppBottomNavBar(
+      items: _items,
+      selectedIndex: 0,
+      onTap: (_) {},
+    ),
     body: ScaffoldMessenger(
       child: BottomNavBarInset(
         overlap: AppSpacing.bottomNavBarOverlap,
@@ -52,7 +64,9 @@ Future<Rect> _showSnackBar(final WidgetTester tester) async {
   await tester.tap(find.text('show'));
   await tester.pumpAndSettle();
   return tester.getRect(
-    find.descendant(of: find.byType(SnackBar), matching: find.byType(Material)).first,
+    find
+        .descendant(of: find.byType(SnackBar), matching: find.byType(Material))
+        .first,
   );
 }
 

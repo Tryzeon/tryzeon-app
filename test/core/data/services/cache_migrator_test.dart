@@ -100,7 +100,10 @@ void main() {
     expect(await isar.productCaches.count(), 0);
     expect(await isar.userProfileCaches.count(), 0);
     expect(await isar.cacheEntrys.count(), 0);
-    expect((await isar.cacheSchemas.get(0))?.version, AppConstants.cacheSchemaVersion);
+    expect(
+      (await isar.cacheSchemas.get(0))?.version,
+      AppConstants.cacheSchemaVersion,
+    );
   });
 
   test('is a no-op once the version is current', () async {
@@ -126,6 +129,9 @@ void main() {
     await CacheMigrator.run(isar);
 
     expect(await isar.productCaches.count(), 0);
-    expect((await isar.cacheSchemas.get(0))?.version, AppConstants.cacheSchemaVersion);
+    expect(
+      (await isar.cacheSchemas.get(0))?.version,
+      AppConstants.cacheSchemaVersion,
+    );
   });
 }

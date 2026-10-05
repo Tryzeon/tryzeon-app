@@ -17,5 +17,6 @@ class FitDimensionWeights {
     BodyMeasurementType.weight: 0.5,
   };
 
-  static double weightFor(final BodyMeasurementType type) => _weights[type] ?? 1;
+  static double weightFor(final BodyMeasurementType type) =>
+      _weights[type] ?? 1;
 }

@@ -17,6 +17,8 @@ class AuthIdentityServiceImpl implements AuthIdentityService {
 
     // The client's own session is authoritative; an event's payload is not
     // carried by every event type.
-    yield* _auth.onAuthStateChange.map((final _) => _auth.currentSession?.user.id);
+    yield* _auth.onAuthStateChange.map(
+      (final _) => _auth.currentSession?.user.id,
+    );
   }
 }

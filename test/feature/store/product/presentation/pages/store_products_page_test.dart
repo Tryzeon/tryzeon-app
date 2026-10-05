@@ -38,7 +38,11 @@ class _FakeAnalytics extends ProductAnalyticsSummariesNotifier {
 }
 
 Future<void> _pullToRefresh(final WidgetTester tester) async {
-  await tester.fling(find.byType(ProductListSection), const Offset(0, 300), 1000);
+  await tester.fling(
+    find.byType(ProductListSection),
+    const Offset(0, 300),
+    1000,
+  );
   await tester.pump();
   await tester.pump(const Duration(seconds: 1));
   await tester.pumpAndSettle();
@@ -61,7 +65,10 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp(theme: AppTheme.lightTheme, home: const StoreProductsPage()),
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const StoreProductsPage(),
+        ),
       ),
     );
     await tester.pumpAndSettle();

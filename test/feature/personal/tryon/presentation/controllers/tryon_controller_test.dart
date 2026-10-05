@@ -32,7 +32,9 @@ class _CapturingTryonRepository implements TryonRepository {
   @override
   Future<Result<TryonResult, Failure>> tryon(final TryonRequest request) async {
     requests.add(request);
-    return Ok(TryonResult(id: request.requestId, mode: request.mode, imageUrl: 'u'));
+    return Ok(
+      TryonResult(id: request.requestId, mode: request.mode, imageUrl: 'u'),
+    );
   }
 }
 
@@ -89,7 +91,9 @@ void main() {
       overrides: [
         isAuthenticatedProvider.overrideWithValue(true),
         userProfileProvider.overrideWith(_FakeUserProfileNotifier.new),
-        tryonPreferencesProvider.overrideWith(_FakeTryonPreferencesNotifier.new),
+        tryonPreferencesProvider.overrideWith(
+          _FakeTryonPreferencesNotifier.new,
+        ),
         dailyUsageTodayProvider.overrideWith(_FakeDailyUsageToday.new),
         tryonUseCaseProvider.overrideWithValue(
           Tryon(

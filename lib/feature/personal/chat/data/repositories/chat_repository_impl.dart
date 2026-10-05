@@ -11,7 +11,9 @@ class ChatRepositoryImpl implements ChatRepository {
   final ChatRemoteDataSource _remoteDataSource;
 
   @override
-  Stream<ChatStreamEvent> sendMessageStream(final List<ChatMessage> history) async* {
+  Stream<ChatStreamEvent> sendMessageStream(
+    final List<ChatMessage> history,
+  ) async* {
     try {
       await for (final event in _remoteDataSource.sendMessageStream(history)) {
         yield event;

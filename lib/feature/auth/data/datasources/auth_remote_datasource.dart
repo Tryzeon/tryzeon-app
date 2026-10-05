@@ -38,7 +38,10 @@ class AuthRemoteDataSource {
       final hashedNonce = CryptoUtils.sha256Hash(rawNonce);
 
       final credential = await SignInWithApple.getAppleIDCredential(
-        scopes: [AppleIDAuthorizationScopes.email, AppleIDAuthorizationScopes.fullName],
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
         nonce: hashedNonce,
       );
 
@@ -64,7 +67,9 @@ class AuthRemoteDataSource {
   Future<void> signInWithGoogleNative() async {
     try {
       final GoogleSignIn googleSignIn = GoogleSignIn.instance;
-      await googleSignIn.initialize(serverClientId: AppConstants.googleServerClientId);
+      await googleSignIn.initialize(
+        serverClientId: AppConstants.googleServerClientId,
+      );
 
       final googleUser = await googleSignIn.authenticate();
       final googleAuth = googleUser.authentication;

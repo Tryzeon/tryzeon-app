@@ -44,7 +44,10 @@ Widget _harness(final ProviderContainer container) {
         body: Stack(
           children: [
             WardrobePage(),
-            Align(alignment: Alignment.bottomCenter, child: OutfitDock(isVisible: true)),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: OutfitDock(isVisible: true),
+            ),
           ],
         ),
       ),
@@ -94,13 +97,14 @@ void main() {
     expect(find.byKey(const Key('outfit-dock')), findsNothing);
   });
 
-  testWidgets('the count reads as used / limit once the wardrobe is nearly full', (
-    final tester,
-  ) async {
-    await pumpPage(tester, limit: 4);
+  testWidgets(
+    'the count reads as used / limit once the wardrobe is nearly full',
+    (final tester) async {
+      await pumpPage(tester, limit: 4);
 
-    expect(find.text('4 / 4 件'), findsOneWidget);
-  });
+      expect(find.text('4 / 4 件'), findsOneWidget);
+    },
+  );
 
   testWidgets('a full wardrobe offers the upgrade instead of the picker', (
     final tester,
@@ -121,16 +125,25 @@ void main() {
 
     await tester.longPress(find.byType(WardrobeItemCard).at(0));
     await tester.pump(AppDuration.standard);
-    expect(find.byKey(const Key('wardrobe-card-selected-badge')), findsOneWidget);
+    expect(
+      find.byKey(const Key('wardrobe-card-selected-badge')),
+      findsOneWidget,
+    );
     expect(find.byKey(const Key('outfit-dock')), findsOneWidget);
 
     await tester.tap(find.byType(WardrobeItemCard).at(1));
     await tester.pump(AppDuration.standard);
-    expect(find.byKey(const Key('wardrobe-card-selected-badge')), findsNWidgets(2));
+    expect(
+      find.byKey(const Key('wardrobe-card-selected-badge')),
+      findsNWidgets(2),
+    );
 
     await tester.tap(find.byType(WardrobeItemCard).at(1));
     await tester.pump(AppDuration.standard);
-    expect(find.byKey(const Key('wardrobe-card-selected-badge')), findsOneWidget);
+    expect(
+      find.byKey(const Key('wardrobe-card-selected-badge')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('a fourth card is refused inside the dock', (final tester) async {
@@ -144,12 +157,20 @@ void main() {
     }
     await tester.pump(AppDuration.slow);
 
-    expect(find.byKey(const Key('wardrobe-card-selected-badge')), findsNWidgets(3));
-    expect(find.text('已滿 ${AppConstants.maxTryonGarments} 件，先移除一件'), findsOneWidget);
+    expect(
+      find.byKey(const Key('wardrobe-card-selected-badge')),
+      findsNWidgets(3),
+    );
+    expect(
+      find.text('已滿 ${AppConstants.maxTryonGarments} 件，先移除一件'),
+      findsOneWidget,
+    );
     expect(find.byType(SnackBar), findsNothing);
   });
 
-  testWidgets('dock clear exits compose mode and restores the FAB', (final tester) async {
+  testWidgets('dock clear exits compose mode and restores the FAB', (
+    final tester,
+  ) async {
     await pumpPage(tester);
 
     await tester.longPress(find.byType(WardrobeItemCard).at(0));

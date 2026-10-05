@@ -43,7 +43,9 @@ UserProfileRemoteDataSource userProfileRemoteDataSource(final Ref ref) {
 UserProfileLocalDataSource userProfileLocalDataSource(final Ref ref) {
   final isarService = ref.watch(isarServiceProvider);
   final imageFileCache = ref.watch(imageFileCacheProvider);
-  final cacheEntryLocalDataSource = ref.watch(cacheEntryLocalDataSourceProvider);
+  final cacheEntryLocalDataSource = ref.watch(
+    cacheEntryLocalDataSourceProvider,
+  );
   return UserProfileLocalDataSource(
     isarService,
     imageFileCache,
@@ -114,7 +116,8 @@ UpdateStylePreferences updateStylePreferencesUseCase(final Ref ref) {
 }
 
 @riverpod
-class UserProfileNotifier extends _$UserProfileNotifier with PullToRefresh<UserProfile?> {
+class UserProfileNotifier extends _$UserProfileNotifier
+    with PullToRefresh<UserProfile?> {
   @override
   Future<UserProfile?> build() async {
     final isLoggedIn = ref.watch(isAuthenticatedProvider);
@@ -128,18 +131,23 @@ class UserProfileNotifier extends _$UserProfileNotifier with PullToRefresh<UserP
     return result.get()!;
   }
 
-  Future<Result<void, Failure>> refresh() =>
-      applyRefresh(() => ref.read(getUserProfileUseCaseProvider)(forceRefresh: true));
+  Future<Result<void, Failure>> refresh() => applyRefresh(
+    () => ref.read(getUserProfileUseCaseProvider)(forceRefresh: true),
+  );
 }
 
 @riverpod
 Future<File?> avatarFile(final Ref ref) async {
   final profile = await ref.watch(userProfileProvider.future);
-  if (profile == null || profile.avatarPath == null || profile.avatarPath!.isEmpty) {
+  if (profile == null ||
+      profile.avatarPath == null ||
+      profile.avatarPath!.isEmpty) {
     return null;
   }
 
-  final result = await ref.watch(getUserAvatarUseCaseProvider)(profile.avatarPath!);
+  final result = await ref.watch(getUserAvatarUseCaseProvider)(
+    profile.avatarPath!,
+  );
 
   if (result.isFailure) {
     throw result.getError()!;
@@ -170,8 +178,9 @@ class ProfileEditNotifier extends _$ProfileEditNotifier {
     final BodyMeasurements measurements,
   ) {
     return _write(
-      () =>
-          ref.read(updateUserBodyMeasurementsUseCaseProvider)(measurements: measurements),
+      () => ref.read(updateUserBodyMeasurementsUseCaseProvider)(
+        measurements: measurements,
+      ),
     );
   }
 
@@ -240,7 +249,11 @@ class AvatarUploadNotifier extends _$AvatarUploadNotifier {
         try {
           await ref.read(avatarFileProvider.future);
         } catch (e, stackTrace) {
-          AppLogger.warning('Avatar saved but reloading it failed', e, stackTrace);
+          AppLogger.warning(
+            'Avatar saved but reloading it failed',
+            e,
+            stackTrace,
+          );
         }
       }
       return result;

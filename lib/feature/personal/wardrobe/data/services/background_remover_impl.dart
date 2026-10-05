@@ -19,7 +19,11 @@ class BackgroundRemoverImpl implements BackgroundRemover {
     try {
       await future;
     } catch (e, st) {
-      AppLogger.warning('Background remover init failed; will retry next call', e, st);
+      AppLogger.warning(
+        'Background remover init failed; will retry next call',
+        e,
+        st,
+      );
       _initFuture = null;
       rethrow;
     }

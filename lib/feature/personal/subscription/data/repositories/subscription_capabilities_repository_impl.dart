@@ -46,9 +46,10 @@ class SubscriptionCapabilitiesRepositoryImpl
       }
 
       // 2. Fetch from remote
-      final capabilities = _mappr.convert<SubscriptionTierDto, SubscriptionCapabilities>(
-        await _remoteDataSource.getTierCapabilities(tier),
-      );
+      final capabilities = _mappr
+          .convert<SubscriptionTierDto, SubscriptionCapabilities>(
+            await _remoteDataSource.getTierCapabilities(tier),
+          );
 
       // 3. Persist to local cache
       try {
@@ -69,7 +70,9 @@ class SubscriptionCapabilitiesRepositoryImpl
         stackTrace,
       );
       return Err(
-        ServerFailure('Failed to load subscription capabilities for ${tier.value}'),
+        ServerFailure(
+          'Failed to load subscription capabilities for ${tier.value}',
+        ),
       );
     }
   }

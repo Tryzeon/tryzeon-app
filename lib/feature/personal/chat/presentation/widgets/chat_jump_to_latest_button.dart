@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
 class ChatJumpToLatestButton extends StatelessWidget {
-  const ChatJumpToLatestButton({super.key, required this.visible, required this.onTap});
+  const ChatJumpToLatestButton({
+    super.key,
+    required this.visible,
+    required this.onTap,
+  });
 
   final bool visible;
   final VoidCallback onTap;

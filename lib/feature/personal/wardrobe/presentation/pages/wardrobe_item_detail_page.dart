@@ -31,7 +31,8 @@ class WardrobeItemDetailPage extends HookConsumerWidget {
 
     return wardrobeItemsAsync.when(
       skipLoadingOnReload: true,
-      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (final error, final stack) => Scaffold(
         appBar: AppBar(),
         body: ErrorView(
@@ -105,7 +106,9 @@ class _WardrobeItemDetailContent extends ConsumerWidget {
 
       if (!context.mounted) return null;
 
-      return result.isFailure ? result.getError()!.displayMessage(context) : null;
+      return result.isFailure
+          ? result.getError()!.displayMessage(context)
+          : null;
     }
 
     Future<void> handleEditGarmentType() async {
@@ -113,14 +116,19 @@ class _WardrobeItemDetailContent extends ConsumerWidget {
         context: context,
         selected: item.garmentType,
       );
-      if (picked == null || picked == item.garmentType || !context.mounted) return;
+      if (picked == null || picked == item.garmentType || !context.mounted) {
+        return;
+      }
 
       final result = await ref
           .read(wardrobeEditProvider.notifier)
           .update(UpdateWardrobeItemParams(id: item.id, garmentType: picked));
 
       if (!context.mounted || result.isSuccess) return;
-      TopNotification.show(context, message: result.getError()!.displayMessage(context));
+      TopNotification.show(
+        context,
+        message: result.getError()!.displayMessage(context),
+      );
     }
 
     Future<void> handleEditTags() async {
@@ -135,7 +143,9 @@ class _WardrobeItemDetailContent extends ConsumerWidget {
       if (item.tags.isEmpty) {
         return Text(
           '尚無標籤',
-          style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+          style: textTheme.bodySmall?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
         );
       }
 
@@ -203,7 +213,8 @@ class _WardrobeItemDetailContent extends ConsumerWidget {
                         padding: item.isCutout
                             ? EdgeInsets.fromLTRB(
                                 AppSpacing.lg,
-                                MediaQuery.paddingOf(context).top + kToolbarHeight,
+                                MediaQuery.paddingOf(context).top +
+                                    kToolbarHeight,
                                 AppSpacing.lg,
                                 AppSpacing.xxl,
                               )
@@ -213,25 +224,28 @@ class _WardrobeItemDetailContent extends ConsumerWidget {
                             file,
                             fit: item.isCutout ? BoxFit.contain : BoxFit.cover,
                             width: double.infinity,
-                            errorBuilder: (final context, final error, final stackTrace) {
-                              return Icon(
-                                Icons.image_not_supported_outlined,
-                                size: AppSpacing.xxl,
-                                color: colorScheme.onSurfaceVariant,
-                              );
-                            },
+                            errorBuilder:
+                                (final context, final error, final stackTrace) {
+                                  return Icon(
+                                    Icons.image_not_supported_outlined,
+                                    size: AppSpacing.xxl,
+                                    color: colorScheme.onSurfaceVariant,
+                                  );
+                                },
                           ),
                         ),
                       ),
                     ),
-                    loading: () => const Center(child: CircularProgressIndicator()),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     error: (final error, final stack) => Container(
                       color: colorScheme.surfaceContainerLow,
                       child: Center(
                         child: ErrorView(
                           isCompact: true,
-                          onRetry: () =>
-                              ref.refresh(wardrobeItemImageProvider(item.imagePath)),
+                          onRetry: () => ref.refresh(
+                            wardrobeItemImageProvider(item.imagePath),
+                          ),
                         ),
                       ),
                     ),
@@ -239,7 +253,9 @@ class _WardrobeItemDetailContent extends ConsumerWidget {
                   Positioned(
                     bottom: AppSpacing.sm,
                     right: AppSpacing.sm,
-                    child: OutfitPillRow(piece: outfitPieceFromWardrobeItem(item)),
+                    child: OutfitPillRow(
+                      piece: outfitPieceFromWardrobeItem(item),
+                    ),
                   ),
                 ],
               ),

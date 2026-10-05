@@ -49,25 +49,34 @@ class _FailingSecondPutDio implements Dio {
     if (url.endsWith('/1')) {
       return Future<Response<void>>.error(const SocketException('lost'));
     }
-    return Future.value(Response<void>(requestOptions: RequestOptions(path: url)));
+    return Future.value(
+      Response<void>(requestOptions: RequestOptions(path: url)),
+    );
   }
 }
 
 void main() {
-  test('a partial upload deletes the keys that did land and rethrows', () async {
-    final dir = await Directory.systemTemp.createTemp('store_images');
-    addTearDown(() => dir.delete(recursive: true));
-    final images = [
-      for (var i = 0; i < 3; i++) File('${dir.path}/$i.jpg')..writeAsBytesSync([i]),
-    ];
-    final functions = _FakeFunctions();
-    final api = StoreImagesApi(_FakeSupabase(functions), _FailingSecondPutDio());
+  test(
+    'a partial upload deletes the keys that did land and rethrows',
+    () async {
+      final dir = await Directory.systemTemp.createTemp('store_images');
+      addTearDown(() => dir.delete(recursive: true));
+      final images = [
+        for (var i = 0; i < 3; i++)
+          File('${dir.path}/$i.jpg')..writeAsBytesSync([i]),
+      ];
+      final functions = _FakeFunctions();
+      final api = StoreImagesApi(
+        _FakeSupabase(functions),
+        _FailingSecondPutDio(),
+      );
 
-    await expectLater(
-      api.uploadProductImages(storeId: 's1', productId: 'p1', images: images),
-      throwsA(isA<SocketException>()),
-    );
+      await expectLater(
+        api.uploadProductImages(storeId: 's1', productId: 'p1', images: images),
+        throwsA(isA<SocketException>()),
+      );
 
-    expect(functions.deletedKeys.single, unorderedEquals(['k0', 'k2']));
-  });
+      expect(functions.deletedKeys.single, unorderedEquals(['k0', 'k2']));
+    },
+  );
 }

@@ -17,7 +17,8 @@ class ProductStyleSheet extends HookWidget {
       useRootNavigator: true,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (final _) => ProductStyleSheet(initialSelection: initialSelection),
+      builder: (final _) =>
+          ProductStyleSheet(initialSelection: initialSelection),
     );
   }
 
@@ -101,7 +102,9 @@ class ProductStyleSheet extends HookWidget {
                     ),
                   )
                 : ListView.builder(
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.sm,
+                    ),
                     itemCount: styles.length,
                     itemBuilder: (final context, final index) {
                       final style = styles[index];

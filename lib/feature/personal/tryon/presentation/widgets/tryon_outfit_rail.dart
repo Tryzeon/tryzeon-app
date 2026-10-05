@@ -6,7 +6,11 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/outfit_piece_thumbnail.dart';
 
 class TryonOutfitRail extends StatelessWidget {
-  const TryonOutfitRail({super.key, required this.pieces, required this.onEdit});
+  const TryonOutfitRail({
+    super.key,
+    required this.pieces,
+    required this.onEdit,
+  });
 
   final List<OutfitPiece> pieces;
   final VoidCallback onEdit;
@@ -18,7 +22,10 @@ class TryonOutfitRail extends StatelessWidget {
       children: [
         for (var i = 0; i < pieces.length; i++) ...[
           if (i > 0) const SizedBox(height: AppSpacing.sm),
-          _RailTile(piece: pieces[i], onEdit: i == pieces.length - 1 ? onEdit : null),
+          _RailTile(
+            piece: pieces[i],
+            onEdit: i == pieces.length - 1 ? onEdit : null,
+          ),
         ],
       ],
     );
@@ -42,9 +49,8 @@ class _RailTile extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     final route = switch (piece) {
-      OutfitPieceWardrobe(:final wardrobeItemId) => AppRoutes.personalWardrobeItemPath(
-        wardrobeItemId,
-      ),
+      OutfitPieceWardrobe(:final wardrobeItemId) =>
+        AppRoutes.personalWardrobeItemPath(wardrobeItemId),
       OutfitPieceProduct(:final productId) => AppRoutes.personalShopProductPath(
         productId,
       ),
@@ -66,7 +72,9 @@ class _RailTile extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: AppRadius.cardAll,
             border: Border.all(
-              color: colorScheme.onPrimary.withValues(alpha: AppOpacity.overlay),
+              color: colorScheme.onPrimary.withValues(
+                alpha: AppOpacity.overlay,
+              ),
               width: AppStroke.thin,
             ),
           ),
@@ -133,7 +141,10 @@ class _CornerBadge extends StatelessWidget {
     return Container(
       width: _size,
       height: _size,
-      decoration: BoxDecoration(color: colorScheme.surface, shape: BoxShape.circle),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        shape: BoxShape.circle,
+      ),
       child: Icon(icon, size: 12, color: colorScheme.onSurface),
     );
   }

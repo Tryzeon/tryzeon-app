@@ -79,7 +79,10 @@ class ProductImageEditor extends StatelessWidget {
                   return Padding(
                     key: const ValueKey('add-tile'),
                     padding: const EdgeInsets.only(right: AppSpacing.sm),
-                    child: GestureDetector(onTap: onPickImage, child: const _AddTile()),
+                    child: GestureDetector(
+                      onTap: onPickImage,
+                      child: const _AddTile(),
+                    ),
                   );
                 }
                 final item = images[index];
@@ -91,7 +94,8 @@ class ProductImageEditor extends StatelessWidget {
                     child: _ImageCard(
                       item: item,
                       onRemove: () {
-                        final updated = List<ImageItem>.from(images)..removeAt(index);
+                        final updated = List<ImageItem>.from(images)
+                          ..removeAt(index);
                         onImagesChanged(updated);
                       },
                     ),
@@ -182,7 +186,11 @@ class _AddTile extends StatelessWidget {
         ),
       ),
       child: Center(
-        child: Icon(Icons.add_rounded, color: colorScheme.onSurfaceVariant, size: 24),
+        child: Icon(
+          Icons.add_rounded,
+          color: colorScheme.onSurfaceVariant,
+          size: 24,
+        ),
       ),
     );
   }
@@ -222,7 +230,9 @@ class _AddPlaceholder extends StatelessWidget {
             const SizedBox(height: AppSpacing.xs),
             Text(
               '點擊新增',
-              style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+              style: textTheme.labelMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),

@@ -52,18 +52,28 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
         try {
           await _localDataSource.markStoreProfileAbsent();
         } catch (e, stackTrace) {
-          AppLogger.warning('Failed to mark store profile cache empty', e, stackTrace);
+          AppLogger.warning(
+            'Failed to mark store profile cache empty',
+            e,
+            stackTrace,
+          );
         }
         return const Ok(null);
       }
 
-      final profile = _mappr.convert<StoreProfileDto, StoreProfile>(remoteProfile);
+      final profile = _mappr.convert<StoreProfileDto, StoreProfile>(
+        remoteProfile,
+      );
 
       // 3. Update Cache
       try {
         await _localDataSource.saveStoreProfile(profile);
       } catch (e, stackTrace) {
-        AppLogger.warning('Failed to save store profile to cache', e, stackTrace);
+        AppLogger.warning(
+          'Failed to save store profile to cache',
+          e,
+          stackTrace,
+        );
       }
 
       return Ok(profile);
@@ -114,7 +124,11 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
       try {
         await _localDataSource.invalidateStoreProfile();
       } catch (e, stackTrace) {
-        AppLogger.error('Failed to invalidate store profile cache', e, stackTrace);
+        AppLogger.error(
+          'Failed to invalidate store profile cache',
+          e,
+          stackTrace,
+        );
       }
     }
   }

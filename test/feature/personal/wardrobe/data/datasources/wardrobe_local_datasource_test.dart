@@ -80,7 +80,8 @@ void main() {
   });
 
   group('list entry', () {
-    CacheEntryLocalDataSource entries() => CacheEntryLocalDataSource(harness.service);
+    CacheEntryLocalDataSource entries() =>
+        CacheEntryLocalDataSource(harness.service);
 
     test('saveWardrobeItem leaves an absent list entry absent', () async {
       final item = WardrobeItem(
@@ -93,7 +94,10 @@ void main() {
 
       await build().saveWardrobeItem(item);
 
-      expect(await entries().getEntryStatus(WardrobeLocalDataSource.cacheKey), isNull);
+      expect(
+        await entries().getEntryStatus(WardrobeLocalDataSource.cacheKey),
+        isNull,
+      );
     });
 
     test('saveWardrobeItem keeps a cached list complete', () async {
@@ -121,13 +125,19 @@ void main() {
         CacheEntryStatus.hasData,
       );
       final lookup = await local.getWardrobeItems();
-      expect((lookup as CacheHit<List<WardrobeItem>>).data, unorderedEquals([w1, w2]));
+      expect(
+        (lookup as CacheHit<List<WardrobeItem>>).data,
+        unorderedEquals([w1, w2]),
+      );
     });
 
     test('deleteWardrobeItem leaves an absent list entry absent', () async {
       await build().deleteWardrobeItem('w1');
 
-      expect(await entries().getEntryStatus(WardrobeLocalDataSource.cacheKey), isNull);
+      expect(
+        await entries().getEntryStatus(WardrobeLocalDataSource.cacheKey),
+        isNull,
+      );
     });
   });
 }

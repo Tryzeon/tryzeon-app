@@ -27,7 +27,10 @@ class OutfitPillRow extends ConsumerWidget {
           onTap: () => toggleOutfitPiece(ref, piece),
         ),
         const SizedBox(width: AppSpacing.sm),
-        TryonFab(label: '試穿', onTap: () => triggerOutfitTryon(context, ref, [piece])),
+        TryonFab(
+          label: '試穿',
+          onTap: () => triggerOutfitTryon(context, ref, [piece]),
+        ),
       ],
     );
   }

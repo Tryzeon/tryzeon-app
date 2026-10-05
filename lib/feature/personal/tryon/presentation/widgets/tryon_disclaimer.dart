@@ -11,7 +11,9 @@ class TryonDisclaimer extends StatelessWidget {
 
     return Text(
       'AI 生成試穿結果，僅供參考',
-      style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onPrimary),
+      style: theme.textTheme.labelSmall?.copyWith(
+        color: theme.colorScheme.onPrimary,
+      ),
     );
   }
 }

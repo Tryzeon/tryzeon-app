@@ -23,18 +23,21 @@ void main() {
   });
 
   for (final preset in PresetAvatar.values) {
-    test('writes the bundled ${preset.name} preset to an uploadable jpg', () async {
-      final source = PresetAvatarSourceImpl(
-        bundle: rootBundle,
-        temporaryDirectory: () async => tempDir,
-      );
+    test(
+      'writes the bundled ${preset.name} preset to an uploadable jpg',
+      () async {
+        final source = PresetAvatarSourceImpl(
+          bundle: rootBundle,
+          temporaryDirectory: () async => tempDir,
+        );
 
-      final file = (await source.fileFor(preset)).get()!;
+        final file = (await source.fileFor(preset)).get()!;
 
-      final asset = await rootBundle.load(preset.assetPath);
-      expect(file.path, endsWith('.jpg'));
-      expect(await file.readAsBytes(), asset.buffer.asUint8List());
-    });
+        final asset = await rootBundle.load(preset.assetPath);
+        expect(file.path, endsWith('.jpg'));
+        expect(await file.readAsBytes(), asset.buffer.asUint8List());
+      },
+    );
   }
 
   test('a missing asset is a failure, not a throw', () async {

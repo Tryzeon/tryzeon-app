@@ -31,7 +31,9 @@ class StoreAnalyticsFilter extends _$StoreAnalyticsFilter {
 }
 
 @riverpod
-ProductAnalyticsRemoteDataSource productAnalyticsRemoteDataSource(final Ref ref) {
+ProductAnalyticsRemoteDataSource productAnalyticsRemoteDataSource(
+  final Ref ref,
+) {
   return ProductAnalyticsRemoteDataSource(Supabase.instance.client);
 }
 
@@ -53,11 +55,14 @@ ProductAnalyticsRepository productAnalyticsRepository(final Ref ref) {
 
 @riverpod
 GetProductAnalyticsSummaries getProductAnalyticsSummaries(final Ref ref) {
-  return GetProductAnalyticsSummaries(ref.watch(productAnalyticsRepositoryProvider));
+  return GetProductAnalyticsSummaries(
+    ref.watch(productAnalyticsRepositoryProvider),
+  );
 }
 
 @riverpod
-class ProductAnalyticsSummariesNotifier extends _$ProductAnalyticsSummariesNotifier
+class ProductAnalyticsSummariesNotifier
+    extends _$ProductAnalyticsSummariesNotifier
     with PullToRefresh<List<ProductAnalyticsSummary>> {
   @override
   Future<List<ProductAnalyticsSummary>> build() async {

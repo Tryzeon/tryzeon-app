@@ -7,23 +7,27 @@ import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_timeline
 void main() {
   final controller = ScrollController();
 
-  Future<void> pumpTimeline(final WidgetTester tester, final List<String> messages) =>
-      tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ChatTimelineList(
-              entries: [for (final text in messages) ChatUserEntry(text)],
-              controller: controller,
-              onStarterTap: (final _) {},
-              onRetry: () {},
-              onUpgrade: () {},
-            ),
-          ),
+  Future<void> pumpTimeline(
+    final WidgetTester tester,
+    final List<String> messages,
+  ) => tester.pumpWidget(
+    MaterialApp(
+      home: Scaffold(
+        body: ChatTimelineList(
+          entries: [for (final text in messages) ChatUserEntry(text)],
+          controller: controller,
+          onStarterTap: (final _) {},
+          onRetry: () {},
+          onUpgrade: () {},
         ),
-      );
+      ),
+    ),
+  );
 
   double opacityOf(final WidgetTester tester, final String text) => tester
-      .widget<Opacity>(find.ancestor(of: find.text(text), matching: find.byType(Opacity)))
+      .widget<Opacity>(
+        find.ancestor(of: find.text(text), matching: find.byType(Opacity)),
+      )
       .opacity;
 
   testWidgets('entries present on first build render without an entrance', (

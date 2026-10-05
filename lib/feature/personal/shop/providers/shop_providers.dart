@@ -84,13 +84,18 @@ IncrementViewCount incrementViewCount(final Ref ref) {
 
 @riverpod
 IncrementPurchaseClickCount incrementPurchaseClickCount(final Ref ref) {
-  return IncrementPurchaseClickCount(ref.watch(productAnalyticsRepositoryProvider));
+  return IncrementPurchaseClickCount(
+    ref.watch(productAnalyticsRepositoryProvider),
+  );
 }
 
 // --- Feature Providers ---
 
 @riverpod
-Future<ShopProduct> shopProductById(final Ref ref, final String productId) async {
+Future<ShopProduct> shopProductById(
+  final Ref ref,
+  final String productId,
+) async {
   final getUseCase = ref.watch(getShopProductProvider);
   final result = await getUseCase(productId);
   if (result.isFailure) {
@@ -110,7 +115,8 @@ Future<List<String>> shopAds(final Ref ref) async {
 }
 
 @riverpod
-class StoreInfoNotifier extends _$StoreInfoNotifier with PullToRefresh<ShopStoreInfo> {
+class StoreInfoNotifier extends _$StoreInfoNotifier
+    with PullToRefresh<ShopStoreInfo> {
   @override
   Future<ShopStoreInfo> build(final String storeId) async {
     final result = await ref.watch(getStoreInfoProvider)(storeId);

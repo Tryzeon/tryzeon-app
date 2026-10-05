@@ -20,11 +20,15 @@ class OutfitPieceThumbnail extends ConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final fallback = ColoredBox(color: Theme.of(context).colorScheme.surfaceContainer);
+    final fallback = ColoredBox(
+      color: Theme.of(context).colorScheme.surfaceContainer,
+    );
 
     final ImageProvider? image = switch (piece) {
       OutfitPieceWardrobe(:final imagePath) =>
-        ref.watch(wardrobeItemImageProvider(imagePath)).whenOrNull(data: FileImage.new),
+        ref
+            .watch(wardrobeItemImageProvider(imagePath))
+            .whenOrNull(data: FileImage.new),
       OutfitPieceProduct(:final imageUrl) =>
         imageUrl.isEmpty ? null : CachedNetworkImageProvider(imageUrl),
       OutfitPieceLocal(:final path) => FileImage(File(path)),

@@ -4,9 +4,12 @@ import 'package:tryzeon/feature/personal/wardrobe/data/dtos/update_wardrobe_item
 
 void main() {
   test('sends only the fields being changed', () {
-    expect(const UpdateWardrobeItemRequest(garmentType: GarmentType.onePiece).toJson(), {
-      'garment_type': 'one_piece',
-    });
+    expect(
+      const UpdateWardrobeItemRequest(
+        garmentType: GarmentType.onePiece,
+      ).toJson(),
+      {'garment_type': 'one_piece'},
+    );
     expect(const UpdateWardrobeItemRequest(tags: ['denim']).toJson(), {
       'tags': ['denim'],
     });

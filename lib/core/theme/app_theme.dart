@@ -10,7 +10,9 @@ class AppColors {
   // so the brand colour is never used for high-emphasis CTAs — only as a
   // low-emphasis tonal accent via `ColorScheme.primaryContainer`. CTAs, prices
   // and active states use neutral charcoal via `primary`.
-  static const Color brand = Color(0xFF6750A4); // deep violet — accent text/icon on light
+  static const Color brand = Color(
+    0xFF6750A4,
+  ); // deep violet — accent text/icon on light
   static const Color brandContainer = Color(
     0xFFE8DEF8,
   ); // soft lavender — chip / tag surface
@@ -20,7 +22,9 @@ class AppColors {
   static const Color neutral98 = Color(0xFFF7F7F7); // surfaceContainerLow
   static const Color neutral95 = Color(0xFFEFEFEF); // surfaceContainer
   static const Color neutral92 = Color(0xFFE8E8E8); // surfaceContainerHigh
-  static const Color neutral90 = Color(0xFFE5E5E5); // outline / containerHighest
+  static const Color neutral90 = Color(
+    0xFFE5E5E5,
+  ); // outline / containerHighest
   static const Color neutral60 = Color(0xFF9E9E9E); // onSurfaceVariant
   static const Color neutral10 = Color(0xFF1A1A1A); // onSurface
 
@@ -112,7 +116,8 @@ class AppStroke {
   AppStroke._();
 
   static const double thin = 1; // hairline borders, dividers
-  static const double regular = 1.5; // standard borders (inputs, outlined buttons)
+  static const double regular =
+      1.5; // standard borders (inputs, outlined buttons)
   static const double medium = 2; // progress indicators
   static const double thick = 3; // emphasized progress
 }
@@ -129,9 +134,13 @@ class AppRadius {
   static const double pill = 100;
 
   static const BorderRadius cardAll = BorderRadius.all(Radius.circular(card));
-  static const BorderRadius buttonAll = BorderRadius.all(Radius.circular(button));
+  static const BorderRadius buttonAll = BorderRadius.all(
+    Radius.circular(button),
+  );
   static const BorderRadius inputAll = BorderRadius.all(Radius.circular(input));
-  static const BorderRadius dialogAll = BorderRadius.all(Radius.circular(dialog));
+  static const BorderRadius dialogAll = BorderRadius.all(
+    Radius.circular(dialog),
+  );
   static const BorderRadius sheetTop = BorderRadius.only(
     topLeft: Radius.circular(sheet),
     topRight: Radius.circular(sheet),
@@ -180,7 +189,9 @@ class AppTheme {
       inversePrimary: AppColors.brand,
     );
 
-    const buttonShape = RoundedRectangleBorder(borderRadius: AppRadius.buttonAll);
+    const buttonShape = RoundedRectangleBorder(
+      borderRadius: AppRadius.buttonAll,
+    );
     const buttonPadding = EdgeInsets.symmetric(
       horizontal: AppSpacing.lg,
       vertical: AppSpacing.sm + 4,
@@ -206,7 +217,11 @@ class AppTheme {
         ),
       ),
 
-      dividerTheme: DividerThemeData(color: colorScheme.outline, thickness: 1, space: 1),
+      dividerTheme: DividerThemeData(
+        color: colorScheme.outline,
+        thickness: 1,
+        space: 1,
+      ),
 
       iconTheme: IconThemeData(color: colorScheme.onSurface),
       iconButtonTheme: IconButtonThemeData(
@@ -237,13 +252,17 @@ class AppTheme {
         inactiveTrackColor: colorScheme.outline,
         thumbColor: colorScheme.primary,
         trackHeight: 1,
-        rangeThumbShape: const RoundRangeSliderThumbShape(enabledThumbRadius: 6),
+        rangeThumbShape: const RoundRangeSliderThumbShape(
+          enabledThumbRadius: 6,
+        ),
         overlayShape: const RoundSliderOverlayShape(overlayRadius: 15),
       ),
 
       radioTheme: RadioThemeData(
         fillColor: WidgetStateProperty.resolveWith((final states) {
-          if (states.contains(WidgetState.selected)) return colorScheme.onSurface;
+          if (states.contains(WidgetState.selected)) {
+            return colorScheme.onSurface;
+          }
           return colorScheme.onSurfaceVariant;
         }),
       ),
@@ -254,18 +273,24 @@ class AppTheme {
           return null;
         }),
         trackColor: WidgetStateProperty.resolveWith((final states) {
-          if (states.contains(WidgetState.selected)) return colorScheme.onSurface;
+          if (states.contains(WidgetState.selected)) {
+            return colorScheme.onSurface;
+          }
           return null;
         }),
         trackOutlineColor: WidgetStateProperty.resolveWith((final states) {
-          if (states.contains(WidgetState.selected)) return colorScheme.onSurface;
+          if (states.contains(WidgetState.selected)) {
+            return colorScheme.onSurface;
+          }
           return null;
         }),
       ),
 
       checkboxTheme: CheckboxThemeData(
         fillColor: WidgetStateProperty.resolveWith((final states) {
-          if (states.contains(WidgetState.selected)) return colorScheme.onSurface;
+          if (states.contains(WidgetState.selected)) {
+            return colorScheme.onSurface;
+          }
           return null;
         }),
         checkColor: WidgetStateProperty.all(colorScheme.surface),
@@ -273,7 +298,9 @@ class AppTheme {
 
       // NOTE: RefreshIndicator does NOT read this theme (it falls back to
       // colorScheme.primary), so its `color` is set explicitly at each site.
-      progressIndicatorTheme: ProgressIndicatorThemeData(color: colorScheme.onSurface),
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: colorScheme.onSurface,
+      ),
 
       // No top/bottom dividers — the design system forbids stacked lines.
       expansionTileTheme: const ExpansionTileThemeData(
@@ -307,7 +334,10 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: colorScheme.onSurface,
-          side: BorderSide(color: colorScheme.onSurface, width: AppStroke.regular),
+          side: BorderSide(
+            color: colorScheme.onSurface,
+            width: AppStroke.regular,
+          ),
           shape: buttonShape,
           padding: buttonPadding,
           textStyle: const TextStyle(
@@ -339,23 +369,38 @@ class AppTheme {
         ),
         border: OutlineInputBorder(
           borderRadius: AppRadius.inputAll,
-          borderSide: BorderSide(color: colorScheme.outline, width: AppStroke.regular),
+          borderSide: BorderSide(
+            color: colorScheme.outline,
+            width: AppStroke.regular,
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: AppRadius.inputAll,
-          borderSide: BorderSide(color: colorScheme.outline, width: AppStroke.regular),
+          borderSide: BorderSide(
+            color: colorScheme.outline,
+            width: AppStroke.regular,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: AppRadius.inputAll,
-          borderSide: BorderSide(color: colorScheme.onSurface, width: AppStroke.regular),
+          borderSide: BorderSide(
+            color: colorScheme.onSurface,
+            width: AppStroke.regular,
+          ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: AppRadius.inputAll,
-          borderSide: BorderSide(color: colorScheme.error, width: AppStroke.regular),
+          borderSide: BorderSide(
+            color: colorScheme.error,
+            width: AppStroke.regular,
+          ),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: AppRadius.inputAll,
-          borderSide: BorderSide(color: colorScheme.error, width: AppStroke.regular),
+          borderSide: BorderSide(
+            color: colorScheme.error,
+            width: AppStroke.regular,
+          ),
         ),
         hintStyle: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
       ),
@@ -390,14 +435,20 @@ class AppTheme {
         labelColor: colorScheme.onSurface,
         unselectedLabelColor: colorScheme.onSurfaceVariant,
         indicator: UnderlineTabIndicator(
-          borderSide: BorderSide(color: colorScheme.onSurface, width: AppStroke.medium),
+          borderSide: BorderSide(
+            color: colorScheme.onSurface,
+            width: AppStroke.medium,
+          ),
         ),
         indicatorSize: TabBarIndicatorSize.tab,
         dividerColor: colorScheme.outline,
         dividerHeight: AppStroke.thin,
         overlayColor: const WidgetStatePropertyAll(Colors.transparent),
         labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-        unselectedLabelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        unselectedLabelStyle: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
       ),
 
       dialogTheme: DialogThemeData(

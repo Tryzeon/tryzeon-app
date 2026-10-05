@@ -160,34 +160,42 @@ void main() {
     expect(profile.stylePreferences, [ClothingStyle.korean]);
   });
 
-  test('null cached enums stay null instead of counting as undecodable', () async {
-    await seedCache(gender: null, ageRange: null, stylePreferences: null);
+  test(
+    'null cached enums stay null instead of counting as undecodable',
+    () async {
+      await seedCache(gender: null, ageRange: null, stylePreferences: null);
 
-    final remote = _FakeRemote(remoteProfile);
-    final profile = (await buildRepository(remote).getUserProfile()).get()!;
+      final remote = _FakeRemote(remoteProfile);
+      final profile = (await buildRepository(remote).getUserProfile()).get()!;
 
-    expect(remote.calls, 0);
-    expect(profile.gender, isNull);
-    expect(profile.ageRange, isNull);
-    expect(profile.stylePreferences, isNull);
-  });
+      expect(remote.calls, 0);
+      expect(profile.gender, isNull);
+      expect(profile.ageRange, isNull);
+      expect(profile.stylePreferences, isNull);
+    },
+  );
 
-  test('updateAvatarPath succeeds and drops the cache when the refresh fails', () async {
-    await seedCache();
-    final remote = _FakeRemote(remoteProfile)
-      ..getError = const SocketException('offline');
+  test(
+    'updateAvatarPath succeeds and drops the cache when the refresh fails',
+    () async {
+      await seedCache();
+      final remote = _FakeRemote(remoteProfile)
+        ..getError = const SocketException('offline');
 
-    final result = await buildRepository(remote).updateAvatarPath('u1/avatar/new.jpg');
+      final result = await buildRepository(
+        remote,
+      ).updateAvatarPath('u1/avatar/new.jpg');
 
-    expect(result.isSuccess, isTrue);
-    expect(
-      await CacheEntryLocalDataSource(
-        harness.service,
-      ).getEntryStatus(UserProfileLocalDataSource.cacheKey),
-      isNull,
-    );
-    expect(await harness.isar.userProfileCaches.count(), 0);
-  });
+      expect(result.isSuccess, isTrue);
+      expect(
+        await CacheEntryLocalDataSource(
+          harness.service,
+        ).getEntryStatus(UserProfileLocalDataSource.cacheKey),
+        isNull,
+      );
+      expect(await harness.isar.userProfileCaches.count(), 0);
+    },
+  );
 
   test(
     'updateAvatarPath returns not-found and skips the refresh when no row matched',
@@ -198,7 +206,9 @@ void main() {
           code: 'PGRST116',
         );
 
-      final result = await buildRepository(remote).updateAvatarPath('u1/avatar/new.jpg');
+      final result = await buildRepository(
+        remote,
+      ).updateAvatarPath('u1/avatar/new.jpg');
 
       expect(result.getError(), const NotFoundFailure());
       expect(remote.calls, 0);

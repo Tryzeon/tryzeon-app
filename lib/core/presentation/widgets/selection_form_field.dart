@@ -45,7 +45,8 @@ class _SelectionFormFieldState<T> extends FormFieldState<T> {
     if (value == _field.controller.value) return;
     // `didChange` marks the ancestor [Form] dirty, which is illegal mid-build,
     // so a change arriving during a build (e.g. from a hook effect) is deferred.
-    if (SchedulerBinding.instance.schedulerPhase == SchedulerPhase.persistentCallbacks) {
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
       SchedulerBinding.instance.addPostFrameCallback((final _) {
         if (mounted && value != _field.controller.value) {
           didChange(_field.controller.value);

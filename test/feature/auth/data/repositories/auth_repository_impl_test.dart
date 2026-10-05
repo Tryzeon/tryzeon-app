@@ -39,7 +39,8 @@ void main() {
   test(
     'signOut still succeeds and ends provider sessions when the Supabase server call fails',
     () async {
-      final remote = _FakeRemote()..signOutError = const SocketException('offline');
+      final remote = _FakeRemote()
+        ..signOutError = const SocketException('offline');
       final repository = AuthRepositoryImpl(
         remoteDataSource: remote,
         localDataSource: _NoopLocal(),

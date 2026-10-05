@@ -44,7 +44,9 @@ class ProductRepositoryImpl implements ProductRepository {
   ) {
     if (bodyMeasurementRanges == null) return null;
     return const BodyMeasurementRangesMappr()
-        .convert<BodyMeasurementRanges, BodyMeasurementRangesDto>(bodyMeasurementRanges);
+        .convert<BodyMeasurementRanges, BodyMeasurementRangesDto>(
+          bodyMeasurementRanges,
+        );
   }
 
   static CreateProductSizeRequest _toSizeRequest(
@@ -55,7 +57,9 @@ class ProductRepositoryImpl implements ProductRepository {
       productId: productId,
       name: size.name,
       garmentMeasurements: _toMeasurementsDto(size.garmentMeasurements),
-      bodyMeasurementRanges: _toBodyMeasurementRangesDto(size.bodyMeasurementRanges),
+      bodyMeasurementRanges: _toBodyMeasurementRangesDto(
+        size.bodyMeasurementRanges,
+      ),
     );
   }
 
@@ -68,7 +72,9 @@ class ProductRepositoryImpl implements ProductRepository {
       // 1. Try Local Cache
       if (!forceRefresh) {
         try {
-          final cachedProducts = await _localDataSource.listProducts(storeId: storeId);
+          final cachedProducts = await _localDataSource.listProducts(
+            storeId: storeId,
+          );
           switch (cachedProducts) {
             case CacheHit<List<Product>>(:final data):
               return Ok(data);
@@ -106,7 +112,9 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<Result<Product, Failure>> getProductById(final String productId) async {
+  Future<Result<Product, Failure>> getProductById(
+    final String productId,
+  ) async {
     try {
       // 1. Try Local Cache
       try {
@@ -174,7 +182,9 @@ class ProductRepositoryImpl implements ProductRepository {
 
       if (product.sizes.isNotEmpty) {
         await _remoteDataSource.insertProductSizes(
-          product.sizes.map((final size) => _toSizeRequest(product.id, size)).toList(),
+          product.sizes
+              .map((final size) => _toSizeRequest(product.id, size))
+              .toList(),
         );
       }
     } catch (e, stackTrace) {
@@ -199,15 +209,22 @@ class ProductRepositoryImpl implements ProductRepository {
       }
 
       for (final size in sizeDiff.toAdd) {
-        await _remoteDataSource.insertProductSize(_toSizeRequest(original.id, size));
+        await _remoteDataSource.insertProductSize(
+          _toSizeRequest(original.id, size),
+        );
       }
 
       for (final update in sizeDiff.toUpdate) {
         final sizeChanges = jsonDiff(
           _mappr.convert<ProductSize, ProductSizeDto>(update.original).toJson(),
-          _mappr.convert<ProductSize, ProductSizeDto>(update.targetSize).toJson(),
+          _mappr
+              .convert<ProductSize, ProductSizeDto>(update.targetSize)
+              .toJson(),
         );
-        await _remoteDataSource.updateProductSize(update.original.id, sizeChanges);
+        await _remoteDataSource.updateProductSize(
+          update.original.id,
+          sizeChanges,
+        );
       }
 
       if (plan.hasProductChanges) {
@@ -234,7 +251,9 @@ class ProductRepositoryImpl implements ProductRepository {
     required final ProductStatus status,
   }) async {
     try {
-      await _remoteDataSource.updateProduct(product.id, {'status': status.value});
+      await _remoteDataSource.updateProduct(product.id, {
+        'status': status.value,
+      });
     } catch (e, stackTrace) {
       AppLogger.error('Failed to set product status', e, stackTrace);
       return Err(mapExceptionToFailure(e));
@@ -257,9 +276,16 @@ class ProductRepositoryImpl implements ProductRepository {
     }
 
     try {
-      await _localDataSource.deleteProduct(storeId: storeId, productId: productId);
+      await _localDataSource.deleteProduct(
+        storeId: storeId,
+        productId: productId,
+      );
     } catch (e, stackTrace) {
-      AppLogger.warning('Failed to evict deleted product from cache', e, stackTrace);
+      AppLogger.warning(
+        'Failed to evict deleted product from cache',
+        e,
+        stackTrace,
+      );
     }
     return const Ok(null);
   }
@@ -275,9 +301,16 @@ class ProductRepositoryImpl implements ProductRepository {
         ),
       );
     } catch (e, stackTrace) {
-      AppLogger.warning('Product refresh failed, invalidating cache', e, stackTrace);
+      AppLogger.warning(
+        'Product refresh failed, invalidating cache',
+        e,
+        stackTrace,
+      );
       try {
-        await _localDataSource.invalidateProduct(storeId: storeId, productId: productId);
+        await _localDataSource.invalidateProduct(
+          storeId: storeId,
+          productId: productId,
+        );
       } catch (e, stackTrace) {
         AppLogger.error('Failed to invalidate product cache', e, stackTrace);
       }

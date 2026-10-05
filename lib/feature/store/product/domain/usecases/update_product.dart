@@ -60,7 +60,10 @@ class UpdateProduct {
     );
     if (plan.isEmpty) return const Ok(null);
 
-    final saved = await _repository.updateProduct(original: original, plan: plan);
+    final saved = await _repository.updateProduct(
+      original: original,
+      plan: plan,
+    );
     if (saved.isFailure) {
       final failure = saved.getError()!;
       if (uploadedPaths.isNotEmpty) {
@@ -75,10 +78,16 @@ class UpdateProduct {
     return const Ok(null);
   }
 
-  Future<void> _deleteImages(final String storeId, final List<String> paths) async {
+  Future<void> _deleteImages(
+    final String storeId,
+    final List<String> paths,
+  ) async {
     final deleted = await _imageStorage.delete(storeId: storeId, paths: paths);
     if (deleted.isFailure) {
-      AppLogger.warning('Failed to delete product images $paths', deleted.getError());
+      AppLogger.warning(
+        'Failed to delete product images $paths',
+        deleted.getError(),
+      );
     }
   }
 }

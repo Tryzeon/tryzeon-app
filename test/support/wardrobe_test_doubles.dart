@@ -4,17 +4,25 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 
-WardrobeItem wardrobeItem(final String id, [final GarmentType type = GarmentType.top]) =>
-    WardrobeItem(
-      id: id,
-      imagePath: '$id.jpg',
-      garmentType: type,
-      createdAt: DateTime(2026),
-      updatedAt: DateTime(2026),
-    );
+WardrobeItem wardrobeItem(
+  final String id, [
+  final GarmentType type = GarmentType.top,
+]) => WardrobeItem(
+  id: id,
+  imagePath: '$id.jpg',
+  garmentType: type,
+  createdAt: DateTime(2026),
+  updatedAt: DateTime(2026),
+);
 
-OutfitPiece wardrobePiece(final String id, [final GarmentType type = GarmentType.top]) =>
-    OutfitPiece.wardrobe(wardrobeItemId: id, imagePath: '$id.jpg', garmentType: type);
+OutfitPiece wardrobePiece(
+  final String id, [
+  final GarmentType type = GarmentType.top,
+]) => OutfitPiece.wardrobe(
+  wardrobeItemId: id,
+  imagePath: '$id.jpg',
+  garmentType: type,
+);
 
 class FakeWardrobeItems extends WardrobeItemsNotifier {
   FakeWardrobeItems(this._initial);

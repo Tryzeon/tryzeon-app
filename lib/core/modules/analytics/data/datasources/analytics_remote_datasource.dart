@@ -7,7 +7,9 @@ class AnalyticsRemoteDataSource {
 
   final SupabaseClient _supabaseClient;
 
-  Future<void> uploadAnalyticsEvents(final List<AnalyticsEventDto> events) async {
+  Future<void> uploadAnalyticsEvents(
+    final List<AnalyticsEventDto> events,
+  ) async {
     if (events.isEmpty) {
       return;
     }

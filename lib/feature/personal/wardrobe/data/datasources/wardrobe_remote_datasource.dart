@@ -33,7 +33,9 @@ class WardrobeRemoteDataSource {
     }).toList();
   }
 
-  Future<void> createWardrobeItem(final CreateWardrobeItemRequest request) async {
+  Future<void> createWardrobeItem(
+    final CreateWardrobeItemRequest request,
+  ) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();
 

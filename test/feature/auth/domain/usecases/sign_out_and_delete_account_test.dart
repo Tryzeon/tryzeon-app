@@ -137,17 +137,24 @@ void main() {
       expect(journal.steps, contains('signOut'));
     });
 
-    test('reports a failed Supabase sign-out after still clearing local data', () async {
-      authRepository.signOutResult = const Err(NetworkFailure());
+    test(
+      'reports a failed Supabase sign-out after still clearing local data',
+      () async {
+        authRepository.signOutResult = const Err(NetworkFailure());
 
-      final result = await signOut();
+        final result = await signOut();
 
-      expect(result.getError(), const NetworkFailure());
-      expect(
-        journal.steps,
-        containsAll(['clearImageFileCache', 'clearLocalDatabase', 'clearPreferences']),
-      );
-    });
+        expect(result.getError(), const NetworkFailure());
+        expect(
+          journal.steps,
+          containsAll([
+            'clearImageFileCache',
+            'clearLocalDatabase',
+            'clearPreferences',
+          ]),
+        );
+      },
+    );
   });
 
   group('DeleteAccount', () {
@@ -157,14 +164,17 @@ void main() {
       signOut: signOut,
     );
 
-    test('a failed server deletion returns the error and stays signed in', () async {
-      authRepository.deleteAccountResult = const Err(ServerFailure());
+    test(
+      'a failed server deletion returns the error and stays signed in',
+      () async {
+        authRepository.deleteAccountResult = const Err(ServerFailure());
 
-      final result = await build()();
+        final result = await build()();
 
-      expect(result.getError(), const ServerFailure());
-      expect(journal.steps, ['flush', 'deleteAccount']);
-    });
+        expect(result.getError(), const ServerFailure());
+        expect(journal.steps, ['flush', 'deleteAccount']);
+      },
+    );
 
     test('a successful deletion signs out', () async {
       final result = await build()();

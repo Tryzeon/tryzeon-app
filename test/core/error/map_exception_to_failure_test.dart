@@ -17,16 +17,22 @@ void main() {
       expect(failure.message, '驗證碼錯誤或過期');
     });
 
-    test('AuthException without otp_expired code falls back to AuthFailure', () {
-      final failure = mapExceptionToFailure(
-        const AuthException('bad password', code: 'invalid_credentials'),
-      );
-      expect(failure, isA<AuthFailure>());
-      expect(failure.message, isNull);
-    });
+    test(
+      'AuthException without otp_expired code falls back to AuthFailure',
+      () {
+        final failure = mapExceptionToFailure(
+          const AuthException('bad password', code: 'invalid_credentials'),
+        );
+        expect(failure, isA<AuthFailure>());
+        expect(failure.message, isNull);
+      },
+    );
 
     test('AuthRetryableFetchException maps to NetworkFailure', () {
-      expect(mapExceptionToFailure(AuthRetryableFetchException()), isA<NetworkFailure>());
+      expect(
+        mapExceptionToFailure(AuthRetryableFetchException()),
+        isA<NetworkFailure>(),
+      );
     });
 
     test('PostgrestException PGRST116 (no rows) maps to NotFoundFailure', () {
@@ -38,21 +44,26 @@ void main() {
       );
     });
 
-    test('PostgrestException 22P02 (malformed input) maps to ServerFailure', () {
-      expect(
-        mapExceptionToFailure(
-          const PostgrestException(
-            message: 'invalid input value for enum garment_type: "onePiece"',
-            code: '22P02',
+    test(
+      'PostgrestException 22P02 (malformed input) maps to ServerFailure',
+      () {
+        expect(
+          mapExceptionToFailure(
+            const PostgrestException(
+              message: 'invalid input value for enum garment_type: "onePiece"',
+              code: '22P02',
+            ),
           ),
-        ),
-        isA<ServerFailure>(),
-      );
-    });
+          isA<ServerFailure>(),
+        );
+      },
+    );
 
     test('PostgrestException with other code maps to ServerFailure', () {
       expect(
-        mapExceptionToFailure(const PostgrestException(message: 'boom', code: '500')),
+        mapExceptionToFailure(
+          const PostgrestException(message: 'boom', code: '500'),
+        ),
         isA<ServerFailure>(),
       );
     });
@@ -78,7 +89,10 @@ void main() {
       // chat stream reports the same failure with no status at all.
       expect(
         mapExceptionToFailure(
-          const FunctionException(status: 529, details: {'code': 'SERVICE_BUSY'}),
+          const FunctionException(
+            status: 529,
+            details: {'code': 'SERVICE_BUSY'},
+          ),
         ),
         isA<ServiceBusyFailure>(),
       );
@@ -86,7 +100,10 @@ void main() {
 
     test('FunctionException AI_GENERATION_FAILED keeps its own copy', () {
       final failure = mapExceptionToFailure(
-        const FunctionException(status: 422, details: {'code': 'AI_GENERATION_FAILED'}),
+        const FunctionException(
+          status: 422,
+          details: {'code': 'AI_GENERATION_FAILED'},
+        ),
       );
       expect(failure, isA<ServerFailure>());
       expect(failure.message, 'AI 無法辨識圖片，請換一張試試');
@@ -103,7 +120,10 @@ void main() {
         ),
       );
       expect(failure, isA<RateLimitFailure>());
-      expect((failure as RateLimitFailure).usagePayload, {'used': 3, 'limit': 3});
+      expect((failure as RateLimitFailure).usagePayload, {
+        'used': 3,
+        'limit': 3,
+      });
     });
 
     test('a malformed body is decoded, not thrown on', () {
@@ -133,7 +153,9 @@ void main() {
     test('a bare 429 with no code of ours is still a rate limit', () {
       // `jsonRateLimited` sends the code and the usage together, so a 429
       // without one has neither: it never reached our handler.
-      final failure = mapExceptionToFailure(const FunctionException(status: 429));
+      final failure = mapExceptionToFailure(
+        const FunctionException(status: 429),
+      );
       expect(failure, isA<RateLimitFailure>());
       expect((failure as RateLimitFailure).usagePayload, isNull);
     });
@@ -147,7 +169,9 @@ void main() {
 
     test('ClientException maps to NetworkFailure', () {
       expect(
-        mapExceptionToFailure(ClientException('SocketException: failed host lookup')),
+        mapExceptionToFailure(
+          ClientException('SocketException: failed host lookup'),
+        ),
         isA<NetworkFailure>(),
       );
     });
@@ -177,7 +201,10 @@ void main() {
     });
 
     test('unrecognised error maps to UnknownFailure', () {
-      expect(mapExceptionToFailure(const FormatException('nope')), isA<UnknownFailure>());
+      expect(
+        mapExceptionToFailure(const FormatException('nope')),
+        isA<UnknownFailure>(),
+      );
     });
 
     test('FunctionException 400 NO_AVATAR maps to AvatarMissingFailure', () {
@@ -211,20 +238,31 @@ void main() {
       );
     });
 
-    test('FunctionException 401 maps to AuthFailure with a neutral re-auth message', () {
-      final failure = mapExceptionToFailure(
-        const FunctionException(status: 401, details: {'code': 'UNAUTHORIZED'}),
-      );
-      expect(failure, isA<AuthFailure>());
-      expect(failure.message, '驗證失敗，請重新登入');
-    });
+    test(
+      'FunctionException 401 maps to AuthFailure with a neutral re-auth message',
+      () {
+        final failure = mapExceptionToFailure(
+          const FunctionException(
+            status: 401,
+            details: {'code': 'UNAUTHORIZED'},
+          ),
+        );
+        expect(failure, isA<AuthFailure>());
+        expect(failure.message, '驗證失敗，請重新登入');
+      },
+    );
 
-    test('CacheDecodeException maps to UnknownFailure carrying its message', () {
-      final failure = mapExceptionToFailure(
-        const CacheDecodeException('Cached garmentType holds an unknown value: dress'),
-      );
-      expect(failure, isA<UnknownFailure>());
-      expect(failure.message, contains('garmentType'));
-    });
+    test(
+      'CacheDecodeException maps to UnknownFailure carrying its message',
+      () {
+        final failure = mapExceptionToFailure(
+          const CacheDecodeException(
+            'Cached garmentType holds an unknown value: dress',
+          ),
+        );
+        expect(failure, isA<UnknownFailure>());
+        expect(failure.message, contains('garmentType'));
+      },
+    );
   });
 }

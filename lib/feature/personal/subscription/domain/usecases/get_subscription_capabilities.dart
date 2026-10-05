@@ -9,7 +9,9 @@ class GetSubscriptionCapabilities {
 
   final SubscriptionCapabilitiesRepository _repository;
 
-  Future<Result<SubscriptionCapabilities, Failure>> call(final AppSubscriptionTier tier) {
+  Future<Result<SubscriptionCapabilities, Failure>> call(
+    final AppSubscriptionTier tier,
+  ) {
     return _repository.getCapabilitiesForTier(tier);
   }
 }

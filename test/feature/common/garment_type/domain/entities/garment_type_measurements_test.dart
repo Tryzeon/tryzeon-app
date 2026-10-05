@@ -47,7 +47,10 @@ void main() {
     });
 
     test('others opens every dimension', () {
-      expect(GarmentType.others.measurementTypes, GarmentMeasurementType.values);
+      expect(
+        GarmentType.others.measurementTypes,
+        GarmentMeasurementType.values,
+      );
     });
   });
 

@@ -61,7 +61,10 @@ void main() {
     channels: const {StoreChannel.physical},
     logoPath: 'logos/old.png',
   );
-  const draft = StoreProfileDraft(name: '新店名', channels: {StoreChannel.physical});
+  const draft = StoreProfileDraft(
+    name: '新店名',
+    channels: {StoreChannel.physical},
+  );
 
   setUp(() {
     repository = _FakeRepository();
@@ -72,20 +75,27 @@ void main() {
     );
   });
 
-  test('saves the draft without touching logos when no logo is picked', () async {
-    final result = await updateStoreProfile(
-      UpdateStoreProfileParams(original: original, draft: draft),
-    );
+  test(
+    'saves the draft without touching logos when no logo is picked',
+    () async {
+      final result = await updateStoreProfile(
+        UpdateStoreProfileParams(original: original, draft: draft),
+      );
 
-    expect(result.isSuccess, isTrue);
-    expect(repository.savedTarget!.name, '新店名');
-    expect(repository.savedTarget!.logoPath, 'logos/old.png');
-    expect(logoStorage.deleted, isEmpty);
-  });
+      expect(result.isSuccess, isTrue);
+      expect(repository.savedTarget!.name, '新店名');
+      expect(repository.savedTarget!.logoPath, 'logos/old.png');
+      expect(logoStorage.deleted, isEmpty);
+    },
+  );
 
   test('deletes the old logo only after the new one is saved', () async {
     final result = await updateStoreProfile(
-      UpdateStoreProfileParams(original: original, draft: draft, logoFile: File('n.png')),
+      UpdateStoreProfileParams(
+        original: original,
+        draft: draft,
+        logoFile: File('n.png'),
+      ),
     );
 
     expect(result.isSuccess, isTrue);
@@ -97,7 +107,11 @@ void main() {
     repository.updateResult = const Err(ServerFailure());
 
     final result = await updateStoreProfile(
-      UpdateStoreProfileParams(original: original, draft: draft, logoFile: File('n.png')),
+      UpdateStoreProfileParams(
+        original: original,
+        draft: draft,
+        logoFile: File('n.png'),
+      ),
     );
 
     expect(result.getError(), const ServerFailure());
@@ -108,7 +122,11 @@ void main() {
     logoStorage.uploadResult = const Err(ServerFailure());
 
     final result = await updateStoreProfile(
-      UpdateStoreProfileParams(original: original, draft: draft, logoFile: File('n.png')),
+      UpdateStoreProfileParams(
+        original: original,
+        draft: draft,
+        logoFile: File('n.png'),
+      ),
     );
 
     expect(result.getError(), const ServerFailure());

@@ -18,13 +18,18 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
 
   final UserType userType;
 
-  static Future<void> show(final BuildContext context, final UserType userType) {
+  static Future<void> show(
+    final BuildContext context,
+    final UserType userType,
+  ) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       useRootNavigator: true,
       builder: (final context) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
         child: EmailOtpBottomSheet(userType: userType),
       ),
     );
@@ -64,7 +69,10 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
       isLoading.value = true;
 
       final sendEmailOtpUseCase = ref.read(sendEmailOtpUseCaseProvider);
-      final result = await sendEmailOtpUseCase(email: email, userType: userType);
+      final result = await sendEmailOtpUseCase(
+        email: email,
+        userType: userType,
+      );
 
       if (context.mounted) {
         isLoading.value = false;
@@ -120,7 +128,9 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
     }) {
       return TextFormField(
         controller: controller,
-        keyboardType: isNumber ? TextInputType.number : TextInputType.emailAddress,
+        keyboardType: isNumber
+            ? TextInputType.number
+            : TextInputType.emailAddress,
         textInputAction: TextInputAction.done,
         validator: validator,
         onFieldSubmitted: onSubmitted,
@@ -176,7 +186,8 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
                     const SizedBox(height: AppSpacing.md),
                     Center(
                       child: TextButton(
-                        onPressed: (resendCountdown.value > 0 || isLoading.value)
+                        onPressed:
+                            (resendCountdown.value > 0 || isLoading.value)
                             ? null
                             : () => handleSendEmailOtp(isResend: true),
                         child: Text(

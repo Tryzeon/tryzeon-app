@@ -61,7 +61,9 @@ class TryonGallery extends HookWidget {
                     context,
                     imageProvider: CachedNetworkImageProvider(imageUrl),
                   ),
-                  child: PinchToZoom(child: _TryonImageItem(imageUrl: imageUrl)),
+                  child: PinchToZoom(
+                    child: _TryonImageItem(imageUrl: imageUrl),
+                  ),
                 );
             }
           },
@@ -129,8 +131,8 @@ class _LoadingAnimationItem extends HookWidget {
 
     final colorScheme = Theme.of(context).colorScheme;
     final controller = useMemoized(() {
-      final order = _sessionOrder ??= (AppConstants.tryonLoadingAnimations.toList()
-        ..shuffle());
+      final order = _sessionOrder ??=
+          (AppConstants.tryonLoadingAnimations.toList()..shuffle());
       final asset = order[_nextIndex];
       _nextIndex = (_nextIndex + 1) % order.length;
       return VideoPlayerController.asset(asset);
@@ -149,7 +151,9 @@ class _LoadingAnimationItem extends HookWidget {
 
     return ColoredBox(
       color: colorScheme.surface,
-      child: isInitialized.value ? _coverVideoFill(controller) : const SizedBox.expand(),
+      child: isInitialized.value
+          ? _coverVideoFill(controller)
+          : const SizedBox.expand(),
     );
   }
 }
@@ -260,7 +264,9 @@ class _TryonVideoItem extends HookWidget {
                   if (isPaused.value)
                     Icon(
                       Icons.play_arrow_rounded,
-                      color: colorScheme.onPrimary.withValues(alpha: AppOpacity.overlay),
+                      color: colorScheme.onPrimary.withValues(
+                        alpha: AppOpacity.overlay,
+                      ),
                       size: 64,
                     ),
                 ],

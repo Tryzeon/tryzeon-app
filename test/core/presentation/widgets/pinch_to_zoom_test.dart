@@ -36,10 +36,18 @@ void main() {
   setUp(() => taps = 0);
   tearDownAll(pageController.dispose);
 
-  Future<(TestGesture, TestGesture)> pinchOpen(final WidgetTester tester) async {
+  Future<(TestGesture, TestGesture)> pinchOpen(
+    final WidgetTester tester,
+  ) async {
     final center = tester.getCenter(find.byKey(photo));
-    final first = await tester.startGesture(center - const Offset(20, 0), pointer: 1);
-    final second = await tester.startGesture(center + const Offset(20, 0), pointer: 2);
+    final first = await tester.startGesture(
+      center - const Offset(20, 0),
+      pointer: 1,
+    );
+    final second = await tester.startGesture(
+      center + const Offset(20, 0),
+      pointer: 2,
+    );
     for (var i = 0; i < 10; i++) {
       await first.moveBy(const Offset(-10, 0));
       await second.moveBy(const Offset(10, 0));
@@ -48,14 +56,19 @@ void main() {
     return (first, second);
   }
 
-  testWidgets('a pinch zooms a copy above the page without paging', (final tester) async {
+  testWidgets('a pinch zooms a copy above the page without paging', (
+    final tester,
+  ) async {
     await tester.pumpWidget(buildSubject());
     final original = tester.getRect(find.byKey(photo));
 
     final (first, second) = await pinchOpen(tester);
 
     expect(find.byKey(photo), findsNWidgets(2));
-    expect(tester.getRect(find.byKey(photo).last).width, greaterThan(original.width));
+    expect(
+      tester.getRect(find.byKey(photo).last).width,
+      greaterThan(original.width),
+    );
     expect(pageController.page, 0);
 
     await first.up();
@@ -68,7 +81,9 @@ void main() {
     expect(taps, 0);
   });
 
-  testWidgets('keeps zooming when one of three fingers lifts', (final tester) async {
+  testWidgets('keeps zooming when one of three fingers lifts', (
+    final tester,
+  ) async {
     await tester.pumpWidget(buildSubject());
     final (first, second) = await pinchOpen(tester);
     final third = await tester.startGesture(
@@ -92,8 +107,14 @@ void main() {
   ) async {
     await tester.pumpWidget(buildSubject());
     final center = tester.getCenter(find.byKey(photo));
-    final first = await tester.startGesture(center - const Offset(20, 0), pointer: 1);
-    final second = await tester.startGesture(center + const Offset(20, 0), pointer: 2);
+    final first = await tester.startGesture(
+      center - const Offset(20, 0),
+      pointer: 1,
+    );
+    final second = await tester.startGesture(
+      center + const Offset(20, 0),
+      pointer: 2,
+    );
     for (var i = 0; i < 10; i++) {
       await first.moveBy(const Offset(-1, -6));
       await second.moveBy(const Offset(1, -6));
@@ -117,7 +138,9 @@ void main() {
     expect(pageController.page, 1);
   });
 
-  testWidgets('a tap still reaches the enclosing detector', (final tester) async {
+  testWidgets('a tap still reaches the enclosing detector', (
+    final tester,
+  ) async {
     await tester.pumpWidget(buildSubject());
 
     await tester.tap(find.byKey(photo));

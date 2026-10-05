@@ -37,7 +37,8 @@ class PageLinkedReveal extends HookWidget {
       animation: Listenable.merge([controller, entrance]),
       child: child,
       builder: (final context, final child) {
-        final page = controller.hasClients && controller.position.hasContentDimensions
+        final page =
+            controller.hasClients && controller.position.hasContentDimensions
             ? controller.page!
             : controller.initialPage.toDouble();
         final progress = interval.transform(page.clamp(0, 1));
@@ -50,7 +51,10 @@ class PageLinkedReveal extends HookWidget {
           child: Opacity(
             opacity: visibility,
             child: Transform.translate(
-              offset: Offset(0, reduceMotion ? 0 : (1 - visibility) * AppSpacing.smMd),
+              offset: Offset(
+                0,
+                reduceMotion ? 0 : (1 - visibility) * AppSpacing.smMd,
+              ),
               child: child,
             ),
           ),

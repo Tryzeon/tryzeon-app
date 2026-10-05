@@ -63,23 +63,26 @@ void main() {
     expect(plan.removedImagePaths, isEmpty);
   });
 
-  test('interleaves uploaded paths into the user order and reports removals', () {
-    final plan = planProductUpdate(
-      original: original,
-      draft: unchangedDraft,
-      images: [
-        ImageItem.newImage(file: File('x.jpg')),
-        const ImageItem.existing(path: 'b.jpg', url: 'https://cdn/b.jpg'),
-        ImageItem.newImage(file: File('y.jpg')),
-      ],
-      uploadedPaths: const ['new-x.jpg', 'new-y.jpg'],
-      sizes: keptSizes,
-    );
+  test(
+    'interleaves uploaded paths into the user order and reports removals',
+    () {
+      final plan = planProductUpdate(
+        original: original,
+        draft: unchangedDraft,
+        images: [
+          ImageItem.newImage(file: File('x.jpg')),
+          const ImageItem.existing(path: 'b.jpg', url: 'https://cdn/b.jpg'),
+          ImageItem.newImage(file: File('y.jpg')),
+        ],
+        uploadedPaths: const ['new-x.jpg', 'new-y.jpg'],
+        sizes: keptSizes,
+      );
 
-    expect(plan.target.imagePaths, ['new-x.jpg', 'b.jpg', 'new-y.jpg']);
-    expect(plan.removedImagePaths, ['a.jpg']);
-    expect(plan.hasProductChanges, isTrue);
-  });
+      expect(plan.target.imagePaths, ['new-x.jpg', 'b.jpg', 'new-y.jpg']);
+      expect(plan.removedImagePaths, ['a.jpg']);
+      expect(plan.hasProductChanges, isTrue);
+    },
+  );
 
   test('a draft-only change is a product change without size changes', () {
     final plan = planProductUpdate(

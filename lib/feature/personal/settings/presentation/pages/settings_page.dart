@@ -45,8 +45,10 @@ class PersonalSettingsPage extends HookConsumerWidget {
           AppMenuAction(
             icon: SimpleIcons.instagram,
             title: 'Instagram',
-            onTap: () =>
-                openContactLink('https://www.instagram.com/tryzeon/', 'Instagram'),
+            onTap: () => openContactLink(
+              'https://www.instagram.com/tryzeon/',
+              'Instagram',
+            ),
           ),
         ],
       );

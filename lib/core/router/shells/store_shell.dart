@@ -87,7 +87,9 @@ class StoreShell extends HookConsumerWidget {
     );
 
     return MediaQuery(
-      data: mediaQuery.copyWith(viewInsets: mediaQuery.viewInsets.copyWith(bottom: 0)),
+      data: mediaQuery.copyWith(
+        viewInsets: mediaQuery.viewInsets.copyWith(bottom: 0),
+      ),
       child: PlatformInfo.isIOS26OrHigher()
           ? AdaptiveScaffold(
               minimizeBehavior: TabBarMinimizeBehavior.never,

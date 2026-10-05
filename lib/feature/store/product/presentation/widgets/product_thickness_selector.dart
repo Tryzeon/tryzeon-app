@@ -18,11 +18,15 @@ class ProductThicknessSelector extends StatelessWidget {
           SegmentedButton<ProductThickness>(
             segments: ProductThickness.values
                 .map(
-                  (final t) =>
-                      ButtonSegment<ProductThickness>(value: t, label: Text(t.label)),
+                  (final t) => ButtonSegment<ProductThickness>(
+                    value: t,
+                    label: Text(t.label),
+                  ),
                 )
                 .toList(),
-            selected: value == null ? <ProductThickness>{} : <ProductThickness>{value},
+            selected: value == null
+                ? <ProductThickness>{}
+                : <ProductThickness>{value},
             multiSelectionEnabled: true,
             emptySelectionAllowed: true,
             showSelectedIcon: false,
@@ -31,7 +35,9 @@ class ProductThicknessSelector extends StatelessWidget {
               if (newSet.isEmpty) {
                 selectedThickness.value = null;
               } else if (newSet.length > 1 && value != null) {
-                selectedThickness.value = newSet.firstWhere((final v) => v != value);
+                selectedThickness.value = newSet.firstWhere(
+                  (final v) => v != value,
+                );
               } else {
                 selectedThickness.value = newSet.first;
               }

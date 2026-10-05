@@ -60,8 +60,9 @@ class _FakeRemote implements ProductRemoteDataSource {
       writes.add('deleteSize:$sizeId');
 
   @override
-  Future<void> insertProductSize(final CreateProductSizeRequest request) async =>
-      writes.add('insertSize:${request.name}');
+  Future<void> insertProductSize(
+    final CreateProductSizeRequest request,
+  ) async => writes.add('insertSize:${request.name}');
 
   @override
   Future<void> updateProduct(
@@ -156,60 +157,82 @@ void main() {
         ),
       );
 
-  test('listProducts re-fetches when a cached garment type no longer decodes', () async {
-    await seedCache(garmentType: 'dress');
+  test(
+    'listProducts re-fetches when a cached garment type no longer decodes',
+    () async {
+      await seedCache(garmentType: 'dress');
 
-    final remote = _FakeRemote(remoteProduct);
-    final products = (await buildRepository(remote).listProducts(storeId: 's1')).get()!;
+      final remote = _FakeRemote(remoteProduct);
+      final products = (await buildRepository(
+        remote,
+      ).listProducts(storeId: 's1')).get()!;
 
-    expect(remote.listCalls, 1);
-    expect(products.single.garmentType, GarmentType.onePiece);
+      expect(remote.listCalls, 1);
+      expect(products.single.garmentType, GarmentType.onePiece);
 
-    final cached = await harness.isar.productCaches.getByProductId('p1');
-    expect(cached!.garmentType, 'one_piece');
-  });
+      final cached = await harness.isar.productCaches.getByProductId('p1');
+      expect(cached!.garmentType, 'one_piece');
+    },
+  );
 
-  test('listProducts re-fetches when a cached season no longer decodes', () async {
-    await seedCache(seasons: const ['summer', 'monsoon']);
+  test(
+    'listProducts re-fetches when a cached season no longer decodes',
+    () async {
+      await seedCache(seasons: const ['summer', 'monsoon']);
 
-    final remote = _FakeRemote(remoteProduct);
-    final products = (await buildRepository(remote).listProducts(storeId: 's1')).get()!;
+      final remote = _FakeRemote(remoteProduct);
+      final products = (await buildRepository(
+        remote,
+      ).listProducts(storeId: 's1')).get()!;
 
-    expect(remote.listCalls, 1);
-    expect(products.single.seasons, {ProductSeason.summer});
+      expect(remote.listCalls, 1);
+      expect(products.single.seasons, {ProductSeason.summer});
 
-    final cached = await harness.isar.productCaches.getByProductId('p1');
-    expect(cached!.seasons, ['summer']);
-  });
+      final cached = await harness.isar.productCaches.getByProductId('p1');
+      expect(cached!.seasons, ['summer']);
+    },
+  );
 
-  test('getProductById re-fetches when a cached fit no longer decodes', () async {
-    await seedCache(fit: 'skinny');
+  test(
+    'getProductById re-fetches when a cached fit no longer decodes',
+    () async {
+      await seedCache(fit: 'skinny');
 
-    final remote = _FakeRemote(remoteProduct);
-    final product = (await buildRepository(remote).getProductById('p1')).get()!;
+      final remote = _FakeRemote(remoteProduct);
+      final product = (await buildRepository(
+        remote,
+      ).getProductById('p1')).get()!;
 
-    expect(remote.getCalls, 1);
-    expect(product.fit, ProductFit.regular);
+      expect(remote.getCalls, 1);
+      expect(product.fit, ProductFit.regular);
 
-    final cached = await harness.isar.productCaches.getByProductId('p1');
-    expect(cached!.fit, 'regular');
-  });
+      final cached = await harness.isar.productCaches.getByProductId('p1');
+      expect(cached!.fit, 'regular');
+    },
+  );
 
-  test('getProductById re-fetches when a cached status no longer decodes', () async {
-    await seedCache(status: 'draft');
+  test(
+    'getProductById re-fetches when a cached status no longer decodes',
+    () async {
+      await seedCache(status: 'draft');
 
-    final remote = _FakeRemote(remoteProduct);
-    final product = (await buildRepository(remote).getProductById('p1')).get()!;
+      final remote = _FakeRemote(remoteProduct);
+      final product = (await buildRepository(
+        remote,
+      ).getProductById('p1')).get()!;
 
-    expect(remote.getCalls, 1);
-    expect(product.status, ProductStatus.active);
-  });
+      expect(remote.getCalls, 1);
+      expect(product.status, ProductStatus.active);
+    },
+  );
 
   test('serves the cache untouched when every cached value decodes', () async {
     await seedCache();
 
     final remote = _FakeRemote(remoteProduct);
-    final products = (await buildRepository(remote).listProducts(storeId: 's1')).get()!;
+    final products = (await buildRepository(
+      remote,
+    ).listProducts(storeId: 's1')).get()!;
 
     expect(remote.listCalls, 0);
     expect(products.single.imageUrls, [StoreImagesApi.publicUrl('p1.jpg')]);
@@ -219,18 +242,29 @@ void main() {
     expect(products.single.seasons, {ProductSeason.summer});
   });
 
-  test('null cached enums stay null instead of counting as undecodable', () async {
-    await seedCache(status: null, gender: null, fit: null, seasons: null, styles: null);
+  test(
+    'null cached enums stay null instead of counting as undecodable',
+    () async {
+      await seedCache(
+        status: null,
+        gender: null,
+        fit: null,
+        seasons: null,
+        styles: null,
+      );
 
-    final remote = _FakeRemote(remoteProduct);
-    final products = (await buildRepository(remote).listProducts(storeId: 's1')).get()!;
+      final remote = _FakeRemote(remoteProduct);
+      final products = (await buildRepository(
+        remote,
+      ).listProducts(storeId: 's1')).get()!;
 
-    expect(remote.listCalls, 0);
-    expect(products.single.fit, isNull);
-    expect(products.single.seasons, isNull);
-    expect(products.single.status, ProductStatus.active);
-    expect(products.single.gender, ProductGender.unisex);
-  });
+      expect(remote.listCalls, 0);
+      expect(products.single.fit, isNull);
+      expect(products.single.seasons, isNull);
+      expect(products.single.status, ProductStatus.active);
+      expect(products.single.gender, ProductGender.unisex);
+    },
+  );
 
   test('listProducts serves an empty cache without calling remote', () async {
     await harness.isar.writeTxn(() async {
@@ -243,36 +277,47 @@ void main() {
     });
 
     final remote = _FakeRemote(remoteProduct);
-    final products = (await buildRepository(remote).listProducts(storeId: 's1')).get()!;
+    final products = (await buildRepository(
+      remote,
+    ).listProducts(storeId: 's1')).get()!;
 
     expect(remote.listCalls, 0);
     expect(products, isEmpty);
   });
 
-  test('createProduct sends styles and seasons in enum declaration order', () async {
-    final remote = _FakeRemote(remoteProduct);
+  test(
+    'createProduct sends styles and seasons in enum declaration order',
+    () async {
+      final remote = _FakeRemote(remoteProduct);
 
-    final result = await buildRepository(remote).createProduct(
-      const NewProduct(
-        id: 'p1',
-        storeId: 's1',
-        draft: ProductDraft(
-          name: '碎花洋裝',
-          categoryId: 'c1',
-          garmentType: GarmentType.onePiece,
-          price: 1280,
-          styles: {ClothingStyle.western, ClothingStyle.japanese},
-          seasons: {ProductSeason.winter, ProductSeason.spring},
+      final result = await buildRepository(remote).createProduct(
+        const NewProduct(
+          id: 'p1',
+          storeId: 's1',
+          draft: ProductDraft(
+            name: '碎花洋裝',
+            categoryId: 'c1',
+            garmentType: GarmentType.onePiece,
+            price: 1280,
+            styles: {ClothingStyle.western, ClothingStyle.japanese},
+            seasons: {ProductSeason.winter, ProductSeason.spring},
+          ),
+          imagePaths: ['p1.jpg'],
+          sizes: [],
         ),
-        imagePaths: ['p1.jpg'],
-        sizes: [],
-      ),
-    );
+      );
 
-    expect(result.isSuccess, isTrue);
-    expect(remote.inserted!.styles, [ClothingStyle.japanese, ClothingStyle.western]);
-    expect(remote.inserted!.seasons, [ProductSeason.spring, ProductSeason.winter]);
-  });
+      expect(result.isSuccess, isTrue);
+      expect(remote.inserted!.styles, [
+        ClothingStyle.japanese,
+        ClothingStyle.western,
+      ]);
+      expect(remote.inserted!.seasons, [
+        ProductSeason.spring,
+        ProductSeason.winter,
+      ]);
+    },
+  );
 
   final original = Product(
     id: 'p1',
@@ -296,21 +341,23 @@ void main() {
     updatedAt: DateTime(2026),
   );
 
-  ProductUpdatePlan planFor(final List<String> imagePaths, final List<SizeItem> sizes) =>
-      planProductUpdate(
-        original: original,
-        draft: const ProductDraft(
-          name: '碎花洋裝',
-          categoryId: 'c1',
-          garmentType: GarmentType.onePiece,
-          price: 1280,
-        ),
-        images: [
-          for (final path in imagePaths) ImageItem.existing(path: path, url: path),
-        ],
-        uploadedPaths: const [],
-        sizes: sizes,
-      );
+  ProductUpdatePlan planFor(
+    final List<String> imagePaths,
+    final List<SizeItem> sizes,
+  ) => planProductUpdate(
+    original: original,
+    draft: const ProductDraft(
+      name: '碎花洋裝',
+      categoryId: 'c1',
+      garmentType: GarmentType.onePiece,
+      price: 1280,
+    ),
+    images: [
+      for (final path in imagePaths) ImageItem.existing(path: path, url: path),
+    ],
+    uploadedPaths: const [],
+    sizes: sizes,
+  );
 
   test(
     'updateProduct writes sizes before the product row that references images',
@@ -327,38 +374,51 @@ void main() {
     },
   );
 
-  test('updateProduct succeeds and drops the cache when the refresh fails', () async {
-    await seedCache();
-    final remote = _FakeRemote(remoteProduct)
-      ..getError = const SocketException('offline');
+  test(
+    'updateProduct succeeds and drops the cache when the refresh fails',
+    () async {
+      await seedCache();
+      final remote = _FakeRemote(remoteProduct)
+        ..getError = const SocketException('offline');
 
-    final result = await buildRepository(remote).updateProduct(
-      original: original,
-      plan: planFor(const [], const [SizeItem.existing(id: 'm', name: 'M')]),
-    );
+      final result = await buildRepository(remote).updateProduct(
+        original: original,
+        plan: planFor(const [], const [SizeItem.existing(id: 'm', name: 'M')]),
+      );
 
-    final entries = CacheEntryLocalDataSource(harness.service);
-    expect(result.isSuccess, isTrue);
-    expect(
-      await entries.getEntryStatus(ProductLocalDataSource.cacheKeyForStore('s1')),
-      isNull,
-    );
-    expect(
-      await entries.getEntryStatus(ProductLocalDataSource.cacheKeyForProduct('p1')),
-      isNull,
-    );
-    expect(await harness.isar.productCaches.getByProductId('p1'), isNull);
-  });
+      final entries = CacheEntryLocalDataSource(harness.service);
+      expect(result.isSuccess, isTrue);
+      expect(
+        await entries.getEntryStatus(
+          ProductLocalDataSource.cacheKeyForStore('s1'),
+        ),
+        isNull,
+      );
+      expect(
+        await entries.getEntryStatus(
+          ProductLocalDataSource.cacheKeyForProduct('p1'),
+        ),
+        isNull,
+      );
+      expect(await harness.isar.productCaches.getByProductId('p1'), isNull);
+    },
+  );
 
-  test('setProductStatus fails without refreshing when no row was updated', () async {
-    final remote = _FakeRemote(remoteProduct)
-      ..updateError = const PostgrestException(message: 'no rows', code: 'PGRST116');
+  test(
+    'setProductStatus fails without refreshing when no row was updated',
+    () async {
+      final remote = _FakeRemote(remoteProduct)
+        ..updateError = const PostgrestException(
+          message: 'no rows',
+          code: 'PGRST116',
+        );
 
-    final result = await buildRepository(
-      remote,
-    ).setProductStatus(product: original, status: ProductStatus.archived);
+      final result = await buildRepository(
+        remote,
+      ).setProductStatus(product: original, status: ProductStatus.archived);
 
-    expect(result.getError(), const NotFoundFailure());
-    expect(remote.getCalls, 0);
-  });
+      expect(result.getError(), const NotFoundFailure());
+      expect(remote.getCalls, 0);
+    },
+  );
 }

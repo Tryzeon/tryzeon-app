@@ -39,8 +39,12 @@ class ChatCardRail extends StatelessWidget {
                 child: SizedBox(
                   width: cardWidth,
                   child: switch (block) {
-                    ShopProductBlock(:final product) => ChatProductCard(product: product),
-                    WardrobeProductBlock(:final item) => ChatWardrobeCard(item: item),
+                    ShopProductBlock(:final product) => ChatProductCard(
+                      product: product,
+                    ),
+                    WardrobeProductBlock(:final item) => ChatWardrobeCard(
+                      item: item,
+                    ),
                     _ => const SizedBox.shrink(),
                   },
                 ),

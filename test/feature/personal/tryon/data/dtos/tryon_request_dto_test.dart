@@ -205,17 +205,20 @@ void main() {
     expect(body['engine'], 'standard');
   });
 
-  test('an animate request carries the engine even though no image is generated', () {
-    final body = TryonRequestDto.fromDomain(
-      const TryonRequest.animate(
-        requestId: 'r1',
-        baseImageBase64: 'FINISHED',
-        engine: TryonEngine.experimental,
-      ),
-    ).toJson();
+  test(
+    'an animate request carries the engine even though no image is generated',
+    () {
+      final body = TryonRequestDto.fromDomain(
+        const TryonRequest.animate(
+          requestId: 'r1',
+          baseImageBase64: 'FINISHED',
+          engine: TryonEngine.experimental,
+        ),
+      ).toJson();
 
-    expect(body['engine'], 'experimental');
-  });
+      expect(body['engine'], 'experimental');
+    },
+  );
 
   test('an animate request reports video as its mode', () {
     const request = TryonRequest.animate(

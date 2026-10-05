@@ -46,11 +46,12 @@ class OutfitPhotoDetailPage extends StatelessWidget {
                   fit: BoxFit.contain,
                   width: double.infinity,
                   height: double.infinity,
-                  errorBuilder: (final context, final error, final stackTrace) => Icon(
-                    Icons.image_not_supported_outlined,
-                    size: AppSpacing.xxl,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                  errorBuilder:
+                      (final context, final error, final stackTrace) => Icon(
+                        Icons.image_not_supported_outlined,
+                        size: AppSpacing.xxl,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                 ),
               ),
             ),

@@ -4,7 +4,10 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_gallery.dart';
 
 void main() {
-  Future<void> pumpGallery(final WidgetTester tester, {final bool showScrims = true}) {
+  Future<void> pumpGallery(
+    final WidgetTester tester, {
+    final bool showScrims = true,
+  }) {
     return tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.lightTheme,

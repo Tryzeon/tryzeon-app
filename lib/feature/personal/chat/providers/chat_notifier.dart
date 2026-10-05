@@ -12,7 +12,8 @@ import 'package:tryzeon/feature/personal/chat/providers/chat_providers.dart';
 part 'chat_notifier.freezed.dart';
 part 'chat_notifier.g.dart';
 
-const String _greetingText = '嗨！我是你的穿搭顧問 👗 告訴我你的需求吧 — 例如場合、風格，或想搭配的某件單品，我會幫你推薦合適的穿搭。';
+const String _greetingText =
+    '嗨！我是你的穿搭顧問 👗 告訴我你的需求吧 — 例如場合、風格，或想搭配的某件單品，我會幫你推薦合適的穿搭。';
 const String _emptyReplyMessage = '抱歉，我沒有理解，可以再說一次你的需求嗎？';
 
 const ChatMessage _greetingMessage = ChatMessage(
@@ -42,7 +43,8 @@ sealed class ChatState with _$ChatState {
 
 @riverpod
 class ChatNotifier extends _$ChatNotifier {
-  final StreamController<ChatEvent> _events = StreamController<ChatEvent>.broadcast();
+  final StreamController<ChatEvent> _events =
+      StreamController<ChatEvent>.broadcast();
 
   Stream<ChatEvent> get events => _events.stream;
 
@@ -92,7 +94,9 @@ class ChatNotifier extends _$ChatNotifier {
     final stream = ref.read(chatActionProvider.notifier).execute(history);
     var terminated = false;
     await for (final event in stream) {
-      if (_isStale(localGen)) return; // reset() mid-stream cancels the subscription
+      if (_isStale(localGen)) {
+        return; // reset() mid-stream cancels the subscription
+      }
       switch (event) {
         case ChatToolStarted(:final block):
           _append(ChatMessage(role: ChatRole.assistant, content: [block]));
@@ -100,7 +104,11 @@ class ChatNotifier extends _$ChatNotifier {
           _append(ChatMessage(role: ChatRole.user, content: [block]));
         case ChatReplied(:final answer):
           terminated = true;
-          _append(answer.content.isEmpty ? _assistantText(_emptyReplyMessage) : answer);
+          _append(
+            answer.content.isEmpty
+                ? _assistantText(_emptyReplyMessage)
+                : answer,
+          );
         case ChatFailed(:final failure):
           terminated = true;
           _failTurn(failure, turnStart);

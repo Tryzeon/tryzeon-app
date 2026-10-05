@@ -46,7 +46,9 @@ class OutfitTrayController extends _$OutfitTrayController {
   }
 
   void remove(final String id) {
-    state = state.copyWith(pieces: state.pieces.where((final p) => p.id != id).toList());
+    state = state.copyWith(
+      pieces: state.pieces.where((final p) => p.id != id).toList(),
+    );
   }
 
   void toggle(final OutfitPiece piece) =>

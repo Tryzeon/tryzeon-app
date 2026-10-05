@@ -189,7 +189,9 @@ class _ErrorText extends StatelessWidget {
       padding: const EdgeInsets.only(top: AppSpacing.xs, left: AppSpacing.mdLg),
       child: Text(
         text,
-        style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.error),
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: theme.colorScheme.error,
+        ),
       ),
     );
   }

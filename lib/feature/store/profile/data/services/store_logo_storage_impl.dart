@@ -17,7 +17,9 @@ class StoreLogoStorageImpl implements StoreLogoStorage {
     required final File logo,
   }) async {
     try {
-      return Ok(await _storeImagesApi.uploadStoreLogo(storeId: storeId, logo: logo));
+      return Ok(
+        await _storeImagesApi.uploadStoreLogo(storeId: storeId, logo: logo),
+      );
     } catch (e, stackTrace) {
       AppLogger.error('Failed to upload store logo', e, stackTrace);
       return Err(mapExceptionToFailure(e));

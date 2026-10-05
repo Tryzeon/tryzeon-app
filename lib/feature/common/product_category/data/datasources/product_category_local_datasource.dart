@@ -8,7 +8,10 @@ import 'package:tryzeon/feature/common/product_category/data/mappers/product_cat
 import 'package:tryzeon/feature/common/product_category/domain/entities/product_category.dart';
 
 class ProductCategoryLocalDataSource {
-  ProductCategoryLocalDataSource(this._isarService, this._cacheEntryLocalDataSource);
+  ProductCategoryLocalDataSource(
+    this._isarService,
+    this._cacheEntryLocalDataSource,
+  );
   final IsarService _isarService;
   final CacheEntryLocalDataSource _cacheEntryLocalDataSource;
   static const _mappr = ProductCategoryMappr();
@@ -34,7 +37,9 @@ class ProductCategoryLocalDataSource {
     );
   }
 
-  Future<void> saveProductCategories(final List<ProductCategory> categories) async {
+  Future<void> saveProductCategories(
+    final List<ProductCategory> categories,
+  ) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
       await isar.productCategoryCaches.clear();
@@ -42,6 +47,9 @@ class ProductCategoryLocalDataSource {
         _mappr.convertList<ProductCategory, ProductCategoryCache>(categories),
       );
     });
-    await _cacheEntryLocalDataSource.markListState(cacheKey, isEmpty: categories.isEmpty);
+    await _cacheEntryLocalDataSource.markListState(
+      cacheKey,
+      isEmpty: categories.isEmpty,
+    );
   }
 }

@@ -54,7 +54,8 @@ class StoreOnboardingPage extends HookConsumerWidget {
                       IconButton(
                         icon: const Icon(Icons.swap_horiz_outlined),
                         tooltip: '切換回個人帳號',
-                        onPressed: () => confirmAndSwitchTo(context, UserType.personal),
+                        onPressed: () =>
+                            confirmAndSwitchTo(context, UserType.personal),
                       ),
                       IconButton(
                         icon: const Icon(Icons.logout_outlined),
@@ -66,7 +67,9 @@ class StoreOnboardingPage extends HookConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                  ),
                   child: Text(
                     '品牌專區 · TRYZEON',
                     style: textTheme.labelMedium?.copyWith(
@@ -76,7 +79,9 @@ class StoreOnboardingPage extends HookConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.smMd),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                  ),
                   child: RichText(
                     text: TextSpan(
                       style: textTheme.displayMedium?.copyWith(
@@ -98,7 +103,9 @@ class StoreOnboardingPage extends HookConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                  ),
                   child: Text(
                     '完成審核後，你的商品就能在 Tryzeon 上架、虛擬試穿與導購。',
                     style: textTheme.bodyLarge?.copyWith(
@@ -109,7 +116,9 @@ class StoreOnboardingPage extends HookConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                  ),
                   child: SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(
@@ -123,7 +132,9 @@ class StoreOnboardingPage extends HookConsumerWidget {
                 const Divider(indent: AppSpacing.lg, endIndent: AppSpacing.lg),
                 const SizedBox(height: AppSpacing.lg),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                  ),
                   child: Text(
                     '申請前須知',
                     style: textTheme.labelMedium?.copyWith(
@@ -153,7 +164,11 @@ class StoreOnboardingPage extends HookConsumerWidget {
 }
 
 class _OnboardingNote extends StatelessWidget {
-  const _OnboardingNote({required this.number, required this.label, required this.body});
+  const _OnboardingNote({
+    required this.number,
+    required this.label,
+    required this.body,
+  });
 
   final String number;
   final String label;
@@ -177,7 +192,9 @@ class _OnboardingNote extends StatelessWidget {
             width: 24,
             child: Text(
               number,
-              style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurface),
+              style: textTheme.labelMedium?.copyWith(
+                color: colorScheme.onSurface,
+              ),
             ),
           ),
           const SizedBox(width: AppSpacing.smMd),

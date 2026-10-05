@@ -6,9 +6,21 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 final _theme = AppTheme.lightTheme;
 
 const _items = [
-  AppBottomNavItem(icon: Icons.home_outlined, selectedIcon: Icons.home, label: '首頁'),
-  AppBottomNavItem(icon: Icons.chat_outlined, selectedIcon: Icons.chat, label: '聊天'),
-  AppBottomNavItem(icon: Icons.person_outline, selectedIcon: Icons.person, label: '我的'),
+  AppBottomNavItem(
+    icon: Icons.home_outlined,
+    selectedIcon: Icons.home,
+    label: '首頁',
+  ),
+  AppBottomNavItem(
+    icon: Icons.chat_outlined,
+    selectedIcon: Icons.chat,
+    label: '聊天',
+  ),
+  AppBottomNavItem(
+    icon: Icons.person_outline,
+    selectedIcon: Icons.person,
+    label: '我的',
+  ),
 ];
 
 const _fiveItems = [
@@ -67,7 +79,9 @@ void main() {
 
   testWidgets('tapping an item reports its index', (final tester) async {
     int? tapped;
-    await tester.pumpWidget(_subject(selectedIndex: 0, onTap: (final i) => tapped = i));
+    await tester.pumpWidget(
+      _subject(selectedIndex: 0, onTap: (final i) => tapped = i),
+    );
 
     await tester.tap(find.text('聊天'));
 
@@ -101,28 +115,31 @@ void main() {
     );
   });
 
-  testWidgets('selected item shows its filled icon, others their outlined icon', (
-    final tester,
-  ) async {
-    await tester.pumpWidget(_subject(selectedIndex: 1));
+  testWidgets(
+    'selected item shows its filled icon, others their outlined icon',
+    (final tester) async {
+      await tester.pumpWidget(_subject(selectedIndex: 1));
 
-    expect(find.byIcon(Icons.chat), findsOneWidget);
-    expect(find.byIcon(Icons.chat_outlined), findsNothing);
-    expect(find.byIcon(Icons.home_outlined), findsOneWidget);
-    expect(find.byIcon(Icons.home), findsNothing);
-  });
+      expect(find.byIcon(Icons.chat), findsOneWidget);
+      expect(find.byIcon(Icons.chat_outlined), findsNothing);
+      expect(find.byIcon(Icons.home_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.home), findsNothing);
+    },
+  );
 
-  testWidgets('selected item uses primary colour, others use onSurfaceVariant', (
-    final tester,
-  ) async {
-    await tester.pumpWidget(_subject(selectedIndex: 0));
+  testWidgets(
+    'selected item uses primary colour, others use onSurfaceVariant',
+    (final tester) async {
+      await tester.pumpWidget(_subject(selectedIndex: 0));
 
-    final colorScheme = _theme.colorScheme;
-    Color? iconColor(final IconData icon) => tester.widget<Icon>(find.byIcon(icon)).color;
+      final colorScheme = _theme.colorScheme;
+      Color? iconColor(final IconData icon) =>
+          tester.widget<Icon>(find.byIcon(icon)).color;
 
-    expect(iconColor(Icons.home), colorScheme.primary);
-    expect(iconColor(Icons.chat_outlined), colorScheme.onSurfaceVariant);
-  });
+      expect(iconColor(Icons.home), colorScheme.primary);
+      expect(iconColor(Icons.chat_outlined), colorScheme.onSurfaceVariant);
+    },
+  );
 
   testWidgets('only the selected item sits on a pill', (final tester) async {
     await tester.pumpWidget(_subject(selectedIndex: 1));
@@ -141,7 +158,9 @@ void main() {
     expect(tester.hasRunningAnimations, isFalse);
   });
 
-  testWidgets('capsule shrinks to its items and is centred', (final tester) async {
+  testWidgets('capsule shrinks to its items and is centred', (
+    final tester,
+  ) async {
     tester.view.physicalSize = const Size(375, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -152,7 +171,8 @@ void main() {
 
     expect(
       capsule.width,
-      3 * AppSpacing.bottomNavBarItemWidth + 2 * (AppSpacing.sm + AppStroke.thin),
+      3 * AppSpacing.bottomNavBarItemWidth +
+          2 * (AppSpacing.sm + AppStroke.thin),
     );
     expect(capsule.center.dx, screen.width / 2);
     expect(capsule.height, AppSpacing.bottomNavBarHeight);
@@ -171,7 +191,10 @@ void main() {
     final capsule = tester.getRect(find.byKey(AppBottomNavBar.capsuleKey));
 
     expect(capsule.left, AppSpacing.bottomNavBarHorizontalMargin);
-    expect(capsule.right, screen.width - AppSpacing.bottomNavBarHorizontalMargin);
+    expect(
+      capsule.right,
+      screen.width - AppSpacing.bottomNavBarHorizontalMargin,
+    );
     for (final item in _fiveItems) {
       expect(find.text(item.label), findsOneWidget);
     }
@@ -183,7 +206,9 @@ void main() {
     tester.view.physicalSize = const Size(360, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(_subject(selectedIndex: 0, items: _fiveItems, textScale: 2));
+    await tester.pumpWidget(
+      _subject(selectedIndex: 0, items: _fiveItems, textScale: 2),
+    );
 
     expect(tester.takeException(), isNull);
     final capsule = tester.getRect(find.byKey(AppBottomNavBar.capsuleKey));
@@ -204,6 +229,9 @@ void main() {
     final screen = tester.getSize(find.byType(MaterialApp));
 
     expect(bar.height, AppSpacing.bottomNavBarOverlap + 34);
-    expect(capsule.bottom, screen.height - 34 - AppSpacing.bottomNavBarBottomMargin);
+    expect(
+      capsule.bottom,
+      screen.height - 34 - AppSpacing.bottomNavBarBottomMargin,
+    );
   });
 }

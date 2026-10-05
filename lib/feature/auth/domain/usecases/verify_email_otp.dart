@@ -12,6 +12,10 @@ class VerifyEmailOtp {
     required final String token,
     required final UserType userType,
   }) {
-    return _repository.verifyEmailOtp(email: email, token: token, userType: userType);
+    return _repository.verifyEmailOtp(
+      email: email,
+      token: token,
+      userType: userType,
+    );
   }
 }

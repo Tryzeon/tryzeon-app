@@ -8,7 +8,9 @@ void main() {
   ) async {
     await tester.pumpWidget(
       const MaterialApp(
-        home: Scaffold(body: ProductDescriptionSection(description: '第一行\n第二行')),
+        home: Scaffold(
+          body: ProductDescriptionSection(description: '第一行\n第二行'),
+        ),
       ),
     );
 

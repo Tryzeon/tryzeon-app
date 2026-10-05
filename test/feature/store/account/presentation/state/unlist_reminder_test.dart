@@ -4,7 +4,10 @@ import 'package:tryzeon/feature/common/product_attributes/domain/entities/produc
 import 'package:tryzeon/feature/store/account/presentation/state/unlist_reminder.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 
-Product product(final String name, {final ProductStatus status = ProductStatus.active}) {
+Product product(
+  final String name, {
+  final ProductStatus status = ProductStatus.active,
+}) {
   final now = DateTime(2026, 8, 18);
   return Product(
     id: name,
@@ -47,7 +50,11 @@ void main() {
       const {'Shirt': 2, 'Pants': 11, 'Jacket': 7},
     );
 
-    expect(reminders.map((final r) => r.product.name), ['Pants', 'Jacket', 'Shirt']);
+    expect(reminders.map((final r) => r.product.name), [
+      'Pants',
+      'Jacket',
+      'Shirt',
+    ]);
   });
 
   test('does not mutate the product list it was given', () {

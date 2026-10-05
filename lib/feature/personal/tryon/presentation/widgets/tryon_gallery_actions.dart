@@ -113,9 +113,17 @@ class TryonGalleryActions extends ConsumerWidget {
         ),
       ],
       _ => [
-        AppMenuAction(icon: Icons.ios_share_rounded, title: '分享', onTap: shareMedia),
+        AppMenuAction(
+          icon: Icons.ios_share_rounded,
+          title: '分享',
+          onTap: shareMedia,
+        ),
         if (canRegenerate)
-          AppMenuAction(icon: Icons.refresh_rounded, title: '重新生成', onTap: regenerate),
+          AppMenuAction(
+            icon: Icons.refresh_rounded,
+            title: '重新生成',
+            onTap: regenerate,
+          ),
         if (result?.mode == TryonMode.image && hasVideoAccess)
           AppMenuAction(
             icon: Icons.movie_creation_outlined,
@@ -128,7 +136,9 @@ class TryonGalleryActions extends ConsumerWidget {
                 ? Icons.person_off_outlined
                 : Icons.person_outline_rounded,
             title: isCurrentTheAvatar ? '取消沿用穿搭' : '沿用這套穿搭',
-            onTap: ref.read(tryonGalleryProvider.notifier).toggleAvatarForCurrent,
+            onTap: ref
+                .read(tryonGalleryProvider.notifier)
+                .toggleAvatarForCurrent,
           ),
         AppMenuAction(
           icon: Icons.delete_outline_rounded,
@@ -140,7 +150,10 @@ class TryonGalleryActions extends ConsumerWidget {
     };
 
     return IconButton(
-      icon: Icon(Icons.more_vert_rounded, color: Theme.of(context).colorScheme.onPrimary),
+      icon: Icon(
+        Icons.more_vert_rounded,
+        color: Theme.of(context).colorScheme.onPrimary,
+      ),
       onPressed: () => showAppActionSheet(context, actions: actions),
     );
   }

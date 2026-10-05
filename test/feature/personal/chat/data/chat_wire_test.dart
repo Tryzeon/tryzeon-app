@@ -17,7 +17,11 @@ void main() {
     test('VALIDATION_ERROR keeps the backend message', () {
       expect(
         parseStreamLine(
-          jsonEncode({'type': 'error', 'code': 'VALIDATION_ERROR', 'message': '太長'}),
+          jsonEncode({
+            'type': 'error',
+            'code': 'VALIDATION_ERROR',
+            'message': '太長',
+          }),
         ),
         const ChatStreamEvent.failed(ValidationFailure('太長')),
       );
@@ -27,7 +31,11 @@ void main() {
       final usage = {'used': 10, 'limit': 10};
       expect(
         parseStreamLine(
-          jsonEncode({'type': 'error', 'code': 'RATE_LIMIT_EXCEEDED', 'usage': usage}),
+          jsonEncode({
+            'type': 'error',
+            'code': 'RATE_LIMIT_EXCEEDED',
+            'usage': usage,
+          }),
         ),
         ChatStreamEvent.failed(RateLimitFailure(usagePayload: usage)),
       );
@@ -35,7 +43,9 @@ void main() {
 
     test('an unknown code maps to ServerFailure', () {
       expect(
-        parseStreamLine(jsonEncode({'type': 'error', 'code': 'SOMETHING_ELSE'})),
+        parseStreamLine(
+          jsonEncode({'type': 'error', 'code': 'SOMETHING_ELSE'}),
+        ),
         const ChatStreamEvent.failed(ServerFailure()),
       );
     });

@@ -4,12 +4,19 @@ import 'package:flutter/widgets.dart';
 /// widgets that must clear it but live in a Scaffold that doesn't know about
 /// it. Absent (0) on full-screen routes.
 class BottomNavBarInset extends InheritedWidget {
-  const BottomNavBarInset({required this.overlap, required super.child, super.key});
+  const BottomNavBarInset({
+    required this.overlap,
+    required super.child,
+    super.key,
+  });
 
   final double overlap;
 
   static double of(final BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<BottomNavBarInset>()?.overlap ?? 0;
+      context
+          .dependOnInheritedWidgetOfExactType<BottomNavBarInset>()
+          ?.overlap ??
+      0;
 
   @override
   bool updateShouldNotify(final BottomNavBarInset oldWidget) =>

@@ -25,7 +25,8 @@ sealed class ContentBlock with _$ContentBlock {
     @Default(<String, dynamic>{}) final Map<String, dynamic> content,
   }) = ToolResultBlock;
 
-  const factory ContentBlock.shopProduct(final ShopProduct product) = ShopProductBlock;
+  const factory ContentBlock.shopProduct(final ShopProduct product) =
+      ShopProductBlock;
 
   const factory ContentBlock.wardrobeProduct(final WardrobeItem item) =
       WardrobeProductBlock;

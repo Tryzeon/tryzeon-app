@@ -13,6 +13,7 @@ Future<List<UnlistReminder>> unlistReminders(final Ref ref) async {
   final summaries = await ref.watch(productAnalyticsSummariesProvider.future);
 
   return selectUnlistReminders(products, {
-    for (final summary in summaries) summary.productId: summary.purchaseClickCount,
+    for (final summary in summaries)
+      summary.productId: summary.purchaseClickCount,
   });
 }

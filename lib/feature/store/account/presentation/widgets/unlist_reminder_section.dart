@@ -33,10 +33,12 @@ class UnlistReminderSection extends HookConsumerWidget {
           const SizedBox(height: AppSpacing.sm),
           remindersAsync.when(
             loading: () => const _LoadingRows(),
-            error: (final error, final stackTrace) => const ErrorView(isCompact: true),
+            error: (final error, final stackTrace) =>
+                const ErrorView(isCompact: true),
             data: (final reminders) => Column(
               children: [
-                for (final reminder in reminders) _ReminderRow(reminder: reminder),
+                for (final reminder in reminders)
+                  _ReminderRow(reminder: reminder),
               ],
             ),
           ),
@@ -79,7 +81,8 @@ class _ReminderRow extends StatelessWidget {
     final product = reminder.product;
 
     return ListTile(
-      onTap: () => context.push(AppRoutes.dashboardProductDetailPath(product.id)),
+      onTap: () =>
+          context.push(AppRoutes.dashboardProductDetailPath(product.id)),
       leading: _Thumbnail(
         imageUrl: product.imageUrls.firstOrNull,
         cacheKey: product.imagePaths.firstOrNull,
@@ -149,7 +152,9 @@ class _ClickCount extends StatelessWidget {
 
     return Text(
       clicks.toString(),
-      style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.primary),
+      style: theme.textTheme.titleMedium?.copyWith(
+        color: theme.colorScheme.primary,
+      ),
     );
   }
 }

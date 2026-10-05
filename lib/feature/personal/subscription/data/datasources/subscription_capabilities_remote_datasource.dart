@@ -8,7 +8,9 @@ class SubscriptionCapabilitiesRemoteDataSource {
 
   final SupabaseClient _supabaseClient;
 
-  Future<SubscriptionTierDto> getTierCapabilities(final AppSubscriptionTier tier) async {
+  Future<SubscriptionTierDto> getTierCapabilities(
+    final AppSubscriptionTier tier,
+  ) async {
     final response = await _supabaseClient
         .from(AppConstants.tableSubscriptionTiers)
         .select()

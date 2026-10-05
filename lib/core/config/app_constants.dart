@@ -9,7 +9,8 @@ class AppConstants {
       '924030382971-ppc2nttqs2dn977e4b6j79i83g03bk11.apps.googleusercontent.com';
   static const String lineChannelId = '2010556446';
 
-  static String productWebUrl(final String productId) => '$webBaseUrl/product/$productId';
+  static String productWebUrl(final String productId) =>
+      '$webBaseUrl/product/$productId';
 
   static const String tableUserProfiles = 'user_profiles';
   static const String tableStoreProfiles = 'store_profiles';
@@ -41,8 +42,10 @@ class AppConstants {
   static const String functionStoreImagesDelete = '$functionStoreImages/delete';
   static const String functionLineAuth = 'line-auth';
 
-  static const String presetAvatarFemale = 'assets/images/tryon/preset_model_female.jpg';
-  static const String presetAvatarMale = 'assets/images/tryon/preset_model_male.jpg';
+  static const String presetAvatarFemale =
+      'assets/images/tryon/preset_model_female.jpg';
+  static const String presetAvatarMale =
+      'assets/images/tryon/preset_model_male.jpg';
   static const List<String> tryonLoadingAnimations = [
     'assets/videos/tryon-loading-animation-1.mp4',
     'assets/videos/tryon-loading-animation-2.mp4',

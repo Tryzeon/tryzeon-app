@@ -49,7 +49,8 @@ class ProductStyleSelector extends HookWidget {
                           .map(
                             (final s) => Chip(
                               label: Text(s.label),
-                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
                               visualDensity: VisualDensity.compact,
                             ),
                           )
@@ -57,7 +58,10 @@ class ProductStyleSelector extends HookWidget {
                     ),
             ),
             const SizedBox(width: AppSpacing.sm),
-            Icon(Icons.keyboard_arrow_down_rounded, color: colorScheme.onSurfaceVariant),
+            Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: colorScheme.onSurfaceVariant,
+            ),
           ],
         ),
       ),

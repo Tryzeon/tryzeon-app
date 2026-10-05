@@ -21,7 +21,8 @@ class TryonModeSheet extends ConsumerWidget {
       context: context,
       useRootNavigator: true,
       showDragHandle: true,
-      builder: (final context) => TryonModeSheet(onModeSelected: onModeSelected),
+      builder: (final context) =>
+          TryonModeSheet(onModeSelected: onModeSelected),
     );
   }
 
@@ -55,7 +56,11 @@ class TryonModeSheet extends ConsumerWidget {
               padding: const EdgeInsets.only(bottom: AppSpacing.md),
               child: Row(
                 children: [
-                  Icon(Icons.auto_awesome, color: colorScheme.onSurface, size: 24),
+                  Icon(
+                    Icons.auto_awesome,
+                    color: colorScheme.onSurface,
+                    size: 24,
+                  ),
                   const SizedBox(width: AppSpacing.smMd),
                   Text('選擇試穿方式', style: textTheme.titleLarge),
                   const Spacer(),
@@ -187,7 +192,11 @@ class _ModeCard extends StatelessWidget {
                       color: colorScheme.primaryContainer,
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(icon, color: colorScheme.onPrimaryContainer, size: 18),
+                    child: Icon(
+                      icon,
+                      color: colorScheme.onPrimaryContainer,
+                      size: 18,
+                    ),
                   ),
                   const SizedBox(width: AppSpacing.md),
 
@@ -200,7 +209,9 @@ class _ModeCard extends StatelessWidget {
                           children: [
                             if (isLocked)
                               Padding(
-                                padding: const EdgeInsets.only(right: AppSpacing.sm),
+                                padding: const EdgeInsets.only(
+                                  right: AppSpacing.sm,
+                                ),
                                 child: Icon(
                                   Icons.lock_rounded,
                                   size: 14,

@@ -21,7 +21,8 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
   static const _mappr = StoreMappr();
 
   @override
-  Future<Result<List<ProductAnalyticsSummary>, Failure>> getProductAnalyticsSummaries(
+  Future<Result<List<ProductAnalyticsSummary>, Failure>>
+  getProductAnalyticsSummaries(
     final String storeId, {
     final int? year,
     final int? month,
@@ -38,7 +39,8 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
         return Ok(_aggregateByProduct(summaries));
       }
 
-      final isPastMonth = year < now.year || (year == now.year && month < now.month);
+      final isPastMonth =
+          year < now.year || (year == now.year && month < now.month);
 
       if (isPastMonth) {
         final cached = await _localDataSource.getProductAnalyticsSummaries(
@@ -67,7 +69,11 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
 
       if (isPastMonth) {
         if (summaries.isEmpty) {
-          await _localDataSource.markProductAnalyticsSummariesEmpty(storeId, year, month);
+          await _localDataSource.markProductAnalyticsSummariesEmpty(
+            storeId,
+            year,
+            month,
+          );
         } else {
           await _localDataSource.saveProductAnalyticsSummaries(
             storeId,
@@ -80,7 +86,11 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
 
       return Ok(summaries);
     } catch (e, stackTrace) {
-      AppLogger.error('Failed to get product analytics summaries', e, stackTrace);
+      AppLogger.error(
+        'Failed to get product analytics summaries',
+        e,
+        stackTrace,
+      );
       return Err(mapExceptionToFailure(e));
     }
   }
@@ -96,7 +106,8 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
           : existing.copyWith(
               viewCount: existing.viewCount + s.viewCount,
               tryonCount: existing.tryonCount + s.tryonCount,
-              purchaseClickCount: existing.purchaseClickCount + s.purchaseClickCount,
+              purchaseClickCount:
+                  existing.purchaseClickCount + s.purchaseClickCount,
             );
     }
     return map.values.toList();

@@ -50,6 +50,9 @@ void main() {
     await local.saveProductCategories(categories);
     final lookup = await local.getProductCategories();
 
-    expect((lookup as CacheHit<List<ProductCategory>>).data, unorderedEquals(categories));
+    expect(
+      (lookup as CacheHit<List<ProductCategory>>).data,
+      unorderedEquals(categories),
+    );
   });
 }

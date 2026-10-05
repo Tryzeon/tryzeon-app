@@ -70,7 +70,9 @@ class OnboardingNotifier extends _$OnboardingNotifier {
     final result = await useCase(
       gender: state.gender,
       ageRange: state.ageRange,
-      stylePreferences: state.stylePreferences.isEmpty ? null : state.stylePreferences,
+      stylePreferences: state.stylePreferences.isEmpty
+          ? null
+          : state.stylePreferences,
     );
 
     state = state.copyWith(isSubmitting: false);

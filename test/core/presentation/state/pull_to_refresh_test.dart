@@ -51,7 +51,9 @@ void main() {
   test('failure keeps the data on screen and reports the failure', () async {
     await mount();
 
-    final result = await notifier().refresh(() async => const Err(NetworkFailure()));
+    final result = await notifier().refresh(
+      () async => const Err(NetworkFailure()),
+    );
 
     expect(result.getError(), isA<NetworkFailure>());
     expect(container.read(_counterProvider), const AsyncData(1));
@@ -62,7 +64,9 @@ void main() {
     await mount();
     expect(container.read(_counterProvider).hasError, isTrue);
 
-    final result = await notifier().refresh(() async => const Err(NetworkFailure()));
+    final result = await notifier().refresh(
+      () async => const Err(NetworkFailure()),
+    );
 
     expect(result.getError(), isA<NetworkFailure>());
     final state = container.read(_counterProvider);

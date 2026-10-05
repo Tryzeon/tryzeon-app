@@ -11,19 +11,25 @@ class ProductGenderSelector extends StatelessWidget {
   Widget build(final BuildContext context) {
     return ValueListenableBuilder<ProductGender?>(
       valueListenable: selectedGender,
-      builder: (final context, final value, final _) => SegmentedButton<ProductGender>(
-        segments: ProductGender.values
-            .map(
-              (final g) => ButtonSegment<ProductGender>(value: g, label: Text(g.label)),
-            )
-            .toList(),
-        selected: value == null ? <ProductGender>{} : <ProductGender>{value},
-        emptySelectionAllowed: true,
-        showSelectedIcon: false,
-        expandedInsets: EdgeInsets.zero,
-        onSelectionChanged: (final newSet) =>
-            selectedGender.value = newSet.isEmpty ? null : newSet.first,
-      ),
+      builder: (final context, final value, final _) =>
+          SegmentedButton<ProductGender>(
+            segments: ProductGender.values
+                .map(
+                  (final g) => ButtonSegment<ProductGender>(
+                    value: g,
+                    label: Text(g.label),
+                  ),
+                )
+                .toList(),
+            selected: value == null
+                ? <ProductGender>{}
+                : <ProductGender>{value},
+            emptySelectionAllowed: true,
+            showSelectedIcon: false,
+            expandedInsets: EdgeInsets.zero,
+            onSelectionChanged: (final newSet) =>
+                selectedGender.value = newSet.isEmpty ? null : newSet.first,
+          ),
     );
   }
 }

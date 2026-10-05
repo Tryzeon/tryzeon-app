@@ -16,9 +16,12 @@ class SettingsRepositoryImpl implements SettingsRepository {
         TryonPreferences(
           scenePrompt: prefs.getString(AppConstants.keyTryonScenePrompt),
           stylingPrompt: prefs.getString(AppConstants.keyTryonStylingPrompt),
-          transitionPrompt: prefs.getString(AppConstants.keyTryonTransitionPrompt),
+          transitionPrompt: prefs.getString(
+            AppConstants.keyTryonTransitionPrompt,
+          ),
           engine: TryonEngine.values.firstWhere(
-            (final engine) => engine.name == prefs.getString(AppConstants.keyTryonEngine),
+            (final engine) =>
+                engine.name == prefs.getString(AppConstants.keyTryonEngine),
             orElse: () => TryonEngine.standard,
           ),
         ),
@@ -35,14 +38,25 @@ class SettingsRepositoryImpl implements SettingsRepository {
   ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await _write(prefs, AppConstants.keyTryonScenePrompt, preferences.scenePrompt);
-      await _write(prefs, AppConstants.keyTryonStylingPrompt, preferences.stylingPrompt);
+      await _write(
+        prefs,
+        AppConstants.keyTryonScenePrompt,
+        preferences.scenePrompt,
+      );
+      await _write(
+        prefs,
+        AppConstants.keyTryonStylingPrompt,
+        preferences.stylingPrompt,
+      );
       await _write(
         prefs,
         AppConstants.keyTryonTransitionPrompt,
         preferences.transitionPrompt,
       );
-      await prefs.setString(AppConstants.keyTryonEngine, preferences.engine.name);
+      await prefs.setString(
+        AppConstants.keyTryonEngine,
+        preferences.engine.name,
+      );
       return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to save tryon preferences', e, stackTrace);

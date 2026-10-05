@@ -17,12 +17,17 @@ void main() {
 
   group('GarmentTypeDisplay.measurementLabel', () {
     test('uses the type-specific label for length', () {
-      expect(GarmentType.pants.measurementLabel(GarmentMeasurementType.length), '褲長');
+      expect(
+        GarmentType.pants.measurementLabel(GarmentMeasurementType.length),
+        '褲長',
+      );
     });
 
     test('keeps the generic label for every other measurement', () {
       expect(
-        GarmentType.pants.measurementLabel(GarmentMeasurementType.waistCircumference),
+        GarmentType.pants.measurementLabel(
+          GarmentMeasurementType.waistCircumference,
+        ),
         '腰圍',
       );
     });

@@ -12,6 +12,9 @@ class SignInWithProvider {
     required final LoginProvider provider,
     required final UserType userType,
   }) {
-    return _repository.signInWithProvider(provider: provider, userType: userType);
+    return _repository.signInWithProvider(
+      provider: provider,
+      userType: userType,
+    );
   }
 }

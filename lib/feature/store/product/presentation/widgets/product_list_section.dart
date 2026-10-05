@@ -33,7 +33,10 @@ class ProductListSection extends HookConsumerWidget {
     Widget buildProductGrid(final List<Product> products) {
       if (products.isEmpty) {
         return centeredFill(
-          _EmptyState(hasQuery: query.searchQuery.isNotEmpty, status: query.status),
+          _EmptyState(
+            hasQuery: query.searchQuery.isNotEmpty,
+            status: query.status,
+          ),
         );
       }
 
@@ -45,7 +48,12 @@ class ProductListSection extends HookConsumerWidget {
       return GridView.builder(
         key: PageStorageKey(query.status),
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.fromLTRB(AppSpacing.sm, 0, AppSpacing.sm, bottomInset),
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.sm,
+          0,
+          AppSpacing.sm,
+          bottomInset,
+        ),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           crossAxisSpacing: AppSpacing.sm,
@@ -97,14 +105,20 @@ class _EmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.inventory_2_outlined, size: 32, color: colorScheme.onSurfaceVariant),
+          Icon(
+            Icons.inventory_2_outlined,
+            size: 32,
+            color: colorScheme.onSurfaceVariant,
+          ),
           const SizedBox(height: AppSpacing.md),
           Text(title, style: textTheme.titleSmall),
           const SizedBox(height: AppSpacing.xs),
           Text(
             body,
             textAlign: TextAlign.center,
-            style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+            style: textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),

@@ -6,7 +6,11 @@ import 'package:tryzeon/feature/common/garment_type/presentation/garment_type_di
 import 'package:tryzeon/feature/common/product_category/domain/entities/product_category.dart';
 
 class ProductCategorySheet extends HookWidget {
-  const ProductCategorySheet({super.key, required this.categories, this.initialId});
+  const ProductCategorySheet({
+    super.key,
+    required this.categories,
+    this.initialId,
+  });
 
   final List<ProductCategory> categories;
   final String? initialId;
@@ -47,8 +51,9 @@ class ProductCategorySheet extends HookWidget {
       groups
           .firstWhere(
             (final g) => g.value.any((final c) => c.id == initialId),
-            orElse: () =>
-                groups.isEmpty ? const MapEntry(GarmentType.others, []) : groups.first,
+            orElse: () => groups.isEmpty
+                ? const MapEntry(GarmentType.others, [])
+                : groups.first,
           )
           .key,
     );
@@ -99,7 +104,10 @@ class ProductCategorySheet extends HookWidget {
               children: [
                 for (final category in activeCategories)
                   ListTile(
-                    title: Text(category.name, style: theme.textTheme.bodyLarge),
+                    title: Text(
+                      category.name,
+                      style: theme.textTheme.bodyLarge,
+                    ),
                     trailing: category.id == initialId
                         ? Icon(Icons.check_rounded, color: colorScheme.primary)
                         : null,

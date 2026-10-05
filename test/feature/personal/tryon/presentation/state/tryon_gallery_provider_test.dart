@@ -15,8 +15,14 @@ void main() {
     imagePath: 'w1.jpg',
     garmentType: GarmentType.top,
   );
-  const imageSubject = TryonSubject.generate(pieces: [piece], mode: TryonMode.image);
-  const videoSubject = TryonSubject.generate(pieces: [piece], mode: TryonMode.video);
+  const imageSubject = TryonSubject.generate(
+    pieces: [piece],
+    mode: TryonMode.image,
+  );
+  const videoSubject = TryonSubject.generate(
+    pieces: [piece],
+    mode: TryonMode.video,
+  );
 
   TryonGalleryNotifier makeNotifier() {
     final container = ProviderContainer(
@@ -77,22 +83,30 @@ void main() {
   test('the finished entry keeps the pieces its placeholder carried', () {
     final notifier = makeNotifier()..addPending(id: 'a', subject: imageSubject);
 
-    notifier.complete(const TryonResult(id: 'a', mode: TryonMode.image, imageUrl: 'u'));
+    notifier.complete(
+      const TryonResult(id: 'a', mode: TryonMode.image, imageUrl: 'u'),
+    );
 
     expect(notifier.state.entries.single.pieces, const [piece]);
   });
 
-  test('avatarReplaced drops the carried-over outfit and returns to the avatar page', () {
-    final notifier = makeNotifier()..addPending(id: 'a', subject: imageSubject);
-    notifier
-      ..complete(const TryonResult(id: 'a', mode: TryonMode.image, imageUrl: 'u'))
-      ..toggleAvatarForCurrent();
-    expect(notifier.state.customAvatarId, 'a');
+  test(
+    'avatarReplaced drops the carried-over outfit and returns to the avatar page',
+    () {
+      final notifier = makeNotifier()
+        ..addPending(id: 'a', subject: imageSubject);
+      notifier
+        ..complete(
+          const TryonResult(id: 'a', mode: TryonMode.image, imageUrl: 'u'),
+        )
+        ..toggleAvatarForCurrent();
+      expect(notifier.state.customAvatarId, 'a');
 
-    notifier.avatarReplaced();
+      notifier.avatarReplaced();
 
-    expect(notifier.state.customAvatarId, isNull);
-    expect(notifier.state.isAvatarPage, isTrue);
-    expect(notifier.state.entries.single.id, 'a');
-  });
+      expect(notifier.state.customAvatarId, isNull);
+      expect(notifier.state.isAvatarPage, isTrue);
+      expect(notifier.state.entries.single.id, 'a');
+    },
+  );
 }

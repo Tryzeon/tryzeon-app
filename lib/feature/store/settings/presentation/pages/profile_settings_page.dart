@@ -62,14 +62,19 @@ class _StoreProfileForm extends HookConsumerWidget {
     final isLoading = ref.watch(storeProfileEditProvider).isLoading;
 
     final storeNameController = useTextEditingController(text: profile.name);
-    final storeAddressController = useTextEditingController(text: profile.address);
+    final storeAddressController = useTextEditingController(
+      text: profile.address,
+    );
 
     final storeName = useValueListenable(storeNameController).text;
     final storeAddress = useValueListenable(storeAddressController).text;
     final newLogo = newLogoImage.value;
     final selectedChannels = useState<Set<StoreChannel>>(profile.channels);
 
-    final channelsChanged = !setEquals(selectedChannels.value, profile.channels);
+    final channelsChanged = !setEquals(
+      selectedChannels.value,
+      profile.channels,
+    );
 
     String initialContact(final OrderContactType type) {
       for (final c in profile.orderContacts) {
@@ -105,7 +110,10 @@ class _StoreProfileForm extends HookConsumerWidget {
       return list;
     }
 
-    final contactsChanged = !listEquals(buildOrderContacts(), profile.orderContacts);
+    final contactsChanged = !listEquals(
+      buildOrderContacts(),
+      profile.orderContacts,
+    );
 
     final hasChanges =
         storeName.trim() != profile.name ||
@@ -203,7 +211,9 @@ class _StoreProfileForm extends HookConsumerWidget {
               child: SizedBox(
                 width: 18,
                 height: 18,
-                child: CircularProgressIndicator(strokeWidth: AppStroke.regular),
+                child: CircularProgressIndicator(
+                  strokeWidth: AppStroke.regular,
+                ),
               ),
             ),
           ),
@@ -268,13 +278,17 @@ class _StoreProfileForm extends HookConsumerWidget {
                   children: [
                     Text(
                       '店家類型',
-                      style: textTheme.titleSmall?.copyWith(color: colorScheme.onSurface),
+                      style: textTheme.titleSmall?.copyWith(
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Wrap(
                       spacing: AppSpacing.sm,
                       children: StoreChannel.values.map((final channel) {
-                        final isSelected = selectedChannels.value.contains(channel);
+                        final isSelected = selectedChannels.value.contains(
+                          channel,
+                        );
                         return FilterChip(
                           label: Text(channel.label),
                           selected: isSelected,
@@ -295,7 +309,9 @@ class _StoreProfileForm extends HookConsumerWidget {
                       const SizedBox(height: AppSpacing.xs),
                       Text(
                         field.errorText!,
-                        style: textTheme.bodySmall?.copyWith(color: colorScheme.error),
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.error,
+                        ),
                       ),
                     ],
                   ],
@@ -305,12 +321,16 @@ class _StoreProfileForm extends HookConsumerWidget {
             const SizedBox(height: AppSpacing.lg),
             Text(
               '訂購聯絡方式',
-              style: textTheme.titleSmall?.copyWith(color: colorScheme.onSurface),
+              style: textTheme.titleSmall?.copyWith(
+                color: colorScheme.onSurface,
+              ),
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
               '沒有線上商店時，顧客可透過這些管道私訊下單。',
-              style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+              style: textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: AppSpacing.sm),
             TextFormField(

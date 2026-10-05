@@ -9,7 +9,8 @@ enum AnalyticsMetric { viewCount, tryonCount, purchaseClickCount }
 @freezed
 sealed class SortKey with _$SortKey {
   const factory SortKey.product(final ProductField field) = ProductSortKey;
-  const factory SortKey.analytics(final AnalyticsMetric metric) = AnalyticsSortKey;
+  const factory SortKey.analytics(final AnalyticsMetric metric) =
+      AnalyticsSortKey;
 }
 
 @freezed

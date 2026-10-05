@@ -41,7 +41,9 @@ void main() {
   });
 
   test('a null image_paths column decodes as no images', () {
-    final product = mappr.convert<ProductDto, Product>(ProductDto.fromJson(productRow()));
+    final product = mappr.convert<ProductDto, Product>(
+      ProductDto.fromJson(productRow()),
+    );
 
     expect(product.imagePaths, isEmpty);
     expect(product.imageUrls, isEmpty);

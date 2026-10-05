@@ -67,16 +67,22 @@ void main() {
   setUp(() {
     repository = _FakeRepository();
     storage = _FakeAvatarStorage();
-    updateUserAvatar = UpdateUserAvatar(repository: repository, avatarStorage: storage);
+    updateUserAvatar = UpdateUserAvatar(
+      repository: repository,
+      avatarStorage: storage,
+    );
   });
 
-  test('points the profile at the new avatar, then deletes the old one', () async {
-    final result = await updateUserAvatar(avatarFile);
+  test(
+    'points the profile at the new avatar, then deletes the old one',
+    () async {
+      final result = await updateUserAvatar(avatarFile);
 
-    expect(result.isSuccess, isTrue);
-    expect(repository.savedPath, 'u1/avatar/new.jpg');
-    expect(storage.deleted, ['u1/avatar/old.jpg']);
-  });
+      expect(result.isSuccess, isTrue);
+      expect(repository.savedPath, 'u1/avatar/new.jpg');
+      expect(storage.deleted, ['u1/avatar/old.jpg']);
+    },
+  );
 
   test('a first avatar deletes nothing', () async {
     repository.profileResult = Ok(_profile());

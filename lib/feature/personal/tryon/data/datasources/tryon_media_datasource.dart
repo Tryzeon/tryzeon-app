@@ -21,10 +21,14 @@ class TryonMediaDataSource {
     return file.readAsBytes();
   }
 
-  Future<Uint8List> readLocalFile(final String path) => File(path).readAsBytes();
+  Future<Uint8List> readLocalFile(final String path) =>
+      File(path).readAsBytes();
 
   /// The caller owns cleanup via [deleteTempFile].
-  Future<String> downloadToTempFile(final String url, final TryonMode type) async {
+  Future<String> downloadToTempFile(
+    final String url,
+    final TryonMode type,
+  ) async {
     final tempDir = await getTemporaryDirectory();
     final path =
         '${tempDir.path}/tryon_${DateTime.now().millisecondsSinceEpoch}'
@@ -46,7 +50,8 @@ class TryonMediaDataSource {
     }
   }
 
-  String _extension(final TryonMode type) => type == TryonMode.video ? 'mp4' : 'jpg';
+  String _extension(final TryonMode type) =>
+      type == TryonMode.video ? 'mp4' : 'jpg';
 
   String _mimeType(final TryonMode type) =>
       type == TryonMode.video ? 'video/mp4' : 'image/jpeg';

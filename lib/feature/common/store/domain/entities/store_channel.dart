@@ -20,7 +20,8 @@ enum StoreChannel {
   }
 
   static List<StoreChannel> listFromCodes(final Iterable<String>? codes) =>
-      codes?.map(StoreChannel.fromCode).whereType<StoreChannel>().toList() ?? const [];
+      codes?.map(StoreChannel.fromCode).whereType<StoreChannel>().toList() ??
+      const [];
 
   static List<StoreChannel> listFromSet(final Set<StoreChannel> channels) =>
       values.where(channels.contains).toList();

@@ -10,14 +10,17 @@ void main() {
     await Isar.initializeIsarCore(download: true);
   });
 
-  test('clear wipes every collection, including other features cache entries', () async {
-    final harness = await openTestIsar();
-    addTearDown(harness.dispose);
-    final cacheEntryDataSource = CacheEntryLocalDataSource(harness.service);
-    await cacheEntryDataSource.markHasData('k');
+  test(
+    'clear wipes every collection, including other features cache entries',
+    () async {
+      final harness = await openTestIsar();
+      addTearDown(harness.dispose);
+      final cacheEntryDataSource = CacheEntryLocalDataSource(harness.service);
+      await cacheEntryDataSource.markHasData('k');
 
-    await LocalDatabaseImpl(harness.service).clear();
+      await LocalDatabaseImpl(harness.service).clear();
 
-    expect(await cacheEntryDataSource.getEntryStatus('k'), isNull);
-  });
+      expect(await cacheEntryDataSource.getEntryStatus('k'), isNull);
+    },
+  );
 }

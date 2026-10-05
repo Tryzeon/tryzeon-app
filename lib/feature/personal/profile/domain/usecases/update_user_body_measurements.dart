@@ -8,7 +8,9 @@ class UpdateUserBodyMeasurements {
 
   final UserProfileRepository _repository;
 
-  Future<Result<void, Failure>> call({required final BodyMeasurements measurements}) {
+  Future<Result<void, Failure>> call({
+    required final BodyMeasurements measurements,
+  }) {
     return _repository.updateUserBodyMeasurements(measurements: measurements);
   }
 }

@@ -30,7 +30,11 @@ class SignOut {
     try {
       await _analyticsQueue.forceFlush();
     } catch (e, stackTrace) {
-      AppLogger.error('Failed to flush analytics events (ignored)', e, stackTrace);
+      AppLogger.error(
+        'Failed to flush analytics events (ignored)',
+        e,
+        stackTrace,
+      );
     }
 
     final signedOut = await _authRepository.signOut();
@@ -44,10 +48,15 @@ class SignOut {
     try {
       await _localDatabase.clear();
     } catch (e, stackTrace) {
-      AppLogger.error('Failed to clear local database (ignored)', e, stackTrace);
+      AppLogger.error(
+        'Failed to clear local database (ignored)',
+        e,
+        stackTrace,
+      );
     }
 
-    final preferencesCleared = await _settingsRepository.clearTryonPreferences();
+    final preferencesCleared = await _settingsRepository
+        .clearTryonPreferences();
     if (preferencesCleared.isFailure) {
       AppLogger.error(
         'Failed to clear device preferences (ignored)',

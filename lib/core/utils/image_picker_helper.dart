@@ -116,14 +116,15 @@ class ImagePickerHelper {
       final Directory directory = await getTemporaryDirectory();
       final String newPath = '${directory.path}/$newFileName';
 
-      final XFile? compressedFile = await FlutterImageCompress.compressAndGetFile(
-        sourcePath,
-        newPath,
-        quality: imageQuality,
-        format: CompressFormat.jpeg,
-        minWidth: maxWidth.toInt(),
-        minHeight: maxHeight.toInt(),
-      );
+      final XFile? compressedFile =
+          await FlutterImageCompress.compressAndGetFile(
+            sourcePath,
+            newPath,
+            quality: imageQuality,
+            format: CompressFormat.jpeg,
+            minWidth: maxWidth.toInt(),
+            minHeight: maxHeight.toInt(),
+          );
 
       if (compressedFile == null) return null;
 
@@ -168,7 +169,9 @@ class ImagePickerHelper {
         return singleFile != null ? [singleFile] : null;
       }
 
-      final List<XFile> pickedFiles = await _picker.pickMultiImage(limit: maxImages);
+      final List<XFile> pickedFiles = await _picker.pickMultiImage(
+        limit: maxImages,
+      );
 
       if (pickedFiles.isEmpty) return null;
 
@@ -180,19 +183,21 @@ class ImagePickerHelper {
 
       for (final pickedFile in limitedFiles) {
         final String sourcePath = pickedFile.path;
-        final String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+        final String timestamp = DateTime.now().millisecondsSinceEpoch
+            .toString();
         final String newFileName = '${timestamp}_${processedFiles.length}.jpg';
         final Directory directory = await getTemporaryDirectory();
         final String newPath = '${directory.path}/$newFileName';
 
-        final XFile? compressedFile = await FlutterImageCompress.compressAndGetFile(
-          sourcePath,
-          newPath,
-          quality: imageQuality,
-          format: CompressFormat.jpeg,
-          minWidth: maxWidth.toInt(),
-          minHeight: maxHeight.toInt(),
-        );
+        final XFile? compressedFile =
+            await FlutterImageCompress.compressAndGetFile(
+              sourcePath,
+              newPath,
+              quality: imageQuality,
+              format: CompressFormat.jpeg,
+              minWidth: maxWidth.toInt(),
+              minHeight: maxHeight.toInt(),
+            );
 
         if (compressedFile != null) {
           processedFiles.add(File(compressedFile.path));

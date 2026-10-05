@@ -47,7 +47,11 @@ class AccountPage extends HookConsumerWidget {
     try {
       await future;
     } catch (e, stackTrace) {
-      AppLogger.warning('Account pull-to-refresh: a source failed', e, stackTrace);
+      AppLogger.warning(
+        'Account pull-to-refresh: a source failed',
+        e,
+        stackTrace,
+      );
     }
     return const Ok(null);
   }
@@ -106,7 +110,10 @@ class _TopBar extends StatelessWidget {
   @override
   Widget build(final BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.sm, right: AppSpacing.smMd),
+      padding: const EdgeInsets.only(
+        top: AppSpacing.sm,
+        right: AppSpacing.smMd,
+      ),
       child: Align(
         alignment: Alignment.centerRight,
         child: IconButton(
@@ -135,7 +142,8 @@ class _ProfileHeader extends HookConsumerWidget {
 
     final isProfileLoading = profileAsync.isLoading && !profileAsync.hasValue;
     final hasProfileError = profileAsync.hasError;
-    final isAvatarLoading = avatarFileAsync.isLoading && !avatarFileAsync.hasValue;
+    final isAvatarLoading =
+        avatarFileAsync.isLoading && !avatarFileAsync.hasValue;
 
     Widget buildAvatar() {
       if (isProfileLoading || isAvatarLoading) {
@@ -149,7 +157,9 @@ class _ProfileHeader extends HookConsumerWidget {
         return Icon(Icons.person_outline, color: colorScheme.onSurfaceVariant);
       }
       if (avatarFile != null) {
-        return SizedBox.expand(child: Image.file(avatarFile, fit: BoxFit.cover));
+        return SizedBox.expand(
+          child: Image.file(avatarFile, fit: BoxFit.cover),
+        );
       }
       return Icon(Icons.person, color: colorScheme.onSurfaceVariant);
     }

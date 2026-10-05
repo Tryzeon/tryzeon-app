@@ -55,7 +55,10 @@ void main() {
         ),
       );
 
-      toggleOutfitPiece(capturedRef, outfitPieceFromProduct(capturedRef, product));
+      toggleOutfitPiece(
+        capturedRef,
+        outfitPieceFromProduct(capturedRef, product),
+      );
 
       final state = container.read(outfitTrayProvider);
       expect(state.isOpen, isTrue);
@@ -67,7 +70,10 @@ void main() {
         const ProductFitResolver(body: null).resolve(product).tryonSizeId,
       );
 
-      toggleOutfitPiece(capturedRef, outfitPieceFromProduct(capturedRef, product));
+      toggleOutfitPiece(
+        capturedRef,
+        outfitPieceFromProduct(capturedRef, product),
+      );
       expect(container.read(outfitTrayProvider).pieces, isEmpty);
     },
   );

@@ -26,20 +26,29 @@ void main() {
       expect(const NetworkFailure().displayMessage(), contains('無網路連線'));
     });
 
-    test('a client deadline reaches the user as timeout copy, not network copy', () {
-      final failure = mapExceptionToFailure(
-        TimeoutException('deadline', const Duration(minutes: 7)),
-      );
-      expect(failure.displayMessage(), isNot(const NetworkFailure().displayMessage()));
-    });
+    test(
+      'a client deadline reaches the user as timeout copy, not network copy',
+      () {
+        final failure = mapExceptionToFailure(
+          TimeoutException('deadline', const Duration(minutes: 7)),
+        );
+        expect(
+          failure.displayMessage(),
+          isNot(const NetworkFailure().displayMessage()),
+        );
+      },
+    );
   });
 
   group('ServiceBusyFailure copy', () {
-    test('tells the user to wait rather than to upgrade or check the network', () {
-      final message = const ServiceBusyFailure().displayMessage();
-      expect(message, contains('稍後'));
-      expect(message, isNot(contains('升級')));
-      expect(message, isNot(contains('網路')));
-    });
+    test(
+      'tells the user to wait rather than to upgrade or check the network',
+      () {
+        final message = const ServiceBusyFailure().displayMessage();
+        expect(message, contains('稍後'));
+        expect(message, isNot(contains('升級')));
+        expect(message, isNot(contains('網路')));
+      },
+    );
   });
 }

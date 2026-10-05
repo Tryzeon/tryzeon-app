@@ -17,7 +17,9 @@ class TryonRepositoryImpl implements TryonRepository {
   @override
   Future<Result<TryonResult, Failure>> tryon(final TryonRequest request) async {
     try {
-      final response = await _remoteDataSource.tryon(TryonRequestDto.fromDomain(request));
+      final response = await _remoteDataSource.tryon(
+        TryonRequestDto.fromDomain(request),
+      );
       final usageJson = response.usage;
       return Ok(
         TryonResult(

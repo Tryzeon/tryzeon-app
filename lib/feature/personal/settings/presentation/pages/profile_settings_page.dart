@@ -100,7 +100,9 @@ class _PersonalProfileForm extends HookConsumerWidget {
           children: [
             Text(
               '您的資訊不會被公開顯示。',
-              style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+              style: textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: AppSpacing.lg),
             TextFormField(
@@ -112,7 +114,9 @@ class _PersonalProfileForm extends HookConsumerWidget {
             const SizedBox(height: AppSpacing.lg),
             Text(
               '年齡',
-              style: textTheme.labelLarge?.copyWith(color: colorScheme.onSurfaceVariant),
+              style: textTheme.labelLarge?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: AppSpacing.xs),
             ...AgeRange.values.map(
@@ -129,7 +133,9 @@ class _PersonalProfileForm extends HookConsumerWidget {
             const SizedBox(height: AppSpacing.lg),
             Text(
               '性別',
-              style: textTheme.labelLarge?.copyWith(color: colorScheme.onSurfaceVariant),
+              style: textTheme.labelLarge?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: AppSpacing.xs),
             ...Gender.values.map(

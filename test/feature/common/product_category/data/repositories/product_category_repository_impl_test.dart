@@ -82,29 +82,40 @@ void main() {
     gender: ProductGender.female,
   );
 
-  test('re-fetches when a cached default garment type no longer decodes', () async {
-    await seedCache(defaultGarmentType: 'dress');
+  test(
+    're-fetches when a cached default garment type no longer decodes',
+    () async {
+      await seedCache(defaultGarmentType: 'dress');
 
-    final remote = _FakeRemote([remoteCategory]);
-    final categories = (await buildRepository(remote).getProductCategories()).get()!;
+      final remote = _FakeRemote([remoteCategory]);
+      final categories = (await buildRepository(
+        remote,
+      ).getProductCategories()).get()!;
 
-    expect(remote.calls, 1);
-    expect(categories.single.defaultGarmentType, GarmentType.onePiece);
+      expect(remote.calls, 1);
+      expect(categories.single.defaultGarmentType, GarmentType.onePiece);
 
-    final cached = await harness.isar.productCategoryCaches.getByCategoryId('c1');
-    expect(cached!.defaultGarmentType, 'one_piece');
-  });
+      final cached = await harness.isar.productCategoryCaches.getByCategoryId(
+        'c1',
+      );
+      expect(cached!.defaultGarmentType, 'one_piece');
+    },
+  );
 
   test('re-fetches when a cached gender no longer decodes', () async {
     await seedCache(defaultGarmentType: 'one_piece', gender: 'nonbinary');
 
     final remote = _FakeRemote([remoteCategory]);
-    final categories = (await buildRepository(remote).getProductCategories()).get()!;
+    final categories = (await buildRepository(
+      remote,
+    ).getProductCategories()).get()!;
 
     expect(remote.calls, 1);
     expect(categories.single.gender, ProductGender.female);
 
-    final cached = await harness.isar.productCategoryCaches.getByCategoryId('c1');
+    final cached = await harness.isar.productCategoryCaches.getByCategoryId(
+      'c1',
+    );
     expect(cached!.gender, 'female');
   });
 
@@ -112,33 +123,42 @@ void main() {
     await seedCache(defaultGarmentType: 'one_piece');
 
     final remote = _FakeRemote([]);
-    final categories = (await buildRepository(remote).getProductCategories()).get()!;
+    final categories = (await buildRepository(
+      remote,
+    ).getProductCategories()).get()!;
 
     expect(remote.calls, 0);
     expect(categories.single.defaultGarmentType, GarmentType.onePiece);
     expect(categories.single.gender, ProductGender.female);
   });
 
-  test('force refresh bypasses a valid cache and rewrites it from remote', () async {
-    await seedCache(defaultGarmentType: 'top');
+  test(
+    'force refresh bypasses a valid cache and rewrites it from remote',
+    () async {
+      await seedCache(defaultGarmentType: 'top');
 
-    final remote = _FakeRemote([remoteCategory]);
-    final categories = (await buildRepository(
-      remote,
-    ).getProductCategories(forceRefresh: true)).get()!;
+      final remote = _FakeRemote([remoteCategory]);
+      final categories = (await buildRepository(
+        remote,
+      ).getProductCategories(forceRefresh: true)).get()!;
 
-    expect(remote.calls, 1);
-    expect(categories.single.defaultGarmentType, GarmentType.onePiece);
+      expect(remote.calls, 1);
+      expect(categories.single.defaultGarmentType, GarmentType.onePiece);
 
-    final cached = await harness.isar.productCategoryCaches.getByCategoryId('c1');
-    expect(cached!.defaultGarmentType, 'one_piece');
-  });
+      final cached = await harness.isar.productCategoryCaches.getByCategoryId(
+        'c1',
+      );
+      expect(cached!.defaultGarmentType, 'one_piece');
+    },
+  );
 
   test('a null cached gender stays null and falls back to unisex', () async {
     await seedCache(defaultGarmentType: 'top', gender: null);
 
     final remote = _FakeRemote([]);
-    final categories = (await buildRepository(remote).getProductCategories()).get()!;
+    final categories = (await buildRepository(
+      remote,
+    ).getProductCategories()).get()!;
 
     expect(remote.calls, 0);
     expect(categories.single.gender, ProductGender.unisex);

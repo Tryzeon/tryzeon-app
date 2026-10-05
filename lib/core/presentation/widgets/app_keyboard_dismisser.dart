@@ -36,12 +36,14 @@ class AppKeyboardDismisser extends HookWidget {
 
     return Actions(
       actions: <Type, Action<Intent>>{
-        EditableTextTapOutsideIntent: CallbackAction<EditableTextTapOutsideIntent>(
-          onInvoke: handleTapDown,
-        ),
-        EditableTextTapUpOutsideIntent: CallbackAction<EditableTextTapUpOutsideIntent>(
-          onInvoke: handleTapUp,
-        ),
+        EditableTextTapOutsideIntent:
+            CallbackAction<EditableTextTapOutsideIntent>(
+              onInvoke: handleTapDown,
+            ),
+        EditableTextTapUpOutsideIntent:
+            CallbackAction<EditableTextTapUpOutsideIntent>(
+              onInvoke: handleTapUp,
+            ),
       },
       child: child,
     );

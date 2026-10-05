@@ -62,7 +62,9 @@ import 'store_mappr.auto_mappr.dart';
         TypeConverter<ProductElasticity?, String?>(
           ProductAttributesCacheConverters.elasticityToCache,
         ),
-        TypeConverter<ProductFit?, String?>(ProductAttributesCacheConverters.fitToCache),
+        TypeConverter<ProductFit?, String?>(
+          ProductAttributesCacheConverters.fitToCache,
+        ),
         TypeConverter<ProductThickness?, String?>(
           ProductAttributesCacheConverters.thicknessToCache,
         ),
@@ -82,7 +84,9 @@ import 'store_mappr.auto_mappr.dart';
         Field('gender', custom: StoreMapprHelper.genderFromCache),
       ],
       converters: [
-        TypeConverter<String, GarmentType>(GarmentTypeCacheConverters.fromCache),
+        TypeConverter<String, GarmentType>(
+          GarmentTypeCacheConverters.fromCache,
+        ),
         TypeConverter<String?, ProductElasticity?>(
           ProductAttributesCacheConverters.elasticityFromCache,
         ),

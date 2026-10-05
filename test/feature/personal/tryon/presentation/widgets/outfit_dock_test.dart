@@ -62,7 +62,10 @@ void main() {
     addTearDown(container.dispose);
   });
 
-  Future<void> pumpDock(final WidgetTester tester, {final bool isVisible = true}) {
+  Future<void> pumpDock(
+    final WidgetTester tester, {
+    final bool isVisible = true,
+  }) {
     return tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
@@ -81,7 +84,9 @@ void main() {
 
   OutfitTrayController tray() => container.read(outfitTrayProvider.notifier);
 
-  testWidgets('hidden while closed or on a tab without a dock', (final tester) async {
+  testWidgets('hidden while closed or on a tab without a dock', (
+    final tester,
+  ) async {
     await pumpDock(tester);
     expect(find.byKey(const Key('outfit-dock')), findsNothing);
 
@@ -94,12 +99,17 @@ void main() {
     expect(find.byKey(const Key('outfit-dock')), findsNothing);
   });
 
-  testWidgets('empty dock shows the hint and disables launch', (final tester) async {
+  testWidgets('empty dock shows the hint and disables launch', (
+    final tester,
+  ) async {
     tray().open();
     await pumpDock(tester);
     await tester.pump(AppDuration.standard);
 
-    expect(find.text('點選衣物加入搭配，最多 ${AppConstants.maxTryonGarments} 件'), findsOneWidget);
+    expect(
+      find.text('點選衣物加入搭配，最多 ${AppConstants.maxTryonGarments} 件'),
+      findsOneWidget,
+    );
     final launch = tester.widget<FilledButton>(
       find.byKey(const Key('outfit-dock-launch')),
     );
@@ -121,7 +131,9 @@ void main() {
     await tester.tap(find.byKey(const Key('outfit-slot-remove-a')));
     await tester.pump(AppDuration.standard);
 
-    expect(container.read(outfitTrayProvider).pieces.map((final p) => p.id), ['b']);
+    expect(container.read(outfitTrayProvider).pieces.map((final p) => p.id), [
+      'b',
+    ]);
   });
 
   testWidgets('a refused fourth piece shows the cap line, then hides it', (
@@ -138,11 +150,17 @@ void main() {
     tray().add(wardrobePiece('d', GarmentType.top));
     await tester.pump();
     await tester.pump(AppDuration.slow);
-    expect(find.text('已滿 ${AppConstants.maxTryonGarments} 件，先移除一件'), findsOneWidget);
+    expect(
+      find.text('已滿 ${AppConstants.maxTryonGarments} 件，先移除一件'),
+      findsOneWidget,
+    );
 
     await tester.pump(const Duration(seconds: 2));
     await tester.pump(AppDuration.standard);
-    expect(find.text('已滿 ${AppConstants.maxTryonGarments} 件，先移除一件'), findsNothing);
+    expect(
+      find.text('已滿 ${AppConstants.maxTryonGarments} 件，先移除一件'),
+      findsNothing,
+    );
   });
 
   testWidgets('clear closes the dock', (final tester) async {
@@ -159,35 +177,37 @@ void main() {
     expect(container.read(outfitTrayProvider).pieces, isEmpty);
   });
 
-  testWidgets('launch opens the mode sheet and hands the outfit to the coordinator', (
-    final tester,
-  ) async {
-    tray()
-      ..open()
-      ..add(wardrobePiece('a', GarmentType.top))
-      ..add(wardrobePiece('b', GarmentType.pants));
-    await pumpDock(tester);
-    await tester.pump(AppDuration.standard);
+  testWidgets(
+    'launch opens the mode sheet and hands the outfit to the coordinator',
+    (final tester) async {
+      tray()
+        ..open()
+        ..add(wardrobePiece('a', GarmentType.top))
+        ..add(wardrobePiece('b', GarmentType.pants));
+      await pumpDock(tester);
+      await tester.pump(AppDuration.standard);
 
-    await tester.tap(find.byKey(const Key('outfit-dock-launch')));
-    await tester.pump();
-    await tester.pump(AppDuration.standard);
-    await tester.pump(AppDuration.standard);
+      await tester.tap(find.byKey(const Key('outfit-dock-launch')));
+      await tester.pump();
+      await tester.pump(AppDuration.standard);
+      await tester.pump(AppDuration.standard);
 
-    expect(find.text('讓 AI 幫你穿上'), findsOneWidget);
+      expect(find.text('讓 AI 幫你穿上'), findsOneWidget);
 
-    await tester.tap(find.text('圖片試穿'));
-    await tester.pump();
-    await tester.pump(AppDuration.standard);
-    await tester.pump(AppDuration.standard);
+      await tester.tap(find.text('圖片試穿'));
+      await tester.pump();
+      await tester.pump(AppDuration.standard);
+      await tester.pump(AppDuration.standard);
 
-    expect(container.read(outfitTrayProvider).isOpen, isFalse);
-    expect(container.read(outfitTrayProvider).pieces, isEmpty);
+      expect(container.read(outfitTrayProvider).isOpen, isFalse);
+      expect(container.read(outfitTrayProvider).pieces, isEmpty);
 
-    final controller =
-        container.read(tryonControllerProvider.notifier) as _RecordingTryonController;
-    expect(controller.calls, hasLength(1));
-    expect(controller.calls.single.$1.map((final p) => p.id), ['a', 'b']);
-    expect(controller.calls.single.$2, TryonMode.image);
-  });
+      final controller =
+          container.read(tryonControllerProvider.notifier)
+              as _RecordingTryonController;
+      expect(controller.calls, hasLength(1));
+      expect(controller.calls.single.$1.map((final p) => p.id), ['a', 'b']);
+      expect(controller.calls.single.$2, TryonMode.image);
+    },
+  );
 }

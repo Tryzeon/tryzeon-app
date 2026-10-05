@@ -68,7 +68,9 @@ class IdentitySegmentedControl extends StatelessWidget {
         child: Text(
           title,
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: isSelected ? colorScheme.onSurface : colorScheme.onSurfaceVariant,
+            color: isSelected
+                ? colorScheme.onSurface
+                : colorScheme.onSurfaceVariant,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
             letterSpacing: 0.8,
           ),

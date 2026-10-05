@@ -29,7 +29,9 @@ class ChatTimelineList extends HookWidget {
     top: AppSpacing.sm,
     bottom: AppSpacing.md,
   );
-  static const EdgeInsets _gutter = EdgeInsets.symmetric(horizontal: AppSpacing.lg);
+  static const EdgeInsets _gutter = EdgeInsets.symmetric(
+    horizontal: AppSpacing.lg,
+  );
 
   @override
   Widget build(final BuildContext context) {
@@ -49,7 +51,8 @@ class ChatTimelineList extends HookWidget {
           if (key is! ValueKey<int> || key.value >= entries.length) return null;
           return entries.length - 1 - key.value;
         },
-        separatorBuilder: (final _, final _) => const SizedBox(height: AppSpacing.lg),
+        separatorBuilder: (final _, final _) =>
+            const SizedBox(height: AppSpacing.lg),
         itemBuilder: (final context, final reversedIndex) {
           final index = entries.length - 1 - reversedIndex;
           return ChatEntrance(

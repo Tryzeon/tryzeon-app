@@ -53,7 +53,9 @@ ProductImageStorage productImageStorage(final Ref ref) {
 @riverpod
 ProductLocalDataSource productLocalDataSource(final Ref ref) {
   final isarService = ref.watch(isarServiceProvider);
-  final cacheEntryLocalDataSource = ref.watch(cacheEntryLocalDataSourceProvider);
+  final cacheEntryLocalDataSource = ref.watch(
+    cacheEntryLocalDataSourceProvider,
+  );
   return ProductLocalDataSource(isarService, cacheEntryLocalDataSource);
 }
 
@@ -125,7 +127,8 @@ class ProductQuery extends _$ProductQuery {
 }
 
 @riverpod
-class ProductsNotifier extends _$ProductsNotifier with PullToRefresh<List<Product>> {
+class ProductsNotifier extends _$ProductsNotifier
+    with PullToRefresh<List<Product>> {
   static const _missingProfile = UnknownFailure('Store profile not found');
 
   @override
@@ -220,7 +223,8 @@ SizeVoiceParser sizeVoiceParser(final Ref ref) =>
     SizeVoiceParser(Supabase.instance.client);
 
 @Riverpod(keepAlive: true)
-AudioRecorderService audioRecorderService(final Ref ref) => AudioRecorderServiceImpl();
+AudioRecorderService audioRecorderService(final Ref ref) =>
+    AudioRecorderServiceImpl();
 
 enum ProductMutation { create, update, delete }
 
@@ -277,7 +281,10 @@ class ProductEditNotifier extends _$ProductEditNotifier {
   }) {
     return _write(
       ProductMutation.update,
-      () => ref.read(setProductStatusUseCaseProvider)(product: product, status: status),
+      () => ref.read(setProductStatusUseCaseProvider)(
+        product: product,
+        status: status,
+      ),
       refreshedProductId: product.id,
     );
   }

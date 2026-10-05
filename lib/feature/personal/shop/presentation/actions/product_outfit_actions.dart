@@ -4,7 +4,10 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart'
 import 'package:tryzeon/feature/personal/shop/providers/product_fit_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 
-OutfitPiece outfitPieceFromProduct(final WidgetRef ref, final ShopProduct product) {
+OutfitPiece outfitPieceFromProduct(
+  final WidgetRef ref,
+  final ShopProduct product,
+) {
   return OutfitPiece.product(
     productId: product.id,
     name: product.name,

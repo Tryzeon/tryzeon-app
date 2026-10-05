@@ -21,13 +21,17 @@ class ChatProductCard extends ConsumerWidget {
 
     return ChatCardFrame(
       image: _ProductImage(product: product),
-      onTap: () =>
-          context.push(AppRoutes.personalShopProductPath(product.id), extra: product),
+      onTap: () => context.push(
+        AppRoutes.personalShopProductPath(product.id),
+        extra: product,
+      ),
       onTryon: () => triggerProductTryon(context, ref, product),
       details: [
         Text(
           product.storeInfo.name,
-          style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+          style: textTheme.bodySmall?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -64,8 +68,10 @@ class _ProductImage extends StatelessWidget {
       cacheKey: product.imagePaths.isNotEmpty ? product.imagePaths.first : null,
       fit: BoxFit.cover,
       placeholder: (final _, final _) => const SizedBox.shrink(),
-      errorWidget: (final _, final _, final _) =>
-          Icon(Icons.broken_image_outlined, color: colorScheme.onSurfaceVariant),
+      errorWidget: (final _, final _, final _) => Icon(
+        Icons.broken_image_outlined,
+        color: colorScheme.onSurfaceVariant,
+      ),
     );
   }
 }

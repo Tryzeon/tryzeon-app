@@ -26,15 +26,23 @@ class NavRow extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    final foreground = isDestructive ? colorScheme.error : colorScheme.onSurface;
+    final foreground = isDestructive
+        ? colorScheme.error
+        : colorScheme.onSurface;
     final muted = colorScheme.onSurfaceVariant;
-    final hairline = BorderSide(color: colorScheme.outline, width: AppStroke.thin);
+    final hairline = BorderSide(
+      color: colorScheme.outline,
+      width: AppStroke.thin,
+    );
 
     return InkWell(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          border: Border(top: isFirst ? hairline : BorderSide.none, bottom: hairline),
+          border: Border(
+            top: isFirst ? hairline : BorderSide.none,
+            bottom: hairline,
+          ),
         ),
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
         child: Row(

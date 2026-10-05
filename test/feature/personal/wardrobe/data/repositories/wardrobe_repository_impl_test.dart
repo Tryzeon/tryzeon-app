@@ -33,7 +33,9 @@ class _FakeRemote implements WardrobeRemoteDataSource {
 
 class _FakeRemoteFailingRefresh implements WardrobeRemoteDataSource {
   @override
-  Future<void> createWardrobeItem(final CreateWardrobeItemRequest request) async {}
+  Future<void> createWardrobeItem(
+    final CreateWardrobeItemRequest request,
+  ) async {}
 
   @override
   Future<List<WardrobeItemDto>> getWardrobeItems() async {
@@ -66,54 +68,59 @@ void main() {
     await harness.dispose();
   });
 
-  Future<void> seedCache(final String garmentType) => harness.isar.writeTxn(() async {
-    await harness.isar.wardrobeItemCaches.putByItemId(
-      WardrobeItemCache()
-        ..itemId = 'w1'
-        ..imagePath = 'w1.jpg'
-        ..garmentType = garmentType
-        ..createdAt = DateTime(2026)
-        ..updatedAt = DateTime(2026),
-    );
-    await harness.isar.cacheEntrys.putByCacheKey(
-      CacheEntry()
-        ..cacheKey = WardrobeLocalDataSource.cacheKey
-        ..status = CacheEntryStatus.hasData.name
-        ..fetchedAt = DateTime.now(),
-    );
-  });
+  Future<void> seedCache(final String garmentType) =>
+      harness.isar.writeTxn(() async {
+        await harness.isar.wardrobeItemCaches.putByItemId(
+          WardrobeItemCache()
+            ..itemId = 'w1'
+            ..imagePath = 'w1.jpg'
+            ..garmentType = garmentType
+            ..createdAt = DateTime(2026)
+            ..updatedAt = DateTime(2026),
+        );
+        await harness.isar.cacheEntrys.putByCacheKey(
+          CacheEntry()
+            ..cacheKey = WardrobeLocalDataSource.cacheKey
+            ..status = CacheEntryStatus.hasData.name
+            ..fetchedAt = DateTime.now(),
+        );
+      });
 
-  WardrobeRepositoryImpl buildRepository(final WardrobeRemoteDataSource remote) =>
-      WardrobeRepositoryImpl(
-        remoteDataSource: remote,
-        localDataSource: WardrobeLocalDataSource(
-          harness.service,
-          _NoopImageFileCache(),
-          CacheEntryLocalDataSource(harness.service),
+  WardrobeRepositoryImpl buildRepository(
+    final WardrobeRemoteDataSource remote,
+  ) => WardrobeRepositoryImpl(
+    remoteDataSource: remote,
+    localDataSource: WardrobeLocalDataSource(
+      harness.service,
+      _NoopImageFileCache(),
+      CacheEntryLocalDataSource(harness.service),
+    ),
+  );
+
+  test(
+    're-fetches from remote when a cached garment type no longer decodes',
+    () async {
+      await seedCache('dress');
+
+      final remote = _FakeRemote([
+        WardrobeItemDto(
+          id: 'w1',
+          imagePath: 'w1.jpg',
+          garmentType: GarmentType.onePiece,
+          createdAt: DateTime(2026),
+          updatedAt: DateTime(2026),
         ),
-      );
+      ]);
 
-  test('re-fetches from remote when a cached garment type no longer decodes', () async {
-    await seedCache('dress');
+      final items = (await buildRepository(remote).getWardrobeItems()).get()!;
 
-    final remote = _FakeRemote([
-      WardrobeItemDto(
-        id: 'w1',
-        imagePath: 'w1.jpg',
-        garmentType: GarmentType.onePiece,
-        createdAt: DateTime(2026),
-        updatedAt: DateTime(2026),
-      ),
-    ]);
+      expect(remote.calls, 1);
+      expect(items.single.garmentType, GarmentType.onePiece);
 
-    final items = (await buildRepository(remote).getWardrobeItems()).get()!;
-
-    expect(remote.calls, 1);
-    expect(items.single.garmentType, GarmentType.onePiece);
-
-    final cached = await harness.isar.wardrobeItemCaches.getByItemId('w1');
-    expect(cached!.garmentType, 'one_piece');
-  });
+      final cached = await harness.isar.wardrobeItemCaches.getByItemId('w1');
+      expect(cached!.garmentType, 'one_piece');
+    },
+  );
 
   test('serves the cache untouched when every cached value decodes', () async {
     await seedCache('top');
@@ -126,23 +133,27 @@ void main() {
     expect(items.single.garmentType, GarmentType.top);
   });
 
-  test('createWardrobeItem invalidates the cache when the refresh fails', () async {
-    await seedCache('top');
+  test(
+    'createWardrobeItem invalidates the cache when the refresh fails',
+    () async {
+      await seedCache('top');
 
-    final result = await buildRepository(_FakeRemoteFailingRefresh()).createWardrobeItem(
-      id: 'w2',
-      imagePath: 'w2.jpg',
-      garmentType: GarmentType.top,
-      tags: const [],
-    );
+      final result = await buildRepository(_FakeRemoteFailingRefresh())
+          .createWardrobeItem(
+            id: 'w2',
+            imagePath: 'w2.jpg',
+            garmentType: GarmentType.top,
+            tags: const [],
+          );
 
-    expect(result.isSuccess, isTrue);
-    expect(
-      await CacheEntryLocalDataSource(
-        harness.service,
-      ).getEntryStatus(WardrobeLocalDataSource.cacheKey),
-      isNull,
-    );
-    expect(await harness.isar.wardrobeItemCaches.count(), 0);
-  });
+      expect(result.isSuccess, isTrue);
+      expect(
+        await CacheEntryLocalDataSource(
+          harness.service,
+        ).getEntryStatus(WardrobeLocalDataSource.cacheKey),
+        isNull,
+      );
+      expect(await harness.isar.wardrobeItemCaches.count(), 0);
+    },
+  );
 }

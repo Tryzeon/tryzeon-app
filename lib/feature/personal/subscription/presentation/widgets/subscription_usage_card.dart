@@ -52,15 +52,23 @@ class SubscriptionUsageCard extends StatelessWidget {
                   const Spacer(),
                   Text(
                     '管理',
-                    style: textTheme.labelMedium?.copyWith(color: colorScheme.primary),
+                    style: textTheme.labelMedium?.copyWith(
+                      color: colorScheme.primary,
+                    ),
                   ),
-                  Icon(Icons.chevron_right_rounded, size: 18, color: colorScheme.primary),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 18,
+                    color: colorScheme.primary,
+                  ),
                 ],
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
                 formatRenewalLine(entitlement),
-                style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: AppSpacing.md),
               Row(
@@ -136,7 +144,9 @@ class SubscriptionUsageCardSkeleton extends StatelessWidget {
               const SizedBox(height: AppSpacing.xs),
               Text(
                 'YYYY/MM/DD 續訂',
-                style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: AppSpacing.md),
               const Row(
@@ -173,14 +183,18 @@ class _QuotaStat extends StatelessWidget {
         children: [
           Text(
             value,
-            style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
+            style: textTheme.titleMedium?.copyWith(
+              color: colorScheme.onSurface,
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: AppSpacing.xxs),
           Text(
             label,
-            style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
+            style: textTheme.labelSmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

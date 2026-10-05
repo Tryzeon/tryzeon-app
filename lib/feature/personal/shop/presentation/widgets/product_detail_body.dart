@@ -22,7 +22,11 @@ import 'package:tryzeon/feature/personal/shop/providers/product_fit_provider.dar
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 
 class ProductDetailBody extends HookConsumerWidget {
-  const ProductDetailBody({super.key, required this.productAsync, required this.onRetry});
+  const ProductDetailBody({
+    super.key,
+    required this.productAsync,
+    required this.onRetry,
+  });
 
   final AsyncValue<ShopProduct> productAsync;
   final VoidCallback onRetry;
@@ -85,7 +89,9 @@ class _ProductDetailContent extends HookConsumerWidget {
 
     final categoriesAsync = ref.watch(productCategoriesProvider);
     final categoryIdToName = categoriesAsync.maybeWhen(
-      data: (final categories) => {for (final cat in categories) cat.id: cat.name},
+      data: (final categories) => {
+        for (final cat in categories) cat.id: cat.name,
+      },
       orElse: () => <String, String>{},
     );
 
@@ -109,7 +115,9 @@ class _ProductDetailContent extends HookConsumerWidget {
                 bottom: AppSpacing.sm,
                 right: AppSpacing.sm,
                 child: Skeleton.ignore(
-                  child: OutfitPillRow(piece: outfitPieceFromProduct(ref, product)),
+                  child: OutfitPillRow(
+                    piece: outfitPieceFromProduct(ref, product),
+                  ),
                 ),
               ),
             ],
@@ -125,14 +133,19 @@ class _ProductDetailContent extends HookConsumerWidget {
                   children: [
                     Chip(
                       label: Text(
-                        categoryIdToName[product.categoryId] ?? product.categoryId,
+                        categoryIdToName[product.categoryId] ??
+                            product.categoryId,
                         style: textTheme.labelMedium,
                       ),
                     ),
                     if (product.styles != null && product.styles!.isNotEmpty)
                       ...product.styles!.map(
-                        (final style) =>
-                            Chip(label: Text(style.label, style: textTheme.labelMedium)),
+                        (final style) => Chip(
+                          label: Text(
+                            style.label,
+                            style: textTheme.labelMedium,
+                          ),
+                        ),
                       ),
                   ],
                 ),
@@ -158,8 +171,12 @@ class _ProductDetailContent extends HookConsumerWidget {
                     ),
                     if (canPurchase)
                       _PurchaseLink(
-                        onTap: () =>
-                            launchProductPurchase(context, ref, product, fitResult),
+                        onTap: () => launchProductPurchase(
+                          context,
+                          ref,
+                          product,
+                          fitResult,
+                        ),
                       ),
                   ],
                 ),
@@ -171,7 +188,8 @@ class _ProductDetailContent extends HookConsumerWidget {
                 ProductStoreInfo(storeInfo: product.storeInfo),
                 const SizedBox(height: AppSpacing.xl),
 
-                if (product.description != null && product.description!.isNotEmpty) ...[
+                if (product.description != null &&
+                    product.description!.isNotEmpty) ...[
                   ProductDescriptionSection(description: product.description!),
                   const SizedBox(height: AppSpacing.xl),
                 ],
@@ -181,7 +199,8 @@ class _ProductDetailContent extends HookConsumerWidget {
                     product.fit != null ||
                     product.thickness != null ||
                     product.material != null ||
-                    (product.seasons != null && product.seasons!.isNotEmpty)) ...[
+                    (product.seasons != null &&
+                        product.seasons!.isNotEmpty)) ...[
                   ProductInfoSection(product: product),
                   const SizedBox(height: AppSpacing.xl),
                 ],
@@ -202,7 +221,8 @@ class _ProductDetailContent extends HookConsumerWidget {
 
           SizedBox(
             height:
-                MediaQuery.of(context).padding.bottom + AppSpacing.bottomNavBarOverlap,
+                MediaQuery.of(context).padding.bottom +
+                AppSpacing.bottomNavBarOverlap,
           ),
         ],
       ),

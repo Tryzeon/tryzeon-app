@@ -25,7 +25,9 @@ class WardrobeLocalDataSource {
 
   Future<CacheLookup<List<WardrobeItem>>> getWardrobeItems() async {
     final isar = await _isarService.db;
-    final cacheStatus = await _cacheEntryLocalDataSource.getEntryStatus(cacheKey);
+    final cacheStatus = await _cacheEntryLocalDataSource.getEntryStatus(
+      cacheKey,
+    );
     if (cacheStatus == null) return const CacheMiss();
 
     if (cacheStatus == CacheEntryStatus.empty) {
@@ -39,17 +41,24 @@ class WardrobeLocalDataSource {
 
     if (collections.isEmpty) return const CacheMiss();
 
-    return CacheHit(_mappr.convertList<WardrobeItemCache, WardrobeItem>(collections));
+    return CacheHit(
+      _mappr.convertList<WardrobeItemCache, WardrobeItem>(collections),
+    );
   }
 
   Future<void> saveWardrobeItems(final List<WardrobeItem> items) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
       await isar.wardrobeItemCaches.clear();
-      final collections = _mappr.convertList<WardrobeItem, WardrobeItemCache>(items);
+      final collections = _mappr.convertList<WardrobeItem, WardrobeItemCache>(
+        items,
+      );
       await isar.wardrobeItemCaches.putAll(collections);
     });
-    await _cacheEntryLocalDataSource.markListState(cacheKey, isEmpty: items.isEmpty);
+    await _cacheEntryLocalDataSource.markListState(
+      cacheKey,
+      isEmpty: items.isEmpty,
+    );
   }
 
   Future<void> saveWardrobeItem(final WardrobeItem item) async {
@@ -69,7 +78,9 @@ class WardrobeLocalDataSource {
       await isar.wardrobeItemCaches.deleteByItemId(id);
     });
 
-    if (await _cacheEntryLocalDataSource.getEntryStatus(cacheKey) == null) return;
+    if (await _cacheEntryLocalDataSource.getEntryStatus(cacheKey) == null) {
+      return;
+    }
 
     if (await isar.wardrobeItemCaches.count() == 0) {
       await _cacheEntryLocalDataSource.markListState(cacheKey, isEmpty: true);

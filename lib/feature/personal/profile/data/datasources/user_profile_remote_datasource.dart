@@ -126,7 +126,11 @@ class UserProfileRemoteDataSource {
     final bytes = await image.readAsBytes();
     await _supabaseClient.storage
         .from(_avatarBucket)
-        .uploadBinary(avatarPath, bytes, fileOptions: FileOptions(contentType: mimeType));
+        .uploadBinary(
+          avatarPath,
+          bytes,
+          fileOptions: FileOptions(contentType: mimeType),
+        );
 
     return avatarPath;
   }

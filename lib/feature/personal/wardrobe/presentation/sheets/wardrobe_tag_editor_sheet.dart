@@ -76,7 +76,9 @@ class WardrobeTagEditorSheet extends HookWidget {
       if (tags.value.isEmpty) {
         return Text(
           '尚無標籤',
-          style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+          style: textTheme.bodySmall?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
         );
       }
 
@@ -94,7 +96,9 @@ class WardrobeTagEditorSheet extends HookWidget {
     }
 
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -58,7 +58,10 @@ class UploadWardrobeItem {
 
     final deleted = await _imageStorage.delete(imagePath);
     if (deleted.isFailure) {
-      AppLogger.warning('Failed to delete wardrobe image $imagePath', deleted.getError());
+      AppLogger.warning(
+        'Failed to delete wardrobe image $imagePath',
+        deleted.getError(),
+      );
     }
     return created;
   }

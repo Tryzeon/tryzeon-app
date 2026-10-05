@@ -25,7 +25,9 @@ class TryonMediaRepositoryImpl implements TryonMediaRepository {
   }
 
   @override
-  Future<Result<Uint8List, Failure>> loadLocalImageBytes(final String path) async {
+  Future<Result<Uint8List, Failure>> loadLocalImageBytes(
+    final String path,
+  ) async {
     try {
       return Ok(await _dataSource.readLocalFile(path));
     } catch (e, stackTrace) {
@@ -36,7 +38,9 @@ class TryonMediaRepositoryImpl implements TryonMediaRepository {
 
   @override
   Future<Result<void, Failure>> share(final TryonResult result) async {
-    final url = result.mode == TryonMode.video ? result.videoUrl : result.imageUrl;
+    final url = result.mode == TryonMode.video
+        ? result.videoUrl
+        : result.imageUrl;
     if (url == null || url.isEmpty) {
       return Err(ValidationFailure('${result.mode.name} URL is missing'));
     }
@@ -47,7 +51,11 @@ class TryonMediaRepositoryImpl implements TryonMediaRepository {
       await _dataSource.shareFile(tempPath, result.mode);
       return const Ok(null);
     } catch (e, stackTrace) {
-      AppLogger.error('Failed to share try-on ${result.mode.name}', e, stackTrace);
+      AppLogger.error(
+        'Failed to share try-on ${result.mode.name}',
+        e,
+        stackTrace,
+      );
       return Err(mapExceptionToFailure(e));
     } finally {
       if (tempPath != null) {

@@ -14,7 +14,10 @@ void main() {
             children: [
               // A numeric field has no return key on iOS, so tapping outside is
               // the only way out.
-              TextField(focusNode: focusNode, keyboardType: TextInputType.number),
+              TextField(
+                focusNode: focusNode,
+                keyboardType: TextInputType.number,
+              ),
               const SizedBox(height: 400, child: Text('outside')),
             ],
           ),
@@ -25,7 +28,9 @@ void main() {
 
   tearDownAll(focusNode.dispose);
 
-  testWidgets('unfocuses when the tap lands outside the field', (final tester) async {
+  testWidgets('unfocuses when the tap lands outside the field', (
+    final tester,
+  ) async {
     await tester.pumpWidget(buildSubject());
 
     focusNode.requestFocus();
@@ -47,7 +52,9 @@ void main() {
     await tester.pump();
     expect(focusNode.hasFocus, isTrue);
 
-    final gesture = await tester.startGesture(tester.getCenter(find.text('outside')));
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.text('outside')),
+    );
     await gesture.moveBy(const Offset(0, -(kTouchSlop + 20)));
     await gesture.up();
     await tester.pump();
@@ -64,7 +71,10 @@ void main() {
         home: Scaffold(
           body: Column(
             children: [
-              TextField(focusNode: focusNode, keyboardType: TextInputType.number),
+              TextField(
+                focusNode: focusNode,
+                keyboardType: TextInputType.number,
+              ),
               const SizedBox(height: 400, child: Text('outside')),
             ],
           ),
@@ -81,7 +91,9 @@ void main() {
     expect(focusNode.hasFocus, isTrue);
   });
 
-  testWidgets('keeps focus when the tap lands inside the field', (final tester) async {
+  testWidgets('keeps focus when the tap lands inside the field', (
+    final tester,
+  ) async {
     await tester.pumpWidget(buildSubject());
 
     focusNode.requestFocus();

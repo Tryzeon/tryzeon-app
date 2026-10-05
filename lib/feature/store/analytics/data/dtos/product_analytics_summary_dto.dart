@@ -14,8 +14,9 @@ class ProductAnalyticsSummaryDto {
     required this.purchaseClickCount,
   });
 
-  factory ProductAnalyticsSummaryDto.fromJson(final Map<String, dynamic> json) =>
-      _$ProductAnalyticsSummaryDtoFromJson(json);
+  factory ProductAnalyticsSummaryDto.fromJson(
+    final Map<String, dynamic> json,
+  ) => _$ProductAnalyticsSummaryDtoFromJson(json);
 
   final String storeId;
   final String productId;

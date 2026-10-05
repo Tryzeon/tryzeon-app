@@ -51,19 +51,22 @@ void main() {
     ),
   ];
 
-  test('reads back exactly the summaries it saved for that store and month', () async {
-    final local = build();
+  test(
+    'reads back exactly the summaries it saved for that store and month',
+    () async {
+      final local = build();
 
-    await local.saveProductAnalyticsSummaries('s1', 2026, 5, first);
-    await local.saveProductAnalyticsSummaries('s2', 2026, 5, second);
+      await local.saveProductAnalyticsSummaries('s1', 2026, 5, first);
+      await local.saveProductAnalyticsSummaries('s2', 2026, 5, second);
 
-    final lookup = await local.getProductAnalyticsSummaries('s1', 2026, 5);
+      final lookup = await local.getProductAnalyticsSummaries('s1', 2026, 5);
 
-    expect(
-      (lookup as CacheHit<List<ProductAnalyticsSummary>>).data,
-      unorderedEquals(first),
-    );
-  });
+      expect(
+        (lookup as CacheHit<List<ProductAnalyticsSummary>>).data,
+        unorderedEquals(first),
+      );
+    },
+  );
 
   test('saving the same month again upserts instead of duplicating', () async {
     final local = build();

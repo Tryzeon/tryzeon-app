@@ -56,13 +56,15 @@ class HomePage extends HookConsumerWidget {
     // The scrims and white chrome are for photos; a page with no photo sits
     // on the plain surface instead.
     final isBlankAvatarPage =
-        galleryState.isAvatarPage && (uploadingAvatarFile ?? avatarAsync.value) == null;
+        galleryState.isAvatarPage &&
+        (uploadingAvatarFile ?? avatarAsync.value) == null;
 
     final currentPage = galleryState.currentPage;
     final isCurrentTheAvatar = galleryState.isCurrentTheAvatar;
 
     useEffect(() {
-      if (pageController.hasClients && pageController.page?.round() != currentPage) {
+      if (pageController.hasClients &&
+          pageController.page?.round() != currentPage) {
         pageController.animateToPage(
           currentPage,
           duration: AppDuration.slow,
@@ -90,10 +92,15 @@ class HomePage extends HookConsumerWidget {
         context,
         title: '選擇模特來源',
         hint: '建議上傳短袖短褲的正面全身照，雙手自然下垂、手上不要拿手機等物品。',
-        crop: const LockedCrop(ratio: AppConstants.avatarAspectRatio, title: '框出全身'),
+        crop: const LockedCrop(
+          ratio: AppConstants.avatarAspectRatio,
+          title: '框出全身',
+        ),
       );
       if (imageFile == null) return;
-      onAvatarReplaced(await ref.read(avatarUploadProvider.notifier).upload(imageFile));
+      onAvatarReplaced(
+        await ref.read(avatarUploadProvider.notifier).upload(imageFile),
+      );
     }
 
     void handleTryonOutcome(final TryonOutcome outcome) {
@@ -112,7 +119,10 @@ class HomePage extends HookConsumerWidget {
                 : '您的今日試穿次數已達上限\n升級至更高方案以獲得更多次數！',
           );
         case TryonFailed(:final failure):
-          TopNotification.show(context, message: failure.displayMessage(context));
+          TopNotification.show(
+            context,
+            message: failure.displayMessage(context),
+          );
       }
     }
 
@@ -167,8 +177,9 @@ class HomePage extends HookConsumerWidget {
             )
           : null,
       body: RefreshIndicator(
-        onRefresh: () =>
-            [ref.read(userProfileProvider.notifier).refresh()].showFirstFailure(context),
+        onRefresh: () => [
+          ref.read(userProfileProvider.notifier).refresh(),
+        ].showFirstFailure(context),
         edgeOffset: MediaQuery.of(context).padding.top,
         child: Stack(
           fit: StackFit.expand,
@@ -191,11 +202,12 @@ class HomePage extends HookConsumerWidget {
                         entries: galleryState.entries,
                         avatarPage: TryonAvatarPage(
                           onUploadOwnPhoto: uploadAvatar,
-                          onPresetSelected: (final preset) async => onAvatarReplaced(
-                            await ref
-                                .read(avatarUploadProvider.notifier)
-                                .applyPreset(preset),
-                          ),
+                          onPresetSelected: (final preset) async =>
+                              onAvatarReplaced(
+                                await ref
+                                    .read(avatarUploadProvider.notifier)
+                                    .applyPreset(preset),
+                              ),
                         ),
                         showScrims: !isBlankAvatarPage,
                       ),
@@ -210,7 +222,11 @@ class HomePage extends HookConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Image.asset(AppConstants.logoMark, height: 28, fit: BoxFit.contain),
+                  Image.asset(
+                    AppConstants.logoMark,
+                    height: 28,
+                    fit: BoxFit.contain,
+                  ),
                   const SizedBox(width: AppSpacing.xs),
                   Text(
                     'Tryzeon',
@@ -244,7 +260,8 @@ class HomePage extends HookConsumerWidget {
               ),
             ),
 
-            if (galleryState.currentEntry case final entry? when entry.pieces.isNotEmpty)
+            if (galleryState.currentEntry case final entry?
+                when entry.pieces.isNotEmpty)
               Positioned(
                 right: AppSpacing.lg,
                 bottom: bottomOffset + AppSpacing.md,

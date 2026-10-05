@@ -115,7 +115,8 @@ class _SubscriptionContent extends ConsumerWidget {
                           backgroundColor: colorScheme.primaryContainer,
                           side: BorderSide.none,
                           visualDensity: VisualDensity.compact,
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
                         ),
                     ],
                   ),
@@ -235,11 +236,17 @@ class _BenefitRow extends StatelessWidget {
   Widget build(final BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final hairline = BorderSide(color: colorScheme.outline, width: AppStroke.thin);
+    final hairline = BorderSide(
+      color: colorScheme.outline,
+      width: AppStroke.thin,
+    );
 
     return Container(
       decoration: BoxDecoration(
-        border: Border(top: isFirst ? hairline : BorderSide.none, bottom: hairline),
+        border: Border(
+          top: isFirst ? hairline : BorderSide.none,
+          bottom: hairline,
+        ),
       ),
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
       child: Row(
@@ -247,7 +254,9 @@ class _BenefitRow extends StatelessWidget {
           Expanded(child: Text(title, style: textTheme.bodyLarge)),
           Text(
             trailingValue,
-            style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+            style: textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),

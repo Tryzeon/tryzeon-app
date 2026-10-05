@@ -67,7 +67,9 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<Result<ShopProduct, Failure>> getProduct(final String productId) async {
+  Future<Result<ShopProduct, Failure>> getProduct(
+    final String productId,
+  ) async {
     try {
       final model = await _remoteDataSource.getProduct(productId);
       return Ok(_mappr.convert<ShopProductDto, ShopProduct>(model));
@@ -78,7 +80,9 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<Result<ShopStoreInfo, Failure>> getStoreInfo(final String storeId) async {
+  Future<Result<ShopStoreInfo, Failure>> getStoreInfo(
+    final String storeId,
+  ) async {
     try {
       final responseMap = await _remoteDataSource.getStoreProfile(storeId);
       final model = ShopStoreInfoDto.fromJson(responseMap);

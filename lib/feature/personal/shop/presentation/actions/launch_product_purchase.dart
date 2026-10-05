@@ -39,7 +39,9 @@ Future<void> launchProductPurchase(
     return;
   }
 
-  incrementClick.call(productId: product.id, storeId: product.storeInfo.id).ignore();
+  incrementClick
+      .call(productId: product.id, storeId: product.storeInfo.id)
+      .ignore();
   await launchUrl(target.uri, mode: LaunchMode.externalApplication);
 }
 
@@ -50,9 +52,15 @@ Future<void> launchProductPurchase(
 ) {
   switch (choice) {
     case OnlineStoreChoice():
-      return (uri: Uri.parse(product.purchaseLink!), failureMessage: '無法開啟購買連結');
+      return (
+        uri: Uri.parse(product.purchaseLink!),
+        failureMessage: '無法開啟購買連結',
+      );
     case ContactChoice(:final contact):
-      final message = OrderMessageBuilder.build(product: product, fitResult: fitResult);
+      final message = OrderMessageBuilder.build(
+        product: product,
+        fitResult: fitResult,
+      );
       return (
         uri: _buildOrderContactUri(contact, message),
         failureMessage: '無法開啟 ${contact.type.label} 聊天室',
@@ -60,7 +68,10 @@ Future<void> launchProductPurchase(
   }
 }
 
-Uri _buildOrderContactUri(final StoreOrderContact contact, final String message) {
+Uri _buildOrderContactUri(
+  final StoreOrderContact contact,
+  final String message,
+) {
   switch (contact.type) {
     case OrderContactType.line:
       // The '@' prefix marks an Official Account, whose deep link can prefill;

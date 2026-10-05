@@ -73,7 +73,9 @@ class _EditProductContent extends HookConsumerWidget {
 
       if (dialogResult != OkCancelResult.ok) return;
 
-      final result = await ref.read(productEditProvider.notifier).delete(product);
+      final result = await ref
+          .read(productEditProvider.notifier)
+          .delete(product);
 
       if (!context.mounted) return;
 
@@ -137,11 +139,15 @@ class _EditProductContent extends HookConsumerWidget {
               formData: formData,
               sizeManager: sizeManager,
               productCategoriesAsync: productCategoriesAsync,
-              onRetryCategories: () => ref.invalidate(productCategoriesProvider),
+              onRetryCategories: () =>
+                  ref.invalidate(productCategoriesProvider),
               voiceStatus: voiceInput.status,
               onVoicePressed: voiceInput.toggle,
               onPickImage: (final remainingCount) async {
-                return ImagePickerHelper.pickImages(context, maxImages: remainingCount);
+                return ImagePickerHelper.pickImages(
+                  context,
+                  maxImages: remainingCount,
+                );
               },
             ),
             ProductDangerZone(

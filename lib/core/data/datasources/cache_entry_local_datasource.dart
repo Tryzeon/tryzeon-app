@@ -32,7 +32,10 @@ class CacheEntryLocalDataSource {
     return _saveEntry(cacheKey, CacheEntryStatus.empty);
   }
 
-  Future<void> markListState(final String cacheKey, {required final bool isEmpty}) {
+  Future<void> markListState(
+    final String cacheKey, {
+    required final bool isEmpty,
+  }) {
     return _saveEntry(
       cacheKey,
       isEmpty ? CacheEntryStatus.empty : CacheEntryStatus.hasData,
@@ -46,7 +49,10 @@ class CacheEntryLocalDataSource {
     });
   }
 
-  Future<void> _saveEntry(final String cacheKey, final CacheEntryStatus status) async {
+  Future<void> _saveEntry(
+    final String cacheKey,
+    final CacheEntryStatus status,
+  ) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
       final entry = CacheEntry()

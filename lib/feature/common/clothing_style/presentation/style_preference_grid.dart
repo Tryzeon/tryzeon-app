@@ -4,7 +4,11 @@ import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_s
 
 /// A scrollable GridView; callers normally wrap it in an `Expanded`.
 class StylePreferenceGrid extends StatelessWidget {
-  const StylePreferenceGrid({super.key, required this.selected, required this.onToggle});
+  const StylePreferenceGrid({
+    super.key,
+    required this.selected,
+    required this.onToggle,
+  });
 
   final Set<ClothingStyle> selected;
   final void Function(ClothingStyle style) onToggle;
@@ -38,7 +42,9 @@ class StylePreferenceGrid extends StatelessWidget {
                     border: Border.all(
                       color: isSelected
                           ? colorScheme.primary
-                          : colorScheme.outline.withValues(alpha: AppOpacity.strong),
+                          : colorScheme.outline.withValues(
+                              alpha: AppOpacity.strong,
+                            ),
                       width: isSelected ? AppStroke.regular : AppStroke.thin,
                     ),
                     borderRadius: AppRadius.cardAll,
@@ -52,23 +58,27 @@ class StylePreferenceGrid extends StatelessWidget {
                           fit: BoxFit.cover,
                           width: double.infinity,
                           height: double.infinity,
-                          errorBuilder: (final context, final error, final stackTrace) {
-                            return Container(
-                              color: colorScheme.surfaceContainerHighest,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.image_not_supported_outlined,
-                                    color: colorScheme.outline,
-                                    size: 32,
+                          errorBuilder:
+                              (final context, final error, final stackTrace) {
+                                return Container(
+                                  color: colorScheme.surfaceContainerHighest,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.image_not_supported_outlined,
+                                        color: colorScheme.outline,
+                                        size: 32,
+                                      ),
+                                      const SizedBox(height: AppSpacing.xs),
+                                      Text(
+                                        style.value,
+                                        style: textTheme.labelSmall,
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(height: AppSpacing.xs),
-                                  Text(style.value, style: textTheme.labelSmall),
-                                ],
-                              ),
-                            );
-                          },
+                                );
+                              },
                         ),
                       ),
                       if (isSelected)

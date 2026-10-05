@@ -31,13 +31,15 @@ class _FakeRevenueCatRepository implements RevenueCatRepository {
       _controller.stream;
 
   @override
-  Future<Result<void, Failure>> logIn(final String userId) async => const Ok(null);
+  Future<Result<void, Failure>> logIn(final String userId) async =>
+      const Ok(null);
 
   @override
   Future<Result<void, Failure>> logOut() async => const Ok(null);
 }
 
-class _FakeCapabilitiesRepository implements SubscriptionCapabilitiesRepository {
+class _FakeCapabilitiesRepository
+    implements SubscriptionCapabilitiesRepository {
   final tiersAskedFor = <AppSubscriptionTier>[];
 
   @override
@@ -115,22 +117,25 @@ void main() {
     ]);
   });
 
-  test('a RevenueCat failure surfaces as an error, not as the free tier', () async {
-    // The old pull-based use case folded any RevenueCat failure into the free
-    // tier, which locked video for paying customers whenever the SDK hiccuped.
-    final subscription = container.listen(
-      subscriptionCapabilitiesProvider,
-      (final _, final _) {},
-      fireImmediately: true,
-    );
-    addTearDown(subscription.close);
+  test(
+    'a RevenueCat failure surfaces as an error, not as the free tier',
+    () async {
+      // The old pull-based use case folded any RevenueCat failure into the free
+      // tier, which locked video for paying customers whenever the SDK hiccuped.
+      final subscription = container.listen(
+        subscriptionCapabilitiesProvider,
+        (final _, final _) {},
+        fireImmediately: true,
+      );
+      addTearDown(subscription.close);
 
-    revenueCat.pushError(const UnknownFailure('RevenueCat unreachable'));
+      revenueCat.pushError(const UnknownFailure('RevenueCat unreachable'));
 
-    await expectLater(
-      container.read(subscriptionCapabilitiesProvider.future),
-      throwsA(isA<UnknownFailure>()),
-    );
-    expect(capabilities.tiersAskedFor, isEmpty);
-  });
+      await expectLater(
+        container.read(subscriptionCapabilitiesProvider.future),
+        throwsA(isA<UnknownFailure>()),
+      );
+      expect(capabilities.tiersAskedFor, isEmpty);
+    },
+  );
 }

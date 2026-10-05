@@ -10,6 +10,9 @@ class IncrementPurchaseClickCount {
     required final String productId,
     required final String storeId,
   }) {
-    return _repository.trackPurchaseClick(productId: productId, storeId: storeId);
+    return _repository.trackPurchaseClick(
+      productId: productId,
+      storeId: storeId,
+    );
   }
 }

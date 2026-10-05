@@ -45,7 +45,10 @@ class FitCalculator {
 
     final sizes = productSizes ?? const <ProductSize>[];
     final evaluated = sizes
-        .map((final size) => _evaluate(size, body, userDimensions, fit, elasticity))
+        .map(
+          (final size) =>
+              _evaluate(size, body, userDimensions, fit, elasticity),
+        )
         .where((final e) => e.dimensions.isNotEmpty)
         .toList();
 
@@ -55,7 +58,9 @@ class FitCalculator {
 
     final cleanMatches = evaluated.where((final e) => e.fitsCleanly).toList();
     if (cleanMatches.isNotEmpty) {
-      cleanMatches.sort((final a, final b) => a.centerScore.compareTo(b.centerScore));
+      cleanMatches.sort(
+        (final a, final b) => a.centerScore.compareTo(b.centerScore),
+      );
       final best = cleanMatches.first;
       final alternative = cleanMatches.length > 1 ? cleanMatches[1] : null;
       return FitResult(
@@ -70,9 +75,13 @@ class FitCalculator {
     // still be one nobody would wear (a single huge miss beats several small
     // ones on a sum), and rejecting it afterwards would discard the sizes that
     // were actually wearable.
-    evaluated.sort((final a, final b) => a.deviationScore.compareTo(b.deviationScore));
+    evaluated.sort(
+      (final a, final b) => a.deviationScore.compareTo(b.deviationScore),
+    );
     final recommendable = evaluated
-        .where((final e) => e.maxDeviation <= EaseTable.maxRecommendableDeviation)
+        .where(
+          (final e) => e.maxDeviation <= EaseTable.maxRecommendableDeviation,
+        )
         .toList();
     // The closest size still goes to the try-on: the banner says there is no
     // size for them, and the render is what shows them why.
@@ -124,7 +133,11 @@ class FitCalculator {
 }
 
 class _DimensionFit {
-  const _DimensionFit({required this.type, required this.value, required this.range});
+  const _DimensionFit({
+    required this.type,
+    required this.value,
+    required this.range,
+  });
 
   final BodyMeasurementType type;
 
@@ -158,19 +171,27 @@ class _SizeFit {
   bool get fitsCleanly => dimensions.every((final d) => d.inRange);
 
   /// Weighted distance from the ideal value. Ranks sizes that all fit cleanly.
-  double get centerScore =>
-      dimensions.fold(0, (final sum, final d) => sum + d.centerDistance * d.weight);
+  double get centerScore => dimensions.fold(
+    0,
+    (final sum, final d) => sum + d.centerDistance * d.weight,
+  );
 
   /// Weighted sum of out-of-range distances. Ranks sizes when none fit cleanly.
   double get deviationScore =>
       dimensions.fold(0, (final sum, final d) => sum + d.deviation * d.weight);
 
-  double get maxDeviation =>
-      dimensions.fold(0, (final max, final d) => d.deviation > max ? d.deviation : max);
+  double get maxDeviation => dimensions.fold(
+    0,
+    (final max, final d) => d.deviation > max ? d.deviation : max,
+  );
 
-  List<BodyMeasurementType> get matchedTypes =>
-      dimensions.where((final d) => d.inRange).map((final d) => d.type).toList();
+  List<BodyMeasurementType> get matchedTypes => dimensions
+      .where((final d) => d.inRange)
+      .map((final d) => d.type)
+      .toList();
 
-  List<MeasurementCaveat> get caveats =>
-      dimensions.where((final d) => !d.inRange).map((final d) => d.caveat).toList();
+  List<MeasurementCaveat> get caveats => dimensions
+      .where((final d) => !d.inRange)
+      .map((final d) => d.caveat)
+      .toList();
 }

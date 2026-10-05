@@ -95,7 +95,10 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
         if (failure is ValidationFailure) {
           showWardrobeFullDialog(context);
         } else {
-          TopNotification.show(context, message: failure.displayMessage(context));
+          TopNotification.show(
+            context,
+            message: failure.displayMessage(context),
+          );
         }
       }
     }
@@ -104,7 +107,9 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
       final capacity = ref.watch(wardrobeCapacityProvider).value;
       if (capacity == null) return const SizedBox.shrink();
 
-      final barColor = capacity.isNearLimit ? colorScheme.error : colorScheme.onSurface;
+      final barColor = capacity.isNearLimit
+          ? colorScheme.error
+          : colorScheme.onSurface;
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -182,7 +187,9 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
         children: [
           Text(
             '選擇類別 *',
-            style: textTheme.labelLarge?.copyWith(color: colorScheme.onSurfaceVariant),
+            style: textTheme.labelLarge?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Wrap(
@@ -194,7 +201,8 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
               return ChoiceChip(
                 label: Text(garmentType.displayName),
                 selected: isSelected,
-                onSelected: (final selected) => selectedGarmentType.value = garmentType,
+                onSelected: (final selected) =>
+                    selectedGarmentType.value = garmentType,
               );
             }).toList(),
           ),
@@ -214,7 +222,9 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
             const SizedBox(width: AppSpacing.sm),
             Text(
               '分析中…',
-              style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+              style: textTheme.labelMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         );
@@ -224,7 +234,9 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
         children: [
           Text(
             '標籤',
-            style: textTheme.labelLarge?.copyWith(color: colorScheme.onSurfaceVariant),
+            style: textTheme.labelLarge?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
           TextField(
@@ -236,7 +248,10 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
               suffixIcon: GestureDetector(
                 onTap: addTag,
                 behavior: HitTestBehavior.opaque,
-                child: Icon(Icons.add_rounded, color: colorScheme.onSurfaceVariant),
+                child: Icon(
+                  Icons.add_rounded,
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
             onSubmitted: (final _) => addTag(),
@@ -303,7 +318,8 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
           ),
           child: LoadingButton.filled(
             isLoading: isUploading,
-            onPressed: selectedGarmentType.value != null && !isAnalyzingTags.value
+            onPressed:
+                selectedGarmentType.value != null && !isAnalyzingTags.value
                 ? handleUpload
                 : null,
             child: const Text('上傳'),

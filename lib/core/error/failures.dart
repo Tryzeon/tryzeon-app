@@ -35,7 +35,8 @@ class ValidationFailure extends Failure {
 }
 
 class RateLimitFailure extends Failure {
-  const RateLimitFailure({final String? message, this.usagePayload}) : super(message);
+  const RateLimitFailure({final String? message, this.usagePayload})
+    : super(message);
 
   /// Raw `usage` snapshot from the edge function's 429 body.
   final Map<String, dynamic>? usagePayload;

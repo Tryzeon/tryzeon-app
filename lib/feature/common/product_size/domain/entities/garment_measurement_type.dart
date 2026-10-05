@@ -21,7 +21,11 @@ enum GarmentMeasurementType {
   length('length', minCm: 20, maxCm: 160),
   legOpening('leg_opening', minCm: 10, maxCm: 60);
 
-  const GarmentMeasurementType(this.value, {required this.minCm, required this.maxCm});
+  const GarmentMeasurementType(
+    this.value, {
+    required this.minCm,
+    required this.maxCm,
+  });
 
   final String value;
   final double minCm;

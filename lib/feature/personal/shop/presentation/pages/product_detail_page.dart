@@ -8,7 +8,11 @@ import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_detai
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 
 class ProductDetailPage extends HookConsumerWidget {
-  const ProductDetailPage({super.key, required this.productId, this.initialProduct});
+  const ProductDetailPage({
+    super.key,
+    required this.productId,
+    this.initialProduct,
+  });
 
   final String productId;
   final ShopProduct? initialProduct;
@@ -39,7 +43,9 @@ class ProductDetailPage extends HookConsumerWidget {
           },
           icon: const Icon(Icons.arrow_back),
         ),
-        title: product != null ? Text(product.name, style: textTheme.titleMedium) : null,
+        title: product != null
+            ? Text(product.name, style: textTheme.titleMedium)
+            : null,
         actions: [
           if (canShare)
             IconButton(

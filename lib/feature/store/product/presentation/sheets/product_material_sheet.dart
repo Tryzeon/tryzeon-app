@@ -33,7 +33,9 @@ class ProductMaterialSheet extends HookWidget {
 
     final initialIsPreset =
         initialValue != null && kMaterialPresets.contains(initialValue);
-    final selectedPreset = useState<String?>(initialIsPreset ? initialValue : null);
+    final selectedPreset = useState<String?>(
+      initialIsPreset ? initialValue : null,
+    );
     final customController = useTextEditingController(
       text: initialIsPreset ? '' : (initialValue ?? ''),
     );
@@ -64,7 +66,9 @@ class ProductMaterialSheet extends HookWidget {
     return SafeArea(
       top: false,
       child: Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.viewInsetsOf(context).bottom,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

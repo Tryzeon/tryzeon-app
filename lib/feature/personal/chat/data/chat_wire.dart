@@ -61,7 +61,8 @@ List<ContentBlock> _parseBlocks(final List<dynamic>? blocksJson) {
         result.add(
           ContentBlock.toolResult(
             toolUseId: raw['tool_use_id'] as String? ?? '',
-            content: (raw['content'] as Map?)?.cast<String, dynamic>() ?? const {},
+            content:
+                (raw['content'] as Map?)?.cast<String, dynamic>() ?? const {},
           ),
         );
       case 'product':
@@ -96,14 +97,16 @@ ChatStreamEvent? parseStreamLine(final String line) {
         ToolUseBlock(
           id: decoded['id'] as String? ?? '',
           name: decoded['name'] as String? ?? '',
-          input: (decoded['input'] as Map?)?.cast<String, dynamic>() ?? const {},
+          input:
+              (decoded['input'] as Map?)?.cast<String, dynamic>() ?? const {},
         ),
       );
     case 'tool_result':
       return ChatStreamEvent.toolFinished(
         ToolResultBlock(
           toolUseId: decoded['tool_use_id'] as String? ?? '',
-          content: (decoded['content'] as Map?)?.cast<String, dynamic>() ?? const {},
+          content:
+              (decoded['content'] as Map?)?.cast<String, dynamic>() ?? const {},
         ),
       );
     case 'done':

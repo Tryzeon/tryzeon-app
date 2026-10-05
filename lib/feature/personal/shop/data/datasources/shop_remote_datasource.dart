@@ -33,7 +33,10 @@ class ShopRemoteDataSource {
   }) async {
     final (:column, :ascending) = sortParams(sort);
     final (userLat, userLng) = switch (sort) {
-      ShopSortProximity(:final latitude, :final longitude) => (latitude, longitude),
+      ShopSortProximity(:final latitude, :final longitude) => (
+        latitude,
+        longitude,
+      ),
       _ => (null, null),
     };
 
@@ -108,7 +111,9 @@ class ShopRemoteDataSource {
 
     return {
       'p_store_id': storeId,
-      'p_search_query': (searchQuery == null || searchQuery.isEmpty) ? null : searchQuery,
+      'p_search_query': (searchQuery == null || searchQuery.isEmpty)
+          ? null
+          : searchQuery,
       'p_category_ids': nonEmpty(categories),
       'p_min_price': minPrice,
       'p_max_price': maxPrice,
@@ -153,7 +158,9 @@ class ShopRemoteDataSource {
 
   /// Both the uuid and the slug form back the same `/store/...` deep link, so
   /// existing uuid links keep working.
-  Future<Map<String, dynamic>> getStoreProfile(final String storeIdOrSlug) async {
+  Future<Map<String, dynamic>> getStoreProfile(
+    final String storeIdOrSlug,
+  ) async {
     final column = _uuidPattern.hasMatch(storeIdOrSlug) ? 'id' : 'slug';
     final response = await _supabaseClient
         .from(_storeProfileTable)

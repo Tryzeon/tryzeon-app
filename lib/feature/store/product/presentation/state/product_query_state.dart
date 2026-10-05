@@ -32,7 +32,11 @@ List<Product> filterAndSortProducts(
       .toList();
 
   filtered.sort(
-    buildProductComparator(query.sort.key, query.sort.ascending, analyticsLookup),
+    buildProductComparator(
+      query.sort.key,
+      query.sort.ascending,
+      analyticsLookup,
+    ),
   );
 
   return filtered;

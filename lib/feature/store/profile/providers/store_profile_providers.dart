@@ -36,7 +36,9 @@ StoreLogoStorage storeLogoStorage(final Ref ref) {
 @riverpod
 StoreProfileLocalDataSource storeProfileLocalDataSource(final Ref ref) {
   final isarService = ref.watch(isarServiceProvider);
-  final cacheEntryLocalDataSource = ref.watch(cacheEntryLocalDataSourceProvider);
+  final cacheEntryLocalDataSource = ref.watch(
+    cacheEntryLocalDataSourceProvider,
+  );
   return StoreProfileLocalDataSource(isarService, cacheEntryLocalDataSource);
 }
 
@@ -77,8 +79,9 @@ class StoreProfileNotifier extends _$StoreProfileNotifier
     return result.get();
   }
 
-  Future<Result<void, Failure>> refresh() =>
-      applyRefresh(() => ref.read(getStoreProfileUseCaseProvider)(forceRefresh: true));
+  Future<Result<void, Failure>> refresh() => applyRefresh(
+    () => ref.read(getStoreProfileUseCaseProvider)(forceRefresh: true),
+  );
 }
 
 @riverpod
@@ -110,7 +113,10 @@ class StoreProfileEditNotifier extends _$StoreProfileEditNotifier {
         return const Err(AuthFailure('無法獲取店家資訊，請重新登入'));
       }
 
-      final located = await _resolveCoordinates(original: original, address: address);
+      final located = await _resolveCoordinates(
+        original: original,
+        address: address,
+      );
 
       final result = await ref.read(updateStoreProfileUseCaseProvider)(
         UpdateStoreProfileParams(
@@ -161,7 +167,9 @@ class StoreProfileEditNotifier extends _$StoreProfileEditNotifier {
       return (latitude: null, longitude: null, addressUnresolved: false);
     }
 
-    final coords = await ref.read(geocodingServiceProvider).geocodeAddress(address);
+    final coords = await ref
+        .read(geocodingServiceProvider)
+        .geocodeAddress(address);
     return (
       latitude: coords?.latitude,
       longitude: coords?.longitude,

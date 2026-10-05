@@ -7,23 +7,32 @@ import 'package:tryzeon/feature/store/analytics/domain/entities/product_analytic
 import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 
 class ProductAnalyticsLocalDataSource {
-  ProductAnalyticsLocalDataSource(this._isarService, this._cacheEntryLocalDataSource);
+  ProductAnalyticsLocalDataSource(
+    this._isarService,
+    this._cacheEntryLocalDataSource,
+  );
 
   final IsarService _isarService;
   final CacheEntryLocalDataSource _cacheEntryLocalDataSource;
   static const _mappr = StoreMappr();
 
-  static String cacheKeyForMonth(final String storeId, final int year, final int month) =>
-      'product_analytics:$storeId:$year:$month';
+  static String cacheKeyForMonth(
+    final String storeId,
+    final int year,
+    final int month,
+  ) => 'product_analytics:$storeId:$year:$month';
 
-  Future<CacheLookup<List<ProductAnalyticsSummary>>> getProductAnalyticsSummaries(
+  Future<CacheLookup<List<ProductAnalyticsSummary>>>
+  getProductAnalyticsSummaries(
     final String storeId,
     final int year,
     final int month,
   ) async {
     final isar = await _isarService.db;
     final cacheKey = cacheKeyForMonth(storeId, year, month);
-    final cacheStatus = await _cacheEntryLocalDataSource.getEntryStatus(cacheKey);
+    final cacheStatus = await _cacheEntryLocalDataSource.getEntryStatus(
+      cacheKey,
+    );
     if (cacheStatus == null) return const CacheMiss();
 
     if (cacheStatus == CacheEntryStatus.empty) {
@@ -40,7 +49,9 @@ class ProductAnalyticsLocalDataSource {
     if (collections.isEmpty) return const CacheMiss();
 
     return CacheHit(
-      _mappr.convertList<ProductAnalyticsCache, ProductAnalyticsSummary>(collections),
+      _mappr.convertList<ProductAnalyticsCache, ProductAnalyticsSummary>(
+        collections,
+      ),
     );
   }
 
@@ -55,7 +66,9 @@ class ProductAnalyticsLocalDataSource {
     await isar.writeTxn(() async {
       for (final summary in summaries) {
         final collection =
-            _mappr.convert<ProductAnalyticsSummary, ProductAnalyticsCache>(summary)
+            _mappr.convert<ProductAnalyticsSummary, ProductAnalyticsCache>(
+                summary,
+              )
               ..storeId = storeId
               ..year = year
               ..month = month;
@@ -72,7 +85,10 @@ class ProductAnalyticsLocalDataSource {
         await isar.productAnalyticsCaches.put(collection);
       }
     });
-    await _cacheEntryLocalDataSource.markListState(cacheKey, isEmpty: summaries.isEmpty);
+    await _cacheEntryLocalDataSource.markListState(
+      cacheKey,
+      isEmpty: summaries.isEmpty,
+    );
   }
 
   Future<void> markProductAnalyticsSummariesEmpty(
@@ -80,6 +96,8 @@ class ProductAnalyticsLocalDataSource {
     final int year,
     final int month,
   ) async {
-    await _cacheEntryLocalDataSource.markEmpty(cacheKeyForMonth(storeId, year, month));
+    await _cacheEntryLocalDataSource.markEmpty(
+      cacheKeyForMonth(storeId, year, month),
+    );
   }
 }

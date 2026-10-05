@@ -31,7 +31,9 @@ class UpdateUserAvatar {
       return saved;
     }
 
-    if (previousPath != null && previousPath.isNotEmpty && previousPath != newPath) {
+    if (previousPath != null &&
+        previousPath.isNotEmpty &&
+        previousPath != newPath) {
       await _delete(previousPath);
     }
     return const Ok(null);

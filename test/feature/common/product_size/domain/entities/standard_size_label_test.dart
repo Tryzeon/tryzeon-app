@@ -15,12 +15,15 @@ void main() {
       expect(StandardSizeLabel.xxl.display, '2XL');
     });
 
-    test('free size matches the literal only; F/free are always custom sizes', () {
-      expect(StandardSizeLabel.tryParse('均碼'), StandardSizeLabel.free);
-      expect(StandardSizeLabel.tryParse('F'), isNull);
-      expect(StandardSizeLabel.tryParse('free'), isNull);
-      expect(StandardSizeLabel.tryParse('One Size'), isNull);
-    });
+    test(
+      'free size matches the literal only; F/free are always custom sizes',
+      () {
+        expect(StandardSizeLabel.tryParse('均碼'), StandardSizeLabel.free);
+        expect(StandardSizeLabel.tryParse('F'), isNull);
+        expect(StandardSizeLabel.tryParse('free'), isNull);
+        expect(StandardSizeLabel.tryParse('One Size'), isNull);
+      },
+    );
 
     test('an unrecognized name returns null, meaning a custom size', () {
       expect(StandardSizeLabel.tryParse('4XL'), isNull);
@@ -30,10 +33,13 @@ void main() {
   });
 
   group('StandardSizeLabel.matchKeyOf', () {
-    test('only trims and upper-cases, so case differences are the same size', () {
-      expect(StandardSizeLabel.matchKeyOf(' m '), 'M');
-      expect(StandardSizeLabel.matchKeyOf('us 10'), 'US 10');
-    });
+    test(
+      'only trims and upper-cases, so case differences are the same size',
+      () {
+        expect(StandardSizeLabel.matchKeyOf(' m '), 'M');
+        expect(StandardSizeLabel.matchKeyOf('us 10'), 'US 10');
+      },
+    );
 
     test('aliases are no longer folded: XXL and 2XL are different keys', () {
       expect(

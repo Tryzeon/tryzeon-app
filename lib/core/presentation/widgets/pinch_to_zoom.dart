@@ -56,10 +56,14 @@ class PinchToZoom extends HookWidget {
       final overlay = Overlay.of(context, rootOverlay: true);
       final box = context.findRenderObject()! as RenderBox;
       final rect =
-          box.localToGlobal(Offset.zero, ancestor: overlay.context.findRenderObject()) &
+          box.localToGlobal(
+            Offset.zero,
+            ancestor: overlay.context.findRenderObject(),
+          ) &
           box.size;
       final layer = OverlayEntry(
-        builder: (final context) => _ZoomLayer(rect: rect, frame: frame, child: child),
+        builder: (final context) =>
+            _ZoomLayer(rect: rect, frame: frame, child: child),
       );
       overlay.insert(layer);
       entry.value = layer;
@@ -84,13 +88,16 @@ class PinchToZoom extends HookWidget {
       );
     }
 
-    void handleScaleEnd(final ScaleEndDetails details) => pinchStart.value = null;
+    void handleScaleEnd(final ScaleEndDetails details) =>
+        pinchStart.value = null;
 
     // The recognizer reports no end for fingers lifted after an earlier one
     // left without moving, so the release follows the raw pointer count.
     void handlePointerGone(final PointerEvent event) {
       pointers.value.remove(event.pointer);
-      if (pointers.value.length >= 2 || entry.value == null || release.isAnimating) {
+      if (pointers.value.length >= 2 ||
+          entry.value == null ||
+          release.isAnimating) {
         return;
       }
       releaseFrom.value = frame.value;
@@ -133,7 +140,11 @@ class _PinchGestureRecognizer extends ScaleGestureRecognizer {
 }
 
 class _ZoomLayer extends StatelessWidget {
-  const _ZoomLayer({required this.rect, required this.frame, required this.child});
+  const _ZoomLayer({
+    required this.rect,
+    required this.frame,
+    required this.child,
+  });
 
   final Rect rect;
   final ValueNotifier<_ZoomFrame> frame;
@@ -180,9 +191,12 @@ class _ZoomFrame {
       Matrix4.diagonal3Values(scale, scale, 1)
         ..setTranslationRaw(offset.dx, offset.dy, 0);
 
-  static _ZoomFrame lerp(final _ZoomFrame a, final _ZoomFrame b, final double t) =>
-      _ZoomFrame(
-        scale: lerpDouble(a.scale, b.scale, t)!,
-        offset: Offset.lerp(a.offset, b.offset, t)!,
-      );
+  static _ZoomFrame lerp(
+    final _ZoomFrame a,
+    final _ZoomFrame b,
+    final double t,
+  ) => _ZoomFrame(
+    scale: lerpDouble(a.scale, b.scale, t)!,
+    offset: Offset.lerp(a.offset, b.offset, t)!,
+  );
 }

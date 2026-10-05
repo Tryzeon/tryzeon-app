@@ -22,7 +22,8 @@ sealed class OutfitPiece with _$OutfitPiece {
     final String? sizeId,
   }) = OutfitPieceProduct;
 
-  const factory OutfitPiece.local({required final String path}) = OutfitPieceLocal;
+  const factory OutfitPiece.local({required final String path}) =
+      OutfitPieceLocal;
 
   const OutfitPiece._();
 

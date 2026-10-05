@@ -117,7 +117,10 @@ class AddProductPage extends HookConsumerWidget {
           voiceStatus: voiceInput.status,
           onVoicePressed: voiceInput.toggle,
           onPickImage: (final remainingCount) async {
-            return ImagePickerHelper.pickImages(context, maxImages: remainingCount);
+            return ImagePickerHelper.pickImages(
+              context,
+              maxImages: remainingCount,
+            );
           },
         ),
       ),

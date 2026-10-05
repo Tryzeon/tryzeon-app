@@ -39,7 +39,11 @@ class WardrobeImageStorageImpl implements WardrobeImageStorage {
     try {
       await _localDataSource.saveImage(bytes, path);
     } catch (e, stackTrace) {
-      AppLogger.warning('Failed to cache uploaded wardrobe image', e, stackTrace);
+      AppLogger.warning(
+        'Failed to cache uploaded wardrobe image',
+        e,
+        stackTrace,
+      );
     }
     return Ok(path);
   }

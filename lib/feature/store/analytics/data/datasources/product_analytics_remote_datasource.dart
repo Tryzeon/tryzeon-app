@@ -21,7 +21,8 @@ class ProductAnalyticsRemoteDataSource {
 
     return response
         .map(
-          (final e) => ProductAnalyticsSummaryDto.fromJson(Map<String, dynamic>.from(e)),
+          (final e) =>
+              ProductAnalyticsSummaryDto.fromJson(Map<String, dynamic>.from(e)),
         )
         .toList();
   }
@@ -36,7 +37,8 @@ class ProductAnalyticsRemoteDataSource {
 
     return response
         .map(
-          (final e) => ProductAnalyticsSummaryDto.fromJson(Map<String, dynamic>.from(e)),
+          (final e) =>
+              ProductAnalyticsSummaryDto.fromJson(Map<String, dynamic>.from(e)),
         )
         .toList();
   }

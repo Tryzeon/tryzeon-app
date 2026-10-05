@@ -36,14 +36,19 @@ class ProductInfoSection extends StatelessWidget {
         if (product.material != null && product.material!.isNotEmpty)
           buildInfoRow('材質', product.material!),
 
-        if (product.elasticity != null) buildInfoRow('彈性', product.elasticity!.label),
+        if (product.elasticity != null)
+          buildInfoRow('彈性', product.elasticity!.label),
 
-        if (product.thickness != null) buildInfoRow('厚薄度', product.thickness!.label),
+        if (product.thickness != null)
+          buildInfoRow('厚薄度', product.thickness!.label),
 
         if (product.fit != null) buildInfoRow('版型', product.fit!.label),
 
         if (product.seasons != null && product.seasons!.isNotEmpty)
-          buildInfoRow('季節', product.seasons!.map((final s) => s.label).join('、')),
+          buildInfoRow(
+            '季節',
+            product.seasons!.map((final s) => s.label).join('、'),
+          ),
       ],
     );
   }

@@ -5,7 +5,13 @@ import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
 class TryonFab extends StatelessWidget {
-  const TryonFab({super.key, required this.onTap, this.size = 24, this.label, this.icon});
+  const TryonFab({
+    super.key,
+    required this.onTap,
+    this.size = 24,
+    this.label,
+    this.icon,
+  });
 
   final VoidCallback onTap;
   final double size;
@@ -69,7 +75,9 @@ class TryonFab extends StatelessWidget {
                 const SizedBox(width: AppSpacing.xs),
                 Text(
                   label!,
-                  style: textTheme.labelLarge?.copyWith(color: colorScheme.onPrimary),
+                  style: textTheme.labelLarge?.copyWith(
+                    color: colorScheme.onPrimary,
+                  ),
                 ),
               ],
             ],

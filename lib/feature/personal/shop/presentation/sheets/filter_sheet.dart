@@ -38,7 +38,9 @@ class FilterSheet extends HookConsumerWidget {
     );
     final currentMinPrice = useState(initial.minPrice);
     final currentMaxPrice = useState(initial.maxPrice);
-    final selectedChannels = useState<Set<StoreChannel>>({...?initial.channels});
+    final selectedChannels = useState<Set<StoreChannel>>({
+      ...?initial.channels,
+    });
     final selectedFits = useState<Set<ProductFit>>({...?initial.fits});
     final selectedElasticities = useState<Set<ProductElasticity>>({
       ...?initial.elasticities,
@@ -55,7 +57,10 @@ class FilterSheet extends HookConsumerWidget {
 
     void applyFilters() {
       final notifier = ref.read(shopFilterProvider.notifier);
-      notifier.setPriceRange(min: currentMinPrice.value, max: currentMaxPrice.value);
+      notifier.setPriceRange(
+        min: currentMinPrice.value,
+        max: currentMaxPrice.value,
+      );
       notifier.setChannels(selectedChannels.value);
       notifier.setFits(selectedFits.value);
       notifier.setElasticities(selectedElasticities.value);
@@ -72,7 +77,9 @@ class FilterSheet extends HookConsumerWidget {
     }
 
     return Container(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: SafeArea(
         bottom: true,
         top: false,
@@ -94,7 +101,8 @@ class FilterSheet extends HookConsumerWidget {
                         options: StoreChannel.values,
                         selected: selectedChannels.value,
                         labelOf: (final c) => c.label,
-                        onChanged: (final next) => selectedChannels.value = next,
+                        onChanged: (final next) =>
+                            selectedChannels.value = next,
                       ),
                       const SizedBox(height: AppSpacing.lg),
 
@@ -148,7 +156,8 @@ class FilterSheet extends HookConsumerWidget {
                         options: ProductElasticity.values,
                         selected: selectedElasticities.value,
                         labelOf: (final e) => e.label,
-                        onChanged: (final next) => selectedElasticities.value = next,
+                        onChanged: (final next) =>
+                            selectedElasticities.value = next,
                       ),
                       const SizedBox(height: AppSpacing.lg),
 
@@ -157,7 +166,8 @@ class FilterSheet extends HookConsumerWidget {
                         options: ProductThickness.values,
                         selected: selectedThicknesses.value,
                         labelOf: (final t) => t.label,
-                        onChanged: (final next) => selectedThicknesses.value = next,
+                        onChanged: (final next) =>
+                            selectedThicknesses.value = next,
                       ),
                       const SizedBox(height: AppSpacing.lg),
 
@@ -184,7 +194,8 @@ class FilterSheet extends HookConsumerWidget {
                         options: kMaterialPresets,
                         selected: selectedMaterials.value,
                         labelOf: (final m) => m,
-                        onChanged: (final next) => selectedMaterials.value = next,
+                        onChanged: (final next) =>
+                            selectedMaterials.value = next,
                       ),
                     ],
                   ),
@@ -201,7 +212,10 @@ class FilterSheet extends HookConsumerWidget {
                   ),
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
-                    child: FilledButton(onPressed: applyFilters, child: const Text('套用')),
+                    child: FilledButton(
+                      onPressed: applyFilters,
+                      child: const Text('套用'),
+                    ),
                   ),
                 ],
               ),

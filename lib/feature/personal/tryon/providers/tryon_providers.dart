@@ -38,10 +38,14 @@ TryonMediaDataSource tryonMediaDataSource(final Ref ref) {
 
 @riverpod
 TryonMediaRepository tryonMediaRepository(final Ref ref) {
-  return TryonMediaRepositoryImpl(dataSource: ref.watch(tryonMediaDataSourceProvider));
+  return TryonMediaRepositoryImpl(
+    dataSource: ref.watch(tryonMediaDataSourceProvider),
+  );
 }
 
 @riverpod
 ShareTryonMedia shareTryonMediaUseCase(final Ref ref) {
-  return ShareTryonMedia(mediaRepository: ref.watch(tryonMediaRepositoryProvider));
+  return ShareTryonMedia(
+    mediaRepository: ref.watch(tryonMediaRepositoryProvider),
+  );
 }

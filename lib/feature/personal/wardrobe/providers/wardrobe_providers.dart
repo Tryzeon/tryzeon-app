@@ -43,8 +43,14 @@ WardrobeRemoteDataSource wardrobeRemoteDataSource(final Ref ref) {
 WardrobeLocalDataSource wardrobeLocalDataSource(final Ref ref) {
   final isarService = ref.watch(isarServiceProvider);
   final imageFileCache = ref.watch(imageFileCacheProvider);
-  final cacheEntryLocalDataSource = ref.watch(cacheEntryLocalDataSourceProvider);
-  return WardrobeLocalDataSource(isarService, imageFileCache, cacheEntryLocalDataSource);
+  final cacheEntryLocalDataSource = ref.watch(
+    cacheEntryLocalDataSourceProvider,
+  );
+  return WardrobeLocalDataSource(
+    isarService,
+    imageFileCache,
+    cacheEntryLocalDataSource,
+  );
 }
 
 @riverpod
@@ -126,15 +132,19 @@ class WardrobeItemsNotifier extends _$WardrobeItemsNotifier
     return result.get()!;
   }
 
-  Future<Result<void, Failure>> refresh() =>
-      applyRefresh(() => ref.read(getWardrobeItemsUseCaseProvider)(forceRefresh: true));
+  Future<Result<void, Failure>> refresh() => applyRefresh(
+    () => ref.read(getWardrobeItemsUseCaseProvider)(forceRefresh: true),
+  );
 }
 
 @riverpod
 Future<WardrobeCapacity> wardrobeCapacity(final Ref ref) async {
   final capabilities = await ref.watch(subscriptionCapabilitiesProvider.future);
   final items = await ref.watch(wardrobeItemsProvider.future);
-  return WardrobeCapacity(used: items.length, limit: capabilities.wardrobeLimit);
+  return WardrobeCapacity(
+    used: items.length,
+    limit: capabilities.wardrobeLimit,
+  );
 }
 
 /// Exposes progress via [state] so a sheet can drive its save button without a
@@ -189,9 +199,14 @@ class WardrobeEditNotifier extends _$WardrobeEditNotifier {
     return _write(() => ref.read(deleteWardrobeItemUseCaseProvider)(item));
   }
 
-  Future<File> _writeTempPng(final Uint8List bytes, {required final File basedOn}) async {
+  Future<File> _writeTempPng(
+    final Uint8List bytes, {
+    required final File basedOn,
+  }) async {
     final dir = await getTemporaryDirectory();
-    final file = File('${dir.path}/wardrobe_nobg_${basedOn.uri.pathSegments.last}.png');
+    final file = File(
+      '${dir.path}/wardrobe_nobg_${basedOn.uri.pathSegments.last}.png',
+    );
     await file.writeAsBytes(bytes);
     return file;
   }
@@ -224,7 +239,9 @@ class WardrobeEditNotifier extends _$WardrobeEditNotifier {
 
 @riverpod
 Future<File> wardrobeItemImage(final Ref ref, final String imagePath) async {
-  final getWardrobeItemImageUseCase = ref.watch(getWardrobeItemImageUseCaseProvider);
+  final getWardrobeItemImageUseCase = ref.watch(
+    getWardrobeItemImageUseCaseProvider,
+  );
   final result = await getWardrobeItemImageUseCase(imagePath);
   if (result.isFailure) {
     throw result.getError()!;

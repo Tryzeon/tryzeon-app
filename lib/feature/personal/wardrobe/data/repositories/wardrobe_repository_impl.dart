@@ -54,13 +54,19 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
 
       // 2. Try Remote
       final remoteItems = await _remoteDataSource.getWardrobeItems();
-      final items = _mappr.convertList<WardrobeItemDto, WardrobeItem>(remoteItems);
+      final items = _mappr.convertList<WardrobeItemDto, WardrobeItem>(
+        remoteItems,
+      );
 
       // 3. Update Cache
       try {
         await _localDataSource.saveWardrobeItems(items);
       } catch (e, stackTrace) {
-        AppLogger.warning('Failed to save wardrobe items to cache', e, stackTrace);
+        AppLogger.warning(
+          'Failed to save wardrobe items to cache',
+          e,
+          stackTrace,
+        );
       }
 
       return Ok(items);
@@ -98,7 +104,11 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
         ),
       );
     } catch (e, stackTrace) {
-      AppLogger.warning('Wardrobe refresh failed, invalidating cache', e, stackTrace);
+      AppLogger.warning(
+        'Wardrobe refresh failed, invalidating cache',
+        e,
+        stackTrace,
+      );
       try {
         await _localDataSource.invalidateWardrobeItems();
       } catch (e, stackTrace) {
@@ -139,7 +149,10 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
       final updatedItem = _mappr.convert<WardrobeItemDto, WardrobeItem>(
         await _remoteDataSource.updateWardrobeItem(
           id: id,
-          request: UpdateWardrobeItemRequest(garmentType: garmentType, tags: tags),
+          request: UpdateWardrobeItemRequest(
+            garmentType: garmentType,
+            tags: tags,
+          ),
         ),
       );
       await _localDataSource.saveWardrobeItem(updatedItem);
@@ -151,13 +164,18 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
   }
 
   @override
-  Future<Result<File, Failure>> getWardrobeItemImage(final String imagePath) async {
+  Future<Result<File, Failure>> getWardrobeItemImage(
+    final String imagePath,
+  ) async {
     try {
       final cachedImage = await _localDataSource.getImage(imagePath);
       if (cachedImage != null) return Ok(cachedImage);
 
       final url = await _remoteDataSource.createSignedUrl(imagePath);
-      final image = await _localDataSource.getImage(imagePath, downloadUrl: url);
+      final image = await _localDataSource.getImage(
+        imagePath,
+        downloadUrl: url,
+      );
 
       if (image == null) {
         return const Err(UnknownFailure('Failed to retrieve wardrobe image'));

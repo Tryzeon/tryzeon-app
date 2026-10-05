@@ -13,9 +13,8 @@ import 'package:typed_result/typed_result.dart';
 part 'subscription_capabilities_provider.g.dart';
 
 @riverpod
-SubscriptionCapabilitiesRemoteDataSource subscriptionCapabilitiesRemoteDataSource(
-  final Ref ref,
-) {
+SubscriptionCapabilitiesRemoteDataSource
+subscriptionCapabilitiesRemoteDataSource(final Ref ref) {
   return SubscriptionCapabilitiesRemoteDataSource(Supabase.instance.client);
 }
 
@@ -30,9 +29,13 @@ SubscriptionCapabilitiesLocalDataSource subscriptionCapabilitiesLocalDataSource(
 }
 
 @riverpod
-SubscriptionCapabilitiesRepository subscriptionCapabilitiesRepository(final Ref ref) {
+SubscriptionCapabilitiesRepository subscriptionCapabilitiesRepository(
+  final Ref ref,
+) {
   return SubscriptionCapabilitiesRepositoryImpl(
-    remoteDataSource: ref.watch(subscriptionCapabilitiesRemoteDataSourceProvider),
+    remoteDataSource: ref.watch(
+      subscriptionCapabilitiesRemoteDataSourceProvider,
+    ),
     localDataSource: ref.watch(subscriptionCapabilitiesLocalDataSourceProvider),
   );
 }
@@ -46,7 +49,9 @@ GetSubscriptionCapabilities getSubscriptionCapabilitiesUseCase(final Ref ref) {
 
 @Riverpod(keepAlive: true)
 Future<SubscriptionCapabilities> subscriptionCapabilities(final Ref ref) async {
-  final entitlement = await ref.watch(appSubscriptionEntitlementProvider.future);
+  final entitlement = await ref.watch(
+    appSubscriptionEntitlementProvider.future,
+  );
 
   final useCase = ref.watch(getSubscriptionCapabilitiesUseCaseProvider);
   final result = await useCase(entitlement.tier);

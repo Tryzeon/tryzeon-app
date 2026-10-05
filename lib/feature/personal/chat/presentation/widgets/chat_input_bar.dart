@@ -33,7 +33,12 @@ class ChatInputBar extends HookWidget {
         duration: AppDuration.standard,
         curve: AppCurves.standard,
         constraints: const BoxConstraints(minHeight: _minHeight),
-        padding: const EdgeInsets.fromLTRB(AppSpacing.md, _inset, _inset, _inset),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          _inset,
+          _inset,
+          _inset,
+        ),
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(_minHeight / 2),
@@ -57,10 +62,14 @@ class ChatInputBar extends HookWidget {
                 style: textStyle,
                 decoration: InputDecoration(
                   hintText: '想找什麼、想怎麼搭？告訴我',
-                  hintStyle: textStyle?.copyWith(color: colorScheme.onSurfaceVariant),
+                  hintStyle: textStyle?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                   filled: false,
                   isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: AppSpacing.sm,
+                  ),
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,

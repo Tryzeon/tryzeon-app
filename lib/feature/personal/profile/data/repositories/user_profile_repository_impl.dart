@@ -63,7 +63,11 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       try {
         await _localDataSource.saveUserProfile(profile);
       } catch (e, stackTrace) {
-        AppLogger.warning('Failed to save user profile to cache', e, stackTrace);
+        AppLogger.warning(
+          'Failed to save user profile to cache',
+          e,
+          stackTrace,
+        );
       }
 
       return Ok(profile);
@@ -147,7 +151,9 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       final updatedProfile = await _remoteDataSource.completeUserOnboarding(
         gender: gender?.value,
         ageRange: ageRange?.value,
-        stylePreferences: stylePreferences?.map((final style) => style.value).toList(),
+        stylePreferences: stylePreferences
+            ?.map((final style) => style.value)
+            .toList(),
       );
 
       await _localDataSource.saveUserProfile(
@@ -177,11 +183,19 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
         ),
       );
     } catch (e, stackTrace) {
-      AppLogger.warning('User profile refresh failed, invalidating cache', e, stackTrace);
+      AppLogger.warning(
+        'User profile refresh failed, invalidating cache',
+        e,
+        stackTrace,
+      );
       try {
         await _localDataSource.invalidateUserProfile();
       } catch (e, stackTrace) {
-        AppLogger.error('Failed to invalidate user profile cache', e, stackTrace);
+        AppLogger.error(
+          'Failed to invalidate user profile cache',
+          e,
+          stackTrace,
+        );
       }
     }
     return const Ok(null);

@@ -26,7 +26,8 @@ class MeasurementGuideSheet extends HookWidget {
       useRootNavigator: true,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (final context) => MeasurementGuideSheet(garmentType: garmentType),
+      builder: (final context) =>
+          MeasurementGuideSheet(garmentType: garmentType),
     );
   }
 
@@ -49,9 +50,16 @@ class MeasurementGuideSheet extends HookWidget {
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               child: Row(
                 children: [
-                  Icon(Icons.straighten_rounded, color: colorScheme.onSurface, size: 24),
+                  Icon(
+                    Icons.straighten_rounded,
+                    color: colorScheme.onSurface,
+                    size: 24,
+                  ),
                   const SizedBox(width: AppSpacing.smMd),
-                  Text('${garmentType.displayName}測量方式', style: textTheme.titleLarge),
+                  Text(
+                    '${garmentType.displayName}測量方式',
+                    style: textTheme.titleLarge,
+                  ),
                 ],
               ),
             ),
@@ -59,19 +67,25 @@ class MeasurementGuideSheet extends HookWidget {
             Center(
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  maxHeight: MediaQuery.sizeOf(context).height * _maxGuideHeightFraction,
+                  maxHeight:
+                      MediaQuery.sizeOf(context).height *
+                      _maxGuideHeightFraction,
                 ),
                 child: AspectRatio(
                   aspectRatio: _guideAspectRatio,
                   child: PhotoViewGallery.builder(
                     pageController: pageController,
                     itemCount: assets.length,
-                    backgroundDecoration: const BoxDecoration(color: Colors.transparent),
-                    builder: (final context, final index) => PhotoViewGalleryPageOptions(
-                      imageProvider: AssetImage(assets[index]),
-                      minScale: PhotoViewComputedScale.contained,
-                      maxScale: PhotoViewComputedScale.contained * _maxGuideZoom,
+                    backgroundDecoration: const BoxDecoration(
+                      color: Colors.transparent,
                     ),
+                    builder: (final context, final index) =>
+                        PhotoViewGalleryPageOptions(
+                          imageProvider: AssetImage(assets[index]),
+                          minScale: PhotoViewComputedScale.contained,
+                          maxScale:
+                              PhotoViewComputedScale.contained * _maxGuideZoom,
+                        ),
                   ),
                 ),
               ),

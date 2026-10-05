@@ -6,7 +6,9 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/outfit_slot.dart';
 
 void main() {
-  testWidgets('a leaving slot fades without scaling down', (final tester) async {
+  testWidgets('a leaving slot fades without scaling down', (
+    final tester,
+  ) async {
     const piece = OutfitPiece.local(path: '/tmp/does-not-exist.png');
 
     Future<void> pumpSlot(final OutfitPiece? piece) {

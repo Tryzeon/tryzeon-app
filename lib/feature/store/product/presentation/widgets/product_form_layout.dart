@@ -70,17 +70,22 @@ class ProductFormLayout extends StatelessWidget {
                 ProductImageEditor(
                   images: formData.images.value,
                   hasError: state.hasError,
-                  onImagesChanged: (final updated) => formData.images.value = updated,
+                  onImagesChanged: (final updated) =>
+                      formData.images.value = updated,
                   onPickImage: () async {
                     final currentCount = formData.images.value.length;
-                    final remaining = AppConstants.maxProductImages - currentCount;
+                    final remaining =
+                        AppConstants.maxProductImages - currentCount;
                     if (remaining <= 0) return;
                     final files = await onPickImage(remaining);
                     if (files != null && files.isNotEmpty) {
                       final newItems = files
                           .map((final f) => ImageItem.newImage(file: f))
                           .toList();
-                      formData.images.value = [...formData.images.value, ...newItems];
+                      formData.images.value = [
+                        ...formData.images.value,
+                        ...newItems,
+                      ];
                     }
                   },
                 ),
@@ -145,7 +150,10 @@ class ProductFormLayout extends StatelessWidget {
                 const Expanded(
                   child: _FormSectionLabel(number: '03', title: '尺寸資訊'),
                 ),
-                _SizeVoiceButton(status: voiceStatus, onPressed: onVoicePressed),
+                _SizeVoiceButton(
+                  status: voiceStatus,
+                  onPressed: onVoicePressed,
+                ),
               ],
             ),
           ),
@@ -206,7 +214,11 @@ class _SizeVoiceButton extends StatelessWidget {
 }
 
 class _FormSectionLabel extends StatelessWidget {
-  const _FormSectionLabel({required this.number, required this.title, this.helper});
+  const _FormSectionLabel({
+    required this.number,
+    required this.title,
+    this.helper,
+  });
 
   final String number;
   final String title;
@@ -232,7 +244,9 @@ class _FormSectionLabel extends StatelessWidget {
           const SizedBox(height: AppSpacing.xs),
           Text(
             helper!,
-            style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+            style: textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ],
@@ -275,10 +289,17 @@ class _ImageErrorText extends StatelessWidget {
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.sm, AppSpacing.lg, 0),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.xl,
+        AppSpacing.sm,
+        AppSpacing.lg,
+        0,
+      ),
       child: Text(
         text,
-        style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.error),
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: theme.colorScheme.error,
+        ),
       ),
     );
   }

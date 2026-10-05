@@ -8,7 +8,10 @@ import 'package:tryzeon/feature/store/profile/data/collections/store_profile_cac
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 
 class StoreProfileLocalDataSource {
-  StoreProfileLocalDataSource(this._isarService, this._cacheEntryLocalDataSource);
+  StoreProfileLocalDataSource(
+    this._isarService,
+    this._cacheEntryLocalDataSource,
+  );
 
   final IsarService _isarService;
   final CacheEntryLocalDataSource _cacheEntryLocalDataSource;
@@ -30,14 +33,18 @@ class StoreProfileLocalDataSource {
     final collection = await isar.storeProfileCaches.where().findFirst();
     if (collection == null) return const CacheMiss();
 
-    return CacheHit(_mappr.convert<StoreProfileCache, StoreProfile>(collection));
+    return CacheHit(
+      _mappr.convert<StoreProfileCache, StoreProfile>(collection),
+    );
   }
 
   Future<void> saveStoreProfile(final StoreProfile profile) async {
     final isar = await _isarService.db;
     await isar.writeTxn(() async {
       await isar.storeProfileCaches.clear();
-      final collection = _mappr.convert<StoreProfile, StoreProfileCache>(profile);
+      final collection = _mappr.convert<StoreProfile, StoreProfileCache>(
+        profile,
+      );
       await isar.storeProfileCaches.put(collection);
     });
     await _cacheEntryLocalDataSource.markHasData(cacheKey);

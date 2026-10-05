@@ -7,9 +7,12 @@ class StoreEnumCacheConverters {
       StoreChannel.codesFromSet(source);
 
   static Set<StoreChannel> channelsFromCache(final List<String> source) =>
-      source.map((final e) => decodeCachedEnum(e, StoreChannel.fromCode)).toSet();
+      source
+          .map((final e) => decodeCachedEnum(e, StoreChannel.fromCode))
+          .toSet();
 
-  static String orderContactTypeToCache(final OrderContactType source) => source.code;
+  static String orderContactTypeToCache(final OrderContactType source) =>
+      source.code;
 
   static OrderContactType orderContactTypeFromCache(final String source) =>
       decodeCachedEnum(source, OrderContactType.fromCode);

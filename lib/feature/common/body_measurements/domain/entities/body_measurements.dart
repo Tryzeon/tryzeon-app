@@ -20,16 +20,17 @@ sealed class BodyMeasurements with _$BodyMeasurements {
   }) = _BodyMeasurements;
   const BodyMeasurements._();
 
-  factory BodyMeasurements.fromValues(final Map<BodyMeasurementType, double?> values) =>
-      BodyMeasurements(
-        height: values[BodyMeasurementType.height],
-        weight: values[BodyMeasurementType.weight],
-        shoulder: values[BodyMeasurementType.shoulder],
-        chest: values[BodyMeasurementType.chest],
-        waist: values[BodyMeasurementType.waist],
-        hips: values[BodyMeasurementType.hips],
-        thigh: values[BodyMeasurementType.thigh],
-      );
+  factory BodyMeasurements.fromValues(
+    final Map<BodyMeasurementType, double?> values,
+  ) => BodyMeasurements(
+    height: values[BodyMeasurementType.height],
+    weight: values[BodyMeasurementType.weight],
+    shoulder: values[BodyMeasurementType.shoulder],
+    chest: values[BodyMeasurementType.chest],
+    waist: values[BodyMeasurementType.waist],
+    hips: values[BodyMeasurementType.hips],
+    thigh: values[BodyMeasurementType.thigh],
+  );
 
   double? getValue(final BodyMeasurementType type) => switch (type) {
     BodyMeasurementType.height => height,

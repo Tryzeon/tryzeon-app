@@ -3,7 +3,10 @@ import 'package:tryzeon/feature/common/product_attributes/domain/entities/produc
 import 'package:tryzeon/feature/common/product_attributes/presentation/product_attributes_extensions.dart';
 
 class ProductElasticitySelector extends StatelessWidget {
-  const ProductElasticitySelector({super.key, required this.selectedElasticity});
+  const ProductElasticitySelector({
+    super.key,
+    required this.selectedElasticity,
+  });
 
   final ValueNotifier<ProductElasticity?> selectedElasticity;
 
@@ -18,11 +21,15 @@ class ProductElasticitySelector extends StatelessWidget {
           SegmentedButton<ProductElasticity>(
             segments: ProductElasticity.values
                 .map(
-                  (final e) =>
-                      ButtonSegment<ProductElasticity>(value: e, label: Text(e.label)),
+                  (final e) => ButtonSegment<ProductElasticity>(
+                    value: e,
+                    label: Text(e.label),
+                  ),
                 )
                 .toList(),
-            selected: value == null ? <ProductElasticity>{} : <ProductElasticity>{value},
+            selected: value == null
+                ? <ProductElasticity>{}
+                : <ProductElasticity>{value},
             multiSelectionEnabled: true,
             emptySelectionAllowed: true,
             showSelectedIcon: false,
@@ -31,7 +38,9 @@ class ProductElasticitySelector extends StatelessWidget {
               if (newSet.isEmpty) {
                 selectedElasticity.value = null;
               } else if (newSet.length > 1 && value != null) {
-                selectedElasticity.value = newSet.firstWhere((final v) => v != value);
+                selectedElasticity.value = newSet.firstWhere(
+                  (final v) => v != value,
+                );
               } else {
                 selectedElasticity.value = newSet.first;
               }

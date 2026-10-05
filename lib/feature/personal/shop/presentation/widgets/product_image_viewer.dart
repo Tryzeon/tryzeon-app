@@ -39,7 +39,9 @@ class ProductImageViewer extends HookWidget {
             itemCount: imageUrls.length,
             itemBuilder: (final context, final index) {
               final imageUrl = imageUrls[index];
-              final imagePath = imagePaths.length > index ? imagePaths[index] : null;
+              final imagePath = imagePaths.length > index
+                  ? imagePaths[index]
+                  : null;
 
               return GestureDetector(
                 onTap: () {
@@ -51,7 +53,9 @@ class ProductImageViewer extends HookWidget {
                           backgroundColor: cs.scrim,
                           appBar: AppBar(
                             backgroundColor: cs.scrim,
-                            iconTheme: IconThemeData(color: cs.onInverseSurface),
+                            iconTheme: IconThemeData(
+                              color: cs.onInverseSurface,
+                            ),
                           ),
                           body: Center(
                             child: InteractiveViewer(
@@ -62,7 +66,9 @@ class ProductImageViewer extends HookWidget {
                                 width: double.infinity,
                                 height: double.infinity,
                                 placeholder: (final context, final url) =>
-                                    const Center(child: CircularProgressIndicator()),
+                                    const Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
                               ),
                             ),
                           ),
@@ -83,7 +89,9 @@ class ProductImageViewer extends HookWidget {
                       placeholder: (final context, final url) =>
                           const Center(child: CircularProgressIndicator()),
                       errorWidget: (final context, final url, final error) =>
-                          const Center(child: Icon(Icons.broken_image_outlined)),
+                          const Center(
+                            child: Icon(Icons.broken_image_outlined),
+                          ),
                     ),
                   ),
                 ),

@@ -63,13 +63,18 @@ void main() {
             (final ref, final imagePath) => Completer<File>().future,
           ),
         ],
-        child: MaterialApp.router(theme: AppTheme.lightTheme, routerConfig: router),
+        child: MaterialApp.router(
+          theme: AppTheme.lightTheme,
+          routerConfig: router,
+        ),
       ),
     );
     await tester.pump();
   }
 
-  testWidgets('shows one tile per piece and badges its source', (final tester) async {
+  testWidgets('shows one tile per piece and badges its source', (
+    final tester,
+  ) async {
     await pumpRail(tester, [
       product,
       wardrobePiece('a'),
@@ -110,7 +115,9 @@ void main() {
     expect(find.text('photo /tmp/none.jpg'), findsOneWidget);
   });
 
-  testWidgets('only the last tile carries the edit badge', (final tester) async {
+  testWidgets('only the last tile carries the edit badge', (
+    final tester,
+  ) async {
     await pumpRail(tester, [product, wardrobePiece('a')]);
 
     final badge = tester.getCenter(find.byIcon(Icons.edit_outlined));
@@ -121,7 +128,9 @@ void main() {
     expect(badge.dx, greaterThan(lastTile.center.dx));
   });
 
-  testWidgets('the edit badge hands the outfit back for editing', (final tester) async {
+  testWidgets('the edit badge hands the outfit back for editing', (
+    final tester,
+  ) async {
     var edits = 0;
     await pumpRail(tester, [product], onEdit: () => edits++);
 

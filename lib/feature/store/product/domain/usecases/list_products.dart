@@ -13,6 +13,9 @@ class ListProducts {
     required final String storeId,
     final bool forceRefresh = false,
   }) async {
-    return _productRepository.listProducts(storeId: storeId, forceRefresh: forceRefresh);
+    return _productRepository.listProducts(
+      storeId: storeId,
+      forceRefresh: forceRefresh,
+    );
   }
 }

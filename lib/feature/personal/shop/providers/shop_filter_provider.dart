@@ -39,7 +39,9 @@ class ShopFilterNotifier extends _$ShopFilterNotifier {
 
   void setElasticities(final Set<ProductElasticity>? elasticities) {
     state = state.copyWith(
-      elasticities: (elasticities == null || elasticities.isEmpty) ? null : elasticities,
+      elasticities: (elasticities == null || elasticities.isEmpty)
+          ? null
+          : elasticities,
     );
   }
 
@@ -49,12 +51,16 @@ class ShopFilterNotifier extends _$ShopFilterNotifier {
 
   void setThicknesses(final Set<ProductThickness>? thicknesses) {
     state = state.copyWith(
-      thicknesses: (thicknesses == null || thicknesses.isEmpty) ? null : thicknesses,
+      thicknesses: (thicknesses == null || thicknesses.isEmpty)
+          ? null
+          : thicknesses,
     );
   }
 
   void setStyles(final Set<ClothingStyle>? styles) {
-    state = state.copyWith(styles: (styles == null || styles.isEmpty) ? null : styles);
+    state = state.copyWith(
+      styles: (styles == null || styles.isEmpty) ? null : styles,
+    );
   }
 
   void setSeasons(final Set<ProductSeason>? seasons) {

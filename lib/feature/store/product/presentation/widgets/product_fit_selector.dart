@@ -11,25 +11,29 @@ class ProductFitSelector extends StatelessWidget {
   Widget build(final BuildContext context) {
     return ValueListenableBuilder<ProductFit?>(
       valueListenable: selectedFit,
-      builder: (final context, final value, final _) => SegmentedButton<ProductFit>(
-        segments: ProductFit.values
-            .map((final f) => ButtonSegment<ProductFit>(value: f, label: Text(f.label)))
-            .toList(),
-        selected: value == null ? <ProductFit>{} : <ProductFit>{value},
-        multiSelectionEnabled: true,
-        emptySelectionAllowed: true,
-        showSelectedIcon: false,
-        expandedInsets: EdgeInsets.zero,
-        onSelectionChanged: (final newSet) {
-          if (newSet.isEmpty) {
-            selectedFit.value = null;
-          } else if (newSet.length > 1 && value != null) {
-            selectedFit.value = newSet.firstWhere((final v) => v != value);
-          } else {
-            selectedFit.value = newSet.first;
-          }
-        },
-      ),
+      builder: (final context, final value, final _) =>
+          SegmentedButton<ProductFit>(
+            segments: ProductFit.values
+                .map(
+                  (final f) =>
+                      ButtonSegment<ProductFit>(value: f, label: Text(f.label)),
+                )
+                .toList(),
+            selected: value == null ? <ProductFit>{} : <ProductFit>{value},
+            multiSelectionEnabled: true,
+            emptySelectionAllowed: true,
+            showSelectedIcon: false,
+            expandedInsets: EdgeInsets.zero,
+            onSelectionChanged: (final newSet) {
+              if (newSet.isEmpty) {
+                selectedFit.value = null;
+              } else if (newSet.length > 1 && value != null) {
+                selectedFit.value = newSet.firstWhere((final v) => v != value);
+              } else {
+                selectedFit.value = newSet.first;
+              }
+            },
+          ),
     );
   }
 }

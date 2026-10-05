@@ -37,7 +37,9 @@ class ChatWardrobeCard extends ConsumerWidget {
         if (tagLine.isNotEmpty)
           Text(
             tagLine,
-            style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+            style: textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

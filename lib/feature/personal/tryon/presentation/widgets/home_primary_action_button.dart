@@ -35,9 +35,13 @@ class HomePrimaryActionButton extends StatelessWidget {
                 vertical: AppSpacing.md,
               ),
               decoration: BoxDecoration(
-                color: colorScheme.onSurface.withValues(alpha: AppOpacity.overlay),
+                color: colorScheme.onSurface.withValues(
+                  alpha: AppOpacity.overlay,
+                ),
                 border: Border.all(
-                  color: colorScheme.onPrimary.withValues(alpha: AppOpacity.medium),
+                  color: colorScheme.onPrimary.withValues(
+                    alpha: AppOpacity.medium,
+                  ),
                   width: AppStroke.thin,
                 ),
                 borderRadius: AppRadius.pillAll,
@@ -49,7 +53,9 @@ class HomePrimaryActionButton extends StatelessWidget {
                   const SizedBox(width: AppSpacing.sm),
                   Text(
                     label,
-                    style: textTheme.labelLarge?.copyWith(color: colorScheme.onPrimary),
+                    style: textTheme.labelLarge?.copyWith(
+                      color: colorScheme.onPrimary,
+                    ),
                   ),
                 ],
               ),

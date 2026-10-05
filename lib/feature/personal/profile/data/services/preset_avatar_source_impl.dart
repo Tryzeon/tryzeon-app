@@ -23,14 +23,20 @@ class PresetAvatarSourceImpl implements PresetAvatarSource {
       final data = await _bundle.load(preset.assetPath);
       final directory = await _temporaryDirectory();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final file = File('${directory.path}/preset_${preset.name}_$timestamp.jpg');
+      final file = File(
+        '${directory.path}/preset_${preset.name}_$timestamp.jpg',
+      );
       await file.writeAsBytes(
         data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
         flush: true,
       );
       return Ok(file);
     } catch (e, stackTrace) {
-      AppLogger.error('Failed to prepare preset avatar ${preset.name}', e, stackTrace);
+      AppLogger.error(
+        'Failed to prepare preset avatar ${preset.name}',
+        e,
+        stackTrace,
+      );
       return Err(mapExceptionToFailure(e));
     }
   }

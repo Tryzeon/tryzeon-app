@@ -24,7 +24,9 @@ class ChatPage extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final entries = ref.watch(chatTimelineProvider);
     final isLoading = ref.watch(chatProvider.select((final s) => s.isLoading));
-    final isPristine = ref.watch(chatProvider.select((final s) => s.isPristine));
+    final isPristine = ref.watch(
+      chatProvider.select((final s) => s.isPristine),
+    );
     final notifier = ref.watch(chatProvider.notifier);
 
     final controller = useTextEditingController();
@@ -33,7 +35,8 @@ class ChatPage extends HookConsumerWidget {
 
     useEffect(() {
       void updateJumpVisibility() {
-        showJump.value = scrollController.offset > ChatTimelineList.jumpThreshold;
+        showJump.value =
+            scrollController.offset > ChatTimelineList.jumpThreshold;
       }
 
       scrollController.addListener(updateJumpVisibility);
@@ -50,11 +53,17 @@ class ChatPage extends HookConsumerWidget {
     }
 
     void scrollToLatestAfterLayout() {
-      WidgetsBinding.instance.addPostFrameCallback((final _) => scrollToLatest());
+      WidgetsBinding.instance.addPostFrameCallback(
+        (final _) => scrollToLatest(),
+      );
     }
 
     void showUpgrade() {
-      UpgradeDialog.show(context, title: '對話次數已達上限', content: '今天的對話次數已達上限\n升級方案就能繼續聊呦！');
+      UpgradeDialog.show(
+        context,
+        title: '對話次數已達上限',
+        content: '今天的對話次數已達上限\n升級方案就能繼續聊呦！',
+      );
     }
 
     ref.listen(chatTimelineProvider.select((final e) => e.length), (
@@ -70,7 +79,9 @@ class ChatPage extends HookConsumerWidget {
       final previous,
       final next,
     ) {
-      if (previous == true && !next && isNearLatest()) scrollToLatestAfterLayout();
+      if (previous == true && !next && isNearLatest()) {
+        scrollToLatestAfterLayout();
+      }
     });
 
     ref.listen(personalTabReselectSignalProvider, (final _, final next) {
@@ -116,7 +127,9 @@ class ChatPage extends HookConsumerWidget {
     final mediaQuery = MediaQuery.of(context);
     final keyboardHeight = mediaQuery.viewInsets.bottom;
     final restingSpacing =
-        mediaQuery.viewPadding.bottom + AppSpacing.bottomNavBarOverlap + AppSpacing.sm;
+        mediaQuery.viewPadding.bottom +
+        AppSpacing.bottomNavBarOverlap +
+        AppSpacing.sm;
     final bottomSpacing = keyboardHeight > 0
         ? math.max(restingSpacing, keyboardHeight)
         : restingSpacing;

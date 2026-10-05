@@ -3,7 +3,8 @@ import 'package:tryzeon/feature/store/analytics/domain/entities/product_analytic
 import 'package:typed_result/typed_result.dart';
 
 abstract class ProductAnalyticsRepository {
-  Future<Result<List<ProductAnalyticsSummary>, Failure>> getProductAnalyticsSummaries(
+  Future<Result<List<ProductAnalyticsSummary>, Failure>>
+  getProductAnalyticsSummaries(
     final String storeId, {
     final int? year,
     final int? month,

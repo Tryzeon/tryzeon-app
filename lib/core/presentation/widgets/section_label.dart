@@ -16,7 +16,10 @@ class SectionLabel extends StatelessWidget {
       padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: AppSpacing.sm),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: Text(text, style: theme.textTheme.labelLarge?.copyWith(color: resolved)),
+        child: Text(
+          text,
+          style: theme.textTheme.labelLarge?.copyWith(color: resolved),
+        ),
       ),
     );
   }

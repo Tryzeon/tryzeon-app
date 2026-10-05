@@ -21,7 +21,8 @@ abstract final class AppRoutes {
   static const String personalSettingsProfile = '/personal/settings/profile';
   static const String personalSettingsBodyMeasurements =
       '/personal/settings/body-measurements';
-  static const String personalSettingsStyle = '/personal/settings/style-preferences';
+  static const String personalSettingsStyle =
+      '/personal/settings/style-preferences';
   static const String personalSubscription = '/personal/settings/subscription';
   static const String personalPaywall = '/personal/paywall';
 
@@ -47,8 +48,10 @@ abstract final class AppRoutes {
     return userType == UserType.store ? dashboardAccount : personalHome;
   }
 
-  static String personalHomePhotoPath(final String filePath) =>
-      Uri(path: personalHomePhoto, queryParameters: {'path': filePath}).toString();
+  static String personalHomePhotoPath(final String filePath) => Uri(
+    path: personalHomePhoto,
+    queryParameters: {'path': filePath},
+  ).toString();
 
   static String personalShopProductPath(final String productId) =>
       '/personal/shop/product/$productId';

@@ -42,7 +42,10 @@ class WardrobeItemCard extends ConsumerWidget {
       shape: isSelected
           ? RoundedRectangleBorder(
               borderRadius: AppRadius.cardAll,
-              side: BorderSide(color: colorScheme.primary, width: AppStroke.regular),
+              side: BorderSide(
+                color: colorScheme.primary,
+                width: AppStroke.regular,
+              ),
             )
           : null,
       child: InkWell(
@@ -59,15 +62,20 @@ class WardrobeItemCard extends ConsumerWidget {
                     buildFallback(),
               ),
               loading: () => const Center(
-                child: CircularProgressIndicator(strokeWidth: AppStroke.regular),
+                child: CircularProgressIndicator(
+                  strokeWidth: AppStroke.regular,
+                ),
               ),
               error: (final error, final stack) => buildFallback(
-                onRetry: () => ref.refresh(wardrobeItemImageProvider(item.imagePath)),
+                onRetry: () =>
+                    ref.refresh(wardrobeItemImageProvider(item.imagePath)),
               ),
             ),
             if (isSelected) ...[
               ColoredBox(
-                color: colorScheme.primaryContainer.withValues(alpha: AppOpacity.strong),
+                color: colorScheme.primaryContainer.withValues(
+                  alpha: AppOpacity.strong,
+                ),
               ),
               Positioned(
                 top: AppSpacing.sm,

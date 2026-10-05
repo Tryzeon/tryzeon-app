@@ -6,8 +6,9 @@ import 'package:tryzeon/feature/personal/usage/domain/repositories/daily_usage_r
 import 'package:typed_result/typed_result.dart';
 
 class DailyUsageRepositoryImpl implements DailyUsageRepository {
-  DailyUsageRepositoryImpl({required final DailyUsageRemoteDataSource remoteDataSource})
-    : _remoteDataSource = remoteDataSource;
+  DailyUsageRepositoryImpl({
+    required final DailyUsageRemoteDataSource remoteDataSource,
+  }) : _remoteDataSource = remoteDataSource;
 
   final DailyUsageRemoteDataSource _remoteDataSource;
 

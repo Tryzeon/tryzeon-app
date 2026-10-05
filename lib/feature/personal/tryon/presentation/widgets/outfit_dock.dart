@@ -59,8 +59,12 @@ class OutfitDock extends HookConsumerWidget {
         ? '點選衣物加入搭配，最多 ${AppConstants.maxTryonGarments} 件'
         : null;
 
-    void launch() =>
-        triggerOutfitTryon(context, ref, tray.pieces, beforeLaunch: notifier.launch);
+    void launch() => triggerOutfitTryon(
+      context,
+      ref,
+      tray.pieces,
+      beforeLaunch: notifier.launch,
+    );
 
     final slots = Row(
       mainAxisSize: MainAxisSize.min,

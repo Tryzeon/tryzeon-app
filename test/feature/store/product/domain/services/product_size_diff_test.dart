@@ -71,7 +71,10 @@ void main() {
     );
 
     final update = diff.toUpdate.single;
-    expect(update.targetSize.garmentMeasurements, const GarmentMeasurements(length: 72));
+    expect(
+      update.targetSize.garmentMeasurements,
+      const GarmentMeasurements(length: 72),
+    );
   });
 
   test('an unchanged size produces an empty diff', () {

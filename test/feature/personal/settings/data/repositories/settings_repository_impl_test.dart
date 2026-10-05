@@ -11,17 +11,20 @@ void main() {
 
   final repository = SettingsRepositoryImpl();
 
-  test('reads back settings saved by v1.13, which used the same keys', () async {
-    SharedPreferences.setMockInitialValues({
-      AppConstants.keyTryonScenePrompt: 'urban street',
-      AppConstants.keyTryonTransitionPrompt: 'single take',
-    });
+  test(
+    'reads back settings saved by v1.13, which used the same keys',
+    () async {
+      SharedPreferences.setMockInitialValues({
+        AppConstants.keyTryonScenePrompt: 'urban street',
+        AppConstants.keyTryonTransitionPrompt: 'single take',
+      });
 
-    final config = (await repository.getTryonPreferences()).get()!;
-    expect(config.scenePrompt, 'urban street');
-    expect(config.transitionPrompt, 'single take');
-    expect(config.engine, TryonEngine.standard);
-  });
+      final config = (await repository.getTryonPreferences()).get()!;
+      expect(config.scenePrompt, 'urban street');
+      expect(config.transitionPrompt, 'single take');
+      expect(config.engine, TryonEngine.standard);
+    },
+  );
 
   test('reads back what it saved', () async {
     SharedPreferences.setMockInitialValues({});
@@ -42,31 +45,39 @@ void main() {
     expect(config.engine, TryonEngine.experimental);
   });
 
-  test('falls back to the standard engine when the stored name is unknown', () async {
-    SharedPreferences.setMockInitialValues({AppConstants.keyTryonEngine: 'turbo'});
+  test(
+    'falls back to the standard engine when the stored name is unknown',
+    () async {
+      SharedPreferences.setMockInitialValues({
+        AppConstants.keyTryonEngine: 'turbo',
+      });
 
-    final config = (await repository.getTryonPreferences()).get()!;
-    expect(config.engine, TryonEngine.standard);
-  });
+      final config = (await repository.getTryonPreferences()).get()!;
+      expect(config.engine, TryonEngine.standard);
+    },
+  );
 
-  test('clearing a prompt removes its key instead of storing an empty string', () async {
-    SharedPreferences.setMockInitialValues({
-      AppConstants.keyTryonScenePrompt: 'urban street',
-      AppConstants.keyTryonStylingPrompt: 'tucked in',
-      AppConstants.keyTryonTransitionPrompt: 'jump cut',
-    });
+  test(
+    'clearing a prompt removes its key instead of storing an empty string',
+    () async {
+      SharedPreferences.setMockInitialValues({
+        AppConstants.keyTryonScenePrompt: 'urban street',
+        AppConstants.keyTryonStylingPrompt: 'tucked in',
+        AppConstants.keyTryonTransitionPrompt: 'jump cut',
+      });
 
-    await repository.setTryonPreferences(const TryonPreferences());
+      await repository.setTryonPreferences(const TryonPreferences());
 
-    final prefs = await SharedPreferences.getInstance();
-    expect(prefs.containsKey(AppConstants.keyTryonScenePrompt), isFalse);
-    expect(prefs.containsKey(AppConstants.keyTryonStylingPrompt), isFalse);
-    expect(prefs.containsKey(AppConstants.keyTryonTransitionPrompt), isFalse);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.containsKey(AppConstants.keyTryonScenePrompt), isFalse);
+      expect(prefs.containsKey(AppConstants.keyTryonStylingPrompt), isFalse);
+      expect(prefs.containsKey(AppConstants.keyTryonTransitionPrompt), isFalse);
 
-    final config = (await repository.getTryonPreferences()).get()!;
-    expect(config.hasScene, isFalse);
-    expect(config.hasStyling, isFalse);
-    expect(config.hasTransition, isFalse);
-    expect(config.hasCustomEngine, isFalse);
-  });
+      final config = (await repository.getTryonPreferences()).get()!;
+      expect(config.hasScene, isFalse);
+      expect(config.hasStyling, isFalse);
+      expect(config.hasTransition, isFalse);
+      expect(config.hasCustomEngine, isFalse);
+    },
+  );
 }

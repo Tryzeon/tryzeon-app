@@ -103,7 +103,9 @@ class _TrafficStatTile extends StatelessWidget {
           const SizedBox(height: AppSpacing.xs),
           Text(
             label,
-            style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
+            style: textTheme.labelSmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),

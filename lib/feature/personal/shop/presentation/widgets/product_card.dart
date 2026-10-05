@@ -47,7 +47,10 @@ class ProductCard extends HookConsumerWidget {
 
     return GestureDetector(
       onTap: () {
-        context.push(AppRoutes.personalShopProductPath(product.id), extra: product);
+        context.push(
+          AppRoutes.personalShopProductPath(product.id),
+          extra: product,
+        );
       },
       child: VisibilityDetector(
         key: Key('product-card-${product.id}'),
@@ -74,11 +77,16 @@ class ProductCard extends HookConsumerWidget {
                                 fadeInDuration: Duration.zero,
                                 fadeOutDuration: Duration.zero,
                                 placeholder: (final context, final url) =>
-                                    Container(color: colorScheme.surfaceContainerLow),
-                                errorWidget: (final context, final url, final error) =>
-                                    const Center(
-                                      child: Icon(Icons.broken_image_outlined),
+                                    Container(
+                                      color: colorScheme.surfaceContainerLow,
                                     ),
+                                errorWidget:
+                                    (final context, final url, final error) =>
+                                        const Center(
+                                          child: Icon(
+                                            Icons.broken_image_outlined,
+                                          ),
+                                        ),
                               ),
                       ),
                       Positioned(
@@ -87,7 +95,8 @@ class ProductCard extends HookConsumerWidget {
                         child: Skeleton.ignore(
                           child: TryonFab(
                             label: '試穿',
-                            onTap: () => triggerProductTryon(context, ref, product),
+                            onTap: () =>
+                                triggerProductTryon(context, ref, product),
                           ),
                         ),
                       ),
@@ -176,11 +185,17 @@ class _SizeChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.check_rounded, size: 10, color: AppColors.onFitMatchContainer),
+          const Icon(
+            Icons.check_rounded,
+            size: 10,
+            color: AppColors.onFitMatchContainer,
+          ),
           const SizedBox(width: AppSpacing.xxs),
           Text(
             sizeName,
-            style: textTheme.labelMedium?.copyWith(color: AppColors.onFitMatchContainer),
+            style: textTheme.labelMedium?.copyWith(
+              color: AppColors.onFitMatchContainer,
+            ),
           ),
         ],
       ),

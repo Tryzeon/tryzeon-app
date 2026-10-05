@@ -52,7 +52,11 @@ class PersonalOnboardingPage extends HookConsumerWidget {
             child: PageView(
               controller: pageController,
               physics: const NeverScrollableScrollPhysics(),
-              children: const [GenderSelectionStep(), AgeStep(), StylePreferenceStep()],
+              children: const [
+                GenderSelectionStep(),
+                AgeStep(),
+                StylePreferenceStep(),
+              ],
             ),
           ),
 
@@ -107,11 +111,12 @@ class PersonalOnboardingPage extends HookConsumerWidget {
     );
   }
 
-  bool _canAdvance(final int step, final OnboardingState state) => switch (step) {
-    0 => state.gender != null,
-    1 => state.ageRange != null,
-    _ => true,
-  };
+  bool _canAdvance(final int step, final OnboardingState state) =>
+      switch (step) {
+        0 => state.gender != null,
+        1 => state.ageRange != null,
+        _ => true,
+      };
 
   Future<void> _handleComplete(
     final BuildContext context,

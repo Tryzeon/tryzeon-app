@@ -25,7 +25,8 @@ sealed class TryonGalleryState with _$TryonGalleryState {
 
   bool get isAvatarPage => currentIndex == -1;
 
-  TryonGalleryEntry? get currentEntry => isAvatarPage ? null : entries[currentIndex];
+  TryonGalleryEntry? get currentEntry =>
+      isAvatarPage ? null : entries[currentIndex];
 
   TryonResult? get currentResult => currentEntry?.result;
 
@@ -34,7 +35,8 @@ sealed class TryonGalleryState with _$TryonGalleryState {
   TryonResult? get customAvatarResult =>
       entries.where((final e) => e.id == customAvatarId).firstOrNull?.result;
 
-  bool get isCurrentTheAvatar => currentId != null && currentId == customAvatarId;
+  bool get isCurrentTheAvatar =>
+      currentId != null && currentId == customAvatarId;
 }
 
 @Riverpod(keepAlive: true)
@@ -60,7 +62,10 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
     state = state.copyWith(currentId: null, customAvatarId: null);
   }
 
-  void addPending({required final String id, required final TryonSubject subject}) {
+  void addPending({
+    required final String id,
+    required final TryonSubject subject,
+  }) {
     state = state.copyWith(
       entries: [
         ...state.entries,
@@ -77,7 +82,8 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
     if (index == -1) return false;
     final entry = state.entries[index];
     state = state.copyWith(
-      entries: [...state.entries]..[index] = FinishedTryonEntry(result, entry.subject),
+      entries: [...state.entries]
+        ..[index] = FinishedTryonEntry(result, entry.subject),
     );
     return true;
   }
@@ -107,6 +113,8 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
   void toggleAvatarForCurrent() {
     final id = state.currentId;
     if (id == null) return;
-    state = state.copyWith(customAvatarId: state.customAvatarId == id ? null : id);
+    state = state.copyWith(
+      customAvatarId: state.customAvatarId == id ? null : id,
+    );
   }
 }

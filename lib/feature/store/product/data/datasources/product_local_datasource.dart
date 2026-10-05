@@ -12,8 +12,10 @@ class ProductLocalDataSource {
   final IsarService _isarService;
   final CacheEntryLocalDataSource _cacheEntryLocalDataSource;
   static const _mappr = StoreMappr();
-  static String cacheKeyForStore(final String storeId) => 'store_products:$storeId';
-  static String cacheKeyForProduct(final String productId) => 'store_product:$productId';
+  static String cacheKeyForStore(final String storeId) =>
+      'store_products:$storeId';
+  static String cacheKeyForProduct(final String productId) =>
+      'store_product:$productId';
 
   Future<CacheLookup<Product>> getProductById(final String productId) async {
     final isar = await _isarService.db;
@@ -41,13 +43,19 @@ class ProductLocalDataSource {
         isEmpty: false,
       );
     }
-    await _cacheEntryLocalDataSource.markHasData(cacheKeyForProduct(product.id));
+    await _cacheEntryLocalDataSource.markHasData(
+      cacheKeyForProduct(product.id),
+    );
   }
 
-  Future<CacheLookup<List<Product>>> listProducts({required final String storeId}) async {
+  Future<CacheLookup<List<Product>>> listProducts({
+    required final String storeId,
+  }) async {
     final isar = await _isarService.db;
     final cacheKey = cacheKeyForStore(storeId);
-    final cacheStatus = await _cacheEntryLocalDataSource.getEntryStatus(cacheKey);
+    final cacheStatus = await _cacheEntryLocalDataSource.getEntryStatus(
+      cacheKey,
+    );
     if (cacheStatus == null) return const CacheMiss();
 
     if (cacheStatus == CacheEntryStatus.empty) {
@@ -64,7 +72,10 @@ class ProductLocalDataSource {
     return CacheHit(_mappr.convertList<ProductCache, Product>(collections));
   }
 
-  Future<void> saveProducts(final String storeId, final List<Product> products) async {
+  Future<void> saveProducts(
+    final String storeId,
+    final List<Product> products,
+  ) async {
     final isar = await _isarService.db;
     final existingCollections = await isar.productCaches
         .filter()
@@ -81,7 +92,10 @@ class ProductLocalDataSource {
     });
 
     final cacheKey = cacheKeyForStore(storeId);
-    await _cacheEntryLocalDataSource.markListState(cacheKey, isEmpty: products.isEmpty);
+    await _cacheEntryLocalDataSource.markListState(
+      cacheKey,
+      isEmpty: products.isEmpty,
+    );
   }
 
   Future<void> deleteProduct({
@@ -117,5 +131,8 @@ class ProductLocalDataSource {
   }
 
   Future<bool> _isStoreListCached(final String storeId) async =>
-      await _cacheEntryLocalDataSource.getEntryStatus(cacheKeyForStore(storeId)) != null;
+      await _cacheEntryLocalDataSource.getEntryStatus(
+        cacheKeyForStore(storeId),
+      ) !=
+      null;
 }

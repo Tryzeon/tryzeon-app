@@ -27,7 +27,11 @@ class ContactChoice extends PurchaseChoice {
 }
 
 class PrePurchaseSheet extends StatelessWidget {
-  const PrePurchaseSheet({super.key, required this.product, required this.fitResult});
+  const PrePurchaseSheet({
+    super.key,
+    required this.product,
+    required this.fitResult,
+  });
 
   final ShopProduct product;
   final FitResult fitResult;
@@ -42,7 +46,8 @@ class PrePurchaseSheet extends StatelessWidget {
       useRootNavigator: true,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (final _) => PrePurchaseSheet(product: product, fitResult: fitResult),
+      builder: (final _) =>
+          PrePurchaseSheet(product: product, fitResult: fitResult),
     );
   }
 
@@ -112,7 +117,8 @@ class PrePurchaseSheet extends StatelessWidget {
 
             if (hasOnlineLink) ...[
               FilledButton(
-                onPressed: () => Navigator.of(context).pop(const OnlineStoreChoice()),
+                onPressed: () =>
+                    Navigator.of(context).pop(const OnlineStoreChoice()),
                 child: const Text('開啟購買連結'),
               ),
               if (contacts.isNotEmpty) const SizedBox(height: AppSpacing.md),
@@ -216,7 +222,9 @@ class _FitInfoRow extends StatelessWidget {
       ),
       subtitle: Text(
         fitResult.subline,
-        style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+        style: textTheme.bodySmall?.copyWith(
+          color: colorScheme.onSurfaceVariant,
+        ),
       ),
       trailing: onTap != null
           ? Icon(
@@ -269,14 +277,19 @@ class _ContactChannels extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.smMd),
 
-        _StepRow(number: 2, child: Text('開啟社群軟體，貼上即可向店家下單', style: textTheme.bodyMedium)),
+        _StepRow(
+          number: 2,
+          child: Text('開啟社群軟體，貼上即可向店家下單', style: textTheme.bodyMedium),
+        ),
         const SizedBox(height: AppSpacing.md),
 
         Padding(
           padding: const EdgeInsets.only(left: _stepIndent),
           child: Wrap(
             spacing: AppSpacing.smMd,
-            children: [for (final contact in contacts) _ChannelButton(contact: contact)],
+            children: [
+              for (final contact in contacts) _ChannelButton(contact: contact),
+            ],
           ),
         ),
       ],
@@ -319,7 +332,10 @@ class _StepBadge extends StatelessWidget {
       width: size,
       height: size,
       alignment: Alignment.center,
-      decoration: BoxDecoration(shape: BoxShape.circle, color: colorScheme.primary),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: colorScheme.primary,
+      ),
       child: Text(
         '$number',
         style: textTheme.labelSmall?.copyWith(

@@ -52,7 +52,11 @@ void main() {
     var taps = 0;
     var longPresses = 0;
     await tester.pumpWidget(
-      _harness(isSelected: false, onTap: () => taps++, onLongPress: () => longPresses++),
+      _harness(
+        isSelected: false,
+        onTap: () => taps++,
+        onLongPress: () => longPresses++,
+      ),
     );
 
     await tester.tap(find.byType(WardrobeItemCard));
@@ -63,9 +67,14 @@ void main() {
   });
 
   testWidgets('a selected card shows the check badge', (final tester) async {
-    await tester.pumpWidget(_harness(isSelected: true, onTap: () {}, onLongPress: () {}));
+    await tester.pumpWidget(
+      _harness(isSelected: true, onTap: () {}, onLongPress: () {}),
+    );
 
-    expect(find.byKey(const Key('wardrobe-card-selected-badge')), findsOneWidget);
+    expect(
+      find.byKey(const Key('wardrobe-card-selected-badge')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('an unselected card shows no badge', (final tester) async {

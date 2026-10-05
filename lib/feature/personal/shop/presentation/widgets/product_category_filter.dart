@@ -107,11 +107,15 @@ class _CategoryGrid extends StatelessWidget {
           height: _height,
           child: GridView.builder(
             scrollDirection: Axis.horizontal,
-            physics: fitsWithoutScrolling ? const NeverScrollableScrollPhysics() : null,
+            physics: fitsWithoutScrolling
+                ? const NeverScrollableScrollPhysics()
+                : null,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: _rowCount,
-              mainAxisExtent: fitsWithoutScrolling ? stretchedWidth : _minColumnWidth,
+              mainAxisExtent: fitsWithoutScrolling
+                  ? stretchedWidth
+                  : _minColumnWidth,
               mainAxisSpacing: _columnSpacing,
               crossAxisSpacing: AppSpacing.sm,
             ),
@@ -192,10 +196,11 @@ class _CategoryCard extends StatelessWidget {
                             ),
                           ),
                         ),
-                        errorWidget: (final context, final url, final error) => Icon(
-                          Icons.image_not_supported_outlined,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
+                        errorWidget: (final context, final url, final error) =>
+                            Icon(
+                              Icons.image_not_supported_outlined,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                       )
                     : Icon(
                         Icons.image_not_supported_outlined,

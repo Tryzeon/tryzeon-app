@@ -98,7 +98,10 @@ void main() {
         ChatState(messages: [_greeting, userAsk], isLoading: true),
       );
 
-      expect(entries.last, const ChatAssistantEntry(status: ChatTurnStatus.thinking));
+      expect(
+        entries.last,
+        const ChatAssistantEntry(status: ChatTurnStatus.thinking),
+      );
     });
 
     test('searching while the last step has no result', () {
@@ -113,7 +116,10 @@ void main() {
         ),
       );
 
-      expect((entries.last as ChatAssistantEntry).status, ChatTurnStatus.searching);
+      expect(
+        (entries.last as ChatAssistantEntry).status,
+        ChatTurnStatus.searching,
+      );
     });
 
     test('composing once every step has a result', () {
@@ -129,7 +135,10 @@ void main() {
         ),
       );
 
-      expect((entries.last as ChatAssistantEntry).status, ChatTurnStatus.composing);
+      expect(
+        (entries.last as ChatAssistantEntry).status,
+        ChatTurnStatus.composing,
+      );
     });
   });
 

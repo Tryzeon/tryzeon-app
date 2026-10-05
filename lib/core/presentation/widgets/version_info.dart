@@ -20,7 +20,8 @@ class VersionInfo extends HookWidget {
         onLongPress: () {
           Navigator.of(context).push(
             MaterialPageRoute<void>(
-              builder: (final context) => TalkerScreen(talker: AppLogger.talker),
+              builder: (final context) =>
+                  TalkerScreen(talker: AppLogger.talker),
             ),
           );
         },

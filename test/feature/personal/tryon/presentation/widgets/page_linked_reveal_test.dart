@@ -15,7 +15,11 @@ void main() {
           children: [
             PageView(
               controller: controller,
-              children: const [SizedBox.expand(), SizedBox.expand(), SizedBox.expand()],
+              children: const [
+                SizedBox.expand(),
+                SizedBox.expand(),
+                SizedBox.expand(),
+              ],
             ),
             PageLinkedReveal(
               controller: controller,
@@ -43,11 +47,18 @@ void main() {
 
   bool ignoresTaps(final WidgetTester tester, final String label) => tester
       .widget<IgnorePointer>(
-        find.ancestor(of: find.text(label), matching: find.byType(IgnorePointer)).first,
+        find
+            .ancestor(
+              of: find.text(label),
+              matching: find.byType(IgnorePointer),
+            )
+            .first,
       )
       .ignoring;
 
-  testWidgets('the avatar page shows only its own chrome', (final tester) async {
+  testWidgets('the avatar page shows only its own chrome', (
+    final tester,
+  ) async {
     await pumpHost(tester);
 
     expect(opacityOf(tester, 'avatar'), 1);
@@ -67,7 +78,9 @@ void main() {
     expect(ignoresTaps(tester, 'result'), isFalse);
   });
 
-  testWidgets('midway through the swipe neither side is shown', (final tester) async {
+  testWidgets('midway through the swipe neither side is shown', (
+    final tester,
+  ) async {
     await pumpHost(tester);
 
     controller.jumpTo(controller.position.viewportDimension * 0.5);

@@ -7,6 +7,7 @@ class GetStoreProfile {
   GetStoreProfile(this._repository);
   final StoreProfileRepository _repository;
 
-  Future<Result<StoreProfile?, Failure>> call({final bool forceRefresh = false}) =>
-      _repository.getStoreProfile(forceRefresh: forceRefresh);
+  Future<Result<StoreProfile?, Failure>> call({
+    final bool forceRefresh = false,
+  }) => _repository.getStoreProfile(forceRefresh: forceRefresh);
 }

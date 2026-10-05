@@ -46,7 +46,9 @@ sealed class BodyMeasurementRanges with _$BodyMeasurementRanges {
     BodyMeasurementType.thigh => thigh,
   };
 
-  MeasurementRange? operator [](final BodyMeasurementType type) => getValue(type);
+  MeasurementRange? operator [](final BodyMeasurementType type) =>
+      getValue(type);
 
-  bool get isEmpty => BodyMeasurementType.values.every((final t) => getValue(t) == null);
+  bool get isEmpty =>
+      BodyMeasurementType.values.every((final t) => getValue(t) == null);
 }

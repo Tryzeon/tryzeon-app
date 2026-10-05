@@ -4,5 +4,5 @@ import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.
 
 const _mappr = PersonalMappr();
 
-WardrobeItem decodeWardrobeItemRow(final Map<String, dynamic> row) =>
-    _mappr.convert<WardrobeItemDto, WardrobeItem>(WardrobeItemDto.fromJson(row));
+WardrobeItem decodeWardrobeItemRow(final Map<String, dynamic> row) => _mappr
+    .convert<WardrobeItemDto, WardrobeItem>(WardrobeItemDto.fromJson(row));

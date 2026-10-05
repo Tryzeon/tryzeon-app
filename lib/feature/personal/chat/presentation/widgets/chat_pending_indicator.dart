@@ -19,7 +19,9 @@ class ChatPendingIndicator extends HookWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    final controller = useAnimationController(duration: AppDuration.thinking ~/ 2);
+    final controller = useAnimationController(
+      duration: AppDuration.thinking ~/ 2,
+    );
     useEffect(() {
       controller.repeat();
       return null;
@@ -46,8 +48,10 @@ class ChatPendingIndicator extends HookWidget {
         Expanded(
           child: AnimatedSwitcher(
             duration: AppDuration.standard,
-            layoutBuilder: (final current, final previous) =>
-                Stack(alignment: Alignment.centerLeft, children: [...previous, ?current]),
+            layoutBuilder: (final current, final previous) => Stack(
+              alignment: Alignment.centerLeft,
+              children: [...previous, ?current],
+            ),
             child: Text(
               label,
               key: ValueKey(label),

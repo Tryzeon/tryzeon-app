@@ -41,7 +41,9 @@ class Tryon {
     return _tryonRepository.tryon(request.get()!);
   }
 
-  Future<Result<TryonRequest, Failure>> _buildRequest(final TryonParams params) async {
+  Future<Result<TryonRequest, Failure>> _buildRequest(
+    final TryonParams params,
+  ) async {
     final preferences = params.preferences;
 
     switch (params.subject) {
@@ -101,7 +103,9 @@ class Tryon {
         case OutfitPieceLocal(:final path):
           final bytes = await _mediaRepository.loadLocalImageBytes(path);
           if (bytes.isFailure) return Err(bytes.getError()!);
-          garments.add(TryonGarment.images(base64Images: [base64Encode(bytes.get()!)]));
+          garments.add(
+            TryonGarment.images(base64Images: [base64Encode(bytes.get()!)]),
+          );
       }
     }
     return Ok(garments);

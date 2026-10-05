@@ -37,7 +37,9 @@ import 'personal_mappr.auto_mappr.dart';
     MapType<UserProfile, UserProfileCache>(
       converters: [
         TypeConverter<Gender?, String?>(ProfileCacheConverters.genderToCache),
-        TypeConverter<AgeRange?, String?>(ProfileCacheConverters.ageRangeToCache),
+        TypeConverter<AgeRange?, String?>(
+          ProfileCacheConverters.ageRangeToCache,
+        ),
         TypeConverter<List<ClothingStyle>?, List<String>?>(
           ClothingStyleCacheConverters.listToCache,
         ),
@@ -46,7 +48,9 @@ import 'personal_mappr.auto_mappr.dart';
     MapType<UserProfileCache, UserProfile>(
       converters: [
         TypeConverter<String?, Gender?>(ProfileCacheConverters.genderFromCache),
-        TypeConverter<String?, AgeRange?>(ProfileCacheConverters.ageRangeFromCache),
+        TypeConverter<String?, AgeRange?>(
+          ProfileCacheConverters.ageRangeFromCache,
+        ),
         TypeConverter<List<String>?, List<ClothingStyle>?>(
           ClothingStyleCacheConverters.listFromCache,
         ),
@@ -63,7 +67,9 @@ import 'personal_mappr.auto_mappr.dart';
     MapType<WardrobeItemCache, WardrobeItem>(
       fields: [Field('id', from: 'itemId')],
       converters: [
-        TypeConverter<String, GarmentType>(GarmentTypeCacheConverters.fromCache),
+        TypeConverter<String, GarmentType>(
+          GarmentTypeCacheConverters.fromCache,
+        ),
       ],
     ),
     MapType<ShopProductDto, ShopProduct>(

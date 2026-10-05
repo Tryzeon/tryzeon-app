@@ -63,5 +63,9 @@ ProductSizeDiff computeSizeDiff(
       .where((final id) => !keptIds.contains(id))
       .toList();
 
-  return ProductSizeDiff(toAdd: toAdd, toUpdate: toUpdate, idsToDelete: idsToDelete);
+  return ProductSizeDiff(
+    toAdd: toAdd,
+    toUpdate: toUpdate,
+    idsToDelete: idsToDelete,
+  );
 }

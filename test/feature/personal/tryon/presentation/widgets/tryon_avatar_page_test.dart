@@ -34,7 +34,8 @@ class _FakeAvatarUploadNotifier extends AvatarUploadNotifier {
 
 void main() {
   setUp(() {
-    final view = TestWidgetsFlutterBinding.instance.platformDispatcher.views.first;
+    final view =
+        TestWidgetsFlutterBinding.instance.platformDispatcher.views.first;
     view.physicalSize = const Size(1170, 2532);
     view.devicePixelRatio = 3;
     addTearDown(view.reset);
@@ -51,8 +52,12 @@ void main() {
       ProviderScope(
         overrides: [
           userProfileProvider.overrideWith(_FakeUserProfileNotifier.new),
-          avatarFileProvider.overrideWith(avatarFile ?? (final ref) async => null),
-          avatarUploadProvider.overrideWith(() => _FakeAvatarUploadNotifier(uploading)),
+          avatarFileProvider.overrideWith(
+            avatarFile ?? (final ref) async => null,
+          ),
+          avatarUploadProvider.overrideWith(
+            () => _FakeAvatarUploadNotifier(uploading),
+          ),
         ],
         child: MaterialApp(
           theme: AppTheme.lightTheme,
@@ -83,35 +88,42 @@ void main() {
     expect(find.text('選擇你的試穿模特'), findsOneWidget);
     expect(find.text(PresetAvatar.male.label), findsNothing);
 
-    await tester.tap(find.widgetWithText(ModelChoiceTile, PresetAvatar.female.label));
+    await tester.tap(
+      find.widgetWithText(ModelChoiceTile, PresetAvatar.female.label),
+    );
     expect(picked, PresetAvatar.female);
 
     await tester.tap(find.widgetWithText(ModelChoiceTile, '上傳全身照'));
     expect(choseUpload, isTrue);
   });
 
-  testWidgets('while the model is loading, shows progress instead of the choice', (
-    final tester,
-  ) async {
-    await pumpPage(tester, avatarFile: (final ref) => Completer<File?>().future);
+  testWidgets(
+    'while the model is loading, shows progress instead of the choice',
+    (final tester) async {
+      await pumpPage(
+        tester,
+        avatarFile: (final ref) => Completer<File?>().future,
+      );
 
-    expect(find.text('選擇你的試穿模特'), findsNothing);
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-  });
+      expect(find.text('選擇你的試穿模特'), findsNothing);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    },
+  );
 
-  testWidgets('a photo being uploaded shows right away, with progress over it', (
-    final tester,
-  ) async {
-    await pumpPage(tester, uploading: File('preset_male.jpg'));
+  testWidgets(
+    'a photo being uploaded shows right away, with progress over it',
+    (final tester) async {
+      await pumpPage(tester, uploading: File('preset_male.jpg'));
 
-    final images = tester.widgetList<Image>(find.byType(Image));
-    expect(
-      images.map((final i) => i.image),
-      contains(FileImage(File('preset_male.jpg'))),
-    );
-    expect(find.text('選擇你的試穿模特'), findsNothing);
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-  });
+      final images = tester.widgetList<Image>(find.byType(Image));
+      expect(
+        images.map((final i) => i.image),
+        contains(FileImage(File('preset_male.jpg'))),
+      );
+      expect(find.text('選擇你的試穿模特'), findsNothing);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    },
+  );
 
   testWidgets('preset cards grow with the screen', (final tester) async {
     await pumpPage(tester);

@@ -13,11 +13,13 @@ import '../../../support/wardrobe_test_doubles.dart';
 
 const _dock = Key('outfit-dock');
 
-GoRoute _page(final String path, {final List<RouteBase> routes = const []}) => GoRoute(
-  path: path,
-  builder: (final _, final state) => Scaffold(body: Text(state.matchedLocation)),
-  routes: routes,
-);
+GoRoute _page(final String path, {final List<RouteBase> routes = const []}) =>
+    GoRoute(
+      path: path,
+      builder: (final _, final state) =>
+          Scaffold(body: Text(state.matchedLocation)),
+      routes: routes,
+    );
 
 void main() {
   late ProviderContainer container;
@@ -27,7 +29,9 @@ void main() {
     container = ProviderContainer(
       overrides: [
         isAuthenticatedProvider.overrideWithValue(true),
-        wardrobeItemsProvider.overrideWith(() => FakeWardrobeItems([wardrobeItem('a')])),
+        wardrobeItemsProvider.overrideWith(
+          () => FakeWardrobeItems([wardrobeItem('a')]),
+        ),
       ],
     );
     addTearDown(container.dispose);
@@ -62,7 +66,10 @@ void main() {
   Future<void> pumpShell(final WidgetTester tester) => tester.pumpWidget(
     UncontrolledProviderScope(
       container: container,
-      child: MaterialApp.router(theme: AppTheme.lightTheme, routerConfig: router),
+      child: MaterialApp.router(
+        theme: AppTheme.lightTheme,
+        routerConfig: router,
+      ),
     ),
   );
 

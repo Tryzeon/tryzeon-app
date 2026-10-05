@@ -3,7 +3,10 @@ import 'package:tryzeon/core/data/services/store_images_api.dart';
 import 'package:tryzeon/feature/personal/shop/data/mappers/product_row_mapper.dart';
 
 void main() {
-  Map<String, dynamic> row({final List<String>? imagePaths, final String? logoPath}) => {
+  Map<String, dynamic> row({
+    final List<String>? imagePaths,
+    final String? logoPath,
+  }) => {
     'id': 'p1',
     'name': '碎花洋裝',
     'category_id': 'c1',

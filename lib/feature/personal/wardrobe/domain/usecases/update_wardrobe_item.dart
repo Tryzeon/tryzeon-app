@@ -23,7 +23,9 @@ class UpdateWardrobeItem {
 
   final WardrobeRepository _repository;
 
-  Future<Result<WardrobeItem, Failure>> call(final UpdateWardrobeItemParams params) {
+  Future<Result<WardrobeItem, Failure>> call(
+    final UpdateWardrobeItemParams params,
+  ) {
     return _repository.updateWardrobeItem(
       id: params.id,
       garmentType: params.garmentType,

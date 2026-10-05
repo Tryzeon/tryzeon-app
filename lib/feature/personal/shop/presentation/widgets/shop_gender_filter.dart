@@ -4,7 +4,11 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 
 class ShopGenderFilter extends StatelessWidget {
-  const ShopGenderFilter({super.key, required this.selected, required this.onChanged});
+  const ShopGenderFilter({
+    super.key,
+    required this.selected,
+    required this.onChanged,
+  });
 
   final ProductGender? selected;
   final ValueChanged<ProductGender?> onChanged;
@@ -34,7 +38,11 @@ class ShopGenderFilter extends StatelessWidget {
 }
 
 class _GenderTab extends StatelessWidget {
-  const _GenderTab({required this.label, required this.isSelected, required this.onTap});
+  const _GenderTab({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
 
   final String label;
   final bool isSelected;
@@ -57,7 +65,9 @@ class _GenderTab extends StatelessWidget {
               duration: const Duration(milliseconds: 200),
               curve: Curves.easeOut,
               style: (theme.textTheme.titleSmall ?? const TextStyle()).copyWith(
-                color: isSelected ? colorScheme.onSurface : colorScheme.onSurfaceVariant,
+                color: isSelected
+                    ? colorScheme.onSurface
+                    : colorScheme.onSurfaceVariant,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                 letterSpacing: 0.5,
               ),

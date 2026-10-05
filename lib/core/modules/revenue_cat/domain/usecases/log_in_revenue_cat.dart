@@ -7,5 +7,6 @@ class LogInRevenueCat {
 
   final RevenueCatRepository _repository;
 
-  Future<Result<void, Failure>> call(final String userId) => _repository.logIn(userId);
+  Future<Result<void, Failure>> call(final String userId) =>
+      _repository.logIn(userId);
 }

@@ -21,7 +21,10 @@ class ChatFailureCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     final action = switch (failure) {
-      RateLimitFailure() => TextButton(onPressed: onUpgrade, child: const Text('升級方案')),
+      RateLimitFailure() => TextButton(
+        onPressed: onUpgrade,
+        child: const Text('升級方案'),
+      ),
       ValidationFailure() => null,
       _ => TextButton.icon(
         onPressed: onRetry,

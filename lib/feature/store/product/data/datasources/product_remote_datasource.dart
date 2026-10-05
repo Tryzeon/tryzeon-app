@@ -26,7 +26,9 @@ class ProductRemoteDataSource {
     await _supabaseClient.from(_productsTable).insert(request.toJson());
   }
 
-  Future<void> insertProductSizes(final List<CreateProductSizeRequest> requests) async {
+  Future<void> insertProductSizes(
+    final List<CreateProductSizeRequest> requests,
+  ) async {
     final sizesData = requests.map((final e) => e.toJson()).toList();
     await _supabaseClient.from(_productSizesTable).insert(sizesData);
   }
@@ -82,6 +84,9 @@ class ProductRemoteDataSource {
       ..remove('created_at')
       ..remove('updated_at');
 
-    await _supabaseClient.from(_productSizesTable).update(json).eq('id', sizeId);
+    await _supabaseClient
+        .from(_productSizesTable)
+        .update(json)
+        .eq('id', sizeId);
   }
 }

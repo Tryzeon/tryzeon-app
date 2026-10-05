@@ -67,29 +67,36 @@ void main() {
 
     await local.saveUserProfile(profile);
 
-    expect((await local.getUserProfile() as CacheHit<UserProfile>).data, profile);
+    expect(
+      (await local.getUserProfile() as CacheHit<UserProfile>).data,
+      profile,
+    );
   });
 
-  test('a cached row without measurements reads back as empty measurements', () async {
-    await harness.isar.writeTxn(() async {
-      await harness.isar.userProfileCaches.put(
-        UserProfileCache()
-          ..userId = 'u1'
-          ..name = 'Amy'
-          ..createdAt = DateTime(2026)
-          ..updatedAt = DateTime(2026)
-          ..isOnboarded = false,
-      );
-      await harness.isar.cacheEntrys.putByCacheKey(
-        CacheEntry()
-          ..cacheKey = UserProfileLocalDataSource.cacheKey
-          ..status = CacheEntryStatus.hasData.name
-          ..fetchedAt = DateTime.now(),
-      );
-    });
+  test(
+    'a cached row without measurements reads back as empty measurements',
+    () async {
+      await harness.isar.writeTxn(() async {
+        await harness.isar.userProfileCaches.put(
+          UserProfileCache()
+            ..userId = 'u1'
+            ..name = 'Amy'
+            ..createdAt = DateTime(2026)
+            ..updatedAt = DateTime(2026)
+            ..isOnboarded = false,
+        );
+        await harness.isar.cacheEntrys.putByCacheKey(
+          CacheEntry()
+            ..cacheKey = UserProfileLocalDataSource.cacheKey
+            ..status = CacheEntryStatus.hasData.name
+            ..fetchedAt = DateTime.now(),
+        );
+      });
 
-    final profile = (await build().getUserProfile() as CacheHit<UserProfile>).data;
+      final profile =
+          (await build().getUserProfile() as CacheHit<UserProfile>).data;
 
-    expect(profile.measurements, const BodyMeasurements());
-  });
+      expect(profile.measurements, const BodyMeasurements());
+    },
+  );
 }

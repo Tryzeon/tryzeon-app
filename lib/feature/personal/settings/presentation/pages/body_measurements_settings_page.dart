@@ -53,7 +53,8 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final formKey = useMemoized(GlobalKey<FormState>.new);
 
-    final measurementControllers = <BodyMeasurementType, TextEditingController>{};
+    final measurementControllers =
+        <BodyMeasurementType, TextEditingController>{};
     for (final type in BodyMeasurementType.values) {
       measurementControllers[type] = useTextEditingController(
         text: profile.measurements[type]?.toString() ?? '',
@@ -65,7 +66,9 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
     var filledCount = 0;
 
     for (final type in BodyMeasurementType.values) {
-      final currentValue = useValueListenable(measurementControllers[type]!).text;
+      final currentValue = useValueListenable(
+        measurementControllers[type]!,
+      ).text;
       final originalValue = profile.measurements[type]?.toString() ?? '';
       final currentDouble = double.tryParse(currentValue);
       final originalDouble = double.tryParse(originalValue);
@@ -187,13 +190,19 @@ class _MeasurementGrid extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: _MeasurementField(type: left, controller: controllers[left]!),
+                child: _MeasurementField(
+                  type: left,
+                  controller: controllers[left]!,
+                ),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: right == null
                     ? const SizedBox.shrink()
-                    : _MeasurementField(type: right, controller: controllers[right]!),
+                    : _MeasurementField(
+                        type: right,
+                        controller: controllers[right]!,
+                      ),
               ),
             ],
           ),
@@ -216,7 +225,9 @@ class _MeasurementField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+      ],
       validator: (final value) => AppValidators.validateRange(
         value,
         min: type.min,

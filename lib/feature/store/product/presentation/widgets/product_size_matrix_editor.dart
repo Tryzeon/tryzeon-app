@@ -111,8 +111,10 @@ class ProductSizeMatrixEditor extends HookWidget {
                 _MatrixColumn(
                   label: '${type.label} (${type.quantity.unitSuffix})',
                   width: _RangeCell.width,
-                  cellBuilder: (final entry) =>
-                      _RangeCell(controllers: entry.rangeControllers[type]!, type: type),
+                  cellBuilder: (final entry) => _RangeCell(
+                    controllers: entry.rangeControllers[type]!,
+                    type: type,
+                  ),
                 ),
             ],
           ),
@@ -149,7 +151,10 @@ class ProductSizeMatrixEditor extends HookWidget {
 }
 
 class _UnitSelector extends StatelessWidget {
-  const _UnitSelector({required this.selectedUnit, required this.onUnitChanged});
+  const _UnitSelector({
+    required this.selectedUnit,
+    required this.onUnitChanged,
+  });
 
   final MeasurementUnit selectedUnit;
   final ValueChanged<MeasurementUnit> onUnitChanged;
@@ -172,8 +177,10 @@ class _UnitSelector extends StatelessWidget {
         ),
         items: MeasurementUnit.values
             .map(
-              (final unit) =>
-                  DropdownMenuItem(value: unit, child: Text(unit.label.toUpperCase())),
+              (final unit) => DropdownMenuItem(
+                value: unit,
+                child: Text(unit.label.toUpperCase()),
+              ),
             )
             .toList(),
         onChanged: (final v) {
@@ -221,7 +228,11 @@ class _SizeChipRow extends StatelessWidget {
 }
 
 class _SubsectionHeader extends StatelessWidget {
-  const _SubsectionHeader({required this.title, required this.helper, this.trailing});
+  const _SubsectionHeader({
+    required this.title,
+    required this.helper,
+    this.trailing,
+  });
 
   final String title;
   final String helper;
@@ -337,7 +348,9 @@ class _MatrixTable extends StatelessWidget {
                     height: rowHeight,
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [for (final column in columns) column.cellBuilder(entry)],
+                      children: [
+                        for (final column in columns) column.cellBuilder(entry),
+                      ],
                     ),
                   ),
               ],
@@ -406,7 +419,9 @@ class _MeasurementCell extends StatelessWidget {
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           textInputAction: TextInputAction.next,
           autovalidateMode: AutovalidateMode.onUserInteractionIfError,
-          inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,1}'))],
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,1}')),
+          ],
           validator: (final value) => AppValidators.validateRange(
             value,
             min: type.minCm,
@@ -424,7 +439,10 @@ class _MeasurementCell extends StatelessWidget {
 
 const TextStyle _captionStyle = TextStyle(fontSize: 9, height: 1.1);
 
-InputDecoration _fieldDecoration(final BuildContext context, {final String? hint}) {
+InputDecoration _fieldDecoration(
+  final BuildContext context, {
+  final String? hint,
+}) {
   final theme = Theme.of(context);
   return InputDecoration(
     isDense: true,
@@ -502,7 +520,10 @@ class _RangeCell extends StatelessWidget {
                   ),
                 ],
               ),
-              _CaptionLine(text: state.errorText, color: theme.colorScheme.error),
+              _CaptionLine(
+                text: state.errorText,
+                color: theme.colorScheme.error,
+              ),
             ],
           ),
         ),
@@ -582,7 +603,9 @@ class _BoundField extends StatelessWidget {
         style: theme.textTheme.bodyMedium,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
         textInputAction: TextInputAction.next,
-        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,1}'))],
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,1}')),
+        ],
         onChanged: (final _) => onChanged(null),
         decoration: InputDecoration(
           isDense: true,
@@ -595,7 +618,9 @@ class _BoundField extends StatelessWidget {
             vertical: AppSpacing.sm,
           ),
           enabledBorder: hasError ? errorBorder : null,
-          focusedBorder: hasError ? theme.inputDecorationTheme.focusedErrorBorder : null,
+          focusedBorder: hasError
+              ? theme.inputDecorationTheme.focusedErrorBorder
+              : null,
         ),
       ),
     );

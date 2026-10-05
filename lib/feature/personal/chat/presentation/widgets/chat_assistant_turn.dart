@@ -9,7 +9,11 @@ import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_pending_
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_step_rail.dart';
 
 class ChatAssistantTurn extends HookWidget {
-  const ChatAssistantTurn({super.key, required this.entry, required this.gutter});
+  const ChatAssistantTurn({
+    super.key,
+    required this.entry,
+    required this.gutter,
+  });
 
   final ChatAssistantEntry entry;
   final EdgeInsets gutter;
@@ -42,7 +46,10 @@ class ChatAssistantTurn extends HookWidget {
             Padding(
               key: const ValueKey('steps'),
               padding: gutter,
-              child: ChatStepRail(steps: entry.steps, isLive: pendingLabel != null),
+              child: ChatStepRail(
+                steps: entry.steps,
+                isLive: pendingLabel != null,
+              ),
             ),
           for (final (index, segment) in entry.segments.indexed)
             _spaced(
@@ -51,7 +58,9 @@ class ChatAssistantTurn extends HookWidget {
               child: switch (segment) {
                 ChatTextSegment(:final text) => ChatEntrance(
                   animate: index >= firstNewSegment,
-                  delay: AppDuration.quick * (index - firstNewSegment).clamp(0, index),
+                  delay:
+                      AppDuration.quick *
+                      (index - firstNewSegment).clamp(0, index),
                   child: Padding(
                     padding: gutter,
                     child: ChatMarkdownText(text: text),
@@ -61,7 +70,9 @@ class ChatAssistantTurn extends HookWidget {
                   cards: cards,
                   padding: gutter,
                   animate: index >= firstNewSegment,
-                  delay: AppDuration.quick * (index - firstNewSegment).clamp(0, index),
+                  delay:
+                      AppDuration.quick *
+                      (index - firstNewSegment).clamp(0, index),
                 ),
               },
             ),

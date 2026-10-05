@@ -51,7 +51,11 @@ class RevenueCatRepositoryImpl implements RevenueCatRepository {
       await Purchases.logIn(userId);
       return const Ok(null);
     } catch (e, stackTrace) {
-      AppLogger.error('Failed to log in to RevenueCat for user $userId', e, stackTrace);
+      AppLogger.error(
+        'Failed to log in to RevenueCat for user $userId',
+        e,
+        stackTrace,
+      );
       return Err(UnknownFailure(e.toString()));
     }
   }
@@ -67,7 +71,9 @@ class RevenueCatRepositoryImpl implements RevenueCatRepository {
     }
   }
 
-  AppSubscriptionEntitlement _mapToEntitlement(final CustomerInfo customerInfo) {
+  AppSubscriptionEntitlement _mapToEntitlement(
+    final CustomerInfo customerInfo,
+  ) {
     final activeEntitlements = customerInfo.entitlements.active;
     final tier = _resolveTier(activeEntitlements);
     final primaryEntitlement = _getEntitlementForTier(activeEntitlements, tier);
@@ -98,8 +104,10 @@ class RevenueCatRepositoryImpl implements RevenueCatRepository {
     final AppSubscriptionTier tier,
   ) {
     return switch (tier) {
-      AppSubscriptionTier.max => activeEntitlements[AppConstants.entitlementMaxId],
-      AppSubscriptionTier.pro => activeEntitlements[AppConstants.entitlementProId],
+      AppSubscriptionTier.max =>
+        activeEntitlements[AppConstants.entitlementMaxId],
+      AppSubscriptionTier.pro =>
+        activeEntitlements[AppConstants.entitlementProId],
       AppSubscriptionTier.free => null,
     };
   }

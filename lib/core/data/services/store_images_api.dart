@@ -15,7 +15,8 @@ class StoreImagesApi {
   final SupabaseClient _supabaseClient;
   final Dio _dio;
 
-  static String publicUrl(final String key) => '${Env.r2PublicImagesBaseUrl}/$key';
+  static String publicUrl(final String key) =>
+      '${Env.r2PublicImagesBaseUrl}/$key';
 
   static String? publicUrlOrNull(final String? key) =>
       key == null || key.isEmpty ? null : publicUrl(key);
@@ -39,7 +40,11 @@ class StoreImagesApi {
     final key = presign['key'] as String;
     final uploadUrl = presign['uploadUrl'] as String;
 
-    await _putToR2(uploadUrl: uploadUrl, bytes: bytes, contentType: contentType);
+    await _putToR2(
+      uploadUrl: uploadUrl,
+      bytes: bytes,
+      contentType: contentType,
+    );
     return key;
   }
 
@@ -53,7 +58,9 @@ class StoreImagesApi {
     final contentTypes = images
         .map((final f) => lookupMimeType(f.path) ?? 'image/jpeg')
         .toList();
-    final allBytes = await Future.wait(images.map((final f) => f.readAsBytes()));
+    final allBytes = await Future.wait(
+      images.map((final f) => f.readAsBytes()),
+    );
 
     final response = await _supabaseClient.functions.invoke(
       AppConstants.functionStoreImagesPresignProducts,
@@ -96,7 +103,11 @@ class StoreImagesApi {
         try {
           await deleteImages(storeId: storeId, keys: uploadedKeys);
         } catch (e, stackTrace) {
-          AppLogger.warning('Failed to delete partially uploaded images', e, stackTrace);
+          AppLogger.warning(
+            'Failed to delete partially uploaded images',
+            e,
+            stackTrace,
+          );
         }
       }
       rethrow;

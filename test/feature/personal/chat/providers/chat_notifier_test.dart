@@ -24,7 +24,9 @@ class _FakeChatAction extends ChatAction {
 const _toolStarted = ChatStreamEvent.toolStarted(
   ToolUseBlock(id: 't1', name: 'search_products'),
 );
-const _toolFinished = ChatStreamEvent.toolFinished(ToolResultBlock(toolUseId: 't1'));
+const _toolFinished = ChatStreamEvent.toolFinished(
+  ToolResultBlock(toolUseId: 't1'),
+);
 const _answer = ChatMessage(
   role: ChatRole.assistant,
   content: [ContentBlock.text('這套很適合你')],
@@ -36,7 +38,9 @@ const _answer = ChatMessage(
   final histories = <List<ChatMessage>>[];
   final container = ProviderContainer(
     retry: (final _, final _) => null,
-    overrides: [chatActionProvider.overrideWith(() => _FakeChatAction(turns, histories))],
+    overrides: [
+      chatActionProvider.overrideWith(() => _FakeChatAction(turns, histories)),
+    ],
   );
   addTearDown(container.dispose);
   container.listen(chatProvider, (final _, final _) {});
@@ -46,7 +50,11 @@ const _answer = ChatMessage(
 void main() {
   test('a failed turn rolls back its steps and records the failure', () async {
     final (:container, histories: _) = _setUp([
-      [_toolStarted, _toolFinished, const ChatStreamEvent.failed(ServerFailure())],
+      [
+        _toolStarted,
+        _toolFinished,
+        const ChatStreamEvent.failed(ServerFailure()),
+      ],
     ]);
 
     await container.read(chatProvider.notifier).sendMessage('找白襯衫');
@@ -60,7 +68,11 @@ void main() {
 
   test('retry clears the failure and replays the same history', () async {
     final (:container, :histories) = _setUp([
-      [_toolStarted, _toolFinished, const ChatStreamEvent.failed(ServerFailure())],
+      [
+        _toolStarted,
+        _toolFinished,
+        const ChatStreamEvent.failed(ServerFailure()),
+      ],
       [const ChatStreamEvent.replied(answer: _answer)],
     ]);
     final notifier = container.read(chatProvider.notifier);

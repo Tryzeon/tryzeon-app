@@ -95,11 +95,16 @@ class _StylePreferencesForm extends HookConsumerWidget {
           const SizedBox(height: AppSpacing.sm),
           Text(
             '可多選，也可以全部取消。',
-            style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+            style: textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: AppSpacing.lg),
           Expanded(
-            child: StylePreferenceGrid(selected: selected.value, onToggle: toggle),
+            child: StylePreferenceGrid(
+              selected: selected.value,
+              onToggle: toggle,
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
           SizedBox(

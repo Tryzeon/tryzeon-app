@@ -33,14 +33,16 @@ class ProductSizeTable extends StatelessWidget {
 
     final rangeTypes = BodyMeasurementType.values
         .where(
-          (final type) =>
-              sizes.any((final s) => s.bodyMeasurementRanges?.getValue(type) != null),
+          (final type) => sizes.any(
+            (final s) => s.bodyMeasurementRanges?.getValue(type) != null,
+          ),
         )
         .toList();
     final garmentTypes = columnTypes
         .where(
-          (final type) =>
-              sizes.any((final s) => s.garmentMeasurements?.getValue(type) != null),
+          (final type) => sizes.any(
+            (final s) => s.garmentMeasurements?.getValue(type) != null,
+          ),
         )
         .toList();
 
@@ -103,7 +105,9 @@ class ProductSizeTable extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
           Text(
             '* 此尺寸數據可能存在些許誤差',
-            style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+            style: textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ],
@@ -112,12 +116,22 @@ class ProductSizeTable extends StatelessWidget {
 }
 
 class _RecommendationHighlight {
-  const _RecommendationHighlight({required this.sizeName, this.row, this.check});
+  const _RecommendationHighlight({
+    required this.sizeName,
+    this.row,
+    this.check,
+  });
 
   factory _RecommendationHighlight.of(final FitResult fitResult) {
     final (Color? row, Color? check) = switch (fitResult.displayState) {
-      FitDisplayState.match => (AppColors.fitMatchContainer, AppColors.fitMatch),
-      FitDisplayState.caveats => (AppColors.fitCaveatContainer, AppColors.fitCaveat),
+      FitDisplayState.match => (
+        AppColors.fitMatchContainer,
+        AppColors.fitMatch,
+      ),
+      FitDisplayState.caveats => (
+        AppColors.fitCaveatContainer,
+        AppColors.fitCaveat,
+      ),
       _ => (null, null),
     };
     return _RecommendationHighlight(
@@ -131,7 +145,8 @@ class _RecommendationHighlight {
   final Color? row;
   final Color? check;
 
-  bool matches(final ProductSize size) => sizeName != null && size.name == sizeName;
+  bool matches(final ProductSize size) =>
+      sizeName != null && size.name == sizeName;
 }
 
 class _SizeColumn {
@@ -165,13 +180,16 @@ class _SizeDataTable extends StatelessWidget {
             columnSpacing: AppSpacing.lg,
             columns: [
               const DataColumn(label: Text('尺寸')),
-              for (final column in columns) DataColumn(label: Text(column.label)),
+              for (final column in columns)
+                DataColumn(label: Text(column.label)),
             ],
             rows: [
               for (final size in sizes)
                 DataRow(
                   color: highlight.matches(size) && highlight.row != null
-                      ? WidgetStateProperty.all(highlight.row!.withValues(alpha: 0.5))
+                      ? WidgetStateProperty.all(
+                          highlight.row!.withValues(alpha: 0.5),
+                        )
                       : null,
                   cells: [
                     DataCell(
@@ -186,15 +204,25 @@ class _SizeDataTable extends StatelessWidget {
                                   : FontWeight.w500,
                             ),
                           ),
-                          if (highlight.matches(size) && highlight.check != null) ...[
+                          if (highlight.matches(size) &&
+                              highlight.check != null) ...[
                             const SizedBox(width: AppSpacing.xs),
-                            Icon(Icons.check_rounded, size: 14, color: highlight.check),
+                            Icon(
+                              Icons.check_rounded,
+                              size: 14,
+                              color: highlight.check,
+                            ),
                           ],
                         ],
                       ),
                     ),
                     for (final column in columns)
-                      DataCell(Text(column.cellText(size), style: textTheme.bodyMedium)),
+                      DataCell(
+                        Text(
+                          column.cellText(size),
+                          style: textTheme.bodyMedium,
+                        ),
+                      ),
                   ],
                 ),
             ],

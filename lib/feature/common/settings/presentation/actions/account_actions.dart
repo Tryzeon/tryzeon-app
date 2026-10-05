@@ -26,7 +26,10 @@ Future<void> confirmAndSignOut(final BuildContext context) async {
   _reportFailure(context, result);
 }
 
-Future<void> confirmAndSwitchTo(final BuildContext context, final UserType target) async {
+Future<void> confirmAndSwitchTo(
+  final BuildContext context,
+  final UserType target,
+) async {
   final targetLabel = switch (target) {
     UserType.personal => '個人版',
     UserType.store => '店家版',
@@ -66,12 +69,19 @@ Future<void> confirmAndDeleteAccount(final BuildContext context) async {
   _reportFailure(context, result);
 }
 
-SettingsController _controller(final BuildContext context) => ProviderScope.containerOf(
-  context,
-  listen: false,
-).read(settingsControllerProvider.notifier);
+SettingsController _controller(final BuildContext context) =>
+    ProviderScope.containerOf(
+      context,
+      listen: false,
+    ).read(settingsControllerProvider.notifier);
 
-void _reportFailure(final BuildContext context, final Result<void, Failure> result) {
+void _reportFailure(
+  final BuildContext context,
+  final Result<void, Failure> result,
+) {
   if (result.isSuccess) return;
-  TopNotification.show(context, message: result.getError()!.displayMessage(context));
+  TopNotification.show(
+    context,
+    message: result.getError()!.displayMessage(context),
+  );
 }

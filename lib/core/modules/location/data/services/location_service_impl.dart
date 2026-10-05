@@ -87,7 +87,9 @@ class LocationServiceImpl implements LocationService {
       ].where((final s) => s != null && s.isNotEmpty).join('');
 
       // If the full address cannot be composed, fall back to city + district
-      final fullAddress = addressParts.isNotEmpty ? addressParts : '$city$district';
+      final fullAddress = addressParts.isNotEmpty
+          ? addressParts
+          : '$city$district';
 
       return UserLocation(
         city: city,

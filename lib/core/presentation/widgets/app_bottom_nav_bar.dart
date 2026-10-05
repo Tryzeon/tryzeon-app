@@ -22,7 +22,9 @@ class AppBottomNavBar extends StatelessWidget {
   });
 
   static const Key capsuleKey = ValueKey('app_bottom_nav_bar_capsule');
-  static const Key selectedPillKey = ValueKey('app_bottom_nav_bar_selected_pill');
+  static const Key selectedPillKey = ValueKey(
+    'app_bottom_nav_bar_selected_pill',
+  );
   static const double maxLabelTextScaleFactor = 1.3;
 
   final List<AppBottomNavItem> items;
@@ -50,7 +52,10 @@ class AppBottomNavBar extends StatelessWidget {
           decoration: BoxDecoration(
             color: colorScheme.surface,
             borderRadius: BorderRadius.circular(AppRadius.pill),
-            border: Border.all(color: colorScheme.outline, width: AppStroke.thin),
+            border: Border.all(
+              color: colorScheme.outline,
+              width: AppStroke.thin,
+            ),
             boxShadow: [
               BoxShadow(
                 color: colorScheme.shadow.withValues(alpha: AppOpacity.medium),
@@ -88,7 +93,11 @@ class AppBottomNavBar extends StatelessWidget {
 }
 
 class _NavItem extends StatelessWidget {
-  const _NavItem({required this.item, required this.selected, required this.onTap});
+  const _NavItem({
+    required this.item,
+    required this.selected,
+    required this.onTap,
+  });
 
   final AppBottomNavItem item;
   final bool selected;
@@ -98,7 +107,9 @@ class _NavItem extends StatelessWidget {
   Widget build(final BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final foreground = selected ? colorScheme.primary : colorScheme.onSurfaceVariant;
+    final foreground = selected
+        ? colorScheme.primary
+        : colorScheme.onSurfaceVariant;
 
     final content = Column(
       mainAxisSize: MainAxisSize.min,
@@ -139,7 +150,9 @@ class _NavItem extends StatelessWidget {
           child: DecoratedBox(
             key: selected ? AppBottomNavBar.selectedPillKey : null,
             decoration: BoxDecoration(
-              color: selected ? colorScheme.surfaceContainer : Colors.transparent,
+              color: selected
+                  ? colorScheme.surfaceContainer
+                  : Colors.transparent,
               borderRadius: BorderRadius.circular(AppRadius.pill),
             ),
             child: Padding(

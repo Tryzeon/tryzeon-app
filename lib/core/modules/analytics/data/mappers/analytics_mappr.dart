@@ -13,5 +13,6 @@ import 'analytics_mappr.auto_mappr.dart';
 class AnalyticsMappr extends $AnalyticsMappr {
   const AnalyticsMappr();
 
-  static String eventTypeToString(final AnalyticsEvent event) => event.eventType.value;
+  static String eventTypeToString(final AnalyticsEvent event) =>
+      event.eventType.value;
 }

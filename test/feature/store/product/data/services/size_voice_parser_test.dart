@@ -43,7 +43,9 @@ void main() {
 
       final size = parsed.single;
       expect(
-        size.garmentMeasurements[GarmentMeasurementType.chestCircumference]?.value,
+        size
+            .garmentMeasurements[GarmentMeasurementType.chestCircumference]
+            ?.value,
         100,
       );
       expect(

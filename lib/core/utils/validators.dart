@@ -148,7 +148,10 @@ class AppValidators {
     return null;
   }
 
-  static String? validateNonEmpty(final Object? value, {required final String message}) {
+  static String? validateNonEmpty(
+    final Object? value, {
+    required final String message,
+  }) {
     if (value == null) return message;
     if (value is Iterable && value.isEmpty) return message;
     if (value is String && value.trim().isEmpty) return message;

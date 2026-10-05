@@ -17,9 +17,10 @@ DailyUsageRemoteDataSource dailyUsageRemoteDataSource(final Ref ref) =>
     DailyUsageRemoteDataSource(Supabase.instance.client);
 
 @riverpod
-DailyUsageRepository dailyUsageRepository(final Ref ref) => DailyUsageRepositoryImpl(
-  remoteDataSource: ref.watch(dailyUsageRemoteDataSourceProvider),
-);
+DailyUsageRepository dailyUsageRepository(final Ref ref) =>
+    DailyUsageRepositoryImpl(
+      remoteDataSource: ref.watch(dailyUsageRemoteDataSourceProvider),
+    );
 
 @riverpod
 GetTodayUsage getTodayUsageUseCase(final Ref ref) =>

@@ -14,7 +14,12 @@ class ChatWelcome extends StatelessWidget {
   final double minHeight;
   final ValueChanged<String> onPromptTap;
 
-  static const List<String> _starters = ['上班約會穿搭', '週末休閒風', '幫我搭一件白襯衫', '參加婚禮要穿什麼'];
+  static const List<String> _starters = [
+    '上班約會穿搭',
+    '週末休閒風',
+    '幫我搭一件白襯衫',
+    '參加婚禮要穿什麼',
+  ];
 
   @override
   Widget build(final BuildContext context) {
@@ -27,13 +32,19 @@ class ChatWelcome extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Image.asset(AppConstants.logoMark, width: AppSpacing.xl, height: AppSpacing.xl),
+          Image.asset(
+            AppConstants.logoMark,
+            width: AppSpacing.xl,
+            height: AppSpacing.xl,
+          ),
           const SizedBox(height: AppSpacing.lg),
           Text('今天想怎麼穿？', style: textTheme.headlineLarge),
           const SizedBox(height: AppSpacing.sm),
           Text(
             '告訴我場合、風格或想搭配的單品，我會從你的衣櫃和商店幫你配好整套。',
-            style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+            style: textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),

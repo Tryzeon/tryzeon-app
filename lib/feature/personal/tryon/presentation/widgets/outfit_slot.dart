@@ -86,7 +86,10 @@ class OutfitSlot extends StatelessWidget {
                   ),
                 ),
                 child: kind == OutfitSlotKind.next
-                    ? Icon(Icons.add_rounded, color: colorScheme.onSurfaceVariant)
+                    ? Icon(
+                        Icons.add_rounded,
+                        color: colorScheme.onSurfaceVariant,
+                      )
                     : null,
               ),
             ),
@@ -105,7 +108,9 @@ class OutfitSlot extends StatelessWidget {
             animation: animation,
             builder: (final _, final child) {
               final isLeaving = animation.status == AnimationStatus.reverse;
-              final scale = isLeaving ? 1.0 : lerpDouble(0.8, 1, animation.value)!;
+              final scale = isLeaving
+                  ? 1.0
+                  : lerpDouble(0.8, 1, animation.value)!;
               return Opacity(
                 opacity: animation.value,
                 child: Transform.scale(scale: scale, child: child),
@@ -119,7 +124,9 @@ class OutfitSlot extends StatelessWidget {
           height: AppSpacing.md,
           child: Text(
             label,
-            style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
+            style: textTheme.labelSmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
       ],

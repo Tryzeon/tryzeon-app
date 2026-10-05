@@ -59,7 +59,11 @@ class _AvatarImageItem extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         PinchToZoom(
-          child: Image(image: imageProvider, fit: BoxFit.cover, gaplessPlayback: true),
+          child: Image(
+            image: imageProvider,
+            fit: BoxFit.cover,
+            gaplessPlayback: true,
+          ),
         ),
         if (isBusy)
           ColoredBox(

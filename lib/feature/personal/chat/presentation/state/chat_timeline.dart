@@ -27,7 +27,8 @@ sealed class ChatToolStep with _$ChatToolStep {
 @freezed
 sealed class ChatSegment with _$ChatSegment {
   const factory ChatSegment.text(final String text) = ChatTextSegment;
-  const factory ChatSegment.cards(final List<ContentBlock> cards) = ChatCardSegment;
+  const factory ChatSegment.cards(final List<ContentBlock> cards) =
+      ChatCardSegment;
 }
 
 @freezed
@@ -40,7 +41,8 @@ sealed class ChatTimelineEntry with _$ChatTimelineEntry {
     @Default([]) final List<ChatSegment> segments,
     required final ChatTurnStatus status,
   }) = ChatAssistantEntry;
-  const factory ChatTimelineEntry.failure(final Failure failure) = ChatFailureEntry;
+  const factory ChatTimelineEntry.failure(final Failure failure) =
+      ChatFailureEntry;
 }
 
 class _OpenTurn {
@@ -60,7 +62,9 @@ class _OpenTurn {
   }
 
   void attachResult(final ToolResultBlock block) {
-    final index = steps.indexWhere((final step) => step.use.id == block.toolUseId);
+    final index = steps.indexWhere(
+      (final step) => step.use.id == block.toolUseId,
+    );
     if (index == -1) return;
     steps[index] = steps[index].copyWith(result: block);
   }
@@ -105,7 +109,9 @@ List<ChatTimelineEntry> buildChatTimeline(final ChatState state) {
   final open = turn;
   if (open != null) {
     entries.add(
-      open.toEntry(state.isLoading ? _liveStatus(open.steps) : ChatTurnStatus.done),
+      open.toEntry(
+        state.isLoading ? _liveStatus(open.steps) : ChatTurnStatus.done,
+      ),
     );
   } else if (state.isLoading) {
     entries.add(const ChatAssistantEntry(status: ChatTurnStatus.thinking));
@@ -119,7 +125,9 @@ List<ChatTimelineEntry> buildChatTimeline(final ChatState state) {
 
 ChatTurnStatus _liveStatus(final List<ChatToolStep> steps) {
   if (steps.isEmpty) return ChatTurnStatus.thinking;
-  return steps.last.isRunning ? ChatTurnStatus.searching : ChatTurnStatus.composing;
+  return steps.last.isRunning
+      ? ChatTurnStatus.searching
+      : ChatTurnStatus.composing;
 }
 
 @riverpod

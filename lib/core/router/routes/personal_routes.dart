@@ -32,8 +32,9 @@ final personalShellRoute = StatefulShellRoute.indexedStack(
           routes: [
             GoRoute(
               path: 'photo',
-              builder: (final context, final state) =>
-                  OutfitPhotoDetailPage(path: state.uri.queryParameters['path']!),
+              builder: (final context, final state) => OutfitPhotoDetailPage(
+                path: state.uri.queryParameters['path']!,
+              ),
             ),
           ],
         ),
@@ -113,15 +114,18 @@ final personalFullScreenRoutes = [
     routes: [
       GoRoute(
         path: 'profile',
-        builder: (final context, final state) => const PersonalProfileSettingsPage(),
+        builder: (final context, final state) =>
+            const PersonalProfileSettingsPage(),
       ),
       GoRoute(
         path: 'body-measurements',
-        builder: (final context, final state) => const BodyMeasurementsSettingsPage(),
+        builder: (final context, final state) =>
+            const BodyMeasurementsSettingsPage(),
       ),
       GoRoute(
         path: 'style-preferences',
-        builder: (final context, final state) => const StylePreferencesSettingsPage(),
+        builder: (final context, final state) =>
+            const StylePreferencesSettingsPage(),
       ),
       GoRoute(
         path: 'subscription',

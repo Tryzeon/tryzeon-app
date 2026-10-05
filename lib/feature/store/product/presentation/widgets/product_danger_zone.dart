@@ -30,7 +30,9 @@ class ProductDangerZone extends StatelessWidget {
             children: [
               Text(
                 '危險操作',
-                style: theme.textTheme.labelMedium?.copyWith(color: colorScheme.error),
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: colorScheme.error,
+                ),
               ),
               const SizedBox(height: AppSpacing.smMd),
               SizedBox(

@@ -22,9 +22,10 @@ sealed class ProductCategory with _$ProductCategory {
   bool appliesTo(final ProductGender shopperGender) =>
       gender == ProductGender.unisex || gender == shopperGender;
 
-  String? imageUrlFor(final ProductGender shopperGender) => switch (shopperGender) {
-    ProductGender.male => imageMaleUrl,
-    ProductGender.female => imageFemaleUrl,
-    ProductGender.unisex => imageFemaleUrl ?? imageMaleUrl,
-  };
+  String? imageUrlFor(final ProductGender shopperGender) =>
+      switch (shopperGender) {
+        ProductGender.male => imageMaleUrl,
+        ProductGender.female => imageFemaleUrl,
+        ProductGender.unisex => imageFemaleUrl ?? imageMaleUrl,
+      };
 }

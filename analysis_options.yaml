@@ -9,9 +9,6 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
-formatter:
-  page_width: 90
-
 analyzer:
   language:
     strict-casts: true

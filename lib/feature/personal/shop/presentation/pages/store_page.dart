@@ -63,7 +63,8 @@ class StorePage extends HookConsumerWidget {
                 final store = storeInfoAsync.value!;
                 share_plus.SharePlus.instance.share(
                   share_plus.ShareParams(
-                    text: '${AppConstants.webBaseUrl}/store/${store.slug ?? store.id}',
+                    text:
+                        '${AppConstants.webBaseUrl}/store/${store.slug ?? store.id}',
                   ),
                 );
               },
@@ -108,9 +109,12 @@ class StorePage extends HookConsumerWidget {
                             children: [
                               CircleAvatar(
                                 radius: 32,
-                                backgroundColor: colorScheme.surfaceContainerHighest,
+                                backgroundColor:
+                                    colorScheme.surfaceContainerHighest,
                                 backgroundImage: storeInfo.logoUrl != null
-                                    ? CachedNetworkImageProvider(storeInfo.logoUrl!)
+                                    ? CachedNetworkImageProvider(
+                                        storeInfo.logoUrl!,
+                                      )
                                     : null,
                                 child: storeInfo.logoUrl == null
                                     ? Icon(
@@ -141,10 +145,13 @@ class StorePage extends HookConsumerWidget {
                                             .map(
                                               (final channel) => Chip(
                                                 label: Text(channel.label),
-                                                labelStyle: textTheme.labelMedium,
-                                                visualDensity: VisualDensity.compact,
+                                                labelStyle:
+                                                    textTheme.labelMedium,
+                                                visualDensity:
+                                                    VisualDensity.compact,
                                                 materialTapTargetSize:
-                                                    MaterialTapTargetSize.shrinkWrap,
+                                                    MaterialTapTargetSize
+                                                        .shrinkWrap,
                                               ),
                                             )
                                             .toList(),
@@ -154,7 +161,8 @@ class StorePage extends HookConsumerWidget {
                                         storeInfo.address!.isNotEmpty) ...[
                                       const SizedBox(height: AppSpacing.sm),
                                       InkWell(
-                                        onTap: () => handleOpenMap(storeInfo.address!),
+                                        onTap: () =>
+                                            handleOpenMap(storeInfo.address!),
                                         borderRadius: AppRadius.buttonAll,
                                         child: Padding(
                                           padding: const EdgeInsets.symmetric(
@@ -166,24 +174,33 @@ class StorePage extends HookConsumerWidget {
                                               Icon(
                                                 Icons.location_on_outlined,
                                                 size: 14,
-                                                color: colorScheme.onSurfaceVariant,
+                                                color: colorScheme
+                                                    .onSurfaceVariant,
                                               ),
-                                              const SizedBox(width: AppSpacing.sm),
+                                              const SizedBox(
+                                                width: AppSpacing.sm,
+                                              ),
                                               Expanded(
                                                 child: Text(
                                                   storeInfo.address!,
-                                                  style: textTheme.bodyMedium?.copyWith(
-                                                    color: colorScheme.onSurfaceVariant,
-                                                  ),
+                                                  style: textTheme.bodyMedium
+                                                      ?.copyWith(
+                                                        color: colorScheme
+                                                            .onSurfaceVariant,
+                                                      ),
                                                   maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                 ),
                                               ),
-                                              const SizedBox(width: AppSpacing.xs),
+                                              const SizedBox(
+                                                width: AppSpacing.xs,
+                                              ),
                                               Icon(
                                                 Icons.north_east,
                                                 size: 12,
-                                                color: colorScheme.onSurfaceVariant,
+                                                color: colorScheme
+                                                    .onSurfaceVariant,
                                               ),
                                             ],
                                           ),

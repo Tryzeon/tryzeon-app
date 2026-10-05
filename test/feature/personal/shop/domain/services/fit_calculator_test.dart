@@ -94,21 +94,24 @@ void main() {
       expect(result.alternativeSize, 'L');
     });
 
-    test('recommends with a caveat when the closest size runs slightly tight', () {
-      // Chest 88 → regular band [96, 103]. Nearest is 94 → body range [79, 86],
-      // so 88 is above it by 2cm.
-      final result = _calc(const BodyMeasurements(chest: 88), [
-        _size('S', const GarmentMeasurements(chestCircumference: 94)),
-      ]);
+    test(
+      'recommends with a caveat when the closest size runs slightly tight',
+      () {
+        // Chest 88 → regular band [96, 103]. Nearest is 94 → body range [79, 86],
+        // so 88 is above it by 2cm.
+        final result = _calc(const BodyMeasurements(chest: 88), [
+          _size('S', const GarmentMeasurements(chestCircumference: 94)),
+        ]);
 
-      expect(result.displayState, FitDisplayState.caveats);
-      expect(result.recommendedSize, 'S');
-      expect(result.caveats, hasLength(1));
-      final caveat = result.caveats.single;
-      expect(caveat.type, BodyMeasurementType.chest);
-      expect(caveat.direction, FitDirection.above);
-      expect(caveat.deviation, closeTo(2, 0.001));
-    });
+        expect(result.displayState, FitDisplayState.caveats);
+        expect(result.recommendedSize, 'S');
+        expect(result.caveats, hasLength(1));
+        final caveat = result.caveats.single;
+        expect(caveat.type, BodyMeasurementType.chest);
+        expect(caveat.direction, FitDirection.above);
+        expect(caveat.deviation, closeTo(2, 0.001));
+      },
+    );
 
     test('flags out of range when no size comes close enough', () {
       // Chest 120 → regular band [128, 135]. Largest garment 100 misses by 28cm.
@@ -144,7 +147,10 @@ void main() {
       final result = _calc(const BodyMeasurements(chest: 84, waist: 70), [
         _size(
           'M',
-          const GarmentMeasurements(chestCircumference: 100, waistCircumference: 76),
+          const GarmentMeasurements(
+            chestCircumference: 100,
+            waistCircumference: 76,
+          ),
         ),
       ]);
 
@@ -154,40 +160,52 @@ void main() {
       expect(byType[BodyMeasurementType.waist]?.direction, FitDirection.below);
     });
 
-    test('recommends a size the per-dimension cap allows over a lower total miss', () {
-      // Ranking by summed deviation alone would crown A, which the
-      // per-dimension cap then rejects — burying B, which the cap allows.
-      // Waist 70 -> band [71, 74]; hips 95 -> band [99, 104].
-      //   A: waist 71 in range, hips 112 loose by 8 -> total 8, worst 8 (capped)
-      //   B: waist 66 tight by 5, hips 95 tight by 4 -> total 9, worst 5 (ok)
-      final result = _calc(const BodyMeasurements(waist: 70, hips: 95), [
-        _size(
-          'A',
-          const GarmentMeasurements(waistCircumference: 71, hipCircumference: 112),
-        ),
-        _size(
-          'B',
-          const GarmentMeasurements(waistCircumference: 66, hipCircumference: 95),
-        ),
-      ]);
+    test(
+      'recommends a size the per-dimension cap allows over a lower total miss',
+      () {
+        // Ranking by summed deviation alone would crown A, which the
+        // per-dimension cap then rejects — burying B, which the cap allows.
+        // Waist 70 -> band [71, 74]; hips 95 -> band [99, 104].
+        //   A: waist 71 in range, hips 112 loose by 8 -> total 8, worst 8 (capped)
+        //   B: waist 66 tight by 5, hips 95 tight by 4 -> total 9, worst 5 (ok)
+        final result = _calc(const BodyMeasurements(waist: 70, hips: 95), [
+          _size(
+            'A',
+            const GarmentMeasurements(
+              waistCircumference: 71,
+              hipCircumference: 112,
+            ),
+          ),
+          _size(
+            'B',
+            const GarmentMeasurements(
+              waistCircumference: 66,
+              hipCircumference: 95,
+            ),
+          ),
+        ]);
 
-      expect(result.displayState, FitDisplayState.caveats);
-      expect(result.recommendedSize, 'B');
-    });
+        expect(result.displayState, FitDisplayState.caveats);
+        expect(result.recommendedSize, 'B');
+      },
+    );
 
-    test('flags out of range when every size exceeds the per-dimension cap', () {
-      // Chest 88 -> band [96, 103]. Both sizes miss by more than 6cm, so the
-      // filter empties and there is nothing left to recommend.
-      final result = _calc(const BodyMeasurements(chest: 88), [
-        _size('S', const GarmentMeasurements(chestCircumference: 88)),
-        _size('L', const GarmentMeasurements(chestCircumference: 112)),
-      ]);
+    test(
+      'flags out of range when every size exceeds the per-dimension cap',
+      () {
+        // Chest 88 -> band [96, 103]. Both sizes miss by more than 6cm, so the
+        // filter empties and there is nothing left to recommend.
+        final result = _calc(const BodyMeasurements(chest: 88), [
+          _size('S', const GarmentMeasurements(chestCircumference: 88)),
+          _size('L', const GarmentMeasurements(chestCircumference: 112)),
+        ]);
 
-      expect(result.displayState, FitDisplayState.outOfRange);
-      expect(result.recommendedSize, isNull);
-      // Still try-on-able: 'L' misses by 9cm, 'S' by 8cm, so 'S' is closest.
-      expect(result.tryonSizeId, 'S');
-    });
+        expect(result.displayState, FitDisplayState.outOfRange);
+        expect(result.recommendedSize, isNull);
+        // Still try-on-able: 'L' misses by 9cm, 'S' by 8cm, so 'S' is closest.
+        expect(result.tryonSizeId, 'S');
+      },
+    );
 
     test('compares thigh and matches within the recalibrated band', () {
       // Thigh 55 → regular band [58, 62]; garment 58 → 3cm ease, a clean fit.
@@ -334,22 +352,25 @@ void main() {
       },
     );
 
-    test('lets a published waist range override the ease estimate for waist', () {
-      // Waist 70 against garment waist 76 is loose by 2cm on the ease table,
-      // but the store says this size fits waists 68–72, and the store wins.
-      final result = _calc(const BodyMeasurements(waist: 70), [
-        _size(
-          'M',
-          const GarmentMeasurements(waistCircumference: 76),
-          bodyMeasurementRanges: const BodyMeasurementRanges(
-            waist: MeasurementRange(min: 68, max: 72),
+    test(
+      'lets a published waist range override the ease estimate for waist',
+      () {
+        // Waist 70 against garment waist 76 is loose by 2cm on the ease table,
+        // but the store says this size fits waists 68–72, and the store wins.
+        final result = _calc(const BodyMeasurements(waist: 70), [
+          _size(
+            'M',
+            const GarmentMeasurements(waistCircumference: 76),
+            bodyMeasurementRanges: const BodyMeasurementRanges(
+              waist: MeasurementRange(min: 68, max: 72),
+            ),
           ),
-        ),
-      ]);
+        ]);
 
-      expect(result.displayState, FitDisplayState.match);
-      expect(result.matchedTypes, [BodyMeasurementType.waist]);
-    });
+        expect(result.displayState, FitDisplayState.match);
+        expect(result.matchedTypes, [BodyMeasurementType.waist]);
+      },
+    );
 
     test('judges ease and range dimensions together and reports each once', () {
       // Chest 88 → regular band [96, 103]; garment 100 fits.
@@ -401,7 +422,10 @@ void main() {
       final result = _calc(const BodyMeasurements(chest: 90, waist: 70), [
         _size(
           'M',
-          const GarmentMeasurements(chestCircumference: 60, waistCircumference: 73),
+          const GarmentMeasurements(
+            chestCircumference: 60,
+            waistCircumference: 73,
+          ),
         ),
       ], garmentType: GarmentType.pants);
 
@@ -409,19 +433,22 @@ void main() {
       expect(result.matchedTypes, [BodyMeasurementType.waist]);
     });
 
-    test('still judges height against a published range on any garment type', () {
-      final result = _calc(const BodyMeasurements(height: 190), [
-        _size(
-          'M',
-          null,
-          bodyMeasurementRanges: const BodyMeasurementRanges(
-            height: MeasurementRange(min: 160, max: 170),
+    test(
+      'still judges height against a published range on any garment type',
+      () {
+        final result = _calc(const BodyMeasurements(height: 190), [
+          _size(
+            'M',
+            null,
+            bodyMeasurementRanges: const BodyMeasurementRanges(
+              height: MeasurementRange(min: 160, max: 170),
+            ),
           ),
-        ),
-      ], garmentType: GarmentType.pants);
+        ], garmentType: GarmentType.pants);
 
-      expect(result.recommendedSize, isNull);
-      expect(result.outOfRange, isTrue);
-    });
+        expect(result.recommendedSize, isNull);
+        expect(result.outOfRange, isTrue);
+      },
+    );
   });
 }

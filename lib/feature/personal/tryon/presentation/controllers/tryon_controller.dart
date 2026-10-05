@@ -33,14 +33,18 @@ class TryonController extends _$TryonController {
   /// successes, which Dart canonicalizes to the same `const` instance) must both
   /// reach `ref.listen`, so every assignment notifies.
   @override
-  bool updateShouldNotify(final TryonOutcome? previous, final TryonOutcome? next) => true;
+  bool updateShouldNotify(
+    final TryonOutcome? previous,
+    final TryonOutcome? next,
+  ) => true;
 
   Future<void> tryonFromOutfit(
     final List<OutfitPiece> pieces, {
     final TryonMode mode = TryonMode.image,
   }) => _start(TryonSubject.generate(pieces: pieces, mode: mode));
 
-  Future<void> regenerate(final TryonGalleryEntry entry) => _start(entry.subject);
+  Future<void> regenerate(final TryonGalleryEntry entry) =>
+      _start(entry.subject);
 
   /// Image generation is skipped, so only the transition style shapes the
   /// result. Takes the entry, not its result: the video inherits its subject.
@@ -51,7 +55,9 @@ class TryonController extends _$TryonController {
       return;
     }
 
-    await _start(TryonSubject.animated(baseImageUrl: imageUrl, origin: entry.subject));
+    await _start(
+      TryonSubject.animated(baseImageUrl: imageUrl, origin: entry.subject),
+    );
   }
 
   Future<void> _start(final TryonSubject subject) async {
@@ -61,8 +67,12 @@ class TryonController extends _$TryonController {
     try {
       // An animate job dresses a finished picture, so it needs no avatar.
       if (subject is TryonSubjectGenerate) {
-        customAvatarUrl = ref.read(tryonGalleryProvider).customAvatarResult?.imageUrl;
-        final hasCustomAvatar = customAvatarUrl != null && customAvatarUrl.isNotEmpty;
+        customAvatarUrl = ref
+            .read(tryonGalleryProvider)
+            .customAvatarResult
+            ?.imageUrl;
+        final hasCustomAvatar =
+            customAvatarUrl != null && customAvatarUrl.isNotEmpty;
 
         // Precondition: "no avatar at all" is a UI prompt, not a failure — check
         // it before inserting a placeholder so nothing flickers. The backend
@@ -122,7 +132,11 @@ class TryonController extends _$TryonController {
         };
       }
     } catch (e, stackTrace) {
-      AppLogger.error('Try-on orchestration failed unexpectedly', e, stackTrace);
+      AppLogger.error(
+        'Try-on orchestration failed unexpectedly',
+        e,
+        stackTrace,
+      );
       if (!galleryNotifier.removeById(id)) return;
       state = TryonFailed(mapExceptionToFailure(e));
     }

@@ -28,9 +28,13 @@ class WardrobePage extends HookConsumerWidget {
     // 1. Data Providers
     final wardrobeItemsAsync = ref.watch(wardrobeItemsProvider);
     final capacity = ref.watch(wardrobeCapacityProvider).value;
-    final isComposing = ref.watch(outfitTrayProvider.select((final s) => s.isOpen));
+    final isComposing = ref.watch(
+      outfitTrayProvider.select((final s) => s.isOpen),
+    );
     final selectedIds = ref.watch(
-      outfitTrayProvider.select((final s) => s.pieces.map((final p) => p.id).toSet()),
+      outfitTrayProvider.select(
+        (final s) => s.pieces.map((final p) => p.id).toSet(),
+      ),
     );
 
     // 2. State
@@ -58,7 +62,9 @@ class WardrobePage extends HookConsumerWidget {
           useSafeArea: true,
           showDragHandle: true,
           builder: (final context) => Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
             child: UploadWardrobeItemSheet(image: image),
           ),
         );
@@ -241,7 +247,9 @@ class WardrobePage extends HookConsumerWidget {
                           ? wardrobeItems
                           : wardrobeItems
                                 .where(
-                                  (final i) => i.garmentType == selectedGarmentType.value,
+                                  (final i) =>
+                                      i.garmentType ==
+                                      selectedGarmentType.value,
                                 )
                                 .toList();
 
@@ -256,12 +264,13 @@ class WardrobePage extends HookConsumerWidget {
                               AppSpacing.fabClearance +
                               AppSpacing.bottomNavBarOverlap,
                         ),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          crossAxisSpacing: AppSpacing.sm,
-                          mainAxisSpacing: AppSpacing.sm,
-                          childAspectRatio: 0.72,
-                        ),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              crossAxisSpacing: AppSpacing.sm,
+                              mainAxisSpacing: AppSpacing.sm,
+                              childAspectRatio: 0.72,
+                            ),
                         itemCount: filtered.length,
                         itemBuilder: (final context, final index) {
                           final item = filtered[index];
@@ -276,13 +285,16 @@ class WardrobePage extends HookConsumerWidget {
                                 : context.push(
                                     AppRoutes.personalWardrobeItemPath(item.id),
                                   ),
-                            onLongPress: () =>
-                                toggleOutfitPiece(ref, outfitPieceFromWardrobeItem(item)),
+                            onLongPress: () => toggleOutfitPiece(
+                              ref,
+                              outfitPieceFromWardrobeItem(item),
+                            ),
                           );
                         },
                       );
                     },
-                    loading: () => const Center(child: CircularProgressIndicator()),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     error: (final error, final stack) => ErrorView(
                       message: error.displayMessage(context),
                       onRetry: () => ref.invalidate(wardrobeItemsProvider),

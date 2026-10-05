@@ -33,7 +33,9 @@ class AuthRepositoryImpl implements AuthRepository {
           if (Platform.isIOS) {
             await _remoteDataSource.signInWithAppleNative();
           } else {
-            await _remoteDataSource.signInWithOAuthProvider(OAuthProvider.apple);
+            await _remoteDataSource.signInWithOAuthProvider(
+              OAuthProvider.apple,
+            );
           }
         case LoginProvider.google:
           await _remoteDataSource.signInWithGoogleNative();
@@ -79,7 +81,9 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Result<void, Failure>> setLastLoginType(final UserType userType) async {
+  Future<Result<void, Failure>> setLastLoginType(
+    final UserType userType,
+  ) async {
     try {
       await _localDataSource.setLastLoginType(userType.value);
       return const Ok(null);

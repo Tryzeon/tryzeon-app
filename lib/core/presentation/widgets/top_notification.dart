@@ -8,7 +8,10 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 class TopNotification {
   static const Duration _autoCloseDuration = Duration(seconds: 30);
 
-  static void show(final BuildContext context, {required final String message}) {
+  static void show(
+    final BuildContext context, {
+    required final String message,
+  }) {
     HapticFeedback.mediumImpact();
 
     toastification.showCustom(
@@ -17,18 +20,28 @@ class TopNotification {
       direction: TextDirection.ltr,
       autoCloseDuration: _autoCloseDuration,
       animationDuration: AppDuration.slow,
-      animationBuilder: (final context, final animation, final alignment, final child) {
-        return SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0, -1),
-            end: Offset.zero,
-          ).animate(CurvedAnimation(parent: animation, curve: AppCurves.emphasized)),
-          child: FadeTransition(
-            opacity: CurvedAnimation(parent: animation, curve: AppCurves.emphasized),
-            child: child,
-          ),
-        );
-      },
+      animationBuilder:
+          (final context, final animation, final alignment, final child) {
+            return SlideTransition(
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, -1),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: AppCurves.emphasized,
+                    ),
+                  ),
+              child: FadeTransition(
+                opacity: CurvedAnimation(
+                  parent: animation,
+                  curve: AppCurves.emphasized,
+                ),
+                child: child,
+              ),
+            );
+          },
       builder: (final context, final holder) {
         final theme = Theme.of(context);
         final colorScheme = theme.colorScheme;
@@ -53,7 +66,9 @@ class TopNotification {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: AppSpacing.smMd),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppSpacing.smMd,
+                        ),
                         child: Icon(
                           Icons.error_outline_rounded,
                           color: colorScheme.error,
@@ -63,7 +78,9 @@ class TopNotification {
                       const SizedBox(width: AppSpacing.smMd),
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: AppSpacing.smMd),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: AppSpacing.smMd,
+                          ),
                           child: Text(
                             message,
                             style: theme.textTheme.titleSmall?.copyWith(

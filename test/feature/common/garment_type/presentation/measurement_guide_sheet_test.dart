@@ -7,10 +7,14 @@ import 'package:tryzeon/feature/common/garment_type/presentation/measurement_gui
 
 void main() {
   Finder findGuide(final String asset) => find.byWidgetPredicate(
-    (final widget) => widget is PhotoView && widget.imageProvider == AssetImage(asset),
+    (final widget) =>
+        widget is PhotoView && widget.imageProvider == AssetImage(asset),
   );
 
-  Future<void> pumpSheet(final WidgetTester tester, final GarmentType type) async {
+  Future<void> pumpSheet(
+    final WidgetTester tester,
+    final GarmentType type,
+  ) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -48,7 +52,9 @@ void main() {
     expect(findGuide('assets/images/size_guide/pants.webp'), findsOneWidget);
   });
 
-  testWidgets('a zoomed guide pans instead of flipping the page', (final tester) async {
+  testWidgets('a zoomed guide pans instead of flipping the page', (
+    final tester,
+  ) async {
     await pumpSheet(tester, GarmentType.onePiece);
     await tester.runAsync(
       () => precacheImage(

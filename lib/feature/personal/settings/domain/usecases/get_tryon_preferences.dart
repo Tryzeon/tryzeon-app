@@ -8,5 +8,6 @@ class GetTryonPreferences {
 
   final SettingsRepository _repository;
 
-  Future<Result<TryonPreferences, Failure>> call() => _repository.getTryonPreferences();
+  Future<Result<TryonPreferences, Failure>> call() =>
+      _repository.getTryonPreferences();
 }
