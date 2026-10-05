@@ -112,16 +112,15 @@ class TryonGalleryActions extends ConsumerWidget {
       }
     }
 
-    final replaceAvatar = AppMenuAction(
-      icon: Icons.swap_horiz_rounded,
-      title: '更換模特圖片',
-      onTap: onReplaceAvatar,
-    );
-
     final actions = switch (gallery) {
-      TryonGalleryState(isAvatarPage: true) => [replaceAvatar],
+      TryonGalleryState(isAvatarPage: true) => [
+        AppMenuAction(
+          icon: Icons.swap_horiz_rounded,
+          title: '更換模特圖片',
+          onTap: onReplaceAvatar,
+        ),
+      ],
       TryonGalleryState(isCurrentPending: true) => [
-        replaceAvatar,
         AppMenuAction(
           icon: Icons.stop_circle_outlined,
           title: '取消生成',
@@ -154,7 +153,6 @@ class TryonGalleryActions extends ConsumerWidget {
             title: isCurrentTheAvatar ? '取消沿用穿搭' : '沿用這套穿搭',
             onTap: ref.read(tryonGalleryProvider.notifier).toggleAvatarForCurrent,
           ),
-        replaceAvatar,
         AppMenuAction(
           icon: Icons.delete_outline_rounded,
           title: '刪除此試穿',
