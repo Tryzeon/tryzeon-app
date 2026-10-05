@@ -18,14 +18,12 @@ class ProductStyleSelector extends HookWidget {
     final current = useListenable(selectedStyles);
     final styles = current.value ?? const <ClothingStyle>{};
 
-    Future<void> openSheet() async {
-      final result = await ProductStyleSheet.show(
-        context: context,
-        initialSelection: styles.toList(),
-      );
-      if (result == null) return;
-      selectedStyles.value = result.isEmpty ? null : result.toSet();
-    }
+    Future<void> openSheet() => ProductStyleSheet.show(
+      context: context,
+      initialSelection: styles,
+      onChanged: (final next) =>
+          selectedStyles.value = next.isEmpty ? null : next,
+    );
 
     return InkWell(
       onTap: openSheet,

@@ -29,3 +29,14 @@ Future<({Future<T?> result})> openSheet<T>(
   await tester.pumpAndSettle();
   return (result: result);
 }
+
+Future<void> dismissByDrag(final WidgetTester tester) async {
+  final sheetTop = tester.getTopLeft(find.byType(BottomSheet));
+  final sheetWidth = tester.getSize(find.byType(BottomSheet)).width;
+  await tester.flingFrom(
+    sheetTop + Offset(sheetWidth / 2, kMinInteractiveDimension / 2),
+    const Offset(0, 600),
+    2000,
+  );
+  await tester.pumpAndSettle();
+}

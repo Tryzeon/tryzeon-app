@@ -1,8 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:tryzeon/core/presentation/widgets/app_sheet.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_button.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/personal/wardrobe/presentation/widgets/wardrobe_tag_input.dart';
 
 class WardrobeTagEditorSheet extends HookWidget {
   const WardrobeTagEditorSheet({
@@ -12,21 +15,19 @@ class WardrobeTagEditorSheet extends HookWidget {
   });
 
   final List<String> initialTags;
+
+  /// Resolves to an error message, or null once the tags are saved.
   final Future<String?> Function(List<String> tags) onSave;
 
-  static Future<bool?> show({
+  static Future<void> show({
     required final BuildContext context,
     required final List<String> initialTags,
     required final Future<String?> Function(List<String> tags) onSave,
   }) {
-    return showModalBottomSheet<bool>(
+    return showAppSheet<void>(
       context: context,
-      useRootNavigator: true,
-      isScrollControlled: true,
-      showDragHandle: true,
-      builder: (final context) {
-        return WardrobeTagEditorSheet(initialTags: initialTags, onSave: onSave);
-      },
+      builder: (final _) =>
+          WardrobeTagEditorSheet(initialTags: initialTags, onSave: onSave),
     );
   }
 
@@ -36,126 +37,75 @@ class WardrobeTagEditorSheet extends HookWidget {
     final textTheme = Theme.of(context).textTheme;
     final tags = useState<List<String>>(List<String>.of(initialTags));
     final controller = useTextEditingController();
+    final pending = useValueListenable(controller).text.trim();
     final isSaving = useState(false);
 
+    final finalTags = pending.isEmpty || tags.value.contains(pending)
+        ? tags.value
+        : [...tags.value, pending];
+    final hasChanges = !listEquals(finalTags, initialTags);
+
     void addTag() {
-      final text = controller.text.trim();
-      if (text.isEmpty) return;
-      if (!tags.value.contains(text)) {
-        tags.value = [...tags.value, text];
-      }
+      tags.value = finalTags;
       controller.clear();
     }
 
     void removeTag(final int index) {
-      final nextTags = List<String>.of(tags.value)..removeAt(index);
-      tags.value = nextTags;
+      tags.value = List<String>.of(tags.value)..removeAt(index);
     }
 
     Future<void> handleSave() async {
       isSaving.value = true;
-
-      final pendingTag = controller.text.trim();
-      if (pendingTag.isNotEmpty) {
-        addTag();
-      }
-
-      final errorMessage = await onSave(tags.value);
+      final errorMessage = await onSave(finalTags);
       if (!context.mounted) return;
 
       isSaving.value = false;
       if (errorMessage == null) {
-        Navigator.pop(context, true);
+        Navigator.of(context).pop();
         return;
       }
-
       TopNotification.show(context, message: errorMessage);
     }
 
-    Widget buildTagList() {
-      if (tags.value.isEmpty) {
-        return Text(
-          '尚無標籤',
-          style: textTheme.bodySmall?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-          ),
-        );
-      }
-
-      return Wrap(
-        spacing: AppSpacing.sm,
-        runSpacing: AppSpacing.sm,
-        children: [
-          for (final entry in tags.value.asMap().entries)
-            Chip(
-              label: Text('#${entry.value}'.toUpperCase()),
-              onDeleted: () => removeTag(entry.key),
+    return AppSheet(
+      title: '編輯標籤',
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            WardrobeTagInput(
+              controller: controller,
+              onAdd: addTag,
+              autofocus: true,
             ),
-        ],
-      );
-    }
-
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Header Area
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.md,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('編輯標籤', style: textTheme.titleMedium),
-                LoadingButton.text(
-                  isLoading: isSaving.value,
-                  onPressed: handleSave,
-                  child: const Text('完成'),
+            const SizedBox(height: AppSpacing.lg),
+            if (tags.value.isEmpty)
+              Text(
+                '尚無標籤',
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
                 ),
-              ],
-            ),
-          ),
-          Flexible(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(
-                AppSpacing.lg,
-                AppSpacing.sm,
-                AppSpacing.lg,
-                MediaQuery.of(context).padding.bottom + AppSpacing.lg,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              )
+            else
+              Wrap(
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.sm,
                 children: [
-                  TextField(
-                    controller: controller,
-                    textInputAction: TextInputAction.done,
-                    style: textTheme.bodyLarge,
-                    decoration: InputDecoration(
-                      hintText: '新增標籤...',
-                      suffixIcon: GestureDetector(
-                        onTap: addTag,
-                        behavior: HitTestBehavior.opaque,
-                        child: Icon(
-                          Icons.add_rounded,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
+                  for (final (index, tag) in tags.value.indexed)
+                    Chip(
+                      label: Text('#$tag'),
+                      onDeleted: () => removeTag(index),
                     ),
-                    onSubmitted: (final _) => addTag(),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  buildTagList(),
                 ],
               ),
-            ),
-          ),
-        ],
+          ],
+        ),
+      ),
+      footer: LoadingButton.filled(
+        isLoading: isSaving.value,
+        onPressed: hasChanges ? handleSave : null,
+        child: const Text('儲存'),
       ),
     );
   }

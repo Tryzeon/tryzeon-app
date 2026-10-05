@@ -12,6 +12,7 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/garment_type/presentation/garment_type_display.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/dialogs/wardrobe_full_dialog.dart';
+import 'package:tryzeon/feature/personal/wardrobe/presentation/widgets/wardrobe_tag_input.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -239,23 +240,7 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          TextField(
-            controller: tagController,
-            textInputAction: TextInputAction.done,
-            style: textTheme.bodyLarge,
-            decoration: InputDecoration(
-              hintText: '新增標籤...',
-              suffixIcon: GestureDetector(
-                onTap: addTag,
-                behavior: HitTestBehavior.opaque,
-                child: Icon(
-                  Icons.add_rounded,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-            onSubmitted: (final _) => addTag(),
-          ),
+          WardrobeTagInput(controller: tagController, onAdd: addTag),
           if (tags.value.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.md),
             Wrap(

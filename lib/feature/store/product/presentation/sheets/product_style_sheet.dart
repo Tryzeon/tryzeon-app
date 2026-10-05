@@ -1,24 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:tryzeon/core/presentation/widgets/app_sheet.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 
 class ProductStyleSheet extends HookWidget {
-  const ProductStyleSheet({super.key, required this.initialSelection});
+  const ProductStyleSheet({
+    super.key,
+    required this.initialSelection,
+    required this.onChanged,
+  });
 
-  final List<ClothingStyle> initialSelection;
+  final Set<ClothingStyle> initialSelection;
+  final ValueChanged<Set<ClothingStyle>> onChanged;
 
-  static Future<List<ClothingStyle>?> show({
+  static Future<void> show({
     required final BuildContext context,
-    required final List<ClothingStyle> initialSelection,
+    required final Set<ClothingStyle> initialSelection,
+    required final ValueChanged<Set<ClothingStyle>> onChanged,
   }) {
-    return showModalBottomSheet<List<ClothingStyle>>(
+    return showAppSheet<void>(
       context: context,
-      useRootNavigator: true,
-      isScrollControlled: true,
-      showDragHandle: true,
-      builder: (final _) =>
-          ProductStyleSheet(initialSelection: initialSelection),
+      builder: (final _) => ProductStyleSheet(
+        initialSelection: initialSelection,
+        onChanged: onChanged,
+      ),
     );
   }
 
@@ -28,53 +34,47 @@ class ProductStyleSheet extends HookWidget {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    final selection = useState<Set<ClothingStyle>>(initialSelection.toSet());
+    final selection = useState<Set<ClothingStyle>>(initialSelection);
     final searchController = useTextEditingController();
-    useListenable(searchController);
+    final query = useValueListenable(
+      searchController,
+    ).text.trim().toLowerCase();
+
+    // Ordered once from the selection at open: re-sorting on every toggle
+    // would move the row out from under the finger.
+    final ordered = useMemoized(
+      () => [
+        ...ClothingStyle.values.where(initialSelection.contains),
+        ...ClothingStyle.values.where(
+          (final s) => !initialSelection.contains(s),
+        ),
+      ],
+    );
+    final styles = query.isEmpty
+        ? ordered
+        : ordered
+              .where(
+                (final s) =>
+                    s.label.toLowerCase().contains(query) ||
+                    s.value.toLowerCase().contains(query),
+              )
+              .toList();
 
     void toggle(final ClothingStyle style) {
-      final next = {...selection.value};
-      if (next.contains(style)) {
-        next.remove(style);
-      } else {
-        next.add(style);
-      }
+      final next = selection.value.contains(style)
+          ? ({...selection.value}..remove(style))
+          : {...selection.value, style};
       selection.value = next;
+      onChanged(next);
     }
 
-    void done() {
-      Navigator.of(context).pop(selection.value.toList());
-    }
+    final count = selection.value.length;
 
-    final query = searchController.text.trim().toLowerCase();
-    final styles = useMemoized(() {
-      if (query.isEmpty) return ClothingStyle.values;
-      return ClothingStyle.values
-          .where(
-            (final s) =>
-                s.label.toLowerCase().contains(query) ||
-                s.value.toLowerCase().contains(query),
-          )
-          .toList();
-    }, [query]);
-
-    return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.7,
-      child: Column(
+    return AppSheet(
+      title: count == 0 ? '選擇風格' : '選擇風格（$count）',
+      height: AppSheetHeight.tall,
+      body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.md,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('選擇風格', style: textTheme.titleMedium),
-                TextButton(onPressed: done, child: const Text('完成')),
-              ],
-            ),
-          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             child: TextField(
@@ -108,9 +108,8 @@ class ProductStyleSheet extends HookWidget {
                     itemCount: styles.length,
                     itemBuilder: (final context, final index) {
                       final style = styles[index];
-                      final isSelected = selection.value.contains(style);
                       return CheckboxListTile(
-                        value: isSelected,
+                        value: selection.value.contains(style),
                         onChanged: (final _) => toggle(style),
                         title: Text(style.label),
                         controlAffinity: ListTileControlAffinity.leading,
