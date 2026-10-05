@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:gal/gal.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
@@ -32,15 +31,6 @@ class TryonMediaDataSource {
         '.${_extension(type)}';
     await _dio.download(url, path);
     return path;
-  }
-
-  Future<void> saveToGallery(final String path, final TryonMode type) async {
-    switch (type) {
-      case TryonMode.image:
-        await Gal.putImage(path);
-      case TryonMode.video:
-        await Gal.putVideo(path);
-    }
   }
 
   Future<void> shareFile(final String path, final TryonMode type) async {

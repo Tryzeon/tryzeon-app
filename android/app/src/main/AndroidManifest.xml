@@ -14,10 +14,6 @@
     <!-- Microphone permission for voice size input -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
-    <!-- Saving try-on results to the gallery (gal). Only needed on Android <= 9;
-         API 29+ uses scoped storage / MediaStore and requires no permission. -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" tools:replace="android:maxSdkVersion" />
-
     <!-- Image selection uses the Android Photo Picker (image_picker), which needs no
          storage/media permissions. Explicitly strip the restricted media permissions
          so no transitive dependency can re-introduce them via manifest merge — this is

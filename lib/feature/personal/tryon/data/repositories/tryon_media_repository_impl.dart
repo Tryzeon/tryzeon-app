@@ -35,28 +35,7 @@ class TryonMediaRepositoryImpl implements TryonMediaRepository {
   }
 
   @override
-  Future<Result<void, Failure>> saveToGallery(final TryonResult result) {
-    return _process(
-      result,
-      (final path) => _dataSource.saveToGallery(path, result.mode),
-      onError: 'Failed to save try-on ${result.mode.name}',
-    );
-  }
-
-  @override
-  Future<Result<void, Failure>> share(final TryonResult result) {
-    return _process(
-      result,
-      (final path) => _dataSource.shareFile(path, result.mode),
-      onError: 'Failed to share try-on ${result.mode.name}',
-    );
-  }
-
-  Future<Result<void, Failure>> _process(
-    final TryonResult result,
-    final Future<void> Function(String path) sink, {
-    required final String onError,
-  }) async {
+  Future<Result<void, Failure>> share(final TryonResult result) async {
     final url = result.mode == TryonMode.video ? result.videoUrl : result.imageUrl;
     if (url == null || url.isEmpty) {
       return Err(ValidationFailure('${result.mode.name} URL is missing'));
@@ -65,10 +44,10 @@ class TryonMediaRepositoryImpl implements TryonMediaRepository {
     String? tempPath;
     try {
       tempPath = await _dataSource.downloadToTempFile(url, result.mode);
-      await sink(tempPath);
+      await _dataSource.shareFile(tempPath, result.mode);
       return const Ok(null);
     } catch (e, stackTrace) {
-      AppLogger.error(onError, e, stackTrace);
+      AppLogger.error('Failed to share try-on ${result.mode.name}', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     } finally {
       if (tempPath != null) {

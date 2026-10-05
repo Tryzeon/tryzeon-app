@@ -42,10 +42,6 @@ class _UncalledTryonMediaRepository implements TryonMediaRepository {
       throw UnimplementedError('wardrobe garments never load an image by url');
 
   @override
-  Future<Result<void, Failure>> saveToGallery(final TryonResult result) =>
-      throw UnimplementedError();
-
-  @override
   Future<Result<void, Failure>> share(final TryonResult result) =>
       throw UnimplementedError();
 

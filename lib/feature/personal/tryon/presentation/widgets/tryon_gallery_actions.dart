@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/app_action_sheet.dart';
 import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
-import 'package:tryzeon/core/presentation/widgets/app_snack_bar.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
@@ -34,18 +33,6 @@ class TryonGalleryActions extends ConsumerWidget {
       if (!context.mounted) return;
       if (outcome.isFailure) {
         TopNotification.show(context, message: '分享失敗，請稍後再試');
-      }
-    }
-
-    Future<void> downloadMedia() async {
-      if (result == null) return;
-
-      final outcome = await ref.read(saveTryonMediaUseCaseProvider)(result);
-      if (!context.mounted) return;
-      if (outcome.isFailure) {
-        TopNotification.show(context, message: '儲存失敗，請檢查儲存權限');
-      } else {
-        AppSnackBar.show(context, message: isVideo ? '影片已儲存到相簿' : '照片已儲存到相簿');
       }
     }
 
@@ -130,7 +117,6 @@ class TryonGalleryActions extends ConsumerWidget {
       ],
       _ => [
         AppMenuAction(icon: Icons.ios_share_rounded, title: '分享', onTap: shareMedia),
-        AppMenuAction(icon: Icons.download_rounded, title: '下載', onTap: downloadMedia),
         if (canRegenerate)
           AppMenuAction(icon: Icons.refresh_rounded, title: '重新生成', onTap: regenerate),
         if (result?.mode == TryonMode.image && hasVideoAccess)
