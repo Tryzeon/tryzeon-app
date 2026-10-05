@@ -115,8 +115,7 @@ Failure mapExceptionToFailure(final Object e) {
     AuthException() => const AuthFailure(),
 
     SocketException() => const NetworkFailure(),
-    // Client-side deadline: an edge function killed at the platform's
-    // wall-clock limit, or a half-open socket that never delivers bytes,
+    // Client-side deadline: a half-open socket that never delivers bytes,
     // EOF or an error.
     TimeoutException() => const TimeoutFailure(),
     // http wraps transport-level failures escaping Supabase in ClientException.
