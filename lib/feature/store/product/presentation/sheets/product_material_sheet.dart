@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:tryzeon/core/presentation/widgets/app_sheet.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/product_attributes/presentation/product_attributes_extensions.dart';
 
@@ -16,11 +17,8 @@ class ProductMaterialSheet extends HookWidget {
     required final BuildContext context,
     required final String? initialValue,
   }) {
-    return showModalBottomSheet<ProductMaterialResult>(
+    return showAppSheet<ProductMaterialResult>(
       context: context,
-      useRootNavigator: true,
-      isScrollControlled: true,
-      showDragHandle: true,
       builder: (final _) => ProductMaterialSheet(initialValue: initialValue),
     );
   }
@@ -31,99 +29,70 @@ class ProductMaterialSheet extends HookWidget {
     final textTheme = theme.textTheme;
     final colorScheme = theme.colorScheme;
 
-    final initialIsPreset =
-        initialValue != null && kMaterialPresets.contains(initialValue);
-    final selectedPreset = useState<String?>(
-      initialIsPreset ? initialValue : null,
-    );
+    final initialValue = this.initialValue;
+    final hasValue = initialValue != null && initialValue.isNotEmpty;
+    final initialIsPreset = kMaterialPresets.contains(initialValue);
     final customController = useTextEditingController(
-      text: initialIsPreset ? '' : (initialValue ?? ''),
+      text: initialIsPreset ? '' : initialValue,
     );
-    useListenable(customController);
+    final hasCustom = useValueListenable(
+      customController,
+    ).text.trim().isNotEmpty;
 
-    void selectPreset(final String value) {
-      if (selectedPreset.value == value) {
-        selectedPreset.value = null;
-      } else {
-        selectedPreset.value = value;
-        if (customController.text.isNotEmpty) customController.clear();
-      }
-    }
-
-    void onCustomChanged(final String text) {
-      if (text.isNotEmpty && selectedPreset.value != null) {
-        selectedPreset.value = null;
-      }
-    }
-
-    void done() {
-      final preset = selectedPreset.value;
-      final custom = customController.text.trim();
-      final value = preset ?? (custom.isEmpty ? null : custom);
+    void pop(final String? value) {
       Navigator.of(context).pop<ProductMaterialResult>((value: value));
     }
 
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.viewInsetsOf(context).bottom,
-        ),
+    void submitCustom() {
+      final custom = customController.text.trim();
+      if (custom.isEmpty) return;
+      pop(custom);
+    }
+
+    return AppSheet(
+      title: '選擇材質',
+      trailing: hasValue
+          ? TextButton(onPressed: () => pop(null), child: const Text('清除'))
+          : null,
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.md,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('選擇材質', style: textTheme.titleMedium),
-                  TextButton(onPressed: done, child: const Text('完成')),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-              child: Wrap(
-                spacing: AppSpacing.sm,
-                runSpacing: AppSpacing.sm,
-                children: kMaterialPresets
-                    .map(
-                      (final p) => ChoiceChip(
-                        label: Text(p),
-                        selected: selectedPreset.value == p,
-                        onSelected: (final _) => selectPreset(p),
-                      ),
-                    )
-                    .toList(),
-              ),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: [
+                for (final preset in kMaterialPresets)
+                  ChoiceChip(
+                    label: Text(preset),
+                    selected: preset == initialValue,
+                    onSelected: (final _) => pop(preset),
+                  ),
+              ],
             ),
             const SizedBox(height: AppSpacing.lg),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-              child: Text(
-                '或自行輸入',
-                style: textTheme.labelMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
+            Text(
+              '或自行輸入',
+              style: textTheme.labelMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: AppSpacing.xs),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-              child: TextField(
-                controller: customController,
-                onChanged: onCustomChanged,
-                textInputAction: TextInputAction.done,
-                onSubmitted: (final _) => done(),
-                decoration: const InputDecoration(hintText: '塑膠、再生纖維…'),
+            TextField(
+              controller: customController,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (final _) => submitCustom(),
+              decoration: InputDecoration(
+                hintText: '塑膠、再生纖維…',
+                suffixIcon: IconButton(
+                  tooltip: '使用自訂材質',
+                  icon: const Icon(Icons.check_rounded),
+                  onPressed: hasCustom ? submitCustom : null,
+                ),
               ),
             ),
-            const SizedBox(height: AppSpacing.lg),
           ],
         ),
       ),

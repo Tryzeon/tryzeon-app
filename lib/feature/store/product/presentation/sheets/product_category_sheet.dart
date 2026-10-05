@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:tryzeon/core/presentation/widgets/app_sheet.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/garment_type/presentation/garment_type_display.dart';
@@ -20,11 +21,8 @@ class ProductCategorySheet extends HookWidget {
     required final List<ProductCategory> categories,
     final String? initialId,
   }) {
-    return showModalBottomSheet<ProductCategory>(
+    return showAppSheet<ProductCategory>(
       context: context,
-      useRootNavigator: true,
-      isScrollControlled: true,
-      showDragHandle: true,
       builder: (final _) =>
           ProductCategorySheet(categories: categories, initialId: initialId),
     );
@@ -33,7 +31,6 @@ class ProductCategorySheet extends HookWidget {
   @override
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
-    final textTheme = theme.textTheme;
     final colorScheme = theme.colorScheme;
 
     final groups = useMemoized(() {
@@ -66,19 +63,11 @@ class ProductCategorySheet extends HookWidget {
         )
         .value;
 
-    return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.7,
-      child: Column(
+    return AppSheet(
+      title: '選擇分類',
+      height: AppSheetHeight.tall,
+      body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.lg,
-              AppSpacing.md,
-              AppSpacing.lg,
-              AppSpacing.md,
-            ),
-            child: Row(children: [Text('選擇分類', style: textTheme.titleMedium)]),
-          ),
           SizedBox(
             height: 44,
             child: ListView.separated(

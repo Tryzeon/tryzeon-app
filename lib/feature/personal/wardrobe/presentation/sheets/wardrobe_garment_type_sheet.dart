@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/core/presentation/widgets/app_sheet.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/garment_type/presentation/garment_type_display.dart';
 
@@ -12,10 +12,8 @@ class WardrobeGarmentTypeSheet extends StatelessWidget {
     required final BuildContext context,
     required final GarmentType selected,
   }) {
-    return showModalBottomSheet<GarmentType>(
+    return showAppSheet<GarmentType>(
       context: context,
-      useRootNavigator: true,
-      showDragHandle: true,
       builder: (final _) => WardrobeGarmentTypeSheet(selected: selected),
     );
   }
@@ -25,23 +23,11 @@ class WardrobeGarmentTypeSheet extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.paddingOf(context).bottom + AppSpacing.sm,
-      ),
-      child: Column(
+    return AppSheet(
+      title: '更改類別',
+      body: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.lg,
-              0,
-              AppSpacing.lg,
-              AppSpacing.sm,
-            ),
-            child: Text('更改類別', style: textTheme.titleMedium),
-          ),
           for (final type in GarmentType.values)
             ListTile(
               title: Text(type.displayName, style: textTheme.bodyLarge),

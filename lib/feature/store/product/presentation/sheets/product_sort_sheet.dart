@@ -1,93 +1,62 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/core/presentation/widgets/app_sheet.dart';
 import 'package:tryzeon/feature/store/product/presentation/mappers/product_sort_field_ui_mapper.dart';
 import 'package:tryzeon/feature/store/product/presentation/state/product_sort_condition.dart';
 import 'package:tryzeon/feature/store/product/providers/store_product_providers.dart';
 
-class ProductSortSheet extends HookConsumerWidget {
+/// Applies every pick live and stays open: field and direction are picked
+/// together, so closing on the field would force a reopen to flip direction.
+class ProductSortSheet extends ConsumerWidget {
   const ProductSortSheet({super.key});
 
   static Future<void> show(final BuildContext context) {
-    return showModalBottomSheet<void>(
+    return showAppSheet<void>(
       context: context,
-      useRootNavigator: true,
-      isScrollControlled: true,
-      showDragHandle: true,
       builder: (final _) => const ProductSortSheet(),
     );
   }
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final currentQuery = ref.read(productQueryProvider);
-    final selectedKey = useState<SortKey>(currentQuery.sort.key);
-    final selectedAscending = useState<bool>(currentQuery.sort.ascending);
+    final sort = ref.watch(productQueryProvider.select((final q) => q.sort));
+    final colorScheme = Theme.of(context).colorScheme;
 
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
-
-    void applySort(final SortKey key, final bool ascending) {
-      ref
-          .read(productQueryProvider.notifier)
-          .updateSort(SortCondition(key: key, ascending: ascending));
+    void applySort(final SortCondition next) {
+      ref.read(productQueryProvider.notifier).updateSort(next);
     }
 
-    return SafeArea(
-      child: Column(
+    return AppSheet(
+      title: '排序',
+      body: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.md,
-            ),
-            child: Text('排序', style: textTheme.titleLarge),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            child: SegmentedButton<bool>(
-              showSelectedIcon: false,
-              segments: [
-                ButtonSegment<bool>(
-                  value: false,
-                  label: Text(selectedKey.value.descendingLabel),
-                ),
-                ButtonSegment<bool>(
-                  value: true,
-                  label: Text(selectedKey.value.ascendingLabel),
-                ),
-              ],
-              selected: {selectedAscending.value},
-              onSelectionChanged: (final s) {
-                final v = s.first;
-                selectedAscending.value = v;
-                applySort(selectedKey.value, v);
-              },
-            ),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          const Divider(),
-          const SizedBox(height: AppSpacing.sm),
-          ...allSortKeys.map(
-            (final key) => ListTile(
+          for (final key in allSortKeys)
+            ListTile(
               title: Text(key.label),
-              selected: key == selectedKey.value,
-              trailing: key == selectedKey.value
-                  ? Icon(Icons.check, color: colorScheme.primary)
+              selected: key == sort.key,
+              trailing: key == sort.key
+                  ? Icon(Icons.check_rounded, color: colorScheme.primary)
                   : null,
-              onTap: () {
-                if (key == selectedKey.value) return;
-                selectedKey.value = key;
-                applySort(key, selectedAscending.value);
-              },
+              onTap: () => applySort(sort.copyWith(key: key)),
             ),
-          ),
-          const SizedBox(height: AppSpacing.md),
         ],
+      ),
+      footer: SegmentedButton<bool>(
+        showSelectedIcon: false,
+        segments: [
+          ButtonSegment<bool>(
+            value: false,
+            label: Text(sort.key.descendingLabel),
+          ),
+          ButtonSegment<bool>(
+            value: true,
+            label: Text(sort.key.ascendingLabel),
+          ),
+        ],
+        selected: {sort.ascending},
+        onSelectionChanged: (final selection) =>
+            applySort(sort.copyWith(ascending: selection.first)),
       ),
     );
   }
