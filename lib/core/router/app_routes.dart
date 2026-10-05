@@ -6,6 +6,7 @@ abstract final class AppRoutes {
 
   // Personal (tabs)
   static const String personalHome = '/personal/home';
+  static const String personalHomePhoto = '/personal/home/photo';
   static const String personalShop = '/personal/shop';
   static const String personalShopProduct = '/personal/shop/product/:id';
   static const String personalShopStore = '/personal/shop/store/:storeId';
@@ -45,6 +46,9 @@ abstract final class AppRoutes {
   static String homeForUserType(final UserType userType) {
     return userType == UserType.store ? dashboardAccount : personalHome;
   }
+
+  static String personalHomePhotoPath(final String filePath) =>
+      Uri(path: personalHomePhoto, queryParameters: {'path': filePath}).toString();
 
   static String personalShopProductPath(final String productId) =>
       '/personal/shop/product/$productId';

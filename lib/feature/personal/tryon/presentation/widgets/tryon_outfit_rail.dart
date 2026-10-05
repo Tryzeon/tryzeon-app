@@ -36,14 +36,14 @@ class _RailTile extends StatelessWidget {
   Widget build(final BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    final String? route = switch (piece) {
+    final route = switch (piece) {
       OutfitPieceWardrobe(:final wardrobeItemId) => AppRoutes.personalWardrobeItemPath(
         wardrobeItemId,
       ),
       OutfitPieceProduct(:final productId) => AppRoutes.personalShopProductPath(
         productId,
       ),
-      _ => null,
+      OutfitPieceLocal(:final path) => AppRoutes.personalHomePhotoPath(path),
     };
 
     return Stack(
@@ -71,9 +71,7 @@ class _RailTile extends StatelessWidget {
                 Positioned.fill(
                   child: Material(
                     type: MaterialType.transparency,
-                    child: InkWell(
-                      onTap: route == null ? null : () => context.push(route),
-                    ),
+                    child: InkWell(onTap: () => context.push(route)),
                   ),
                 ),
               ],

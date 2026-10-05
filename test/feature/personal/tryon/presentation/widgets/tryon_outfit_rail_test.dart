@@ -40,6 +40,11 @@ void main() {
               Text('product ${state.pathParameters['id']}'),
         ),
         GoRoute(
+          path: AppRoutes.personalHomePhoto,
+          builder: (final _, final state) =>
+              Text('photo ${state.uri.queryParameters['path']}'),
+        ),
+        GoRoute(
           path: AppRoutes.personalWardrobeItem,
           builder: (final _, final state) =>
               Text('wardrobe ${state.pathParameters['id']}'),
@@ -91,5 +96,14 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('wardrobe a'), findsOneWidget);
+  });
+
+  testWidgets('a local photo tile opens its photo page', (final tester) async {
+    await pumpRail(tester, [const OutfitPiece.local(path: '/tmp/none.jpg')]);
+
+    await tester.tap(find.byKey(const Key('outfit-rail-/tmp/none.jpg')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('photo /tmp/none.jpg'), findsOneWidget);
   });
 }

@@ -15,6 +15,7 @@ import 'package:tryzeon/feature/personal/shop/presentation/pages/shop_page.dart'
 import 'package:tryzeon/feature/personal/shop/presentation/pages/store_page.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/pages/subscription_page.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/pages/home_page.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/pages/outfit_photo_detail_page.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/pages/wardrobe_item_detail_page.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/pages/wardrobe_page.dart';
 
@@ -28,6 +29,13 @@ final personalShellRoute = StatefulShellRoute.indexedStack(
         GoRoute(
           path: AppRoutes.personalHome,
           builder: (final context, final state) => const HomePage(),
+          routes: [
+            GoRoute(
+              path: 'photo',
+              builder: (final context, final state) =>
+                  OutfitPhotoDetailPage(path: state.uri.queryParameters['path']!),
+            ),
+          ],
         ),
       ],
     ),
