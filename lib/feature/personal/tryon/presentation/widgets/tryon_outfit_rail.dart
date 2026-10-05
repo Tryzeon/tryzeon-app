@@ -51,6 +51,12 @@ class _RailTile extends StatelessWidget {
       OutfitPieceLocal(:final path) => AppRoutes.personalHomePhotoPath(path),
     };
 
+    final badgeIcon = switch (piece) {
+      OutfitPieceWardrobe() => Icons.checkroom_outlined,
+      OutfitPieceProduct() => Icons.shopping_bag_outlined,
+      OutfitPieceLocal() => null,
+    };
+
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -83,11 +89,11 @@ class _RailTile extends StatelessWidget {
             ),
           ),
         ),
-        if (piece is OutfitPieceProduct)
-          const Positioned(
+        if (badgeIcon != null)
+          Positioned(
             top: -AppSpacing.xs,
             right: -AppSpacing.xs,
-            child: IgnorePointer(child: _CornerBadge(icon: Icons.shopping_bag_outlined)),
+            child: IgnorePointer(child: _CornerBadge(icon: badgeIcon)),
           ),
         if (onEdit case final onEdit?)
           Positioned(

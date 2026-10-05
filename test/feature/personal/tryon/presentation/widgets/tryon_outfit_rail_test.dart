@@ -69,9 +69,7 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('shows one tile per piece and badges only shop products', (
-    final tester,
-  ) async {
+  testWidgets('shows one tile per piece and badges its source', (final tester) async {
     await pumpRail(tester, [
       product,
       wardrobePiece('a'),
@@ -82,6 +80,7 @@ void main() {
     expect(find.byKey(const Key('outfit-rail-a')), findsOneWidget);
     expect(find.byKey(const Key('outfit-rail-/tmp/none.jpg')), findsOneWidget);
     expect(find.byIcon(Icons.shopping_bag_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.checkroom_outlined), findsOneWidget);
   });
 
   testWidgets('a product tile opens its product page', (final tester) async {
