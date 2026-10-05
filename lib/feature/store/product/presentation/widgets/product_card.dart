@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/price_format_extension.dart';
+import 'package:tryzeon/core/presentation/widgets/app_action_sheet.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/product_category/providers/product_category_providers.dart';
 import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/presentation/actions/toggle_product_status.dart';
-import 'package:tryzeon/feature/store/product/presentation/sheets/product_actions_sheet.dart';
+import 'package:tryzeon/feature/store/product/presentation/mappers/product_status_ui_mapper.dart';
 
 class StoreProductCard extends HookConsumerWidget {
   const StoreProductCard({super.key, required this.product});
@@ -128,12 +130,21 @@ class _ProductCardMenuButton extends StatelessWidget {
       constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
       color: Theme.of(context).colorScheme.onSurfaceVariant,
       tooltip: '更多操作',
-      onPressed: () async {
-        final confirmed = await ProductActionsSheet.show(context, product);
-        if (confirmed != true || !context.mounted) return;
-
-        await toggleProductStatus(context, product);
-      },
+      // Editing lives behind a tap on the card and delete behind the editor's
+      // danger zone, so the reversible 下架 stays the easy action here.
+      onPressed: () => showAppActionSheet(
+        context,
+        title: product.name,
+        actions: [
+          AppMenuAction(
+            icon: product.status == ProductStatus.active
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
+            title: product.status.toggleLabel,
+            onTap: () => toggleProductStatus(context, product),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -32,6 +32,7 @@ class AppSheet extends StatelessWidget {
     super.key,
     this.title,
     this.icon,
+    this.onBack,
     this.trailing,
     required this.body,
     this.footer,
@@ -40,6 +41,7 @@ class AppSheet extends StatelessWidget {
 
   final String? title;
   final IconData? icon;
+  final VoidCallback? onBack;
   final Widget? trailing;
   final Widget body;
   final Widget? footer;
@@ -58,7 +60,12 @@ class AppSheet extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (title != null)
-            _AppSheetHeader(title: title, icon: icon, trailing: trailing),
+            _AppSheetHeader(
+              title: title,
+              icon: icon,
+              onBack: onBack,
+              trailing: trailing,
+            ),
           switch (height) {
             AppSheetHeight.content => Flexible(
               child: SingleChildScrollView(child: body),
@@ -98,27 +105,40 @@ class AppSheet extends StatelessWidget {
 }
 
 class _AppSheetHeader extends StatelessWidget {
-  const _AppSheetHeader({required this.title, this.icon, this.trailing});
+  const _AppSheetHeader({
+    required this.title,
+    this.icon,
+    this.onBack,
+    this.trailing,
+  });
 
   final String title;
   final IconData? icon;
+  final VoidCallback? onBack;
   final Widget? trailing;
 
   @override
   Widget build(final BuildContext context) {
     final icon = this.icon;
+    final onBack = this.onBack;
     final trailing = this.trailing;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
+      padding: EdgeInsets.fromLTRB(
+        onBack == null ? AppSpacing.lg : AppSpacing.xs,
         0,
         AppSpacing.lg,
         AppSpacing.md,
       ),
       child: Row(
         children: [
-          if (icon != null) ...[
+          if (onBack != null)
+            IconButton(
+              tooltip: '返回',
+              icon: const Icon(Icons.arrow_back_rounded),
+              onPressed: onBack,
+            )
+          else if (icon != null) ...[
             Icon(icon, color: Theme.of(context).colorScheme.onSurface),
             const SizedBox(width: AppSpacing.smMd),
           ],

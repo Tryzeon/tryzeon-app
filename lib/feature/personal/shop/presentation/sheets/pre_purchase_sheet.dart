@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:simple_icons/simple_icons.dart';
 import 'package:tryzeon/core/extensions/price_format_extension.dart';
+import 'package:tryzeon/core/presentation/widgets/app_sheet.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
@@ -41,11 +42,8 @@ class PrePurchaseSheet extends StatelessWidget {
     required final ShopProduct product,
     required final FitResult fitResult,
   }) {
-    return showModalBottomSheet<PurchaseChoice>(
+    return showAppSheet<PurchaseChoice>(
       context: context,
-      useRootNavigator: true,
-      isScrollControlled: true,
-      showDragHandle: true,
       builder: (final _) =>
           PrePurchaseSheet(product: product, fitResult: fitResult),
     );
@@ -60,8 +58,8 @@ class PrePurchaseSheet extends StatelessWidget {
         product.purchaseLink != null && product.purchaseLink!.isNotEmpty;
     final contacts = product.storeInfo.orderContacts;
 
-    return SafeArea(
-      child: Padding(
+    return AppSheet(
+      body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -132,12 +130,6 @@ class PrePurchaseSheet extends StatelessWidget {
                   fitResult: fitResult,
                 ),
               ),
-
-            const SizedBox(height: AppSpacing.sm),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('取消'),
-            ),
           ],
         ),
       ),

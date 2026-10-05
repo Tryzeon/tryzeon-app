@@ -70,6 +70,31 @@ void main() {
     expect(find.text('完成'), findsOneWidget);
   });
 
+  testWidgets('shows a back button in place of the icon', (final tester) async {
+    useScreen(tester);
+    var backs = 0;
+    await openSheet(
+      tester,
+      (final _) => AppSheet(
+        title: '標題',
+        icon: Icons.tune_rounded,
+        onBack: () => backs++,
+        body: const Text('body'),
+      ),
+    );
+
+    expect(find.byIcon(Icons.tune_rounded), findsNothing);
+    final backButton = find.ancestor(
+      of: find.byTooltip('返回'),
+      matching: find.byType(IconButton),
+    );
+    expect(tester.getTopLeft(backButton).dx, AppSpacing.xs);
+
+    await tester.tap(find.byTooltip('返回'));
+
+    expect(backs, 1);
+  });
+
   testWidgets('content height hugs a short body', (final tester) async {
     useScreen(tester);
     await openSheet(
