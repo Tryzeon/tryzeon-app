@@ -115,7 +115,6 @@ class TryonGalleryActions extends ConsumerWidget {
     final replaceAvatar = AppMenuAction(
       icon: Icons.swap_horiz_rounded,
       title: '更換模特圖片',
-      subtitle: '上傳照片更換試穿模特',
       onTap: onReplaceAvatar,
     );
 
@@ -126,43 +125,25 @@ class TryonGalleryActions extends ConsumerWidget {
         AppMenuAction(
           icon: Icons.stop_circle_outlined,
           title: '取消生成',
-          subtitle: '停止等待這次試穿結果',
           onTap: confirmCancelGeneration,
           isDestructive: true,
         ),
       ],
       _ => [
-        AppMenuAction(
-          icon: Icons.ios_share_rounded,
-          title: '分享',
-          subtitle: isVideo ? '分享試穿影片' : '分享試穿照片',
-          onTap: shareMedia,
-        ),
-        AppMenuAction(
-          icon: Icons.download_rounded,
-          title: '下載',
-          subtitle: '儲存到相簿',
-          onTap: downloadMedia,
-        ),
+        AppMenuAction(icon: Icons.ios_share_rounded, title: '分享', onTap: shareMedia),
+        AppMenuAction(icon: Icons.download_rounded, title: '下載', onTap: downloadMedia),
         if (canRegenerate)
-          AppMenuAction(
-            icon: Icons.refresh_rounded,
-            title: '重新生成',
-            subtitle: isVideo ? '再生成一支影片' : '再生成一張試穿照片',
-            onTap: regenerate,
-          ),
+          AppMenuAction(icon: Icons.refresh_rounded, title: '重新生成', onTap: regenerate),
         if (result?.mode == TryonMode.image && hasVideoAccess)
           AppMenuAction(
             icon: Icons.movie_creation_outlined,
             title: '轉成影片',
-            subtitle: '讓這張試穿動起來',
             onTap: animateToVideo,
           ),
         if (canEditOutfit)
           AppMenuAction(
             icon: Icons.checkroom_outlined,
             title: '編輯搭配',
-            subtitle: '把這套衣服放回搭配盤調整',
             onTap: () => editOutfit(context, ref, entry),
           ),
         if (result?.mode == TryonMode.image)
@@ -171,14 +152,12 @@ class TryonGalleryActions extends ConsumerWidget {
                 ? Icons.person_off_outlined
                 : Icons.person_outline_rounded,
             title: isCurrentTheAvatar ? '取消沿用穿搭' : '沿用這套穿搭',
-            subtitle: isCurrentTheAvatar ? '下次試穿不再帶上這套衣服' : '下次試穿在這套衣服上繼續搭配',
             onTap: ref.read(tryonGalleryProvider.notifier).toggleAvatarForCurrent,
           ),
         replaceAvatar,
         AppMenuAction(
           icon: Icons.delete_outline_rounded,
           title: '刪除此試穿',
-          subtitle: isVideo ? '移除這支試穿影片' : '移除這張試穿照片',
           onTap: confirmDelete,
           isDestructive: true,
         ),
