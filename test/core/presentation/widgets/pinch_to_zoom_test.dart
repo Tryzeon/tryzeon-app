@@ -87,28 +87,26 @@ void main() {
     expect(find.byKey(photo), findsOneWidget);
   });
 
-  testWidgets(
-    'an iOS pinch that drifts while spreading still zooms',
-    (final tester) async {
-      await tester.pumpWidget(buildSubject());
-      final center = tester.getCenter(find.byKey(photo));
-      final first = await tester.startGesture(center - const Offset(20, 0), pointer: 1);
-      final second = await tester.startGesture(center + const Offset(20, 0), pointer: 2);
-      for (var i = 0; i < 10; i++) {
-        await first.moveBy(const Offset(-1, -6));
-        await second.moveBy(const Offset(1, -6));
-        await tester.pump();
-      }
+  testWidgets('an iOS pinch that drifts while spreading still zooms', (
+    final tester,
+  ) async {
+    await tester.pumpWidget(buildSubject());
+    final center = tester.getCenter(find.byKey(photo));
+    final first = await tester.startGesture(center - const Offset(20, 0), pointer: 1);
+    final second = await tester.startGesture(center + const Offset(20, 0), pointer: 2);
+    for (var i = 0; i < 10; i++) {
+      await first.moveBy(const Offset(-1, -6));
+      await second.moveBy(const Offset(1, -6));
+      await tester.pump();
+    }
 
-      expect(find.byKey(photo), findsNWidgets(2));
-      expect(pageController.page, 0);
+    expect(find.byKey(photo), findsNWidgets(2));
+    expect(pageController.page, 0);
 
-      await first.up();
-      await second.up();
-      await tester.pumpAndSettle();
-    },
-    variant: TargetPlatformVariant.only(TargetPlatform.iOS),
-  );
+    await first.up();
+    await second.up();
+    await tester.pumpAndSettle();
+  }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 
   testWidgets('a one-finger swipe still pages', (final tester) async {
     await tester.pumpWidget(buildSubject());
