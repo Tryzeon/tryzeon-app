@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:tryzeon/core/presentation/widgets/pinch_to_zoom.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
 class ProductImageViewer extends HookWidget {
@@ -70,18 +71,20 @@ class ProductImageViewer extends HookWidget {
                     ),
                   );
                 },
-                child: ClipRRect(
-                  borderRadius: AppRadius.cardAll,
-                  child: CachedNetworkImage(
-                    imageUrl: imageUrl,
-                    cacheKey: imagePath,
-                    width: double.infinity,
-                    height: 400,
-                    fit: BoxFit.cover,
-                    placeholder: (final context, final url) =>
-                        const Center(child: CircularProgressIndicator()),
-                    errorWidget: (final context, final url, final error) =>
-                        const Center(child: Icon(Icons.broken_image_outlined)),
+                child: PinchToZoom(
+                  child: ClipRRect(
+                    borderRadius: AppRadius.cardAll,
+                    child: CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      cacheKey: imagePath,
+                      width: double.infinity,
+                      height: 400,
+                      fit: BoxFit.cover,
+                      placeholder: (final context, final url) =>
+                          const Center(child: CircularProgressIndicator()),
+                      errorWidget: (final context, final url, final error) =>
+                          const Center(child: Icon(Icons.broken_image_outlined)),
+                    ),
                   ),
                 ),
               );

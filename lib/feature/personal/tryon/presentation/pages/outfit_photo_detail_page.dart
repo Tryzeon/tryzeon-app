@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tryzeon/core/presentation/widgets/pinch_to_zoom.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/outfit_piece_label.dart';
@@ -39,15 +40,17 @@ class OutfitPhotoDetailPage extends StatelessWidget {
           Expanded(
             child: ColoredBox(
               color: colorScheme.surfaceContainerLow,
-              child: Image.file(
-                File(path),
-                fit: BoxFit.contain,
-                width: double.infinity,
-                height: double.infinity,
-                errorBuilder: (final context, final error, final stackTrace) => Icon(
-                  Icons.image_not_supported_outlined,
-                  size: AppSpacing.xxl,
-                  color: colorScheme.onSurfaceVariant,
+              child: PinchToZoom(
+                child: Image.file(
+                  File(path),
+                  fit: BoxFit.contain,
+                  width: double.infinity,
+                  height: double.infinity,
+                  errorBuilder: (final context, final error, final stackTrace) => Icon(
+                    Icons.image_not_supported_outlined,
+                    size: AppSpacing.xxl,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/presentation/widgets/pinch_to_zoom.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/preset_avatar.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
@@ -57,7 +58,9 @@ class _AvatarImageItem extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        Image(image: imageProvider, fit: BoxFit.cover, gaplessPlayback: true),
+        PinchToZoom(
+          child: Image(image: imageProvider, fit: BoxFit.cover, gaplessPlayback: true),
+        ),
         if (isBusy)
           ColoredBox(
             color: colorScheme.scrim.withValues(alpha: AppOpacity.overlay),

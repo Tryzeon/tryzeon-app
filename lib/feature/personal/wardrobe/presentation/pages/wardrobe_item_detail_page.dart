@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
+import 'package:tryzeon/core/presentation/widgets/pinch_to_zoom.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/garment_type/presentation/garment_type_display.dart';
@@ -207,17 +208,19 @@ class _WardrobeItemDetailContent extends ConsumerWidget {
                                 AppSpacing.xxl,
                               )
                             : EdgeInsets.zero,
-                        child: Image.file(
-                          file,
-                          fit: item.isCutout ? BoxFit.contain : BoxFit.cover,
-                          width: double.infinity,
-                          errorBuilder: (final context, final error, final stackTrace) {
-                            return Icon(
-                              Icons.image_not_supported_outlined,
-                              size: AppSpacing.xxl,
-                              color: colorScheme.onSurfaceVariant,
-                            );
-                          },
+                        child: PinchToZoom(
+                          child: Image.file(
+                            file,
+                            fit: item.isCutout ? BoxFit.contain : BoxFit.cover,
+                            width: double.infinity,
+                            errorBuilder: (final context, final error, final stackTrace) {
+                              return Icon(
+                                Icons.image_not_supported_outlined,
+                                size: AppSpacing.xxl,
+                                color: colorScheme.onSurfaceVariant,
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),
