@@ -6,6 +6,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
+import 'package:tryzeon/core/presentation/widgets/app_sheet.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_button.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
@@ -17,8 +18,28 @@ import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.d
 import 'package:typed_result/typed_result.dart';
 
 class UploadWardrobeItemSheet extends HookConsumerWidget {
-  const UploadWardrobeItemSheet({super.key, required this.image});
+  const UploadWardrobeItemSheet({
+    super.key,
+    required this.image,
+    required this.hostContext,
+  });
+
   final File image;
+
+  /// The page that opened the sheet. A drag can dismiss the sheet mid-upload,
+  /// and the upload's failure must still reach the user from somewhere.
+  final BuildContext hostContext;
+
+  static Future<GarmentType?> show({
+    required final BuildContext context,
+    required final File image,
+  }) {
+    return showAppSheet<GarmentType>(
+      context: context,
+      builder: (final _) =>
+          UploadWardrobeItemSheet(image: image, hostContext: context),
+    );
+  }
 
   static const double _previewSize = 80;
   static const double _capacityBarHeight = 6;
@@ -86,21 +107,22 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
             replacementBytes: useRemovedBg.value ? removedBgImage.value : null,
           );
 
-      if (!context.mounted) return;
-
       if (result.isSuccess) {
-        Navigator.pop(context, selectedGarmentType.value);
-      } else {
-        final failure = result.getError()!;
+        if (context.mounted) Navigator.pop(context, selectedGarmentType.value);
+        return;
+      }
 
-        if (failure is ValidationFailure) {
-          showWardrobeFullDialog(context);
-        } else {
-          TopNotification.show(
-            context,
-            message: failure.displayMessage(context),
-          );
-        }
+      final feedbackContext = context.mounted ? context : hostContext;
+      if (!feedbackContext.mounted) return;
+
+      final failure = result.getError()!;
+      if (failure is ValidationFailure) {
+        showWardrobeFullDialog(feedbackContext);
+      } else {
+        TopNotification.show(
+          feedbackContext,
+          message: failure.displayMessage(feedbackContext),
+        );
       }
     }
 
@@ -259,58 +281,30 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
       );
     }
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // Header
-        Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.lg,
-            AppSpacing.sm,
-            AppSpacing.lg,
-            AppSpacing.sm,
-          ),
-          child: Text('上傳衣服', style: textTheme.titleMedium),
+    return AppSheet(
+      title: '上傳衣服',
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            buildImagePreviewRow(),
+            if (removedBgImage.value != null) ...[
+              const SizedBox(height: AppSpacing.lg),
+              buildBackgroundToggle(),
+            ],
+            const SizedBox(height: AppSpacing.lg),
+            buildCategorySelector(),
+            const SizedBox(height: AppSpacing.lg),
+            buildTagEditor(),
+          ],
         ),
-        // Scrollable content
-        Flexible(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                buildImagePreviewRow(),
-                if (removedBgImage.value != null) ...[
-                  const SizedBox(height: AppSpacing.lg),
-                  buildBackgroundToggle(),
-                ],
-                const SizedBox(height: AppSpacing.lg),
-                buildCategorySelector(),
-                const SizedBox(height: AppSpacing.lg),
-                buildTagEditor(),
-              ],
-            ),
-          ),
-        ),
-        // Footer
-        Padding(
-          padding: EdgeInsets.fromLTRB(
-            AppSpacing.md,
-            AppSpacing.md,
-            AppSpacing.md,
-            MediaQuery.of(context).padding.bottom + AppSpacing.md,
-          ),
-          child: LoadingButton.filled(
-            isLoading: isUploading,
-            onPressed:
-                selectedGarmentType.value != null && !isAnalyzingTags.value
-                ? handleUpload
-                : null,
-            child: const Text('上傳'),
-          ),
-        ),
-      ],
+      ),
+      footer: LoadingButton.filled(
+        isLoading: isUploading,
+        onPressed: selectedGarmentType.value != null ? handleUpload : null,
+        child: const Text('上傳'),
+      ),
     );
   }
 }

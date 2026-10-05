@@ -55,18 +55,9 @@ class WardrobePage extends HookConsumerWidget {
       final File? image = await ImagePickerHelper.pickImage(context);
 
       if (image != null && context.mounted) {
-        final uploadedGarmentType = await showModalBottomSheet<GarmentType>(
+        final uploadedGarmentType = await UploadWardrobeItemSheet.show(
           context: context,
-          isScrollControlled: true,
-          useRootNavigator: true,
-          useSafeArea: true,
-          showDragHandle: true,
-          builder: (final context) => Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-            ),
-            child: UploadWardrobeItemSheet(image: image),
-          ),
+          image: image,
         );
 
         if (uploadedGarmentType != null) {
