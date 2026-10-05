@@ -205,7 +205,7 @@ class _FitInfoRow extends StatelessWidget {
             // Capture the router before popping; the sheet's context is
             // disposed by the time `push` would run.
             final router = GoRouter.of(context);
-            Navigator.of(context, rootNavigator: true).pop(false);
+            Navigator.of(context, rootNavigator: true).pop();
             router.push(AppRoutes.personalSettingsBodyMeasurements);
           }
         : null;
