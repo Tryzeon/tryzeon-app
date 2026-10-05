@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tryzeon/core/presentation/widgets/app_sheet.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
 class AppMenuAction {
@@ -6,13 +7,11 @@ class AppMenuAction {
     required this.icon,
     required this.title,
     required this.onTap,
-    this.subtitle,
     this.isDestructive = false,
   });
 
   final IconData icon;
   final String title;
-  final String? subtitle;
   final VoidCallback onTap;
   final bool isDestructive;
 }
@@ -23,72 +22,85 @@ Future<void> showAppActionSheet(
   final String? title,
   final String? hint,
 }) {
-  final theme = Theme.of(context);
-  final colorScheme = theme.colorScheme;
-
-  return showModalBottomSheet<void>(
+  return showAppSheet<void>(
     context: context,
-    useRootNavigator: true,
-    showDragHandle: true,
-    isScrollControlled: true,
-    builder: (final context) => SafeArea(
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (title != null) ...[
-              Text(title, style: theme.textTheme.headlineMedium),
-              const SizedBox(height: AppSpacing.mdLg),
-            ],
-            if (hint != null) ...[
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.lightbulb_outline_rounded,
-                      size: 18,
-                      color: colorScheme.onSurface,
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: Text(
-                        hint,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-            ],
-            for (final action in actions)
-              ListTile(
-                leading: Icon(
-                  action.icon,
-                  color: action.isDestructive ? colorScheme.error : null,
-                ),
-                title: Text(
-                  action.title,
-                  style: action.isDestructive
-                      ? TextStyle(color: colorScheme.error)
-                      : null,
-                ),
-                subtitle: action.subtitle != null
-                    ? Text(action.subtitle!)
-                    : null,
-                onTap: () {
-                  Navigator.pop(context);
-                  action.onTap();
-                },
-              ),
-            const SizedBox(height: AppSpacing.md),
-          ],
-        ),
-      ),
+    builder: (final context) => AppSheet(
+      title: title,
+      body: _ActionList(actions: actions, hint: hint),
     ),
   );
+}
+
+class _ActionList extends StatelessWidget {
+  const _ActionList({required this.actions, this.hint});
+
+  final List<AppMenuAction> actions;
+  final String? hint;
+
+  @override
+  Widget build(final BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final hint = this.hint;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (hint != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              0,
+              AppSpacing.lg,
+              AppSpacing.sm,
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.lightbulb_outline_rounded,
+                  size: 18,
+                  color: colorScheme.onSurface,
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Text(
+                    hint,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        for (final (index, action) in actions.indexed) ...[
+          if (action.isDestructive &&
+              index > 0 &&
+              !actions[index - 1].isDestructive)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
+              child: Divider(),
+            ),
+          ListTile(
+            leading: Icon(
+              action.icon,
+              color: action.isDestructive ? colorScheme.error : null,
+            ),
+            title: Text(
+              action.title,
+              style: action.isDestructive
+                  ? TextStyle(color: colorScheme.error)
+                  : null,
+            ),
+            onTap: () {
+              Navigator.pop(context);
+              action.onTap();
+            },
+          ),
+        ],
+      ],
+    );
+  }
 }
