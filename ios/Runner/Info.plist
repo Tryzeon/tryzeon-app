@@ -2,8 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>FlutterDeepLinkingEnabled</key>
-	<true/>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
@@ -53,6 +51,8 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>FlutterDeepLinkingEnabled</key>
+	<true/>
 	<key>GIDClientID</key>
 	<string>924030382971-leijmlmni8hjrtlbeum428f9bl7ebtu0.apps.googleusercontent.com</string>
 	<key>GIDServerClientID</key>
@@ -67,10 +67,10 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Tryzeon requires camera access so you can take a profile photo to create your virtual try-on avatar and capture photos of clothing items to upload.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Tryzeon requires your location while using the app to calculate the distance to local clothing stores and recommend nearby fashion retailers based on your current position.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Tryzeon requires your location to calculate the distance to local clothing stores and recommend nearby fashion retailers based on your current position.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Tryzeon requires your location while using the app to calculate the distance to local clothing stores and recommend nearby fashion retailers based on your current position.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Tryzeon requires microphone access so you can use voice input to enter product sizes and measurements.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
