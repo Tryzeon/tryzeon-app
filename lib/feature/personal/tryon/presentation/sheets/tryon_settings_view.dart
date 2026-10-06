@@ -3,6 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/app_sheet.dart';
+import 'package:tryzeon/core/presentation/widgets/loading_button.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_preferences.dart';
@@ -48,12 +49,14 @@ class TryonSettingsView extends HookConsumerWidget {
     );
     final engine = useState(initial.engine);
     final isSaving = useState(false);
-    final promptsListenable = useMemoized(
-      () => Listenable.merge([
-        stylingController,
-        sceneController,
-        transitionController,
-      ]),
+    useListenable(
+      useMemoized(
+        () => Listenable.merge([
+          stylingController,
+          sceneController,
+          transitionController,
+        ]),
+      ),
     );
 
     String? promptOf(final TextEditingController controller) {
@@ -68,7 +71,16 @@ class TryonSettingsView extends HookConsumerWidget {
       engine: engine.value,
     );
 
-    bool canSave() => !isSaving.value && buildDraft() != initial;
+    final currentDraft = buildDraft();
+    final canSave = currentDraft != initial;
+    final canReset = currentDraft != const TryonPreferences();
+
+    void reset() {
+      stylingController.clear();
+      sceneController.clear();
+      transitionController.clear();
+      engine.value = TryonEngine.standard;
+    }
 
     Future<void> save() async {
       final draft = buildDraft();
@@ -139,12 +151,9 @@ class TryonSettingsView extends HookConsumerWidget {
       title: '試穿設定',
       onBack: onBack,
       height: AppSheetHeight.tall,
-      trailing: ListenableBuilder(
-        listenable: promptsListenable,
-        builder: (final context, final _) => TextButton(
-          onPressed: canSave() ? save : null,
-          child: const Text('儲存'),
-        ),
+      trailing: TextButton(
+        onPressed: canReset && !isSaving.value ? reset : null,
+        child: const Text('重置'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
@@ -201,6 +210,11 @@ class TryonSettingsView extends HookConsumerWidget {
             ),
           ],
         ),
+      ),
+      footer: LoadingButton.filled(
+        isLoading: isSaving.value,
+        onPressed: canSave ? save : null,
+        child: const Text('儲存'),
       ),
     );
   }

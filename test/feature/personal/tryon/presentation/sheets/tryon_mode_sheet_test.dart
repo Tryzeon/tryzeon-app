@@ -121,8 +121,11 @@ void main() {
     await settle(tester);
   }
 
-  TextButton saveButton(final WidgetTester tester) =>
-      tester.widget<TextButton>(find.widgetWithText(TextButton, '儲存'));
+  FilledButton saveButton(final WidgetTester tester) =>
+      tester.widget<FilledButton>(find.widgetWithText(FilledButton, '儲存'));
+
+  TextButton resetButton(final WidgetTester tester) =>
+      tester.widget<TextButton>(find.widgetWithText(TextButton, '重置'));
 
   testWidgets('closes and reports the picked mode', (final tester) async {
     final picked = await open(tester);
@@ -315,5 +318,28 @@ void main() {
     expect(preferences.saved, [const TryonPreferences(scenePrompt: '都會街頭')]);
     expect(find.text('選擇試穿方式'), findsOneWidget);
     expect(find.text('場景：都會街頭'), findsOneWidget);
+  });
+
+  testWidgets('offers no reset when already on defaults', (final tester) async {
+    await open(tester);
+    await openSettings(tester);
+
+    expect(resetButton(tester).onPressed, isNull);
+  });
+
+  testWidgets('reset restores defaults without saving', (final tester) async {
+    await open(tester, initial: customPreferences);
+    await openSettings(tester);
+
+    await tester.tap(find.text('重置'));
+    await settle(tester);
+
+    expect(preferences.saved, isEmpty);
+    expect(resetButton(tester).onPressed, isNull);
+
+    await tester.tap(find.text('儲存'));
+    await settle(tester);
+
+    expect(preferences.saved, [const TryonPreferences()]);
   });
 }
