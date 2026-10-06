@@ -95,6 +95,42 @@ void main() {
     expect(backs, 1);
   });
 
+  testWidgets('system back runs onBack instead of closing the sheet', (
+    final tester,
+  ) async {
+    useScreen(tester);
+    var backs = 0;
+    await openSheet(
+      tester,
+      (final _) => AppSheet(
+        title: '標題',
+        onBack: () => backs++,
+        body: const Text('body'),
+      ),
+    );
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(backs, 1);
+    expect(find.byType(AppSheet), findsOneWidget);
+  });
+
+  testWidgets('system back closes a sheet without onBack', (
+    final tester,
+  ) async {
+    useScreen(tester);
+    await openSheet(
+      tester,
+      (final _) => const AppSheet(title: '標題', body: Text('body')),
+    );
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AppSheet), findsNothing);
+  });
+
   testWidgets('content height hugs a short body', (final tester) async {
     useScreen(tester);
     await openSheet(

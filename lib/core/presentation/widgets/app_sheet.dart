@@ -51,6 +51,7 @@ class AppSheet extends StatelessWidget {
   Widget build(final BuildContext context) {
     final title = this.title;
     final footer = this.footer;
+    final onBack = this.onBack;
 
     final content = SafeArea(
       top: false,
@@ -86,7 +87,7 @@ class AppSheet extends StatelessWidget {
       ),
     );
 
-    return Padding(
+    final sheet = Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
       child: switch (height) {
         AppSheetHeight.content => content,
@@ -100,6 +101,15 @@ class AppSheet extends StatelessWidget {
           ),
         ),
       },
+    );
+
+    if (onBack == null) return sheet;
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (final didPop, final _) {
+        if (!didPop) onBack();
+      },
+      child: sheet,
     );
   }
 }
