@@ -13,6 +13,7 @@ import 'package:tryzeon/feature/personal/subscription/providers/subscription_cap
 import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/controllers/tryon_controller.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/sheets/tryon_mode_sheet.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/outfit_tray_controller.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_outcome.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/outfit_dock.dart';
@@ -192,7 +193,7 @@ void main() {
       await tester.pump(AppDuration.standard);
       await tester.pump(AppDuration.standard);
 
-      expect(find.text('讓 AI 幫你穿上'), findsOneWidget);
+      expect(find.byType(TryonModeSheet), findsOneWidget);
 
       await tester.tap(find.text('圖片試穿'));
       await tester.pump();
