@@ -15,8 +15,6 @@ import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
-const int _otpLength = 6;
-
 class EmailOtpBottomSheet extends HookConsumerWidget {
   const EmailOtpBottomSheet({super.key, required this.userType});
 
@@ -176,16 +174,20 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
               autofillHints: const [AutofillHints.oneTimeCode],
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(_otpLength),
+                LengthLimitingTextInputFormatter(AppConstants.otpCodeLength),
               ],
               textInputAction: TextInputAction.done,
               validator: AppValidators.validateOtp,
               onChanged: (final value) {
-                if (value.length == _otpLength) handleVerifyEmailOtp();
+                if (value.length == AppConstants.otpCodeLength) {
+                  handleVerifyEmailOtp();
+                }
               },
               onFieldSubmitted: (final _) => handleVerifyEmailOtp(),
               style: textTheme.bodyLarge,
-              decoration: const InputDecoration(hintText: '6位數驗證碼'),
+              decoration: const InputDecoration(
+                hintText: '${AppConstants.otpCodeLength} 位數驗證碼',
+              ),
             ),
             const SizedBox(height: AppSpacing.sm),
             Center(

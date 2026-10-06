@@ -1,3 +1,5 @@
+import 'package:tryzeon/core/config/app_constants.dart';
+
 class AppValidators {
   static final _emailRegex = RegExp(
     r"^[a-zA-Z0-9.!#$%&'*+\-/=?^_`{|}~]+@[a-zA-Z0-9]+(\.[a-zA-Z]+)+$",
@@ -26,8 +28,9 @@ class AppValidators {
     if (trimmed.isEmpty) {
       return '請輸入驗證碼';
     }
-    if (trimmed.length != 6 || int.tryParse(trimmed) == null) {
-      return '請輸入 6 位數驗證碼';
+    if (trimmed.length != AppConstants.otpCodeLength ||
+        int.tryParse(trimmed) == null) {
+      return '請輸入 ${AppConstants.otpCodeLength} 位數驗證碼';
     }
     return null;
   }
