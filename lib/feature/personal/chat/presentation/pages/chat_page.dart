@@ -33,12 +33,11 @@ class ChatPage extends HookConsumerWidget {
     final scrollController = useScrollController();
     final showJump = useState(false);
 
-    useEffect(() {
-      void updateJumpVisibility() {
-        showJump.value =
-            scrollController.offset > ChatTimelineList.jumpThreshold;
-      }
+    void updateJumpVisibility() {
+      showJump.value = scrollController.offset > ChatTimelineList.jumpThreshold;
+    }
 
+    useEffect(() {
       scrollController.addListener(updateJumpVisibility);
       return () => scrollController.removeListener(updateJumpVisibility);
     }, [scrollController]);
@@ -145,12 +144,18 @@ class ChatPage extends HookConsumerWidget {
               Expanded(
                 child: Stack(
                   children: [
-                    ChatTimelineList(
-                      entries: entries,
-                      controller: scrollController,
-                      onStarterTap: sendMessage,
-                      onRetry: notifier.retry,
-                      onUpgrade: showUpgrade,
+                    NotificationListener<ScrollMetricsNotification>(
+                      onNotification: (final notification) {
+                        if (notification.depth == 0) updateJumpVisibility();
+                        return false;
+                      },
+                      child: ChatTimelineList(
+                        entries: entries,
+                        controller: scrollController,
+                        onStarterTap: sendMessage,
+                        onRetry: notifier.retry,
+                        onUpgrade: showUpgrade,
+                      ),
                     ),
                     Positioned(
                       bottom: AppSpacing.sm,
