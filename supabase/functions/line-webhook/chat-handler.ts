@@ -48,7 +48,7 @@ async function deliver(
 /**
  * A reply costs nothing against the messaging quota and a push costs one per
  * message, so every exit goes through `deliver`. The token holds for about a
- * minute and a turn is usually a few seconds — but `MAX_AGENT_STEPS` is 10, and
+ * minute and a turn is usually a few seconds — but `MAX_AGENT_STEPS` is 20, and
  * LINE says not to rely on the limit, so the fallback is what makes the tail
  * safe rather than lossy.
  *

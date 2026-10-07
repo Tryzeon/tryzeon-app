@@ -16,7 +16,7 @@ import type {
   ChatRole,
 } from "./types.ts";
 
-const MAX_AGENT_STEPS = 10;
+const MAX_AGENT_STEPS = 20;
 
 export const runVertexAgent: AgentRunner = async (req) => {
   const tools = buildTools({
