@@ -110,7 +110,6 @@ export type Database = {
           id: string
           platform: string | null
           source: string
-          user_id: string | null
         }
         Insert: {
           channel?: string | null
@@ -119,7 +118,6 @@ export type Database = {
           id?: string
           platform?: string | null
           source: string
-          user_id?: string | null
         }
         Update: {
           channel?: string | null
@@ -128,7 +126,6 @@ export type Database = {
           id?: string
           platform?: string | null
           source?: string
-          user_id?: string | null
         }
         Relationships: [
           {
