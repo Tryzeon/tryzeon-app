@@ -92,11 +92,7 @@ void main() {
           (final ref) => tier == null
               ? const Stream.empty()
               : Stream.value(
-                  AppSubscriptionEntitlement(
-                    tier: tier,
-                    expirationDate: null,
-                    productIdentifier: null,
-                  ),
+                  AppSubscriptionEntitlement(tier: tier, expirationDate: null),
                 ),
         ),
         subscriptionCapabilitiesProvider.overrideWith(

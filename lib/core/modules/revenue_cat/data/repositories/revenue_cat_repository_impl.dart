@@ -81,7 +81,6 @@ class RevenueCatRepositoryImpl implements RevenueCatRepository {
     return AppSubscriptionEntitlement(
       tier: tier,
       expirationDate: primaryEntitlement?.expirationDate,
-      productIdentifier: primaryEntitlement?.productIdentifier,
     );
   }
 

@@ -11,11 +11,6 @@ enum AppSubscriptionTier {
 
   const AppSubscriptionTier(this.value);
   final String value;
-
-  static AppSubscriptionTier? tryFromString(final String? value) =>
-      AppSubscriptionTier.values
-          .where((final e) => e.value == value)
-          .firstOrNull;
 }
 
 @freezed
@@ -23,7 +18,6 @@ sealed class AppSubscriptionEntitlement with _$AppSubscriptionEntitlement {
   const factory AppSubscriptionEntitlement({
     required final AppSubscriptionTier tier,
     required final String? expirationDate,
-    required final String? productIdentifier,
   }) = _AppSubscriptionEntitlement;
 
   const AppSubscriptionEntitlement._();

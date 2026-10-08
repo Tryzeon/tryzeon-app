@@ -16,11 +16,7 @@ class _FakeRevenueCatRepository implements RevenueCatRepository {
 
   void push(final AppSubscriptionTier tier) {
     _controller.add(
-      AppSubscriptionEntitlement(
-        tier: tier,
-        expirationDate: null,
-        productIdentifier: null,
-      ),
+      AppSubscriptionEntitlement(tier: tier, expirationDate: null),
     );
   }
 
