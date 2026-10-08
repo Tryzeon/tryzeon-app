@@ -31,7 +31,7 @@ final personalShellRoute = StatefulShellRoute.indexedStack(
           builder: (final context, final state) => const HomePage(),
           routes: [
             GoRoute(
-              path: 'photo',
+              path: AppRoutes.personalHomePhotoSegment,
               builder: (final context, final state) => OutfitPhotoDetailPage(
                 path: state.uri.queryParameters['path']!,
               ),
@@ -48,7 +48,7 @@ final personalShellRoute = StatefulShellRoute.indexedStack(
           builder: (final context, final state) => const ShopPage(),
           routes: [
             GoRoute(
-              path: 'product/:id',
+              path: AppRoutes.personalShopProductSegment,
               builder: (final context, final state) {
                 final productId = state.pathParameters['id']!;
                 return ProductDetailPage(
@@ -58,7 +58,7 @@ final personalShellRoute = StatefulShellRoute.indexedStack(
               },
             ),
             GoRoute(
-              path: 'store/:storeId',
+              path: AppRoutes.personalShopStoreSegment,
               builder: (final context, final state) {
                 final storeId = state.pathParameters['storeId']!;
                 return StorePage(storeId: storeId);
@@ -85,7 +85,7 @@ final personalShellRoute = StatefulShellRoute.indexedStack(
           builder: (final context, final state) => const WardrobePage(),
           routes: [
             GoRoute(
-              path: 'item/:id',
+              path: AppRoutes.personalWardrobeItemSegment,
               builder: (final context, final state) {
                 final itemId = state.pathParameters['id']!;
                 return WardrobeItemDetailPage(itemId: itemId);
@@ -113,22 +113,22 @@ final personalFullScreenRoutes = [
     builder: (final context, final state) => const PersonalSettingsPage(),
     routes: [
       GoRoute(
-        path: 'profile',
+        path: AppRoutes.personalSettingsProfileSegment,
         builder: (final context, final state) =>
             const PersonalProfileSettingsPage(),
       ),
       GoRoute(
-        path: 'body-measurements',
+        path: AppRoutes.personalSettingsBodyMeasurementsSegment,
         builder: (final context, final state) =>
             const BodyMeasurementsSettingsPage(),
       ),
       GoRoute(
-        path: 'style-preferences',
+        path: AppRoutes.personalSettingsStyleSegment,
         builder: (final context, final state) =>
             const StylePreferencesSettingsPage(),
       ),
       GoRoute(
-        path: 'subscription',
+        path: AppRoutes.personalSubscriptionSegment,
         builder: (final context, final state) => const SubscriptionPage(),
       ),
     ],

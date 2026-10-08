@@ -44,7 +44,7 @@ final storeFullScreenRoutes = [
     builder: (final context, final state) => const StoreSettingsPage(),
     routes: [
       GoRoute(
-        path: 'profile',
+        path: AppRoutes.dashboardSettingsProfileSegment,
         builder: (final context, final state) =>
             const StoreProfileSettingsPage(),
       ),
