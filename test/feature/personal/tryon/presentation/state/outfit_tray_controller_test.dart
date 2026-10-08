@@ -10,7 +10,6 @@ import '../../../../../support/wardrobe_test_doubles.dart';
 
 const _product = OutfitPiece.product(
   productId: 'p1',
-  name: 'Tee',
   imageUrl: 'https://x/p1.jpg',
   garmentType: GarmentType.top,
 );

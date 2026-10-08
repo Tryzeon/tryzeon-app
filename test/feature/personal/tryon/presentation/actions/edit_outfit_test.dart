@@ -102,7 +102,6 @@ void main() {
         pieces: [
           OutfitPiece.product(
             productId: 'p1',
-            name: 'Tee',
             imageUrl: 'u',
             garmentType: GarmentType.top,
           ),

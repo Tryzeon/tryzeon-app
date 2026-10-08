@@ -17,7 +17,6 @@ import '../../../../../support/wardrobe_test_doubles.dart';
 void main() {
   const product = OutfitPiece.product(
     productId: 'p1',
-    name: '亞麻襯衫',
     imageUrl: '',
     garmentType: GarmentType.top,
   );

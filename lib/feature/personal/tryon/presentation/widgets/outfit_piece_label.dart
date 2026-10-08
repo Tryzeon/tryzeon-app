@@ -8,12 +8,4 @@ extension OutfitPieceLabel on OutfitPiece {
     OutfitPieceProduct(:final garmentType) => garmentType.displayName,
     OutfitPieceLocal() => '照片',
   };
-
-  /// Only shop products have a name of their own.
-  String? get name => switch (this) {
-    OutfitPieceProduct(:final name) => name,
-    _ => null,
-  };
-
-  String get label => name ?? typeLabel;
 }

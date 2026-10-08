@@ -118,7 +118,6 @@ void main() {
   );
   const p1 = OutfitPiece.product(
     productId: 'p1',
-    name: 'Tee',
     imageUrl: 'https://x/p1.jpg',
     garmentType: GarmentType.top,
     sizeId: 'M',

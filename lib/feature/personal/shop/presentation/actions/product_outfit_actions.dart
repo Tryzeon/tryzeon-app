@@ -10,7 +10,6 @@ OutfitPiece outfitPieceFromProduct(
 ) {
   return OutfitPiece.product(
     productId: product.id,
-    name: product.name,
     imageUrl: product.imageUrls.firstOrNull ?? '',
     garmentType: product.garmentType,
     sizeId: ref.read(productFitResolverProvider).resolve(product).tryonSizeId,

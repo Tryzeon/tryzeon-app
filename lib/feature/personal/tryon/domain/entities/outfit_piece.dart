@@ -16,7 +16,6 @@ sealed class OutfitPiece with _$OutfitPiece {
 
   const factory OutfitPiece.product({
     required final String productId,
-    required final String name,
     required final String imageUrl,
     required final GarmentType garmentType,
     final String? sizeId,

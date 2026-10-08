@@ -12,16 +12,15 @@ void main() {
   );
   const product = OutfitPiece.product(
     productId: 'p1',
-    name: '白色印花 T 恤',
     imageUrl: 'https://x/p1.jpg',
     garmentType: GarmentType.top,
     sizeId: 'M',
   );
   const local = OutfitPiece.local(path: '/tmp/x.jpg');
 
-  test('label names the piece for the dock', () {
-    expect(wardrobe.label, GarmentType.top.displayName);
-    expect(product.label, '白色印花 T 恤');
-    expect(local.label, '照片');
+  test('typeLabel names the garment type, or 照片 for a picked photo', () {
+    expect(wardrobe.typeLabel, GarmentType.top.displayName);
+    expect(product.typeLabel, GarmentType.top.displayName);
+    expect(local.typeLabel, '照片');
   });
 }

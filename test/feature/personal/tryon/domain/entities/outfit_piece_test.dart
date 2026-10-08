@@ -11,7 +11,6 @@ void main() {
   );
   const product = OutfitPiece.product(
     productId: 'p1',
-    name: '白色印花 T 恤',
     imageUrl: 'https://x/p1.jpg',
     garmentType: GarmentType.top,
     sizeId: 'M',
