@@ -19,7 +19,6 @@ class AppConstants {
   static const String tableProductCategories = 'product_categories';
   static const String tableSubscriptionTiers = 'subscription_tiers';
   static const String tableWardrobeItems = 'wardrobe_items';
-  static const String tableAnalyticsEvents = 'analytics_events';
   static const String tableAnalyticsProductMonthlySummary =
       'analytics_product_monthly_summary';
   static const String tableUserDailyUsage = 'user_daily_usage';

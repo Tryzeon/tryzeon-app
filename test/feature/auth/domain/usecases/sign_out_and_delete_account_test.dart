@@ -52,9 +52,6 @@ class _FakeQueue implements AnalyticsEventQueue {
 
   @override
   void enqueue(final AnalyticsEvent event) => throw UnimplementedError();
-
-  @override
-  void dispose() {}
 }
 
 class _FakeImageFileCache implements ImageFileCache {

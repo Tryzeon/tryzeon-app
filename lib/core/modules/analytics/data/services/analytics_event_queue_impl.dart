@@ -61,10 +61,4 @@ class AnalyticsEventQueueImpl implements AnalyticsEventQueue {
   Future<void> forceFlush() async {
     await _flush();
   }
-
-  @override
-  void dispose() {
-    _flushTimer?.cancel();
-    _queue.clear();
-  }
 }
