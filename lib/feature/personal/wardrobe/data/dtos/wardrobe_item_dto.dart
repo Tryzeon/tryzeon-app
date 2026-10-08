@@ -3,7 +3,7 @@ import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type
 
 part 'wardrobe_item_dto.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, createToJson: false)
 class WardrobeItemDto {
   const WardrobeItemDto({
     required this.id,
@@ -24,6 +24,4 @@ class WardrobeItemDto {
   final List<String> tags;
   final DateTime createdAt;
   final DateTime updatedAt;
-
-  Map<String, dynamic> toJson() => _$WardrobeItemDtoToJson(this);
 }

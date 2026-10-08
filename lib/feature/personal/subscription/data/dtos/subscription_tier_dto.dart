@@ -3,7 +3,7 @@ import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscriptio
 
 part 'subscription_tier_dto.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, createToJson: false)
 class SubscriptionTierDto {
   const SubscriptionTierDto({
     required this.id,
@@ -21,6 +21,4 @@ class SubscriptionTierDto {
   final int tryonLimit;
   final int videoLimit;
   final int chatLimit;
-
-  Map<String, dynamic> toJson() => _$SubscriptionTierDtoToJson(this);
 }

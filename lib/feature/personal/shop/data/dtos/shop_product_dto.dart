@@ -7,7 +7,7 @@ import 'package:tryzeon/feature/personal/shop/data/dtos/shop_store_info_dto.dart
 
 part 'shop_product_dto.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, createToJson: false)
 class ShopProductDto {
   const ShopProductDto({
     required this.storeInfo,
@@ -33,7 +33,7 @@ class ShopProductDto {
   factory ShopProductDto.fromJson(final Map<String, dynamic> json) =>
       _$ShopProductDtoFromJson(json);
 
-  @JsonKey(name: 'store_profiles', includeToJson: false)
+  @JsonKey(name: 'store_profiles')
   final ShopStoreInfoDto storeInfo;
   final String name;
   final String categoryId;
@@ -56,12 +56,10 @@ class ShopProductDto {
   final List<ClothingStyle>? styles;
   @JsonKey(fromJson: _seasonsFromJson)
   final List<ProductSeason>? seasons;
-  @JsonKey(name: 'product_sizes', includeToJson: false)
+  @JsonKey(name: 'product_sizes')
   final List<ProductSizeDto>? sizes;
   final DateTime createdAt;
   final DateTime updatedAt;
-
-  Map<String, dynamic> toJson() => _$ShopProductDtoToJson(this);
 }
 
 List<ClothingStyle>? _stylesFromJson(final List<dynamic>? json) =>

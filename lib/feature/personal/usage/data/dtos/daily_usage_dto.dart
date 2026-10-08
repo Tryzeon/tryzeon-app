@@ -3,7 +3,7 @@ import 'package:tryzeon/feature/personal/usage/domain/entities/daily_usage.dart'
 
 part 'daily_usage_dto.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, createToJson: false)
 class DailyUsageDto {
   const DailyUsageDto({
     required this.userId,
@@ -32,8 +32,6 @@ class DailyUsageDto {
   final int tryonCount;
   final int chatCount;
   final int videoCount;
-
-  Map<String, dynamic> toJson() => _$DailyUsageDtoToJson(this);
 
   DailyUsage toEntity() => DailyUsage(
     userId: userId,

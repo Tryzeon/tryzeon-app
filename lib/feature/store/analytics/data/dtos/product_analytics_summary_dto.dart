@@ -2,7 +2,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'product_analytics_summary_dto.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, createToJson: false)
 class ProductAnalyticsSummaryDto {
   const ProductAnalyticsSummaryDto({
     required this.storeId,
@@ -25,6 +25,4 @@ class ProductAnalyticsSummaryDto {
   final int viewCount;
   final int tryonCount;
   final int purchaseClickCount;
-
-  Map<String, dynamic> toJson() => _$ProductAnalyticsSummaryDtoToJson(this);
 }

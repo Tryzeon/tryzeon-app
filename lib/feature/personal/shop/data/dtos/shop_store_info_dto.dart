@@ -5,7 +5,7 @@ import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact
 
 part 'shop_store_info_dto.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, createToJson: false)
 class ShopStoreInfoDto {
   const ShopStoreInfoDto({
     required this.id,
@@ -29,8 +29,6 @@ class ShopStoreInfoDto {
   final String? logoPath;
   @JsonKey(fromJson: _orderContactsFromJson)
   final List<StoreOrderContactDto> orderContacts;
-
-  Map<String, dynamic> toJson() => _$ShopStoreInfoDtoToJson(this);
 }
 
 List<StoreChannel> _channelsFromJson(final List<dynamic>? json) =>

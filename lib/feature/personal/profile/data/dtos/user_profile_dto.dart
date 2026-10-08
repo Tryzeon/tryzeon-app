@@ -6,7 +6,7 @@ import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 
 part 'user_profile_dto.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, createToJson: false)
 class UserProfileDto {
   const UserProfileDto({
     required this.userId,
@@ -40,8 +40,6 @@ class UserProfileDto {
   final List<ClothingStyle>? stylePreferences;
   @JsonKey(defaultValue: false)
   final bool isOnboarded;
-
-  Map<String, dynamic> toJson() => _$UserProfileDtoToJson(this);
 }
 
 List<ClothingStyle>? _stylePreferencesFromJson(final List<dynamic>? json) =>
