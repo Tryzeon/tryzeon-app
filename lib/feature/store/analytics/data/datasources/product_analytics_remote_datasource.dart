@@ -26,20 +26,4 @@ class ProductAnalyticsRemoteDataSource {
         )
         .toList();
   }
-
-  Future<List<ProductAnalyticsSummaryDto>> getAllProductAnalyticsSummaries(
-    final String storeId,
-  ) async {
-    final response = await _supabaseClient
-        .from(AppConstants.tableAnalyticsProductMonthlySummary)
-        .select()
-        .eq('store_id', storeId);
-
-    return response
-        .map(
-          (final e) =>
-              ProductAnalyticsSummaryDto.fromJson(Map<String, dynamic>.from(e)),
-        )
-        .toList();
-  }
 }

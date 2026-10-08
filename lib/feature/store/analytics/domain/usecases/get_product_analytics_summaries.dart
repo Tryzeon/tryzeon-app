@@ -10,8 +10,8 @@ class GetProductAnalyticsSummaries {
 
   Future<Result<List<ProductAnalyticsSummary>, Failure>> call({
     required final String storeId,
-    final int? year,
-    final int? month,
+    required final int year,
+    required final int month,
   }) async {
     return _analyticsRepository.getProductAnalyticsSummaries(
       storeId,

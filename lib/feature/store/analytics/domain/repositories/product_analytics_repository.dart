@@ -6,7 +6,7 @@ abstract class ProductAnalyticsRepository {
   Future<Result<List<ProductAnalyticsSummary>, Failure>>
   getProductAnalyticsSummaries(
     final String storeId, {
-    final int? year,
-    final int? month,
+    required final int year,
+    required final int month,
   });
 }

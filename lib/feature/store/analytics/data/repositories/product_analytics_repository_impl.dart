@@ -24,21 +24,11 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
   Future<Result<List<ProductAnalyticsSummary>, Failure>>
   getProductAnalyticsSummaries(
     final String storeId, {
-    final int? year,
-    final int? month,
+    required final int year,
+    required final int month,
   }) async {
     try {
       final now = DateTime.now();
-      final isAllTime = year == null || month == null;
-
-      if (isAllTime) {
-        final summaries = _mappr
-            .convertList<ProductAnalyticsSummaryDto, ProductAnalyticsSummary>(
-              await _remoteDataSource.getAllProductAnalyticsSummaries(storeId),
-            );
-        return Ok(_aggregateByProduct(summaries));
-      }
-
       final isPastMonth =
           year < now.year || (year == now.year && month < now.month);
 
@@ -93,23 +83,5 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
       );
       return Err(mapExceptionToFailure(e));
     }
-  }
-
-  List<ProductAnalyticsSummary> _aggregateByProduct(
-    final List<ProductAnalyticsSummary> summaries,
-  ) {
-    final Map<String, ProductAnalyticsSummary> map = {};
-    for (final s in summaries) {
-      final existing = map[s.productId];
-      map[s.productId] = existing == null
-          ? s
-          : existing.copyWith(
-              viewCount: existing.viewCount + s.viewCount,
-              tryonCount: existing.tryonCount + s.tryonCount,
-              purchaseClickCount:
-                  existing.purchaseClickCount + s.purchaseClickCount,
-            );
-    }
-    return map.values.toList();
   }
 }
