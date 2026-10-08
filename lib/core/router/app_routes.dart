@@ -2,7 +2,6 @@ import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 
 abstract final class AppRoutes {
   static const String login = '/login';
-  static const String authCallback = '/auth/callback';
 
   // Personal (tabs)
   static const String personalHome = '/personal/home';

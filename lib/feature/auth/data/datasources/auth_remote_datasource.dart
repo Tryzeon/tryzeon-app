@@ -180,10 +180,6 @@ class AuthRemoteDataSource {
     await LineSDK.instance.logout();
   }
 
-  User? getCurrentUser() {
-    return _supabase.auth.currentSession?.user;
-  }
-
   Future<void> deleteAccount() async {
     await _supabase.functions.invoke(AppConstants.functionDeleteAccount);
   }
