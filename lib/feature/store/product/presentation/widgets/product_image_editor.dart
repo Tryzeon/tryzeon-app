@@ -10,14 +10,12 @@ class ProductImageEditor extends StatelessWidget {
     required this.images,
     required this.onImagesChanged,
     required this.onPickImage,
-    this.maxImages = AppConstants.maxProductImages,
     this.hasError = false,
   });
 
   final List<ImageItem> images;
   final ValueChanged<List<ImageItem>> onImagesChanged;
   final VoidCallback onPickImage;
-  final int maxImages;
   final bool hasError;
 
   @override
@@ -25,7 +23,7 @@ class ProductImageEditor extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
-    final canAddMore = images.length < maxImages;
+    final canAddMore = images.length < AppConstants.maxProductImages;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -35,9 +33,9 @@ class ProductImageEditor extends StatelessWidget {
           child: Row(
             children: [
               Text(
-                '${images.length}/$maxImages',
+                '${images.length}/${AppConstants.maxProductImages}',
                 style: textTheme.labelMedium?.copyWith(
-                  color: images.length >= maxImages
+                  color: images.length >= AppConstants.maxProductImages
                       ? colorScheme.error
                       : colorScheme.onSurfaceVariant,
                 ),

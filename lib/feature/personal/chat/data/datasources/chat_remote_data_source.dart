@@ -11,10 +11,10 @@ import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart'
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_stream_event.dart';
 
 class ChatRemoteDataSource {
-  ChatRemoteDataSource(this._supabase, [final Dio? dio]) : _dio = dio ?? Dio();
+  ChatRemoteDataSource(this._supabase);
 
   final SupabaseClient _supabase;
-  final Dio _dio;
+  final Dio _dio = Dio();
 
   /// Rate-limit and other run failures arrive in-stream as an error event
   /// (handled in [parseStreamLine]); a non-200 status is auth/bad-request only.

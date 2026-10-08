@@ -81,7 +81,6 @@ class StoreImagesApi {
     if (items.length != images.length) {
       throw const ServerException(
         'store-images: presign returned wrong number of items',
-        500,
       );
     }
 

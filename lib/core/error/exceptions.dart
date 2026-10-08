@@ -7,8 +7,7 @@ abstract class AppException implements Exception {
 }
 
 class ServerException extends AppException {
-  const ServerException([super.message, this.statusCode]);
-  final int? statusCode;
+  const ServerException([super.message]);
 }
 
 class UnauthenticatedException extends AppException {
