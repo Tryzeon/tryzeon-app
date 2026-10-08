@@ -17,14 +17,6 @@ class AppLogger {
     return StackTrace.fromString(croppedString);
   }
 
-  static void debug(
-    final dynamic message, [
-    final dynamic error,
-    final StackTrace? stackTrace,
-  ]) {
-    talker.debug(message, error, _cropStackTrace(stackTrace));
-  }
-
   static void info(
     final dynamic message, [
     final dynamic error,
@@ -47,13 +39,5 @@ class AppLogger {
     final StackTrace? stackTrace,
   ]) {
     talker.error(message, error, _cropStackTrace(stackTrace));
-  }
-
-  static void fatal(
-    final dynamic message, [
-    final dynamic error,
-    final StackTrace? stackTrace,
-  ]) {
-    talker.critical(message, error, _cropStackTrace(stackTrace));
   }
 }
