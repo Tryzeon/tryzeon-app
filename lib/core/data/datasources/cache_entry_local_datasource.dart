@@ -1,7 +1,7 @@
 import 'package:tryzeon/core/data/collections/cache_entry.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 
-enum CacheEntryStatus { hasData, empty, absent }
+enum CacheEntryStatus { hasData, empty }
 
 class CacheEntryLocalDataSource {
   CacheEntryLocalDataSource(this._isarService);
