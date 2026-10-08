@@ -17,8 +17,6 @@ class RangeEntryControllers {
   final TextEditingController min;
   final TextEditingController max;
 
-  bool get isEmpty => min.text.isEmpty && max.text.isEmpty;
-
   MeasurementRange? toRange() {
     final lower = double.tryParse(min.text);
     final upper = double.tryParse(max.text);

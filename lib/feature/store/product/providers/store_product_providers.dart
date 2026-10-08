@@ -122,8 +122,6 @@ class ProductQuery extends _$ProductQuery {
   void updateStatus(final ProductStatus status) {
     state = state.copyWith(status: status);
   }
-
-  void reset() => state = const ProductQueryState();
 }
 
 @riverpod
