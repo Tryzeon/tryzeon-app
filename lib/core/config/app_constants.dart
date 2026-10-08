@@ -70,7 +70,6 @@ class AppConstants {
 
   // Tryon Params
   static const String paramMode = 'mode';
-  static const String modeVideo = 'video';
   static const String paramScenePrompt = 'scenePrompt';
   static const String paramStylingPrompt = 'stylingPrompt';
   static const String paramTransitionPrompt = 'transitionPrompt';

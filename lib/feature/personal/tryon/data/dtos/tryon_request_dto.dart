@@ -35,7 +35,7 @@ class TryonRequestDto {
         TryonRequestDto(
           avatarBase64: avatarBase64,
           garments: garments.map(_garmentToJson).toList(),
-          mode: mode.name,
+          mode: mode.value,
           isVideo: mode == TryonMode.video,
           scenePrompt: scenePrompt,
           stylingPrompt: stylingPrompt,
@@ -51,7 +51,7 @@ class TryonRequestDto {
       ) =>
         TryonRequestDto(
           garments: const [],
-          mode: AppConstants.modeVideo,
+          mode: TryonMode.video.value,
           isVideo: true,
           baseImageBase64: baseImageBase64,
           transitionPrompt: transitionPrompt,
