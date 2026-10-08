@@ -35,7 +35,7 @@ class BodyMeasurementsSettingsPage extends HookConsumerWidget {
           },
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (final error, final stack) => ErrorView(
-            message: error.displayMessage(context),
+            message: error.displayMessage(),
             onRetry: () => ref.invalidate(userProfileProvider),
           ),
         ),
@@ -104,7 +104,7 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
       } else {
         TopNotification.show(
           context,
-          message: result.getError()!.displayMessage(context),
+          message: result.getError()!.displayMessage(),
         );
       }
     }

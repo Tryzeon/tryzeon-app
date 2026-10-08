@@ -47,7 +47,7 @@ class ChatFailureCard extends StatelessWidget {
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(
-                failure.displayMessage(context),
+                failure.displayMessage(),
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),

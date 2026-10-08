@@ -12,6 +12,6 @@ extension RefreshFeedback on Iterable<Future<Result<void, Failure>>> {
         .nonNulls
         .firstOrNull;
     if (failure == null || !context.mounted) return;
-    TopNotification.show(context, message: failure.displayMessage(context));
+    TopNotification.show(context, message: failure.displayMessage());
   }
 }

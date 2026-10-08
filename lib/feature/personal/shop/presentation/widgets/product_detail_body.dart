@@ -71,7 +71,7 @@ class ProductDetailBody extends HookConsumerWidget {
 
     // Priority 3: Show error when failed without data
     return ErrorView(
-      message: productAsync.error.displayMessage(context),
+      message: productAsync.error.displayMessage(),
       onRetry: onRetry,
     );
   }

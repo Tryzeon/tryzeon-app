@@ -34,7 +34,7 @@ class EditProductPage extends ConsumerWidget {
         body: productAsync.isLoading
             ? const Center(child: CircularProgressIndicator())
             : ErrorView(
-                message: productAsync.error.displayMessage(context),
+                message: productAsync.error.displayMessage(),
                 onRetry: () => ref.invalidate(productByIdProvider(productId)),
               ),
       );
@@ -84,7 +84,7 @@ class _EditProductContent extends HookConsumerWidget {
       } else {
         TopNotification.show(
           context,
-          message: result.getError()!.displayMessage(context),
+          message: result.getError()!.displayMessage(),
         );
       }
     }
@@ -110,7 +110,7 @@ class _EditProductContent extends HookConsumerWidget {
       } else {
         TopNotification.show(
           context,
-          message: result.getError()!.displayMessage(context),
+          message: result.getError()!.displayMessage(),
         );
       }
     }

@@ -72,7 +72,7 @@ class ProductListSection extends HookConsumerWidget {
       loading: () => centeredFill(const CircularProgressIndicator()),
       error: (final error, final stack) => centeredFill(
         ErrorView(
-          message: error.displayMessage(context),
+          message: error.displayMessage(),
           onRetry: () => ref.invalidate(productsProvider),
         ),
       ),

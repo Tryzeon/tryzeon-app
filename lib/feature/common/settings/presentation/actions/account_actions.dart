@@ -80,8 +80,5 @@ void _reportFailure(
   final Result<void, Failure> result,
 ) {
   if (result.isSuccess) return;
-  TopNotification.show(
-    context,
-    message: result.getError()!.displayMessage(context),
-  );
+  TopNotification.show(context, message: result.getError()!.displayMessage());
 }

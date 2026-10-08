@@ -36,7 +36,7 @@ class WardrobeItemDetailPage extends HookConsumerWidget {
       error: (final error, final stack) => Scaffold(
         appBar: AppBar(),
         body: ErrorView(
-          message: error.displayMessage(context),
+          message: error.displayMessage(),
           onRetry: () => ref.invalidate(wardrobeItemsProvider),
         ),
       ),
@@ -94,7 +94,7 @@ class _WardrobeItemDetailContent extends ConsumerWidget {
       } else {
         TopNotification.show(
           context,
-          message: result.getError()!.displayMessage(context),
+          message: result.getError()!.displayMessage(),
         );
       }
     }
@@ -106,9 +106,7 @@ class _WardrobeItemDetailContent extends ConsumerWidget {
 
       if (!context.mounted) return null;
 
-      return result.isFailure
-          ? result.getError()!.displayMessage(context)
-          : null;
+      return result.isFailure ? result.getError()!.displayMessage() : null;
     }
 
     Future<void> handleEditGarmentType() async {
@@ -127,7 +125,7 @@ class _WardrobeItemDetailContent extends ConsumerWidget {
       if (!context.mounted || result.isSuccess) return;
       TopNotification.show(
         context,
-        message: result.getError()!.displayMessage(context),
+        message: result.getError()!.displayMessage(),
       );
     }
 

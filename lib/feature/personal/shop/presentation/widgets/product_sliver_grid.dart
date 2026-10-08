@@ -139,7 +139,7 @@ class ProductSliverGrid extends ConsumerWidget {
     return SliverFillRemaining(
       hasScrollBody: false,
       child: ErrorView(
-        message: productsAsync.error.displayMessage(context),
+        message: productsAsync.error.displayMessage(),
         onRetry: onRetry,
       ),
     );

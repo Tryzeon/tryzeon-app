@@ -1,8 +1,7 @@
-import 'package:flutter/widgets.dart';
 import '../error/failures.dart';
 
 extension FailureMessage on Failure {
-  String displayMessage([final BuildContext? context]) {
+  String displayMessage() {
     return switch (this) {
       NetworkFailure(message: final msg?) => msg,
       NetworkFailure() => '無網路連線，請檢查您的網路設定',
@@ -41,17 +40,17 @@ extension FailureMessage on Failure {
 }
 
 extension ErrorDisplayMessage on Object? {
-  String displayMessage([final BuildContext? context]) {
+  String displayMessage() {
     final error = this;
 
     if (error is Failure) {
-      return error.displayMessage(context);
+      return error.displayMessage();
     }
 
     if (error is String && error.isNotEmpty) {
       return error;
     }
 
-    return const UnknownFailure().displayMessage(context);
+    return const UnknownFailure().displayMessage();
   }
 }

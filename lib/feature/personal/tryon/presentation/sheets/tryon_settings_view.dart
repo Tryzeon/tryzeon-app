@@ -94,7 +94,7 @@ class TryonSettingsView extends HookConsumerWidget {
       if (result.isFailure) {
         TopNotification.show(
           context,
-          message: result.getError()!.displayMessage(context),
+          message: result.getError()!.displayMessage(),
         );
         return;
       }

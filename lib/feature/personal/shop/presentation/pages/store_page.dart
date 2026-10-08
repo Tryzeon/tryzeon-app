@@ -239,7 +239,7 @@ class StorePage extends HookConsumerWidget {
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (final error, final stack) => ErrorView(
-          message: error.displayMessage(context),
+          message: error.displayMessage(),
           onRetry: () => ref.refresh(storeInfoProvider(storeId)),
         ),
       ),

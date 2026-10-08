@@ -102,7 +102,7 @@ class ProductBasicFieldsEditor extends HookWidget {
                   child: Center(child: CircularProgressIndicator()),
                 ),
                 error: (final error, final stack) => ErrorView(
-                  message: error.displayMessage(context),
+                  message: error.displayMessage(),
                   onRetry: onRetryCategories,
                   isCompact: true,
                 ),

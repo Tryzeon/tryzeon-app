@@ -23,10 +23,7 @@ Future<void> toggleProductStatus(
   if (!context.mounted) return;
 
   if (result.isFailure) {
-    TopNotification.show(
-      context,
-      message: result.getError()!.displayMessage(context),
-    );
+    TopNotification.show(context, message: result.getError()!.displayMessage());
     return;
   }
 

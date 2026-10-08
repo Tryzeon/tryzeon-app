@@ -121,7 +121,7 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
       } else {
         TopNotification.show(
           feedbackContext,
-          message: failure.displayMessage(feedbackContext),
+          message: failure.displayMessage(),
         );
       }
     }

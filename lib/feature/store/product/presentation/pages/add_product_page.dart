@@ -85,7 +85,7 @@ class AddProductPage extends HookConsumerWidget {
       } else {
         TopNotification.show(
           context,
-          message: result.getError()!.displayMessage(context),
+          message: result.getError()!.displayMessage(),
         );
       }
     }

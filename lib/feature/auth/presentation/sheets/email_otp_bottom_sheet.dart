@@ -77,7 +77,7 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
       } else {
         TopNotification.show(
           context,
-          message: result.getError()?.displayMessage(context) ?? '發送失敗，請稍後再試',
+          message: result.getError()?.displayMessage() ?? '發送失敗，請稍後再試',
         );
       }
     }
@@ -107,7 +107,7 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
       } else {
         TopNotification.show(
           context,
-          message: result.getError()?.displayMessage(context) ?? '驗證碼錯誤',
+          message: result.getError()?.displayMessage() ?? '驗證碼錯誤',
         );
       }
     }

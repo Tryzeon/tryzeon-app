@@ -25,13 +25,12 @@ class SubscriptionPage extends HookConsumerWidget {
       appBar: AppBar(title: const Text('訂閱方案')),
       body: SafeArea(
         top: false,
-        child: _buildBody(context, ref, entitlementAsync, capabilitiesAsync),
+        child: _buildBody(ref, entitlementAsync, capabilitiesAsync),
       ),
     );
   }
 
   Widget _buildBody(
-    final BuildContext context,
     final WidgetRef ref,
     final AsyncValue<AppSubscriptionEntitlement> entitlementAsync,
     final AsyncValue<SubscriptionCapabilities> capabilitiesAsync,
@@ -43,7 +42,7 @@ class SubscriptionPage extends HookConsumerWidget {
     if (entitlement == null) {
       if (entitlementAsync.hasError) {
         return ErrorView(
-          message: entitlementAsync.error!.displayMessage(context),
+          message: entitlementAsync.error!.displayMessage(),
           onRetry: () {
             ref.invalidate(appSubscriptionEntitlementProvider);
             ref.invalidate(subscriptionCapabilitiesProvider);

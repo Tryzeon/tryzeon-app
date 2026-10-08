@@ -79,7 +79,7 @@ class HomePage extends HookConsumerWidget {
       if (result.isFailure) {
         TopNotification.show(
           context,
-          message: result.getError()!.displayMessage(context),
+          message: result.getError()!.displayMessage(),
         );
         return;
       }
@@ -119,10 +119,7 @@ class HomePage extends HookConsumerWidget {
                 : '您的今日試穿次數已達上限\n升級至更高方案以獲得更多次數！',
           );
         case TryonFailed(:final failure):
-          TopNotification.show(
-            context,
-            message: failure.displayMessage(context),
-          );
+          TopNotification.show(context, message: failure.displayMessage());
       }
     }
 
@@ -192,7 +189,7 @@ class HomePage extends HookConsumerWidget {
                 child: avatarError != null
                     ? Center(
                         child: ErrorView(
-                          message: avatarError.displayMessage(context),
+                          message: avatarError.displayMessage(),
                           onRetry: () => ref.invalidate(userProfileProvider),
                         ),
                       )

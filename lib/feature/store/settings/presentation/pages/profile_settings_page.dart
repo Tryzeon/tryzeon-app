@@ -41,7 +41,7 @@ class StoreProfileSettingsPage extends HookConsumerWidget {
           },
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (final error, final stack) => ErrorView(
-            message: error.displayMessage(context),
+            message: error.displayMessage(),
             onRetry: () => ref.invalidate(storeProfileProvider),
           ),
         ),
@@ -149,7 +149,7 @@ class _StoreProfileForm extends HookConsumerWidget {
           }
           context.pop();
         case Err(:final error):
-          TopNotification.show(context, message: error.displayMessage(context));
+          TopNotification.show(context, message: error.displayMessage());
       }
     }
 
