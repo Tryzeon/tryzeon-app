@@ -1,3 +1,4 @@
+import 'package:tryzeon/core/data/cache/decode_cached_enum.dart';
 import 'package:tryzeon/core/data/collections/cache_entry.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 
@@ -21,7 +22,10 @@ class CacheEntryLocalDataSource {
       if (age > staleDuration) return null;
     }
 
-    return CacheEntryStatus.values.byName(entry.status);
+    return decodeCachedEnum(
+      entry.status,
+      (final raw) => CacheEntryStatus.values.asNameMap()[raw],
+    );
   }
 
   Future<void> markHasData(final String cacheKey) {
