@@ -31,9 +31,7 @@ class StoreProfileRemoteDataSource {
 
     final json = Map<String, dynamic>.from(changes)
       ..remove('id')
-      ..remove('owner_id')
-      ..remove('created_at')
-      ..remove('updated_at');
+      ..remove('owner_id');
 
     await _supabaseClient
         .from(_storeProfileTable)

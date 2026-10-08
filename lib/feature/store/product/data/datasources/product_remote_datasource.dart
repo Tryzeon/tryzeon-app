@@ -49,10 +49,7 @@ class ProductRemoteDataSource {
   ) async {
     final json = Map<String, dynamic>.from(changes)
       ..remove('id')
-      ..remove('store_id')
-      ..remove('created_at')
-      ..remove('updated_at')
-      ..remove('product_sizes');
+      ..remove('store_id');
 
     await _supabaseClient
         .from(_productsTable)
