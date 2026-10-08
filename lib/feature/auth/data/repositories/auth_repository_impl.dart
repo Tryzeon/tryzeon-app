@@ -94,10 +94,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Result<void, Failure>> sendEmailOtp({
-    required final String email,
-    required final UserType userType,
-  }) async {
+  Future<Result<void, Failure>> sendEmailOtp(final String email) async {
     try {
       await _remoteDataSource.sendEmailOTP(email);
       return const Ok(null);

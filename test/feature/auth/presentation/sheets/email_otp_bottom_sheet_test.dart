@@ -14,10 +14,7 @@ class _FakeSendEmailOtp implements SendEmailOtp {
   final emails = <String>[];
 
   @override
-  Future<Result<void, Failure>> call({
-    required final String email,
-    required final UserType userType,
-  }) async {
+  Future<Result<void, Failure>> call(final String email) async {
     emails.add(email);
     return const Ok(null);
   }

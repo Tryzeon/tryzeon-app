@@ -63,10 +63,7 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
       isLoading.value = true;
 
       final sendEmailOtpUseCase = ref.read(sendEmailOtpUseCaseProvider);
-      final result = await sendEmailOtpUseCase(
-        email: email,
-        userType: userType,
-      );
+      final result = await sendEmailOtpUseCase(email);
 
       if (!context.mounted) return;
       isLoading.value = false;
