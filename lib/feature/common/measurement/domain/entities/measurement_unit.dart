@@ -9,12 +9,6 @@ enum MeasurementUnit {
     MeasurementUnit.inch => '英吋',
   };
 
-  String get symbol => switch (this) {
-    MeasurementUnit.centimeter => 'cm',
-    MeasurementUnit.cun => '寸',
-    MeasurementUnit.inch => 'in',
-  };
-
   double get toCmFactor => switch (this) {
     MeasurementUnit.centimeter => 1.0,
     MeasurementUnit.cun => 3.03,
