@@ -85,30 +85,12 @@ export async function uploadTryonImageToR2(
   return await uploadToR2(bucketName, fileName, body, contentType);
 }
 
-const PUBLIC_CACHE_CONTROL = "public, max-age=31536000, immutable";
-
 function getPublicImagesBucketName(): string {
   const bucket = Deno.env.get("R2_PUBLIC_IMAGES_BUCKET_NAME");
   if (!bucket) {
     throw new Error("Missing required environment variable: R2_PUBLIC_IMAGES_BUCKET_NAME");
   }
   return bucket;
-}
-
-export async function uploadPublicImageToR2(
-  buffer: ArrayBuffer,
-  key: string,
-  contentType: string,
-): Promise<void> {
-  const bucket = getPublicImagesBucketName();
-  const s3Client = getR2Client();
-  await s3Client.send(new PutObjectCommand({
-    Bucket: bucket,
-    Key: key,
-    Body: new Uint8Array(buffer),
-    ContentType: contentType,
-    CacheControl: PUBLIC_CACHE_CONTROL,
-  }));
 }
 
 export async function deletePublicImagesFromR2(keys: string[]): Promise<void> {

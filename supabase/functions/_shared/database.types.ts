@@ -592,44 +592,12 @@ export type Database = {
         Args: { p_feature_name: string; p_user_id: string }
         Returns: boolean
       }
-      find_orphan_avatar_images: {
-        Args: never
-        Returns: {
-          image_path: string
-        }[]
-      }
-      find_orphan_product_images: {
-        Args: never
-        Returns: {
-          image_path: string
-        }[]
-      }
-      find_orphan_store_logos: {
-        Args: never
-        Returns: {
-          image_path: string
-        }[]
-      }
-      find_orphan_wardrobe_images: {
-        Args: never
-        Returns: {
-          bucket_id: string
-          image_path: string
-        }[]
-      }
       get_shop_product: { Args: { p_id: string }; Returns: Json }
       increment_feature_usage: {
         Args: { p_feature_name: string; p_user_id: string }
         Returns: Json
       }
       is_admin: { Args: never; Returns: boolean }
-      list_migration_objects: {
-        Args: { p_buckets: string[]; p_limit: number; p_offset: number }
-        Returns: {
-          bucket_id: string
-          name: string
-        }[]
-      }
       list_shop_products: {
         Args: {
           p_category_ids?: string[]
