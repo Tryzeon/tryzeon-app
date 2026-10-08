@@ -27,6 +27,7 @@ SizeVoiceInput useSizeVoiceInput({
   final context = useContext();
   final status = useState(SizeVoiceStatus.idle);
   final autoStopTimer = useRef<Timer?>(null);
+  final activeRecorder = useRef<AudioRecorderService?>(null);
 
   void showError(final String message) {
     if (!context.mounted) return;
@@ -34,13 +35,22 @@ SizeVoiceInput useSizeVoiceInput({
   }
 
   useEffect(
-    () =>
-        () => autoStopTimer.value?.cancel(),
+    () => () {
+      autoStopTimer.value?.cancel();
+      final recorder = activeRecorder.value;
+      if (recorder == null) return;
+      unawaited(
+        recorder.cancel().catchError((final Object e, final StackTrace st) {
+          AppLogger.warning('Failed to cancel size voice recording', e, st);
+        }),
+      );
+    },
     const [],
   );
 
   Future<void> stopAndParse(final AudioRecorderService recorder) async {
     autoStopTimer.value?.cancel();
+    activeRecorder.value = null;
     status.value = SizeVoiceStatus.uploading;
     try {
       final recording = await recorder.stop();
@@ -84,6 +94,7 @@ SizeVoiceInput useSizeVoiceInput({
       showError('需要麥克風權限才能語音輸入，請至系統設定開啟');
       return;
     }
+    activeRecorder.value = recorder;
     status.value = SizeVoiceStatus.recording;
     autoStopTimer.value = Timer(_maxRecordingDuration, () {
       if (status.value == SizeVoiceStatus.recording) {
