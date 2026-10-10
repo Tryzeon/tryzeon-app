@@ -21,6 +21,7 @@ import 'package:tryzeon/feature/personal/tryon/presentation/actions/edit_outfit.
 import 'package:tryzeon/feature/personal/tryon/presentation/controllers/tryon_controller.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/coordinators/tryon_coordinator.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/sheets/tryon_mode_sheet.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_outcome.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/home_primary_action_button.dart';
@@ -32,6 +33,7 @@ import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_galler
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_gallery_actions.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_indicator.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_outfit_rail.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_rating_buttons.dart';
 import 'package:typed_result/typed_result.dart';
 
 class HomePage extends HookConsumerWidget {
@@ -258,16 +260,30 @@ class HomePage extends HookConsumerWidget {
             ),
 
             if (galleryState.currentEntry case final entry?
-                when entry.pieces.isNotEmpty)
+                when entry is FinishedTryonEntry || entry.pieces.isNotEmpty)
               Positioned(
                 right: AppSpacing.lg,
                 bottom: bottomOffset + AppSpacing.md,
                 child: PageLinkedReveal(
                   controller: pageController,
                   interval: const Interval(0.5, 1),
-                  child: TryonOutfitRail(
-                    pieces: entry.pieces,
-                    onEdit: () => editOutfit(context, ref, entry),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (entry.pieces.isNotEmpty)
+                        TryonOutfitRail(
+                          pieces: entry.pieces,
+                          onEdit: () => editOutfit(context, ref, entry),
+                        ),
+                      if (entry is FinishedTryonEntry) ...[
+                        if (entry.pieces.isNotEmpty)
+                          const SizedBox(height: AppSpacing.smMd),
+                        TryonRatingButtons(
+                          key: ValueKey(entry.id),
+                          tryonId: entry.id,
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ),
