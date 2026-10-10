@@ -2,10 +2,14 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_media_datasource.dart';
 import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_remote_data_source.dart';
+import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_report_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/tryon/data/repositories/tryon_media_repository_impl.dart';
+import 'package:tryzeon/feature/personal/tryon/data/repositories/tryon_report_repository_impl.dart';
 import 'package:tryzeon/feature/personal/tryon/data/repositories/tryon_repository_impl.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_media_repository.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_report_repository.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_repository.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/usecases/report_tryon.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/usecases/share_tryon_media.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/usecases/tryon.dart';
 
@@ -47,5 +51,24 @@ TryonMediaRepository tryonMediaRepository(final Ref ref) {
 ShareTryonMedia shareTryonMediaUseCase(final Ref ref) {
   return ShareTryonMedia(
     mediaRepository: ref.watch(tryonMediaRepositoryProvider),
+  );
+}
+
+@riverpod
+TryonReportRemoteDataSource tryonReportRemoteDataSource(final Ref ref) {
+  return TryonReportRemoteDataSource(Supabase.instance.client);
+}
+
+@riverpod
+TryonReportRepository tryonReportRepository(final Ref ref) {
+  return TryonReportRepositoryImpl(
+    remoteDataSource: ref.watch(tryonReportRemoteDataSourceProvider),
+  );
+}
+
+@riverpod
+ReportTryon reportTryonUseCase(final Ref ref) {
+  return ReportTryon(
+    reportRepository: ref.watch(tryonReportRepositoryProvider),
   );
 }
