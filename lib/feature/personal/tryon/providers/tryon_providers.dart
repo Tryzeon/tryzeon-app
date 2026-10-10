@@ -1,14 +1,18 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_media_datasource.dart';
+import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_rating_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_report_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/tryon/data/repositories/tryon_media_repository_impl.dart';
+import 'package:tryzeon/feature/personal/tryon/data/repositories/tryon_rating_repository_impl.dart';
 import 'package:tryzeon/feature/personal/tryon/data/repositories/tryon_report_repository_impl.dart';
 import 'package:tryzeon/feature/personal/tryon/data/repositories/tryon_repository_impl.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_media_repository.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_rating_repository.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_report_repository.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_repository.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/usecases/rate_tryon.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/usecases/report_tryon.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/usecases/share_tryon_media.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/usecases/tryon.dart';
@@ -71,4 +75,21 @@ ReportTryon reportTryonUseCase(final Ref ref) {
   return ReportTryon(
     reportRepository: ref.watch(tryonReportRepositoryProvider),
   );
+}
+
+@riverpod
+TryonRatingRemoteDataSource tryonRatingRemoteDataSource(final Ref ref) {
+  return TryonRatingRemoteDataSource(Supabase.instance.client);
+}
+
+@riverpod
+TryonRatingRepository tryonRatingRepository(final Ref ref) {
+  return TryonRatingRepositoryImpl(
+    remoteDataSource: ref.watch(tryonRatingRemoteDataSourceProvider),
+  );
+}
+
+@riverpod
+RateTryon rateTryonUseCase(final Ref ref) {
+  return RateTryon(ratingRepository: ref.watch(tryonRatingRepositoryProvider));
 }

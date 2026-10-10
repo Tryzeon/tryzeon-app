@@ -23,6 +23,7 @@ class AppConstants {
       'analytics_product_monthly_summary';
   static const String tableUserDailyUsage = 'user_daily_usage';
   static const String tableContentReports = 'content_reports';
+  static const String tableTryonRatings = 'tryon_ratings';
 
   static const String bucketUserAvatars = 'user-avatars';
   static const String bucketWardrobeImages = 'wardrobe-images';
