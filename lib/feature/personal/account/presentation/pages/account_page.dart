@@ -67,7 +67,6 @@ class AccountPage extends HookConsumerWidget {
           bottom: false,
           child: RefreshIndicator(
             onRefresh: () => _refresh(ref).showFirstFailure(context),
-            edgeOffset: MediaQuery.of(context).padding.top,
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               child: Column(
