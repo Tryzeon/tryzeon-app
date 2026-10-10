@@ -82,7 +82,6 @@ class ShopPage extends HookConsumerWidget {
         );
 
     final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
 
     void handleSortByLatest() {
       filterNotifier.setSort(const ShopSort.latest());
@@ -298,20 +297,7 @@ class ShopPage extends HookConsumerWidget {
                             ref.invalidate(productCategoriesProvider);
                           },
                         ),
-                        const SizedBox(height: AppSpacing.lg),
-
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.md,
-                          ),
-                          child: Text(
-                            'RECOMMENDED',
-                            style: textTheme.labelLarge?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.xs),
+                        const SizedBox(height: AppSpacing.md),
                       ],
                     ),
                   ),
