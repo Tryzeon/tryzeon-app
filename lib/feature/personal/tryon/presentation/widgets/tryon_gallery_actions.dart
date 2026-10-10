@@ -116,7 +116,7 @@ class TryonGalleryActions extends ConsumerWidget {
         return;
       }
       ref.read(tryonGalleryProvider.notifier).removeById(targetId);
-      AppSnackBar.show(context, message: '已收到檢舉，謝謝您！');
+      AppSnackBar.show(context, message: '已收到此檢舉，謝謝您！');
     }
 
     final actions = switch (gallery) {
