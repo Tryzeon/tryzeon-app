@@ -74,7 +74,7 @@ class AccountPage extends HookConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AppPageHeader(
-                    title: '帳戶',
+                    title: '我的帳戶',
                     action: IconButton(
                       icon: const Icon(Icons.settings_outlined),
                       tooltip: '設定',
