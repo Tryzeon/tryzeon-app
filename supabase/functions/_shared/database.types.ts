@@ -494,18 +494,24 @@ export type Database = {
         Row: {
           created_at: string
           rating: Database["public"]["Enums"]["tryon_rating"]
+          reason: string | null
+          comment: string | null
           tryon_generation_id: string
           updated_at: string
         }
         Insert: {
           created_at?: string
           rating: Database["public"]["Enums"]["tryon_rating"]
+          reason?: string | null
+          comment?: string | null
           tryon_generation_id: string
           updated_at?: string
         }
         Update: {
           created_at?: string
           rating?: Database["public"]["Enums"]["tryon_rating"]
+          reason?: string | null
+          comment?: string | null
           tryon_generation_id?: string
           updated_at?: string
         }
