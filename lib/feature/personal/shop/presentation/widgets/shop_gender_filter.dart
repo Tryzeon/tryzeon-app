@@ -62,8 +62,8 @@ class _GenderTab extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeOut,
+              duration: AppDuration.standard,
+              curve: AppCurves.enter,
               style: (theme.textTheme.titleSmall ?? const TextStyle()).copyWith(
                 color: isSelected
                     ? colorScheme.onSurface
@@ -75,8 +75,8 @@ class _GenderTab extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.xs),
             AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeOut,
+              duration: AppDuration.standard,
+              curve: AppCurves.enter,
               height: 2,
               width: isSelected ? 18 : 0,
               decoration: BoxDecoration(
