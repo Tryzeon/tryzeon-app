@@ -18,8 +18,6 @@ class StoreAccountPage extends HookConsumerWidget {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
 
-    final profile = ref.watch(storeProfileProvider).value;
-
     return Scaffold(
       body: SafeArea(
         bottom: false,
@@ -32,7 +30,7 @@ class StoreAccountPage extends HookConsumerWidget {
             physics: const AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.zero,
             children: [
-              StoreAccountHeader(profile: profile),
+              const StoreAccountHeader(),
               const SizedBox(height: AppSpacing.lg),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
