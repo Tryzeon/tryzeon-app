@@ -130,12 +130,18 @@ class _ProductCardMenuButton extends StatelessWidget {
       constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
       color: Theme.of(context).colorScheme.onSurfaceVariant,
       tooltip: '更多操作',
-      // Editing lives behind a tap on the card and delete behind the editor's
-      // danger zone, so the reversible 下架 stays the easy action here.
+      // Delete stays behind the editor's danger zone, so the reversible 下架
+      // is the only state change offered here.
       onPressed: () => showAppActionSheet(
         context,
         title: product.name,
         actions: [
+          AppMenuAction(
+            icon: Icons.edit_outlined,
+            title: '編輯商品',
+            onTap: () =>
+                context.push(AppRoutes.dashboardProductDetailPath(product.id)),
+          ),
           AppMenuAction(
             icon: product.status == ProductStatus.active
                 ? Icons.visibility_off_outlined
