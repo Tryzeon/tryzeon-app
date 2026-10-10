@@ -3,7 +3,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/refresh_feedback_extension.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/store/account/presentation/widgets/store_account_header.dart';
-import 'package:tryzeon/feature/store/account/presentation/widgets/unlist_reminder_section.dart';
 import 'package:tryzeon/feature/store/analytics/presentation/widgets/month_filter_widget.dart';
 import 'package:tryzeon/feature/store/analytics/presentation/widgets/store_traffic_dashboard.dart';
 import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
@@ -48,7 +47,6 @@ class StoreAccountPage extends HookConsumerWidget {
                 padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 child: StoreTrafficDashboard(),
               ),
-              const UnlistReminderSection(),
               SizedBox(
                 height:
                     MediaQuery.of(context).padding.bottom +
