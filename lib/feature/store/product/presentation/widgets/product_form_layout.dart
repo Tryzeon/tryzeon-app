@@ -57,7 +57,7 @@ class ProductFormLayout extends StatelessWidget {
             child: _FormSectionLabel(
               number: '01',
               title: '商品圖片',
-              helper: '最多 3 張 · 長按拖曳調整順序',
+              helper: '最多 3 張 · 第一張為主圖，用於封面與 AI 試穿，請放完整正面照 · 長按拖曳調整順序',
             ),
           ),
           SelectionFormField<List<ImageItem>>(

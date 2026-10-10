@@ -91,6 +91,7 @@ class ProductImageEditor extends StatelessWidget {
                     index: index,
                     child: _ImageCard(
                       item: item,
+                      isMain: index == 0,
                       onRemove: () {
                         final updated = List<ImageItem>.from(images)
                           ..removeAt(index);
@@ -108,9 +109,14 @@ class ProductImageEditor extends StatelessWidget {
 }
 
 class _ImageCard extends StatelessWidget {
-  const _ImageCard({required this.item, required this.onRemove});
+  const _ImageCard({
+    required this.item,
+    required this.isMain,
+    required this.onRemove,
+  });
 
   final ImageItem item;
+  final bool isMain;
   final VoidCallback onRemove;
 
   @override
@@ -144,6 +150,29 @@ class _ImageCard extends StatelessWidget {
               ),
             },
           ),
+          if (isMain)
+            Positioned(
+              left: AppSpacing.xs,
+              bottom: AppSpacing.xs,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.xs,
+                  vertical: AppSpacing.xxs,
+                ),
+                decoration: BoxDecoration(
+                  color: colorScheme.scrim.withValues(
+                    alpha: AppOpacity.overlay,
+                  ),
+                  borderRadius: AppRadius.pillAll,
+                ),
+                child: Text(
+                  '主圖',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelSmall?.copyWith(color: Colors.white),
+                ),
+              ),
+            ),
           Positioned(
             top: 4,
             right: 4,
