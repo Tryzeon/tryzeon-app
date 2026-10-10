@@ -490,6 +490,35 @@ export type Database = {
         }
         Relationships: []
       }
+      tryon_ratings: {
+        Row: {
+          created_at: string
+          rating: Database["public"]["Enums"]["tryon_rating"]
+          tryon_generation_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          rating: Database["public"]["Enums"]["tryon_rating"]
+          tryon_generation_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          rating?: Database["public"]["Enums"]["tryon_rating"]
+          tryon_generation_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tryon_ratings_tryon_generation_id_fkey"
+            columns: ["tryon_generation_id"]
+            isOneToOne: true
+            referencedRelation: "tryon_generations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_daily_usage: {
         Row: {
           chat_count: number
@@ -705,6 +734,7 @@ export type Database = {
       store_channel: "physical" | "online"
       tryon_generation_mode: "image" | "video"
       tryon_generation_status: "pending" | "succeeded" | "failed"
+      tryon_rating: "like" | "dislike"
       user_gender: "female" | "male"
     }
     CompositeTypes: {
@@ -853,6 +883,7 @@ export const Constants = {
       store_channel: ["physical", "online"],
       tryon_generation_mode: ["image", "video"],
       tryon_generation_status: ["pending", "succeeded", "failed"],
+      tryon_rating: ["like", "dislike"],
       user_gender: ["female", "male"],
     },
   },
