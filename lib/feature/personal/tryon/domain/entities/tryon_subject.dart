@@ -9,7 +9,8 @@ part 'tryon_subject.freezed.dart';
 /// run, so regenerating picks up a changed setting.
 @freezed
 sealed class TryonSubject with _$TryonSubject {
-  const factory TryonSubject.generate({
+  @Assert('pieces.isNotEmpty')
+  factory TryonSubject.generate({
     required final List<OutfitPiece> pieces,
     required final TryonMode mode,
   }) = TryonSubjectGenerate;

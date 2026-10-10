@@ -15,12 +15,12 @@ void main() {
     imagePath: 'w1.jpg',
     garmentType: GarmentType.top,
   );
-  const imageSubject = TryonSubject.generate(
-    pieces: [piece],
+  final imageSubject = TryonSubject.generate(
+    pieces: const [piece],
     mode: TryonMode.image,
   );
-  const videoSubject = TryonSubject.generate(
-    pieces: [piece],
+  final videoSubject = TryonSubject.generate(
+    pieces: const [piece],
     mode: TryonMode.video,
   );
 

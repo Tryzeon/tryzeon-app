@@ -75,10 +75,10 @@ void main() {
 
   test('an image generate request carries prompts but no transition', () async {
     await tryon(
-      const TryonParams(
+      TryonParams(
         requestId: 'r1',
         subject: TryonSubject.generate(
-          pieces: [wardrobe],
+          pieces: const [wardrobe],
           mode: TryonMode.image,
         ),
         preferences: preferences,
@@ -96,10 +96,10 @@ void main() {
 
   test('a video generate request carries the transition prompt', () async {
     await tryon(
-      const TryonParams(
+      TryonParams(
         requestId: 'r1',
         subject: TryonSubject.generate(
-          pieces: [wardrobe],
+          pieces: const [wardrobe],
           mode: TryonMode.video,
         ),
         preferences: preferences,
@@ -116,10 +116,10 @@ void main() {
       ..remote['https://x/avatar.jpg'] = [4, 5];
 
     await tryon(
-      const TryonParams(
+      TryonParams(
         requestId: 'r1',
         subject: TryonSubject.generate(
-          pieces: [OutfitPiece.local(path: 'g.jpg')],
+          pieces: const [OutfitPiece.local(path: 'g.jpg')],
           mode: TryonMode.image,
         ),
         preferences: preferences,
@@ -142,12 +142,12 @@ void main() {
     media.remote['https://x/base.jpg'] = [9];
 
     await tryon(
-      const TryonParams(
+      TryonParams(
         requestId: 'r1',
         subject: TryonSubject.animated(
           baseImageUrl: 'https://x/base.jpg',
           origin: TryonSubject.generate(
-            pieces: [wardrobe],
+            pieces: const [wardrobe],
             mode: TryonMode.image,
           ),
         ),
@@ -162,10 +162,10 @@ void main() {
 
   test('an unreadable local piece fails without calling the backend', () async {
     final result = await tryon(
-      const TryonParams(
+      TryonParams(
         requestId: 'r1',
         subject: TryonSubject.generate(
-          pieces: [OutfitPiece.local(path: 'missing.jpg')],
+          pieces: const [OutfitPiece.local(path: 'missing.jpg')],
           mode: TryonMode.image,
         ),
         preferences: preferences,

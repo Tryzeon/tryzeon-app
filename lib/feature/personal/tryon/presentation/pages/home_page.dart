@@ -259,8 +259,7 @@ class HomePage extends HookConsumerWidget {
               ),
             ),
 
-            if (galleryState.currentEntry case final entry?
-                when entry is FinishedTryonEntry || entry.pieces.isNotEmpty)
+            if (galleryState.currentEntry case final entry?)
               Positioned(
                 right: AppSpacing.lg,
                 bottom: bottomOffset + AppSpacing.md,
@@ -270,14 +269,12 @@ class HomePage extends HookConsumerWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (entry.pieces.isNotEmpty)
-                        TryonOutfitRail(
-                          pieces: entry.pieces,
-                          onEdit: () => editOutfit(context, ref, entry),
-                        ),
+                      TryonOutfitRail(
+                        pieces: entry.pieces,
+                        onEdit: () => editOutfit(context, ref, entry),
+                      ),
                       if (entry is FinishedTryonEntry) ...[
-                        if (entry.pieces.isNotEmpty)
-                          const SizedBox(height: AppSpacing.smMd),
+                        const SizedBox(height: AppSpacing.smMd),
                         TryonRatingButtons(
                           key: ValueKey(entry.id),
                           tryonId: entry.id,

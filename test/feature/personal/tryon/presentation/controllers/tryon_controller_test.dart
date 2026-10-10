@@ -150,7 +150,7 @@ void main() {
     expect(entry.pieces, [w1, w2]);
     expect(
       entry.subject,
-      const TryonSubject.generate(pieces: [w1, w2], mode: TryonMode.video),
+      TryonSubject.generate(pieces: const [w1, w2], mode: TryonMode.video),
     );
   });
 }

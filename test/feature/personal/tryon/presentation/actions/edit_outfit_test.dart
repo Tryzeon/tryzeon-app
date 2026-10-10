@@ -98,8 +98,8 @@ void main() {
     await pump(tester);
     final shopEntry = FinishedTryonEntry(
       entry.result,
-      const TryonSubject.generate(
-        pieces: [
+      TryonSubject.generate(
+        pieces: const [
           OutfitPiece.product(
             productId: 'p1',
             imageUrl: 'u',
