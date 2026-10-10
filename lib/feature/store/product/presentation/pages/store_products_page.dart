@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/refresh_feedback_extension.dart';
+import 'package:tryzeon/core/presentation/widgets/app_page_header.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
 import 'package:tryzeon/feature/store/product/presentation/mappers/product_sort_field_ui_mapper.dart';
@@ -16,30 +17,13 @@ class StoreProductsPage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final textTheme = Theme.of(context).textTheme;
-
     return Scaffold(
       body: SafeArea(
         bottom: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg,
-                AppSpacing.lg,
-                AppSpacing.lg,
-                AppSpacing.sm,
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text('我的商品', style: textTheme.headlineMedium),
-                  ),
-                  const _SortButton(),
-                ],
-              ),
-            ),
+            const AppPageHeader(title: '我的商品', action: _SortButton()),
             const ProductStatusTabs(),
             const SizedBox(height: AppSpacing.md),
             const Padding(

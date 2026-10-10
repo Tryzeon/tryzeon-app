@@ -5,6 +5,7 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/refresh_feedback_extension.dart';
 import 'package:tryzeon/core/modules/revenue_cat/presentation/utils/revenue_cat_ui_utils.dart';
 import 'package:tryzeon/core/modules/revenue_cat/providers/revenue_cat_providers.dart';
+import 'package:tryzeon/core/presentation/widgets/app_page_header.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_overlay.dart';
 import 'package:tryzeon/core/presentation/widgets/nav_row.dart';
 import 'package:tryzeon/core/presentation/widgets/section_label.dart';
@@ -72,7 +73,14 @@ class AccountPage extends HookConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const _TopBar(),
+                  AppPageHeader(
+                    title: '帳戶',
+                    action: IconButton(
+                      icon: const Icon(Icons.settings_outlined),
+                      tooltip: '設定',
+                      onPressed: () => context.push(AppRoutes.personalSettings),
+                    ),
+                  ),
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                     child: Column(
@@ -97,28 +105,6 @@ class AccountPage extends HookConsumerWidget {
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _TopBar extends StatelessWidget {
-  const _TopBar();
-
-  @override
-  Widget build(final BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        top: AppSpacing.sm,
-        right: AppSpacing.smMd,
-      ),
-      child: Align(
-        alignment: Alignment.centerRight,
-        child: IconButton(
-          icon: const Icon(Icons.settings_outlined),
-          tooltip: '設定',
-          onPressed: () => context.push(AppRoutes.personalSettings),
         ),
       ),
     );
@@ -186,7 +172,7 @@ class _ProfileHeader extends HookConsumerWidget {
         children: [
           Text(
             profile.name,
-            style: theme.textTheme.headlineMedium,
+            style: theme.textTheme.titleLarge,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

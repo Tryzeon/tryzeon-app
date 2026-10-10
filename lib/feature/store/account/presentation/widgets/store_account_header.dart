@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:tryzeon/core/presentation/widgets/app_page_header.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
@@ -12,37 +13,22 @@ class StoreAccountHeader extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
-    return const Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _TopBar(),
-        Padding(
+        AppPageHeader(
+          title: '帳戶',
+          action: IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: '設定',
+            onPressed: () => context.push(AppRoutes.dashboardSettings),
+          ),
+        ),
+        const Padding(
           padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           child: _ProfileHeader(),
         ),
       ],
-    );
-  }
-}
-
-class _TopBar extends StatelessWidget {
-  const _TopBar();
-
-  @override
-  Widget build(final BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        top: AppSpacing.sm,
-        right: AppSpacing.smMd,
-      ),
-      child: Align(
-        alignment: Alignment.centerRight,
-        child: IconButton(
-          icon: const Icon(Icons.settings_outlined),
-          tooltip: '設定',
-          onPressed: () => context.push(AppRoutes.dashboardSettings),
-        ),
-      ),
     );
   }
 }
@@ -113,7 +99,7 @@ class _ProfileHeader extends ConsumerWidget {
               Expanded(
                 child: Text(
                   name,
-                  style: theme.textTheme.headlineMedium,
+                  style: theme.textTheme.titleLarge,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

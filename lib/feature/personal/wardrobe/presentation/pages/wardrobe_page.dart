@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/extensions/refresh_feedback_extension.dart';
+import 'package:tryzeon/core/presentation/widgets/app_page_header.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
@@ -190,36 +191,17 @@ class WardrobePage extends HookConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg,
-                  AppSpacing.lg,
-                  AppSpacing.lg,
-                  AppSpacing.sm,
+              AppPageHeader(
+                title: '我的衣櫃',
+                titleTrailing: Text(
+                  countLabel,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: isNearLimit
+                        ? colorScheme.error
+                        : colorScheme.onSurfaceVariant,
+                  ),
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
-                        children: [
-                          Text('我的衣櫃', style: textTheme.headlineMedium),
-                          const SizedBox(width: AppSpacing.sm),
-                          Text(
-                            countLabel,
-                            style: textTheme.bodySmall?.copyWith(
-                              color: isNearLimit
-                                  ? colorScheme.error
-                                  : colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    buildComposeButton(),
-                  ],
-                ),
+                action: buildComposeButton(),
               ),
 
               buildGarmentTypeBar(),

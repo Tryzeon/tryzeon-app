@@ -7,10 +7,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/app_keyboard_dismisser.dart';
+import 'package:tryzeon/core/presentation/widgets/app_page_header.dart';
 import 'package:tryzeon/core/router/shells/personal_tab.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/state/chat_timeline.dart';
-import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_header.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_input_bar.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_jump_to_latest_button.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_timeline_list.dart';
@@ -140,7 +140,14 @@ class ChatPage extends HookConsumerWidget {
           bottom: false,
           child: Column(
             children: [
-              ChatHeader(canReset: !isPristine, onReset: confirmReset),
+              AppPageHeader(
+                title: '穿搭顧問',
+                action: IconButton(
+                  icon: const Icon(Icons.add_comment_outlined),
+                  tooltip: '新對話',
+                  onPressed: isPristine ? null : confirmReset,
+                ),
+              ),
               Expanded(
                 child: Stack(
                   children: [
