@@ -16,9 +16,7 @@ class StoreProductsPage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       body: SafeArea(
@@ -33,31 +31,13 @@ class StoreProductsPage extends HookConsumerWidget {
                 AppSpacing.lg,
                 AppSpacing.sm,
               ),
-              child: SizedBox(
-                width: double.infinity,
-                child: Stack(
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'MY PRODUCTS',
-                          style: textTheme.labelSmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.xs),
-                        Text('我的商品', style: textTheme.headlineMedium),
-                      ],
-                    ),
-                    const Positioned(
-                      right: 0,
-                      bottom: 0,
-                      child: _SortButton(),
-                    ),
-                  ],
-                ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text('我的商品', style: textTheme.headlineMedium),
+                  ),
+                  const _SortButton(),
+                ],
               ),
             ),
             const ProductStatusTabs(),
