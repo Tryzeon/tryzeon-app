@@ -30,6 +30,15 @@ class ProductAdvancedFieldsEditor extends StatelessWidget {
 
   final ExpansibleController? controller;
 
+  List<bool> get _filledFlags => [
+    selectedStyles.value?.isNotEmpty ?? false,
+    selectedSeasons.value?.isNotEmpty ?? false,
+    selectedMaterial.value?.isNotEmpty ?? false,
+    selectedElasticity.value != null,
+    selectedFit.value != null,
+    selectedThickness.value != null,
+  ];
+
   @override
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
@@ -40,11 +49,27 @@ class ProductAdvancedFieldsEditor extends StatelessWidget {
       childrenPadding: const EdgeInsets.only(top: AppSpacing.sm),
       expandedCrossAxisAlignment: CrossAxisAlignment.start,
       title: Text('進階資料', style: theme.textTheme.titleSmall),
-      subtitle: Text(
-        '展開以填寫更多選填屬性',
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
+      subtitle: ListenableBuilder(
+        listenable: Listenable.merge([
+          selectedStyles,
+          selectedSeasons,
+          selectedMaterial,
+          selectedElasticity,
+          selectedFit,
+          selectedThickness,
+        ]),
+        builder: (final context, final _) {
+          final flags = _filledFlags;
+          final filled = flags.where((final f) => f).length;
+          return Text(
+            filled == 0
+                ? '選填：風格、季節、材質、彈性、版型、厚度'
+                : '已填 $filled / ${flags.length} 項',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          );
+        },
       ),
       children: [
         const _FieldLabel('風格標籤'),
