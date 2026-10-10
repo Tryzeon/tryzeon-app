@@ -1,7 +1,7 @@
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_rating_remote_data_source.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_rating.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_feedback.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_rating_repository.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -15,13 +15,26 @@ class TryonRatingRepositoryImpl implements TryonRatingRepository {
   @override
   Future<Result<void, Failure>> rate({
     required final String tryonId,
-    required final TryonRating? rating,
+    required final TryonFeedback? feedback,
   }) async {
     try {
-      if (rating == null) {
+      if (feedback == null) {
         await _remoteDataSource.delete(tryonId);
       } else {
-        await _remoteDataSource.upsert(tryonId: tryonId, rating: rating.value);
+        final (rating, reason, comment) = switch (feedback) {
+          TryonLike() => ('like', null, null),
+          TryonDislike(:final reason, :final comment) => (
+            'dislike',
+            reason?.value,
+            comment,
+          ),
+        };
+        await _remoteDataSource.upsert(
+          tryonId: tryonId,
+          rating: rating,
+          reason: reason,
+          comment: comment,
+        );
       }
       return const Ok(null);
     } catch (e, stackTrace) {
