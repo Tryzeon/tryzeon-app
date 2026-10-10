@@ -20,10 +20,6 @@ class OutfitPieceThumbnail extends ConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final fallback = ColoredBox(
-      color: Theme.of(context).colorScheme.surfaceContainer,
-    );
-
     final ImageProvider? image = switch (piece) {
       OutfitPieceWardrobe(:final imagePath) =>
         ref
@@ -36,15 +32,19 @@ class OutfitPieceThumbnail extends ConsumerWidget {
 
     return ClipRRect(
       borderRadius: borderRadius,
-      child: SizedBox.square(
-        dimension: size,
-        child: image == null
-            ? fallback
-            : Image(
-                image: image,
-                fit: BoxFit.cover,
-                errorBuilder: (final _, final _, final _) => fallback,
-              ),
+      child: ColoredBox(
+        color: Theme.of(context).colorScheme.surfaceContainer,
+        child: SizedBox.square(
+          dimension: size,
+          child: image == null
+              ? null
+              : Image(
+                  image: image,
+                  fit: BoxFit.cover,
+                  errorBuilder: (final _, final _, final _) =>
+                      const SizedBox.shrink(),
+                ),
+        ),
       ),
     );
   }
