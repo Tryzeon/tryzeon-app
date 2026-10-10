@@ -84,6 +84,35 @@ export type Database = {
           },
         ]
       }
+      content_reports: {
+        Row: {
+          created_at: string
+          id: string
+          reporter_id: string
+          tryon_generation_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reporter_id?: string
+          tryon_generation_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reporter_id?: string
+          tryon_generation_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_reports_tryon_generation_id_fkey"
+            columns: ["tryon_generation_id"]
+            isOneToOne: true
+            referencedRelation: "tryon_generations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       line_user_links: {
         Row: {
           created_at: string
