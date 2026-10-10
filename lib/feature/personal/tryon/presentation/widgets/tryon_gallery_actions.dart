@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/app_action_sheet.dart';
 import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
+import 'package:tryzeon/core/presentation/widgets/app_snack_bar.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
@@ -96,6 +97,28 @@ class TryonGalleryActions extends ConsumerWidget {
       }
     }
 
+    Future<void> confirmReport() async {
+      if (targetId == null) return;
+
+      final choice = await showAppOkCancelDialog(
+        context: context,
+        message: '確定要檢舉這則試穿嗎？檢舉後會從畫面移除。',
+        okLabel: '檢舉',
+        cancelLabel: '取消',
+        isDestructiveAction: true,
+      );
+      if (choice != OkCancelResult.ok) return;
+
+      final outcome = await ref.read(reportTryonUseCaseProvider)(targetId);
+      if (!context.mounted) return;
+      if (outcome.isFailure) {
+        TopNotification.show(context, message: '檢舉送出失敗，請稍後再試');
+        return;
+      }
+      ref.read(tryonGalleryProvider.notifier).removeById(targetId);
+      AppSnackBar.show(context, message: '已收到檢舉，謝謝您！');
+    }
+
     final actions = switch (gallery) {
       TryonGalleryState(isAvatarPage: true) => [
         AppMenuAction(
@@ -140,6 +163,11 @@ class TryonGalleryActions extends ConsumerWidget {
                 .read(tryonGalleryProvider.notifier)
                 .toggleAvatarForCurrent,
           ),
+        AppMenuAction(
+          icon: Icons.flag_outlined,
+          title: '檢舉此內容',
+          onTap: confirmReport,
+        ),
         AppMenuAction(
           icon: Icons.delete_outline_rounded,
           title: '刪除此試穿',
