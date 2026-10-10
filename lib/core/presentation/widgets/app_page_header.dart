@@ -21,7 +21,7 @@ class AppPageHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.lg,
         AppSpacing.lg,
-        AppSpacing.lg,
+        AppSpacing.smMd,
         AppSpacing.sm,
       ),
       child: SizedBox(
@@ -36,7 +36,7 @@ class AppPageHeader extends StatelessWidget {
                   Flexible(
                     child: Text(
                       title,
-                      style: Theme.of(context).textTheme.headlineMedium,
+                      style: Theme.of(context).textTheme.headlineLarge,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
