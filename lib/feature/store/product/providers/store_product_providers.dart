@@ -185,12 +185,7 @@ Future<List<Product>> filteredProducts(final Ref ref) async {
 
   int lookup(final String productId, final AnalyticsMetric metric) {
     final summary = byId[productId];
-    if (summary == null) return 0;
-    return switch (metric) {
-      AnalyticsMetric.viewCount => summary.viewCount,
-      AnalyticsMetric.tryonCount => summary.tryonCount,
-      AnalyticsMetric.purchaseClickCount => summary.purchaseClickCount,
-    };
+    return summary == null ? 0 : metric.countIn(summary);
   }
 
   return filterAndSortProducts(products, query, lookup);

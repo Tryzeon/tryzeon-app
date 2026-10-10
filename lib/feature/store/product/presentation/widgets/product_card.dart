@@ -11,7 +11,9 @@ import 'package:tryzeon/feature/common/product_category/providers/product_catego
 import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/presentation/actions/toggle_product_status.dart';
+import 'package:tryzeon/feature/store/product/presentation/mappers/analytics_metric_ui_mapper.dart';
 import 'package:tryzeon/feature/store/product/presentation/mappers/product_status_ui_mapper.dart';
+import 'package:tryzeon/feature/store/product/presentation/state/product_sort_condition.dart';
 
 class StoreProductCard extends HookConsumerWidget {
   const StoreProductCard({super.key, required this.product});
@@ -188,20 +190,13 @@ class _AnalyticsRow extends ConsumerWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _AnalyticsBadge(
-          icon: Icons.visibility_outlined,
-          count: analytics?.viewCount ?? 0,
-        ),
-        const SizedBox(width: AppSpacing.smMd),
-        _AnalyticsBadge(
-          icon: Icons.checkroom_outlined,
-          count: analytics?.tryonCount ?? 0,
-        ),
-        const SizedBox(width: AppSpacing.smMd),
-        _AnalyticsBadge(
-          icon: Icons.north_east_rounded,
-          count: analytics?.purchaseClickCount ?? 0,
-        ),
+        for (final (index, metric) in AnalyticsMetric.values.indexed) ...[
+          if (index > 0) const SizedBox(width: AppSpacing.smMd),
+          _AnalyticsBadge(
+            icon: metric.icon,
+            count: analytics == null ? 0 : metric.countIn(analytics),
+          ),
+        ],
       ],
     );
   }

@@ -1,10 +1,21 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:tryzeon/feature/store/analytics/domain/entities/product_analytics_summary.dart';
 
 part 'product_sort_condition.freezed.dart';
 
 enum ProductField { name, price, createdAt, updatedAt }
 
-enum AnalyticsMetric { viewCount, tryonCount, purchaseClickCount }
+enum AnalyticsMetric {
+  viewCount,
+  tryonCount,
+  purchaseClickCount;
+
+  int countIn(final ProductAnalyticsSummary summary) => switch (this) {
+    AnalyticsMetric.viewCount => summary.viewCount,
+    AnalyticsMetric.tryonCount => summary.tryonCount,
+    AnalyticsMetric.purchaseClickCount => summary.purchaseClickCount,
+  };
+}
 
 @freezed
 sealed class SortKey with _$SortKey {
