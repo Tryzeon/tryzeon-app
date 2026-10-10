@@ -16,35 +16,33 @@ class AdBanner extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final pageController = usePageController();
+    final currentPage = useState(0);
+    final adImages = adsAsync.value ?? const <String>[];
+
+    useEffect(() {
+      if (adImages.isEmpty) return null;
+
+      final timer = Timer.periodic(const Duration(seconds: 3), (final timer) {
+        if (!pageController.hasClients) return;
+
+        // Compute next page without triggering a rebuild via State
+        final nextPage = (pageController.page?.round() ?? 0) + 1;
+        final targetPage = nextPage >= adImages.length ? 0 : nextPage;
+
+        pageController.animateToPage(
+          targetPage,
+          duration: AppDuration.slow,
+          curve: AppCurves.standard,
+        );
+      });
+      return timer.cancel;
+    }, [adImages]);
 
     // Priority 1: Show data if available (even during loading or error)
     if (adsAsync.hasValue) {
-      final adImages = adsAsync.value!;
-
       if (adImages.isEmpty) {
         return const SizedBox.shrink();
       }
-
-      useEffect(() {
-        if (adImages.isEmpty) return null;
-
-        final timer = Timer.periodic(const Duration(seconds: 3), (final timer) {
-          if (!pageController.hasClients) return;
-
-          // Compute next page without triggering a rebuild via State
-          final nextPage = (pageController.page?.round() ?? 0) + 1;
-          final targetPage = nextPage >= adImages.length ? 0 : nextPage;
-
-          pageController.animateToPage(
-            targetPage,
-            duration: AppDuration.slow,
-            curve: AppCurves.standard,
-          );
-        });
-        return timer.cancel;
-      }, [adImages]);
-
-      final currentPage = useState(0);
 
       return Column(
         mainAxisSize: MainAxisSize.min,
