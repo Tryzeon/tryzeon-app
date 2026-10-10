@@ -224,7 +224,7 @@ SizeVoiceParser sizeVoiceParser(final Ref ref) =>
 AudioRecorderService audioRecorderService(final Ref ref) =>
     AudioRecorderServiceImpl();
 
-enum ProductMutation { create, update, delete }
+enum ProductMutation { create, update, setStatus, delete }
 
 @riverpod
 class ProductEditNotifier extends _$ProductEditNotifier {
@@ -278,7 +278,7 @@ class ProductEditNotifier extends _$ProductEditNotifier {
     required final ProductStatus status,
   }) {
     return _write(
-      ProductMutation.update,
+      ProductMutation.setStatus,
       () => ref.read(setProductStatusUseCaseProvider)(
         product: product,
         status: status,

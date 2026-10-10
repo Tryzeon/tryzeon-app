@@ -5,12 +5,12 @@ class ProductDangerZone extends StatelessWidget {
   const ProductDangerZone({
     super.key,
     required this.onDelete,
-    this.isSaving = false,
+    this.isBusy = false,
     this.isDeleting = false,
   });
 
   final VoidCallback onDelete;
-  final bool isSaving;
+  final bool isBusy;
   final bool isDeleting;
 
   @override
@@ -38,7 +38,7 @@ class ProductDangerZone extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
-                  onPressed: (isSaving || isDeleting) ? null : onDelete,
+                  onPressed: isBusy ? null : onDelete,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: colorScheme.error,
                     side: BorderSide(color: colorScheme.error),

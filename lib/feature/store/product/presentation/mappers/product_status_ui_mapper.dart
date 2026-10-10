@@ -6,6 +6,11 @@ extension ProductStatusUi on ProductStatus {
     ProductStatus.archived => '已下架',
   };
 
+  String get description => switch (this) {
+    ProductStatus.active => '顧客可以在商店看到這件商品',
+    ProductStatus.archived => '顧客看不到這件商品，隨時可以重新上架',
+  };
+
   /// What the action moving a product *out of* this state is called.
   String get toggleLabel => switch (this) {
     ProductStatus.active => '下架商品',
