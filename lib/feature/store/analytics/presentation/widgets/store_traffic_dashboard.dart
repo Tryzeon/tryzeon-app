@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:tryzeon/core/extensions/count_format_extension.dart';
+import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/store/analytics/domain/entities/product_analytics_summary.dart';
 import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
 
 class StoreTrafficDashboard extends HookConsumerWidget {
@@ -12,22 +15,17 @@ class StoreTrafficDashboard extends HookConsumerWidget {
     final analyticsAsync = ref.watch(productAnalyticsSummariesProvider);
     final colorScheme = Theme.of(context).colorScheme;
 
-    int totalView = 0;
-    int totalTryon = 0;
-    int totalPurchaseClicks = 0;
-    bool hasError = false;
+    final summaries = analyticsAsync.value;
+    final isLoading = summaries == null && analyticsAsync.isLoading;
 
-    if (analyticsAsync.hasValue && analyticsAsync.value != null) {
-      for (final s in analyticsAsync.value!) {
-        totalView += s.viewCount;
-        totalTryon += s.tryonCount;
-        totalPurchaseClicks += s.purchaseClickCount;
-      }
-    } else if (analyticsAsync.hasError) {
-      hasError = true;
+    var totalView = 0;
+    var totalTryon = 0;
+    var totalPurchaseClicks = 0;
+    for (final s in summaries ?? _skeletonSummaries(isLoading)) {
+      totalView += s.viewCount;
+      totalTryon += s.tryonCount;
+      totalPurchaseClicks += s.purchaseClickCount;
     }
-
-    final isLoading = analyticsAsync.isLoading;
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.mdLg),
@@ -37,47 +35,56 @@ class StoreTrafficDashboard extends HookConsumerWidget {
           bottom: BorderSide(color: colorScheme.outline),
         ),
       ),
-      child: Row(
-        children: [
-          _TrafficStatTile(
-            label: '瀏覽',
-            value: totalView,
-            isLoading: isLoading,
-            hasError: hasError,
-            isHero: true,
-          ),
-          _TrafficStatTile(
-            label: '試穿',
-            value: totalTryon,
-            isLoading: isLoading,
-            hasError: hasError,
-          ),
-          _TrafficStatTile(
-            label: '購買點擊',
-            value: totalPurchaseClicks,
-            isLoading: isLoading,
-            hasError: hasError,
-          ),
-        ],
-      ),
+      child: summaries == null && analyticsAsync.hasError
+          ? ErrorView(
+              isCompact: true,
+              onRetry: () => ref.invalidate(productAnalyticsSummariesProvider),
+            )
+          : Row(
+              children: [
+                _TrafficStatTile(
+                  label: '瀏覽',
+                  value: totalView,
+                  isLoading: isLoading,
+                ),
+                _TrafficStatTile(
+                  label: '試穿',
+                  value: totalTryon,
+                  isLoading: isLoading,
+                ),
+                _TrafficStatTile(
+                  label: '購買點擊',
+                  value: totalPurchaseClicks,
+                  isLoading: isLoading,
+                ),
+              ],
+            ),
     );
   }
 }
+
+List<ProductAnalyticsSummary> _skeletonSummaries(final bool isLoading) =>
+    isLoading
+    ? const [
+        ProductAnalyticsSummary(
+          productId: '',
+          viewCount: 100,
+          tryonCount: 100,
+          purchaseClickCount: 100,
+        ),
+      ]
+    : const [];
 
 class _TrafficStatTile extends StatelessWidget {
   const _TrafficStatTile({
     required this.label,
     required this.value,
     required this.isLoading,
-    required this.hasError,
-    this.isHero = false,
   });
 
   final String label;
   final int value;
   final bool isLoading;
-  final bool hasError;
-  final bool isHero;
 
   @override
   Widget build(final BuildContext context) {
@@ -85,20 +92,13 @@ class _TrafficStatTile extends StatelessWidget {
     final textTheme = theme.textTheme;
     final colorScheme = theme.colorScheme;
 
-    final valueColor = hasError
-        ? colorScheme.onSurfaceVariant
-        : (isHero ? colorScheme.primary : colorScheme.onSurface);
-
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Skeletonizer(
             enabled: isLoading,
-            child: Text(
-              (isLoading || hasError) ? '--' : value.toString(),
-              style: textTheme.headlineLarge?.copyWith(color: valueColor),
-            ),
+            child: Text(value.asCount, style: textTheme.headlineLarge),
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
