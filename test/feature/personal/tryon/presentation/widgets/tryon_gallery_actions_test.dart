@@ -158,7 +158,7 @@ void main() {
       container.read(tryonGalleryProvider).entries.map((final e) => e.id),
       ['a'],
     );
-    expect(find.text('已收到檢舉'), findsOneWidget);
+    expect(find.text('已收到此檢舉，謝謝您！'), findsOneWidget);
   });
 
   testWidgets('reporting the try-on used as the avatar clears the avatar', (
