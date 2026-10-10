@@ -136,4 +136,39 @@ void main() {
     expect(find.text('editing ${_product.id}'), findsOneWidget);
     expect(find.text('編輯商品'), findsNothing);
   });
+
+  testWidgets('centres the no-image placeholder across the card', (
+    final tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          productCategoriesProvider.overrideWith(_FakeCategories.new),
+          productAnalyticsSummariesProvider.overrideWith(_FakeAnalytics.new),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 200,
+                height: 340,
+                child: StoreProductCard(product: _product),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await settle(tester);
+
+    final card = tester.getRect(find.byType(Card));
+    final icon = find.byIcon(Icons.image_outlined);
+    final placeholder = tester.getRect(
+      find.ancestor(of: icon, matching: find.byType(Container)).first,
+    );
+
+    expect(placeholder.width, card.width);
+    expect(tester.getCenter(icon).dx, card.center.dx);
+  });
 }
