@@ -428,6 +428,39 @@ export type Database = {
           },
         ]
       }
+      tryon_generations: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          mode: Database["public"]["Enums"]["tryon_generation_mode"]
+          result_key: string | null
+          status: Database["public"]["Enums"]["tryon_generation_status"]
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          mode: Database["public"]["Enums"]["tryon_generation_mode"]
+          result_key?: string | null
+          status?: Database["public"]["Enums"]["tryon_generation_status"]
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          mode?: Database["public"]["Enums"]["tryon_generation_mode"]
+          result_key?: string | null
+          status?: Database["public"]["Enums"]["tryon_generation_status"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_daily_usage: {
         Row: {
           chat_count: number
@@ -641,6 +674,8 @@ export type Database = {
       product_season: "spring" | "summer" | "autumn" | "winter"
       product_thickness: "low" | "medium" | "high"
       store_channel: "physical" | "online"
+      tryon_generation_mode: "image" | "video"
+      tryon_generation_status: "pending" | "succeeded" | "failed"
       user_gender: "female" | "male"
     }
     CompositeTypes: {
@@ -787,6 +822,8 @@ export const Constants = {
       product_season: ["spring", "summer", "autumn", "winter"],
       product_thickness: ["low", "medium", "high"],
       store_channel: ["physical", "online"],
+      tryon_generation_mode: ["image", "video"],
+      tryon_generation_status: ["pending", "succeeded", "failed"],
       user_gender: ["female", "male"],
     },
   },
