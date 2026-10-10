@@ -229,4 +229,29 @@ void main() {
 
     expect(request.mode, TryonMode.video);
   });
+
+  test('names the generation with the request id', () {
+    final body = TryonRequestDto.fromDomain(
+      const TryonRequest.generate(
+        requestId: 'r1',
+        garments: garments,
+        mode: TryonMode.image,
+        engine: TryonEngine.standard,
+      ),
+    ).toJson();
+
+    expect(body['generationId'], 'r1');
+  });
+
+  test('names an animate generation with the request id', () {
+    final body = TryonRequestDto.fromDomain(
+      const TryonRequest.animate(
+        requestId: 'r2',
+        baseImageBase64: 'FINISHED',
+        engine: TryonEngine.standard,
+      ),
+    ).toJson();
+
+    expect(body['generationId'], 'r2');
+  });
 }

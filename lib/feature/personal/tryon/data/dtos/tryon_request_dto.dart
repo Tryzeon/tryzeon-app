@@ -10,6 +10,7 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_request.dar
 /// image as `{base64}`.
 class TryonRequestDto {
   const TryonRequestDto({
+    required this.generationId,
     required this.garments,
     required this.mode,
     required this.isVideo,
@@ -24,6 +25,7 @@ class TryonRequestDto {
   factory TryonRequestDto.fromDomain(final TryonRequest request) {
     return switch (request) {
       TryonGenerateRequest(
+        :final requestId,
         :final garments,
         :final mode,
         :final avatarBase64,
@@ -33,6 +35,7 @@ class TryonRequestDto {
         :final engine,
       ) =>
         TryonRequestDto(
+          generationId: requestId,
           avatarBase64: avatarBase64,
           garments: garments.map(_garmentToJson).toList(),
           mode: mode.value,
@@ -45,11 +48,13 @@ class TryonRequestDto {
       // The backend rejects an animate body carrying garments or an avatar and
       // drops a scene or styling prompt, so none of them are ever set here.
       TryonAnimateRequest(
+        :final requestId,
         :final baseImageBase64,
         :final transitionPrompt,
         :final engine,
       ) =>
         TryonRequestDto(
+          generationId: requestId,
           garments: const [],
           mode: TryonMode.video.value,
           isVideo: true,
@@ -60,6 +65,7 @@ class TryonRequestDto {
     };
   }
 
+  final String generationId;
   final String? avatarBase64;
   final String? baseImageBase64;
   final List<Map<String, Object>> garments;
@@ -71,7 +77,10 @@ class TryonRequestDto {
   final String? transitionPrompt;
 
   Map<String, dynamic> toJson() {
-    final body = <String, dynamic>{AppConstants.paramMode: mode};
+    final body = <String, dynamic>{
+      AppConstants.paramGenerationId: generationId,
+      AppConstants.paramMode: mode,
+    };
     if (garments.isNotEmpty) {
       body['garments'] = garments;
     }
