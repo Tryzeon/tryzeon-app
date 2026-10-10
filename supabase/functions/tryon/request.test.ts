@@ -223,3 +223,14 @@ Deno.test("parseTryonParams drops a blank stylingPrompt", () => {
   );
   assertEquals(params.stylingPrompt, undefined);
 });
+
+Deno.test("parseTryonParams carries the client's generation id to the core", () => {
+  const params = parse(
+    {
+      generationId: "6f1c2a4e-8b3d-4c7a-9e21-0a5b7c9d1e3f",
+      garments: [{ productId: "p1" }],
+    },
+    "u1",
+  );
+  assertEquals(params.generationId, "6f1c2a4e-8b3d-4c7a-9e21-0a5b7c9d1e3f");
+});

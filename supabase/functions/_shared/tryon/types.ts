@@ -124,6 +124,7 @@ export interface TryonParams {
   transitionPrompt?: string;
   /** Only valid with `mode: "video"`. */
   baseImage?: BaseImage;
+  generationId?: string;
 }
 
 /*
@@ -180,6 +181,23 @@ export type TryonRecorder = (
   userId: string,
   productIds: string[],
 ) => Promise<void>;
+
+export interface GenerationStart {
+  id?: string;
+  userId: string;
+  mode: TryonMode;
+}
+
+/**
+ * One row per generation, written on the service role for the same reason as
+ * {@link TryonRecorder}. The adapter binds the channel, so the core never
+ * learns where a job came from.
+ */
+export interface GenerationLog {
+  start(entry: GenerationStart): Promise<string>;
+  succeed(id: string, resultKey: string): Promise<void>;
+  fail(id: string, errorMessage: string): Promise<void>;
+}
 
 /**
  * Resolves to clean base64 image data: no data-URI prefix — stripping any

@@ -40,5 +40,6 @@ export function parseTryonParams(rawBody: string, userId: string): TryonParams {
     stylingPrompt: normalizeText(b.stylingPrompt),
     transitionPrompt: normalizeText(b.transitionPrompt),
     baseImage: b.baseImage as TryonParams["baseImage"],
+    generationId: b.generationId as TryonParams["generationId"],
   };
 }

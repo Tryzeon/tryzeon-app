@@ -8,6 +8,7 @@ import {
 import { type DailyUsage, QuotaExceededError } from "../quota.ts";
 import type { GarmentBrief } from "./prompt.ts";
 import type {
+  GenerationLog,
   QuotaFactory,
   TryonMode,
   TryonParams,
@@ -37,6 +38,31 @@ function fakeRecorder(fail = false) {
   };
   return { record, calls };
 }
+
+function fakeGenerations(
+  fail: { start?: boolean; succeed?: boolean; fail?: boolean } = {},
+) {
+  const calls: Array<{ op: string; args: unknown[] }> = [];
+  const settle = (failed: boolean | undefined, op: string) =>
+    failed ? Promise.reject(new Error(`${op} down`)) : Promise.resolve();
+  const log: GenerationLog = {
+    start(entry) {
+      calls.push({ op: "start", args: [entry] });
+      return settle(fail.start, "start").then(() => entry.id ?? "g1");
+    },
+    succeed(id, resultKey) {
+      calls.push({ op: "succeed", args: [id, resultKey] });
+      return settle(fail.succeed, "succeed");
+    },
+    fail(id, errorMessage) {
+      calls.push({ op: "fail", args: [id, errorMessage] });
+      return settle(fail.fail, "fail");
+    },
+  };
+  return { log, calls };
+}
+
+const ignoreGenerations = fakeGenerations().log;
 
 function fakeQuota(allowed = true) {
   const calls: string[] = [];
@@ -71,6 +97,7 @@ Deno.test("image mode uploads the generated image and does not call video", asyn
   const result = await runTryonJob(client, imageParams, {
     quota: quota.factory,
     recordTryon: ignoreTryons,
+    generations: ignoreGenerations,
     generate: () => Promise.resolve("GENERATEDB64"),
     upload: (_bytes, fileName) => {
       uploadedKey = fileName;
@@ -104,6 +131,7 @@ Deno.test("video mode uploads the generated video bytes, not an image", async ()
     {
       quota: quota.factory,
       recordTryon: ignoreTryons,
+      generations: ignoreGenerations,
       generate: () => Promise.resolve("GENERATEDB64"),
       upload: () => {
         imageUploadCalled = true;
@@ -133,6 +161,7 @@ Deno.test("video mode opens the quota counter for the video feature", async () =
   await runTryonJob(client, { ...imageParams, mode: "video" }, {
     quota: quota.factory,
     recordTryon: ignoreTryons,
+    generations: ignoreGenerations,
     generate: () => Promise.resolve("GENERATEDB64"),
     generateVideo: () => Promise.resolve(new Uint8Array([1])),
     uploadVideo: () => Promise.resolve("https://vid/x.mp4"),
@@ -150,6 +179,7 @@ Deno.test("video mode passes the transition prompt to the generator", async () =
     {
       quota: quota.factory,
       recordTryon: ignoreTryons,
+      generations: ignoreGenerations,
       generate: () => Promise.resolve("GENERATEDB64"),
       generateVideo: (_image, opts) => {
         seenPrompt = opts?.transitionPrompt;
@@ -178,6 +208,7 @@ Deno.test("the job runs on validated params, not the raw input", async () => {
     {
       quota: quota.factory,
       recordTryon: ignoreTryons,
+      generations: ignoreGenerations,
       generate: (avatarBase64) => {
         seenAvatar = avatarBase64;
         return Promise.resolve("GENERATEDB64");
@@ -196,6 +227,7 @@ Deno.test("invalid params are rejected before quota is charged", async () => {
       runTryonJob(client, { ...imageParams, garments: [] }, {
         quota: quota.factory,
         recordTryon: ignoreTryons,
+        generations: ignoreGenerations,
       }),
     Error,
   );
@@ -208,6 +240,7 @@ Deno.test("quota rejection throws QuotaExceededError with usage", async () => {
     () => runTryonJob(client, imageParams, {
         quota: quota.factory,
         recordTryon: ignoreTryons,
+        generations: ignoreGenerations,
       }),
     QuotaExceededError,
   );
@@ -221,6 +254,7 @@ Deno.test("null generation throws GenerationFailedError and refunds quota", asyn
       runTryonJob(client, imageParams, {
         quota: quota.factory,
         recordTryon: ignoreTryons,
+        generations: ignoreGenerations,
         generate: () => Promise.resolve(null),
       }),
     GenerationFailedError,
@@ -239,6 +273,7 @@ Deno.test("a failed refund does not mask the original error", async () => {
       runTryonJob(client, imageParams, {
         quota,
         recordTryon: ignoreTryons,
+        generations: ignoreGenerations,
         generate: () => Promise.resolve(null),
       }),
     GenerationFailedError,
@@ -253,6 +288,7 @@ Deno.test("an omitted avatar is resolved from the user's profile", async () => {
   await runTryonJob(client, { ...imageParams, avatar: undefined }, {
     quota: quota.factory,
     recordTryon: ignoreTryons,
+    generations: ignoreGenerations,
     resolveAvatar: (_admin, userId) => {
       resolvedFor.push(userId);
       // Base64 rather than a path: the loader would otherwise reach for storage
@@ -277,6 +313,7 @@ Deno.test("an inline avatar override skips profile resolution", async () => {
   await runTryonJob(client, imageParams, {
     quota: quota.factory,
     recordTryon: ignoreTryons,
+    generations: ignoreGenerations,
     resolveAvatar: () => {
       resolverCalled = true;
       return Promise.resolve({ base64: "STORED" });
@@ -299,6 +336,7 @@ Deno.test("a user with no stored avatar is never charged", async () => {
       runTryonJob(client, { ...imageParams, avatar: undefined }, {
         quota: quota.factory,
         recordTryon: ignoreTryons,
+        generations: ignoreGenerations,
         resolveAvatar: () => Promise.reject(new MissingAvatarError("none")),
         generate: () => Promise.resolve("GENERATEDB64"),
         upload: () => Promise.resolve("https://img/result.png"),
@@ -323,6 +361,7 @@ Deno.test("product-ref garments are resolved before loading", async () => {
     {
       quota: quota.factory,
       recordTryon: ignoreTryons,
+      generations: ignoreGenerations,
       resolveProduct: () =>
         Promise.resolve({
           images: [{ base64: "PRODUCTB64" }],
@@ -357,6 +396,7 @@ Deno.test("the resolvers' category and detail reach the generator, garment by ga
     {
       quota: quota.factory,
       recordTryon: ignoreTryons,
+      generations: ignoreGenerations,
       resolveProduct: () =>
         Promise.resolve({
           images: [{ base64: "P" }],
@@ -393,6 +433,7 @@ Deno.test("product resolution failure refunds quota", async () => {
         {
           quota: quota.factory,
           recordTryon: ignoreTryons,
+          generations: ignoreGenerations,
           resolveProduct: () => Promise.reject(new Error("no product")),
         },
       ),
@@ -416,6 +457,7 @@ Deno.test("a wardrobe ref is resolved with the job's own user id", async () => {
     {
       quota: quota.factory,
       recordTryon: ignoreTryons,
+      generations: ignoreGenerations,
       resolveWardrobe: (_admin, userId, itemId) => {
         // The user id comes from the job, never from the caller's garment —
         // that is what makes the ownership bound unforgeable.
@@ -458,6 +500,7 @@ Deno.test("each garment kind reaches its own resolver", async () => {
     {
       quota: quota.factory,
       recordTryon: ignoreTryons,
+      generations: ignoreGenerations,
       resolveProduct: () => {
         productCalls++;
         return Promise.resolve({ images: [{ base64: "PRODUCTB64" }] });
@@ -491,6 +534,7 @@ Deno.test("runTryonJob hands the resolver the whole ref, size included", async (
   }, {
     quota: quota.factory,
     recordTryon: ignoreTryons,
+    generations: ignoreGenerations,
     resolveProduct: (_admin, ref) => {
       seenRef = ref;
       return Promise.resolve({ images: [{ base64: "G" }] });
@@ -516,6 +560,7 @@ Deno.test("a baseImage job animates that image without generating one", async ()
   const result = await runTryonJob(client, animateParams, {
     quota: quota.factory,
     recordTryon: ignoreTryons,
+    generations: ignoreGenerations,
     generate: () => {
       generateCalled = true;
       return Promise.resolve("SHOULD-NOT-HAPPEN");
@@ -542,6 +587,7 @@ Deno.test("a baseImage job never resolves an avatar", async () => {
   await runTryonJob(client, animateParams, {
     quota: quota.factory,
     recordTryon: ignoreTryons,
+    generations: ignoreGenerations,
     resolveAvatar: () => {
       avatarResolved = true;
       return Promise.reject(new MissingAvatarError("none"));
@@ -560,6 +606,7 @@ Deno.test("a baseImage job resolves no garment", async () => {
   await runTryonJob(client, animateParams, {
     quota: quota.factory,
     recordTryon: ignoreTryons,
+    generations: ignoreGenerations,
     resolveProduct: () => {
       productResolved = true;
       return Promise.reject(new Error("should not happen"));
@@ -581,6 +628,7 @@ Deno.test("a baseImage job charges the video quota", async () => {
   await runTryonJob(client, animateParams, {
     quota: quota.factory,
     recordTryon: ignoreTryons,
+    generations: ignoreGenerations,
     generateVideo: () => Promise.resolve(new Uint8Array([1])),
     uploadVideo: () => Promise.resolve("https://vid/x.mp4"),
     now: () => 1,
@@ -596,6 +644,7 @@ Deno.test("a baseImage job refunds when animation fails", async () => {
       runTryonJob(client, animateParams, {
         quota: quota.factory,
         recordTryon: ignoreTryons,
+        generations: ignoreGenerations,
         generateVideo: () => Promise.reject(new Error("vertex exploded")),
         uploadVideo: () => Promise.resolve("https://vid/x.mp4"),
         now: () => 1,
@@ -613,6 +662,7 @@ Deno.test("a baseImage job is rejected before quota when the mode is image", asy
       runTryonJob(client, { ...animateParams, mode: "image" }, {
         quota: quota.factory,
         recordTryon: ignoreTryons,
+        generations: ignoreGenerations,
       }),
     ValidationError,
   );
@@ -632,6 +682,7 @@ Deno.test("runTryonJob forwards the styling prompt to the image generator", asyn
   }, {
     quota: quota.factory,
     recordTryon: ignoreTryons,
+    generations: ignoreGenerations,
     generate: (_avatar, _groups, opts) => {
       seenStyling = opts?.stylingPrompt;
       return Promise.resolve("GENERATEDB64");
@@ -649,6 +700,7 @@ Deno.test("runTryonJob forwards the engine to the image generator", async () => 
   await runTryonJob(client, { ...imageParams, engine: "experimental" }, {
     quota: quota.factory,
     recordTryon: ignoreTryons,
+    generations: ignoreGenerations,
     generate: (_avatar, _groups, opts) => {
       seenEngine = opts?.engine;
       return Promise.resolve("GENERATEDB64");
@@ -669,6 +721,7 @@ Deno.test("runTryonJob forwards the engine to the video generator", async () => 
     {
       quota: quota.factory,
       recordTryon: ignoreTryons,
+      generations: ignoreGenerations,
       generate: () => Promise.resolve("GENERATEDB64"),
       generateVideo: (_image, opts) => {
         seenEngine = opts?.engine;
@@ -688,6 +741,7 @@ Deno.test("animate mode forwards the engine to the video generator", async () =>
   await runTryonJob(client, { ...animateParams, engine: "experimental" }, {
     quota: quota.factory,
     recordTryon: ignoreTryons,
+    generations: ignoreGenerations,
     generateVideo: (_image, opts) => {
       seenEngine = opts?.engine;
       return Promise.resolve(new Uint8Array([1]));
@@ -705,6 +759,7 @@ Deno.test("runTryonJob sends the standard engine when the caller names none", as
   await runTryonJob(client, imageParams, {
     quota: quota.factory,
     recordTryon: ignoreTryons,
+    generations: ignoreGenerations,
     generate: (_avatar, _groups, opts) => {
       seenEngine = opts?.engine;
       return Promise.resolve("GENERATEDB64");
@@ -737,6 +792,7 @@ Deno.test("a finished job records one try-on per product garment, for the job's 
   await runTryonJob(client, productParams, {
     quota: quota.factory,
     recordTryon: recorder.record,
+    generations: ignoreGenerations,
     resolveProduct: resolveAny,
     resolveWardrobe: resolveAny,
     generate: () => Promise.resolve("GENERATEDB64"),
@@ -752,6 +808,7 @@ Deno.test("a video job records its product garments too", async () => {
   await runTryonJob(client, { ...productParams, mode: "video" }, {
     quota: quota.factory,
     recordTryon: recorder.record,
+    generations: ignoreGenerations,
     resolveProduct: resolveAny,
     resolveWardrobe: resolveAny,
     generate: () => Promise.resolve("GENERATEDB64"),
@@ -768,6 +825,7 @@ Deno.test("a job with no product garments records nothing", async () => {
   await runTryonJob(client, imageParams, {
     quota: quota.factory,
     recordTryon: recorder.record,
+    generations: ignoreGenerations,
     generate: () => Promise.resolve("GENERATEDB64"),
     upload: () => Promise.resolve("https://img/result.png"),
     now: () => 1,
@@ -783,6 +841,7 @@ Deno.test("a job that fails records no try-on", async () => {
       runTryonJob(client, productParams, {
         quota: quota.factory,
         recordTryon: recorder.record,
+        generations: ignoreGenerations,
         resolveProduct: resolveAny,
         resolveWardrobe: resolveAny,
         generate: () => Promise.resolve(null),
@@ -800,6 +859,7 @@ Deno.test("a job whose upload fails records no try-on", async () => {
       runTryonJob(client, productParams, {
         quota: quota.factory,
         recordTryon: recorder.record,
+        generations: ignoreGenerations,
         resolveProduct: resolveAny,
         resolveWardrobe: resolveAny,
         generate: () => Promise.resolve("GENERATEDB64"),
@@ -817,6 +877,7 @@ Deno.test("a recorder failure neither fails the job nor refunds it", async () =>
   const result = await runTryonJob(client, productParams, {
     quota: quota.factory,
     recordTryon: recorder.record,
+    generations: ignoreGenerations,
     resolveProduct: resolveAny,
     resolveWardrobe: resolveAny,
     generate: () => Promise.resolve("GENERATEDB64"),
@@ -826,4 +887,180 @@ Deno.test("a recorder failure neither fails the job nor refunds it", async () =>
   assertEquals(result.kind, "image");
   assertEquals(recorder.calls.length, 1);
   assertEquals(quota.calls, ["charge"]);
+});
+
+Deno.test("a finished image job logs its generation under the client's id and the uploaded key", async () => {
+  const generations = fakeGenerations();
+  let uploadedKey = "";
+  const id = "6f1c2a4e-8b3d-4c7a-9e21-0a5b7c9d1e3f";
+  await runTryonJob(client, { ...imageParams, generationId: id }, {
+    quota: fakeQuota().factory,
+    recordTryon: ignoreTryons,
+    generations: generations.log,
+    generate: () => Promise.resolve("GENERATEDB64"),
+    upload: (_bytes, fileName) => {
+      uploadedKey = fileName;
+      return Promise.resolve("https://img/result.png");
+    },
+    now: () => 1,
+  });
+
+  assertEquals(generations.calls, [
+    { op: "start", args: [{ id, userId: "u1", mode: "image" }] },
+    { op: "succeed", args: [id, uploadedKey] },
+  ]);
+});
+
+Deno.test("a finished video job logs its generation under the uploaded video key", async () => {
+  const generations = fakeGenerations();
+  let uploadedKey = "";
+  await runTryonJob(client, { ...imageParams, mode: "video" }, {
+    quota: fakeQuota().factory,
+    recordTryon: ignoreTryons,
+    generations: generations.log,
+    generate: () => Promise.resolve("GENERATEDB64"),
+    generateVideo: () => Promise.resolve(new Uint8Array([1])),
+    uploadVideo: (_bytes, fileName) => {
+      uploadedKey = fileName;
+      return Promise.resolve("https://vid/result.mp4");
+    },
+    now: () => 1,
+  });
+
+  assertEquals(uploadedKey, "u1/tryon-1.mp4");
+  assertEquals(generations.calls.at(-1), {
+    op: "succeed",
+    args: ["g1", "u1/tryon-1.mp4"],
+  });
+});
+
+Deno.test("a quota rejection logs no generation", async () => {
+  const generations = fakeGenerations();
+  await assertRejects(
+    () =>
+      runTryonJob(client, imageParams, {
+        quota: fakeQuota(false).factory,
+        recordTryon: ignoreTryons,
+        generations: generations.log,
+      }),
+    QuotaExceededError,
+  );
+  assertEquals(generations.calls, []);
+});
+
+Deno.test("a failed generation is marked with its error message and refunded", async () => {
+  const quota = fakeQuota();
+  const generations = fakeGenerations();
+  await assertRejects(
+    () =>
+      runTryonJob(client, imageParams, {
+        quota: quota.factory,
+        recordTryon: ignoreTryons,
+        generations: generations.log,
+        generate: () => Promise.resolve(null),
+      }),
+    GenerationFailedError,
+  );
+  assertEquals(generations.calls.at(-1), {
+    op: "fail",
+    args: ["g1", "image generation returned null"],
+  });
+  assertEquals(quota.calls, ["charge", "refund"]);
+});
+
+Deno.test("any failure is marked with its own message", async () => {
+  const generations = fakeGenerations();
+  await assertRejects(
+    () =>
+      runTryonJob(client, imageParams, {
+        quota: fakeQuota().factory,
+        recordTryon: ignoreTryons,
+        generations: generations.log,
+        generate: () => Promise.resolve("GENERATEDB64"),
+        upload: () => Promise.reject(new Error("r2 down")),
+      }),
+    Error,
+    "r2 down",
+  );
+  assertEquals(generations.calls.at(-1), {
+    op: "fail",
+    args: ["g1", "r2 down"],
+  });
+});
+
+Deno.test("a thrown non-Error value is marked with its string form", async () => {
+  const generations = fakeGenerations();
+  await assertRejects(() =>
+    runTryonJob(client, imageParams, {
+      quota: fakeQuota().factory,
+      recordTryon: ignoreTryons,
+      generations: generations.log,
+      generate: () => Promise.resolve("GENERATEDB64"),
+      upload: () => Promise.reject("socket hang up"),
+    })
+  );
+  assertEquals(generations.calls.at(-1), {
+    op: "fail",
+    args: ["g1", "socket hang up"],
+  });
+});
+
+Deno.test("a generation that cannot be started fails the job before generating, and refunds", async () => {
+  const quota = fakeQuota();
+  const generations = fakeGenerations({ start: true });
+  let generated = false;
+  await assertRejects(
+    () =>
+      runTryonJob(client, imageParams, {
+        quota: quota.factory,
+        recordTryon: ignoreTryons,
+        generations: generations.log,
+        generate: () => {
+          generated = true;
+          return Promise.resolve("GENERATEDB64");
+        },
+      }),
+    Error,
+    "start down",
+  );
+  assertEquals(generated, false);
+  assertEquals(generations.calls.map((c) => c.op), ["start"]);
+  assertEquals(quota.calls, ["charge", "refund"]);
+});
+
+Deno.test("a generation that cannot be completed fails the job, is marked failed, and refunds", async () => {
+  const quota = fakeQuota();
+  const generations = fakeGenerations({ succeed: true });
+  await assertRejects(
+    () =>
+      runTryonJob(client, imageParams, {
+        quota: quota.factory,
+        recordTryon: ignoreTryons,
+        generations: generations.log,
+        generate: () => Promise.resolve("GENERATEDB64"),
+        upload: () => Promise.resolve("https://img/result.png"),
+      }),
+    Error,
+    "succeed down",
+  );
+  assertEquals(generations.calls.map((c) => c.op), [
+    "start",
+    "succeed",
+    "fail",
+  ]);
+  assertEquals(quota.calls, ["charge", "refund"]);
+});
+
+Deno.test("a failed fail-mark does not mask the original error", async () => {
+  const generations = fakeGenerations({ fail: true });
+  await assertRejects(
+    () =>
+      runTryonJob(client, imageParams, {
+        quota: fakeQuota().factory,
+        recordTryon: ignoreTryons,
+        generations: generations.log,
+        generate: () => Promise.resolve(null),
+      }),
+    GenerationFailedError,
+  );
 });

@@ -14,6 +14,7 @@ import {
   isProductRef,
   isWardrobeRef,
   type AvatarResolver,
+  type GenerationLog,
   type ImageGenerator,
   type ImageSource,
   type ImageUploader,
@@ -41,6 +42,7 @@ export interface RunTryonJobDeps {
    */
   quota: QuotaFactory;
   recordTryon: TryonRecorder;
+  generations: GenerationLog;
   generate?: ImageGenerator;
   generateVideo?: VideoGenerator;
   upload?: ImageUploader;
@@ -52,8 +54,8 @@ export interface RunTryonJobDeps {
 }
 
 /**
- * Single try-on entry point: validate -> resolve avatar -> quota -> resolve
- * garments -> load -> generate -> persist -> record.
+ * Single try-on entry point: validate -> resolve avatar -> quota -> log ->
+ * resolve garments -> load -> generate -> persist -> record.
  *
  * One client, and it is the caller's own: an adapter with a session (the app)
  * has RLS bounding what a request can reach, while an adapter without one
@@ -96,7 +98,14 @@ export async function runTryonJob<M extends TryonMode>(
     throw new QuotaExceededError(usage);
   }
 
+  let generationId: string | undefined;
   try {
+    generationId = await deps.generations.start({
+      id: job.generationId,
+      userId: job.userId,
+      mode: job.mode,
+    });
+
     let generated: string | null;
     if (source.kind === "animate") {
       generated = source.base64;
@@ -143,32 +152,35 @@ export async function runTryonJob<M extends TryonMode>(
     // Stage 3: persist. The two casts are the single point where the
     // mode -> result-variant correspondence is asserted.
     let result: TryonResultFor<M>;
+    let resultKey: string;
     if (job.mode === "video") {
       const bytes = await generateVideo(generated, {
         engine: job.engine,
         transitionPrompt: job.transitionPrompt,
       });
-      const videoUrl = await uploadVideo(
-        bytes,
-        assetKey(job.userId, now(), "mp4"),
-      );
+      resultKey = assetKey(job.userId, now(), "mp4");
+      const videoUrl = await uploadVideo(bytes, resultKey);
       result = { kind: "video", videoUrl, usage } as TryonResultFor<M>;
     } else {
       const mimeType = detectMimeType(generated);
+      resultKey = assetKey(job.userId, now(), mimeTypeToExtension(mimeType));
       const imageUrl = await upload(
         decodeBase64(generated),
-        assetKey(job.userId, now(), mimeTypeToExtension(mimeType)),
+        resultKey,
         mimeType,
       );
       result = { kind: "image", imageUrl, usage } as TryonResultFor<M>;
     }
 
-    // Stage 4: record. Outside the refund path and never rethrown: the user
-    // has a result they were charged for, and a dashboard count is not worth
-    // reporting that as a failure.
+    await deps.generations.succeed(generationId, resultKey);
+
     await recordProductTryons(deps.recordTryon, job);
+
     return result;
   } catch (err) {
+    if (generationId) {
+      await markGenerationFailed(deps.generations, generationId, err);
+    }
     // Refund is best-effort: a failure here must not replace the error that
     // actually caused the job to fail, or callers would report the wrong thing.
     try {
@@ -177,6 +189,21 @@ export async function runTryonJob<M extends TryonMode>(
       console.error("try-on quota refund failed:", refundErr);
     }
     throw err;
+  }
+}
+
+async function markGenerationFailed(
+  generations: GenerationLog,
+  id: string,
+  err: unknown,
+): Promise<void> {
+  try {
+    await generations.fail(
+      id,
+      err instanceof Error ? err.message : String(err),
+    );
+  } catch (failErr) {
+    console.error("try-on generation fail-mark failed:", failErr);
   }
 }
 

@@ -525,3 +525,41 @@ Deno.test("validateTryonParams keeps the engine on an animate job", () => {
 Deno.test("validateTryonParams defaults an animate job's engine to standard", () => {
   assertEquals(validateTryonParams(animateParams).engine, "standard");
 });
+
+Deno.test("validateTryonParams keeps a uuid generation id", () => {
+  const id = "6f1c2a4e-8b3d-4c7a-9e21-0a5b7c9d1e3f";
+  assertEquals(
+    validateTryonParams({ ...validParams, generationId: id }).generationId,
+    id,
+  );
+});
+
+Deno.test("validateTryonParams leaves a missing generation id to the database", () => {
+  assertEquals(validateTryonParams(validParams).generationId, undefined);
+});
+
+Deno.test("validateTryonParams rejects a generation id that is not a uuid", () => {
+  for (const generationId of ["", "g1", 42]) {
+    assertThrows(
+      () =>
+        validateTryonParams({
+          ...validParams,
+          generationId: generationId as string,
+        }),
+      ValidationError,
+      "generationId",
+    );
+  }
+});
+
+Deno.test("validateTryonParams keeps the generation id on an animate job", () => {
+  const id = "6f1c2a4e-8b3d-4c7a-9e21-0a5b7c9d1e3f";
+  const job = validateTryonParams({
+    userId: "u1",
+    garments: [],
+    mode: "video",
+    baseImage: { base64: "FINISHED" },
+    generationId: id,
+  });
+  assertEquals(job.generationId, id);
+});

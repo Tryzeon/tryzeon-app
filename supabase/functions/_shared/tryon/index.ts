@@ -8,9 +8,12 @@
 export { runTryonJob, type RunTryonJobDeps } from "./run.ts";
 export { supabaseQuota } from "./quota.ts";
 export { supabaseTryonRecorder } from "./analytics.ts";
+export { supabaseGenerationLog } from "./generations.ts";
 export type { GarmentBrief } from "./prompt.ts";
 export type {
   AvatarResolver,
+  GenerationLog,
+  GenerationStart,
   ImageGenerationOptions,
   ImageGenerator,
   ImageUploader,

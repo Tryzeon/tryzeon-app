@@ -6,6 +6,7 @@
  * told "accepted" while its input was quietly cut short.
  */
 import { requireString, ValidationError } from "../validation.ts";
+import { isUuid } from "../text.ts";
 import { isProductRef, isWardrobeRef, LIMITS } from "./types.ts";
 import type {
   AvatarOverride,
@@ -157,6 +158,13 @@ export function validateTryonParams(params: TryonParams): TryonParams {
   }
 
   const engine = normalizeEngine(params.engine);
+
+  if (
+    params.generationId !== undefined &&
+    (typeof params.generationId !== "string" || !isUuid(params.generationId))
+  ) {
+    throw new ValidationError("generationId must be a uuid");
+  }
 
   assertOptionalText(
     params.scenePrompt,

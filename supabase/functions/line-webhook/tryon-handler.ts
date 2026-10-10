@@ -3,6 +3,7 @@ import { getOrCreateUserId as defaultGetOrCreateUserId } from "../_shared/line-u
 import {
   classifyTryonError,
   runTryonJob,
+  supabaseGenerationLog,
   supabaseQuota,
   supabaseTryonRecorder,
 } from "../_shared/tryon/index.ts";
@@ -89,6 +90,7 @@ async function runTryon(
       {
         quota: supabaseQuota(deps.admin),
         recordTryon: supabaseTryonRecorder(deps.admin),
+        generations: supabaseGenerationLog(deps.admin),
       },
     );
     return { ok: true, imageUrl: result.imageUrl };
