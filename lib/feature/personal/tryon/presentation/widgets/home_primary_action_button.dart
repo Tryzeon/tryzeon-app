@@ -1,5 +1,5 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:tryzeon/core/presentation/widgets/glass_pill.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
 class HomePrimaryActionButton extends StatelessWidget {
@@ -25,41 +25,23 @@ class HomePrimaryActionButton extends StatelessWidget {
       onTap: isDisabled ? null : onTap,
       child: Opacity(
         opacity: isDisabled ? AppOpacity.strong : 1.0,
-        child: ClipRRect(
-          borderRadius: AppRadius.pillAll,
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.xl,
-                vertical: AppSpacing.md,
-              ),
-              decoration: BoxDecoration(
-                color: colorScheme.onSurface.withValues(
-                  alpha: AppOpacity.overlay,
+        child: GlassPill(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.xl,
+            vertical: AppSpacing.md,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              icon,
+              const SizedBox(width: AppSpacing.sm),
+              Text(
+                label,
+                style: textTheme.labelLarge?.copyWith(
+                  color: colorScheme.onPrimary,
                 ),
-                border: Border.all(
-                  color: colorScheme.onPrimary.withValues(
-                    alpha: AppOpacity.medium,
-                  ),
-                  width: AppStroke.thin,
-                ),
-                borderRadius: AppRadius.pillAll,
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  icon,
-                  const SizedBox(width: AppSpacing.sm),
-                  Text(
-                    label,
-                    style: textTheme.labelLarge?.copyWith(
-                      color: colorScheme.onPrimary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            ],
           ),
         ),
       ),
