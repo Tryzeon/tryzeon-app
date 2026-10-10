@@ -7,6 +7,7 @@ import 'package:tryzeon/feature/store/analytics/domain/entities/product_analytic
 import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/presentation/pages/store_products_page.dart';
+import 'package:tryzeon/feature/store/product/presentation/state/product_sort_condition.dart';
 import 'package:tryzeon/feature/store/product/presentation/widgets/product_list_section.dart';
 import 'package:tryzeon/feature/store/product/providers/store_product_providers.dart';
 import 'package:typed_result/typed_result.dart';
@@ -77,5 +78,42 @@ void main() {
 
     expect(products.refreshCount, 1);
     expect(analytics.refreshCount, 1);
+  });
+
+  testWidgets('the sort button names the current field and direction', (
+    final tester,
+  ) async {
+    final container = ProviderContainer(
+      overrides: [
+        productsProvider.overrideWith(_FakeProducts.new),
+        productAnalyticsSummariesProvider.overrideWith(_FakeAnalytics.new),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const StoreProductsPage(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('建立時間 · 新 → 舊'), findsOneWidget);
+
+    container
+        .read(productQueryProvider.notifier)
+        .updateSort(
+          const SortCondition(
+            key: SortKey.product(ProductField.price),
+            ascending: true,
+          ),
+        );
+    await tester.pump();
+
+    expect(find.text('價格 · 低 → 高'), findsOneWidget);
   });
 }

@@ -38,21 +38,23 @@ class ProductSortSheet extends ConsumerWidget {
               trailing: key == sort.key
                   ? Icon(Icons.check_rounded, color: colorScheme.primary)
                   : null,
-              onTap: () => applySort(sort.copyWith(key: key)),
+              onTap: () {
+                if (key != sort.key) applySort(SortCondition.byDefault(key));
+              },
             ),
         ],
       ),
       footer: SegmentedButton<bool>(
         showSelectedIcon: false,
         segments: [
-          ButtonSegment<bool>(
-            value: false,
-            label: Text(sort.key.descendingLabel),
-          ),
-          ButtonSegment<bool>(
-            value: true,
-            label: Text(sort.key.ascendingLabel),
-          ),
+          for (final ascending in [
+            sort.key.defaultAscending,
+            !sort.key.defaultAscending,
+          ])
+            ButtonSegment<bool>(
+              value: ascending,
+              label: Text(sort.key.directionLabel(ascending: ascending)),
+            ),
         ],
         selected: {sort.ascending},
         onSelectionChanged: (final selection) =>

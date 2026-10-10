@@ -65,4 +65,11 @@ void main() {
 
     expect(result.map((final p) => p.name), ['Linen Shirt']);
   });
+
+  test('the initial sort uses its key default direction', () {
+    expect(
+      SortCondition.defaultSort,
+      SortCondition.byDefault(SortCondition.defaultSort.key),
+    );
+  });
 }

@@ -18,22 +18,23 @@ extension SortKeyLabels on SortKey {
   String get ascendingLabel => switch (this) {
     ProductSortKey(:final field) => switch (field) {
       ProductField.name => 'A → Z',
-      ProductField.price => '由低到高',
-      ProductField.createdAt => '最舊 → 最新',
-      ProductField.updatedAt => '最舊 → 最新',
+      ProductField.price => '低 → 高',
+      ProductField.createdAt || ProductField.updatedAt => '舊 → 新',
     },
-    AnalyticsSortKey() => '最少 → 最多',
+    AnalyticsSortKey() => '少 → 多',
   };
 
   String get descendingLabel => switch (this) {
     ProductSortKey(:final field) => switch (field) {
       ProductField.name => 'Z → A',
-      ProductField.price => '由高到低',
-      ProductField.createdAt => '最新 → 最舊',
-      ProductField.updatedAt => '最新 → 最舊',
+      ProductField.price => '高 → 低',
+      ProductField.createdAt || ProductField.updatedAt => '新 → 舊',
     },
-    AnalyticsSortKey() => '最多 → 最少',
+    AnalyticsSortKey() => '多 → 少',
   };
+
+  String directionLabel({required final bool ascending}) =>
+      ascending ? ascendingLabel : descendingLabel;
 }
 
 /// Canonical ordering of sort options shown in the sort sheet.
