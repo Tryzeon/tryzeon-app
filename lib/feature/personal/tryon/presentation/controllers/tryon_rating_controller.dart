@@ -2,7 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_rating.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_feedback.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/usecases/rate_tryon.dart';
 import 'package:tryzeon/feature/personal/tryon/providers/tryon_providers.dart';
 import 'package:typed_result/typed_result.dart';
@@ -13,11 +13,14 @@ part 'tryon_rating_controller.g.dart';
 @freezed
 sealed class TryonRatingState with _$TryonRatingState {
   const factory TryonRatingState({
-    @Default(<String, TryonRating>{}) final Map<String, TryonRating> ratings,
+    @Default(<String, TryonFeedback>{})
+    final Map<String, TryonFeedback> feedback,
     @Default(<String>{}) final Set<String> saving,
   }) = _TryonRatingState;
 }
 
+/// One save per try-on is in flight at a time, so responses cannot land out of
+/// order and leave the server disagreeing with the screen.
 @Riverpod(keepAlive: true)
 class TryonRatingController extends _$TryonRatingController {
   @override
@@ -26,49 +29,60 @@ class TryonRatingController extends _$TryonRatingController {
     return const TryonRatingState();
   }
 
-  /// Ignores a tap on a try-on whose last rating is still saving: responses
-  /// could land out of order and leave the server disagreeing with the screen.
   Future<Result<void, Failure>> toggle(
     final String tryonId,
-    final TryonRating tapped,
+    final TryonFeedback tapped,
   ) async {
     if (state.saving.contains(tryonId)) return const Ok(null);
 
-    final previous = state.ratings[tryonId];
-    final next = previous == tapped ? null : tapped;
-    state = state.copyWith(
-      ratings: _withRating(state.ratings, tryonId, next),
-      saving: {...state.saving, tryonId},
-    );
+    final previous = state.feedback[tryonId];
+    final tappedAgain = switch ((previous, tapped)) {
+      (TryonLike(), TryonLike()) || (TryonDislike(), TryonDislike()) => true,
+      _ => false,
+    };
+    _show(tryonId, tappedAgain ? null : tapped);
+    return _save(tryonId, lastSaved: previous);
+  }
+
+  Future<Result<void, Failure>> explain(
+    final String tryonId,
+    final TryonDislike explanation,
+  ) async {
+    final current = state.feedback[tryonId];
+    if (current is! TryonDislike || state.saving.contains(tryonId)) {
+      return const Ok(null);
+    }
+
+    _show(tryonId, explanation);
+    return _save(tryonId, lastSaved: current);
+  }
+
+  Future<Result<void, Failure>> _save(
+    final String tryonId, {
+    required final TryonFeedback? lastSaved,
+  }) async {
+    state = state.copyWith(saving: {...state.saving, tryonId});
 
     // Captured before the await: `this.ref` follows the notifier into its next
     // build, so only this one goes unmounted when the auth reset rebuilds it.
     final ref = this.ref;
     final result = await ref.read(rateTryonUseCaseProvider)(
-      RateTryonParams(tryonId: tryonId, rating: next),
+      RateTryonParams(tryonId: tryonId, feedback: state.feedback[tryonId]),
     );
     if (!ref.mounted) return result;
 
-    state = state.copyWith(
-      ratings: result.isSuccess
-          ? state.ratings
-          : _withRating(state.ratings, tryonId, previous),
-      saving: {...state.saving}..remove(tryonId),
-    );
+    if (result.isFailure) _show(tryonId, lastSaved);
+    state = state.copyWith(saving: {...state.saving}..remove(tryonId));
     return result;
   }
 
-  static Map<String, TryonRating> _withRating(
-    final Map<String, TryonRating> ratings,
-    final String tryonId,
-    final TryonRating? rating,
-  ) {
-    final next = {...ratings};
-    if (rating == null) {
+  void _show(final String tryonId, final TryonFeedback? feedback) {
+    final next = {...state.feedback};
+    if (feedback == null) {
       next.remove(tryonId);
     } else {
-      next[tryonId] = rating;
+      next[tryonId] = feedback;
     }
-    return next;
+    state = state.copyWith(feedback: next);
   }
 }

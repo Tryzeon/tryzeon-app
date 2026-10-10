@@ -9,8 +9,10 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/presentation/widgets/glass_pill.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_rating.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_dislike_reason.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_feedback.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_rating_repository.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/sheets/tryon_dislike_reason_sheet.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_rating_buttons.dart';
 import 'package:tryzeon/feature/personal/tryon/providers/tryon_providers.dart';
 import 'package:typed_result/typed_result.dart';
@@ -18,20 +20,26 @@ import 'package:typed_result/typed_result.dart';
 import '../../../../../support/sheet_test_host.dart';
 
 class _FakeRatingRepository implements TryonRatingRepository {
-  _FakeRatingRepository({this.failure, this.gate});
+  _FakeRatingRepository({this.failure, this.gate, this.outcomes = const []});
 
   final Failure? failure;
   final Completer<void>? gate;
-  final sent = <(String, TryonRating?)>[];
+
+  /// Per-call outcomes, used in order before falling back to [failure].
+  final List<Failure?> outcomes;
+  final sent = <(String, TryonFeedback?)>[];
 
   @override
   Future<Result<void, Failure>> rate({
     required final String tryonId,
-    required final TryonRating? rating,
+    required final TryonFeedback? feedback,
   }) async {
-    sent.add((tryonId, rating));
+    final outcome = sent.length < outcomes.length
+        ? outcomes[sent.length]
+        : failure;
+    sent.add((tryonId, feedback));
     await gate?.future;
-    if (failure case final failure?) return Err(failure);
+    if (outcome case final failure?) return Err(failure);
     return const Ok(null);
   }
 }
@@ -43,8 +51,13 @@ void main() {
     final WidgetTester tester, {
     final Failure? failure,
     final Completer<void>? gate,
+    final List<Failure?> outcomes = const [],
   }) async {
-    repository = _FakeRatingRepository(failure: failure, gate: gate);
+    repository = _FakeRatingRepository(
+      failure: failure,
+      gate: gate,
+      outcomes: outcomes,
+    );
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -80,7 +93,7 @@ void main() {
 
     expect(find.byIcon(Icons.thumb_up), findsOneWidget);
     expect(find.byIcon(Icons.thumb_down_outlined), findsOneWidget);
-    expect(repository.sent, [('t1', TryonRating.like)]);
+    expect(repository.sent, [('t1', const TryonFeedback.like())]);
   });
 
   testWidgets('disliking after liking switches the mark', (final tester) async {
@@ -93,6 +106,34 @@ void main() {
     expect(find.byIcon(Icons.thumb_down), findsOneWidget);
   });
 
+  testWidgets('disliking asks what fell short', (final tester) async {
+    await pumpButtons(tester);
+
+    await tapTooltip(tester, '不喜歡');
+
+    expect(find.byType(TryonDislikeReasonSheet), findsOneWidget);
+  });
+
+  testWidgets('liking asks nothing', (final tester) async {
+    await pumpButtons(tester);
+
+    await tapTooltip(tester, '喜歡');
+
+    expect(find.byType(TryonDislikeReasonSheet), findsNothing);
+    expect(find.text('感謝你的回饋'), findsNothing);
+  });
+
+  testWidgets('clearing a dislike asks nothing', (final tester) async {
+    await pumpButtons(tester);
+    await tapTooltip(tester, '不喜歡');
+    await dismissByDrag(tester);
+
+    await tapTooltip(tester, '不喜歡');
+
+    expect(find.byIcon(Icons.thumb_down_outlined), findsOneWidget);
+    expect(find.byType(TryonDislikeReasonSheet), findsNothing);
+  });
+
   testWidgets('a failed save reverts the mark and says so', (
     final tester,
   ) async {
@@ -101,7 +142,51 @@ void main() {
     await tapTooltip(tester, '不喜歡');
 
     expect(find.byIcon(Icons.thumb_down_outlined), findsOneWidget);
+    expect(find.byType(TryonDislikeReasonSheet), findsNothing);
     expect(find.text('評分失敗，請稍後再試'), findsOneWidget);
+
+    toastification.dismissAll(delayForAnimation: false);
+    await settle(tester);
+  });
+
+  testWidgets('a picked reason is saved with the dislike', (
+    final tester,
+  ) async {
+    await pumpButtons(tester);
+    await tapTooltip(tester, '不喜歡');
+
+    await tester.tap(find.text('服飾變形'));
+    await settle(tester);
+
+    expect(find.byType(TryonDislikeReasonSheet), findsNothing);
+    expect(repository.sent.last, (
+      't1',
+      const TryonFeedback.dislike(reason: TryonDislikeReason.garmentDeformed),
+    ));
+    expect(find.text('感謝你的回饋'), findsOneWidget);
+  });
+
+  testWidgets('a dismissed sheet thanks no one', (final tester) async {
+    await pumpButtons(tester);
+    await tapTooltip(tester, '不喜歡');
+
+    await dismissByDrag(tester);
+
+    expect(find.byIcon(Icons.thumb_down), findsOneWidget);
+    expect(find.text('感謝你的回饋'), findsNothing);
+  });
+
+  testWidgets('a reason that fails to save says so', (final tester) async {
+    await pumpButtons(tester, outcomes: [null, const ServerFailure()]);
+    await tapTooltip(tester, '不喜歡');
+
+    await tester.tap(find.text('臉不像我'));
+    await settle(tester);
+
+    expect(find.byIcon(Icons.thumb_down), findsOneWidget);
+    expect(find.text('送出原因失敗，請稍後再試'), findsOneWidget);
+    expect(find.text('評分失敗，請稍後再試'), findsNothing);
+    expect(find.text('感謝你的回饋'), findsNothing);
 
     toastification.dismissAll(delayForAnimation: false);
     await settle(tester);

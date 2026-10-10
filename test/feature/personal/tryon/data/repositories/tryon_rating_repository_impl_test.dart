@@ -56,10 +56,10 @@ void main() {
 
   test('a dislike is stored with the reason picked for it', () async {
     final (_, calls) = await rate(
-      const TryonFeedback.dislike(reason: TryonDislikeReason.lowQuality),
+      const TryonFeedback.dislike(reason: TryonDislikeReason.garmentDeformed),
     );
 
-    expect(calls, ['upsert t1 dislike low_quality null']);
+    expect(calls, ['upsert t1 dislike garment_deformed null']);
   });
 
   test('a dislike is stored with the words typed for it', () async {
