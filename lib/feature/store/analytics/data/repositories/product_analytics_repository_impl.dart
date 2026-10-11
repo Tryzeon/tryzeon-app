@@ -27,12 +27,12 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
     required final int year,
     required final int month,
   }) async {
-    try {
-      final now = DateTime.now();
-      final isPastMonth =
-          year < now.year || (year == now.year && month < now.month);
+    final now = DateTime.now();
+    final isPastMonth =
+        year < now.year || (year == now.year && month < now.month);
 
-      if (isPastMonth) {
+    if (isPastMonth) {
+      try {
         final cached = await _localDataSource.getProductAnalyticsSummaries(
           storeId,
           year,
@@ -46,9 +46,18 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
           case CacheMiss<List<ProductAnalyticsSummary>>():
             break;
         }
+      } catch (e, stackTrace) {
+        AppLogger.warning(
+          'Local cache read failed, falling back to remote',
+          e,
+          stackTrace,
+        );
       }
+    }
 
-      final summaries = _mappr
+    final List<ProductAnalyticsSummary> summaries;
+    try {
+      summaries = _mappr
           .convertList<ProductAnalyticsSummaryDto, ProductAnalyticsSummary>(
             await _remoteDataSource.getProductAnalyticsSummaries(
               storeId,
@@ -56,8 +65,17 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
               month: month,
             ),
           );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Failed to get product analytics summaries',
+        e,
+        stackTrace,
+      );
+      return Err(mapExceptionToFailure(e));
+    }
 
-      if (isPastMonth) {
+    if (isPastMonth) {
+      try {
         if (summaries.isEmpty) {
           await _localDataSource.markProductAnalyticsSummariesEmpty(
             storeId,
@@ -72,16 +90,15 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
             summaries,
           );
         }
+      } catch (e, stackTrace) {
+        AppLogger.warning(
+          'Failed to save product analytics summaries to cache',
+          e,
+          stackTrace,
+        );
       }
-
-      return Ok(summaries);
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'Failed to get product analytics summaries',
-        e,
-        stackTrace,
-      );
-      return Err(mapExceptionToFailure(e));
     }
+
+    return Ok(summaries);
   }
 }
