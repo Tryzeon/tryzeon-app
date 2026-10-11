@@ -4,7 +4,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/app_snack_bar.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
-import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/store/product/domain/services/audio_recorder_service.dart';
 import 'package:tryzeon/feature/store/product/domain/usecases/parse_size_voice.dart';
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_size_manager.dart';
@@ -41,11 +40,7 @@ SizeVoiceInput useSizeVoiceInput({
       autoStopTimer.value?.cancel();
       final recorder = activeRecorder.value;
       if (recorder == null) return;
-      unawaited(
-        recorder.cancel().catchError((final Object e, final StackTrace st) {
-          AppLogger.warning('Failed to cancel size voice recording', e, st);
-        }),
-      );
+      unawaited(recorder.cancel());
     },
     const [],
   );
@@ -55,7 +50,11 @@ SizeVoiceInput useSizeVoiceInput({
     activeRecorder.value = null;
     status.value = SizeVoiceStatus.uploading;
     try {
-      final recording = await recorder.stop();
+      final recording = (await recorder.stop()).get();
+      if (recording == null) {
+        showError('語音解析失敗，請再試一次');
+        return;
+      }
       final bytes = recording.bytes;
       if (bytes == null || bytes.isEmpty) {
         showError('沒有錄到聲音，請再試一次');
@@ -80,9 +79,6 @@ SizeVoiceInput useSizeVoiceInput({
       sizeManager.applyParsedSizes(parsed);
       if (!context.mounted) return;
       AppSnackBar.show(context, message: '已填入 ${parsed.length} 筆尺寸，請檢查數字');
-    } catch (e, st) {
-      AppLogger.error('Size voice recording failed', e, st);
-      showError('語音解析失敗，請再試一次');
     } finally {
       status.value = SizeVoiceStatus.idle;
     }
@@ -97,10 +93,15 @@ SizeVoiceInput useSizeVoiceInput({
     }
     if (status.value == SizeVoiceStatus.uploading) return;
 
-    final result = await recorder.start();
-    if (result == RecorderStartResult.permissionDenied) {
-      showError('需要麥克風權限才能語音輸入，請至系統設定開啟');
-      return;
+    switch ((await recorder.start()).get()) {
+      case null:
+        showError('無法開始錄音，請再試一次');
+        return;
+      case RecorderStartResult.permissionDenied:
+        showError('需要麥克風權限才能語音輸入，請至系統設定開啟');
+        return;
+      case RecorderStartResult.started:
+        break;
     }
     activeRecorder.value = recorder;
     status.value = SizeVoiceStatus.recording;

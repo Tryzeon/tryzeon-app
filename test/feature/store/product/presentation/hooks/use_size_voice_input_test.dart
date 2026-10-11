@@ -1,25 +1,29 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/store/product/domain/services/audio_recorder_service.dart';
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_size_manager.dart';
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_size_voice_input.dart';
 import 'package:tryzeon/feature/store/product/providers/store_product_providers.dart';
+import 'package:typed_result/typed_result.dart';
 
 class _FakeRecorder implements AudioRecorderService {
   int cancelCount = 0;
 
   @override
-  Future<RecorderStartResult> start() async => RecorderStartResult.started;
+  Future<Result<RecorderStartResult, Failure>> start() async =>
+      const Ok(RecorderStartResult.started);
 
   @override
-  Future<({Uint8List? bytes, String mimeType})> stop() async =>
-      (bytes: null, mimeType: mimeType);
+  Future<Result<Recording, Failure>> stop() async =>
+      Ok((bytes: null, mimeType: mimeType));
 
   @override
-  Future<void> cancel() async => cancelCount++;
+  Future<Result<void, Failure>> cancel() async {
+    cancelCount++;
+    return const Ok(null);
+  }
 
   @override
   String get mimeType => 'audio/mp4';
