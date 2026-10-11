@@ -4,16 +4,18 @@ import 'package:tryzeon/feature/common/product_size/data/dtos/garment_measuremen
 
 part 'create_product_size_request.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
+@JsonSerializable(
+  fieldRename: FieldRename.snake,
+  createFactory: false,
+  explicitToJson: true,
+)
 class CreateProductSizeRequest {
   const CreateProductSizeRequest({
-    required this.productId,
     required this.name,
     this.garmentMeasurements,
     this.bodyMeasurementRanges,
   });
 
-  final String productId;
   final String name;
   final GarmentMeasurementsDto? garmentMeasurements;
   final BodyMeasurementRangesDto? bodyMeasurementRanges;

@@ -60,9 +60,10 @@ class _FakeRemote implements ProductRemoteDataSource {
       writes.add('deleteSize:$sizeId');
 
   @override
-  Future<void> insertProductSize(
-    final CreateProductSizeRequest request,
-  ) async => writes.add('insertSize:${request.name}');
+  Future<void> insertProductSize({
+    required final String productId,
+    required final CreateProductSizeRequest request,
+  }) async => writes.add('insertSize:${request.name}');
 
   @override
   Future<void> updateProduct(

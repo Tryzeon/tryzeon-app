@@ -1,8 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/core/data/services/store_images_api.dart';
 import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
+import 'package:tryzeon/feature/store/product/data/dtos/create_product_size_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/product_dto.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
+import 'package:tryzeon/feature/store/product/domain/value_objects/size_item.dart';
 import 'package:tryzeon/feature/store/profile/data/collections/store_profile_cache.dart';
 import 'package:tryzeon/feature/store/profile/data/dtos/store_profile_dto.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
@@ -126,5 +128,20 @@ void main() {
       profileJson.keys,
       isNot(anyOf(contains('id'), contains('owner_id'))),
     );
+  });
+
+  test('a new size serializes its nested measurements', () {
+    final request = mappr.convert<NewSizeItem, CreateProductSizeRequest>(
+      const NewSizeItem(
+        name: 'M',
+        garmentMeasurements: GarmentMeasurements(chestCircumference: 96),
+      ),
+    );
+
+    expect(request.toJson(), {
+      'name': 'M',
+      'garment_measurements': {'chest_circumference': 96.0},
+      'body_measurement_ranges': null,
+    });
   });
 }

@@ -4,10 +4,6 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
-import 'package:tryzeon/feature/common/product_size/data/dtos/body_measurement_ranges_dto.dart';
-import 'package:tryzeon/feature/common/product_size/data/dtos/garment_measurements_dto.dart';
-import 'package:tryzeon/feature/common/product_size/data/mappers/body_measurement_ranges_mappr.dart';
-import 'package:tryzeon/feature/common/product_size/data/mappers/garment_measurements_mappr.dart';
 import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:tryzeon/feature/store/product/data/datasources/product_local_datasource.dart';
 import 'package:tryzeon/feature/store/product/data/datasources/product_remote_datasource.dart';
@@ -30,38 +26,6 @@ class ProductRepositoryImpl implements ProductRepository {
   final ProductRemoteDataSource _remoteDataSource;
   final ProductLocalDataSource _localDataSource;
   static const _mappr = StoreMappr();
-
-  static GarmentMeasurementsDto? _toMeasurementsDto(
-    final GarmentMeasurements? measurements,
-  ) {
-    if (measurements == null) return null;
-    return const GarmentMeasurementsMappr()
-        .convert<GarmentMeasurements, GarmentMeasurementsDto>(measurements);
-  }
-
-  static BodyMeasurementRangesDto? _toBodyMeasurementRangesDto(
-    final BodyMeasurementRanges? bodyMeasurementRanges,
-  ) {
-    if (bodyMeasurementRanges == null) return null;
-    return const BodyMeasurementRangesMappr()
-        .convert<BodyMeasurementRanges, BodyMeasurementRangesDto>(
-          bodyMeasurementRanges,
-        );
-  }
-
-  static CreateProductSizeRequest _toSizeRequest(
-    final String productId,
-    final NewSizeItem size,
-  ) {
-    return CreateProductSizeRequest(
-      productId: productId,
-      name: size.name,
-      garmentMeasurements: _toMeasurementsDto(size.garmentMeasurements),
-      bodyMeasurementRanges: _toBodyMeasurementRangesDto(
-        size.bodyMeasurementRanges,
-      ),
-    );
-  }
 
   @override
   Future<Result<List<Product>, Failure>> listProducts({
@@ -182,9 +146,10 @@ class ProductRepositoryImpl implements ProductRepository {
 
       if (product.sizes.isNotEmpty) {
         await _remoteDataSource.insertProductSizes(
-          product.sizes
-              .map((final size) => _toSizeRequest(product.id, size))
-              .toList(),
+          productId: product.id,
+          requests: _mappr.convertList<NewSizeItem, CreateProductSizeRequest>(
+            product.sizes,
+          ),
         );
       }
     } catch (e, stackTrace) {
@@ -210,7 +175,8 @@ class ProductRepositoryImpl implements ProductRepository {
 
       for (final size in sizeDiff.toAdd) {
         await _remoteDataSource.insertProductSize(
-          _toSizeRequest(original.id, size),
+          productId: original.id,
+          request: _mappr.convert<NewSizeItem, CreateProductSizeRequest>(size),
         );
       }
 
