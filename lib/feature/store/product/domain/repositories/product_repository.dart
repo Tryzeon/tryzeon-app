@@ -1,5 +1,4 @@
 import 'package:tryzeon/core/error/failures.dart';
-import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/domain/services/product_update_plan.dart';
 import 'package:typed_result/typed_result.dart';
@@ -17,11 +16,6 @@ abstract class ProductRepository {
   Future<Result<void, Failure>> updateProduct({
     required final Product original,
     required final ProductUpdatePlan plan,
-  });
-
-  Future<Result<void, Failure>> setProductStatus({
-    required final Product product,
-    required final ProductStatus status,
   });
 
   Future<Result<void, Failure>> deleteProduct({

@@ -275,8 +275,7 @@ class ProductEditNotifier extends _$ProductEditNotifier {
     return _write(
       ProductMutation.setStatus,
       () => ref.read(setProductStatusUseCaseProvider)(
-        product: product,
-        status: status,
+        SetProductStatusParams(product: product, status: status),
       ),
       refreshedProductId: product.id,
     );

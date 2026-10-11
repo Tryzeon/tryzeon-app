@@ -21,6 +21,11 @@ class ProductSizeDiff {
     required this.idsToDelete,
   });
 
+  const ProductSizeDiff.empty()
+    : toAdd = const [],
+      toUpdate = const [],
+      idsToDelete = const [];
+
   final List<NewSizeItem> toAdd;
   final List<ProductSizeUpdate> toUpdate;
   final List<String> idsToDelete;

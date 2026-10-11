@@ -17,6 +17,7 @@ import 'package:tryzeon/feature/store/product/data/dtos/create_product_size_requ
 import 'package:tryzeon/feature/store/product/data/dtos/product_dto.dart';
 import 'package:tryzeon/feature/store/product/data/repositories/product_repository_impl.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
+import 'package:tryzeon/feature/store/product/domain/services/product_size_diff.dart';
 import 'package:tryzeon/feature/store/product/domain/services/product_update_plan.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/size_item.dart';
@@ -400,7 +401,7 @@ void main() {
   );
 
   test(
-    'setProductStatus fails without refreshing when no row was updated',
+    'updateProduct fails without refreshing when no row was updated',
     () async {
       final remote = _FakeRemote(remoteProduct)
         ..updateError = const PostgrestException(
@@ -408,9 +409,15 @@ void main() {
           code: 'PGRST116',
         );
 
-      final result = await buildRepository(
-        remote,
-      ).setProductStatus(product: original, status: ProductStatus.archived);
+      final result = await buildRepository(remote).updateProduct(
+        original: original,
+        plan: ProductUpdatePlan(
+          target: original.copyWith(status: ProductStatus.archived),
+          removedImagePaths: const [],
+          sizeDiff: const ProductSizeDiff.empty(),
+          hasProductChanges: true,
+        ),
+      );
 
       expect(result.getError(), const NotFoundFailure());
       expect(remote.getCalls, 0);

@@ -246,24 +246,6 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<Result<void, Failure>> setProductStatus({
-    required final Product product,
-    required final ProductStatus status,
-  }) async {
-    try {
-      await _remoteDataSource.updateProduct(product.id, {
-        'status': status.value,
-      });
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to set product status', e, stackTrace);
-      return Err(mapExceptionToFailure(e));
-    }
-
-    await _refreshProduct(storeId: product.storeId, productId: product.id);
-    return const Ok(null);
-  }
-
-  @override
   Future<Result<void, Failure>> deleteProduct({
     required final String storeId,
     required final String productId,

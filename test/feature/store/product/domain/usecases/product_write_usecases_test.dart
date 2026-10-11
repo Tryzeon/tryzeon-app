@@ -3,12 +3,14 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/domain/repositories/product_repository.dart';
 import 'package:tryzeon/feature/store/product/domain/services/product_image_storage.dart';
 import 'package:tryzeon/feature/store/product/domain/services/product_update_plan.dart';
 import 'package:tryzeon/feature/store/product/domain/usecases/create_product.dart';
 import 'package:tryzeon/feature/store/product/domain/usecases/delete_product.dart';
+import 'package:tryzeon/feature/store/product/domain/usecases/set_product_status.dart';
 import 'package:tryzeon/feature/store/product/domain/usecases/update_product.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.dart';
 import 'package:typed_result/typed_result.dart';
@@ -241,6 +243,32 @@ void main() {
 
       expect(result.getError(), const ServerFailure());
       expect(imageStorage.deleted, isEmpty);
+    });
+  });
+
+  group('SetProductStatus', () {
+    test('writes only the status change', () async {
+      final result = await SetProductStatus(repository)(
+        SetProductStatusParams(
+          product: original,
+          status: ProductStatus.archived,
+        ),
+      );
+
+      expect(result.isSuccess, isTrue);
+      final plan = repository.appliedPlan!;
+      expect(plan.target, original.copyWith(status: ProductStatus.archived));
+      expect(plan.sizeDiff.isEmpty, isTrue);
+      expect(plan.removedImagePaths, isEmpty);
+    });
+
+    test('skips the write when the status is unchanged', () async {
+      final result = await SetProductStatus(repository)(
+        SetProductStatusParams(product: original, status: original.status),
+      );
+
+      expect(result.isSuccess, isTrue);
+      expect(repository.appliedPlan, isNull);
     });
   });
 }

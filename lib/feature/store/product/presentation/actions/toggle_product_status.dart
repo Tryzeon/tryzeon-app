@@ -4,6 +4,7 @@ import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/app_snack_bar.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/presentation/mappers/product_status_ui_mapper.dart';
 import 'package:tryzeon/feature/store/product/providers/store_product_providers.dart';
@@ -31,17 +32,19 @@ Future<void> toggleProductStatus(
     context,
     message: target.arrivedMessage,
     actionLabel: '復原',
-    onAction: () => _undo(container, product),
+    onAction: () =>
+        _undo(container, product.copyWith(status: target), product.status),
   );
 }
 
 Future<void> _undo(
   final ProviderContainer container,
-  final Product product,
+  final Product toggled,
+  final ProductStatus previous,
 ) async {
   final result = await container
       .read(productEditProvider.notifier)
-      .setStatus(product: product, status: product.status);
+      .setStatus(product: toggled, status: previous);
 
   if (result.isFailure) {
     AppLogger.error(
