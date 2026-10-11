@@ -41,8 +41,15 @@ class AddProductPage extends HookConsumerWidget {
       analyzedPath.value = file.path;
       isAnalyzing.value = true;
       Future<void>(() async {
-        final result = await ref.read(analyzeProductImageUseCaseProvider)(file);
+        final analyzed = await ref.read(analyzeProductImageUseCaseProvider)(
+          file,
+        );
         if (!context.mounted) return;
+        final result = analyzed.get();
+        if (result == null) {
+          isAnalyzing.value = false;
+          return;
+        }
 
         List<ProductCategory> categories;
         try {
