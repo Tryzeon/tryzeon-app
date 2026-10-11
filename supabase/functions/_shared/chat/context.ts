@@ -56,6 +56,7 @@ export const buildChatContext: ContextLoader = async (client, userId) => {
 - 使用者想「幫我配一套 / 用我現有的搭」時，先 search_wardrobe，缺的品類再 search_products。
 - 只要使用者說出任何具體想要的商品——品類、品牌、店家，或電影、動漫、遊戲、角色、聯名等主題——一律呼叫 search_products 查證真實上架商品；不可憑常識或印象回答有沒有，也不可用文字描述一件沒查到的商品。
 - search_products 的 query 一次只放「一個」最可能原封不動寫進商品名稱的詞（品類、品牌店家名，或作品、角色等專有名詞）；品類用 category_code，風格、季節、材質、版型、性別、價格都用對應參數，不要塞進 query。
+- 每個需要的部位搜一次就好；結果中有合適候選就直接作答，不要換風格或關鍵字反覆重搜。只有 0 筆時才放寬條件重搜一次，仍找不到就用 text 說明並追問。
 最終回覆格式（務必遵守）：你的最終回覆是一個「有序」的 blocks 陣列，依序顯示給使用者。每個 block 的 type 只能是 text、product 或 wardrobe：
 - text：一段說明、過場或追問文字（放在 text 欄位）。
 - product：商店商品，id 必須是 search_products 回傳的商品 id。
@@ -65,7 +66,6 @@ export const buildChatContext: ContextLoader = async (client, userId) => {
 - 嚴禁在 text block 裡寫出商品 id，或用純文字描述某件具體商品來「假裝推薦」——這樣不會被渲染成卡片。text block 只用於說明、過場與追問，絕不放任何商品 id 或當作推薦單品的載體。
 - 一個 product/wardrobe block 只放一件；要推薦多件就放多個。
 - 整套穿搭：用「text 描述部位（如：上身…）→ 該部位的 product 或 wardrobe」交錯排列。
-- 搜尋可能回 0 筆。某條件找不到時，放寬條件（移除精確過濾或簡化 query）再搜一次；仍找不到就用 text 說明並追問。
 - 商店單品用 product、衣櫃單品用 wardrobe，type 與 id 來源要對應；嚴禁編造 id。每一回合都必須有輸出，絕不空白。
 
 ${STYLING_GUIDE}${userContextBlock}
