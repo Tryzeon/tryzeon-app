@@ -11,6 +11,7 @@ import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
+import 'package:tryzeon/feature/personal/profile/domain/usecases/update_user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -73,9 +74,11 @@ class _PersonalProfileForm extends HookConsumerWidget {
       final result = await ref
           .read(profileEditProvider.notifier)
           .updateProfile(
-            name: nameController.text.trim(),
-            gender: gender.value,
-            ageRange: ageRange.value,
+            UpdateUserProfileParams(
+              name: nameController.text.trim(),
+              gender: gender.value,
+              ageRange: ageRange.value,
+            ),
           );
 
       if (!context.mounted) return;

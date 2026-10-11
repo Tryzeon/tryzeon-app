@@ -1,11 +1,8 @@
 import 'dart:io';
 
 import 'package:tryzeon/core/error/failures.dart';
-import 'package:tryzeon/feature/common/body_measurements/domain/entities/body_measurements.dart';
-import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
-import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
-import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile_update.dart';
 import 'package:typed_result/typed_result.dart';
 
 abstract class UserProfileRepository {
@@ -15,25 +12,7 @@ abstract class UserProfileRepository {
 
   Future<Result<File, Failure>> getUserAvatar(final String path);
 
-  Future<Result<void, Failure>> updateUserProfile({
-    required final String name,
-    final Gender? gender,
-    final AgeRange? ageRange,
-  });
-
-  Future<Result<void, Failure>> updateStylePreferences({
-    required final List<ClothingStyle> stylePreferences,
-  });
-
-  Future<Result<void, Failure>> updateUserBodyMeasurements({
-    required final BodyMeasurements measurements,
-  });
-
-  Future<Result<void, Failure>> updateAvatarPath(final String path);
-
-  Future<Result<void, Failure>> completeUserOnboarding({
-    final Gender? gender,
-    final AgeRange? ageRange,
-    final List<ClothingStyle>? stylePreferences,
-  });
+  Future<Result<void, Failure>> updateUserProfile(
+    final UserProfileUpdate update,
+  );
 }

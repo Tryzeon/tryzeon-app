@@ -6,14 +6,17 @@ import 'package:tryzeon/core/data/collections/cache_entry.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/domain/services/image_file_cache.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/feature/common/body_measurements/domain/entities/body_measurements.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/personal/profile/data/collections/user_profile_cache.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_local_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_remote_datasource.dart';
+import 'package:tryzeon/feature/personal/profile/data/dtos/update_user_profile_request.dart';
 import 'package:tryzeon/feature/personal/profile/data/dtos/user_profile_dto.dart';
 import 'package:tryzeon/feature/personal/profile/data/repositories/user_profile_repository_impl.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile_update.dart';
 import 'package:typed_result/typed_result.dart';
 
 import '../../../../../support/isar_test_harness.dart';
@@ -23,9 +26,9 @@ class _FakeRemote implements UserProfileRemoteDataSource {
 
   final UserProfileDto profile;
   int calls = 0;
-  int updateAvatarPathCalls = 0;
+  final List<Map<String, dynamic>> updates = [];
   Object? getError;
-  Object? updateAvatarPathError;
+  Object? updateError;
 
   @override
   Future<UserProfileDto> getUserProfile() async {
@@ -35,9 +38,9 @@ class _FakeRemote implements UserProfileRemoteDataSource {
   }
 
   @override
-  Future<void> updateUserAvatarPath(final String avatarPath) async {
-    updateAvatarPathCalls++;
-    if (updateAvatarPathError case final error?) throw error;
+  Future<void> updateUserProfile(final UpdateUserProfileRequest request) async {
+    updates.add(request.toJson());
+    if (updateError case final error?) throw error;
   }
 
   @override
@@ -171,15 +174,15 @@ void main() {
   );
 
   test(
-    'updateAvatarPath succeeds and drops the cache when the refresh fails',
+    'updateUserProfile succeeds and drops the cache when the refresh fails',
     () async {
       await seedCache();
       final remote = _FakeRemote(remoteProfile)
         ..getError = const SocketException('offline');
 
-      final result = await buildRepository(
-        remote,
-      ).updateAvatarPath('u1/avatar/new.jpg');
+      final result = await buildRepository(remote).updateUserProfile(
+        const UserProfileUpdate(avatarPath: 'u1/avatar/new.jpg'),
+      );
 
       expect(result.isSuccess, isTrue);
       expect(
@@ -193,20 +196,45 @@ void main() {
   );
 
   test(
-    'updateAvatarPath returns not-found and skips the refresh when no row matched',
+    'updateUserProfile returns not-found and skips the refresh when no row matched',
     () async {
       final remote = _FakeRemote(remoteProfile)
-        ..updateAvatarPathError = const PostgrestException(
+        ..updateError = const PostgrestException(
           message: 'no rows',
           code: 'PGRST116',
         );
 
-      final result = await buildRepository(
-        remote,
-      ).updateAvatarPath('u1/avatar/new.jpg');
+      final result = await buildRepository(remote).updateUserProfile(
+        const UserProfileUpdate(avatarPath: 'u1/avatar/new.jpg'),
+      );
 
       expect(result.getError(), const NotFoundFailure());
       expect(remote.calls, 0);
+    },
+  );
+
+  test(
+    'updateUserProfile sends only the changed fields and caches the refetched row',
+    () async {
+      await seedCache();
+      final remote = _FakeRemote(remoteProfile);
+
+      final result = await buildRepository(remote).updateUserProfile(
+        const UserProfileUpdate(
+          measurements: BodyMeasurements(height: 170),
+          isOnboarded: true,
+        ),
+      );
+
+      expect(result.isSuccess, isTrue);
+      expect(remote.updates, [
+        {
+          'measurements': {'height': 170.0},
+          'is_onboarded': true,
+        },
+      ]);
+      expect(remote.calls, 1);
+      expect(await harness.isar.userProfileCaches.count(), 1);
     },
   );
 }

@@ -16,8 +16,6 @@ import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_r
 import 'package:tryzeon/feature/personal/profile/data/repositories/user_profile_repository_impl.dart';
 import 'package:tryzeon/feature/personal/profile/data/services/avatar_storage_impl.dart';
 import 'package:tryzeon/feature/personal/profile/data/services/preset_avatar_source_impl.dart';
-import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
-import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/preset_avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
@@ -160,18 +158,10 @@ class ProfileEditNotifier extends _$ProfileEditNotifier {
   @override
   AsyncValue<void> build() => const AsyncData(null);
 
-  Future<Result<void, Failure>> updateProfile({
-    required final String name,
-    final Gender? gender,
-    final AgeRange? ageRange,
-  }) {
-    return _write(
-      () => ref.read(updateUserProfileUseCaseProvider)(
-        name: name,
-        gender: gender,
-        ageRange: ageRange,
-      ),
-    );
+  Future<Result<void, Failure>> updateProfile(
+    final UpdateUserProfileParams params,
+  ) {
+    return _write(() => ref.read(updateUserProfileUseCaseProvider)(params));
   }
 
   Future<Result<void, Failure>> updateBodyMeasurements(

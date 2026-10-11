@@ -3,6 +3,7 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile_update.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -24,10 +25,13 @@ class CompleteOnboarding {
   final UserProfileRepository _repository;
 
   Future<Result<void, Failure>> call(final CompleteOnboardingParams params) {
-    return _repository.completeUserOnboarding(
-      gender: params.gender,
-      ageRange: params.ageRange,
-      stylePreferences: params.stylePreferences,
+    return _repository.updateUserProfile(
+      UserProfileUpdate(
+        gender: params.gender,
+        ageRange: params.ageRange,
+        stylePreferences: params.stylePreferences,
+        isOnboarded: true,
+      ),
     );
   }
 }

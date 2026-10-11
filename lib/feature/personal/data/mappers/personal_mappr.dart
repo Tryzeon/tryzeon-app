@@ -15,10 +15,12 @@ import '../../../common/store/data/dtos/store_order_contact_dto.dart';
 import '../../../common/store/domain/entities/store_channel.dart';
 import '../../../common/store/domain/entities/store_order_contact.dart';
 import '../../profile/data/collections/user_profile_cache.dart';
+import '../../profile/data/dtos/update_user_profile_request.dart';
 import '../../profile/data/dtos/user_profile_dto.dart';
 import '../../profile/domain/entities/age_range.dart';
 import '../../profile/domain/entities/gender.dart';
 import '../../profile/domain/entities/user_profile.dart';
+import '../../profile/domain/entities/user_profile_update.dart';
 import '../../shop/data/dtos/shop_product_dto.dart';
 import '../../shop/data/dtos/shop_store_info_dto.dart';
 import '../../shop/domain/entities/shop_product.dart';
@@ -34,6 +36,7 @@ import 'personal_mappr.auto_mappr.dart';
 @AutoMappr(
   [
     MapType<UserProfileDto, UserProfile>(),
+    MapType<UserProfileUpdate, UpdateUserProfileRequest>(),
     MapType<UserProfile, UserProfileCache>(
       converters: [
         TypeConverter<Gender?, String?>(ProfileCacheConverters.genderToCache),
@@ -98,7 +101,7 @@ import 'personal_mappr.auto_mappr.dart';
     MapType<SubscriptionTierCache, SubscriptionCapabilities>(),
   ],
   includes: [
-    BodyMeasurementsMappr(), // UserProfile.measurements
+    BodyMeasurementsMappr(), // UserProfile(Update).measurements
     GarmentMeasurementsMappr(), // ProductSize.measurements
     BodyMeasurementRangesMappr(), // ProductSize.bodyMeasurementRanges
   ],

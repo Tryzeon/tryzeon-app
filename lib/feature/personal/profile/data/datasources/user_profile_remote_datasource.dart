@@ -5,7 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
-import 'package:tryzeon/feature/common/body_measurements/data/dtos/body_measurements_dto.dart';
+import 'package:tryzeon/feature/personal/profile/data/dtos/update_user_profile_request.dart';
 import 'package:tryzeon/feature/personal/profile/data/dtos/user_profile_dto.dart';
 
 class UserProfileRemoteDataSource {
@@ -30,86 +30,13 @@ class UserProfileRemoteDataSource {
     return UserProfileDto.fromJson(response);
   }
 
-  Future<UserProfileDto> updateUserBodyMeasurements(
-    final BodyMeasurementsDto measurements,
-  ) async {
-    final user = _supabaseClient.auth.currentUser;
-    if (user == null) throw const UnauthenticatedException();
-
-    final response = await _supabaseClient
-        .from(_userProfileTable)
-        .update({'measurements': measurements.toJson()})
-        .eq('user_id', user.id)
-        .select()
-        .single();
-
-    return UserProfileDto.fromJson(response);
-  }
-
-  Future<UserProfileDto> updateUserProfile({
-    required final String name,
-    final String? gender,
-    final String? ageRange,
-  }) async {
-    final user = _supabaseClient.auth.currentUser;
-    if (user == null) throw const UnauthenticatedException();
-
-    final response = await _supabaseClient
-        .from(_userProfileTable)
-        .update({'name': name, 'gender': gender, 'age_range': ageRange})
-        .eq('user_id', user.id)
-        .select()
-        .single();
-
-    return UserProfileDto.fromJson(response);
-  }
-
-  Future<UserProfileDto> updateStylePreferences(
-    final List<String> stylePreferences,
-  ) async {
-    final user = _supabaseClient.auth.currentUser;
-    if (user == null) throw const UnauthenticatedException();
-
-    final response = await _supabaseClient
-        .from(_userProfileTable)
-        .update({'style_preferences': stylePreferences})
-        .eq('user_id', user.id)
-        .select()
-        .single();
-
-    return UserProfileDto.fromJson(response);
-  }
-
-  Future<UserProfileDto> completeUserOnboarding({
-    final String? gender,
-    final String? ageRange,
-    final List<String>? stylePreferences,
-  }) async {
-    final user = _supabaseClient.auth.currentUser;
-    if (user == null) throw const UnauthenticatedException();
-
-    final response = await _supabaseClient
-        .from(_userProfileTable)
-        .update({
-          'gender': gender,
-          'age_range': ageRange,
-          'style_preferences': stylePreferences,
-          'is_onboarded': true,
-        })
-        .eq('user_id', user.id)
-        .select()
-        .single();
-
-    return UserProfileDto.fromJson(response);
-  }
-
-  Future<void> updateUserAvatarPath(final String avatarPath) async {
+  Future<void> updateUserProfile(final UpdateUserProfileRequest request) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();
 
     await _supabaseClient
         .from(_userProfileTable)
-        .update({'avatar_path': avatarPath})
+        .update(request.toJson())
         .eq('user_id', user.id)
         .select('user_id')
         .single();

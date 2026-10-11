@@ -3,17 +3,13 @@ import 'dart:io';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
-import 'package:tryzeon/feature/common/body_measurements/data/dtos/body_measurements_dto.dart';
-import 'package:tryzeon/feature/common/body_measurements/data/mappers/body_measurements_mappr.dart';
-import 'package:tryzeon/feature/common/body_measurements/domain/entities/body_measurements.dart';
-import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_local_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_remote_datasource.dart';
+import 'package:tryzeon/feature/personal/profile/data/dtos/update_user_profile_request.dart';
 import 'package:tryzeon/feature/personal/profile/data/dtos/user_profile_dto.dart';
-import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
-import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile_update.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -27,7 +23,6 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
   final UserProfileRemoteDataSource _remoteDataSource;
   final UserProfileLocalDataSource _localDataSource;
   static const _mappr = PersonalMappr();
-  static const _measurementsMappr = BodyMeasurementsMappr();
 
   @override
   Future<Result<UserProfile, Failure>> getUserProfile({
@@ -78,101 +73,15 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
   }
 
   @override
-  Future<Result<void, Failure>> updateUserProfile({
-    required final String name,
-    final Gender? gender,
-    final AgeRange? ageRange,
-  }) async {
+  Future<Result<void, Failure>> updateUserProfile(
+    final UserProfileUpdate update,
+  ) async {
     try {
-      final updatedProfile = await _remoteDataSource.updateUserProfile(
-        name: name,
-        gender: gender?.value,
-        ageRange: ageRange?.value,
+      await _remoteDataSource.updateUserProfile(
+        _mappr.convert<UserProfileUpdate, UpdateUserProfileRequest>(update),
       );
-      await _localDataSource.saveUserProfile(
-        _mappr.convert<UserProfileDto, UserProfile>(updatedProfile),
-      );
-
-      return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to update user profile', e, stackTrace);
-      return Err(mapExceptionToFailure(e));
-    }
-  }
-
-  @override
-  Future<Result<void, Failure>> updateStylePreferences({
-    required final List<ClothingStyle> stylePreferences,
-  }) async {
-    try {
-      final updatedProfile = await _remoteDataSource.updateStylePreferences(
-        stylePreferences.map((final style) => style.value).toList(),
-      );
-      await _localDataSource.saveUserProfile(
-        _mappr.convert<UserProfileDto, UserProfile>(updatedProfile),
-      );
-
-      return const Ok(null);
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to update style preferences', e, stackTrace);
-      return Err(mapExceptionToFailure(e));
-    }
-  }
-
-  @override
-  Future<Result<void, Failure>> updateUserBodyMeasurements({
-    required final BodyMeasurements measurements,
-  }) async {
-    try {
-      final measurementsDto = _measurementsMappr
-          .convert<BodyMeasurements, BodyMeasurementsDto>(measurements);
-      final updatedProfile = await _remoteDataSource.updateUserBodyMeasurements(
-        measurementsDto,
-      );
-
-      await _localDataSource.saveUserProfile(
-        _mappr.convert<UserProfileDto, UserProfile>(updatedProfile),
-      );
-
-      return const Ok(null);
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to update user body measurements', e, stackTrace);
-      return Err(mapExceptionToFailure(e));
-    }
-  }
-
-  @override
-  Future<Result<void, Failure>> completeUserOnboarding({
-    final Gender? gender,
-    final AgeRange? ageRange,
-    final List<ClothingStyle>? stylePreferences,
-  }) async {
-    try {
-      final updatedProfile = await _remoteDataSource.completeUserOnboarding(
-        gender: gender?.value,
-        ageRange: ageRange?.value,
-        stylePreferences: stylePreferences
-            ?.map((final style) => style.value)
-            .toList(),
-      );
-
-      await _localDataSource.saveUserProfile(
-        _mappr.convert<UserProfileDto, UserProfile>(updatedProfile),
-      );
-
-      return const Ok(null);
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to complete user onboarding', e, stackTrace);
-      return Err(mapExceptionToFailure(e));
-    }
-  }
-
-  @override
-  Future<Result<void, Failure>> updateAvatarPath(final String path) async {
-    try {
-      await _remoteDataSource.updateUserAvatarPath(path);
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to update avatar path', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
 

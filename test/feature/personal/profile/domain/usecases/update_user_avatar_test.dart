@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile_update.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
 import 'package:tryzeon/feature/personal/profile/domain/services/avatar_storage.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/update_user_avatar.dart';
@@ -29,8 +30,10 @@ class _FakeRepository implements UserProfileRepository {
   }) async => profileResult;
 
   @override
-  Future<Result<void, Failure>> updateAvatarPath(final String path) async {
-    savedPath = path;
+  Future<Result<void, Failure>> updateUserProfile(
+    final UserProfileUpdate update,
+  ) async {
+    savedPath = update.avatarPath;
     return updateResult;
   }
 
