@@ -35,4 +35,21 @@ void main() {
       '/dashboard/products/p1',
     );
   });
+
+  test('deep-link content prefixes match the paths they exempt', () {
+    expect(
+      AppRoutes.personalShopProductPath('p1'),
+      startsWith(AppRoutes.personalShopProductPrefix),
+    );
+    expect(
+      AppRoutes.personalShopStorePath('s1'),
+      startsWith(AppRoutes.personalShopStorePrefix),
+    );
+  });
+
+  test('every tab sits under its role root', () {
+    expect(AppRoutes.personalHome, '/personal/home');
+    expect(AppRoutes.dashboardAccount, '/dashboard/account');
+    expect(AppRoutes.dashboardProductAdd, '/dashboard/products/add');
+  });
 }

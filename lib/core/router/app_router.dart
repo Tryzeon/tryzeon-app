@@ -10,7 +10,9 @@ import 'package:tryzeon/core/router/routes/personal_routes.dart';
 import 'package:tryzeon/core/router/routes/store_routes.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
+import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
 import 'package:tryzeon/main.dart';
 import 'package:typed_result/typed_result.dart';
@@ -94,9 +96,9 @@ Future<String> _resolveHomePath(final Ref ref) async {
 
 String? _handleStoreOnboardingRedirect(
   final String path,
-  final AsyncValue<dynamic> storeProfileAsync,
+  final AsyncValue<StoreProfile?> storeProfileAsync,
 ) {
-  if (!path.startsWith('/dashboard')) return null;
+  if (!path.startsWith(AppRoutes.dashboardRoot)) return null;
   if (storeProfileAsync.isLoading || storeProfileAsync.hasError) return null;
 
   final hasProfile = storeProfileAsync.asData?.value != null;
@@ -109,19 +111,19 @@ String? _handleStoreOnboardingRedirect(
 
 String? _handlePersonalOnboardingRedirect(
   final String path,
-  final AsyncValue<dynamic> userProfileAsync,
+  final AsyncValue<UserProfile?> userProfileAsync,
 ) {
-  if (!path.startsWith('/personal')) return null;
+  if (!path.startsWith(AppRoutes.personalRoot)) return null;
 
-  if (path.startsWith('/personal/shop/product/') ||
-      path.startsWith('/personal/shop/store/')) {
+  if (path.startsWith(AppRoutes.personalShopProductPrefix) ||
+      path.startsWith(AppRoutes.personalShopStorePrefix)) {
     return null;
   }
 
   if (userProfileAsync.isLoading || userProfileAsync.hasError) return null;
 
   final profile = userProfileAsync.asData?.value;
-  final isOnboarded = (profile?.isOnboarded as bool?) ?? false;
+  final isOnboarded = profile?.isOnboarded ?? false;
   if (path == AppRoutes.personalOnboarding) {
     return isOnboarded ? AppRoutes.personalHome : null;
   }
