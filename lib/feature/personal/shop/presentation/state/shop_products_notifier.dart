@@ -41,7 +41,9 @@ class ShopProductsNotifier extends _$ShopProductsNotifier
   Future<Result<ShopProductsState, Failure>> _fetchFirstPage(
     final ListShopProducts useCase,
   ) async {
-    final result = await useCase(filter: filter, limit: _pageSize, offset: 0);
+    final result = await useCase(
+      ListShopProductsParams(filter: filter, limit: _pageSize, offset: 0),
+    );
     return result.map(
       (final items) =>
           ShopProductsState(items: items, hasMore: items.length == _pageSize),
@@ -58,9 +60,11 @@ class ShopProductsNotifier extends _$ShopProductsNotifier
 
     final useCase = ref.read(listShopProductsProvider);
     final result = await useCase(
-      filter: filter,
-      limit: _pageSize,
-      offset: current.items.length,
+      ListShopProductsParams(
+        filter: filter,
+        limit: _pageSize,
+        offset: current.items.length,
+      ),
     );
 
     // A refresh that landed meanwhile replaced the list this page would extend.
