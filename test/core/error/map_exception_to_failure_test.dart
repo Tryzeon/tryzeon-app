@@ -35,6 +35,21 @@ void main() {
       );
     });
 
+    test(
+      'PostgrestException TZ001 (wardrobe limit) maps to WardrobeFullFailure',
+      () {
+        expect(
+          mapExceptionToFailure(
+            const PostgrestException(
+              message: 'Wardrobe limit exceeded',
+              code: 'TZ001',
+            ),
+          ),
+          const WardrobeFullFailure(),
+        );
+      },
+    );
+
     test('PostgrestException PGRST116 (no rows) maps to NotFoundFailure', () {
       expect(
         mapExceptionToFailure(

@@ -27,6 +27,9 @@ extension FailureMessage on Failure {
       AvatarMissingFailure(message: final msg?) => msg,
       AvatarMissingFailure() => '請先選擇試穿模特才能開始試穿呦！',
 
+      WardrobeFullFailure(message: final msg?) => msg,
+      WardrobeFullFailure() => '衣櫃已達上限',
+
       TimeoutFailure(message: final msg?) => msg,
       TimeoutFailure() => '處理時間過長而中斷，請重新嘗試；生成期間請讓 App 保持在前景',
 

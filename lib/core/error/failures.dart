@@ -61,6 +61,10 @@ class AvatarMissingFailure extends Failure {
   const AvatarMissingFailure([super.message]);
 }
 
+class WardrobeFullFailure extends Failure {
+  const WardrobeFullFailure([super.message]);
+}
+
 class TimeoutFailure extends Failure {
   const TimeoutFailure([super.message]);
 }
@@ -76,6 +80,11 @@ Failure mapExceptionToFailure(final Object e) {
   // PGRST116 = `.single()` matched no rows.
   if (e is PostgrestException && e.code == 'PGRST116') {
     return const NotFoundFailure();
+  }
+
+  // TZ001 = the wardrobe_items insert trigger rejected a full wardrobe.
+  if (e is PostgrestException && e.code == 'TZ001') {
+    return const WardrobeFullFailure();
   }
 
   if (e is FunctionException) {
