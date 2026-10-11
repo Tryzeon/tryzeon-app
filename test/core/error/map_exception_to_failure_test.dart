@@ -6,6 +6,7 @@ import 'package:http/http.dart' show ClientException;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
 
 void main() {
   group('mapExceptionToFailure', () {
@@ -130,15 +131,27 @@ void main() {
           status: 429,
           details: {
             'code': 'RATE_LIMIT_EXCEEDED',
-            'usage': {'used': 3, 'limit': 3},
+            'usage': {
+              'user_id': 'u1',
+              'usage_date': '2026-10-11',
+              'tryon_count': 3,
+              'chat_count': 0,
+              'video_count': 0,
+            },
           },
         ),
       );
       expect(failure, isA<RateLimitFailure>());
-      expect((failure as RateLimitFailure).usagePayload, {
-        'used': 3,
-        'limit': 3,
-      });
+      expect(
+        (failure as RateLimitFailure).usage,
+        DailyUsage(
+          userId: 'u1',
+          usageDate: DateTime(2026, 10, 11),
+          tryonCount: 3,
+          chatCount: 0,
+          videoCount: 0,
+        ),
+      );
     });
 
     test('a malformed body is decoded, not thrown on', () {
@@ -162,7 +175,7 @@ void main() {
           details: {'code': 'RATE_LIMIT_EXCEEDED', 'usage': 'not a map'},
         ),
       );
-      expect((failure as RateLimitFailure).usagePayload, isNull);
+      expect((failure as RateLimitFailure).usage, isNull);
     });
 
     test('a bare 429 with no code of ours is still a rate limit', () {
@@ -172,7 +185,7 @@ void main() {
         const FunctionException(status: 429),
       );
       expect(failure, isA<RateLimitFailure>());
-      expect((failure as RateLimitFailure).usagePayload, isNull);
+      expect((failure as RateLimitFailure).usage, isNull);
     });
 
     test('FunctionException 422 maps to ServerFailure', () {

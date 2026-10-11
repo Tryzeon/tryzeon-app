@@ -5,6 +5,8 @@ import 'package:equatable/equatable.dart';
 import 'package:http/http.dart' show ClientException;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
+import 'package:tryzeon/feature/common/daily_usage/data/mappers/daily_usage_payload.dart';
+import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
 
 sealed class Failure extends Equatable {
   const Failure([this.message]);
@@ -35,14 +37,12 @@ class ValidationFailure extends Failure {
 }
 
 class RateLimitFailure extends Failure {
-  const RateLimitFailure({final String? message, this.usagePayload})
-    : super(message);
+  const RateLimitFailure({final String? message, this.usage}) : super(message);
 
-  /// Raw `usage` snapshot from the edge function's 429 body.
-  final Map<String, dynamic>? usagePayload;
+  final DailyUsage? usage;
 
   @override
-  List<Object?> get props => [message, usagePayload];
+  List<Object?> get props => [message, usage];
 }
 
 class ServiceBusyFailure extends Failure {
@@ -69,9 +69,6 @@ class TimeoutFailure extends Failure {
   const TimeoutFailure([super.message]);
 }
 
-Map<String, dynamic>? _usagePayload(final Object? usage) =>
-    usage is Map<String, dynamic> ? usage : null;
-
 Failure mapExceptionToFailure(final Object e) {
   if (e is AuthException && e.code == 'otp_expired') {
     return const AuthFailure('驗證碼錯誤或過期');
@@ -95,7 +92,7 @@ Failure mapExceptionToFailure(final Object e) {
         'NO_AVATAR' => const AvatarMissingFailure(),
         'AI_GENERATION_FAILED' => const ServerFailure('AI 無法辨識圖片，請換一張試試'),
         'RATE_LIMIT_EXCEEDED' => RateLimitFailure(
-          usagePayload: _usagePayload(body['usage']),
+          usage: tryParseDailyUsagePayload(body['usage']),
         ),
         _ => null,
       };

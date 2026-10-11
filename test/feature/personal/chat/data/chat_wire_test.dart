@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
 import 'package:tryzeon/feature/personal/chat/data/chat_wire.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_stream_event.dart';
 
@@ -27,8 +28,14 @@ void main() {
       );
     });
 
-    test('RATE_LIMIT_EXCEEDED carries the usage payload', () {
-      final usage = {'used': 10, 'limit': 10};
+    test('RATE_LIMIT_EXCEEDED carries the usage snapshot', () {
+      final usage = {
+        'user_id': 'u1',
+        'usage_date': '2026-10-11',
+        'tryon_count': 0,
+        'chat_count': 10,
+        'video_count': 0,
+      };
       expect(
         parseStreamLine(
           jsonEncode({
@@ -37,7 +44,17 @@ void main() {
             'usage': usage,
           }),
         ),
-        ChatStreamEvent.failed(RateLimitFailure(usagePayload: usage)),
+        ChatStreamEvent.failed(
+          RateLimitFailure(
+            usage: DailyUsage(
+              userId: 'u1',
+              usageDate: DateTime(2026, 10, 11),
+              tryonCount: 0,
+              chatCount: 10,
+              videoCount: 0,
+            ),
+          ),
+        ),
       );
     });
 

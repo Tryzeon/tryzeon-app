@@ -2,7 +2,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
-import 'package:tryzeon/feature/common/daily_usage/data/mappers/daily_usage_payload.dart';
 import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
 import 'package:tryzeon/feature/personal/usage/data/datasources/daily_usage_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/usage/data/repositories/daily_usage_repository_impl.dart';
@@ -53,8 +52,8 @@ class DailyUsageToday extends _$DailyUsageToday {
   }
 
   void syncFromFailure(final Failure failure) {
-    if (failure is RateLimitFailure && failure.usagePayload != null) {
-      state = AsyncData(parseDailyUsagePayload(failure.usagePayload!));
+    if (failure case RateLimitFailure(:final usage?)) {
+      state = AsyncData(usage);
     }
   }
 }

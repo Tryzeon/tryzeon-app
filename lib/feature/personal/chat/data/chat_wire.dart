@@ -114,15 +114,14 @@ ChatStreamEvent? parseStreamLine(final String line) {
       final answer = message is Map<String, dynamic>
           ? parseMessage(message)
           : const ChatMessage(role: ChatRole.assistant, content: []);
-      final usageJson = decoded['usage'] as Map<String, dynamic>?;
       return ChatStreamEvent.replied(
         answer: answer,
-        usage: usageJson == null ? null : parseDailyUsagePayload(usageJson),
+        usage: tryParseDailyUsagePayload(decoded['usage']),
       );
     case 'error':
       return ChatStreamEvent.failed(switch (decoded['code']) {
         'RATE_LIMIT_EXCEEDED' => RateLimitFailure(
-          usagePayload: decoded['usage'] as Map<String, dynamic>?,
+          usage: tryParseDailyUsagePayload(decoded['usage']),
         ),
         'SERVICE_BUSY' => const ServiceBusyFailure(),
         'VALIDATION_ERROR' => ValidationFailure(decoded['message'] as String?),
