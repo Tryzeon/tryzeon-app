@@ -145,8 +145,9 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
     final GarmentType? garmentType,
     final List<String>? tags,
   }) async {
+    final WardrobeItem updatedItem;
     try {
-      final updatedItem = _mappr.convert<WardrobeItemDto, WardrobeItem>(
+      updatedItem = _mappr.convert<WardrobeItemDto, WardrobeItem>(
         await _remoteDataSource.updateWardrobeItem(
           id: id,
           request: UpdateWardrobeItemRequest(
@@ -155,12 +156,26 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
           ),
         ),
       );
-      await _localDataSource.saveWardrobeItem(updatedItem);
-      return Ok(updatedItem);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to update wardrobe item', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
+
+    try {
+      await _localDataSource.saveWardrobeItem(updatedItem);
+    } catch (e, stackTrace) {
+      AppLogger.warning(
+        'Failed to cache updated wardrobe item, invalidating cache',
+        e,
+        stackTrace,
+      );
+      try {
+        await _localDataSource.invalidateWardrobeItems();
+      } catch (e, stackTrace) {
+        AppLogger.error('Failed to invalidate wardrobe cache', e, stackTrace);
+      }
+    }
+    return Ok(updatedItem);
   }
 
   @override

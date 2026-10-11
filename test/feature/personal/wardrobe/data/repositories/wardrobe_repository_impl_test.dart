@@ -7,8 +7,10 @@ import 'package:tryzeon/feature/personal/wardrobe/data/collections/wardrobe_item
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_local_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/dtos/create_wardrobe_item_request.dart';
+import 'package:tryzeon/feature/personal/wardrobe/data/dtos/update_wardrobe_item_request.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/dtos/wardrobe_item_dto.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/repositories/wardrobe_repository_impl.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:typed_result/typed_result.dart';
 
 import '../../../../../support/isar_test_harness.dart';
@@ -44,6 +46,37 @@ class _FakeRemoteFailingRefresh implements WardrobeRemoteDataSource {
   @override
   dynamic noSuchMethod(final Invocation invocation) =>
       throw UnimplementedError(invocation.memberName.toString());
+}
+
+class _FakeRemoteUpdate implements WardrobeRemoteDataSource {
+  @override
+  Future<WardrobeItemDto> updateWardrobeItem({
+    required final String id,
+    required final UpdateWardrobeItemRequest request,
+  }) async => WardrobeItemDto(
+    id: id,
+    imagePath: '$id.jpg',
+    garmentType: request.garmentType ?? GarmentType.top,
+    createdAt: DateTime(2026),
+    updatedAt: DateTime(2026),
+  );
+
+  @override
+  dynamic noSuchMethod(final Invocation invocation) =>
+      throw UnimplementedError(invocation.memberName.toString());
+}
+
+class _FailingSaveLocal extends WardrobeLocalDataSource {
+  _FailingSaveLocal(
+    super.isarService,
+    super.imageFileCache,
+    super.cacheEntryLocalDataSource,
+  );
+
+  @override
+  Future<void> saveWardrobeItem(final WardrobeItem item) async {
+    throw Exception('cache write failed');
+  }
 }
 
 class _NoopImageFileCache implements ImageFileCache {
@@ -149,6 +182,35 @@ void main() {
         isNull,
       );
       expect(await harness.isar.wardrobeItemCaches.count(), 0);
+    },
+  );
+
+  test(
+    'updateWardrobeItem succeeds and drops the cache when the cache write fails',
+    () async {
+      await seedCache('top');
+
+      final repository = WardrobeRepositoryImpl(
+        remoteDataSource: _FakeRemoteUpdate(),
+        localDataSource: _FailingSaveLocal(
+          harness.service,
+          _NoopImageFileCache(),
+          CacheEntryLocalDataSource(harness.service),
+        ),
+      );
+
+      final result = await repository.updateWardrobeItem(
+        id: 'w1',
+        garmentType: GarmentType.pants,
+      );
+
+      expect(result.get()?.garmentType, GarmentType.pants);
+      expect(
+        await CacheEntryLocalDataSource(
+          harness.service,
+        ).getEntryStatus(WardrobeLocalDataSource.cacheKey),
+        isNull,
+      );
     },
   );
 }
