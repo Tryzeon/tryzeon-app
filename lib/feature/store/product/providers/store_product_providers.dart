@@ -17,17 +17,19 @@ import 'package:tryzeon/feature/store/product/data/repositories/product_reposito
 import 'package:tryzeon/feature/store/product/data/services/audio_recorder_service_impl.dart';
 import 'package:tryzeon/feature/store/product/data/services/product_image_analyzer_impl.dart';
 import 'package:tryzeon/feature/store/product/data/services/product_image_storage_impl.dart';
-import 'package:tryzeon/feature/store/product/data/services/size_voice_parser.dart';
+import 'package:tryzeon/feature/store/product/data/services/size_voice_parser_impl.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/domain/repositories/product_repository.dart';
 import 'package:tryzeon/feature/store/product/domain/services/audio_recorder_service.dart';
 import 'package:tryzeon/feature/store/product/domain/services/product_image_analyzer.dart';
 import 'package:tryzeon/feature/store/product/domain/services/product_image_storage.dart';
+import 'package:tryzeon/feature/store/product/domain/services/size_voice_parser.dart';
 import 'package:tryzeon/feature/store/product/domain/usecases/analyze_product_image.dart';
 import 'package:tryzeon/feature/store/product/domain/usecases/create_product.dart';
 import 'package:tryzeon/feature/store/product/domain/usecases/delete_product.dart';
 import 'package:tryzeon/feature/store/product/domain/usecases/get_product.dart';
 import 'package:tryzeon/feature/store/product/domain/usecases/list_products.dart';
+import 'package:tryzeon/feature/store/product/domain/usecases/parse_size_voice.dart';
 import 'package:tryzeon/feature/store/product/domain/usecases/set_product_status.dart';
 import 'package:tryzeon/feature/store/product/domain/usecases/update_product.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.dart';
@@ -213,7 +215,11 @@ AnalyzeProductImage analyzeProductImageUseCase(final Ref ref) =>
 
 @riverpod
 SizeVoiceParser sizeVoiceParser(final Ref ref) =>
-    SizeVoiceParser(Supabase.instance.client);
+    SizeVoiceParserImpl(Supabase.instance.client);
+
+@riverpod
+ParseSizeVoice parseSizeVoiceUseCase(final Ref ref) =>
+    ParseSizeVoice(ref.watch(sizeVoiceParserProvider));
 
 @Riverpod(keepAlive: true)
 AudioRecorderService audioRecorderService(final Ref ref) =>

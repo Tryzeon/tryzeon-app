@@ -3,10 +3,14 @@ import 'dart:typed_data';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/measurement/domain/entities/measurement_unit.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/body_measurement_ranges.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/garment_measurement_type.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/parsed_size.dart';
+import 'package:tryzeon/feature/store/product/domain/services/size_voice_parser.dart';
+import 'package:typed_result/typed_result.dart';
 
 GarmentMeasurementType? _typeFromKey(final String key) {
   for (final t in GarmentMeasurementType.values) {
@@ -81,30 +85,37 @@ List<ParsedSize> parseSizeVoiceResponse(final Map<String, dynamic> data) {
   return result;
 }
 
-class SizeVoiceParser {
-  SizeVoiceParser(this._supabase);
+class SizeVoiceParserImpl implements SizeVoiceParser {
+  SizeVoiceParserImpl(this._supabase);
 
   final SupabaseClient _supabase;
   static const _timeout = Duration(seconds: 30);
 
-  Future<List<ParsedSize>> parse({
+  @override
+  Future<Result<List<ParsedSize>, Failure>> parse({
     required final Uint8List audioBytes,
     required final String mimeType,
     required final MeasurementUnit currentUnit,
   }) async {
-    final base64Audio = base64Encode(audioBytes);
-    final response = await _supabase.functions
-        .invoke(
-          AppConstants.functionParseSizeVoice,
-          body: {
-            'audioBase64': base64Audio,
-            'mimeType': mimeType,
-            'currentUnit': currentUnit.name,
-          },
-        )
-        .timeout(_timeout);
+    try {
+      final response = await _supabase.functions
+          .invoke(
+            AppConstants.functionParseSizeVoice,
+            body: {
+              'audioBase64': base64Encode(audioBytes),
+              'mimeType': mimeType,
+              'currentUnit': currentUnit.name,
+            },
+          )
+          .timeout(_timeout);
 
-    final data = response.data;
-    return data is Map<String, dynamic> ? parseSizeVoiceResponse(data) : [];
+      final data = response.data;
+      return Ok(
+        data is Map<String, dynamic> ? parseSizeVoiceResponse(data) : [],
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error('Size voice parse failed', e, stackTrace);
+      return Err(mapExceptionToFailure(e));
+    }
   }
 }

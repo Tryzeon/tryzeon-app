@@ -6,8 +6,10 @@ import 'package:tryzeon/core/presentation/widgets/app_snack_bar.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/store/product/domain/services/audio_recorder_service.dart';
+import 'package:tryzeon/feature/store/product/domain/usecases/parse_size_voice.dart';
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_size_manager.dart';
 import 'package:tryzeon/feature/store/product/providers/store_product_providers.dart';
+import 'package:typed_result/typed_result.dart';
 
 enum SizeVoiceStatus { idle, recording, uploading }
 
@@ -59,12 +61,18 @@ SizeVoiceInput useSizeVoiceInput({
         showError('沒有錄到聲音，請再試一次');
         return;
       }
-      final parser = ref.read(sizeVoiceParserProvider);
-      final parsed = await parser.parse(
-        audioBytes: bytes,
-        mimeType: recording.mimeType,
-        currentUnit: sizeManager.selectedUnit,
+      final result = await ref.read(parseSizeVoiceUseCaseProvider)(
+        ParseSizeVoiceParams(
+          audioBytes: bytes,
+          mimeType: recording.mimeType,
+          currentUnit: sizeManager.selectedUnit,
+        ),
       );
+      final parsed = result.get();
+      if (parsed == null) {
+        showError('語音解析失敗，請再試一次');
+        return;
+      }
       if (parsed.isEmpty) {
         showError('沒有聽到尺寸資訊，請再試一次');
         return;
@@ -73,7 +81,7 @@ SizeVoiceInput useSizeVoiceInput({
       if (!context.mounted) return;
       AppSnackBar.show(context, message: '已填入 ${parsed.length} 筆尺寸，請檢查數字');
     } catch (e, st) {
-      AppLogger.error('Size voice parse failed', e, st);
+      AppLogger.error('Size voice recording failed', e, st);
       showError('語音解析失敗，請再試一次');
     } finally {
       status.value = SizeVoiceStatus.idle;

@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/body_measurement_ranges.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/garment_measurement_type.dart';
-import 'package:tryzeon/feature/store/product/data/services/size_voice_parser.dart';
+import 'package:tryzeon/feature/store/product/data/services/size_voice_parser_impl.dart';
 
 void main() {
   group('parseSizeVoiceResponse', () {
