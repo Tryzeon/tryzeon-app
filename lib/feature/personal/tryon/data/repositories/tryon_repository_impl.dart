@@ -1,6 +1,8 @@
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
-import 'package:tryzeon/feature/common/daily_usage/data/mappers/daily_usage_payload.dart';
+import 'package:tryzeon/feature/common/daily_usage/data/dtos/daily_usage_dto.dart';
+import 'package:tryzeon/feature/common/daily_usage/data/mappers/daily_usage_mappr.dart';
+import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
 import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_function_request.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_request.dart';
@@ -13,6 +15,7 @@ class TryonRepositoryImpl implements TryonRepository {
     : _remoteDataSource = remoteDataSource;
 
   final TryonRemoteDataSource _remoteDataSource;
+  static const _usageMappr = DailyUsageMappr();
 
   @override
   Future<Result<TryonResult, Failure>> tryon(final TryonRequest request) async {
@@ -20,14 +23,16 @@ class TryonRepositoryImpl implements TryonRepository {
       final response = await _remoteDataSource.tryon(
         TryonFunctionRequest.fromDomain(request),
       );
-      final usageJson = response.usage;
+      final usage = response.usage;
       return Ok(
         TryonResult(
           id: request.requestId,
           imageUrl: response.imageUrl,
           videoUrl: response.videoUrl,
           mode: request.mode,
-          usage: usageJson == null ? null : parseDailyUsagePayload(usageJson),
+          usage: usage == null
+              ? null
+              : _usageMappr.convert<DailyUsageDto, DailyUsage>(usage),
         ),
       );
     } catch (e, stackTrace) {
