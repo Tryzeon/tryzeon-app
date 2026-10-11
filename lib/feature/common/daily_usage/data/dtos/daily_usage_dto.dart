@@ -1,5 +1,4 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
 
 part 'daily_usage_dto.g.dart';
 
@@ -18,7 +17,7 @@ class DailyUsageDto {
 
   factory DailyUsageDto.empty({
     required final String userId,
-    required final String usageDate,
+    required final DateTime usageDate,
   }) => DailyUsageDto(
     userId: userId,
     usageDate: usageDate,
@@ -28,16 +27,8 @@ class DailyUsageDto {
   );
 
   final String userId;
-  final String usageDate;
+  final DateTime usageDate;
   final int tryonCount;
   final int chatCount;
   final int videoCount;
-
-  DailyUsage toEntity() => DailyUsage(
-    userId: userId,
-    usageDate: DateTime.parse(usageDate),
-    tryonCount: tryonCount,
-    chatCount: chatCount,
-    videoCount: videoCount,
-  );
 }

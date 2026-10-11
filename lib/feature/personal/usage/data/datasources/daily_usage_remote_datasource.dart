@@ -21,7 +21,10 @@ class DailyUsageRemoteDataSource {
         .eq('usage_date', today)
         .maybeSingle();
     if (response == null) {
-      return DailyUsageDto.empty(userId: user.id, usageDate: today);
+      return DailyUsageDto.empty(
+        userId: user.id,
+        usageDate: DateTime.parse(today),
+      );
     }
     return DailyUsageDto.fromJson(response);
   }
