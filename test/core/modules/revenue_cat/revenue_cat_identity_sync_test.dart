@@ -43,17 +43,20 @@ class _FakeAuthIdentityService implements AuthIdentityService {
   final Stream<String?> _userIds;
 
   @override
+  String? get currentUserId => null;
+
+  @override
   Stream<String?> watchUserId() => _userIds;
 }
 
 void main() {
   late StreamController<String?> authUserIds;
-  late _FakeEntitlementService repository;
+  late _FakeEntitlementService service;
 
   void build() {
     final container = ProviderContainer(
       overrides: [
-        subscriptionEntitlementServiceProvider.overrideWithValue(repository),
+        subscriptionEntitlementServiceProvider.overrideWithValue(service),
         authIdentityServiceProvider.overrideWithValue(
           _FakeAuthIdentityService(authUserIds.stream),
         ),
@@ -80,7 +83,7 @@ void main() {
   test(
     'repeated events for the same user id do not call logIn again',
     () async {
-      repository = _FakeEntitlementService();
+      service = _FakeEntitlementService();
       build();
 
       authUserIds.add('user-a');
@@ -88,31 +91,31 @@ void main() {
       authUserIds.add('user-a');
       await settle();
 
-      expect(repository.loggedInUserIds, ['user-a']);
+      expect(service.loggedInUserIds, ['user-a']);
     },
   );
 
   test(
     'a failed logIn retries on the next auth event with the same user id',
     () async {
-      repository = _FakeEntitlementService(logInFailures: 1);
+      service = _FakeEntitlementService(logInFailures: 1);
       build();
 
       authUserIds.add('user-a');
       await settle();
-      expect(repository.loggedInUserIds, ['user-a']);
+      expect(service.loggedInUserIds, ['user-a']);
 
       // A single token refresh is enough to recover, without waiting for the user
       // to sign in again.
       authUserIds.add('user-a');
       await settle();
 
-      expect(repository.loggedInUserIds, ['user-a', 'user-a']);
+      expect(service.loggedInUserIds, ['user-a', 'user-a']);
     },
   );
 
   test('retrying stops once it succeeds', () async {
-    repository = _FakeEntitlementService(logInFailures: 1);
+    service = _FakeEntitlementService(logInFailures: 1);
     build();
 
     authUserIds.add('user-a');
@@ -122,13 +125,13 @@ void main() {
     authUserIds.add('user-a');
     await settle();
 
-    expect(repository.loggedInUserIds, ['user-a', 'user-a']);
+    expect(service.loggedInUserIds, ['user-a', 'user-a']);
   });
 
   test(
     'signing out and back in to the same account calls logIn again',
     () async {
-      repository = _FakeEntitlementService();
+      service = _FakeEntitlementService();
       build();
 
       authUserIds.add('user-a');
@@ -138,28 +141,28 @@ void main() {
       authUserIds.add('user-a');
       await settle();
 
-      expect(repository.logOutCount, 1);
-      expect(repository.loggedInUserIds, ['user-a', 'user-a']);
+      expect(service.logOutCount, 1);
+      expect(service.loggedInUserIds, ['user-a', 'user-a']);
     },
   );
 
   test(
     'starting up signed out does not logOut an anonymous RevenueCat',
     () async {
-      repository = _FakeEntitlementService();
+      service = _FakeEntitlementService();
       build();
 
       authUserIds.add(null);
       await settle();
 
-      expect(repository.logOutCount, 0);
+      expect(service.logOutCount, 0);
     },
   );
 
   test(
     'switching accounts does not drop the user that arrives later',
     () async {
-      repository = _FakeEntitlementService();
+      service = _FakeEntitlementService();
       build();
 
       authUserIds
@@ -168,7 +171,7 @@ void main() {
       await settle();
       await settle();
 
-      expect(repository.loggedInUserIds, ['user-a', 'user-b']);
+      expect(service.loggedInUserIds, ['user-a', 'user-b']);
     },
   );
 }

@@ -17,29 +17,22 @@ import 'package:tryzeon/feature/personal/settings/providers/settings_providers.d
 part 'auth_providers.g.dart';
 
 @riverpod
-Stream<AuthState> authState(final Ref ref) {
-  return Supabase.instance.client.auth.onAuthStateChange;
-}
-
-@riverpod
-bool isAuthenticated(final Ref ref) {
-  // Watch the authState stream to properly react to auth changes
-  // without manually invalidating (which causes infinite rebuild loops)
-  ref.watch(authStateProvider);
-
-  return Supabase.instance.client.auth.currentSession != null;
-}
-
-@riverpod
-User? currentUser(final Ref ref) {
-  ref.watch(authStateProvider);
-  return Supabase.instance.client.auth.currentUser;
-}
+Stream<String?> authUserIdChanges(final Ref ref) =>
+    ref.watch(authIdentityServiceProvider).watchUserId();
 
 /// Changes only when a different account signs in — not on token refresh —
 /// so per-user caches can key on it without refetching every hour.
+///
+/// Rebuilt by watching the change stream and reading the current id, rather
+/// than invalidating by hand, which loops.
 @riverpod
-String? currentUserId(final Ref ref) => ref.watch(currentUserProvider)?.id;
+String? currentUserId(final Ref ref) {
+  ref.watch(authUserIdChangesProvider);
+  return ref.watch(authIdentityServiceProvider).currentUserId;
+}
+
+@riverpod
+bool isAuthenticated(final Ref ref) => ref.watch(currentUserIdProvider) != null;
 
 @riverpod
 AuthRemoteDataSource authRemoteDataSource(final Ref ref) {

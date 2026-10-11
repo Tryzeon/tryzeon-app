@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/data/datasources/auth_local_datasource.dart';
@@ -26,7 +27,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }) async {
     try {
       // Store login type preference before auth state changes fire.
-      await _localDataSource.setLastLoginType(userType.value);
+      await _localDataSource.setLastLoginType(userType);
 
       switch (provider) {
         case LoginProvider.apple:
@@ -68,12 +69,10 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Result<UserType?, Failure>> getLastLoginType() async {
     try {
-      final typeString = await _localDataSource.getLastLoginType();
-      if (typeString == null) return const Ok(null);
-
-      final userType = UserType.tryFromString(typeString) ?? UserType.personal;
-
-      return Ok(userType);
+      return Ok(await _localDataSource.getLastLoginType());
+    } on CacheDecodeException catch (e, stackTrace) {
+      AppLogger.warning('Stored login type no longer decodes', e, stackTrace);
+      return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to get login type', e, stackTrace);
       return Err(mapExceptionToFailure(e));
@@ -85,7 +84,7 @@ class AuthRepositoryImpl implements AuthRepository {
     final UserType userType,
   ) async {
     try {
-      await _localDataSource.setLastLoginType(userType.value);
+      await _localDataSource.setLastLoginType(userType);
       return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to save login type', e, stackTrace);
@@ -111,7 +110,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required final UserType userType,
   }) async {
     try {
-      await _localDataSource.setLastLoginType(userType.value);
+      await _localDataSource.setLastLoginType(userType);
 
       await _remoteDataSource.verifyEmailOTP(email: email, token: token);
 

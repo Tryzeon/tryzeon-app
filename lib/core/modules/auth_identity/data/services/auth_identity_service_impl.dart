@@ -6,6 +6,9 @@ class AuthIdentityServiceImpl implements AuthIdentityService {
 
   final GoTrueClient _auth;
 
+  @override
+  String? get currentUserId => _auth.currentSession?.user.id;
+
   // Repeated ids are the retry budget, so this must not be `.distinct()`:
   // deduplicating here silently strands a consumer whose binding side effect
   // failed, since the next token refresh carries the same id.

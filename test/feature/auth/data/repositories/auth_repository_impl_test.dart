@@ -1,9 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/feature/auth/data/datasources/auth_local_datasource.dart';
 import 'package:tryzeon/feature/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:tryzeon/feature/auth/data/repositories/auth_repository_impl.dart';
+import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
+import 'package:typed_result/typed_result.dart';
 
 class _FakeRemote implements AuthRemoteDataSource {
   Object? signOutError;
@@ -30,6 +33,14 @@ class _FakeRemote implements AuthRemoteDataSource {
 }
 
 class _NoopLocal implements AuthLocalDataSource {
+  Object? lastLoginTypeError;
+
+  @override
+  Future<UserType?> getLastLoginType() async {
+    if (lastLoginTypeError case final error?) throw error;
+    return null;
+  }
+
   @override
   dynamic noSuchMethod(final Invocation invocation) =>
       throw UnimplementedError(invocation.memberName.toString());
@@ -64,4 +75,20 @@ void main() {
 
     expect(result.isSuccess, isTrue);
   });
+
+  test(
+    'a stored login type that no longer decodes reads as none chosen',
+    () async {
+      final repository = AuthRepositoryImpl(
+        remoteDataSource: _FakeRemote(),
+        localDataSource: _NoopLocal()
+          ..lastLoginTypeError = const CacheDecodeException('admin'),
+      );
+
+      final result = await repository.getLastLoginType();
+
+      expect(result.isSuccess, isTrue);
+      expect(result.get(), isNull);
+    },
+  );
 }

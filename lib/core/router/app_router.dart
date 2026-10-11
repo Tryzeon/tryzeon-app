@@ -1,7 +1,7 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/router/auth_refresh_listenable.dart';
 import 'package:tryzeon/core/router/routes/auth_routes.dart';
@@ -19,9 +19,8 @@ part 'app_router.g.dart';
 
 @riverpod
 Raw<GoRouter> appRouter(final Ref ref) {
-  final supabase = Supabase.instance.client;
-  final authStream = supabase.auth.onAuthStateChange;
-  final refreshListenable = AuthRefreshListenable(authStream);
+  final authIdentity = ref.read(authIdentityServiceProvider);
+  final refreshListenable = AuthRefreshListenable(authIdentity.watchUserId());
 
   ref.onDispose(refreshListenable.dispose);
 
@@ -33,7 +32,7 @@ Raw<GoRouter> appRouter(final Ref ref) {
       FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance),
     ],
     redirect: (final context, final state) {
-      final isLoggedIn = supabase.auth.currentSession != null;
+      final isLoggedIn = authIdentity.currentUserId != null;
       final path = state.matchedLocation;
       final isAuthPath = path == AppRoutes.login;
 
