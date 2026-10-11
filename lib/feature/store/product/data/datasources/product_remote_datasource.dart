@@ -74,6 +74,8 @@ class ProductRemoteDataSource {
     await _supabaseClient
         .from(_productSizesTable)
         .update(changes)
-        .eq('id', sizeId);
+        .eq('id', sizeId)
+        .select('id')
+        .single();
   }
 }
