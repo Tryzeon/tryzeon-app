@@ -8,8 +8,8 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_request.dar
 /// Hand-written rather than json_serializable because the body omits empty
 /// prompts, an absent avatar and an absent garment list, and wraps each garment
 /// image as `{base64}`.
-class TryonRequestDto {
-  const TryonRequestDto({
+class TryonFunctionRequest {
+  const TryonFunctionRequest({
     required this.generationId,
     required this.garments,
     required this.mode,
@@ -22,7 +22,7 @@ class TryonRequestDto {
     this.transitionPrompt,
   });
 
-  factory TryonRequestDto.fromDomain(final TryonRequest request) {
+  factory TryonFunctionRequest.fromDomain(final TryonRequest request) {
     return switch (request) {
       TryonGenerateRequest(
         :final requestId,
@@ -34,7 +34,7 @@ class TryonRequestDto {
         :final transitionPrompt,
         :final engine,
       ) =>
-        TryonRequestDto(
+        TryonFunctionRequest(
           generationId: requestId,
           avatarBase64: avatarBase64,
           garments: garments.map(_garmentToJson).toList(),
@@ -53,7 +53,7 @@ class TryonRequestDto {
         :final transitionPrompt,
         :final engine,
       ) =>
-        TryonRequestDto(
+        TryonFunctionRequest(
           generationId: requestId,
           garments: const [],
           mode: TryonMode.video.value,

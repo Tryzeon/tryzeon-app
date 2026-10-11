@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_request_dto.dart';
+import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_function_request.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_engine.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_garment.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
@@ -9,7 +9,7 @@ void main() {
   const garments = [TryonGarment.product(productId: 'p1')];
 
   test('omits the avatar field entirely when there is no override', () {
-    final body = TryonRequestDto.fromDomain(
+    final body = TryonFunctionRequest.fromDomain(
       const TryonRequest.generate(
         requestId: 'r1',
         garments: garments,
@@ -25,7 +25,7 @@ void main() {
   });
 
   test('sends a custom avatar as inline base64', () {
-    final body = TryonRequestDto.fromDomain(
+    final body = TryonFunctionRequest.fromDomain(
       const TryonRequest.generate(
         requestId: 'r1',
         garments: garments,
@@ -39,7 +39,7 @@ void main() {
   });
 
   test('sends a product garment with its size when one is known', () {
-    final body = TryonRequestDto.fromDomain(
+    final body = TryonFunctionRequest.fromDomain(
       const TryonRequest.generate(
         requestId: 'r1',
         garments: [TryonGarment.product(productId: 'p1', sizeId: 's1')],
@@ -54,7 +54,7 @@ void main() {
   });
 
   test('wraps each of a garment\'s own photos as inline bytes', () {
-    final body = TryonRequestDto.fromDomain(
+    final body = TryonFunctionRequest.fromDomain(
       const TryonRequest.generate(
         requestId: 'r1',
         garments: [
@@ -76,7 +76,7 @@ void main() {
   });
 
   test('sends a wardrobe garment as a bare item reference', () {
-    final body = TryonRequestDto.fromDomain(
+    final body = TryonFunctionRequest.fromDomain(
       const TryonRequest.generate(
         requestId: 'r1',
         garments: [TryonGarment.wardrobe(wardrobeItemId: 'w1')],
@@ -91,7 +91,7 @@ void main() {
   });
 
   test('omits the sizeId key entirely when no size is known', () {
-    final body = TryonRequestDto.fromDomain(
+    final body = TryonFunctionRequest.fromDomain(
       const TryonRequest.generate(
         requestId: 'r1',
         garments: garments,
@@ -106,7 +106,7 @@ void main() {
   });
 
   test('sends an animate request as a baseImage with no garments', () {
-    final body = TryonRequestDto.fromDomain(
+    final body = TryonFunctionRequest.fromDomain(
       const TryonRequest.animate(
         requestId: 'r1',
         baseImageBase64: 'FINISHED',
@@ -125,7 +125,7 @@ void main() {
   });
 
   test('omits the transitionPrompt when the user set no style', () {
-    final body = TryonRequestDto.fromDomain(
+    final body = TryonFunctionRequest.fromDomain(
       const TryonRequest.animate(
         requestId: 'r1',
         baseImageBase64: 'FINISHED',
@@ -137,7 +137,7 @@ void main() {
   });
 
   test('a generate request never carries a baseImage', () {
-    final body = TryonRequestDto.fromDomain(
+    final body = TryonFunctionRequest.fromDomain(
       const TryonRequest.generate(
         requestId: 'r1',
         garments: garments,
@@ -153,7 +153,7 @@ void main() {
   });
 
   test('sends the stylingPrompt when the user set one', () {
-    final body = TryonRequestDto.fromDomain(
+    final body = TryonFunctionRequest.fromDomain(
       const TryonRequest.generate(
         requestId: 'r1',
         garments: garments,
@@ -167,7 +167,7 @@ void main() {
   });
 
   test('omits the stylingPrompt when the user set no styling', () {
-    final body = TryonRequestDto.fromDomain(
+    final body = TryonFunctionRequest.fromDomain(
       const TryonRequest.generate(
         requestId: 'r1',
         garments: garments,
@@ -180,7 +180,7 @@ void main() {
   });
 
   test('sends the engine only when the user picked the experimental one', () {
-    final body = TryonRequestDto.fromDomain(
+    final body = TryonFunctionRequest.fromDomain(
       const TryonRequest.generate(
         requestId: 'r1',
         garments: garments,
@@ -193,7 +193,7 @@ void main() {
   });
 
   test('names the engine on every body, the standard one included', () {
-    final body = TryonRequestDto.fromDomain(
+    final body = TryonFunctionRequest.fromDomain(
       const TryonRequest.generate(
         requestId: 'r1',
         garments: garments,
@@ -208,7 +208,7 @@ void main() {
   test(
     'an animate request carries the engine even though no image is generated',
     () {
-      final body = TryonRequestDto.fromDomain(
+      final body = TryonFunctionRequest.fromDomain(
         const TryonRequest.animate(
           requestId: 'r1',
           baseImageBase64: 'FINISHED',
@@ -231,7 +231,7 @@ void main() {
   });
 
   test('names the generation with the request id', () {
-    final body = TryonRequestDto.fromDomain(
+    final body = TryonFunctionRequest.fromDomain(
       const TryonRequest.generate(
         requestId: 'r1',
         garments: garments,
@@ -244,7 +244,7 @@ void main() {
   });
 
   test('names an animate generation with the request id', () {
-    final body = TryonRequestDto.fromDomain(
+    final body = TryonFunctionRequest.fromDomain(
       const TryonRequest.animate(
         requestId: 'r2',
         baseImageBase64: 'FINISHED',
