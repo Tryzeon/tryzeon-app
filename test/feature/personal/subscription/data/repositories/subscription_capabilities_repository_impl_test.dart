@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/core/data/collections/cache_entry.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/feature/personal/subscription/data/collections/subscription_tier_cache.dart';
 import 'package:tryzeon/feature/personal/subscription/data/datasources/subscription_capabilities_local_datasource.dart';
@@ -12,6 +15,9 @@ import 'package:typed_result/typed_result.dart';
 import '../../../../../support/isar_test_harness.dart';
 
 class _FakeRemote implements SubscriptionCapabilitiesRemoteDataSource {
+  _FakeRemote({this.error});
+
+  final Object? error;
   int calls = 0;
 
   @override
@@ -19,6 +25,7 @@ class _FakeRemote implements SubscriptionCapabilitiesRemoteDataSource {
     final AppSubscriptionTier tier,
   ) async {
     calls++;
+    if (error case final error?) throw error;
     return SubscriptionTierDto(
       id: tier,
       wardrobeLimit: 100,
@@ -99,5 +106,13 @@ void main() {
     expect(remote.calls, 0);
     expect(capabilities.wardrobeLimit, 10);
     expect(capabilities.hasVideoAccess, isFalse);
+  });
+
+  test('an offline fetch is reported as a network failure', () async {
+    final result = await buildRepository(
+      _FakeRemote(error: const SocketException('offline')),
+    ).getCapabilitiesForTier(AppSubscriptionTier.pro);
+
+    expect(result.getError(), const NetworkFailure());
   });
 }

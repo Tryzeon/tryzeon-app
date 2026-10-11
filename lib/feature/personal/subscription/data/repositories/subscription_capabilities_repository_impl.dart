@@ -69,11 +69,7 @@ class SubscriptionCapabilitiesRepositoryImpl
         e,
         stackTrace,
       );
-      return Err(
-        ServerFailure(
-          'Failed to load subscription capabilities for ${tier.value}',
-        ),
-      );
+      return Err(mapExceptionToFailure(e));
     }
   }
 }
