@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:isar_community/isar.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
@@ -10,10 +9,6 @@ import 'package:tryzeon/feature/common/product_category/domain/entities/product_
 import '../../../../../support/isar_test_harness.dart';
 
 void main() {
-  setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
-  });
-
   late TestIsar harness;
 
   setUp(() async {

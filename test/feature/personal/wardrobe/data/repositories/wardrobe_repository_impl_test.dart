@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:isar_community/isar.dart';
 import 'package:tryzeon/core/data/collections/cache_entry.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/domain/services/image_file_cache.dart';
@@ -54,10 +53,6 @@ class _NoopImageFileCache implements ImageFileCache {
 }
 
 void main() {
-  setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
-  });
-
   late TestIsar harness;
 
   setUp(() async {

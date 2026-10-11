@@ -9,10 +9,6 @@ import 'package:tryzeon/feature/store/analytics/domain/entities/product_analytic
 import '../../../../../support/isar_test_harness.dart';
 
 void main() {
-  setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
-  });
-
   late TestIsar harness;
 
   setUp(() async {

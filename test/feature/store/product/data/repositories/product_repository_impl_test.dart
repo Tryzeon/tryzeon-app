@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:isar_community/isar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/data/collections/cache_entry.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
@@ -79,10 +78,6 @@ class _FakeRemote implements ProductRemoteDataSource {
 }
 
 void main() {
-  setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
-  });
-
   late TestIsar harness;
 
   setUp(() async {

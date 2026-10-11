@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:isar_community/isar.dart';
 import 'package:tryzeon/core/data/collections/cache_entry.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
@@ -31,10 +30,6 @@ class _FakeRemote implements ProductCategoryRemoteDataSource {
 }
 
 void main() {
-  setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
-  });
-
   late TestIsar harness;
 
   setUp(() async {

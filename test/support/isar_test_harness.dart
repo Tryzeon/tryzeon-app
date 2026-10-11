@@ -1,6 +1,8 @@
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:isar_community/isar.dart';
+import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
 import 'package:tryzeon/core/data/collections/cache_entry.dart';
 import 'package:tryzeon/core/data/collections/cache_schema.dart';
@@ -35,7 +37,28 @@ class _FixedIsarService extends IsarService {
   Future<Isar> openDB() async => _isar;
 }
 
+const _hostIsarCoreBinaries = {
+  Abi.linuxX64: 'linux/libisar.so',
+  Abi.macosArm64: 'macos/libisar.dylib',
+  Abi.macosX64: 'macos/libisar.dylib',
+  Abi.windowsX64: 'windows/libisar.dll',
+};
+
+// Not `download: true`: parallel test processes race writing one shared
+// binary, and mapping it mid-write crashes the runner with SIGBUS.
+Future<void> initializeTestIsarCore() async {
+  final binary = _hostIsarCoreBinaries[Abi.current()];
+  if (binary == null) {
+    throw UnsupportedError('No IsarCore host binary for ${Abi.current()}');
+  }
+  final packages = await findPackageConfig(Directory.current);
+  final flutterLibs = packages!['isar_community_flutter_libs']!.root;
+  final path = flutterLibs.resolve(binary).toFilePath();
+  await Isar.initializeIsarCore(libraries: {Abi.current(): path});
+}
+
 Future<TestIsar> openTestIsar() async {
+  await initializeTestIsarCore();
   final dir = await Directory.systemTemp.createTemp('tryzeon_cache_test');
   final isar = await Isar.open(
     [
