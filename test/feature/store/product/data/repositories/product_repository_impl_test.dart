@@ -305,14 +305,9 @@ void main() {
       );
 
       expect(result.isSuccess, isTrue);
-      expect(remote.inserted!.styles, [
-        ClothingStyle.japanese,
-        ClothingStyle.western,
-      ]);
-      expect(remote.inserted!.seasons, [
-        ProductSeason.spring,
-        ProductSeason.winter,
-      ]);
+      final row = remote.inserted!.toJson();
+      expect(row['styles'], ['japanese', 'western']);
+      expect(row['seasons'], ['spring', 'winter']);
     },
   );
 

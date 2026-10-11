@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/core/data/services/store_images_api.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
+import 'package:tryzeon/feature/store/product/data/dtos/create_product_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/create_product_size_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/product_dto.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
@@ -128,6 +130,42 @@ void main() {
       profileJson.keys,
       isNot(anyOf(contains('id'), contains('owner_id'))),
     );
+  });
+
+  test('a new product becomes one flat insert row', () {
+    final request = mappr.convert<NewProduct, CreateProductRequest>(
+      const NewProduct(
+        id: 'p1',
+        storeId: 's1',
+        draft: ProductDraft(
+          name: '碎花洋裝',
+          categoryId: 'c1',
+          garmentType: GarmentType.onePiece,
+          price: 1280,
+        ),
+        imagePaths: ['p1.jpg'],
+        sizes: [],
+      ),
+    );
+
+    expect(request.toJson(), {
+      'id': 'p1',
+      'store_id': 's1',
+      'image_paths': ['p1.jpg'],
+      'name': '碎花洋裝',
+      'category_id': 'c1',
+      'garment_type': 'one_piece',
+      'price': 1280.0,
+      'gender': 'unisex',
+      'purchase_link': null,
+      'description': null,
+      'material': null,
+      'elasticity': null,
+      'fit': null,
+      'thickness': null,
+      'styles': null,
+      'seasons': null,
+    });
   });
 
   test('a new size serializes its nested measurements', () {

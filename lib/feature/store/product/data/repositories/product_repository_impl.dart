@@ -2,8 +2,6 @@ import 'package:tryzeon/core/data/utils/json_diff.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
-import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
-import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:tryzeon/feature/store/product/data/datasources/product_local_datasource.dart';
 import 'package:tryzeon/feature/store/product/data/datasources/product_remote_datasource.dart';
@@ -116,32 +114,8 @@ class ProductRepositoryImpl implements ProductRepository {
   @override
   Future<Result<void, Failure>> createProduct(final NewProduct product) async {
     try {
-      final draft = product.draft;
       await _remoteDataSource.insertProduct(
-        CreateProductRequest(
-          id: product.id,
-          storeId: product.storeId,
-          name: draft.name,
-          categoryId: draft.categoryId,
-          garmentType: draft.garmentType,
-          price: draft.price,
-          imagePaths: product.imagePaths,
-          gender: draft.gender,
-          purchaseLink: draft.purchaseLink,
-          description: draft.description,
-          material: draft.material,
-          elasticity: draft.elasticity,
-          fit: draft.fit,
-          thickness: draft.thickness,
-          styles: switch (draft.styles) {
-            final styles? => ClothingStyle.listFromSet(styles),
-            null => null,
-          },
-          seasons: switch (draft.seasons) {
-            final seasons? => ProductSeason.listFromSet(seasons),
-            null => null,
-          },
-        ),
+        _mappr.convert<NewProduct, CreateProductRequest>(product),
       );
 
       if (product.sizes.isNotEmpty) {

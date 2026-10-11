@@ -19,7 +19,9 @@ import '../../analytics/data/collections/product_analytics_cache.dart';
 import '../../analytics/data/dtos/product_analytics_summary_dto.dart';
 import '../../analytics/domain/entities/product_analytics_summary.dart';
 import '../../product/data/collections/product_cache.dart';
+import '../../product/data/dtos/create_product_request.dart';
 import '../../product/data/dtos/create_product_size_request.dart';
+import '../../product/data/dtos/product_draft_dto.dart';
 import '../../product/data/dtos/product_dto.dart';
 import '../../product/domain/entities/product.dart';
 import '../../product/domain/value_objects/size_item.dart';
@@ -51,6 +53,13 @@ import 'store_mappr.auto_mappr.dart';
       ],
     ),
 
+    MapType<NewProduct, CreateProductRequest>(),
+    MapType<ProductDraft, ProductDraftDto>(
+      fields: [
+        Field('styles', custom: StoreMapprHelper.draftStylesToDto),
+        Field('seasons', custom: StoreMapprHelper.draftSeasonsToDto),
+      ],
+    ),
     MapType<NewSizeItem, CreateProductSizeRequest>(),
 
     MapType<Product, ProductCache>(
@@ -197,6 +206,16 @@ class StoreMapprHelper {
   static ProductGender genderFromCache(final ProductCache source) =>
       ProductAttributesCacheConverters.genderFromCache(source.gender) ??
       ProductGender.unisex;
+
+  static List<ClothingStyle>? draftStylesToDto(final ProductDraft source) {
+    final styles = source.styles;
+    return styles == null ? null : ClothingStyle.listFromSet(styles);
+  }
+
+  static List<ProductSeason>? draftSeasonsToDto(final ProductDraft source) {
+    final seasons = source.seasons;
+    return seasons == null ? null : ProductSeason.listFromSet(seasons);
+  }
 
   static List<ClothingStyle>? stylesToDto(final Product source) {
     final styles = source.styles;
