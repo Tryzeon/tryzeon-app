@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/analytics/domain/entities/analytics_event.dart';
 import 'package:tryzeon/core/modules/analytics/domain/services/analytics_event_queue.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:typed_result/typed_result.dart';
 
 class AnalyticsEventQueueImpl implements AnalyticsEventQueue {
   AnalyticsEventQueueImpl({
@@ -39,26 +41,23 @@ class AnalyticsEventQueueImpl implements AnalyticsEventQueue {
     }
   }
 
-  Future<void> _flush() async {
+  Future<Result<void, Failure>> _flush() async {
     _flushTimer?.cancel();
 
-    if (_queue.isEmpty) {
-      return;
-    }
+    if (_queue.isEmpty) return const Ok(null);
 
     final eventsToUpload = List<AnalyticsEvent>.from(_queue);
     _queue.clear();
 
     try {
       await uploadCallback(eventsToUpload);
+      return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to upload analytics events', e, stackTrace);
-      // Don't re-queue on failure - just drop the events
+      return Err(mapExceptionToFailure(e));
     }
   }
 
   @override
-  Future<void> forceFlush() async {
-    await _flush();
-  }
+  Future<Result<void, Failure>> forceFlush() => _flush();
 }

@@ -19,13 +19,11 @@ class DeleteAccount {
   final SignOut _signOut;
 
   Future<Result<void, Failure>> call() async {
-    try {
-      await _analyticsQueue.forceFlush();
-    } catch (e, stackTrace) {
+    final flushed = await _analyticsQueue.forceFlush();
+    if (flushed.isFailure) {
       AppLogger.error(
         'Failed to flush analytics events (ignored)',
-        e,
-        stackTrace,
+        flushed.getError(),
       );
     }
 

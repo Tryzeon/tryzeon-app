@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/analytics/domain/entities/analytics_event.dart';
 import 'package:tryzeon/core/modules/analytics/domain/entities/analytics_event_type.dart';
 import 'package:tryzeon/core/modules/analytics/domain/services/analytics_event_queue.dart';
@@ -7,6 +8,7 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart'
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/track_product_purchase_click.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/track_product_view.dart';
+import 'package:typed_result/typed_result.dart';
 
 class _RecordingQueue implements AnalyticsEventQueue {
   final List<AnalyticsEvent> events = [];
@@ -15,7 +17,7 @@ class _RecordingQueue implements AnalyticsEventQueue {
   void enqueue(final AnalyticsEvent event) => events.add(event);
 
   @override
-  Future<void> forceFlush() async {}
+  Future<Result<void, Failure>> forceFlush() async => const Ok(null);
 }
 
 void main() {

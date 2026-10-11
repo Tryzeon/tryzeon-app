@@ -45,9 +45,9 @@ class _FakeQueue implements AnalyticsEventQueue {
   bool failFlush = false;
 
   @override
-  Future<void> forceFlush() async {
+  Future<Result<void, Failure>> forceFlush() async {
     _journal.steps.add('flush');
-    if (failFlush) throw Exception('flush failed');
+    return failFlush ? const Err(NetworkFailure()) : const Ok(null);
   }
 
   @override
