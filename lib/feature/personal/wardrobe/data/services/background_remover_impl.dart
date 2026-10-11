@@ -2,7 +2,9 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:image_background_remover/image_background_remover.dart' as bg;
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:typed_result/typed_result.dart';
 
 import '../../domain/services/background_remover.dart';
 
@@ -30,9 +32,14 @@ class BackgroundRemoverImpl implements BackgroundRemover {
   }
 
   @override
-  Future<Uint8List?> remove(final File image) async {
-    final bytes = await image.readAsBytes();
-    await _ensureInit();
-    return bg.BackgroundRemover.instance.removeBgBytes(bytes);
+  Future<Result<Uint8List?, Failure>> remove(final File image) async {
+    try {
+      final bytes = await image.readAsBytes();
+      await _ensureInit();
+      return Ok(await bg.BackgroundRemover.instance.removeBgBytes(bytes));
+    } catch (e, stackTrace) {
+      AppLogger.warning('Background removal failed', e, stackTrace);
+      return Err(mapExceptionToFailure(e));
+    }
   }
 }

@@ -2,7 +2,10 @@ import 'dart:io';
 
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/data/services/image_analysis_api.dart';
+import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:typed_result/typed_result.dart';
 
 import '../../domain/entities/label_result.dart';
 import '../../domain/services/label_tagger.dart';
@@ -27,12 +30,17 @@ class LabelTaggerImpl implements LabelTagger {
   final ImageAnalysisApi _api;
 
   @override
-  Future<LabelResult> analyze(final File image) async {
-    final data = await _api.analyze(
-      image: image,
-      functionName: AppConstants.functionAnalyzeWardrobeImage,
-    );
-    if (data == null) return const LabelResult();
-    return parseAnalysisResponse(data);
+  Future<Result<LabelResult, Failure>> analyze(final File image) async {
+    try {
+      final data = await _api.analyze(
+        image: image,
+        functionName: AppConstants.functionAnalyzeWardrobeImage,
+      );
+      if (data == null) return const Ok(LabelResult());
+      return Ok(parseAnalysisResponse(data));
+    } catch (e, stackTrace) {
+      AppLogger.warning('Wardrobe label tagging failed', e, stackTrace);
+      return Err(mapExceptionToFailure(e));
+    }
   }
 }

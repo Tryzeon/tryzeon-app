@@ -11,21 +11,26 @@ import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type
 import 'package:tryzeon/feature/common/garment_type/presentation/garment_type_display.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/label_result.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_capacity.dart';
-import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/analyze_wardrobe_image.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/remove_wardrobe_image_background.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/tag_wardrobe_image.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/sheets/upload_wardrobe_item_sheet.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 import '../../../../../support/sheet_test_host.dart';
 
-class _FakeAnalyze implements AnalyzeWardrobeImage {
+class _FakeTag implements TagWardrobeImage {
   final labelsResult = Completer<LabelResult>();
 
   @override
-  Future<LabelResult> labels(final File image) => labelsResult.future;
+  Future<Result<LabelResult, Failure>> call(final File image) async =>
+      Ok(await labelsResult.future);
+}
 
+class _NoBackgroundRemoval implements RemoveWardrobeImageBackground {
   @override
-  Future<Uint8List?> removeBackground(final File image) async => null;
+  Future<Result<Uint8List?, Failure>> call(final File image) async =>
+      const Ok(null);
 }
 
 class _FakeEdit extends WardrobeEditNotifier {
@@ -53,12 +58,12 @@ class _FakeEdit extends WardrobeEditNotifier {
 }
 
 void main() {
-  late _FakeAnalyze analyze;
+  late _FakeTag tag;
   late _FakeEdit edit;
 
   Future<({Future<GarmentType?> result})> open(final WidgetTester tester) {
     // Built inside the test so their completers resolve in its fake-async zone.
-    analyze = _FakeAnalyze();
+    tag = _FakeTag();
     edit = _FakeEdit();
     return openSheet<GarmentType>(
       tester,
@@ -67,7 +72,10 @@ void main() {
         image: File('missing.jpg'),
       ),
       overrides: [
-        analyzeWardrobeImageUseCaseProvider.overrideWithValue(analyze),
+        tagWardrobeImageUseCaseProvider.overrideWithValue(tag),
+        removeWardrobeImageBackgroundUseCaseProvider.overrideWithValue(
+          _NoBackgroundRemoval(),
+        ),
         wardrobeEditProvider.overrideWith(() => edit),
         wardrobeCapacityProvider.overrideWith(
           (final ref) async => const WardrobeCapacity(used: 1, limit: 10),
@@ -117,7 +125,7 @@ void main() {
   ) async {
     await open(tester);
 
-    analyze.labelsResult.complete(
+    tag.labelsResult.complete(
       const LabelResult(tags: ['denim'], garmentType: GarmentType.skirt),
     );
     await settle(tester);

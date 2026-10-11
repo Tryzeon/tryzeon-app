@@ -24,10 +24,11 @@ import 'package:tryzeon/feature/personal/wardrobe/domain/repositories/wardrobe_r
 import 'package:tryzeon/feature/personal/wardrobe/domain/services/background_remover.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/services/label_tagger.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/services/wardrobe_image_storage.dart';
-import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/analyze_wardrobe_image.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/delete_wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/get_wardrobe_item_image.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/get_wardrobe_items.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/remove_wardrobe_image_background.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/tag_wardrobe_image.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/update_wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/upload_wardrobe_item.dart';
 import 'package:typed_result/typed_result.dart';
@@ -107,12 +108,16 @@ LabelTagger labelTagger(final Ref ref) =>
 @Riverpod(keepAlive: true)
 BackgroundRemover backgroundRemover(final Ref ref) => BackgroundRemoverImpl();
 
-@Riverpod(keepAlive: true)
-AnalyzeWardrobeImage analyzeWardrobeImageUseCase(final Ref ref) {
-  return AnalyzeWardrobeImage(
-    labelTagger: ref.watch(labelTaggerProvider),
-    backgroundRemover: ref.watch(backgroundRemoverProvider),
-  );
+@riverpod
+TagWardrobeImage tagWardrobeImageUseCase(final Ref ref) {
+  return TagWardrobeImage(ref.watch(labelTaggerProvider));
+}
+
+@riverpod
+RemoveWardrobeImageBackground removeWardrobeImageBackgroundUseCase(
+  final Ref ref,
+) {
+  return RemoveWardrobeImageBackground(ref.watch(backgroundRemoverProvider));
 }
 
 /// Keyed on the signed-in user, not on who is listening: a keepAlive holder

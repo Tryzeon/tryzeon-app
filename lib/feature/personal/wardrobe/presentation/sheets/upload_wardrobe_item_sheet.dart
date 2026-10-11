@@ -56,19 +56,24 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
 
     useEffect(() {
       var cancelled = false;
-      final usecase = ref.read(analyzeWardrobeImageUseCaseProvider);
+      final removeBackground = ref.read(
+        removeWardrobeImageBackgroundUseCaseProvider,
+      );
+      final tagImage = ref.read(tagWardrobeImageUseCaseProvider);
 
       Future<void> runBackground() async {
-        final bg = await usecase.removeBackground(image);
-        if (!cancelled) removedBgImage.value = bg;
+        final result = await removeBackground(image);
+        if (!cancelled) removedBgImage.value = result.get();
       }
 
       Future<void> runLabels() async {
-        final result = await usecase.labels(image);
+        final result = (await tagImage(image)).get();
         if (cancelled) return;
-        tags.value = result.tags;
-        if (result.garmentType != null && selectedGarmentType.value == null) {
-          selectedGarmentType.value = result.garmentType;
+        if (result != null) {
+          tags.value = result.tags;
+          if (result.garmentType != null && selectedGarmentType.value == null) {
+            selectedGarmentType.value = result.garmentType;
+          }
         }
         isAnalyzingTags.value = false;
       }
