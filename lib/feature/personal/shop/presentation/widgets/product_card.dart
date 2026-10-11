@@ -34,10 +34,7 @@ class ProductCard extends HookConsumerWidget {
       if (info.visibleFraction > AppConstants.productVisibilityThreshold &&
           !hasLoggedView.value) {
         hasLoggedView.value = true;
-        ref
-            .read(incrementViewCountProvider)
-            .call(productId: product.id, storeId: product.storeInfo.id)
-            .ignore();
+        ref.read(trackProductViewProvider)(product);
       }
     }
 

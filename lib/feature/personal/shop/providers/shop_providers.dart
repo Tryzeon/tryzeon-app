@@ -6,19 +6,17 @@ import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/ad_local_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/repositories/ad_repository_impl.dart';
-import 'package:tryzeon/feature/personal/shop/data/repositories/product_analytics_repository_impl.dart';
 import 'package:tryzeon/feature/personal/shop/data/repositories/product_repository_impl.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:tryzeon/feature/personal/shop/domain/repositories/ad_repository.dart';
-import 'package:tryzeon/feature/personal/shop/domain/repositories/product_analytics_repository.dart';
 import 'package:tryzeon/feature/personal/shop/domain/repositories/product_repository.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/get_ads.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/get_shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/get_store_info.dart';
-import 'package:tryzeon/feature/personal/shop/domain/usecases/increment_purchase_click_count.dart';
-import 'package:tryzeon/feature/personal/shop/domain/usecases/increment_view_count.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/list_shop_products.dart';
+import 'package:tryzeon/feature/personal/shop/domain/usecases/track_product_purchase_click.dart';
+import 'package:tryzeon/feature/personal/shop/domain/usecases/track_product_view.dart';
 import 'package:typed_result/typed_result.dart';
 
 part 'shop_providers.g.dart';
@@ -41,12 +39,6 @@ AdLocalDataSource adLocalDataSource(final Ref ref) {
 ProductRepository productRepository(final Ref ref) {
   final remote = ref.watch(shopRemoteDataSourceProvider);
   return ProductRepositoryImpl(remoteDataSource: remote);
-}
-
-@riverpod
-ProductAnalyticsRepository productAnalyticsRepository(final Ref ref) {
-  final analyticsQueue = ref.watch(analyticsEventQueueProvider);
-  return ProductAnalyticsRepositoryImpl(analyticsQueue);
 }
 
 @riverpod
@@ -78,15 +70,13 @@ GetAds getAds(final Ref ref) {
 }
 
 @riverpod
-IncrementViewCount incrementViewCount(final Ref ref) {
-  return IncrementViewCount(ref.watch(productAnalyticsRepositoryProvider));
+TrackProductView trackProductView(final Ref ref) {
+  return TrackProductView(ref.watch(analyticsEventQueueProvider));
 }
 
 @riverpod
-IncrementPurchaseClickCount incrementPurchaseClickCount(final Ref ref) {
-  return IncrementPurchaseClickCount(
-    ref.watch(productAnalyticsRepositoryProvider),
-  );
+TrackProductPurchaseClick trackProductPurchaseClick(final Ref ref) {
+  return TrackProductPurchaseClick(ref.watch(analyticsEventQueueProvider));
 }
 
 // --- Feature Providers ---

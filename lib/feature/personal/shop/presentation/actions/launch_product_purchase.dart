@@ -30,7 +30,7 @@ Future<void> launchProductPurchase(
 
   final target = _resolveTarget(choice, product, fitResult);
 
-  final incrementClick = ref.read(incrementPurchaseClickCountProvider);
+  final trackPurchaseClick = ref.read(trackProductPurchaseClickProvider);
 
   if (!await canLaunchUrl(target.uri)) {
     if (context.mounted) {
@@ -39,9 +39,7 @@ Future<void> launchProductPurchase(
     return;
   }
 
-  incrementClick
-      .call(productId: product.id, storeId: product.storeInfo.id)
-      .ignore();
+  trackPurchaseClick(product);
   await launchUrl(target.uri, mode: LaunchMode.externalApplication);
 }
 
