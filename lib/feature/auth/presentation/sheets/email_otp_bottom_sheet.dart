@@ -12,6 +12,7 @@ import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
+import 'package:tryzeon/feature/auth/domain/usecases/verify_email_otp.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -92,9 +93,7 @@ class EmailOtpBottomSheet extends HookConsumerWidget {
 
       final verifyEmailOtpUseCase = ref.read(verifyEmailOtpUseCaseProvider);
       final result = await verifyEmailOtpUseCase(
-        email: email,
-        token: token,
-        userType: userType,
+        VerifyEmailOtpParams(email: email, token: token, userType: userType),
       );
 
       if (!context.mounted) return;

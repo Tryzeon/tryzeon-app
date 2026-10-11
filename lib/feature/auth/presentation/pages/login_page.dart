@@ -9,6 +9,7 @@ import 'package:tryzeon/core/presentation/widgets/version_info.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/domain/entities/login_provider.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
+import 'package:tryzeon/feature/auth/domain/usecases/sign_in_with_provider.dart';
 import 'package:tryzeon/feature/auth/presentation/sheets/email_otp_bottom_sheet.dart';
 import 'package:tryzeon/feature/auth/presentation/widgets/identity_segmented_control.dart';
 import 'package:tryzeon/feature/auth/presentation/widgets/login_provider_display.dart';
@@ -28,8 +29,7 @@ class LoginPage extends HookConsumerWidget {
       isLoading.value = true;
       final signInUseCase = ref.read(signInWithProviderUseCaseProvider);
       final result = await signInUseCase(
-        provider: provider,
-        userType: userType.value,
+        SignInWithProviderParams(provider: provider, userType: userType.value),
       );
 
       if (!context.mounted) return;

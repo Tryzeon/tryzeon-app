@@ -24,12 +24,8 @@ class _FakeVerifyEmailOtp implements VerifyEmailOtp {
   final tokens = <String>[];
 
   @override
-  Future<Result<void, Failure>> call({
-    required final String email,
-    required final String token,
-    required final UserType userType,
-  }) async {
-    tokens.add(token);
+  Future<Result<void, Failure>> call(final VerifyEmailOtpParams params) async {
+    tokens.add(params.token);
     return const Ok(null);
   }
 }
