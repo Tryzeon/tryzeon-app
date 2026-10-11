@@ -97,6 +97,12 @@ class ProductAnalyticsSummariesNotifier
     required final GetProductAnalyticsSummaries useCase,
   }) async {
     if (profile == null) return const Ok([]);
-    return useCase(storeId: profile.id, year: filter.year, month: filter.month);
+    return useCase(
+      GetProductAnalyticsSummariesParams(
+        storeId: profile.id,
+        year: filter.year,
+        month: filter.month,
+      ),
+    );
   }
 }
