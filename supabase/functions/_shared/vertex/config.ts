@@ -11,7 +11,8 @@
  * | Variable                   | Required     | Read by                              |
  * | -------------------------- | ------------ | ------------------------------------ |
  * | `GOOGLE_SERVICE_ACCOUNT`   | yes          | everything — credential and project  |
- * | `CHAT_MODEL`               | yes          | chat, image analysis, audio analysis |
+ * | `CHAT_MODEL`               | yes          | chat                                 |
+ * | `ANALYSIS_MODEL`           | yes          | image analysis, audio analysis       |
  * | `TRYON_MODEL`              | yes          | try-on images, standard engine       |
  * | `TRYON_MODEL_EXPERIMENTAL` | yes          | try-on images, experimental engine   |
  * |                            |              | and the standard engine's fallback   |
@@ -25,9 +26,6 @@
  * model fails, stalls, or answers without an image (see `provider.ts`). Vertex
  * meters image generation per model, so the fallback draws on its own
  * allowance.
- *
- * `CHAT_MODEL` naming three unrelated features is a known wart: changing the
- * chat model also changes how wardrobe photos and size recordings are read.
  *
  * Image engine tiers follow the Artificial Analysis image-editing arena
  * restricted to Google models on Vertex: the standard engine is the top-ranked
@@ -91,7 +89,8 @@ export function vertexServiceAccount(): VertexServiceAccount {
 
 export const vertexLocation = (): string => Deno.env.get("VERTEX_LOCATION") ?? "global";
 
-export const chatModel = (): string => requireEnv("CHAT_MODEL");
+export const chatModel = (): string => requireEnv("CHAT_MODEL"); // gemini-3.8-flash
+export const analysisModel = (): string => requireEnv("ANALYSIS_MODEL"); // gemini-3.5-flash-lite
 
 export const tryonImageModel = (): string => requireEnv("TRYON_MODEL"); // gemini-3.1-flash-image
 export const tryonExperimentalImageModel = (): string => requireEnv("TRYON_MODEL_EXPERIMENTAL"); // gemini-3-pro-image

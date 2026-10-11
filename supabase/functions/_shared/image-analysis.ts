@@ -1,6 +1,6 @@
 import { generateObject, jsonSchema } from "ai";
 import { vertexModel } from "./vertex/provider.ts";
-import { chatModel } from "./vertex/config.ts";
+import { analysisModel } from "./vertex/config.ts";
 import { detectMimeType } from "./image-utils.ts";
 import { jsonError, jsonRateLimited } from "./http.ts";
 import { checkRateLimit } from "./rate-limit.ts";
@@ -46,7 +46,7 @@ export async function analyzeImage<T extends Record<string, unknown> = Record<st
   },
 ): Promise<T> {
   const { object } = await generateObject({
-    model: vertexModel(chatModel()),
+    model: vertexModel(analysisModel()),
     schema: jsonSchema<T>(schema),
     messages: [
       {
