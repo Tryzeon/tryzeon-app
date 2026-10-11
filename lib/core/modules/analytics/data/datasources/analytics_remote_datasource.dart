@@ -22,7 +22,7 @@ class AnalyticsRemoteDataSource {
     final eventsJson = events.map((final e) => e.toJson()).toList();
 
     await _supabaseClient.rpc<void>(
-      AppConstants.functionLogAnalyticsEvents,
+      AppConstants.rpcLogAnalyticsEvents,
       params: {'p_events': eventsJson},
     );
   }

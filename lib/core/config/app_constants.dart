@@ -28,10 +28,12 @@ class AppConstants {
   static const String bucketUserAvatars = 'user-avatars';
   static const String bucketWardrobeImages = 'wardrobe-images';
 
+  static const String rpcLogAnalyticsEvents = 'log_analytics_events';
+  static const String rpcListShopProducts = 'list_shop_products';
+
   static const String functionChat = 'chat';
   static const String functionTryon = 'tryon';
   static const String functionDeleteAccount = 'delete-account';
-  static const String functionLogAnalyticsEvents = 'log_analytics_events';
   static const String functionAnalyzeWardrobeImage = 'analyze-wardrobe-image';
   static const String functionAnalyzeProductImage = 'analyze-product-image';
   static const String functionParseSizeVoice = 'parse-size-voice';

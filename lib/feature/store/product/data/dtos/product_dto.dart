@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
@@ -64,7 +65,7 @@ class ProductDto {
   final List<ClothingStyle>? styles;
   @JsonKey(fromJson: _seasonsFromJson)
   final List<ProductSeason>? seasons;
-  @JsonKey(name: 'product_sizes', includeToJson: false)
+  @JsonKey(name: AppConstants.tableProductSizes, includeToJson: false)
   final List<ProductSizeDto>? sizes;
   @JsonKey(includeToJson: false)
   final DateTime createdAt;

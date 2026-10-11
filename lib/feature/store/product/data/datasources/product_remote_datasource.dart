@@ -14,7 +14,7 @@ class ProductRemoteDataSource {
   Future<List<ProductDto>> listProducts({required final String storeId}) async {
     final response = await _supabaseClient
         .from(_productsTable)
-        .select('*, product_sizes(*)')
+        .select('*, ${AppConstants.tableProductSizes}(*)')
         .eq('store_id', storeId);
 
     return (response as List<dynamic>)
@@ -38,7 +38,7 @@ class ProductRemoteDataSource {
   Future<ProductDto> getProduct(final String productId) async {
     final response = await _supabaseClient
         .from(_productsTable)
-        .select('*, product_sizes(*)')
+        .select('*, ${AppConstants.tableProductSizes}(*)')
         .eq('id', productId)
         .single();
 

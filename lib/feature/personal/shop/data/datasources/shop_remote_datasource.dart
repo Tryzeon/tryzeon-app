@@ -14,7 +14,7 @@ class ShopRemoteDataSource {
     final ListShopProductsRequest request,
   ) async {
     final response = await _supabaseClient.rpc<List<dynamic>>(
-      'list_shop_products',
+      AppConstants.rpcListShopProducts,
       params: request.toJson(),
     );
 
@@ -34,8 +34,8 @@ class ShopRemoteDataSource {
         .from(_productsTable)
         .select('''
           *,
-          product_sizes(*),
-          store_profiles!products_store_id_fkey(id, name, slug, address, logo_path, channels)
+          ${AppConstants.tableProductSizes}(*),
+          ${AppConstants.tableStoreProfiles}!products_store_id_fkey(id, name, slug, address, logo_path, channels)
         ''')
         .eq('id', productId)
         .single();
