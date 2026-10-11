@@ -90,7 +90,7 @@ export function vertexServiceAccount(): VertexServiceAccount {
 export const vertexLocation = (): string => Deno.env.get("VERTEX_LOCATION") ?? "global";
 
 export const chatModel = (): string => requireEnv("CHAT_MODEL"); // gemini-3.8-flash
-export const analysisModel = (): string => requireEnv("ANALYSIS_MODEL"); // gemini-3.5-flash-lite
+export const analysisModel = (): string => requireEnv("ANALYSIS_MODEL"); // gemini-3.8-flash
 
 export const tryonImageModel = (): string => requireEnv("TRYON_MODEL"); // gemini-3.1-flash-image
 export const tryonExperimentalImageModel = (): string => requireEnv("TRYON_MODEL_EXPERIMENTAL"); // gemini-3-pro-image
