@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_cache_manager/flutter_cache_manager.dart' as fcm;
-import 'package:tryzeon/core/domain/services/image_file_cache.dart';
+import 'package:tryzeon/core/data/services/image_file_cache.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 
 class ImageFileCacheImpl implements ImageFileCache {

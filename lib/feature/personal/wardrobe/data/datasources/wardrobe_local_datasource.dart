@@ -3,9 +3,9 @@ import 'dart:typed_data';
 
 import 'package:isar_community/isar.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
+import 'package:tryzeon/core/data/services/image_file_cache.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
-import 'package:tryzeon/core/domain/services/image_file_cache.dart';
 import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/collections/wardrobe_item_cache.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';

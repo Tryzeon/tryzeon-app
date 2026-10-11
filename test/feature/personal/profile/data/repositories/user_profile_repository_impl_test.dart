@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/data/collections/cache_entry.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
-import 'package:tryzeon/core/domain/services/image_file_cache.dart';
+import 'package:tryzeon/core/data/services/image_file_cache.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/body_measurements/domain/entities/body_measurements.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';

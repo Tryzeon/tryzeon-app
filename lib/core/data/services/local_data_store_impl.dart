@@ -1,5 +1,5 @@
+import 'package:tryzeon/core/data/services/image_file_cache.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
-import 'package:tryzeon/core/domain/services/image_file_cache.dart';
 import 'package:tryzeon/core/domain/services/local_data_store.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';

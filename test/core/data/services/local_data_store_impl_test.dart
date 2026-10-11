@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
+import 'package:tryzeon/core/data/services/image_file_cache.dart';
 import 'package:tryzeon/core/data/services/local_data_store_impl.dart';
-import 'package:tryzeon/core/domain/services/image_file_cache.dart';
 
 import '../../../support/isar_test_harness.dart';
 
