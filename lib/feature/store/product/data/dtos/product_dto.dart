@@ -36,6 +36,7 @@ class ProductDto {
   factory ProductDto.fromJson(final Map<String, dynamic> json) =>
       _$ProductDtoFromJson(json);
 
+  @JsonKey(includeToJson: false)
   final String storeId;
   final String name;
   final String categoryId;
@@ -44,6 +45,7 @@ class ProductDto {
   final double price;
   @JsonKey(defaultValue: <String>[])
   final List<String> imagePaths;
+  @JsonKey(includeToJson: false)
   final String id;
   @JsonKey(unknownEnumValue: ProductStatus.active)
   final ProductStatus? status;

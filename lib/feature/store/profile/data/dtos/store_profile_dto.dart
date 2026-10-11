@@ -7,7 +7,8 @@ part 'store_profile_dto.g.dart';
 
 /// [explicitToJson] keeps the nested order contacts plain maps rather than
 /// [StoreOrderContactDto] instances, so `jsonDiff` can compare them
-/// structurally instead of falling back to identity equality.
+/// structurally instead of falling back to identity equality. [toJson] is the
+/// update payload, so server-owned columns are left out of it.
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class StoreProfileDto {
   const StoreProfileDto({
@@ -28,7 +29,9 @@ class StoreProfileDto {
   factory StoreProfileDto.fromJson(final Map<String, dynamic> json) =>
       _$StoreProfileDtoFromJson(json);
 
+  @JsonKey(includeToJson: false)
   final String id;
+  @JsonKey(includeToJson: false)
   final String ownerId;
   final String name;
   @JsonKey(includeToJson: false)

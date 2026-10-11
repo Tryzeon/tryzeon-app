@@ -6,7 +6,8 @@ part 'product_size_dto.g.dart';
 
 /// [explicitToJson] serializes nested garment measurements and body measurement
 /// ranges as plain maps, so `jsonDiff` can compare them structurally instead of
-/// falling back to identity equality.
+/// falling back to identity equality. [toJson] is the update payload, so
+/// server-owned columns are left out of it.
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class ProductSizeDto {
   const ProductSizeDto({
@@ -22,12 +23,16 @@ class ProductSizeDto {
   factory ProductSizeDto.fromJson(final Map<String, dynamic> json) =>
       _$ProductSizeDtoFromJson(json);
 
+  @JsonKey(includeToJson: false)
   final String id;
+  @JsonKey(includeToJson: false)
   final String productId;
   final String name;
   final GarmentMeasurementsDto? garmentMeasurements;
   final BodyMeasurementRangesDto? bodyMeasurementRanges;
+  @JsonKey(includeToJson: false)
   final DateTime createdAt;
+  @JsonKey(includeToJson: false)
   final DateTime updatedAt;
 
   Map<String, dynamic> toJson() => _$ProductSizeDtoToJson(this);

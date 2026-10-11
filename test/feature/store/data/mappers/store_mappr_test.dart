@@ -85,4 +85,46 @@ void main() {
     expect(json['logo_path'], 's1/logo.png');
     expect(json.containsKey('logo_url'), isFalse);
   });
+
+  test('update payloads leave out server-owned columns', () {
+    final product = mappr.convert<ProductDto, Product>(
+      ProductDto.fromJson({
+        ...productRow(),
+        'product_sizes': [
+          {
+            'id': 'm',
+            'product_id': 'p1',
+            'name': 'M',
+            'created_at': '2026-01-01T00:00:00Z',
+            'updated_at': '2026-01-01T00:00:00Z',
+          },
+        ],
+      }),
+    );
+    final profile = mappr.convert<StoreProfileDto, StoreProfile>(
+      StoreProfileDto.fromJson(profileRow()),
+    );
+
+    final productJson = mappr.convert<Product, ProductDto>(product).toJson();
+    final sizeJson = mappr
+        .convert<ProductSize, ProductSizeDto>(product.sizes!.single)
+        .toJson();
+    final profileJson = mappr
+        .convert<StoreProfile, StoreProfileDto>(profile)
+        .toJson();
+
+    expect(
+      productJson.keys,
+      isNot(anyOf(contains('id'), contains('store_id'))),
+    );
+    expect(sizeJson.keys, [
+      'name',
+      'garment_measurements',
+      'body_measurement_ranges',
+    ]);
+    expect(
+      profileJson.keys,
+      isNot(anyOf(contains('id'), contains('owner_id'))),
+    );
+  });
 }

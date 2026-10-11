@@ -29,13 +29,9 @@ class StoreProfileRemoteDataSource {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();
 
-    final json = Map<String, dynamic>.from(changes)
-      ..remove('id')
-      ..remove('owner_id');
-
     await _supabaseClient
         .from(_storeProfileTable)
-        .update(json)
+        .update(changes)
         .eq('owner_id', user.id)
         .select('id')
         .single();

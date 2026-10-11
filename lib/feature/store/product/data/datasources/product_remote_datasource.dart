@@ -47,13 +47,9 @@ class ProductRemoteDataSource {
     final String productId,
     final Map<String, dynamic> changes,
   ) async {
-    final json = Map<String, dynamic>.from(changes)
-      ..remove('id')
-      ..remove('store_id');
-
     await _supabaseClient
         .from(_productsTable)
-        .update(json)
+        .update(changes)
         .eq('id', productId)
         .select('id')
         .single();
@@ -75,15 +71,9 @@ class ProductRemoteDataSource {
     final String sizeId,
     final Map<String, dynamic> changes,
   ) async {
-    final json = Map<String, dynamic>.from(changes)
-      ..remove('id')
-      ..remove('product_id')
-      ..remove('created_at')
-      ..remove('updated_at');
-
     await _supabaseClient
         .from(_productSizesTable)
-        .update(json)
+        .update(changes)
         .eq('id', sizeId);
   }
 }
