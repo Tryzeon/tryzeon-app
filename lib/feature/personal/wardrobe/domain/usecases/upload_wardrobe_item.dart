@@ -7,19 +7,18 @@ import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type
 import 'package:typed_result/typed_result.dart';
 import 'package:uuid/uuid.dart';
 
-import '../entities/wardrobe_capacity.dart';
 import '../repositories/wardrobe_repository.dart';
 import '../services/wardrobe_image_storage.dart';
 
 part 'upload_wardrobe_item.freezed.dart';
 
 @freezed
-sealed class CreateWardrobeItemParams with _$CreateWardrobeItemParams {
-  const factory CreateWardrobeItemParams({
+sealed class UploadWardrobeItemParams with _$UploadWardrobeItemParams {
+  const factory UploadWardrobeItemParams({
     required final File image,
     required final GarmentType garmentType,
     @Default([]) final List<String> tags,
-  }) = _CreateWardrobeItemParams;
+  }) = _UploadWardrobeItemParams;
 }
 
 class UploadWardrobeItem {
@@ -33,14 +32,9 @@ class UploadWardrobeItem {
   final WardrobeImageStorage _imageStorage;
   static const _uuid = Uuid();
 
-  Future<Result<void, Failure>> call({
-    required final CreateWardrobeItemParams params,
-    required final WardrobeCapacity capacity,
-  }) async {
-    if (capacity.isFull) {
-      return const Err(ValidationFailure());
-    }
-
+  Future<Result<void, Failure>> call(
+    final UploadWardrobeItemParams params,
+  ) async {
     final uploaded = await _imageStorage.upload(
       image: params.image,
       garmentType: params.garmentType,

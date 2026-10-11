@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
-import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_capacity.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/repositories/wardrobe_repository.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/services/wardrobe_image_storage.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/delete_wardrobe_item.dart';
@@ -69,25 +68,11 @@ void main() {
     UploadWardrobeItem build() =>
         UploadWardrobeItem(repository: repository, imageStorage: imageStorage);
     Future<Result<void, Failure>> upload() => build()(
-      params: CreateWardrobeItemParams(
+      UploadWardrobeItemParams(
         image: File('a.jpg'),
         garmentType: GarmentType.top,
       ),
-      capacity: const WardrobeCapacity(used: 0, limit: 10),
     );
-
-    test('a full wardrobe uploads nothing', () async {
-      final result = await build()(
-        params: CreateWardrobeItemParams(
-          image: File('a.jpg'),
-          garmentType: GarmentType.top,
-        ),
-        capacity: const WardrobeCapacity(used: 10, limit: 10),
-      );
-
-      expect(result.getError(), isA<ValidationFailure>());
-      expect(repository.createdImagePath, isNull);
-    });
 
     test('creates the item with the uploaded path', () async {
       final result = await upload();

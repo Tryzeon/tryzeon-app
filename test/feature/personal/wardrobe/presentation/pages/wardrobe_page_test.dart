@@ -106,18 +106,6 @@ void main() {
     },
   );
 
-  testWidgets('a full wardrobe offers the upgrade instead of the picker', (
-    final tester,
-  ) async {
-    await pumpPage(tester, limit: 4);
-
-    await tester.tap(find.byType(FloatingActionButton));
-    await tester.pump();
-    await tester.pump(AppDuration.slow);
-
-    expect(find.text('衣櫃已達上限'), findsOneWidget);
-  });
-
   testWidgets('long-press adds the card and opens the dock; tap toggles', (
     final tester,
   ) async {

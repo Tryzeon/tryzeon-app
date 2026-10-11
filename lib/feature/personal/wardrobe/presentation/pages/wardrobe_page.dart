@@ -15,7 +15,6 @@ import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type
 import 'package:tryzeon/feature/common/garment_type/presentation/garment_type_display.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/actions/wardrobe_outfit_actions.dart';
-import 'package:tryzeon/feature/personal/wardrobe/presentation/dialogs/wardrobe_full_dialog.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 
 import '../sheets/upload_wardrobe_item_sheet.dart';
@@ -48,11 +47,6 @@ class WardrobePage extends HookConsumerWidget {
 
     // 4. Actions
     Future<void> showUploadSheet() async {
-      if (capacity?.isFull ?? false) {
-        await showWardrobeFullDialog(context);
-        return;
-      }
-
       final File? image = await ImagePickerHelper.pickImage(context);
 
       if (image != null && context.mounted) {

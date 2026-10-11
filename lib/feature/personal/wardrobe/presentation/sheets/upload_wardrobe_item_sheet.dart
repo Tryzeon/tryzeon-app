@@ -116,7 +116,7 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
       if (!feedbackContext.mounted) return;
 
       final failure = result.getError()!;
-      if (failure is ValidationFailure) {
+      if (failure is WardrobeFullFailure) {
         showWardrobeFullDialog(feedbackContext);
       } else {
         TopNotification.show(

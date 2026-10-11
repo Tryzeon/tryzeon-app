@@ -159,14 +159,14 @@ void main() {
     await drainToasts(tester);
   });
 
-  testWidgets('still shows the full-wardrobe dialog after a drag dismiss', (
+  testWidgets('a full wardrobe offers the upgrade, even after a drag dismiss', (
     final tester,
   ) async {
     await open(tester);
 
     await pickPantsAndUpload(tester);
     await dismissByDrag(tester);
-    edit.uploadResult.complete(const Err(ValidationFailure()));
+    edit.uploadResult.complete(const Err(WardrobeFullFailure()));
     await settle(tester);
 
     expect(find.text('衣櫃已達上限'), findsOneWidget);

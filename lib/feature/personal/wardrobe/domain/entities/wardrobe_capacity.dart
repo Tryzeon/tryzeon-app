@@ -13,8 +13,6 @@ sealed class WardrobeCapacity with _$WardrobeCapacity {
 
   static const double _nearLimitRatio = 0.9;
 
-  bool get isFull => used >= limit;
-
   bool get isNearLimit => used >= limit * _nearLimitRatio;
 
   double get usage => limit <= 0 ? 1 : (used / limit).clamp(0, 1);

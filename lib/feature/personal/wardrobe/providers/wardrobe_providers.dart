@@ -162,20 +162,17 @@ class WardrobeEditNotifier extends _$WardrobeEditNotifier {
     final Uint8List? replacementBytes,
   }) {
     return _write(() async {
-      final capacity = await ref.read(wardrobeCapacityProvider.future);
-
       final tempFile = replacementBytes == null
           ? null
           : await _writeTempPng(replacementBytes, basedOn: image);
 
       try {
         return await ref.read(uploadWardrobeItemUseCaseProvider)(
-          params: CreateWardrobeItemParams(
+          UploadWardrobeItemParams(
             image: tempFile ?? image,
             garmentType: garmentType,
             tags: tags,
           ),
-          capacity: capacity,
         );
       } finally {
         try {
