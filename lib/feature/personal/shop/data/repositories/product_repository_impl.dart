@@ -54,10 +54,11 @@ class ProductRepositoryImpl implements ProductRepository {
     final String storeId,
   ) async {
     try {
-      final responseMap = await _remoteDataSource.getStoreProfile(storeId);
-      final model = ShopStoreInfoDto.fromJson(responseMap);
-      final entity = _mappr.convert<ShopStoreInfoDto, ShopStoreInfo>(model);
-      return Ok(entity);
+      return Ok(
+        _mappr.convert<ShopStoreInfoDto, ShopStoreInfo>(
+          await _remoteDataSource.getStoreProfile(storeId),
+        ),
+      );
     } catch (e, stackTrace) {
       AppLogger.error('Failed to fetch store info for $storeId', e, stackTrace);
       return Err(mapExceptionToFailure(e));

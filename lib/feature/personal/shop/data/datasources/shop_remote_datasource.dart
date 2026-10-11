@@ -3,6 +3,7 @@ import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/feature/personal/shop/data/dtos/list_shop_products_request.dart';
 import 'package:tryzeon/feature/personal/shop/data/dtos/shop_product_dto.dart';
+import 'package:tryzeon/feature/personal/shop/data/dtos/shop_store_info_dto.dart';
 
 class ShopRemoteDataSource {
   ShopRemoteDataSource(this._supabaseClient);
@@ -45,16 +46,14 @@ class ShopRemoteDataSource {
 
   /// Both the uuid and the slug form back the same `/store/...` deep link, so
   /// existing uuid links keep working.
-  Future<Map<String, dynamic>> getStoreProfile(
-    final String storeIdOrSlug,
-  ) async {
+  Future<ShopStoreInfoDto> getStoreProfile(final String storeIdOrSlug) async {
     final column = _uuidPattern.hasMatch(storeIdOrSlug) ? 'id' : 'slug';
     final response = await _supabaseClient
         .from(_storeProfileTable)
         .select('id, name, slug, address, logo_path, channels')
         .eq(column, storeIdOrSlug)
         .single();
-    return response;
+    return ShopStoreInfoDto.fromJson(response);
   }
 
   static final _uuidPattern = RegExp(
