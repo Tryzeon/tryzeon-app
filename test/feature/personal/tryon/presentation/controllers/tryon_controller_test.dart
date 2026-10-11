@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
+import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
@@ -22,7 +23,6 @@ import 'package:tryzeon/feature/personal/tryon/presentation/controllers/tryon_co
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/providers/tryon_providers.dart';
-import 'package:tryzeon/feature/personal/usage/domain/entities/daily_usage.dart';
 import 'package:tryzeon/feature/personal/usage/providers/daily_usage_providers.dart';
 import 'package:typed_result/typed_result.dart';
 

@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:tryzeon/feature/personal/usage/domain/entities/daily_usage.dart';
+import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
 import 'tryon_mode.dart';
 
 part 'tryon_result.freezed.dart';

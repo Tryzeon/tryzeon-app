@@ -1,7 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
-import 'package:tryzeon/feature/personal/usage/data/dtos/daily_usage_dto.dart';
+import 'package:tryzeon/feature/common/daily_usage/data/dtos/daily_usage_dto.dart';
 
 class DailyUsageRemoteDataSource {
   DailyUsageRemoteDataSource(this._supabase);

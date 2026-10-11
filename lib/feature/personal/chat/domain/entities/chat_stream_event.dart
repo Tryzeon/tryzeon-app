@@ -1,8 +1,8 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
-import 'package:tryzeon/feature/personal/usage/domain/entities/daily_usage.dart';
 
 part 'chat_stream_event.freezed.dart';
 

@@ -1,5 +1,5 @@
 import 'package:tryzeon/core/error/failures.dart';
-import 'package:tryzeon/feature/personal/usage/domain/entities/daily_usage.dart';
+import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
 import 'package:tryzeon/feature/personal/usage/domain/repositories/daily_usage_repository.dart';
 import 'package:typed_result/typed_result.dart';
 

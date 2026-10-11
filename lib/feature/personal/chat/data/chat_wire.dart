@@ -2,11 +2,11 @@ import 'dart:convert';
 
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/common/daily_usage/data/mappers/daily_usage_payload.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_stream_event.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
 import 'package:tryzeon/feature/personal/shop/shop.dart';
-import 'package:tryzeon/feature/personal/usage/usage.dart';
 import 'package:tryzeon/feature/personal/wardrobe/wardrobe.dart';
 
 Map<String, dynamic> messageToWire(final ChatMessage m) => {

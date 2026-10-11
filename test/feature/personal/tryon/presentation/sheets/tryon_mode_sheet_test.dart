@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/core/modules/revenue_cat/providers/revenue_cat_providers.dart';
+import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
 import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_preferences.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
 import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription_capabilities.dart';
@@ -13,7 +14,6 @@ import 'package:tryzeon/feature/personal/subscription/providers/subscription_cap
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_engine.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/sheets/tryon_mode_sheet.dart';
-import 'package:tryzeon/feature/personal/usage/domain/entities/daily_usage.dart';
 import 'package:tryzeon/feature/personal/usage/providers/daily_usage_providers.dart';
 import 'package:typed_result/typed_result.dart';
 

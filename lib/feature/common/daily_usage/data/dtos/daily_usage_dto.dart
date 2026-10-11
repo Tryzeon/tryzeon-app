@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:tryzeon/feature/personal/usage/domain/entities/daily_usage.dart';
+import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
 
 part 'daily_usage_dto.g.dart';
 

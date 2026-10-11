@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
 import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription_capabilities.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/utils/subscription_format.dart';
-import 'package:tryzeon/feature/personal/usage/domain/entities/daily_usage.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_capacity.dart';
 
 class SubscriptionUsageCard extends StatelessWidget {

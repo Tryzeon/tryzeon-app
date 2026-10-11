@@ -1,11 +1,11 @@
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/common/daily_usage/data/mappers/daily_usage_payload.dart';
 import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_function_request.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_request.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_repository.dart';
-import 'package:tryzeon/feature/personal/usage/usage.dart';
 import 'package:typed_result/typed_result.dart';
 
 class TryonRepositoryImpl implements TryonRepository {
