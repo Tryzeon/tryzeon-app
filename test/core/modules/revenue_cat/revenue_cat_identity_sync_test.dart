@@ -6,12 +6,12 @@ import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/auth_identity/domain/services/auth_identity_service.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
-import 'package:tryzeon/core/modules/revenue_cat/domain/repositories/revenue_cat_repository.dart';
+import 'package:tryzeon/core/modules/revenue_cat/domain/services/subscription_entitlement_service.dart';
 import 'package:tryzeon/core/modules/revenue_cat/providers/revenue_cat_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
-class _FakeRevenueCatRepository implements RevenueCatRepository {
-  _FakeRevenueCatRepository({this.logInFailures = 0});
+class _FakeEntitlementService implements SubscriptionEntitlementService {
+  _FakeEntitlementService({this.logInFailures = 0});
 
   int logInFailures;
   final loggedInUserIds = <String>[];
@@ -34,8 +34,7 @@ class _FakeRevenueCatRepository implements RevenueCatRepository {
   }
 
   @override
-  Stream<AppSubscriptionEntitlement> watchAppSubscriptionEntitlement() =>
-      const Stream.empty();
+  Stream<AppSubscriptionEntitlement> watchEntitlement() => const Stream.empty();
 }
 
 class _FakeAuthIdentityService implements AuthIdentityService {
@@ -49,12 +48,12 @@ class _FakeAuthIdentityService implements AuthIdentityService {
 
 void main() {
   late StreamController<String?> authUserIds;
-  late _FakeRevenueCatRepository repository;
+  late _FakeEntitlementService repository;
 
   void build() {
     final container = ProviderContainer(
       overrides: [
-        revenueCatRepositoryProvider.overrideWithValue(repository),
+        subscriptionEntitlementServiceProvider.overrideWithValue(repository),
         authIdentityServiceProvider.overrideWithValue(
           _FakeAuthIdentityService(authUserIds.stream),
         ),
@@ -81,7 +80,7 @@ void main() {
   test(
     'repeated events for the same user id do not call logIn again',
     () async {
-      repository = _FakeRevenueCatRepository();
+      repository = _FakeEntitlementService();
       build();
 
       authUserIds.add('user-a');
@@ -96,7 +95,7 @@ void main() {
   test(
     'a failed logIn retries on the next auth event with the same user id',
     () async {
-      repository = _FakeRevenueCatRepository(logInFailures: 1);
+      repository = _FakeEntitlementService(logInFailures: 1);
       build();
 
       authUserIds.add('user-a');
@@ -113,7 +112,7 @@ void main() {
   );
 
   test('retrying stops once it succeeds', () async {
-    repository = _FakeRevenueCatRepository(logInFailures: 1);
+    repository = _FakeEntitlementService(logInFailures: 1);
     build();
 
     authUserIds.add('user-a');
@@ -129,7 +128,7 @@ void main() {
   test(
     'signing out and back in to the same account calls logIn again',
     () async {
-      repository = _FakeRevenueCatRepository();
+      repository = _FakeEntitlementService();
       build();
 
       authUserIds.add('user-a');
@@ -147,7 +146,7 @@ void main() {
   test(
     'starting up signed out does not logOut an anonymous RevenueCat',
     () async {
-      repository = _FakeRevenueCatRepository();
+      repository = _FakeEntitlementService();
       build();
 
       authUserIds.add(null);
@@ -160,7 +159,7 @@ void main() {
   test(
     'switching accounts does not drop the user that arrives later',
     () async {
-      repository = _FakeRevenueCatRepository();
+      repository = _FakeEntitlementService();
       build();
 
       authUserIds

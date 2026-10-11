@@ -1,16 +1,18 @@
 import 'dart:async';
 
+import 'package:flutter/services.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
-import 'package:tryzeon/core/modules/revenue_cat/domain/repositories/revenue_cat_repository.dart';
+import 'package:tryzeon/core/modules/revenue_cat/domain/services/subscription_entitlement_service.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:typed_result/typed_result.dart';
 
-class RevenueCatRepositoryImpl implements RevenueCatRepository {
+class SubscriptionEntitlementServiceImpl
+    implements SubscriptionEntitlementService {
   @override
-  Stream<AppSubscriptionEntitlement> watchAppSubscriptionEntitlement() {
+  Stream<AppSubscriptionEntitlement> watchEntitlement() {
     final controller = StreamController<AppSubscriptionEntitlement>();
 
     void emit(final CustomerInfo customerInfo) {
@@ -32,7 +34,7 @@ class RevenueCatRepositoryImpl implements RevenueCatRepository {
               stackTrace,
             );
             if (!controller.isClosed) {
-              controller.addError(UnknownFailure(e.toString()), stackTrace);
+              controller.addError(_toFailure(e), stackTrace);
             }
           }),
         );
@@ -56,7 +58,7 @@ class RevenueCatRepositoryImpl implements RevenueCatRepository {
         e,
         stackTrace,
       );
-      return Err(UnknownFailure(e.toString()));
+      return Err(_toFailure(e));
     }
   }
 
@@ -67,8 +69,21 @@ class RevenueCatRepositoryImpl implements RevenueCatRepository {
       return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to log out from RevenueCat', e, stackTrace);
-      return Err(UnknownFailure(e.toString()));
+      return Err(_toFailure(e));
     }
+  }
+
+  /// The SDK reports every failure as a [PlatformException] whose code indexes
+  /// [PurchasesErrorCode]; anything else goes through the shared mapping.
+  Failure _toFailure(final Object e) {
+    if (e is PlatformException && int.tryParse(e.code) != null) {
+      return switch (PurchasesErrorHelper.getErrorCode(e)) {
+        PurchasesErrorCode.networkError ||
+        PurchasesErrorCode.offlineConnectionError => const NetworkFailure(),
+        _ => const ServerFailure(),
+      };
+    }
+    return mapExceptionToFailure(e);
   }
 
   AppSubscriptionEntitlement _mapToEntitlement(

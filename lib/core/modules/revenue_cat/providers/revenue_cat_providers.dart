@@ -1,45 +1,23 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
-import 'package:tryzeon/core/modules/revenue_cat/data/repositories/revenue_cat_repository_impl.dart';
+import 'package:tryzeon/core/modules/revenue_cat/data/services/subscription_entitlement_service_impl.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
-import 'package:tryzeon/core/modules/revenue_cat/domain/repositories/revenue_cat_repository.dart';
-import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/log_in_revenue_cat.dart';
-import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/log_out_revenue_cat.dart';
-import 'package:tryzeon/core/modules/revenue_cat/domain/usecases/watch_app_subscription_entitlement.dart';
+import 'package:tryzeon/core/modules/revenue_cat/domain/services/subscription_entitlement_service.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:typed_result/typed_result.dart';
 
 part 'revenue_cat_providers.g.dart';
 
 @Riverpod(keepAlive: true)
-RevenueCatRepository revenueCatRepository(final Ref ref) {
-  return RevenueCatRepositoryImpl();
-}
-
-@riverpod
-WatchAppSubscriptionEntitlement watchAppSubscriptionEntitlementUseCase(
-  final Ref ref,
-) {
-  return WatchAppSubscriptionEntitlement(
-    ref.watch(revenueCatRepositoryProvider),
-  );
-}
-
-@riverpod
-LogInRevenueCat logInRevenueCatUseCase(final Ref ref) {
-  return LogInRevenueCat(ref.watch(revenueCatRepositoryProvider));
-}
-
-@riverpod
-LogOutRevenueCat logOutRevenueCatUseCase(final Ref ref) {
-  return LogOutRevenueCat(ref.watch(revenueCatRepositoryProvider));
+SubscriptionEntitlementService subscriptionEntitlementService(final Ref ref) {
+  return SubscriptionEntitlementServiceImpl();
 }
 
 /// Kept alive so one RevenueCat listener backs the whole app: every screen reads
 /// the same entitlement and sees each change at once.
 @Riverpod(keepAlive: true)
 Stream<AppSubscriptionEntitlement> appSubscriptionEntitlement(final Ref ref) {
-  return ref.watch(watchAppSubscriptionEntitlementUseCaseProvider)();
+  return ref.watch(subscriptionEntitlementServiceProvider).watchEntitlement();
 }
 
 /// Keeps the RevenueCat App User ID in sync with the Supabase auth identity:
@@ -54,15 +32,14 @@ Stream<AppSubscriptionEntitlement> appSubscriptionEntitlement(final Ref ref) {
 /// the session whenever the first attempt fails.
 @Riverpod(keepAlive: true)
 void revenueCatIdentitySync(final Ref ref) {
-  final logIn = ref.watch(logInRevenueCatUseCaseProvider);
-  final logOut = ref.watch(logOutRevenueCatUseCaseProvider);
+  final service = ref.watch(subscriptionEntitlementServiceProvider);
 
   String? syncedUserId;
 
   Future<void> syncLogIn(final String userId) async {
     if (syncedUserId == userId) return;
 
-    final result = await logIn(userId);
+    final result = await service.logIn(userId);
     if (result.isFailure) {
       AppLogger.error(
         'RevenueCat login failed; retrying on the next auth event',
@@ -77,7 +54,7 @@ void revenueCatIdentitySync(final Ref ref) {
   Future<void> syncLogOut() async {
     if (syncedUserId == null) return;
 
-    final result = await logOut();
+    final result = await service.logOut();
     if (result.isFailure) {
       AppLogger.error(
         'RevenueCat logout failed; the customer stays linked',

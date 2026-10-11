@@ -4,14 +4,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
-import 'package:tryzeon/core/modules/revenue_cat/domain/repositories/revenue_cat_repository.dart';
+import 'package:tryzeon/core/modules/revenue_cat/domain/services/subscription_entitlement_service.dart';
 import 'package:tryzeon/core/modules/revenue_cat/providers/revenue_cat_providers.dart';
 import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription_capabilities.dart';
 import 'package:tryzeon/feature/personal/subscription/domain/repositories/subscription_capabilities_repository.dart';
 import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:typed_result/typed_result.dart';
 
-class _FakeRevenueCatRepository implements RevenueCatRepository {
+class _FakeEntitlementService implements SubscriptionEntitlementService {
   final _controller = StreamController<AppSubscriptionEntitlement>();
 
   void push(final AppSubscriptionTier tier) {
@@ -23,8 +23,7 @@ class _FakeRevenueCatRepository implements RevenueCatRepository {
   void pushError(final Failure failure) => _controller.addError(failure);
 
   @override
-  Stream<AppSubscriptionEntitlement> watchAppSubscriptionEntitlement() =>
-      _controller.stream;
+  Stream<AppSubscriptionEntitlement> watchEntitlement() => _controller.stream;
 
   @override
   Future<Result<void, Failure>> logIn(final String userId) async =>
@@ -56,19 +55,21 @@ class _FakeCapabilitiesRepository
 }
 
 void main() {
-  late _FakeRevenueCatRepository revenueCat;
+  late _FakeEntitlementService revenueCat;
   late _FakeCapabilitiesRepository capabilities;
   late ProviderContainer container;
 
   setUp(() {
-    revenueCat = _FakeRevenueCatRepository();
+    revenueCat = _FakeEntitlementService();
     capabilities = _FakeCapabilitiesRepository();
     container = ProviderContainer(
       // Mirrors `customRetry`: only NetworkFailure backs off, everything else
       // fails fast. The failures below are not network ones.
       retry: (final _, final _) => null,
       overrides: [
-        revenueCatRepositoryProvider.overrideWith((final ref) => revenueCat),
+        subscriptionEntitlementServiceProvider.overrideWith(
+          (final ref) => revenueCat,
+        ),
         subscriptionCapabilitiesRepositoryProvider.overrideWith(
           (final ref) => capabilities,
         ),
