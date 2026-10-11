@@ -6,6 +6,13 @@ import 'package:mime/mime.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide MultipartFile;
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/config/env.dart';
+import 'package:tryzeon/core/data/dtos/delete_images_request.dart';
+import 'package:tryzeon/core/data/dtos/presign_file_dto.dart';
+import 'package:tryzeon/core/data/dtos/presign_logo_request.dart';
+import 'package:tryzeon/core/data/dtos/presign_products_request.dart';
+import 'package:tryzeon/core/data/dtos/presign_products_response_dto.dart';
+import 'package:tryzeon/core/data/dtos/presigned_upload_dto.dart';
+import 'package:tryzeon/core/data/utils/decode_function_response.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 
@@ -30,22 +37,23 @@ class StoreImagesApi {
 
     final response = await _supabaseClient.functions.invoke(
       AppConstants.functionStoreImagesPresignLogo,
-      body: {
-        'storeId': storeId,
-        'contentType': contentType,
-        'contentLength': bytes.length,
-      },
+      body: PresignLogoRequest(
+        storeId: storeId,
+        contentType: contentType,
+        contentLength: bytes.length,
+      ).toJson(),
     );
-    final presign = Map<String, dynamic>.from(response.data as Map);
-    final key = presign['key'] as String;
-    final uploadUrl = presign['uploadUrl'] as String;
+    final presign = decodeFunctionResponse(
+      response.data,
+      PresignedUploadDto.fromJson,
+    );
 
     await _putToR2(
-      uploadUrl: uploadUrl,
+      uploadUrl: presign.uploadUrl,
       bytes: bytes,
       contentType: contentType,
     );
-    return key;
+    return presign.key;
   }
 
   Future<List<String>> uploadProductImages({
@@ -64,20 +72,22 @@ class StoreImagesApi {
 
     final response = await _supabaseClient.functions.invoke(
       AppConstants.functionStoreImagesPresignProducts,
-      body: {
-        'storeId': storeId,
-        'productId': productId,
-        'files': List.generate(
-          images.length,
-          (final i) => {
-            'contentType': contentTypes[i],
-            'contentLength': allBytes[i].length,
-          },
-        ),
-      },
+      body: PresignProductsRequest(
+        storeId: storeId,
+        productId: productId,
+        files: [
+          for (var i = 0; i < images.length; i++)
+            PresignFileDto(
+              contentType: contentTypes[i],
+              contentLength: allBytes[i].length,
+            ),
+        ],
+      ).toJson(),
     );
-    final presign = Map<String, dynamic>.from(response.data as Map);
-    final items = (presign['items'] as List).cast<Map<String, dynamic>>();
+    final items = decodeFunctionResponse(
+      response.data,
+      PresignProductsResponseDto.fromJson,
+    ).items;
     if (items.length != images.length) {
       throw const ServerException(
         'store-images: presign returned wrong number of items',
@@ -89,11 +99,11 @@ class StoreImagesApi {
       return await Future.wait(
         List.generate(images.length, (final i) async {
           await _putToR2(
-            uploadUrl: items[i]['uploadUrl'] as String,
+            uploadUrl: items[i].uploadUrl,
             bytes: allBytes[i],
             contentType: contentTypes[i],
           );
-          return items[i]['key'] as String;
+          return items[i].key;
         }),
         cleanUp: uploadedKeys.add,
       );
@@ -120,7 +130,7 @@ class StoreImagesApi {
     if (keys.isEmpty) return;
     await _supabaseClient.functions.invoke(
       AppConstants.functionStoreImagesDelete,
-      body: {'storeId': storeId, 'keys': keys},
+      body: DeleteImagesRequest(storeId: storeId, keys: keys).toJson(),
     );
   }
 

@@ -4,9 +4,12 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/data/utils/decode_function_response.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/core/utils/crypto_utils.dart';
+import 'package:tryzeon/feature/auth/data/dtos/line_auth_request.dart';
+import 'package:tryzeon/feature/auth/data/dtos/line_auth_response_dto.dart';
 
 class AuthRemoteDataSource {
   AuthRemoteDataSource(this._supabase);
@@ -122,16 +125,14 @@ class AuthRemoteDataSource {
 
       final response = await _supabase.functions.invoke(
         AppConstants.functionLineAuth,
-        body: {'idToken': idToken, 'nonce': rawNonce},
+        body: LineAuthRequest(idToken: idToken, nonce: rawNonce).toJson(),
+      );
+      final session = decodeFunctionResponse(
+        response.data,
+        LineAuthResponseDto.fromJson,
       );
 
-      final data = response.data;
-      final refreshToken = data is Map ? data['refreshToken'] as String? : null;
-      if (refreshToken == null) {
-        throw const ServerException();
-      }
-
-      await _supabase.auth.setSession(refreshToken);
+      await _supabase.auth.setSession(session.refreshToken);
     } on PlatformException catch (e, stackTrace) {
       AppLogger.error(
         'LINE sign-in PlatformException '
