@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
+import 'package:tryzeon/feature/personal/onboarding/domain/usecases/complete_onboarding.dart';
 import 'package:tryzeon/feature/personal/onboarding/providers/personal_onboarding_providers.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
@@ -68,11 +69,13 @@ class OnboardingNotifier extends _$OnboardingNotifier {
 
     final useCase = ref.read(completeOnboardingUseCaseProvider);
     final result = await useCase(
-      gender: state.gender,
-      ageRange: state.ageRange,
-      stylePreferences: state.stylePreferences.isEmpty
-          ? null
-          : state.stylePreferences,
+      CompleteOnboardingParams(
+        gender: state.gender,
+        ageRange: state.ageRange,
+        stylePreferences: state.stylePreferences.isEmpty
+            ? null
+            : state.stylePreferences,
+      ),
     );
 
     state = state.copyWith(isSubmitting: false);
