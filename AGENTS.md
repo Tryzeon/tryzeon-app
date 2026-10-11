@@ -1,31 +1,27 @@
-# CLAUDE.md
+# AGENTS.md
 
 ## Working notes
 
 - Design/spec docs under `docs/superpowers/` are gitignored and intentionally NOT committed. Write them there for reference, but never `git add -f` or commit them.
-- Development in this project does not require creating a branch — make changes directly on `main` and commit there. The user manages these changes themselves.
-- Always propose the best-practice solution. Do not compromise the design to minimize change scope or migration effort — optimize for correctness and quality, not for avoiding churn.
+- The user manages commits themselves.
+- Always propose the best-practice, long-term solution. Do not compromise the design to minimize change scope or migration effort, and don't accept "do it this way for now, refactor later" — optimize for correctness and quality, not for avoiding churn.
 - Dart/Flutter conventions (theme, state management, errors, logging) live in `lib/CLAUDE.md`.
-- **No code comments by default:** write self-explanatory code instead. Only annotate a non-obvious trade-off or constraint a reader cannot infer from the code — never restate what a symbol already says. Match the surrounding file: if it has no comments, adding a field/function there adds none either.
+- **No code comments by default:** write self-explanatory code instead. Only annotate a non-obvious trade-off or constraint a reader cannot infer from the code — never restate what a symbol already says.
 - Jira tickets: use the `acli` CLI to fetch ticket details instead of asking the user to paste them.
 
 ## Engineering principles
 
 - **No backward-compatibility cruft:** delete the obsolete path outright instead of stacking a compatibility layer on top of it. This includes removed routes and URLs: no redirect or fallback for old links (e.g. links already sent in LINE messages) — update every in-repo reference and drop the route.
 - **Grow in layers:** build the smallest working end-to-end version first, then add layers on top. Never replace something that works with a half-finished version.
-- **Stay modular:** keep component responsibilities cleanly separated.
-- **Prefer mature wheels:** if an existing library reduces complexity, use it instead of reinventing it.
-- **Use what the project already depends on:** check the docs of existing dependencies before writing new code — don't rush to add a new package.
-- **Decide for the long term:** don't accept "let's do it this way for now and refactor later" solutions.
+- **Don't reinvent:** check the docs of existing dependencies first; if none fits, prefer a mature library over hand-rolled code.
 
 ## Common Commands
 
 ```bash
 dart run build_runner build --delete-conflicting-outputs   # codegen: riverpod, freezed, json, isar, auto_mappr, envied
-dart run build_runner watch  --delete-conflicting-outputs  # incremental codegen during dev
 ```
 
-Code generation is required after editing any annotated file (`@riverpod`, `@freezed`, `@JsonSerializable`, Isar `@collection`, `@AutoMappr`, `@Envied`). If imports of `*.g.dart` / `*.freezed.dart` are missing, run build_runner.
+Code generation is required after editing any annotated file (`@riverpod`, `@freezed`, `@JsonSerializable`, Isar `@collection`, `@AutoMappr`, `@Envied`).
 
 `Env` (`lib/core/config/env.dart`) is generated from a `.env` file via `envied`. The `.env` file must define all four keys or codegen fails: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `REVENUE_CAT_API_KEY`, `R2_PUBLIC_IMAGES_BASE_URL`.
 
@@ -45,7 +41,7 @@ Every feature follows Clean Architecture. When adding code, these are hard rules
   `Err` means nothing was written remotely: after a successful remote write, a cache save/refresh failure logs and invalidates the cache, and the call returns `Ok`.
 - **Module boundaries:** a feature may depend on another feature's `domain/` (entities, usecases, repository interfaces) or on `feature/common/*` — never on another feature's `data/` internals. If two features need the same DTO, promote the concept to `common/` or expose it through a domain contract. A feature may publish one public-API barrel `<feature>.dart` exporting its domain entities and decoders for its own wire rows (e.g. `decodeShopProductRow`); other features import that barrel, never `data/**` directly.
 - **`feature/common/*` layout:** same nested layout as features (`domain/entities/`, not a flat `entities/` folder).
-- **`core/modules/*` use the service pattern, not repository + usecase** (template: `location`). These are infrastructure (location, short_link, analytics), not business features — abstract the capability behind an interface in `domain/services/`, put the implementation in `data/services/`, and keep domain types in `domain/entities/`. Consumers (providers, pages) depend on the interface, never the concrete impl or a raw datasource. Do NOT add a usecase layer here.
+- **`core/modules/*` use the service pattern, not repository + usecase** (template: `location`). These are infrastructure (location, analytics, auth_identity, revenue_cat), not business features — abstract the capability behind an interface in `domain/services/`, put the implementation in `data/services/`, and keep domain types in `domain/entities/`. Consumers (providers, pages) depend on the interface, never the concrete impl or a raw datasource. Do NOT add a usecase layer here.
 - **Constants:** every table name, storage bucket, edge-function name, RPC name, and route segment is a constant in `AppConstants` / `AppRoutes`. No raw strings at call sites.
 - **Exception mapping:** extend `mapExceptionToFailure` with typed `is` checks when introducing a new error source. Never match on `toString()` contents, and never swallow errors with a bare `catch (_)` — at minimum log via `AppLogger`. Catch in the data layer (repository / service impl) and return `Result`; service interfaces return `Result` too. Usecases never catch — they compose `Result`s.
 - **Isar cache invalidation:** a cached enum string that no longer decodes throws `CacheDecodeException` and the repository refetches that row, so renaming an enum value needs no bump. Bump `AppConstants.cacheSchemaVersion` in the same commit only for what strict decoding cannot see: adding or renaming an `@collection` field, or teaching the client an enum value the server already returns (old rows hold a tolerated fallback that still decodes cleanly). The bump wipes every collection, so it is not free.

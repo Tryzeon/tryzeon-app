@@ -1,6 +1,6 @@
 # Dart / Flutter conventions
 
-Architecture rules (layering, usecases, DTO boundary, module boundaries) live in the root `CLAUDE.md`.
+Architecture rules (layering, usecases, DTO boundary, module boundaries) live in the root `AGENTS.md`.
 
 ## State management
 
