@@ -3,9 +3,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/data/services/image_file_cache_impl.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
-import 'package:tryzeon/core/data/services/local_database_impl.dart';
+import 'package:tryzeon/core/data/services/local_data_store_impl.dart';
 import 'package:tryzeon/core/domain/services/image_file_cache.dart';
-import 'package:tryzeon/core/domain/services/local_database.dart';
+import 'package:tryzeon/core/domain/services/local_data_store.dart';
 import 'package:tryzeon/core/modules/analytics/data/datasources/analytics_remote_datasource.dart';
 import 'package:tryzeon/core/modules/analytics/data/dtos/analytics_event_dto.dart';
 import 'package:tryzeon/core/modules/analytics/data/mappers/analytics_mappr.dart';
@@ -63,8 +63,11 @@ IsarService isarService(final Ref ref) {
 }
 
 @Riverpod(keepAlive: true)
-LocalDatabase localDatabase(final Ref ref) {
-  return LocalDatabaseImpl(ref.watch(isarServiceProvider));
+LocalDataStore localDataStore(final Ref ref) {
+  return LocalDataStoreImpl(
+    ref.watch(isarServiceProvider),
+    ref.watch(imageFileCacheProvider),
+  );
 }
 
 @Riverpod(keepAlive: true)

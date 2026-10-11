@@ -76,8 +76,7 @@ SignOut signOutUseCase(final Ref ref) {
   return SignOut(
     authRepository: ref.watch(authRepositoryProvider),
     analyticsQueue: ref.watch(analyticsEventQueueProvider),
-    imageFileCache: ref.watch(imageFileCacheProvider),
-    localDatabase: ref.watch(localDatabaseProvider),
+    localDataStore: ref.watch(localDataStoreProvider),
     settingsRepository: ref.watch(settingsRepositoryProvider),
   );
 }

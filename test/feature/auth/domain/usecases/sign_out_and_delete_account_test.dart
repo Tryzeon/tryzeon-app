@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tryzeon/core/domain/services/image_file_cache.dart';
-import 'package:tryzeon/core/domain/services/local_database.dart';
+import 'package:tryzeon/core/domain/services/local_data_store.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/analytics/domain/entities/analytics_event.dart';
 import 'package:tryzeon/core/modules/analytics/domain/services/analytics_event_queue.dart';
@@ -54,26 +53,16 @@ class _FakeQueue implements AnalyticsEventQueue {
   void enqueue(final AnalyticsEvent event) => throw UnimplementedError();
 }
 
-class _FakeImageFileCache implements ImageFileCache {
-  _FakeImageFileCache(this._journal);
+class _FakeLocalDataStore implements LocalDataStore {
+  _FakeLocalDataStore(this._journal);
 
   final _Journal _journal;
 
   @override
-  Future<void> clear() async => _journal.steps.add('clearImageFileCache');
-
-  @override
-  dynamic noSuchMethod(final Invocation invocation) =>
-      throw UnimplementedError(invocation.memberName.toString());
-}
-
-class _FakeLocalDatabase implements LocalDatabase {
-  _FakeLocalDatabase(this._journal);
-
-  final _Journal _journal;
-
-  @override
-  Future<void> clear() async => _journal.steps.add('clearLocalDatabase');
+  Future<Result<void, Failure>> clear() async {
+    _journal.steps.add('clearLocalData');
+    return const Ok(null);
+  }
 }
 
 class _FakeSettingsRepository implements SettingsRepository {
@@ -105,8 +94,7 @@ void main() {
     signOut = SignOut(
       authRepository: authRepository,
       analyticsQueue: queue,
-      imageFileCache: _FakeImageFileCache(journal),
-      localDatabase: _FakeLocalDatabase(journal),
+      localDataStore: _FakeLocalDataStore(journal),
       settingsRepository: _FakeSettingsRepository(journal),
     );
   });
@@ -119,8 +107,7 @@ void main() {
       expect(journal.steps, [
         'flush',
         'signOut',
-        'clearImageFileCache',
-        'clearLocalDatabase',
+        'clearLocalData',
         'clearPreferences',
       ]);
     });
@@ -144,11 +131,7 @@ void main() {
         expect(result.getError(), const NetworkFailure());
         expect(
           journal.steps,
-          containsAll([
-            'clearImageFileCache',
-            'clearLocalDatabase',
-            'clearPreferences',
-          ]),
+          containsAll(['clearLocalData', 'clearPreferences']),
         );
       },
     );
