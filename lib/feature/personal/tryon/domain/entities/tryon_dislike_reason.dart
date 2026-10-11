@@ -1,3 +1,6 @@
+import 'package:json_annotation/json_annotation.dart';
+
+@JsonEnum(valueField: 'value')
 enum TryonDislikeReason {
   identityMismatch('identity_mismatch'),
   garmentUnfaithful('garment_unfaithful'),
