@@ -1,3 +1,4 @@
+import { ownsUserObjectPath } from "./storage.ts";
 import { nonEmptyStr, textArrayValues } from "./text.ts";
 import type { Enums } from "./database.types.ts";
 import type { DbClient } from "./supabase.ts";
@@ -16,6 +17,12 @@ export interface UserProfile {
   stylePreferences: string[];
 }
 
+/**
+ * `avatar_path` is client-written free text, and the LINE adapter reads it on
+ * the admin client with no storage policy beneath it. A path outside the
+ * user's own folder is therefore reported as "no avatar" rather than resolved,
+ * mirroring the `user_profiles_avatar_path_owner_check` constraint.
+ */
 export async function getAvatarPath(
   client: DbClient,
   userId: string,
@@ -28,7 +35,8 @@ export async function getAvatarPath(
   if (error) {
     throw new Error(`${AVATAR_PATH_COLUMN} lookup failed: ${error.message}`);
   }
-  return nonEmptyStr(data?.[AVATAR_PATH_COLUMN]);
+  const path = data?.[AVATAR_PATH_COLUMN]?.trim();
+  return ownsUserObjectPath(userId, path) ? path : null;
 }
 
 export async function getUserProfile(

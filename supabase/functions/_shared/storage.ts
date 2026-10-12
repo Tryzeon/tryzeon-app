@@ -27,3 +27,7 @@ export function isR2PublicKey(path: string): boolean {
 export function publicImageUrl(baseUrl: string, key: string): string {
   return `${baseUrl.replace(/\/+$/, "")}/${key}`;
 }
+
+export function ownsUserObjectPath(userId: string, path: unknown): path is string {
+  return typeof path === "string" && path.startsWith(`${userId}/`);
+}

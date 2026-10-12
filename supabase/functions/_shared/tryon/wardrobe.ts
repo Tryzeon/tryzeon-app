@@ -1,3 +1,4 @@
+import { ownsUserObjectPath } from "../storage.ts";
 import { isUuid, textArrayValues } from "../text.ts";
 import { ValidationError } from "./errors.ts";
 import { garmentCategoryOf, LIMITS } from "./types.ts";
@@ -56,13 +57,8 @@ export async function resolveWardrobeGarment(
   }
 
   // One check for four outcomes, because separating them is what would leak.
-  //
-  // The row is the caller's, but `image_path` is client-written free text, so
-  // owning the row is not owning the object. Same folder rule the storage
-  // policy enforces, restated here because the LINE adapter reads through a
-  // client that has no policy beneath it.
   const path = trimmedString(data?.image_path);
-  if (!data || !path || !path.startsWith(`${userId}/`)) {
+  if (!data || !ownsUserObjectPath(userId, path)) {
     throw new ValidationError(
       `no wardrobe item for wardrobeItemId: ${wardrobeItemId}`,
     );

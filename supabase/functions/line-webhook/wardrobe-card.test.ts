@@ -189,6 +189,19 @@ Deno.test("fetchWardrobeRows binds the query to the asking user", async () => {
   assertEquals(inCalls, [["w1"]]);
 });
 
+Deno.test("SECURITY: fetchWardrobeRows neither signs nor returns an item whose image sits in another user's folder", async () => {
+  // image_path is client-written free text: owning the row is not owning the
+  // object. A row pointed at someone else's key must not become a 7-day URL.
+  const { admin, signCalls } = fakeAdmin(
+    [row(), row({ id: "w2", image_path: "u2/top/w2.png" })],
+    signedOk(["u1/top/w1.png"]),
+  );
+  const rows = await fetchWardrobeRows(admin, "u1", ["w1", "w2"]);
+
+  assertEquals(signCalls, [["u1/top/w1.png"]]);
+  assertEquals([...rows.keys()], ["w1"]);
+});
+
 Deno.test("fetchWardrobeRows signs the whole set in one call", async () => {
   const paths = ["u1/top/w1.png", "u1/top/w2.png"];
   const { admin, signCalls } = fakeAdmin(

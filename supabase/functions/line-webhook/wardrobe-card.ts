@@ -1,6 +1,6 @@
 import { fetchRowsByIds } from "../_shared/chat/hydrate.ts";
 import { textArrayValues } from "../_shared/text.ts";
-import { WARDROBE_IMAGES_BUCKET } from "../_shared/storage.ts";
+import { ownsUserObjectPath, WARDROBE_IMAGES_BUCKET } from "../_shared/storage.ts";
 import { CARD_COLOR } from "./card-kit.ts";
 import type { Enums, Tables } from "../_shared/database.types.ts";
 import type { DbClient } from "../_shared/supabase.ts";
@@ -155,7 +155,9 @@ async function signImageUrls(
 /**
  * `userId` bounds the query, and that is a security property rather than a
  * filter: this path runs on the admin client with no RLS beneath it, so without
- * the `.eq` an id the model quoted could name another sender's item.
+ * the `.eq` an id the model quoted could name another sender's item. It bounds
+ * the signing too: a row of theirs whose `image_path` names another user's
+ * folder is dropped before it can become a seven-day URL.
  * `fetchProductRows` needs no such parameter only because the catalog is public.
  */
 export async function fetchWardrobeRows(
@@ -163,18 +165,16 @@ export async function fetchWardrobeRows(
   userId: string,
   ids: string[],
 ): Promise<Map<string, LineWardrobeItem>> {
-  const raw = await fetchRowsByIds(
+  const owned = await fetchRowsByIds(
     admin.from("wardrobe_items").select(WARDROBE_CARD_SELECT).eq("user_id", userId),
     ids,
+    (row) => (ownsUserObjectPath(userId, row.image_path) ? row : null),
   );
 
-  const urls = await signImageUrls(
-    admin,
-    [...raw.values()].map((r) => r.image_path).filter((p) => typeof p === "string" && p.length > 0),
-  );
+  const urls = await signImageUrls(admin, [...owned.values()].map((r) => r.image_path));
 
   const rows = new Map<string, LineWardrobeItem>();
-  for (const [id, row] of raw) {
+  for (const [id, row] of owned) {
     const item = toLineWardrobeItem(row, urls.get(row.image_path));
     if (item) rows.set(id, item);
   }
