@@ -1,5 +1,4 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/modules/revenue_cat/providers/revenue_cat_providers.dart';
 import 'package:tryzeon/feature/personal/subscription/data/datasources/subscription_capabilities_local_datasource.dart';
@@ -15,7 +14,9 @@ part 'subscription_capabilities_provider.g.dart';
 @riverpod
 SubscriptionCapabilitiesRemoteDataSource
 subscriptionCapabilitiesRemoteDataSource(final Ref ref) {
-  return SubscriptionCapabilitiesRemoteDataSource(Supabase.instance.client);
+  return SubscriptionCapabilitiesRemoteDataSource(
+    ref.watch(supabaseClientProvider),
+  );
 }
 
 @riverpod

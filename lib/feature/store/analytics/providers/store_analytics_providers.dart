@@ -1,5 +1,4 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
@@ -36,7 +35,7 @@ class StoreAnalyticsFilter extends _$StoreAnalyticsFilter {
 ProductAnalyticsRemoteDataSource productAnalyticsRemoteDataSource(
   final Ref ref,
 ) {
-  return ProductAnalyticsRemoteDataSource(Supabase.instance.client);
+  return ProductAnalyticsRemoteDataSource(ref.watch(supabaseClientProvider));
 }
 
 @riverpod

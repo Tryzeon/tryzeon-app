@@ -1,5 +1,4 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
@@ -15,7 +14,7 @@ part 'product_category_providers.g.dart';
 
 @riverpod
 ProductCategoryRemoteDataSource productCategoryRemoteDataSource(final Ref ref) {
-  return ProductCategoryRemoteDataSource(Supabase.instance.client);
+  return ProductCategoryRemoteDataSource(ref.watch(supabaseClientProvider));
 }
 
 @riverpod

@@ -21,9 +21,12 @@ import 'package:tryzeon/core/modules/location/domain/services/location_service.d
 
 part 'core_providers.g.dart';
 
+@Riverpod(keepAlive: true)
+SupabaseClient supabaseClient(final Ref ref) => Supabase.instance.client;
+
 @riverpod
 AnalyticsRemoteDataSource analyticsRemoteDataSource(final Ref ref) {
-  return AnalyticsRemoteDataSource(Supabase.instance.client);
+  return AnalyticsRemoteDataSource(ref.watch(supabaseClientProvider));
 }
 
 @Riverpod(keepAlive: true)
@@ -83,5 +86,5 @@ CacheEntryLocalDataSource cacheEntryLocalDataSource(final Ref ref) {
 
 @Riverpod(keepAlive: true)
 AuthIdentityService authIdentityService(final Ref ref) {
-  return AuthIdentityServiceImpl(Supabase.instance.client.auth);
+  return AuthIdentityServiceImpl(ref.watch(supabaseClientProvider).auth);
 }

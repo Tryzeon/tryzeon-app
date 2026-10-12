@@ -1,5 +1,4 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/feature/auth/data/datasources/auth_local_datasource.dart';
 import 'package:tryzeon/feature/auth/data/datasources/auth_remote_datasource.dart';
@@ -36,7 +35,7 @@ bool isAuthenticated(final Ref ref) => ref.watch(currentUserIdProvider) != null;
 
 @riverpod
 AuthRemoteDataSource authRemoteDataSource(final Ref ref) {
-  return AuthRemoteDataSource(Supabase.instance.client);
+  return AuthRemoteDataSource(ref.watch(supabaseClientProvider));
 }
 
 @riverpod

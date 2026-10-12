@@ -1,5 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
@@ -13,7 +13,7 @@ part 'daily_usage_providers.g.dart';
 
 @riverpod
 DailyUsageRemoteDataSource dailyUsageRemoteDataSource(final Ref ref) =>
-    DailyUsageRemoteDataSource(Supabase.instance.client);
+    DailyUsageRemoteDataSource(ref.watch(supabaseClientProvider));
 
 @riverpod
 DailyUsageRepository dailyUsageRepository(final Ref ref) =>

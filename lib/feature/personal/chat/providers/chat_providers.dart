@@ -1,5 +1,4 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/feature/personal/chat/data/datasources/chat_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/chat/data/repositories/chat_repository_impl.dart';
@@ -13,7 +12,10 @@ part 'chat_providers.g.dart';
 
 @riverpod
 ChatRemoteDataSource chatRemoteDataSource(final Ref ref) {
-  return ChatRemoteDataSource(Supabase.instance.client, ref.watch(dioProvider));
+  return ChatRemoteDataSource(
+    ref.watch(supabaseClientProvider),
+    ref.watch(dioProvider),
+  );
 }
 
 @riverpod

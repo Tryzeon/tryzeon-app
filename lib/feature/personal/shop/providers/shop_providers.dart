@@ -1,5 +1,4 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
@@ -25,7 +24,7 @@ part 'shop_providers.g.dart';
 
 @riverpod
 ShopRemoteDataSource shopRemoteDataSource(final Ref ref) {
-  return ShopRemoteDataSource(Supabase.instance.client);
+  return ShopRemoteDataSource(ref.watch(supabaseClientProvider));
 }
 
 @riverpod

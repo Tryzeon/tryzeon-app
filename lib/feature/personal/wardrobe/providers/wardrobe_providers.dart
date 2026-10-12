@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
@@ -35,7 +34,7 @@ part 'wardrobe_providers.g.dart';
 
 @riverpod
 WardrobeRemoteDataSource wardrobeRemoteDataSource(final Ref ref) {
-  return WardrobeRemoteDataSource(Supabase.instance.client);
+  return WardrobeRemoteDataSource(ref.watch(supabaseClientProvider));
 }
 
 @riverpod
@@ -101,7 +100,7 @@ GetWardrobeItemImage getWardrobeItemImageUseCase(final Ref ref) {
 
 @riverpod
 LabelTagger labelTagger(final Ref ref) =>
-    LabelTaggerImpl(Supabase.instance.client);
+    LabelTaggerImpl(ref.watch(supabaseClientProvider));
 
 @Riverpod(keepAlive: true)
 BackgroundRemover backgroundRemover(final Ref ref) => BackgroundRemoverImpl();

@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
@@ -34,7 +33,7 @@ part 'personal_profile_providers.g.dart';
 
 @riverpod
 UserProfileRemoteDataSource userProfileRemoteDataSource(final Ref ref) {
-  return UserProfileRemoteDataSource(Supabase.instance.client);
+  return UserProfileRemoteDataSource(ref.watch(supabaseClientProvider));
 }
 
 @riverpod

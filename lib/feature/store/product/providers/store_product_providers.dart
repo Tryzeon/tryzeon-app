@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
@@ -45,7 +44,7 @@ part 'store_product_providers.g.dart';
 
 @riverpod
 ProductRemoteDataSource productRemoteDataSource(final Ref ref) {
-  return ProductRemoteDataSource(Supabase.instance.client);
+  return ProductRemoteDataSource(ref.watch(supabaseClientProvider));
 }
 
 @riverpod
@@ -208,7 +207,7 @@ Future<Product> productById(final Ref ref, final String productId) async {
 
 @riverpod
 ProductImageAnalyzer productImageAnalyzer(final Ref ref) =>
-    ProductImageAnalyzerImpl(Supabase.instance.client);
+    ProductImageAnalyzerImpl(ref.watch(supabaseClientProvider));
 
 @Riverpod(keepAlive: true)
 AnalyzeProductImage analyzeProductImageUseCase(final Ref ref) =>
@@ -231,7 +230,7 @@ Future<ProductImageAnalysis> productImageAnalysis(
 
 @riverpod
 SizeVoiceParser sizeVoiceParser(final Ref ref) =>
-    SizeVoiceParserImpl(Supabase.instance.client);
+    SizeVoiceParserImpl(ref.watch(supabaseClientProvider));
 
 @riverpod
 ParseSizeVoice parseSizeVoiceUseCase(final Ref ref) =>
