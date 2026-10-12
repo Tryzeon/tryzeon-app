@@ -7,10 +7,10 @@ import 'package:tryzeon/feature/personal/profile/data/mappers/profile_cache_conv
 
 import '../../../../feature/common/body_measurements/data/mappers/body_measurements_mappr.dart';
 import '../../../../feature/common/clothing_style/domain/entities/clothing_style.dart';
+import '../../../../feature/common/product_size/data/dtos/product_size_dto.dart';
 import '../../../../feature/common/product_size/data/mappers/body_measurement_ranges_mappr.dart';
 import '../../../../feature/common/product_size/data/mappers/garment_measurements_mappr.dart';
 import '../../../../feature/common/product_size/domain/entities/product_size.dart';
-import '../../../../feature/store/product/data/dtos/product_dto.dart';
 import '../../../common/store/data/dtos/store_order_contact_dto.dart';
 import '../../../common/store/domain/entities/store_channel.dart';
 import '../../../common/store/domain/entities/store_order_contact.dart';
