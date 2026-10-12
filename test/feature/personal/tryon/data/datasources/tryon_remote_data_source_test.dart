@@ -5,26 +5,7 @@ import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.d
 import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_function_request.dart';
 
-class _ThrowingFunctions implements FunctionsClient {
-  _ThrowingFunctions(this.error);
-
-  final FunctionException error;
-
-  @override
-  dynamic noSuchMethod(final Invocation invocation) =>
-      Future<FunctionResponse>.error(error);
-}
-
-class _FakeSupabase implements SupabaseClient {
-  _FakeSupabase(this.functions);
-
-  @override
-  final FunctionsClient functions;
-
-  @override
-  dynamic noSuchMethod(final Invocation invocation) =>
-      throw UnimplementedError(invocation.memberName.toString());
-}
+import '../../../../../support/fake_functions_client.dart';
 
 const _request = TryonFunctionRequest(
   generationId: 'g1',
@@ -36,7 +17,44 @@ const _request = TryonFunctionRequest(
 
 void main() {
   TryonRemoteDataSource dataSource(final FunctionException error) =>
-      TryonRemoteDataSource(_FakeSupabase(_ThrowingFunctions(error)));
+      TryonRemoteDataSource(
+        FakeSupabaseClient(FakeFunctionsClient(error: error)),
+      );
+
+  TryonRemoteDataSource answering(final Object? data) => TryonRemoteDataSource(
+    FakeSupabaseClient(FakeFunctionsClient(data: data)),
+  );
+
+  test('decodes the generated image and usage', () async {
+    final response = await answering({
+      'imageUrl': 'https://cdn/r.png',
+      'usage': {
+        'user_id': 'u1',
+        'usage_date': '2026-10-11',
+        'tryon_count': 1,
+        'chat_count': 0,
+        'video_count': 0,
+      },
+    }).tryon(_request);
+
+    expect(response.imageUrl, 'https://cdn/r.png');
+    expect(response.videoUrl, isNull);
+    expect(response.usage?.tryonCount, 1);
+  });
+
+  test('a malformed response surfaces as a ServerException', () async {
+    await expectLater(
+      answering({'imageUrl': 42}).tryon(_request),
+      throwsA(isA<ServerException>()),
+    );
+  });
+
+  test('a non-object response surfaces as a ServerException', () async {
+    await expectLater(
+      answering('oops').tryon(_request),
+      throwsA(isA<ServerException>()),
+    );
+  });
 
   test('a rate limit carries the usage snapshot it was sent with', () async {
     final call = dataSource(

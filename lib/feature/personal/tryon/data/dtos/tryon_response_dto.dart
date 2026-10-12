@@ -4,7 +4,7 @@ import 'package:tryzeon/feature/common/daily_usage/data/dtos/daily_usage_dto.dar
 part 'tryon_response_dto.g.dart';
 
 /// Server → Client wire response from the `tryon` edge function.
-@JsonSerializable(createToJson: false)
+@JsonSerializable(createToJson: false, checked: true)
 class TryonResponseDto {
   const TryonResponseDto({this.imageUrl, this.videoUrl, this.usage});
 
