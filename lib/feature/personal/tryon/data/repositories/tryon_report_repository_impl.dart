@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_report_remote_data_source.dart';
+import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_report_request.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_report_repository.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -17,7 +18,9 @@ class TryonReportRepositoryImpl implements TryonReportRepository {
   @override
   Future<Result<void, Failure>> report(final String tryonId) async {
     try {
-      await _remoteDataSource.report(tryonId);
+      await _remoteDataSource.report(
+        TryonReportRequest(tryonGenerationId: tryonId),
+      );
       return const Ok(null);
     } catch (e, stackTrace) {
       // One try-on takes one report, so a duplicate means an earlier attempt
