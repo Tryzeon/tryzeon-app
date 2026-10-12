@@ -37,9 +37,10 @@ class UploadWardrobeItem {
   Future<Result<void, Failure>> call(
     final UploadWardrobeItemParams params,
   ) async {
+    final id = _uuid.v4();
     final uploaded = await _imageStorage.upload(
+      itemId: id,
       image: params.image,
-      garmentType: params.garmentType,
       backgroundRemovedPng: params.backgroundRemovedPng,
     );
     if (uploaded.isFailure) return Err(uploaded.getError()!);
@@ -47,7 +48,7 @@ class UploadWardrobeItem {
 
     final created = await _repository.createWardrobeItem(
       NewWardrobeItem(
-        id: _uuid.v4(),
+        id: id,
         imagePath: imagePath,
         garmentType: params.garmentType,
         tags: params.tags,

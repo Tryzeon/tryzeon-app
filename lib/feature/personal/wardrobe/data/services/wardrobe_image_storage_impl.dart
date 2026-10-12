@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:path/path.dart' as p;
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
-import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_local_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/services/wardrobe_image_storage.dart';
@@ -18,19 +17,19 @@ class WardrobeImageStorageImpl implements WardrobeImageStorage {
 
   @override
   Future<Result<String, Failure>> upload({
+    required final String itemId,
     required final File image,
-    required final GarmentType garmentType,
     final Uint8List? backgroundRemovedPng,
   }) async {
     final String path;
     final Uint8List bytes;
     try {
       bytes = backgroundRemovedPng ?? await image.readAsBytes();
+      final extension = backgroundRemovedPng == null
+          ? p.extension(image.path).toLowerCase()
+          : '.png';
       path = await _remoteDataSource.uploadImage(
-        garmentType: garmentType.value,
-        fileName: backgroundRemovedPng == null
-            ? p.basename(image.path)
-            : '${p.basenameWithoutExtension(image.path)}.png',
+        fileName: '$itemId$extension',
         bytes: bytes,
       );
     } catch (e, stackTrace) {

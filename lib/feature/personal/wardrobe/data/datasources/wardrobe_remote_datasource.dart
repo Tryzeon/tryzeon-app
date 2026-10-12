@@ -72,14 +72,13 @@ class WardrobeRemoteDataSource {
   }
 
   Future<String> uploadImage({
-    required final String garmentType,
     required final String fileName,
     required final Uint8List bytes,
   }) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();
 
-    final imagePath = '${user.id}/$garmentType/$fileName';
+    final imagePath = '${user.id}/$fileName';
     final contentType = lookupMimeType(fileName);
 
     await _supabaseClient.storage

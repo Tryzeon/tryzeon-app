@@ -17,6 +17,7 @@ class _FakeRepository implements WardrobeRepository {
   Result<void, Failure> createResult = const Ok(null);
   Result<void, Failure> deleteResult = const Ok(null);
   String? createdImagePath;
+  String? createdId;
   final List<String> deletedIds = [];
 
   @override
@@ -24,6 +25,7 @@ class _FakeRepository implements WardrobeRepository {
     final NewWardrobeItem item,
   ) async {
     createdImagePath = item.imagePath;
+    createdId = item.id;
     return createResult;
   }
 
@@ -41,15 +43,17 @@ class _FakeRepository implements WardrobeRepository {
 class _FakeImageStorage implements WardrobeImageStorage {
   final List<String> deleted = [];
   Uint8List? uploadedPng;
+  String? uploadedItemId;
 
   @override
   Future<Result<String, Failure>> upload({
+    required final String itemId,
     required final File image,
-    required final GarmentType garmentType,
     final Uint8List? backgroundRemovedPng,
   }) async {
+    uploadedItemId = itemId;
     uploadedPng = backgroundRemovedPng;
-    return const Ok('u1/top/new.jpg');
+    return const Ok('u1/new.jpg');
   }
 
   @override
@@ -82,7 +86,14 @@ void main() {
       final result = await upload();
 
       expect(result.isSuccess, isTrue);
-      expect(repository.createdImagePath, 'u1/top/new.jpg');
+      expect(repository.createdImagePath, 'u1/new.jpg');
+    });
+
+    test('names the image after the item it creates', () async {
+      await upload();
+
+      expect(imageStorage.uploadedItemId, isNotNull);
+      expect(repository.createdId, imageStorage.uploadedItemId);
     });
 
     test('uploads the background-removed image when one is given', () async {
@@ -104,7 +115,7 @@ void main() {
 
       await upload();
 
-      expect(imageStorage.deleted, ['u1/top/new.jpg']);
+      expect(imageStorage.deleted, ['u1/new.jpg']);
     });
   });
 
