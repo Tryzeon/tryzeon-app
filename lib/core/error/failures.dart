@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:equatable/equatable.dart';
 import 'package:http/http.dart' show ClientException;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/feature/common/daily_usage/data/mappers/daily_usage_payload.dart';
 import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
@@ -88,10 +89,12 @@ Failure mapExceptionToFailure(final Object e) {
     final body = e.details;
     if (body is Map) {
       final Failure? coded = switch (body['code']) {
-        'SERVICE_BUSY' => const ServiceBusyFailure(),
-        'NO_AVATAR' => const AvatarMissingFailure(),
-        'AI_GENERATION_FAILED' => const ServerFailure('AI 無法辨識圖片，請換一張試試'),
-        'RATE_LIMIT_EXCEEDED' => RateLimitFailure(
+        AppConstants.functionErrorServiceBusy => const ServiceBusyFailure(),
+        AppConstants.functionErrorNoAvatar => const AvatarMissingFailure(),
+        AppConstants.functionErrorAiGenerationFailed => const ServerFailure(
+          'AI 無法辨識圖片，請換一張試試',
+        ),
+        AppConstants.functionErrorRateLimitExceeded => RateLimitFailure(
           usage: tryParseDailyUsagePayload(body['usage']),
         ),
         _ => null,

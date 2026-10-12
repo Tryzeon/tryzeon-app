@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/daily_usage/data/mappers/daily_usage_payload.dart';
@@ -120,11 +121,13 @@ ChatStreamEvent? parseStreamLine(final String line) {
       );
     case 'error':
       return ChatStreamEvent.failed(switch (decoded['code']) {
-        'RATE_LIMIT_EXCEEDED' => RateLimitFailure(
+        AppConstants.functionErrorRateLimitExceeded => RateLimitFailure(
           usage: tryParseDailyUsagePayload(decoded['usage']),
         ),
-        'SERVICE_BUSY' => const ServiceBusyFailure(),
-        'VALIDATION_ERROR' => ValidationFailure(decoded['message'] as String?),
+        AppConstants.functionErrorServiceBusy => const ServiceBusyFailure(),
+        AppConstants.functionErrorValidation => ValidationFailure(
+          decoded['message'] as String?,
+        ),
         _ => const ServerFailure(),
       });
     default:

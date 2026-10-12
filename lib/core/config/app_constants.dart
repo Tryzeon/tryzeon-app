@@ -45,6 +45,13 @@ class AppConstants {
   static const String functionStoreImagesDelete = '$functionStoreImages/delete';
   static const String functionLineAuth = 'line-auth';
 
+  // Edge Function Error Codes (supabase/functions/_shared/errors.ts)
+  static const String functionErrorRateLimitExceeded = 'RATE_LIMIT_EXCEEDED';
+  static const String functionErrorServiceBusy = 'SERVICE_BUSY';
+  static const String functionErrorNoAvatar = 'NO_AVATAR';
+  static const String functionErrorAiGenerationFailed = 'AI_GENERATION_FAILED';
+  static const String functionErrorValidation = 'VALIDATION_ERROR';
+
   static const String presetAvatarFemale =
       'assets/images/tryon/preset_model_female.jpg';
   static const String presetAvatarMale =
