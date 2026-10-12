@@ -2,11 +2,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:share_plus/share_plus.dart' as share_plus;
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/extensions/refresh_feedback_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
+import 'package:tryzeon/core/presentation/widgets/share_icon_button.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
@@ -58,20 +58,10 @@ class StorePage extends HookConsumerWidget {
             : const Text('店家'),
         actions: [
           if (storeInfoAsync.hasValue)
-            IconButton(
-              onPressed: () {
-                final store = storeInfoAsync.value!;
-                share_plus.SharePlus.instance.share(
-                  share_plus.ShareParams(
-                    text:
-                        '${AppConstants.webBaseUrl}/store/${store.slug ?? store.id}',
-                  ),
-                );
-              },
-              icon: Icon(
-                Theme.of(context).platform == TargetPlatform.iOS
-                    ? Icons.ios_share
-                    : Icons.share,
+            ShareIconButton(
+              url: AppConstants.storeWebUrl(
+                id: storeInfoAsync.value!.id,
+                slug: storeInfoAsync.value!.slug,
               ),
             ),
         ],

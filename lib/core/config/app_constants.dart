@@ -12,6 +12,9 @@ class AppConstants {
   static String productWebUrl(final String productId) =>
       '$webBaseUrl/product/$productId';
 
+  static String storeWebUrl({required final String id, final String? slug}) =>
+      '$webBaseUrl/store/${slug ?? id}';
+
   static const String tableUserProfiles = 'user_profiles';
   static const String tableStoreProfiles = 'store_profiles';
   static const String tableProducts = 'products';
