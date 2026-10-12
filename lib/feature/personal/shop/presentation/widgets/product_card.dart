@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/extensions/price_format_extension.dart';
+import 'package:tryzeon/core/presentation/widgets/image_placeholder.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
@@ -65,7 +66,7 @@ class ProductCard extends HookConsumerWidget {
                     children: [
                       Positioned.fill(
                         child: product.imageUrls.isEmpty
-                            ? const _ImagePlaceholder()
+                            ? const ImagePlaceholder()
                             : CachedNetworkImage(
                                 imageUrl: product.imageUrls.first,
                                 cacheKey: product.imagePaths.first,
@@ -196,19 +197,6 @@ class _SizeChip extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _ImagePlaceholder extends StatelessWidget {
-  const _ImagePlaceholder();
-
-  @override
-  Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      color: colorScheme.surfaceContainerLow,
-      child: Icon(Icons.image_outlined, color: colorScheme.onSurfaceVariant),
     );
   }
 }

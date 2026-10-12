@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/price_format_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/app_action_sheet.dart';
+import 'package:tryzeon/core/presentation/widgets/image_placeholder.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
@@ -47,7 +48,7 @@ class StoreProductCard extends HookConsumerWidget {
               child: Container(
                 color: colorScheme.surfaceContainerLow,
                 child: product.imageUrls.isEmpty
-                    ? const _ImagePlaceholder()
+                    ? const ImagePlaceholder()
                     : CachedNetworkImage(
                         imageUrl: product.imageUrls.first,
                         cacheKey: product.imagePaths.isNotEmpty
@@ -153,21 +154,6 @@ class _ProductCardMenuButton extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _ImagePlaceholder extends StatelessWidget {
-  const _ImagePlaceholder();
-
-  @override
-  Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      width: double.infinity,
-      alignment: Alignment.center,
-      color: colorScheme.surfaceContainerLow,
-      child: Icon(Icons.image_outlined, color: colorScheme.onSurfaceVariant),
     );
   }
 }
