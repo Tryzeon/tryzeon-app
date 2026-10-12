@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:equatable/equatable.dart';
 import 'package:http/http.dart' show ClientException;
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/error/api_error_code.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
 
@@ -88,12 +88,12 @@ Failure mapExceptionToFailure(final Object e) {
     final body = e.details;
     if (body is Map) {
       final Failure? coded = switch (body['code']) {
-        AppConstants.functionErrorServiceBusy => const ServiceBusyFailure(),
-        AppConstants.functionErrorNoAvatar => const AvatarMissingFailure(),
-        AppConstants.functionErrorAiGenerationFailed => const ServerFailure(
+        ApiErrorCode.serviceBusy => const ServiceBusyFailure(),
+        ApiErrorCode.noAvatar => const AvatarMissingFailure(),
+        ApiErrorCode.aiGenerationFailed => const ServerFailure(
           'AI 無法辨識圖片，請換一張試試',
         ),
-        AppConstants.functionErrorRateLimitExceeded => const RateLimitFailure(),
+        ApiErrorCode.rateLimitExceeded => const RateLimitFailure(),
         _ => null,
       };
       if (coded != null) return coded;

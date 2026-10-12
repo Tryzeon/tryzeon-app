@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:mime/mime.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide MultipartFile;
-import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/data/utils/decode_function_response.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
@@ -20,6 +19,10 @@ class StoreImagesApi {
 
   final SupabaseClient _supabaseClient;
   final Dio _dio;
+  static const _storeImagesFunction = 'store-images';
+  static const _presignLogoPath = '$_storeImagesFunction/presign-logo';
+  static const _presignProductsPath = '$_storeImagesFunction/presign-products';
+  static const _deletePath = '$_storeImagesFunction/delete';
 
   Future<String> uploadStoreLogo({
     required final String storeId,
@@ -29,7 +32,7 @@ class StoreImagesApi {
     final bytes = await logo.readAsBytes();
 
     final response = await _supabaseClient.functions.invoke(
-      AppConstants.functionStoreImagesPresignLogo,
+      _presignLogoPath,
       body: PresignLogoRequest(
         storeId: storeId,
         contentType: contentType,
@@ -64,7 +67,7 @@ class StoreImagesApi {
     );
 
     final response = await _supabaseClient.functions.invoke(
-      AppConstants.functionStoreImagesPresignProducts,
+      _presignProductsPath,
       body: PresignProductsRequest(
         storeId: storeId,
         productId: productId,
@@ -122,7 +125,7 @@ class StoreImagesApi {
   }) async {
     if (keys.isEmpty) return;
     await _supabaseClient.functions.invoke(
-      AppConstants.functionStoreImagesDelete,
+      _deletePath,
       body: DeleteImagesRequest(storeId: storeId, keys: keys).toJson(),
     );
   }

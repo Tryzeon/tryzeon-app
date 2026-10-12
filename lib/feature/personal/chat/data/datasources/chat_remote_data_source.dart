@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/config/env.dart';
 import 'package:tryzeon/core/data/utils/decode_function_response.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
@@ -16,13 +15,14 @@ class ChatRemoteDataSource {
 
   final SupabaseClient _supabase;
   final Dio _dio;
+  static const _chatFunction = 'chat';
 
   /// Rate-limit and other run failures arrive in-stream as an error event; a
   /// non-200 status is auth/bad-request only.
   Stream<ChatStreamEventDto> sendMessageStream(
     final ChatRequest request,
   ) async* {
-    final url = '${Env.supabaseUrl}/functions/v1/${AppConstants.functionChat}';
+    final url = '${Env.supabaseUrl}/functions/v1/$_chatFunction';
     final accessToken = _supabase.auth.currentSession?.accessToken ?? '';
 
     final response = await _dio.post<ResponseBody>(

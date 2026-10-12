@@ -12,8 +12,8 @@ class UserProfileRemoteDataSource {
   UserProfileRemoteDataSource(this._supabaseClient);
 
   final SupabaseClient _supabaseClient;
-  static const _userProfileTable = AppConstants.tableUserProfiles;
-  static const _avatarBucket = AppConstants.bucketUserAvatars;
+  static const _userProfileTable = 'user_profiles';
+  static const _avatarBucket = 'user-avatars';
 
   Future<UserProfileDto> getUserProfile() async {
     final user = _supabaseClient.auth.currentUser;

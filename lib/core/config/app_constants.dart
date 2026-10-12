@@ -15,50 +15,6 @@ class AppConstants {
   static String storeWebUrl({required final String id, final String? slug}) =>
       '$webBaseUrl/store/${slug ?? id}';
 
-  static const String tableUserProfiles = 'user_profiles';
-  static const String tableStoreProfiles = 'store_profiles';
-  static const String tableProducts = 'products';
-  static const String tableProductSizes = 'product_sizes';
-  static const String tableProductCategories = 'product_categories';
-  static const String tableSubscriptionTiers = 'subscription_tiers';
-  static const String tableWardrobeItems = 'wardrobe_items';
-  static const String tableAnalyticsProductMonthlySummary =
-      'analytics_product_monthly_summary';
-  static const String tableUserDailyUsage = 'user_daily_usage';
-  static const String tableContentReports = 'content_reports';
-  static const String tableTryonRatings = 'tryon_ratings';
-
-  // analytics_events also links products to store_profiles, so PostgREST needs
-  // the foreign key to pick which relationship an embed follows.
-  static const String fkProductsStoreId = 'products_store_id_fkey';
-
-  static const String bucketUserAvatars = 'user-avatars';
-  static const String bucketWardrobeImages = 'wardrobe-images';
-
-  static const String rpcLogAnalyticsEvents = 'log_analytics_events';
-  static const String rpcListShopProducts = 'list_shop_products';
-
-  static const String functionChat = 'chat';
-  static const String functionTryon = 'tryon';
-  static const String functionDeleteAccount = 'delete-account';
-  static const String functionAnalyzeWardrobeImage = 'analyze-wardrobe-image';
-  static const String functionAnalyzeProductImage = 'analyze-product-image';
-  static const String functionParseSizeVoice = 'parse-size-voice';
-  static const String functionStoreImages = 'store-images';
-  static const String functionStoreImagesPresignLogo =
-      '$functionStoreImages/presign-logo';
-  static const String functionStoreImagesPresignProducts =
-      '$functionStoreImages/presign-products';
-  static const String functionStoreImagesDelete = '$functionStoreImages/delete';
-  static const String functionLineAuth = 'line-auth';
-
-  // Edge Function Error Codes (supabase/functions/_shared/errors.ts)
-  static const String functionErrorRateLimitExceeded = 'RATE_LIMIT_EXCEEDED';
-  static const String functionErrorServiceBusy = 'SERVICE_BUSY';
-  static const String functionErrorNoAvatar = 'NO_AVATAR';
-  static const String functionErrorAiGenerationFailed = 'AI_GENERATION_FAILED';
-  static const String functionErrorValidation = 'VALIDATION_ERROR';
-
   static const String presetAvatarFemale =
       'assets/images/tryon/preset_model_female.jpg';
   static const String presetAvatarMale =

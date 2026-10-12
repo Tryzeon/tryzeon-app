@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/data/dtos/image_analysis_request.dart';
 import 'package:tryzeon/core/data/utils/decode_function_response.dart';
 import 'package:tryzeon/core/data/utils/encode_image_for_analysis.dart';
@@ -21,6 +20,7 @@ class ProductImageAnalyzerImpl implements ProductImageAnalyzer {
 
   final SupabaseClient _supabase;
   final ImageEncoder _encodeImage;
+  static const _analyzeProductImageFunction = 'analyze-product-image';
   static const _timeout = Duration(seconds: 20);
   static const _mappr = StoreMappr();
 
@@ -34,7 +34,7 @@ class ProductImageAnalyzerImpl implements ProductImageAnalyzer {
 
       final response = await _supabase.functions
           .invoke(
-            AppConstants.functionAnalyzeProductImage,
+            _analyzeProductImageFunction,
             body: ImageAnalysisRequest(base64: base64).toJson(),
           )
           .timeout(_timeout);

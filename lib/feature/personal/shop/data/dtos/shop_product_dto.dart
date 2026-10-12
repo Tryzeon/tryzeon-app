@@ -1,12 +1,14 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/product_size/data/dtos/product_size_dto.dart';
+import 'package:tryzeon/feature/common/product_size/data/product_size_table.dart';
 import 'package:tryzeon/feature/personal/shop/data/dtos/shop_store_info_dto.dart';
 
 part 'shop_product_dto.g.dart';
+
+const _storeProfilesEmbed = 'store_profiles';
 
 @JsonSerializable(fieldRename: FieldRename.snake, createToJson: false)
 class ShopProductDto {
@@ -34,7 +36,7 @@ class ShopProductDto {
   factory ShopProductDto.fromJson(final Map<String, dynamic> json) =>
       _$ShopProductDtoFromJson(json);
 
-  @JsonKey(name: AppConstants.tableStoreProfiles)
+  @JsonKey(name: _storeProfilesEmbed)
   final ShopStoreInfoDto storeInfo;
   final String name;
   final String categoryId;
@@ -57,7 +59,7 @@ class ShopProductDto {
   final List<ClothingStyle>? styles;
   @JsonKey(fromJson: _seasonsFromJson)
   final List<ProductSeason>? seasons;
-  @JsonKey(name: AppConstants.tableProductSizes)
+  @JsonKey(name: ProductSizeTable.name)
   final List<ProductSizeDto>? sizes;
   final DateTime createdAt;
   final DateTime updatedAt;

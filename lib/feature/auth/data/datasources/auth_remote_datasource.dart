@@ -14,6 +14,8 @@ import 'package:tryzeon/feature/auth/data/dtos/line_auth_response_dto.dart';
 class AuthRemoteDataSource {
   AuthRemoteDataSource(this._supabase);
   final SupabaseClient _supabase;
+  static const _lineAuthFunction = 'line-auth';
+  static const _deleteAccountFunction = 'delete-account';
 
   Future<void> signInWithOAuthProvider(final OAuthProvider provider) async {
     final success = await _supabase.auth.signInWithOAuth(
@@ -124,7 +126,7 @@ class AuthRemoteDataSource {
       }
 
       final response = await _supabase.functions.invoke(
-        AppConstants.functionLineAuth,
+        _lineAuthFunction,
         body: LineAuthRequest(idToken: idToken, nonce: rawNonce).toJson(),
       );
       final session = decodeFunctionResponse(
@@ -182,6 +184,6 @@ class AuthRemoteDataSource {
   }
 
   Future<void> deleteAccount() async {
-    await _supabase.functions.invoke(AppConstants.functionDeleteAccount);
+    await _supabase.functions.invoke(_deleteAccountFunction);
   }
 }

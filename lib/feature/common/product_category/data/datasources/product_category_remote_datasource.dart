@@ -1,12 +1,11 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/feature/common/product_category/data/dtos/product_category_dto.dart';
 
 class ProductCategoryRemoteDataSource {
   ProductCategoryRemoteDataSource(this._supabaseClient);
 
   final SupabaseClient _supabaseClient;
-  static const _productCategoryTable = AppConstants.tableProductCategories;
+  static const _productCategoryTable = 'product_categories';
 
   Future<List<ProductCategoryDto>> getProductCategories() async {
     final response = await _supabaseClient

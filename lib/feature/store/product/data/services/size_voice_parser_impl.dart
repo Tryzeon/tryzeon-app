@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/data/utils/decode_function_response.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
@@ -18,6 +17,7 @@ class SizeVoiceParserImpl implements SizeVoiceParser {
   SizeVoiceParserImpl(this._supabase);
 
   final SupabaseClient _supabase;
+  static const _parseSizeVoiceFunction = 'parse-size-voice';
   static const _timeout = Duration(seconds: 30);
   static const _mappr = StoreMappr();
 
@@ -30,7 +30,7 @@ class SizeVoiceParserImpl implements SizeVoiceParser {
     try {
       final response = await _supabase.functions
           .invoke(
-            AppConstants.functionParseSizeVoice,
+            _parseSizeVoiceFunction,
             body: ParseSizeVoiceRequest(
               audioBase64: base64Encode(audioBytes),
               mimeType: mimeType,

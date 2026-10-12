@@ -1,6 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
+import 'package:tryzeon/feature/common/product_size/data/product_size_table.dart';
 import 'package:tryzeon/feature/personal/shop/data/dtos/list_shop_products_request.dart';
 import 'package:tryzeon/feature/personal/shop/data/dtos/shop_product_dto.dart';
 import 'package:tryzeon/feature/personal/shop/data/dtos/shop_store_info_dto.dart';
@@ -8,14 +8,17 @@ import 'package:tryzeon/feature/personal/shop/data/dtos/shop_store_info_dto.dart
 class ShopRemoteDataSource {
   ShopRemoteDataSource(this._supabaseClient);
   final SupabaseClient _supabaseClient;
-  static const _productsTable = AppConstants.tableProducts;
-  static const _storeProfileTable = AppConstants.tableStoreProfiles;
+  static const _listShopProductsRpc = 'list_shop_products';
+  static const _productsTable = 'products';
+  static const _storeProfileTable = 'store_profiles';
+  static const _productSizesTable = ProductSizeTable.name;
+  static const _productsStoreIdFk = 'products_store_id_fkey';
 
   Future<List<ShopProductDto>> listProducts(
     final ListShopProductsRequest request,
   ) async {
     final response = await _supabaseClient.rpc<List<dynamic>>(
-      AppConstants.rpcListShopProducts,
+      _listShopProductsRpc,
       params: request.toJson(),
     );
 
@@ -35,8 +38,8 @@ class ShopRemoteDataSource {
         .from(_productsTable)
         .select('''
           *,
-          ${AppConstants.tableProductSizes}(*),
-          ${AppConstants.tableStoreProfiles}!${AppConstants.fkProductsStoreId}(id, name, slug, address, logo_path, channels)
+          $_productSizesTable(*),
+          $_storeProfileTable!$_productsStoreIdFk(id, name, slug, address, logo_path, channels)
         ''')
         .eq('id', productId)
         .single();

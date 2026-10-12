@@ -1,5 +1,4 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/feature/store/profile/data/dtos/store_profile_dto.dart';
 
@@ -7,7 +6,7 @@ class StoreProfileRemoteDataSource {
   StoreProfileRemoteDataSource(this._supabaseClient);
 
   final SupabaseClient _supabaseClient;
-  static const _storeProfileTable = AppConstants.tableStoreProfiles;
+  static const _storeProfileTable = 'store_profiles';
 
   Future<StoreProfileDto?> getStoreProfile() async {
     final user = _supabaseClient.auth.currentUser;

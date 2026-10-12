@@ -1,5 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/feature/common/product_size/data/product_size_table.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/create_product_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/create_product_size_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/product_dto.dart';
@@ -8,13 +8,13 @@ class ProductRemoteDataSource {
   ProductRemoteDataSource(this._supabaseClient);
 
   final SupabaseClient _supabaseClient;
-  static const _productsTable = AppConstants.tableProducts;
-  static const _productSizesTable = AppConstants.tableProductSizes;
+  static const _productsTable = 'products';
+  static const _productSizesTable = ProductSizeTable.name;
 
   Future<List<ProductDto>> listProducts({required final String storeId}) async {
     final response = await _supabaseClient
         .from(_productsTable)
-        .select('*, ${AppConstants.tableProductSizes}(*)')
+        .select('*, $_productSizesTable(*)')
         .eq('store_id', storeId);
 
     return (response as List<dynamic>)
@@ -37,7 +37,7 @@ class ProductRemoteDataSource {
   Future<ProductDto> getProduct(final String productId) async {
     final response = await _supabaseClient
         .from(_productsTable)
-        .select('*, ${AppConstants.tableProductSizes}(*)')
+        .select('*, $_productSizesTable(*)')
         .eq('id', productId)
         .single();
 

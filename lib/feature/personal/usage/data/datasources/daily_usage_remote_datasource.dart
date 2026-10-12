@@ -1,12 +1,11 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/feature/common/daily_usage/data/dtos/daily_usage_dto.dart';
 
 class DailyUsageRemoteDataSource {
   DailyUsageRemoteDataSource(this._supabase);
   final SupabaseClient _supabase;
-  static const _userDailyUsageTable = AppConstants.tableUserDailyUsage;
+  static const _userDailyUsageTable = 'user_daily_usage';
 
   /// Returns an empty model when authenticated but no row exists yet today.
   Future<DailyUsageDto> getTodayUsage() async {

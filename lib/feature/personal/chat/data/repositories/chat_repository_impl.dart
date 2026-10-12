@@ -1,4 +1,4 @@
-import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/error/api_error_code.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/daily_usage/data/mappers/daily_usage_payload.dart';
@@ -54,11 +54,11 @@ class ChatRepositoryImpl implements ChatRepository {
     ),
     ChatErrorEventDto(:final code, :final message, :final usage) =>
       ChatStreamEvent.failed(switch (code) {
-        AppConstants.functionErrorRateLimitExceeded => RateLimitFailure(
+        ApiErrorCode.rateLimitExceeded => RateLimitFailure(
           usage: tryParseDailyUsagePayload(usage),
         ),
-        AppConstants.functionErrorServiceBusy => const ServiceBusyFailure(),
-        AppConstants.functionErrorValidation => ValidationFailure(message),
+        ApiErrorCode.serviceBusy => const ServiceBusyFailure(),
+        ApiErrorCode.validation => ValidationFailure(message),
         _ => const ServerFailure(),
       }),
     ChatUnknownEventDto() => null,

@@ -1,5 +1,4 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/core/modules/analytics/data/dtos/analytics_event_dto.dart';
 import 'package:tryzeon/core/modules/analytics/data/dtos/log_analytics_events_request.dart';
@@ -8,6 +7,7 @@ class AnalyticsRemoteDataSource {
   AnalyticsRemoteDataSource(this._supabaseClient);
 
   final SupabaseClient _supabaseClient;
+  static const _logAnalyticsEventsRpc = 'log_analytics_events';
 
   Future<void> uploadAnalyticsEvents(
     final List<AnalyticsEventDto> events,
@@ -18,7 +18,7 @@ class AnalyticsRemoteDataSource {
     }
 
     await _supabaseClient.rpc<void>(
-      AppConstants.rpcLogAnalyticsEvents,
+      _logAnalyticsEventsRpc,
       params: LogAnalyticsEventsRequest(events: events).toJson(),
     );
   }
