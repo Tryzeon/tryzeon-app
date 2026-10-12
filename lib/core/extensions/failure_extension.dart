@@ -1,4 +1,4 @@
-import '../error/failures.dart';
+import 'package:tryzeon/core/error/failures.dart';
 
 extension FailureMessage on Failure {
   String displayMessage() {

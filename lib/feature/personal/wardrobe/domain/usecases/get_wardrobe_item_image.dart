@@ -1,7 +1,8 @@
 import 'dart:io';
+
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/repositories/wardrobe_repository.dart';
 import 'package:typed_result/typed_result.dart';
-import '../repositories/wardrobe_repository.dart';
 
 class GetWardrobeItemImage {
   GetWardrobeItemImage(this._repository);

@@ -1,10 +1,9 @@
 import 'dart:io';
 
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/label_result.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/services/label_tagger.dart';
 import 'package:typed_result/typed_result.dart';
-
-import '../entities/label_result.dart';
-import '../services/label_tagger.dart';
 
 class TagWardrobeImage {
   TagWardrobeImage(this._labelTagger);

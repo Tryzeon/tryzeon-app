@@ -1,9 +1,10 @@
 import 'dart:io';
+
+import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/new_wardrobe_item.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item_update.dart';
 import 'package:typed_result/typed_result.dart';
-import '../../../../../core/error/failures.dart';
-import '../entities/new_wardrobe_item.dart';
-import '../entities/wardrobe_item.dart';
-import '../entities/wardrobe_item_update.dart';
 
 abstract class WardrobeRepository {
   Future<Result<List<WardrobeItem>, Failure>> getWardrobeItems({

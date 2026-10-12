@@ -14,16 +14,15 @@ import 'package:tryzeon/feature/common/product_category/providers/product_catego
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_sort.dart';
 import 'package:tryzeon/feature/personal/shop/domain/extensions/user_gender_extension.dart';
+import 'package:tryzeon/feature/personal/shop/presentation/sheets/filter_sheet.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/state/shop_products_notifier.dart';
+import 'package:tryzeon/feature/personal/shop/presentation/widgets/ad_banner.dart';
+import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_category_filter.dart';
+import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_sliver_grid.dart';
+import 'package:tryzeon/feature/personal/shop/presentation/widgets/search_bar.dart';
+import 'package:tryzeon/feature/personal/shop/presentation/widgets/shop_gender_filter.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_filter_provider.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
-
-import '../sheets/filter_sheet.dart';
-import '../widgets/ad_banner.dart';
-import '../widgets/product_category_filter.dart';
-import '../widgets/product_sliver_grid.dart';
-import '../widgets/search_bar.dart';
-import '../widgets/shop_gender_filter.dart';
 
 class ShopPage extends HookConsumerWidget {
   const ShopPage({super.key});

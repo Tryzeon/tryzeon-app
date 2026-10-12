@@ -4,12 +4,11 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/new_wardrobe_item.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/repositories/wardrobe_repository.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/services/wardrobe_image_storage.dart';
 import 'package:typed_result/typed_result.dart';
 import 'package:uuid/uuid.dart';
-
-import '../entities/new_wardrobe_item.dart';
-import '../repositories/wardrobe_repository.dart';
-import '../services/wardrobe_image_storage.dart';
 
 part 'upload_wardrobe_item.freezed.dart';
 

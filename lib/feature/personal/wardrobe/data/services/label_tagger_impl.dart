@@ -8,11 +8,10 @@ import 'package:tryzeon/core/data/utils/encode_image_for_analysis.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
+import 'package:tryzeon/feature/personal/wardrobe/data/dtos/label_result_dto.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/label_result.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/services/label_tagger.dart';
 import 'package:typed_result/typed_result.dart';
-
-import '../../domain/entities/label_result.dart';
-import '../../domain/services/label_tagger.dart';
-import '../dtos/label_result_dto.dart';
 
 class LabelTaggerImpl implements LabelTagger {
   LabelTaggerImpl(

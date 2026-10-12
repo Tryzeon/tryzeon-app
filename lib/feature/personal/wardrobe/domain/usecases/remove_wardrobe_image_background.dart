@@ -2,9 +2,8 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/services/background_remover.dart';
 import 'package:typed_result/typed_result.dart';
-
-import '../services/background_remover.dart';
 
 class RemoveWardrobeImageBackground {
   RemoveWardrobeImageBackground(this._backgroundRemover);

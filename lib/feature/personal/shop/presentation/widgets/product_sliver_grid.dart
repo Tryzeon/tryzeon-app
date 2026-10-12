@@ -10,9 +10,8 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/state/shop_products_notifier.dart';
+import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_card.dart';
 import 'package:tryzeon/feature/personal/shop/providers/product_fit_provider.dart';
-
-import 'product_card.dart';
 
 class ProductSliverGrid extends ConsumerWidget {
   const ProductSliverGrid({

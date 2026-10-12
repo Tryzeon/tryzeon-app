@@ -20,8 +20,8 @@ import 'package:tryzeon/core/presentation/widgets/app_upgrade_alert.dart';
 import 'package:tryzeon/core/router/app_router.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/firebase_options.dart';
 import 'package:upgrader/upgrader.dart';
-import 'firebase_options.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 

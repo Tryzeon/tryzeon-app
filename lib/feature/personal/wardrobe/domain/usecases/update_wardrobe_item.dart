@@ -1,11 +1,10 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item_update.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/repositories/wardrobe_repository.dart';
 import 'package:typed_result/typed_result.dart';
-
-import '../entities/wardrobe_item.dart';
-import '../entities/wardrobe_item_update.dart';
-import '../repositories/wardrobe_repository.dart';
 
 part 'update_wardrobe_item.freezed.dart';
 

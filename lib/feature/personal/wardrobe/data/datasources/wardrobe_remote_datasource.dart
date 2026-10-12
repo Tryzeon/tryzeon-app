@@ -5,9 +5,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
 
-import '../dtos/create_wardrobe_item_request.dart';
-import '../dtos/update_wardrobe_item_request.dart';
-import '../dtos/wardrobe_item_dto.dart';
+import 'package:tryzeon/feature/personal/wardrobe/data/dtos/create_wardrobe_item_request.dart';
+import 'package:tryzeon/feature/personal/wardrobe/data/dtos/update_wardrobe_item_request.dart';
+import 'package:tryzeon/feature/personal/wardrobe/data/dtos/wardrobe_item_dto.dart';
 
 class WardrobeRemoteDataSource {
   WardrobeRemoteDataSource(this._supabaseClient);

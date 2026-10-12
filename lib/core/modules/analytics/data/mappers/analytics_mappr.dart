@@ -1,9 +1,7 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
-
-import '../../domain/entities/analytics_event.dart';
-import '../dtos/analytics_event_dto.dart';
-
-import 'analytics_mappr.auto_mappr.dart';
+import 'package:tryzeon/core/modules/analytics/data/dtos/analytics_event_dto.dart';
+import 'package:tryzeon/core/modules/analytics/data/mappers/analytics_mappr.auto_mappr.dart';
+import 'package:tryzeon/core/modules/analytics/domain/entities/analytics_event.dart';
 
 @AutoMappr([
   MapType<AnalyticsEvent, AnalyticsEventDto>(

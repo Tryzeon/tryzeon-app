@@ -1,10 +1,9 @@
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/repositories/wardrobe_repository.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/services/wardrobe_image_storage.dart';
 import 'package:typed_result/typed_result.dart';
-
-import '../entities/wardrobe_item.dart';
-import '../repositories/wardrobe_repository.dart';
-import '../services/wardrobe_image_storage.dart';
 
 class DeleteWardrobeItem {
   DeleteWardrobeItem({

@@ -36,7 +36,7 @@ linter:
   rules:
     # Imports & Ordering (Strict)
     directives_ordering: true
-    always_use_package_imports: false
+    always_use_package_imports: true
     
     # Style & Formatting
     prefer_single_quotes: true

@@ -5,11 +5,10 @@ import 'package:path/path.dart' as p;
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_local_datasource.dart';
+import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_remote_datasource.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/services/wardrobe_image_storage.dart';
 import 'package:typed_result/typed_result.dart';
-
-import '../../domain/services/wardrobe_image_storage.dart';
-import '../datasources/wardrobe_local_datasource.dart';
-import '../datasources/wardrobe_remote_datasource.dart';
 
 class WardrobeImageStorageImpl implements WardrobeImageStorage {
   WardrobeImageStorageImpl(this._remoteDataSource, this._localDataSource);

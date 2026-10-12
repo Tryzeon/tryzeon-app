@@ -4,11 +4,10 @@ import 'package:tryzeon/feature/common/garment_type/data/mappers/garment_type_ca
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/data/mappers/product_attributes_cache_converters.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
-
-import '../../domain/entities/product_category.dart';
-import '../collections/product_category_cache.dart';
-import '../dtos/product_category_dto.dart';
-import 'product_category_mappr.auto_mappr.dart';
+import 'package:tryzeon/feature/common/product_category/data/collections/product_category_cache.dart';
+import 'package:tryzeon/feature/common/product_category/data/dtos/product_category_dto.dart';
+import 'package:tryzeon/feature/common/product_category/data/mappers/product_category_mappr.auto_mappr.dart';
+import 'package:tryzeon/feature/common/product_category/domain/entities/product_category.dart';
 
 @AutoMappr([
   MapType<ProductCategoryDto, ProductCategory>(

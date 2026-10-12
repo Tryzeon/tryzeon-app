@@ -4,9 +4,8 @@ import 'dart:typed_data';
 import 'package:image_background_remover/image_background_remover.dart' as bg;
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/services/background_remover.dart';
 import 'package:typed_result/typed_result.dart';
-
-import '../../domain/services/background_remover.dart';
 
 class BackgroundRemoverImpl implements BackgroundRemover {
   BackgroundRemoverImpl();

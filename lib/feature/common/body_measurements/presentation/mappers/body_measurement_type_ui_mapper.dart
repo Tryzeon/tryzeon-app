@@ -1,6 +1,6 @@
-import '../../domain/entities/body_measurement_type.dart';
+import 'package:tryzeon/feature/common/body_measurements/domain/entities/body_measurement_type.dart';
 
-export '../../domain/entities/body_measurement_type.dart';
+export 'package:tryzeon/feature/common/body_measurements/domain/entities/body_measurement_type.dart';
 
 extension BodyMeasurementTypeUiMapper on BodyMeasurementType {
   String get label => switch (this) {

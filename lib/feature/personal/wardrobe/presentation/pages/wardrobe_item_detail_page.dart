@@ -12,11 +12,10 @@ import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/update_wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/actions/wardrobe_outfit_actions.dart';
+import 'package:tryzeon/feature/personal/wardrobe/presentation/sheets/wardrobe_garment_type_sheet.dart';
+import 'package:tryzeon/feature/personal/wardrobe/presentation/sheets/wardrobe_tag_editor_sheet.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 import 'package:typed_result/typed_result.dart';
-
-import '../sheets/wardrobe_garment_type_sheet.dart';
-import '../sheets/wardrobe_tag_editor_sheet.dart';
 
 class WardrobeItemDetailPage extends HookConsumerWidget {
   const WardrobeItemDetailPage({super.key, required this.itemId});

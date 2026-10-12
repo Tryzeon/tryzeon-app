@@ -15,10 +15,9 @@ import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type
 import 'package:tryzeon/feature/common/garment_type/presentation/mappers/garment_type_display.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/actions/wardrobe_outfit_actions.dart';
+import 'package:tryzeon/feature/personal/wardrobe/presentation/sheets/upload_wardrobe_item_sheet.dart';
+import 'package:tryzeon/feature/personal/wardrobe/presentation/widgets/wardrobe_item_card.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
-
-import '../sheets/upload_wardrobe_item_sheet.dart';
-import '../widgets/wardrobe_item_card.dart';
 
 class WardrobePage extends HookConsumerWidget {
   const WardrobePage({super.key});
