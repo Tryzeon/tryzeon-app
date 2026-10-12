@@ -1,6 +1,8 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/personal/settings/data/datasources/tryon_preferences_local_datasource.dart';
 import 'package:tryzeon/feature/personal/settings/data/repositories/settings_repository_impl.dart';
 import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_preferences.dart';
 import 'package:tryzeon/feature/personal/settings/domain/repositories/settings_repository.dart';
@@ -11,8 +13,15 @@ import 'package:typed_result/typed_result.dart';
 part 'settings_providers.g.dart';
 
 @riverpod
+TryonPreferencesLocalDataSource tryonPreferencesLocalDataSource(final Ref ref) {
+  return TryonPreferencesLocalDataSource(ref.watch(sharedPreferencesProvider));
+}
+
+@riverpod
 SettingsRepository settingsRepository(final Ref ref) {
-  return SettingsRepositoryImpl();
+  return SettingsRepositoryImpl(
+    ref.watch(tryonPreferencesLocalDataSourceProvider),
+  );
 }
 
 @riverpod

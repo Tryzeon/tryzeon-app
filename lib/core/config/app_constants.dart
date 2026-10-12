@@ -93,11 +93,9 @@ class AppConstants {
   static const String paramEngine = 'engine';
 
   // Shared Preferences Keys
-  // Stored names keep their `video_` prefix from when scene was video-only —
-  // renaming them would only cost a migration for v1.13 users.
-  static const String keyTryonScenePrompt = 'video_scene_prompt';
+  static const String keyTryonScenePrompt = 'tryon_scene_prompt';
   static const String keyTryonStylingPrompt = 'tryon_styling_prompt';
-  static const String keyTryonTransitionPrompt = 'video_transition_prompt';
+  static const String keyTryonTransitionPrompt = 'tryon_transition_prompt';
   static const String keyTryonEngine = 'tryon_engine';
 
   static const Duration staleDurationProductCategories = Duration(days: 7);

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/data/services/image_file_cache.dart';
@@ -45,6 +46,11 @@ Dio dio(final Ref ref) {
   final dio = Dio();
   ref.onDispose(dio.close);
   return dio;
+}
+
+@Riverpod(keepAlive: true)
+SharedPreferencesAsync sharedPreferences(final Ref ref) {
+  return SharedPreferencesAsync();
 }
 
 @Riverpod(keepAlive: true)
