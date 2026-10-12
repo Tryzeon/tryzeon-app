@@ -1,5 +1,5 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
-import 'package:tryzeon/core/data/services/store_images_api.dart';
+import 'package:tryzeon/core/utils/public_image_url.dart';
 import 'package:tryzeon/feature/common/clothing_style/data/mappers/clothing_style_cache_converters.dart';
 import 'package:tryzeon/feature/common/garment_type/data/mappers/garment_type_cache_converters.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
@@ -112,11 +112,11 @@ class PersonalMappr extends $PersonalMappr {
 
 class ShopMapprHelper {
   static List<String> imageUrlsToEntity(final ShopProductDto source) =>
-      source.imagePaths.map(StoreImagesApi.publicUrl).toList();
+      source.imagePaths.map(PublicImageUrl.of).toList();
 
   static Set<StoreChannel> channelsToEntity(final ShopStoreInfoDto source) =>
       source.channels.toSet();
 
   static String? logoUrlToEntity(final ShopStoreInfoDto source) =>
-      StoreImagesApi.publicUrlOrNull(source.logoPath);
+      PublicImageUrl.ofOrNull(source.logoPath);
 }

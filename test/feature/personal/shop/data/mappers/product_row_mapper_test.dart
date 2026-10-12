@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tryzeon/core/data/services/store_images_api.dart';
+import 'package:tryzeon/core/utils/public_image_url.dart';
 import 'package:tryzeon/feature/personal/shop/data/mappers/product_row_mapper.dart';
 
 void main() {
@@ -30,10 +30,10 @@ void main() {
 
     expect(product.imagePaths, ['p1/a.jpg', 'p1/b.jpg']);
     expect(product.imageUrls, [
-      StoreImagesApi.publicUrl('p1/a.jpg'),
-      StoreImagesApi.publicUrl('p1/b.jpg'),
+      PublicImageUrl.of('p1/a.jpg'),
+      PublicImageUrl.of('p1/b.jpg'),
     ]);
-    expect(product.storeInfo.logoUrl, StoreImagesApi.publicUrl('s1/logo.png'));
+    expect(product.storeInfo.logoUrl, PublicImageUrl.of('s1/logo.png'));
   });
 
   test('a missing image list or blank logo path yields no URLs', () {

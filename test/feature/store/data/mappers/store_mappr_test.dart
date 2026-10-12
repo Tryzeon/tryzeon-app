@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tryzeon/core/data/services/store_images_api.dart';
+import 'package:tryzeon/core/utils/public_image_url.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/create_product_request.dart';
@@ -41,7 +41,7 @@ void main() {
       ProductDto.fromJson(productRow(imagePaths: ['p1/a.jpg'])),
     );
 
-    expect(product.imageUrls, [StoreImagesApi.publicUrl('p1/a.jpg')]);
+    expect(product.imageUrls, [PublicImageUrl.of('p1/a.jpg')]);
   });
 
   test('a null image_paths column decodes as no images', () {
@@ -58,7 +58,7 @@ void main() {
       StoreProfileDto.fromJson(profileRow(logoPath: 's1/logo.png')),
     );
 
-    expect(profile.logoUrl, StoreImagesApi.publicUrl('s1/logo.png'));
+    expect(profile.logoUrl, PublicImageUrl.of('s1/logo.png'));
   });
 
   test('a blank logo path yields no logo URL', () {

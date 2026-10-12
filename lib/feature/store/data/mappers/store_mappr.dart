@@ -1,5 +1,5 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
-import 'package:tryzeon/core/data/services/store_images_api.dart';
+import 'package:tryzeon/core/utils/public_image_url.dart';
 import 'package:tryzeon/feature/common/clothing_style/data/mappers/clothing_style_cache_converters.dart';
 import 'package:tryzeon/feature/common/garment_type/data/mappers/garment_type_cache_converters.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
@@ -176,16 +176,16 @@ class StoreMappr extends $StoreMappr {
 
 class StoreMapprHelper {
   static List<String> imageUrlsFromDto(final ProductDto source) =>
-      source.imagePaths.map(StoreImagesApi.publicUrl).toList();
+      source.imagePaths.map(PublicImageUrl.of).toList();
 
   static List<String> imageUrlsFromCache(final ProductCache source) =>
-      source.imagePaths.map(StoreImagesApi.publicUrl).toList();
+      source.imagePaths.map(PublicImageUrl.of).toList();
 
   static String? logoUrlFromDto(final StoreProfileDto source) =>
-      StoreImagesApi.publicUrlOrNull(source.logoPath);
+      PublicImageUrl.ofOrNull(source.logoPath);
 
   static String? logoUrlFromCache(final StoreProfileCache source) =>
-      StoreImagesApi.publicUrlOrNull(source.logoPath);
+      PublicImageUrl.ofOrNull(source.logoPath);
 
   static ProductStatus statusFromDto(final ProductDto source) =>
       source.status ?? ProductStatus.active;

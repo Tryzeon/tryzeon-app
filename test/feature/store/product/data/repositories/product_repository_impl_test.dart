@@ -4,8 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/data/collections/cache_entry.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
-import 'package:tryzeon/core/data/services/store_images_api.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/utils/public_image_url.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
@@ -232,7 +232,7 @@ void main() {
     ).listProducts(storeId: 's1')).get()!;
 
     expect(remote.listCalls, 0);
-    expect(products.single.imageUrls, [StoreImagesApi.publicUrl('p1.jpg')]);
+    expect(products.single.imageUrls, [PublicImageUrl.of('p1.jpg')]);
     expect(products.single.garmentType, GarmentType.onePiece);
     expect(products.single.gender, ProductGender.female);
     expect(products.single.fit, ProductFit.regular);

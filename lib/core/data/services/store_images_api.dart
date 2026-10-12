@@ -5,7 +5,6 @@ import 'package:dio/dio.dart';
 import 'package:mime/mime.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide MultipartFile;
 import 'package:tryzeon/core/config/app_constants.dart';
-import 'package:tryzeon/core/config/env.dart';
 import 'package:tryzeon/core/data/dtos/delete_images_request.dart';
 import 'package:tryzeon/core/data/dtos/presign_file_dto.dart';
 import 'package:tryzeon/core/data/dtos/presign_logo_request.dart';
@@ -21,12 +20,6 @@ class StoreImagesApi {
 
   final SupabaseClient _supabaseClient;
   final Dio _dio;
-
-  static String publicUrl(final String key) =>
-      '${Env.r2PublicImagesBaseUrl}/$key';
-
-  static String? publicUrlOrNull(final String? key) =>
-      key == null || key.isEmpty ? null : publicUrl(key);
 
   Future<String> uploadStoreLogo({
     required final String storeId,

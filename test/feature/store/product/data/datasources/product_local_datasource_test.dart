@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
-import 'package:tryzeon/core/data/services/store_images_api.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
+import 'package:tryzeon/core/utils/public_image_url.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
@@ -35,10 +35,7 @@ void main() {
     garmentType: GarmentType.top,
     price: 1280,
     imagePaths: const ['p1/a.jpg', 'p1/b.jpg'],
-    imageUrls: [
-      StoreImagesApi.publicUrl('p1/a.jpg'),
-      StoreImagesApi.publicUrl('p1/b.jpg'),
-    ],
+    imageUrls: [PublicImageUrl.of('p1/a.jpg'), PublicImageUrl.of('p1/b.jpg')],
     status: ProductStatus.archived,
     gender: ProductGender.female,
     purchaseLink: 'https://shop/p1',
