@@ -108,6 +108,7 @@ class Tryzeon extends HookConsumerWidget {
 
     return MaterialApp.router(
       title: 'TryZeon',
+      debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       routerConfig: router,
       builder: (final context, final child) => AppKeyboardDismisser(
