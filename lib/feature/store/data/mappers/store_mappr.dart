@@ -13,6 +13,7 @@ import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact
 import '../../../../feature/common/clothing_style/domain/entities/clothing_style.dart';
 import '../../../../feature/common/product_attributes/domain/entities/product_attributes.dart';
 import '../../../../feature/common/product_size/data/collections/product_size_embedded.dart';
+import '../../../../feature/common/product_size/data/dtos/body_measurement_ranges_dto.dart';
 import '../../../../feature/common/product_size/data/mappers/body_measurement_ranges_mappr.dart';
 import '../../../../feature/common/product_size/data/mappers/garment_measurements_mappr.dart';
 import '../../analytics/data/collections/product_analytics_cache.dart';
@@ -20,9 +21,11 @@ import '../../analytics/data/dtos/product_analytics_summary_dto.dart';
 import '../../analytics/domain/entities/product_analytics_summary.dart';
 import '../../product/data/collections/product_cache.dart';
 import '../../product/data/dtos/create_product_request.dart';
+import '../../product/data/dtos/parse_size_voice_response_dto.dart';
 import '../../product/data/dtos/product_draft_dto.dart';
 import '../../product/data/dtos/product_dto.dart';
 import '../../product/data/dtos/product_size_draft_dto.dart';
+import '../../product/domain/entities/parsed_size.dart';
 import '../../product/domain/entities/product.dart';
 import '../../product/domain/value_objects/size_item.dart';
 import '../../profile/data/collections/store_profile_cache.dart';
@@ -36,6 +39,20 @@ import 'store_mappr.auto_mappr.dart';
     MapType<ProductSize, ProductSizeDto>(),
     MapType<ProductSize, ProductSizeEmbedded>(),
     MapType<ProductSizeEmbedded, ProductSize>(),
+
+    MapType<ParsedMeasurementDto, ParsedMeasurement>(),
+    MapType<ParsedSizeDto, ParsedSize>(
+      fields: [
+        Field(
+          'garmentMeasurements',
+          custom: StoreMapprHelper.parsedGarmentMeasurementsFromDto,
+        ),
+        Field(
+          'bodyMeasurementRanges',
+          custom: StoreMapprHelper.parsedBodyMeasurementRangesFromDto,
+        ),
+      ],
+    ),
 
     MapType<ProductDto, Product>(
       fields: [
@@ -175,6 +192,24 @@ class StoreMappr extends $StoreMappr {
 }
 
 class StoreMapprHelper {
+  static Map<GarmentMeasurementType, ParsedMeasurement>
+  parsedGarmentMeasurementsFromDto(final ParsedSizeDto source) => {
+    for (final MapEntry(:key, :value) in source.garmentMeasurements.entries)
+      ?GarmentMeasurementType.values
+          .where((final t) => t.value == key)
+          .firstOrNull: const StoreMappr()
+          .convert<ParsedMeasurementDto, ParsedMeasurement>(value),
+  };
+
+  static Map<BodyMeasurementType, MeasurementRange>
+  parsedBodyMeasurementRangesFromDto(final ParsedSizeDto source) {
+    final ranges = const StoreMappr()
+        .convert<BodyMeasurementRangesDto, BodyMeasurementRanges>(
+          source.bodyMeasurementRanges,
+        );
+    return {for (final type in BodyMeasurementType.values) type: ?ranges[type]};
+  }
+
   static List<String> imageUrlsFromDto(final ProductDto source) =>
       source.imagePaths.map(PublicImageUrl.of).toList();
 
