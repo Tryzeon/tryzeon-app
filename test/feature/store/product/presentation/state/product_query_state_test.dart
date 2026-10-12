@@ -1,29 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
-import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/presentation/state/product_query_state.dart';
 import 'package:tryzeon/feature/store/product/presentation/state/product_sort_condition.dart';
 
-Product product(
-  final String name, {
-  final ProductStatus status = ProductStatus.active,
-}) {
-  final now = DateTime(2026, 8, 16);
-  return Product(
-    id: name,
-    storeId: 's1',
-    name: name,
-    categoryId: 'c1',
-    garmentType: GarmentType.top,
-    price: 100,
-    imagePaths: const [],
-    imageUrls: const [],
-    status: status,
-    createdAt: now,
-    updatedAt: now,
-  );
-}
+import '../../../../../support/store_test_doubles.dart';
 
 int noAnalytics(final String productId, final AnalyticsMetric metric) => 0;
 
