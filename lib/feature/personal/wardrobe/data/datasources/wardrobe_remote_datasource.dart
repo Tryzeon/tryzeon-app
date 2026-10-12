@@ -39,10 +39,7 @@ class WardrobeRemoteDataSource {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();
 
-    final json = request.toJson();
-    json['user_id'] = user.id;
-
-    await _supabaseClient.from(_wardrobeItemTable).insert(json);
+    await _supabaseClient.from(_wardrobeItemTable).insert(request.toJson());
   }
 
   Future<void> deleteWardrobeItem(final String id) async {
