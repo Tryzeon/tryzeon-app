@@ -109,7 +109,7 @@ GetProduct getProductUseCase(final Ref ref) {
   return GetProduct(ref.watch(productRepositoryProvider));
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 class ProductQuery extends _$ProductQuery {
   @override
   ProductQueryState build() => const ProductQueryState();
