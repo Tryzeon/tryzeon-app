@@ -9,7 +9,11 @@ class ShareTryonMedia {
 
   final TryonMediaRepository _mediaRepository;
 
-  Future<Result<void, Failure>> call(final TryonResult result) {
-    return _mediaRepository.share(result);
+  Future<Result<void, Failure>> call(final TryonResult result) async {
+    final url = result.mediaUrl;
+    if (url == null || url.isEmpty) {
+      return Err(ValidationFailure('${result.mode.name} URL is missing'));
+    }
+    return _mediaRepository.share(url: url, mode: result.mode);
   }
 }

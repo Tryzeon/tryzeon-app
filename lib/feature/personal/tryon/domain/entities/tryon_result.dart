@@ -13,4 +13,11 @@ sealed class TryonResult with _$TryonResult {
     final String? videoUrl,
     final DailyUsage? usage,
   }) = _TryonResult;
+
+  const TryonResult._();
+
+  String? get mediaUrl => switch (mode) {
+    TryonMode.video => videoUrl,
+    TryonMode.image => imageUrl,
+  };
 }
