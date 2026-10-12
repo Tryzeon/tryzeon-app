@@ -6,6 +6,7 @@ import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
 import 'package:tryzeon/feature/store/analytics/data/datasources/product_analytics_local_datasource.dart';
 import 'package:tryzeon/feature/store/analytics/data/datasources/product_analytics_remote_datasource.dart';
 import 'package:tryzeon/feature/store/analytics/data/repositories/product_analytics_repository_impl.dart';
+import 'package:tryzeon/feature/store/analytics/domain/entities/analytics_month.dart';
 import 'package:tryzeon/feature/store/analytics/domain/entities/product_analytics_summary.dart';
 import 'package:tryzeon/feature/store/analytics/domain/repositories/product_analytics_repository.dart';
 import 'package:tryzeon/feature/store/analytics/domain/usecases/get_product_analytics_summaries.dart';
@@ -18,14 +19,14 @@ part 'store_analytics_providers.g.dart';
 @riverpod
 class StoreAnalyticsFilter extends _$StoreAnalyticsFilter {
   @override
-  ({int year, int month}) build() {
+  AnalyticsMonth build() {
     final now = DateTime.now();
     return (year: now.year, month: now.month);
   }
 
-  ({int year, int month}) get filter => state;
+  AnalyticsMonth get filter => state;
 
-  set filter(final ({int year, int month}) filter) {
+  set filter(final AnalyticsMonth filter) {
     state = filter;
   }
 }
@@ -93,7 +94,7 @@ class ProductAnalyticsSummariesNotifier
 
   Future<Result<List<ProductAnalyticsSummary>, Failure>> _fetch({
     required final StoreProfile? profile,
-    required final ({int year, int month}) filter,
+    required final AnalyticsMonth filter,
     required final GetProductAnalyticsSummaries useCase,
   }) async {
     if (profile == null) return const Ok([]);
