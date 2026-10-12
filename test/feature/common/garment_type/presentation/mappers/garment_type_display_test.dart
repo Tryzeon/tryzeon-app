@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type_measurements.dart';
-import 'package:tryzeon/feature/common/garment_type/presentation/garment_type_display.dart';
+import 'package:tryzeon/feature/common/garment_type/presentation/mappers/garment_type_display.dart';
 
 void main() {
   group('GarmentTypeDisplay.lengthLabel', () {

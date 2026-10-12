@@ -6,7 +6,7 @@ import 'package:tryzeon/core/presentation/widgets/app_sheet.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
-import 'package:tryzeon/feature/common/product_attributes/presentation/product_attributes_extensions.dart';
+import 'package:tryzeon/feature/common/product_attributes/presentation/mappers/product_attributes_extensions.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/filter_chip_group.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_filter_provider.dart';

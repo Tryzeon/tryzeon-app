@@ -1,4 +1,4 @@
-import '../domain/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 
 const List<String> kMaterialPresets = [
   '棉',

@@ -11,7 +11,7 @@ import 'package:tryzeon/core/presentation/widgets/loading_button.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
-import 'package:tryzeon/feature/common/garment_type/presentation/garment_type_display.dart';
+import 'package:tryzeon/feature/common/garment_type/presentation/mappers/garment_type_display.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/dialogs/wardrobe_full_dialog.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/widgets/wardrobe_tag_input.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';

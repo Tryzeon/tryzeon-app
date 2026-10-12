@@ -3,7 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/core/presentation/widgets/app_sheet.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
-import 'package:tryzeon/feature/common/garment_type/presentation/garment_type_display.dart';
+import 'package:tryzeon/feature/common/garment_type/presentation/mappers/garment_type_display.dart';
 import 'package:tryzeon/feature/common/product_category/domain/entities/product_category.dart';
 
 class ProductCategorySheet extends HookWidget {

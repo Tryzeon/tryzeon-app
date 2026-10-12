@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
-import 'package:tryzeon/feature/common/garment_type/presentation/garment_type_display.dart';
+import 'package:tryzeon/feature/common/garment_type/presentation/mappers/garment_type_display.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/sheets/wardrobe_garment_type_sheet.dart';
 
 import '../../../../../support/sheet_test_host.dart';

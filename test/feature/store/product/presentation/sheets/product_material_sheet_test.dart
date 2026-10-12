@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tryzeon/feature/common/product_attributes/presentation/product_attributes_extensions.dart';
+import 'package:tryzeon/feature/common/product_attributes/presentation/mappers/product_attributes_extensions.dart';
 import 'package:tryzeon/feature/store/product/presentation/sheets/product_material_sheet.dart';
 
 import '../../../../../support/sheet_test_host.dart';

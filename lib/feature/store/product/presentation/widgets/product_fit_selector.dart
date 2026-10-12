@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
-import 'package:tryzeon/feature/common/product_attributes/presentation/product_attributes_extensions.dart';
+import 'package:tryzeon/feature/common/product_attributes/presentation/mappers/product_attributes_extensions.dart';
 
 class ProductFitSelector extends StatelessWidget {
   const ProductFitSelector({super.key, required this.selectedFit});

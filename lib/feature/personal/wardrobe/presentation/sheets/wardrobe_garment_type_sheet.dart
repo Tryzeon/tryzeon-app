@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/core/presentation/widgets/app_sheet.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
-import 'package:tryzeon/feature/common/garment_type/presentation/garment_type_display.dart';
+import 'package:tryzeon/feature/common/garment_type/presentation/mappers/garment_type_display.dart';
 
 class WardrobeGarmentTypeSheet extends StatelessWidget {
   const WardrobeGarmentTypeSheet({super.key, required this.selected});

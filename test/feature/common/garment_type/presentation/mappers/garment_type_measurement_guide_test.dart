@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
-import 'package:tryzeon/feature/common/garment_type/presentation/garment_type_measurement_guide.dart';
+import 'package:tryzeon/feature/common/garment_type/presentation/mappers/garment_type_measurement_guide.dart';
 
 void main() {
   group('GarmentType.measurementGuideAssets', () {
