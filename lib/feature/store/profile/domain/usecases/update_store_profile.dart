@@ -33,7 +33,6 @@ class UpdateStoreProfile {
   final StoreLogoStorage _logoStorage;
   final GeocodingService _geocoding;
 
-
   Future<Result<({bool addressUnresolved}), Failure>> call(
     final UpdateStoreProfileParams params,
   ) async {
