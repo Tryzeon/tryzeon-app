@@ -29,8 +29,12 @@ import '../../subscription/data/collections/subscription_tier_cache.dart';
 import '../../subscription/data/dtos/subscription_tier_dto.dart';
 import '../../subscription/domain/entities/subscription_capabilities.dart';
 import '../../wardrobe/data/collections/wardrobe_item_cache.dart';
+import '../../wardrobe/data/dtos/create_wardrobe_item_request.dart';
+import '../../wardrobe/data/dtos/update_wardrobe_item_request.dart';
 import '../../wardrobe/data/dtos/wardrobe_item_dto.dart';
+import '../../wardrobe/domain/entities/new_wardrobe_item.dart';
 import '../../wardrobe/domain/entities/wardrobe_item.dart';
+import '../../wardrobe/domain/entities/wardrobe_item_update.dart';
 import 'personal_mappr.auto_mappr.dart';
 
 @AutoMappr(
@@ -61,6 +65,8 @@ import 'personal_mappr.auto_mappr.dart';
     ),
 
     MapType<WardrobeItemDto, WardrobeItem>(),
+    MapType<NewWardrobeItem, CreateWardrobeItemRequest>(),
+    MapType<WardrobeItemUpdate, UpdateWardrobeItemRequest>(),
     MapType<WardrobeItem, WardrobeItemCache>(
       fields: [Field('itemId', from: 'id')],
       converters: [

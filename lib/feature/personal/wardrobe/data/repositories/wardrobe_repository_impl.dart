@@ -3,11 +3,12 @@ import 'dart:io';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
-import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:typed_result/typed_result.dart';
 
+import '../../domain/entities/new_wardrobe_item.dart';
 import '../../domain/entities/wardrobe_item.dart';
+import '../../domain/entities/wardrobe_item_update.dart';
 import '../../domain/repositories/wardrobe_repository.dart';
 import '../datasources/wardrobe_local_datasource.dart';
 import '../datasources/wardrobe_remote_datasource.dart';
@@ -77,20 +78,12 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
   }
 
   @override
-  Future<Result<void, Failure>> createWardrobeItem({
-    required final String id,
-    required final String imagePath,
-    required final GarmentType garmentType,
-    required final List<String> tags,
-  }) async {
+  Future<Result<void, Failure>> createWardrobeItem(
+    final NewWardrobeItem item,
+  ) async {
     try {
       await _remoteDataSource.createWardrobeItem(
-        CreateWardrobeItemRequest(
-          id: id,
-          imagePath: imagePath,
-          garmentType: garmentType,
-          tags: tags,
-        ),
+        _mappr.convert<NewWardrobeItem, CreateWardrobeItemRequest>(item),
       );
     } catch (e, stackTrace) {
       AppLogger.error('Failed to create wardrobe item', e, stackTrace);
@@ -140,20 +133,17 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
   }
 
   @override
-  Future<Result<WardrobeItem, Failure>> updateWardrobeItem({
-    required final String id,
-    final GarmentType? garmentType,
-    final List<String>? tags,
-  }) async {
+  Future<Result<WardrobeItem, Failure>> updateWardrobeItem(
+    final String id,
+    final WardrobeItemUpdate update,
+  ) async {
     final WardrobeItem updatedItem;
     try {
       updatedItem = _mappr.convert<WardrobeItemDto, WardrobeItem>(
         await _remoteDataSource.updateWardrobeItem(
           id: id,
-          request: UpdateWardrobeItemRequest(
-            garmentType: garmentType,
-            tags: tags,
-          ),
+          request: _mappr
+              .convert<WardrobeItemUpdate, UpdateWardrobeItemRequest>(update),
         ),
       );
     } catch (e, stackTrace) {

@@ -4,7 +4,11 @@ import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type
 
 part 'update_wardrobe_item_request.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake, includeIfNull: false)
+@JsonSerializable(
+  fieldRename: FieldRename.snake,
+  includeIfNull: false,
+  createFactory: false,
+)
 class UpdateWardrobeItemRequest {
   const UpdateWardrobeItemRequest({this.garmentType, this.tags});
 

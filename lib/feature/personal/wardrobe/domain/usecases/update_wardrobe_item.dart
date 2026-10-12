@@ -4,6 +4,7 @@ import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type
 import 'package:typed_result/typed_result.dart';
 
 import '../entities/wardrobe_item.dart';
+import '../entities/wardrobe_item_update.dart';
 import '../repositories/wardrobe_repository.dart';
 
 part 'update_wardrobe_item.freezed.dart';
@@ -27,9 +28,8 @@ class UpdateWardrobeItem {
     final UpdateWardrobeItemParams params,
   ) {
     return _repository.updateWardrobeItem(
-      id: params.id,
-      garmentType: params.garmentType,
-      tags: params.tags,
+      params.id,
+      WardrobeItemUpdate(garmentType: params.garmentType, tags: params.tags),
     );
   }
 }

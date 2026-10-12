@@ -4,13 +4,13 @@ import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type
 
 part 'create_wardrobe_item_request.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, createFactory: false)
 class CreateWardrobeItemRequest {
   const CreateWardrobeItemRequest({
     required this.id,
     required this.imagePath,
     required this.garmentType,
-    this.tags = const [],
+    required this.tags,
   });
 
   final String id;

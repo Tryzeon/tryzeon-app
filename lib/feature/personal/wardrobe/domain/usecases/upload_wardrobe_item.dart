@@ -7,6 +7,7 @@ import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type
 import 'package:typed_result/typed_result.dart';
 import 'package:uuid/uuid.dart';
 
+import '../entities/new_wardrobe_item.dart';
 import '../repositories/wardrobe_repository.dart';
 import '../services/wardrobe_image_storage.dart';
 
@@ -43,10 +44,12 @@ class UploadWardrobeItem {
     final imagePath = uploaded.get()!;
 
     final created = await _repository.createWardrobeItem(
-      id: _uuid.v4(),
-      imagePath: imagePath,
-      garmentType: params.garmentType,
-      tags: params.tags,
+      NewWardrobeItem(
+        id: _uuid.v4(),
+        imagePath: imagePath,
+        garmentType: params.garmentType,
+        tags: params.tags,
+      ),
     );
     if (created.isSuccess) return const Ok(null);
 

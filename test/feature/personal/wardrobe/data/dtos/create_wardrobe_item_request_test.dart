@@ -8,6 +8,7 @@ void main() {
       id: 'w1',
       imagePath: 'u/one_piece/a.jpg',
       garmentType: GarmentType.onePiece,
+      tags: [],
     );
 
     expect(request.toJson()['garment_type'], 'one_piece');

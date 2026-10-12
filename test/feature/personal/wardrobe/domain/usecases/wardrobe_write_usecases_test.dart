@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/new_wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/repositories/wardrobe_repository.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/services/wardrobe_image_storage.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/delete_wardrobe_item.dart';
@@ -18,13 +19,10 @@ class _FakeRepository implements WardrobeRepository {
   final List<String> deletedIds = [];
 
   @override
-  Future<Result<void, Failure>> createWardrobeItem({
-    required final String id,
-    required final String imagePath,
-    required final GarmentType garmentType,
-    required final List<String> tags,
-  }) async {
-    createdImagePath = imagePath;
+  Future<Result<void, Failure>> createWardrobeItem(
+    final NewWardrobeItem item,
+  ) async {
+    createdImagePath = item.imagePath;
     return createResult;
   }
 

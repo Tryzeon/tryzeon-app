@@ -10,7 +10,9 @@ import 'package:tryzeon/feature/personal/wardrobe/data/dtos/create_wardrobe_item
 import 'package:tryzeon/feature/personal/wardrobe/data/dtos/update_wardrobe_item_request.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/dtos/wardrobe_item_dto.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/repositories/wardrobe_repository_impl.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/new_wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item_update.dart';
 import 'package:typed_result/typed_result.dart';
 
 import '../../../../../support/isar_test_harness.dart';
@@ -168,10 +170,12 @@ void main() {
 
       final result = await buildRepository(_FakeRemoteFailingRefresh())
           .createWardrobeItem(
-            id: 'w2',
-            imagePath: 'w2.jpg',
-            garmentType: GarmentType.top,
-            tags: const [],
+            const NewWardrobeItem(
+              id: 'w2',
+              imagePath: 'w2.jpg',
+              garmentType: GarmentType.top,
+              tags: [],
+            ),
           );
 
       expect(result.isSuccess, isTrue);
@@ -200,8 +204,8 @@ void main() {
       );
 
       final result = await repository.updateWardrobeItem(
-        id: 'w1',
-        garmentType: GarmentType.pants,
+        'w1',
+        const WardrobeItemUpdate(garmentType: GarmentType.pants),
       );
 
       expect(result.get()?.garmentType, GarmentType.pants);
