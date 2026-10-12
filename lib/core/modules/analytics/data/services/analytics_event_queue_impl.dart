@@ -1,20 +1,24 @@
 import 'dart:async';
 
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/modules/analytics/data/datasources/analytics_remote_datasource.dart';
+import 'package:tryzeon/core/modules/analytics/data/dtos/analytics_event_dto.dart';
+import 'package:tryzeon/core/modules/analytics/data/mappers/analytics_mappr.dart';
 import 'package:tryzeon/core/modules/analytics/domain/entities/analytics_event.dart';
 import 'package:tryzeon/core/modules/analytics/domain/services/analytics_event_queue.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:typed_result/typed_result.dart';
 
 class AnalyticsEventQueueImpl implements AnalyticsEventQueue {
-  AnalyticsEventQueueImpl({
-    required this.uploadCallback,
+  AnalyticsEventQueueImpl(
+    this._remoteDataSource, {
     this.batchSize = 10,
     this.flushDelay = const Duration(seconds: 5),
     this.maxQueueSize = 100,
   });
 
-  final Future<void> Function(List<AnalyticsEvent> events) uploadCallback;
+  final AnalyticsRemoteDataSource _remoteDataSource;
+  static const _mappr = AnalyticsMappr();
 
   final int batchSize;
   final Duration flushDelay;
@@ -50,7 +54,9 @@ class AnalyticsEventQueueImpl implements AnalyticsEventQueue {
     _queue.clear();
 
     try {
-      await uploadCallback(eventsToUpload);
+      await _remoteDataSource.uploadAnalyticsEvents(
+        _mappr.convertList<AnalyticsEvent, AnalyticsEventDto>(eventsToUpload),
+      );
       return const Ok(null);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to upload analytics events', e, stackTrace);

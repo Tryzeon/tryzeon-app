@@ -8,10 +8,7 @@ import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/data/services/local_data_store_impl.dart';
 import 'package:tryzeon/core/domain/services/local_data_store.dart';
 import 'package:tryzeon/core/modules/analytics/data/datasources/analytics_remote_datasource.dart';
-import 'package:tryzeon/core/modules/analytics/data/dtos/analytics_event_dto.dart';
-import 'package:tryzeon/core/modules/analytics/data/mappers/analytics_mappr.dart';
 import 'package:tryzeon/core/modules/analytics/data/services/analytics_event_queue_impl.dart';
-import 'package:tryzeon/core/modules/analytics/domain/entities/analytics_event.dart';
 import 'package:tryzeon/core/modules/analytics/domain/services/analytics_event_queue.dart';
 import 'package:tryzeon/core/modules/auth_identity/data/services/auth_identity_service_impl.dart';
 import 'package:tryzeon/core/modules/auth_identity/domain/services/auth_identity_service.dart';
@@ -22,8 +19,6 @@ import 'package:tryzeon/core/modules/location/domain/services/location_service.d
 
 part 'core_providers.g.dart';
 
-const _mappr = AnalyticsMappr();
-
 @riverpod
 AnalyticsRemoteDataSource analyticsRemoteDataSource(final Ref ref) {
   return AnalyticsRemoteDataSource(Supabase.instance.client);
@@ -31,16 +26,7 @@ AnalyticsRemoteDataSource analyticsRemoteDataSource(final Ref ref) {
 
 @Riverpod(keepAlive: true)
 AnalyticsEventQueue analyticsEventQueue(final Ref ref) {
-  final analyticsDataSource = ref.watch(analyticsRemoteDataSourceProvider);
-
-  return AnalyticsEventQueueImpl(
-    uploadCallback: (final events) {
-      final models = _mappr.convertList<AnalyticsEvent, AnalyticsEventDto>(
-        events,
-      );
-      return analyticsDataSource.uploadAnalyticsEvents(models);
-    },
-  );
+  return AnalyticsEventQueueImpl(ref.watch(analyticsRemoteDataSourceProvider));
 }
 
 @riverpod
