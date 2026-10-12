@@ -3,6 +3,7 @@ import 'package:tryzeon/core/utils/public_image_url.dart';
 import 'package:tryzeon/feature/common/body_measurements/data/mappers/body_measurements_mappr.dart';
 import 'package:tryzeon/feature/common/clothing_style/data/mappers/clothing_style_cache_converters.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
+import 'package:tryzeon/feature/common/daily_usage/data/mappers/daily_usage_mappr.dart';
 import 'package:tryzeon/feature/common/garment_type/data/mappers/garment_type_cache_converters.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_size/data/dtos/product_size_dto.dart';
@@ -151,6 +152,7 @@ import 'package:tryzeon/feature/personal/wardrobe/wardrobe.dart'
     BodyMeasurementsMappr(), // UserProfile(Update).measurements
     GarmentMeasurementsMappr(), // ProductSize.measurements
     BodyMeasurementRangesMappr(), // ProductSize.bodyMeasurementRanges
+    DailyUsageMappr(), // TryonResult.usage
   ],
 )
 class PersonalMappr extends $PersonalMappr {

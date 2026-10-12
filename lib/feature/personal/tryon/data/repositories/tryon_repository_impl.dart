@@ -1,7 +1,6 @@
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/daily_usage/data/dtos/daily_usage_dto.dart';
-import 'package:tryzeon/feature/common/daily_usage/data/mappers/daily_usage_mappr.dart';
 import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
 import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_remote_data_source.dart';
@@ -16,7 +15,6 @@ class TryonRepositoryImpl implements TryonRepository {
     : _remoteDataSource = remoteDataSource;
 
   final TryonRemoteDataSource _remoteDataSource;
-  static const _usageMappr = DailyUsageMappr();
   static const _mappr = PersonalMappr();
 
   @override
@@ -28,16 +26,13 @@ class TryonRepositoryImpl implements TryonRepository {
         TryonAnimateRequest() =>
           _mappr.convert<TryonAnimateRequest, TryonFunctionRequest>(request),
       });
-      final usage = response.usage;
       return Ok(
         TryonResult(
           id: request.requestId,
+          mode: request.mode,
           imageUrl: response.imageUrl,
           videoUrl: response.videoUrl,
-          mode: request.mode,
-          usage: usage == null
-              ? null
-              : _usageMappr.convert<DailyUsageDto, DailyUsage>(usage),
+          usage: _mappr.tryConvert<DailyUsageDto, DailyUsage>(response.usage),
         ),
       );
     } catch (e, stackTrace) {
