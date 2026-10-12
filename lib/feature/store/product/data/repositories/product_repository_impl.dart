@@ -11,7 +11,7 @@ import 'package:tryzeon/feature/store/product/data/dtos/product_dto.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/product_size_draft_dto.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/domain/repositories/product_repository.dart';
-import 'package:tryzeon/feature/store/product/domain/services/product_update_plan.dart';
+import 'package:tryzeon/feature/store/product/domain/services/product_size_diff.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/size_item.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -144,11 +144,10 @@ class ProductRepositoryImpl implements ProductRepository {
   @override
   Future<Result<void, Failure>> updateProduct({
     required final Product original,
-    required final ProductUpdatePlan plan,
+    required final Product target,
+    final ProductSizeDiff sizeDiff = const ProductSizeDiff.empty(),
   }) async {
     try {
-      final sizeDiff = plan.sizeDiff;
-
       for (final sizeId in sizeDiff.idsToDelete) {
         await _remoteDataSource.deleteProductSize(sizeId);
       }
@@ -166,20 +165,20 @@ class ProductRepositoryImpl implements ProductRepository {
               .convert<ProductSize, ProductSizeDto>(update.targetSize)
               .toJson(),
         );
-        await _remoteDataSource.updateProductSize(
-          update.original.id,
-          sizeChanges,
-        );
+        if (sizeChanges.isNotEmpty) {
+          await _remoteDataSource.updateProductSize(
+            update.original.id,
+            sizeChanges,
+          );
+        }
       }
 
-      if (plan.hasProductChanges) {
-        final productChanges = jsonDiff(
-          _mappr.convert<Product, ProductDto>(original).toJson(),
-          _mappr.convert<Product, ProductDto>(plan.target).toJson(),
-        );
-        if (productChanges.isNotEmpty) {
-          await _remoteDataSource.updateProduct(original.id, productChanges);
-        }
+      final productChanges = jsonDiff(
+        _mappr.convert<Product, ProductDto>(original).toJson(),
+        _mappr.convert<Product, ProductDto>(target).toJson(),
+      );
+      if (productChanges.isNotEmpty) {
+        await _remoteDataSource.updateProduct(original.id, productChanges);
       }
     } catch (e, stackTrace) {
       AppLogger.error('Failed to update product', e, stackTrace);

@@ -354,10 +354,12 @@ void main() {
     'updateProduct writes sizes before the product row that references images',
     () async {
       final remote = _FakeRemote(remoteProduct);
+      final plan = planFor(const [], const [SizeItem.newSize(name: 'L')]);
 
       final result = await buildRepository(remote).updateProduct(
         original: original,
-        plan: planFor(const [], const [SizeItem.newSize(name: 'L')]),
+        target: plan.target,
+        sizeDiff: plan.sizeDiff,
       );
 
       expect(result.isSuccess, isTrue);
@@ -365,17 +367,41 @@ void main() {
     },
   );
 
+  test('updateProduct skips a size whose row would not change', () async {
+    final remote = _FakeRemote(remoteProduct);
+
+    final result = await buildRepository(remote).updateProduct(
+      original: original,
+      target: original,
+      sizeDiff: ProductSizeDiff(
+        toAdd: const [],
+        toUpdate: [
+          ProductSizeUpdate(
+            original: original.sizes!.single,
+            target: const ExistingSizeItem(id: 'm', name: 'M'),
+          ),
+        ],
+        idsToDelete: const [],
+      ),
+    );
+
+    expect(result.isSuccess, isTrue);
+    expect(remote.writes, isEmpty);
+  });
+
   test(
     'updateProduct succeeds and drops the cache when the refresh fails',
     () async {
       await seedCache();
       final remote = _FakeRemote(remoteProduct)
         ..getError = const SocketException('offline');
+      final plan = planFor(const [], const [
+        SizeItem.existing(id: 'm', name: 'M'),
+      ]);
 
-      final result = await buildRepository(remote).updateProduct(
-        original: original,
-        plan: planFor(const [], const [SizeItem.existing(id: 'm', name: 'M')]),
-      );
+      final result = await buildRepository(
+        remote,
+      ).updateProduct(original: original, target: plan.target);
 
       final entries = CacheEntryLocalDataSource(harness.service);
       expect(result.isSuccess, isTrue);
@@ -406,12 +432,7 @@ void main() {
 
       final result = await buildRepository(remote).updateProduct(
         original: original,
-        plan: ProductUpdatePlan(
-          target: original.copyWith(status: ProductStatus.archived),
-          removedImagePaths: const [],
-          sizeDiff: const ProductSizeDiff.empty(),
-          hasProductChanges: true,
-        ),
+        target: original.copyWith(status: ProductStatus.archived),
       );
 
       expect(result.getError(), const NotFoundFailure());

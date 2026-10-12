@@ -7,7 +7,7 @@ import 'package:tryzeon/feature/common/product_attributes/domain/entities/produc
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/domain/repositories/product_repository.dart';
 import 'package:tryzeon/feature/store/product/domain/services/product_image_storage.dart';
-import 'package:tryzeon/feature/store/product/domain/services/product_update_plan.dart';
+import 'package:tryzeon/feature/store/product/domain/services/product_size_diff.dart';
 import 'package:tryzeon/feature/store/product/domain/usecases/create_product.dart';
 import 'package:tryzeon/feature/store/product/domain/usecases/delete_product.dart';
 import 'package:tryzeon/feature/store/product/domain/usecases/set_product_status.dart';
@@ -20,7 +20,8 @@ class _FakeRepository implements ProductRepository {
   Result<void, Failure> updateResult = const Ok(null);
   Result<void, Failure> deleteResult = const Ok(null);
   NewProduct? created;
-  ProductUpdatePlan? appliedPlan;
+  Product? appliedTarget;
+  ProductSizeDiff? appliedSizeDiff;
   final List<String> deletedProductIds = [];
 
   @override
@@ -32,9 +33,11 @@ class _FakeRepository implements ProductRepository {
   @override
   Future<Result<void, Failure>> updateProduct({
     required final Product original,
-    required final ProductUpdatePlan plan,
+    required final Product target,
+    final ProductSizeDiff sizeDiff = const ProductSizeDiff.empty(),
   }) async {
-    appliedPlan = plan;
+    appliedTarget = target;
+    appliedSizeDiff = sizeDiff;
     return updateResult;
   }
 
@@ -174,7 +177,7 @@ void main() {
 
       expect(result.isSuccess, isTrue);
       expect(imageStorage.uploadCalls, 0);
-      expect(repository.appliedPlan, isNull);
+      expect(repository.appliedTarget, isNull);
     });
 
     test('replacing an image deletes the old one after the write', () async {
@@ -188,7 +191,7 @@ void main() {
       );
 
       expect(result.isSuccess, isTrue);
-      expect(repository.appliedPlan!.target.imagePaths, ['p1/new-0.jpg']);
+      expect(repository.appliedTarget!.imagePaths, ['p1/new-0.jpg']);
       expect(imageStorage.deleted, ['a.jpg']);
     });
 
@@ -220,7 +223,7 @@ void main() {
       );
 
       expect(result.getError(), const NetworkFailure());
-      expect(repository.appliedPlan, isNull);
+      expect(repository.appliedTarget, isNull);
     });
   });
 
@@ -256,10 +259,11 @@ void main() {
       );
 
       expect(result.isSuccess, isTrue);
-      final plan = repository.appliedPlan!;
-      expect(plan.target, original.copyWith(status: ProductStatus.archived));
-      expect(plan.sizeDiff.isEmpty, isTrue);
-      expect(plan.removedImagePaths, isEmpty);
+      expect(
+        repository.appliedTarget,
+        original.copyWith(status: ProductStatus.archived),
+      );
+      expect(repository.appliedSizeDiff!.isEmpty, isTrue);
     });
 
     test('skips the write when the status is unchanged', () async {
@@ -268,7 +272,7 @@ void main() {
       );
 
       expect(result.isSuccess, isTrue);
-      expect(repository.appliedPlan, isNull);
+      expect(repository.appliedTarget, isNull);
     });
   });
 }

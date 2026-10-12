@@ -62,7 +62,8 @@ class UpdateProduct {
 
     final saved = await _repository.updateProduct(
       original: original,
-      plan: plan,
+      target: plan.target,
+      sizeDiff: plan.sizeDiff,
     );
     if (saved.isFailure) {
       final failure = saved.getError()!;

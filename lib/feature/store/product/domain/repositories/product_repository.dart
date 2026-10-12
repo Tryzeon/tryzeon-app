@@ -1,6 +1,6 @@
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
-import 'package:tryzeon/feature/store/product/domain/services/product_update_plan.dart';
+import 'package:tryzeon/feature/store/product/domain/services/product_size_diff.dart';
 import 'package:typed_result/typed_result.dart';
 
 abstract class ProductRepository {
@@ -15,7 +15,8 @@ abstract class ProductRepository {
 
   Future<Result<void, Failure>> updateProduct({
     required final Product original,
-    required final ProductUpdatePlan plan,
+    required final Product target,
+    final ProductSizeDiff sizeDiff = const ProductSizeDiff.empty(),
   });
 
   Future<Result<void, Failure>> deleteProduct({
