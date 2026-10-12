@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/garment_type/presentation/mappers/garment_type_measurement_guide.dart';
-import 'package:tryzeon/feature/common/garment_type/presentation/measurement_guide_sheet.dart';
+import 'package:tryzeon/feature/common/garment_type/presentation/sheets/measurement_guide_sheet.dart';
 
 class MeasurementGuideButton extends StatelessWidget {
   const MeasurementGuideButton({super.key, required this.garmentType});

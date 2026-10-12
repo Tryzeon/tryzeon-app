@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
-import 'package:tryzeon/feature/common/garment_type/presentation/measurement_guide_sheet.dart';
+import 'package:tryzeon/feature/common/garment_type/presentation/sheets/measurement_guide_sheet.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/product_size.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_size_table.dart';

@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
-import 'package:tryzeon/feature/common/garment_type/presentation/measurement_guide_sheet.dart';
+import 'package:tryzeon/feature/common/garment_type/presentation/sheets/measurement_guide_sheet.dart';
 
 void main() {
   Finder findGuide(final String asset) => find.byWidgetPredicate(
