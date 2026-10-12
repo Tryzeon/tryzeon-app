@@ -5,15 +5,15 @@ import 'package:dio/dio.dart';
 import 'package:mime/mime.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide MultipartFile;
 import 'package:tryzeon/core/config/app_constants.dart';
-import 'package:tryzeon/core/data/dtos/delete_images_request.dart';
-import 'package:tryzeon/core/data/dtos/presign_file_dto.dart';
-import 'package:tryzeon/core/data/dtos/presign_logo_request.dart';
-import 'package:tryzeon/core/data/dtos/presign_products_request.dart';
-import 'package:tryzeon/core/data/dtos/presign_products_response_dto.dart';
-import 'package:tryzeon/core/data/dtos/presigned_upload_dto.dart';
 import 'package:tryzeon/core/data/utils/decode_function_response.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/store/data/dtos/delete_images_request.dart';
+import 'package:tryzeon/feature/store/data/dtos/presign_file_dto.dart';
+import 'package:tryzeon/feature/store/data/dtos/presign_logo_request.dart';
+import 'package:tryzeon/feature/store/data/dtos/presign_products_request.dart';
+import 'package:tryzeon/feature/store/data/dtos/presign_products_response_dto.dart';
+import 'package:tryzeon/feature/store/data/dtos/presigned_upload_dto.dart';
 
 class StoreImagesApi {
   StoreImagesApi(this._supabaseClient, [final Dio? dio]) : _dio = dio ?? Dio();

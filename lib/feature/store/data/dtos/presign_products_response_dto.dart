@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:tryzeon/core/data/dtos/presigned_upload_dto.dart';
+import 'package:tryzeon/feature/store/data/dtos/presigned_upload_dto.dart';
 
 part 'presign_products_response_dto.g.dart';
 

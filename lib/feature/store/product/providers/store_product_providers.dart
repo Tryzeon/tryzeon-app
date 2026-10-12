@@ -36,6 +36,7 @@ import 'package:tryzeon/feature/store/product/presentation/state/product_query_s
 import 'package:tryzeon/feature/store/product/presentation/state/product_sort_condition.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
+import 'package:tryzeon/feature/store/providers/store_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 part 'store_product_providers.g.dart';

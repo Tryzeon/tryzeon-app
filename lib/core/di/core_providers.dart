@@ -6,7 +6,6 @@ import 'package:tryzeon/core/data/services/image_file_cache.dart';
 import 'package:tryzeon/core/data/services/image_file_cache_impl.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/data/services/local_data_store_impl.dart';
-import 'package:tryzeon/core/data/services/store_images_api.dart';
 import 'package:tryzeon/core/domain/services/local_data_store.dart';
 import 'package:tryzeon/core/modules/analytics/data/datasources/analytics_remote_datasource.dart';
 import 'package:tryzeon/core/modules/analytics/data/dtos/analytics_event_dto.dart';
@@ -85,8 +84,3 @@ AuthIdentityService authIdentityService(final Ref ref) {
 @Riverpod(keepAlive: true)
 ImageAnalysisApi imageAnalysisApi(final Ref ref) =>
     ImageAnalysisApi(Supabase.instance.client);
-
-@riverpod
-StoreImagesApi storeImagesApi(final Ref ref) {
-  return StoreImagesApi(Supabase.instance.client);
-}

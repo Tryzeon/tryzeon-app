@@ -18,6 +18,7 @@ import 'package:tryzeon/feature/store/profile/domain/repositories/store_profile_
 import 'package:tryzeon/feature/store/profile/domain/services/store_logo_storage.dart';
 import 'package:tryzeon/feature/store/profile/domain/usecases/get_store_profile.dart';
 import 'package:tryzeon/feature/store/profile/domain/usecases/update_store_profile.dart';
+import 'package:tryzeon/feature/store/providers/store_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 part 'store_profile_providers.g.dart';

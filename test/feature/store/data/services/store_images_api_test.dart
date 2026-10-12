@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/core/data/services/store_images_api.dart';
+import 'package:tryzeon/feature/store/data/services/store_images_api.dart';
 
 class _FakeFunctions implements FunctionsClient {
   final List<List<String>> deletedKeys = [];

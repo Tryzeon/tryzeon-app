@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:tryzeon/core/data/services/store_images_api.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/store/data/services/store_images_api.dart';
 import 'package:tryzeon/feature/store/product/domain/services/product_image_storage.dart';
 import 'package:typed_result/typed_result.dart';
 
