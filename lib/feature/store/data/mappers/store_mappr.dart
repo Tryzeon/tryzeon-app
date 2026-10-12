@@ -197,11 +197,16 @@ class StoreMappr extends $StoreMappr {
 class StoreMapprHelper {
   static Map<GarmentMeasurementType, ParsedMeasurement>
   parsedGarmentMeasurementsFromDto(final ParsedSizeDto source) => {
+    // A `?key:` null-aware element around this const constructor call crashes
+    // the Dart 3.13 front end (iOS CI builds without widget-creation tracking).
     for (final MapEntry(:key, :value) in source.garmentMeasurements.entries)
-      ?GarmentMeasurementType.values
-          .where((final t) => t.value == key)
-          .firstOrNull: const StoreMappr()
-          .convert<ParsedMeasurementDto, ParsedMeasurement>(value),
+      // ignore: use_null_aware_elements
+      if (GarmentMeasurementType.values
+              .where((final t) => t.value == key)
+              .firstOrNull
+          case final type?)
+        type: const StoreMappr()
+            .convert<ParsedMeasurementDto, ParsedMeasurement>(value),
   };
 
   static Map<BodyMeasurementType, MeasurementRange>
