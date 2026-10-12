@@ -1,0 +1,254 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:tryzeon/core/data/utils/decode_function_response.dart';
+import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
+import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/personal/chat/data/datasources/chat_remote_data_source.dart';
+import 'package:tryzeon/feature/personal/chat/data/dtos/chat_request.dart';
+import 'package:tryzeon/feature/personal/chat/data/dtos/chat_stream_event_dto.dart';
+import 'package:tryzeon/feature/personal/chat/data/repositories/chat_repository_impl.dart';
+import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
+import 'package:tryzeon/feature/personal/chat/domain/entities/chat_stream_event.dart';
+import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
+
+class _FakeChatRemoteDataSource implements ChatRemoteDataSource {
+  _FakeChatRemoteDataSource(this.events);
+
+  final List<Map<String, dynamic>> events;
+  ChatRequest? sentRequest;
+
+  @override
+  Stream<ChatStreamEventDto> sendMessageStream(
+    final ChatRequest request,
+  ) async* {
+    sentRequest = request;
+    for (final event in events) {
+      yield decodeFunctionResponse(event, ChatStreamEventDto.fromJson);
+    }
+  }
+}
+
+final _usageJson = {
+  'user_id': 'u1',
+  'usage_date': '2026-10-11',
+  'tryon_count': 0,
+  'chat_count': 10,
+  'video_count': 0,
+};
+
+final _usage = DailyUsage(
+  userId: 'u1',
+  usageDate: DateTime(2026, 10, 11),
+  tryonCount: 0,
+  chatCount: 10,
+  videoCount: 0,
+);
+
+final _wardrobeRow = {
+  'id': 'w1',
+  'image_path': 'u1/w1.jpg',
+  'garment_type': 'top',
+  'tags': ['casual'],
+  'created_at': '2026-01-01T00:00:00Z',
+  'updated_at': '2026-01-01T00:00:00Z',
+};
+
+void main() {
+  Future<List<ChatStreamEvent>> run(
+    final List<Map<String, dynamic>> events, {
+    final List<ChatMessage> history = const [],
+  }) => ChatRepositoryImpl(
+    remoteDataSource: _FakeChatRemoteDataSource(events),
+  ).sendMessageStream(history).toList();
+
+  test('sends products and wardrobe items by id only', () async {
+    final dataSource = _FakeChatRemoteDataSource(const []);
+    final item = WardrobeItem(
+      id: 'w1',
+      imagePath: 'u1/w1.jpg',
+      garmentType: GarmentType.top,
+      createdAt: DateTime(2026),
+      updatedAt: DateTime(2026),
+    );
+
+    await ChatRepositoryImpl(remoteDataSource: dataSource).sendMessageStream([
+      const ChatMessage(role: ChatRole.user, content: [TextBlock('想找外套')]),
+      const ChatMessage(
+        role: ChatRole.assistant,
+        content: [
+          ToolUseBlock(id: 't1', name: 'search', input: {'q': '外套'}),
+        ],
+      ),
+      const ChatMessage(
+        role: ChatRole.user,
+        content: [
+          ToolResultBlock(toolUseId: 't1', content: {'items': <Object>[]}),
+        ],
+      ),
+      ChatMessage(
+        role: ChatRole.assistant,
+        content: [ContentBlock.wardrobeProduct(item)],
+      ),
+    ]).drain<void>();
+
+    expect(dataSource.sentRequest!.toJson(), {
+      'messages': [
+        {
+          'role': 'user',
+          'content': [
+            {'type': 'text', 'text': '想找外套'},
+          ],
+        },
+        {
+          'role': 'assistant',
+          'content': [
+            {
+              'type': 'tool_use',
+              'id': 't1',
+              'name': 'search',
+              'input': {'q': '外套'},
+            },
+          ],
+        },
+        {
+          'role': 'user',
+          'content': [
+            {
+              'type': 'tool_result',
+              'tool_use_id': 't1',
+              'content': {'items': <Object>[]},
+            },
+          ],
+        },
+        {
+          'role': 'assistant',
+          'content': [
+            {'type': 'wardrobe', 'id': 'w1'},
+          ],
+        },
+      ],
+    });
+  });
+
+  test('maps tool events and the final answer', () async {
+    final events = await run([
+      {
+        'type': 'tool_use',
+        'id': 't1',
+        'name': 'search',
+        'input': {'q': '外套'},
+      },
+      {
+        'type': 'tool_result',
+        'tool_use_id': 't1',
+        'content': {'items': <Object>[]},
+      },
+      {
+        'type': 'done',
+        'message': {
+          'role': 'assistant',
+          'content': [
+            {'type': 'text', 'text': '這件很適合'},
+            {'type': 'wardrobe', 'item': _wardrobeRow},
+            {'type': 'sticker', 'id': 's1'},
+          ],
+        },
+        'usage': _usageJson,
+      },
+    ]);
+
+    expect(events, hasLength(3));
+    expect(
+      events[0],
+      const ChatStreamEvent.toolStarted(
+        ToolUseBlock(id: 't1', name: 'search', input: {'q': '外套'}),
+      ),
+    );
+    expect(
+      events[1],
+      const ChatStreamEvent.toolFinished(
+        ToolResultBlock(toolUseId: 't1', content: {'items': <Object>[]}),
+      ),
+    );
+    final replied = events[2] as ChatReplied;
+    expect(replied.usage, _usage);
+    expect(replied.answer.role, ChatRole.assistant);
+    expect(replied.answer.content, hasLength(2));
+    expect(replied.answer.content[0], const TextBlock('這件很適合'));
+    expect((replied.answer.content[1] as WardrobeProductBlock).item.id, 'w1');
+  });
+
+  test('a malformed usage snapshot only drops the usage', () async {
+    final events = await run([
+      {
+        'type': 'done',
+        'message': {'role': 'assistant', 'content': <Object>[]},
+        'usage': {'user_id': 'u1'},
+      },
+    ]);
+
+    expect(
+      events.single,
+      const ChatStreamEvent.replied(
+        answer: ChatMessage(role: ChatRole.assistant),
+      ),
+    );
+  });
+
+  test('skips unknown event types', () async {
+    final events = await run([
+      {'type': 'heartbeat'},
+    ]);
+
+    expect(events, isEmpty);
+  });
+
+  test('a malformed event fails the run with ServerFailure', () async {
+    final events = await run([
+      {'type': 'tool_use', 'id': 't1'},
+    ]);
+
+    expect(events.single, const ChatStreamEvent.failed(ServerFailure()));
+  });
+
+  group('error events', () {
+    test('SERVICE_BUSY maps to ServiceBusyFailure', () async {
+      final events = await run([
+        {'type': 'error', 'code': 'SERVICE_BUSY'},
+      ]);
+
+      expect(events.single, const ChatStreamEvent.failed(ServiceBusyFailure()));
+    });
+
+    test('VALIDATION_ERROR keeps the backend message', () async {
+      final events = await run([
+        {'type': 'error', 'code': 'VALIDATION_ERROR', 'message': '太長'},
+      ]);
+
+      expect(
+        events.single,
+        const ChatStreamEvent.failed(ValidationFailure('太長')),
+      );
+    });
+
+    test('RATE_LIMIT_EXCEEDED carries the usage snapshot', () async {
+      final events = await run([
+        {'type': 'error', 'code': 'RATE_LIMIT_EXCEEDED', 'usage': _usageJson},
+      ]);
+
+      expect(
+        events.single,
+        ChatStreamEvent.failed(RateLimitFailure(usage: _usage)),
+      );
+    });
+
+    test('an unknown code maps to ServerFailure', () async {
+      final events = await run([
+        {'type': 'error', 'code': 'SOMETHING_ELSE'},
+      ]);
+
+      expect(events.single, const ChatStreamEvent.failed(ServerFailure()));
+    });
+  });
+}

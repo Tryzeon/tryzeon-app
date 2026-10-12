@@ -5,10 +5,11 @@ import 'package:dio/dio.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/config/env.dart';
-import 'package:tryzeon/core/error/failures.dart';
-import 'package:tryzeon/feature/personal/chat/data/chat_wire.dart';
-import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
-import 'package:tryzeon/feature/personal/chat/domain/entities/chat_stream_event.dart';
+import 'package:tryzeon/core/data/utils/decode_function_response.dart';
+import 'package:tryzeon/core/error/exceptions.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/personal/chat/data/dtos/chat_request.dart';
+import 'package:tryzeon/feature/personal/chat/data/dtos/chat_stream_event_dto.dart';
 
 class ChatRemoteDataSource {
   ChatRemoteDataSource(this._supabase);
@@ -16,20 +17,17 @@ class ChatRemoteDataSource {
   final SupabaseClient _supabase;
   final Dio _dio = Dio();
 
-  /// Rate-limit and other run failures arrive in-stream as an error event
-  /// (handled in [parseStreamLine]); a non-200 status is auth/bad-request only.
-  Stream<ChatStreamEvent> sendMessageStream(
-    final List<ChatMessage> history,
+  /// Rate-limit and other run failures arrive in-stream as an error event; a
+  /// non-200 status is auth/bad-request only.
+  Stream<ChatStreamEventDto> sendMessageStream(
+    final ChatRequest request,
   ) async* {
     final url = '${Env.supabaseUrl}/functions/v1/${AppConstants.functionChat}';
     final accessToken = _supabase.auth.currentSession?.accessToken ?? '';
-    final body = jsonEncode({
-      'messages': [for (final m in history) messageToWire(m)],
-    });
 
     final response = await _dio.post<ResponseBody>(
       url,
-      data: body,
+      data: jsonEncode(request.toJson()),
       options: Options(
         responseType: ResponseType.stream,
         headers: {
@@ -42,8 +40,7 @@ class ChatRemoteDataSource {
     );
 
     if ((response.statusCode ?? 0) != 200) {
-      yield const ChatStreamEvent.failed(ServerFailure());
-      return;
+      throw ServerException('Chat request failed: ${response.statusCode}');
     }
 
     // ResponseBody.stream is Stream<Uint8List>; Uint8List implements List<int>
@@ -54,8 +51,19 @@ class ChatRemoteDataSource {
         .transform(utf8.decoder)
         .transform(const LineSplitter());
     await for (final line in lines) {
-      final event = parseStreamLine(line);
-      if (event != null) yield event;
+      if (line.trim().isEmpty) continue;
+      yield _decodeLine(line);
     }
+  }
+
+  ChatStreamEventDto _decodeLine(final String line) {
+    final Object? json;
+    try {
+      json = jsonDecode(line);
+    } on FormatException catch (e, stackTrace) {
+      AppLogger.warning('Malformed chat stream line', e, stackTrace);
+      throw const ServerException();
+    }
+    return decodeFunctionResponse(json, ChatStreamEventDto.fromJson);
   }
 }

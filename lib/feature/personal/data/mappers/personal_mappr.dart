@@ -14,6 +14,13 @@ import '../../../../feature/common/product_size/domain/entities/product_size.dar
 import '../../../common/store/data/dtos/store_order_contact_dto.dart';
 import '../../../common/store/domain/entities/store_channel.dart';
 import '../../../common/store/domain/entities/store_order_contact.dart';
+import '../../chat/data/dtos/chat_answer_block_dto.dart';
+import '../../chat/data/dtos/chat_answer_dto.dart';
+import '../../chat/data/dtos/chat_content_block_dto.dart';
+import '../../chat/data/dtos/chat_message_dto.dart';
+import '../../chat/data/dtos/chat_stream_event_dto.dart';
+import '../../chat/domain/entities/chat_message.dart';
+import '../../chat/domain/entities/content_block.dart';
 import '../../profile/data/collections/user_profile_cache.dart';
 import '../../profile/data/dtos/update_user_profile_request.dart';
 import '../../profile/data/dtos/user_profile_dto.dart';
@@ -25,6 +32,7 @@ import '../../shop/data/dtos/shop_product_dto.dart';
 import '../../shop/data/dtos/shop_store_info_dto.dart';
 import '../../shop/domain/entities/shop_product.dart';
 import '../../shop/domain/entities/shop_store_info.dart';
+import '../../shop/shop.dart' show decodeShopProductRow;
 import '../../subscription/data/collections/subscription_tier_cache.dart';
 import '../../subscription/data/dtos/subscription_tier_dto.dart';
 import '../../subscription/domain/entities/subscription_capabilities.dart';
@@ -37,6 +45,7 @@ import '../../wardrobe/domain/entities/label_result.dart';
 import '../../wardrobe/domain/entities/new_wardrobe_item.dart';
 import '../../wardrobe/domain/entities/wardrobe_item.dart';
 import '../../wardrobe/domain/entities/wardrobe_item_update.dart';
+import '../../wardrobe/wardrobe.dart' show decodeWardrobeItemRow;
 import 'personal_mappr.auto_mappr.dart';
 
 @AutoMappr(
@@ -108,6 +117,15 @@ import 'personal_mappr.auto_mappr.dart';
     ),
     MapType<SubscriptionCapabilities, SubscriptionTierCache>(),
     MapType<SubscriptionTierCache, SubscriptionCapabilities>(),
+
+    MapType<ChatMessage, ChatMessageDto>(
+      fields: [Field('content', custom: ChatMapprHelper.contentToDto)],
+    ),
+    MapType<ChatAnswerDto, ChatMessage>(
+      fields: [Field('content', custom: ChatMapprHelper.answerContentToEntity)],
+    ),
+    MapType<ChatToolUseEventDto, ToolUseBlock>(),
+    MapType<ChatToolResultEventDto, ToolResultBlock>(),
   ],
   includes: [
     BodyMeasurementsMappr(), // UserProfile(Update).measurements
@@ -128,4 +146,41 @@ class ShopMapprHelper {
 
   static String? logoUrlToEntity(final ShopStoreInfoDto source) =>
       PublicImageUrl.ofOrNull(source.logoPath);
+}
+
+class ChatMapprHelper {
+  static List<ChatContentBlockDto> contentToDto(final ChatMessage source) => [
+    for (final block in source.content)
+      switch (block) {
+        TextBlock(:final text) => ChatContentBlockDto.text(text: text),
+        ToolUseBlock(:final id, :final name, :final input) =>
+          ChatContentBlockDto.toolUse(id: id, name: name, input: input),
+        ToolResultBlock(:final toolUseId, :final content) =>
+          ChatContentBlockDto.toolResult(
+            toolUseId: toolUseId,
+            content: content,
+          ),
+        ShopProductBlock(:final product) => ChatContentBlockDto.product(
+          id: product.id,
+        ),
+        WardrobeProductBlock(:final item) => ChatContentBlockDto.wardrobe(
+          id: item.id,
+        ),
+      },
+  ];
+
+  static List<ContentBlock> answerContentToEntity(final ChatAnswerDto source) =>
+      [
+        for (final block in source.content)
+          ?switch (block) {
+            ChatAnswerTextDto(:final text) => ContentBlock.text(text),
+            ChatAnswerProductDto(:final item) => ContentBlock.shopProduct(
+              decodeShopProductRow(item),
+            ),
+            ChatAnswerWardrobeDto(:final item) => ContentBlock.wardrobeProduct(
+              decodeWardrobeItemRow(item),
+            ),
+            ChatAnswerUnknownDto() => null,
+          },
+      ];
 }
