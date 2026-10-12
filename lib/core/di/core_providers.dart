@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
@@ -39,8 +41,20 @@ GeocodingService geocodingService(final Ref ref) {
 }
 
 @Riverpod(keepAlive: true)
+Dio dio(final Ref ref) {
+  final dio = Dio();
+  ref.onDispose(dio.close);
+  return dio;
+}
+
+@Riverpod(keepAlive: true)
+BaseCacheManager cacheManager(final Ref ref) {
+  return DefaultCacheManager();
+}
+
+@Riverpod(keepAlive: true)
 ImageFileCache imageFileCache(final Ref ref) {
-  return ImageFileCacheImpl();
+  return ImageFileCacheImpl(ref.watch(cacheManagerProvider));
 }
 
 @Riverpod(keepAlive: true)

@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_media_datasource.dart';
 import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_rating_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_remote_data_source.dart';
@@ -41,7 +42,10 @@ Tryon tryonUseCase(final Ref ref) {
 
 @riverpod
 TryonMediaDataSource tryonMediaDataSource(final Ref ref) {
-  return TryonMediaDataSource();
+  return TryonMediaDataSource(
+    ref.watch(dioProvider),
+    ref.watch(cacheManagerProvider),
+  );
 }
 
 @riverpod

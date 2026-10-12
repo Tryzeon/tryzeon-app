@@ -16,7 +16,7 @@ import 'package:tryzeon/feature/store/data/dtos/presign_products_response_dto.da
 import 'package:tryzeon/feature/store/data/dtos/presigned_upload_dto.dart';
 
 class StoreImagesApi {
-  StoreImagesApi(this._supabaseClient, [final Dio? dio]) : _dio = dio ?? Dio();
+  StoreImagesApi(this._supabaseClient, this._dio);
 
   final SupabaseClient _supabaseClient;
   final Dio _dio;

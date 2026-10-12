@@ -9,8 +9,10 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 
 /// Throws on failure — the repository maps exceptions to [Failure]s.
 class TryonMediaDataSource {
-  final BaseCacheManager _cacheManager = DefaultCacheManager();
-  final Dio _dio = Dio();
+  TryonMediaDataSource(this._dio, this._cacheManager);
+
+  final Dio _dio;
+  final BaseCacheManager _cacheManager;
 
   Future<Uint8List> downloadImageBytes(final String url) async {
     final file = await _cacheManager.getSingleFile(url);
