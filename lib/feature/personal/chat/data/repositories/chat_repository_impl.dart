@@ -7,18 +7,18 @@ import 'package:tryzeon/feature/personal/chat/data/dtos/chat_answer_dto.dart';
 import 'package:tryzeon/feature/personal/chat/data/dtos/chat_message_dto.dart';
 import 'package:tryzeon/feature/personal/chat/data/dtos/chat_request.dart';
 import 'package:tryzeon/feature/personal/chat/data/dtos/chat_stream_event_dto.dart';
+import 'package:tryzeon/feature/personal/chat/data/mappers/chat_mappr.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_stream_event.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
 import 'package:tryzeon/feature/personal/chat/domain/repositories/chat_repository.dart';
-import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 
 class ChatRepositoryImpl implements ChatRepository {
   ChatRepositoryImpl({required final ChatRemoteDataSource remoteDataSource})
     : _remoteDataSource = remoteDataSource;
   final ChatRemoteDataSource _remoteDataSource;
 
-  static const _mappr = PersonalMappr();
+  static const _mappr = ChatMappr();
 
   @override
   Stream<ChatStreamEvent> sendMessageStream(

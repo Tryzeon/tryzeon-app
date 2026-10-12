@@ -2,9 +2,9 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/daily_usage/data/dtos/daily_usage_dto.dart';
 import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
-import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_function_request.dart';
+import 'package:tryzeon/feature/personal/tryon/data/mappers/tryon_mappr.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_request.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_repository.dart';
@@ -15,7 +15,7 @@ class TryonRepositoryImpl implements TryonRepository {
     : _remoteDataSource = remoteDataSource;
 
   final TryonRemoteDataSource _remoteDataSource;
-  static const _mappr = PersonalMappr();
+  static const _mappr = TryonMappr();
 
   @override
   Future<Result<TryonResult, Failure>> tryon(final TryonRequest request) async {

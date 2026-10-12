@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_function_request.dart';
+import 'package:tryzeon/feature/personal/tryon/data/mappers/tryon_mappr.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_engine.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_garment.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
@@ -8,11 +8,11 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_request.dar
 
 Map<String, dynamic> _body(final TryonRequest request) => switch (request) {
   TryonGenerateRequest() =>
-    const PersonalMappr().convert<TryonGenerateRequest, TryonFunctionRequest>(
+    const TryonMappr().convert<TryonGenerateRequest, TryonFunctionRequest>(
       request,
     ),
   TryonAnimateRequest() =>
-    const PersonalMappr().convert<TryonAnimateRequest, TryonFunctionRequest>(
+    const TryonMappr().convert<TryonAnimateRequest, TryonFunctionRequest>(
       request,
     ),
 }.toJson();

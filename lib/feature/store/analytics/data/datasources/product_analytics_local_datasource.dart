@@ -3,8 +3,8 @@ import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart'
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/feature/store/analytics/data/collections/product_analytics_cache.dart';
+import 'package:tryzeon/feature/store/analytics/data/mappers/store_analytics_mappr.dart';
 import 'package:tryzeon/feature/store/analytics/domain/entities/product_analytics_summary.dart';
-import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 
 class ProductAnalyticsLocalDataSource {
   ProductAnalyticsLocalDataSource(
@@ -14,7 +14,7 @@ class ProductAnalyticsLocalDataSource {
 
   final IsarService _isarService;
   final CacheEntryLocalDataSource _cacheEntryLocalDataSource;
-  static const _mappr = StoreMappr();
+  static const _mappr = StoreAnalyticsMappr();
 
   static String cacheKeyForMonth(
     final String storeId,

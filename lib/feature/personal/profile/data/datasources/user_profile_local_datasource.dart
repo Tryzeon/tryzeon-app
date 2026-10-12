@@ -7,8 +7,8 @@ import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart'
 import 'package:tryzeon/core/data/services/image_file_cache.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
-import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/profile/data/collections/user_profile_cache.dart';
+import 'package:tryzeon/feature/personal/profile/data/mappers/user_profile_mappr.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 
 class UserProfileLocalDataSource {
@@ -20,7 +20,7 @@ class UserProfileLocalDataSource {
   final IsarService _isarService;
   final ImageFileCache _imageFileCache;
   final CacheEntryLocalDataSource _cacheEntryLocalDataSource;
-  static const _mappr = PersonalMappr();
+  static const _mappr = UserProfileMappr();
   static const cacheKey = 'user_profile';
 
   Future<CacheLookup<UserProfile>> getUserProfile() async {

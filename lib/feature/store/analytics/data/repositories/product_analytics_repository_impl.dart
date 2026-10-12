@@ -4,9 +4,9 @@ import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/store/analytics/data/datasources/product_analytics_local_datasource.dart';
 import 'package:tryzeon/feature/store/analytics/data/datasources/product_analytics_remote_datasource.dart';
 import 'package:tryzeon/feature/store/analytics/data/dtos/product_analytics_summary_dto.dart';
+import 'package:tryzeon/feature/store/analytics/data/mappers/store_analytics_mappr.dart';
 import 'package:tryzeon/feature/store/analytics/domain/entities/product_analytics_summary.dart';
 import 'package:tryzeon/feature/store/analytics/domain/repositories/product_analytics_repository.dart';
-import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:typed_result/typed_result.dart';
 
 class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
@@ -18,7 +18,7 @@ class ProductAnalyticsRepositoryImpl implements ProductAnalyticsRepository {
 
   final ProductAnalyticsRemoteDataSource _remoteDataSource;
   final ProductAnalyticsLocalDataSource _localDataSource;
-  static const _mappr = StoreMappr();
+  static const _mappr = StoreAnalyticsMappr();
 
   @override
   Future<Result<List<ProductAnalyticsSummary>, Failure>>

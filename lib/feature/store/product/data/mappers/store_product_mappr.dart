@@ -6,19 +6,8 @@ import 'package:tryzeon/feature/common/garment_type/data/mappers/garment_type_ca
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/data/mappers/product_attributes_cache_converters.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
-import 'package:tryzeon/feature/common/product_size/data/collections/product_size_embedded.dart';
 import 'package:tryzeon/feature/common/product_size/data/dtos/body_measurement_ranges_dto.dart';
-import 'package:tryzeon/feature/common/product_size/data/mappers/body_measurement_ranges_mappr.dart';
-import 'package:tryzeon/feature/common/product_size/data/mappers/garment_measurements_mappr.dart';
-import 'package:tryzeon/feature/common/store/data/collections/store_order_contact_embedded.dart';
-import 'package:tryzeon/feature/common/store/data/dtos/store_order_contact_dto.dart';
-import 'package:tryzeon/feature/common/store/data/mappers/store_enum_cache_converters.dart';
-import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
-import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
-import 'package:tryzeon/feature/store/analytics/data/collections/product_analytics_cache.dart';
-import 'package:tryzeon/feature/store/analytics/data/dtos/product_analytics_summary_dto.dart';
-import 'package:tryzeon/feature/store/analytics/domain/entities/product_analytics_summary.dart';
-import 'package:tryzeon/feature/store/data/mappers/store_mappr.auto_mappr.dart';
+import 'package:tryzeon/feature/common/product_size/data/mappers/product_size_mappr.dart';
 import 'package:tryzeon/feature/store/product/data/collections/product_cache.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/create_product_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/parse_size_voice_response_dto.dart';
@@ -26,57 +15,50 @@ import 'package:tryzeon/feature/store/product/data/dtos/product_analysis_result_
 import 'package:tryzeon/feature/store/product/data/dtos/product_draft_dto.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/product_dto.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/product_size_draft_dto.dart';
+import 'package:tryzeon/feature/store/product/data/mappers/store_product_mappr.auto_mappr.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/parsed_size.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product_analysis_result.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/size_item.dart';
-import 'package:tryzeon/feature/store/profile/data/collections/store_profile_cache.dart';
-import 'package:tryzeon/feature/store/profile/data/dtos/store_profile_dto.dart';
-import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 
 @AutoMappr(
   [
-    MapType<ProductSizeDto, ProductSize>(),
-    MapType<ProductSize, ProductSizeDto>(),
-    MapType<ProductSize, ProductSizeEmbedded>(),
-    MapType<ProductSizeEmbedded, ProductSize>(),
-
     MapType<ProductAnalysisResultDto, ProductAnalysisResult>(),
     MapType<ParsedMeasurementDto, ParsedMeasurement>(),
     MapType<ParsedSizeDto, ParsedSize>(
       fields: [
         Field(
           'garmentMeasurements',
-          custom: StoreMapprHelper.parsedGarmentMeasurementsFromDto,
+          custom: StoreProductMapprHelper.parsedGarmentMeasurementsFromDto,
         ),
         Field(
           'bodyMeasurementRanges',
-          custom: StoreMapprHelper.parsedBodyMeasurementRangesFromDto,
+          custom: StoreProductMapprHelper.parsedBodyMeasurementRangesFromDto,
         ),
       ],
     ),
 
     MapType<ProductDto, Product>(
       fields: [
-        Field('imageUrls', custom: StoreMapprHelper.imageUrlsFromDto),
-        Field('status', custom: StoreMapprHelper.statusFromDto),
-        Field('gender', custom: StoreMapprHelper.genderFromDto),
-        Field('styles', custom: StoreMapprHelper.stylesFromDto),
-        Field('seasons', custom: StoreMapprHelper.seasonsFromDto),
+        Field('imageUrls', custom: StoreProductMapprHelper.imageUrlsFromDto),
+        Field('status', custom: StoreProductMapprHelper.statusFromDto),
+        Field('gender', custom: StoreProductMapprHelper.genderFromDto),
+        Field('styles', custom: StoreProductMapprHelper.stylesFromDto),
+        Field('seasons', custom: StoreProductMapprHelper.seasonsFromDto),
       ],
     ),
     MapType<Product, ProductDto>(
       fields: [
-        Field('styles', custom: StoreMapprHelper.stylesToDto),
-        Field('seasons', custom: StoreMapprHelper.seasonsToDto),
+        Field('styles', custom: StoreProductMapprHelper.stylesToDto),
+        Field('seasons', custom: StoreProductMapprHelper.seasonsToDto),
       ],
     ),
 
     MapType<NewProduct, CreateProductRequest>(),
     MapType<ProductDraft, ProductDraftDto>(
       fields: [
-        Field('styles', custom: StoreMapprHelper.draftStylesToDto),
-        Field('seasons', custom: StoreMapprHelper.draftSeasonsToDto),
+        Field('styles', custom: StoreProductMapprHelper.draftStylesToDto),
+        Field('seasons', custom: StoreProductMapprHelper.draftSeasonsToDto),
       ],
     ),
     MapType<NewSizeItem, ProductSizeDraftDto>(),
@@ -111,9 +93,9 @@ import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart
     MapType<ProductCache, Product>(
       fields: [
         Field('id', from: 'productId'),
-        Field('imageUrls', custom: StoreMapprHelper.imageUrlsFromCache),
-        Field('status', custom: StoreMapprHelper.statusFromCache),
-        Field('gender', custom: StoreMapprHelper.genderFromCache),
+        Field('imageUrls', custom: StoreProductMapprHelper.imageUrlsFromCache),
+        Field('status', custom: StoreProductMapprHelper.statusFromCache),
+        Field('gender', custom: StoreProductMapprHelper.genderFromCache),
       ],
       converters: [
         TypeConverter<String, GarmentType>(
@@ -136,64 +118,14 @@ import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart
         ),
       ],
     ),
-
-    MapType<StoreOrderContactDto, StoreOrderContact>(),
-    MapType<StoreOrderContact, StoreOrderContactDto>(),
-    MapType<StoreOrderContact, StoreOrderContactEmbedded>(
-      converters: [
-        TypeConverter<OrderContactType, String>(
-          StoreEnumCacheConverters.orderContactTypeToCache,
-        ),
-      ],
-    ),
-    MapType<StoreOrderContactEmbedded, StoreOrderContact>(
-      converters: [
-        TypeConverter<String, OrderContactType>(
-          StoreEnumCacheConverters.orderContactTypeFromCache,
-        ),
-      ],
-    ),
-
-    MapType<StoreProfileDto, StoreProfile>(
-      fields: [
-        Field('channels', custom: StoreMapprHelper.channelsToEntity),
-        Field('logoUrl', custom: StoreMapprHelper.logoUrlFromDto),
-      ],
-    ),
-    MapType<StoreProfile, StoreProfileDto>(
-      fields: [Field('channels', custom: StoreMapprHelper.channelsToDto)],
-    ),
-    MapType<StoreProfile, StoreProfileCache>(
-      fields: [Field('storeId', from: 'id')],
-      converters: [
-        TypeConverter<Set<StoreChannel>, List<String>>(
-          StoreEnumCacheConverters.channelsToCache,
-        ),
-      ],
-    ),
-    MapType<StoreProfileCache, StoreProfile>(
-      fields: [
-        Field('id', from: 'storeId'),
-        Field('logoUrl', custom: StoreMapprHelper.logoUrlFromCache),
-      ],
-      converters: [
-        TypeConverter<List<String>, Set<StoreChannel>>(
-          StoreEnumCacheConverters.channelsFromCache,
-        ),
-      ],
-    ),
-
-    MapType<ProductAnalyticsSummaryDto, ProductAnalyticsSummary>(),
-    MapType<ProductAnalyticsSummary, ProductAnalyticsCache>(),
-    MapType<ProductAnalyticsCache, ProductAnalyticsSummary>(),
   ],
-  includes: [GarmentMeasurementsMappr(), BodyMeasurementRangesMappr()],
+  includes: [ProductSizeMappr()],
 )
-class StoreMappr extends $StoreMappr {
-  const StoreMappr();
+class StoreProductMappr extends $StoreProductMappr {
+  const StoreProductMappr();
 }
 
-class StoreMapprHelper {
+class StoreProductMapprHelper {
   static Map<GarmentMeasurementType, ParsedMeasurement>
   parsedGarmentMeasurementsFromDto(final ParsedSizeDto source) => {
     // A `?key:` null-aware element around this const constructor call crashes
@@ -204,13 +136,13 @@ class StoreMapprHelper {
               .where((final t) => t.value == key)
               .firstOrNull
           case final type?)
-        type: const StoreMappr()
+        type: const StoreProductMappr()
             .convert<ParsedMeasurementDto, ParsedMeasurement>(value),
   };
 
   static Map<BodyMeasurementType, MeasurementRange>
   parsedBodyMeasurementRangesFromDto(final ParsedSizeDto source) {
-    final ranges = const StoreMappr()
+    final ranges = const StoreProductMappr()
         .convert<BodyMeasurementRangesDto, BodyMeasurementRanges>(
           source.bodyMeasurementRanges,
         );
@@ -222,12 +154,6 @@ class StoreMapprHelper {
 
   static List<String> imageUrlsFromCache(final ProductCache source) =>
       source.imagePaths.map(PublicImageUrl.of).toList();
-
-  static String? logoUrlFromDto(final StoreProfileDto source) =>
-      PublicImageUrl.ofOrNull(source.logoPath);
-
-  static String? logoUrlFromCache(final StoreProfileCache source) =>
-      PublicImageUrl.ofOrNull(source.logoPath);
 
   static ProductStatus statusFromDto(final ProductDto source) =>
       source.status ?? ProductStatus.active;
@@ -268,10 +194,4 @@ class StoreMapprHelper {
     final seasons = source.seasons;
     return seasons == null ? null : ProductSeason.listFromSet(seasons);
   }
-
-  static Set<StoreChannel> channelsToEntity(final StoreProfileDto source) =>
-      source.channels.toSet();
-
-  static List<StoreChannel> channelsToDto(final StoreProfile source) =>
-      StoreChannel.listFromSet(source.channels);
 }

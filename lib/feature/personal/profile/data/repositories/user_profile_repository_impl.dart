@@ -3,11 +3,11 @@ import 'dart:io';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
-import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_local_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/dtos/update_user_profile_request.dart';
 import 'package:tryzeon/feature/personal/profile/data/dtos/user_profile_dto.dart';
+import 'package:tryzeon/feature/personal/profile/data/mappers/user_profile_mappr.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile_update.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
@@ -22,7 +22,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
 
   final UserProfileRemoteDataSource _remoteDataSource;
   final UserProfileLocalDataSource _localDataSource;
-  static const _mappr = PersonalMappr();
+  static const _mappr = UserProfileMappr();
 
   @override
   Future<Result<UserProfile, Failure>> getUserProfile({

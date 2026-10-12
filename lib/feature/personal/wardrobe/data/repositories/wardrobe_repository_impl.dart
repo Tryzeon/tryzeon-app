@@ -3,12 +3,12 @@ import 'dart:io';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
-import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_local_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/dtos/create_wardrobe_item_request.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/dtos/update_wardrobe_item_request.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/dtos/wardrobe_item_dto.dart';
+import 'package:tryzeon/feature/personal/wardrobe/data/mappers/wardrobe_mappr.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/new_wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item_update.dart';
@@ -24,7 +24,7 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
 
   final WardrobeRemoteDataSource _remoteDataSource;
   final WardrobeLocalDataSource _localDataSource;
-  static const _mappr = PersonalMappr();
+  static const _mappr = WardrobeMappr();
 
   @override
   Future<Result<List<WardrobeItem>, Failure>> getWardrobeItems({

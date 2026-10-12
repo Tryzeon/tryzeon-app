@@ -2,8 +2,8 @@ import 'package:isar_community/isar.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
-import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:tryzeon/feature/store/product/data/collections/product_cache.dart';
+import 'package:tryzeon/feature/store/product/data/mappers/store_product_mappr.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 
 class ProductLocalDataSource {
@@ -11,7 +11,7 @@ class ProductLocalDataSource {
 
   final IsarService _isarService;
   final CacheEntryLocalDataSource _cacheEntryLocalDataSource;
-  static const _mappr = StoreMappr();
+  static const _mappr = StoreProductMappr();
   static String cacheKeyForStore(final String storeId) =>
       'store_products:$storeId';
   static String cacheKeyForProduct(final String productId) =>

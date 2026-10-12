@@ -2,13 +2,13 @@ import 'package:tryzeon/core/data/utils/json_diff.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
-import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:tryzeon/feature/store/product/data/datasources/product_local_datasource.dart';
 import 'package:tryzeon/feature/store/product/data/datasources/product_remote_datasource.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/create_product_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/create_product_size_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/product_dto.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/product_size_draft_dto.dart';
+import 'package:tryzeon/feature/store/product/data/mappers/store_product_mappr.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/domain/repositories/product_repository.dart';
 import 'package:tryzeon/feature/store/product/domain/services/product_size_diff.dart';
@@ -24,7 +24,7 @@ class ProductRepositoryImpl implements ProductRepository {
 
   final ProductRemoteDataSource _remoteDataSource;
   final ProductLocalDataSource _localDataSource;
-  static const _mappr = StoreMappr();
+  static const _mappr = StoreProductMappr();
 
   static CreateProductSizeRequest _sizeRequest(
     final String productId,

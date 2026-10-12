@@ -6,9 +6,9 @@ import 'package:tryzeon/core/data/utils/decode_function_response.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/measurement/domain/entities/measurement_unit.dart';
-import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/parse_size_voice_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/parse_size_voice_response_dto.dart';
+import 'package:tryzeon/feature/store/product/data/mappers/store_product_mappr.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/parsed_size.dart';
 import 'package:tryzeon/feature/store/product/domain/services/size_voice_parser.dart';
 import 'package:typed_result/typed_result.dart';
@@ -19,7 +19,7 @@ class SizeVoiceParserImpl implements SizeVoiceParser {
   final SupabaseClient _supabase;
   static const _parseSizeVoiceFunction = 'parse-size-voice';
   static const _timeout = Duration(seconds: 30);
-  static const _mappr = StoreMappr();
+  static const _mappr = StoreProductMappr();
 
   @override
   Future<Result<List<ParsedSize>, Failure>> parse({

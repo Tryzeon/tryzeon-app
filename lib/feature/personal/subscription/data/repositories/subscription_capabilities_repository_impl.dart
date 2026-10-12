@@ -2,10 +2,10 @@ import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
-import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/subscription/data/datasources/subscription_capabilities_local_datasource.dart';
 import 'package:tryzeon/feature/personal/subscription/data/datasources/subscription_capabilities_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/subscription/data/dtos/subscription_tier_dto.dart';
+import 'package:tryzeon/feature/personal/subscription/data/mappers/subscription_mappr.dart';
 import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription_capabilities.dart';
 import 'package:tryzeon/feature/personal/subscription/domain/repositories/subscription_capabilities_repository.dart';
 import 'package:typed_result/typed_result.dart';
@@ -20,7 +20,7 @@ class SubscriptionCapabilitiesRepositoryImpl
 
   final SubscriptionCapabilitiesRemoteDataSource _remoteDataSource;
   final SubscriptionCapabilitiesLocalDataSource _localDataSource;
-  static const _mappr = PersonalMappr();
+  static const _mappr = SubscriptionMappr();
 
   @override
   Future<Result<SubscriptionCapabilities, Failure>> getCapabilitiesForTier(

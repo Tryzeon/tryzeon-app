@@ -6,8 +6,8 @@ import 'package:tryzeon/core/data/utils/decode_function_response.dart';
 import 'package:tryzeon/core/data/utils/encode_image_for_analysis.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
-import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/product_analysis_result_dto.dart';
+import 'package:tryzeon/feature/store/product/data/mappers/store_product_mappr.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product_analysis_result.dart';
 import 'package:tryzeon/feature/store/product/domain/services/product_image_analyzer.dart';
 import 'package:typed_result/typed_result.dart';
@@ -22,7 +22,7 @@ class ProductImageAnalyzerImpl implements ProductImageAnalyzer {
   final ImageEncoder _encodeImage;
   static const _analyzeProductImageFunction = 'analyze-product-image';
   static const _timeout = Duration(seconds: 20);
-  static const _mappr = StoreMappr();
+  static const _mappr = StoreProductMappr();
 
   @override
   Future<Result<ProductAnalysisResult, Failure>> analyze(

@@ -3,8 +3,8 @@ import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
-import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:tryzeon/feature/store/profile/data/collections/store_profile_cache.dart';
+import 'package:tryzeon/feature/store/profile/data/mappers/store_profile_mappr.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 
 class StoreProfileLocalDataSource {
@@ -15,7 +15,7 @@ class StoreProfileLocalDataSource {
 
   final IsarService _isarService;
   final CacheEntryLocalDataSource _cacheEntryLocalDataSource;
-  static const _mappr = StoreMappr();
+  static const _mappr = StoreProfileMappr();
   static const cacheKey = 'store_profile';
 
   Future<CacheLookup<StoreProfile>> getStoreProfile() async {

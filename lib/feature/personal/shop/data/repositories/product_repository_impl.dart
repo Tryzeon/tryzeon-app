@@ -1,10 +1,10 @@
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
-import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/dtos/shop_product_dto.dart';
 import 'package:tryzeon/feature/personal/shop/data/dtos/shop_store_info_dto.dart';
 import 'package:tryzeon/feature/personal/shop/data/mappers/list_shop_products_request_mapper.dart';
+import 'package:tryzeon/feature/personal/shop/data/mappers/shop_mappr.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
@@ -16,7 +16,7 @@ class ProductRepositoryImpl implements ProductRepository {
     : _remoteDataSource = remoteDataSource;
 
   final ShopRemoteDataSource _remoteDataSource;
-  static const _mappr = PersonalMappr();
+  static const _mappr = ShopMappr();
 
   @override
   Future<Result<List<ShopProduct>, Failure>> listProducts(

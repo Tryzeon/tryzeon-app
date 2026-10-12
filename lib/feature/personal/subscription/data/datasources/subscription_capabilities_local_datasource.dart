@@ -3,8 +3,8 @@ import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart'
 import 'package:tryzeon/core/data/services/isar_service.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
-import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/subscription/data/collections/subscription_tier_cache.dart';
+import 'package:tryzeon/feature/personal/subscription/data/mappers/subscription_mappr.dart';
 import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription_capabilities.dart';
 
 class SubscriptionCapabilitiesLocalDataSource {
@@ -16,7 +16,7 @@ class SubscriptionCapabilitiesLocalDataSource {
   final IsarService _isarService;
   final CacheEntryLocalDataSource _cacheEntryLocalDataSource;
 
-  static const _mappr = PersonalMappr();
+  static const _mappr = SubscriptionMappr();
   static const _baseCacheKey = 'subscription_tier_capabilities';
 
   static String cacheKeyForTier(final AppSubscriptionTier tier) =>

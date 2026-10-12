@@ -2,10 +2,10 @@ import 'package:tryzeon/core/data/utils/json_diff.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
-import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_local_datasource.dart';
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_remote_datasource.dart';
 import 'package:tryzeon/feature/store/profile/data/dtos/store_profile_dto.dart';
+import 'package:tryzeon/feature/store/profile/data/mappers/store_profile_mappr.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 import 'package:tryzeon/feature/store/profile/domain/repositories/store_profile_repository.dart';
 import 'package:typed_result/typed_result.dart';
@@ -19,7 +19,7 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
 
   final StoreProfileRemoteDataSource _remoteDataSource;
   final StoreProfileLocalDataSource _localDataSource;
-  static const _mappr = StoreMappr();
+  static const _mappr = StoreProfileMappr();
 
   @override
   Future<Result<StoreProfile?, Failure>> getStoreProfile({
