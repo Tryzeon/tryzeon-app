@@ -11,10 +11,10 @@ ListShopProductsRequest toListShopProductsRequest(
   required final int offset,
 }) {
   final (column, ascending) = switch (filter.sort) {
-    ShopSortLatest() => ('created_at', false),
-    ShopSortPriceLowToHigh() => ('price', true),
-    ShopSortPriceHighToLow() => ('price', false),
-    ShopSortProximity() => ('proximity', true),
+    ShopSortLatest() => (ShopSortColumn.createdAt, false),
+    ShopSortPriceLowToHigh() => (ShopSortColumn.price, true),
+    ShopSortPriceHighToLow() => (ShopSortColumn.price, false),
+    ShopSortProximity() => (ShopSortColumn.proximity, true),
   };
   final (latitude, longitude) = switch (filter.sort) {
     ShopSortProximity(:final latitude, :final longitude) => (

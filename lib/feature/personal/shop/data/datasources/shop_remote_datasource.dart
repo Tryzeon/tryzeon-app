@@ -36,7 +36,7 @@ class ShopRemoteDataSource {
         .select('''
           *,
           ${AppConstants.tableProductSizes}(*),
-          ${AppConstants.tableStoreProfiles}!products_store_id_fkey(id, name, slug, address, logo_path, channels)
+          ${AppConstants.tableStoreProfiles}!${AppConstants.fkProductsStoreId}(id, name, slug, address, logo_path, channels)
         ''')
         .eq('id', productId)
         .single();

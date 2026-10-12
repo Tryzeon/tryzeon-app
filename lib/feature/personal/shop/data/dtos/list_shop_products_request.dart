@@ -56,7 +56,7 @@ class ListShopProductsRequest {
   @JsonKey(name: 'p_seasons')
   final List<ProductSeason>? seasons;
   @JsonKey(name: 'p_sort_column')
-  final String sortColumn;
+  final ShopSortColumn sortColumn;
   @JsonKey(name: 'p_sort_ascending')
   final bool sortAscending;
   @JsonKey(name: 'p_user_lat')
@@ -69,4 +69,13 @@ class ListShopProductsRequest {
   final int offset;
 
   Map<String, dynamic> toJson() => _$ListShopProductsRequestToJson(this);
+}
+
+enum ShopSortColumn {
+  @JsonValue('created_at')
+  createdAt,
+  @JsonValue('price')
+  price,
+  @JsonValue('proximity')
+  proximity,
 }

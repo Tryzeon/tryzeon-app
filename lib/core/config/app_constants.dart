@@ -28,6 +28,10 @@ class AppConstants {
   static const String tableContentReports = 'content_reports';
   static const String tableTryonRatings = 'tryon_ratings';
 
+  // analytics_events also links products to store_profiles, so PostgREST needs
+  // the foreign key to pick which relationship an embed follows.
+  static const String fkProductsStoreId = 'products_store_id_fkey';
+
   static const String bucketUserAvatars = 'user-avatars';
   static const String bucketWardrobeImages = 'wardrobe-images';
 
