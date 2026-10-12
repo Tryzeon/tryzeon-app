@@ -17,6 +17,7 @@ import 'package:tryzeon/feature/personal/wardrobe/data/repositories/wardrobe_rep
 import 'package:tryzeon/feature/personal/wardrobe/data/services/background_remover_impl.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/services/label_tagger_impl.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/services/wardrobe_image_storage_impl.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/label_result.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_capacity.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/repositories/wardrobe_repository.dart';
@@ -117,6 +118,30 @@ RemoveWardrobeImageBackground removeWardrobeImageBackgroundUseCase(
   final Ref ref,
 ) {
   return RemoveWardrobeImageBackground(ref.watch(backgroundRemoverProvider));
+}
+
+@riverpod
+Future<LabelResult> wardrobeImageLabels(
+  final Ref ref,
+  final String imagePath,
+) async {
+  final result = await ref.watch(tagWardrobeImageUseCaseProvider)(
+    File(imagePath),
+  );
+  if (result.isFailure) throw result.getError()!;
+  return result.get()!;
+}
+
+@riverpod
+Future<Uint8List?> wardrobeImageWithoutBackground(
+  final Ref ref,
+  final String imagePath,
+) async {
+  final result = await ref.watch(removeWardrobeImageBackgroundUseCaseProvider)(
+    File(imagePath),
+  );
+  if (result.isFailure) throw result.getError()!;
+  return result.get();
 }
 
 /// Keyed on the signed-in user, not on who is listening: a keepAlive holder

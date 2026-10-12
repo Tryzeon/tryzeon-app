@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -50,38 +49,21 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
     final isUploading = ref.watch(wardrobeEditProvider).isLoading;
     final tags = useState<List<String>>(const []);
     final tagController = useTextEditingController();
-    final removedBgImage = useState<Uint8List?>(null);
     final useRemovedBg = useState(true);
-    final isAnalyzingTags = useState(true);
+    final removedBgImage = ref
+        .watch(wardrobeImageWithoutBackgroundProvider(image.path))
+        .value;
 
-    useEffect(() {
-      var cancelled = false;
-      final removeBackground = ref.read(
-        removeWardrobeImageBackgroundUseCaseProvider,
-      );
-      final tagImage = ref.read(tagWardrobeImageUseCaseProvider);
-
-      Future<void> runBackground() async {
-        final result = await removeBackground(image);
-        if (!cancelled) removedBgImage.value = result.get();
-      }
-
-      Future<void> runLabels() async {
-        final result = (await tagImage(image)).get();
-        if (cancelled) return;
-        if (result != null) {
-          tags.value = result.tags;
-          if (result.garmentType != null && selectedGarmentType.value == null) {
-            selectedGarmentType.value = result.garmentType;
-          }
+    final labelsProvider = wardrobeImageLabelsProvider(image.path);
+    final isAnalyzingTags = ref.watch(labelsProvider).isLoading;
+    ref.listen(labelsProvider, (_, final next) {
+      if (next case AsyncData(:final value)) {
+        tags.value = value.tags;
+        if (value.garmentType != null && selectedGarmentType.value == null) {
+          selectedGarmentType.value = value.garmentType;
         }
-        isAnalyzingTags.value = false;
       }
-
-      runBackground();
-      runLabels();
-      return () => cancelled = true;
-    }, const []);
+    });
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
@@ -109,7 +91,7 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
             image: image,
             garmentType: selectedGarmentType.value!,
             tags: tags.value,
-            replacementBytes: useRemovedBg.value ? removedBgImage.value : null,
+            replacementBytes: useRemovedBg.value ? removedBgImage : null,
           );
 
       if (result.isSuccess) {
@@ -179,9 +161,9 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
         children: [
           ClipRRect(
             borderRadius: AppRadius.cardAll,
-            child: useRemovedBg.value && removedBgImage.value != null
+            child: useRemovedBg.value && removedBgImage != null
                 ? Image.memory(
-                    removedBgImage.value!,
+                    removedBgImage,
                     width: _previewSize,
                     height: _previewSize,
                     fit: BoxFit.cover,
@@ -200,7 +182,7 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
     }
 
     Widget buildBackgroundToggle() {
-      if (removedBgImage.value == null) return const SizedBox.shrink();
+      if (removedBgImage == null) return const SizedBox.shrink();
       return SwitchListTile(
         contentPadding: EdgeInsets.zero,
         title: Text('自動去背', style: textTheme.labelLarge),
@@ -239,7 +221,7 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
     }
 
     Widget buildTagEditor() {
-      if (isAnalyzingTags.value) {
+      if (isAnalyzingTags) {
         return Row(
           children: [
             const SizedBox(
@@ -294,7 +276,7 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             buildImagePreviewRow(),
-            if (removedBgImage.value != null) ...[
+            if (removedBgImage != null) ...[
               const SizedBox(height: AppSpacing.lg),
               buildBackgroundToggle(),
             ],
