@@ -1,3 +1,4 @@
+import 'package:tryzeon/core/data/errors/map_exception_to_failure.dart';
 import 'package:tryzeon/core/data/utils/json_diff.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
+import 'package:tryzeon/core/error/failure_from_error.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
@@ -202,7 +203,7 @@ class ProfileEditNotifier extends _$ProfileEditNotifier {
     } catch (e, stackTrace) {
       AppLogger.error('Failed to update user profile', e, stackTrace);
       state = AsyncError(e, stackTrace);
-      return Err(mapExceptionToFailure(e));
+      return Err(failureFromError(e));
     } finally {
       link.close();
     }
@@ -248,7 +249,7 @@ class AvatarUploadNotifier extends _$AvatarUploadNotifier {
       return result;
     } catch (e, stackTrace) {
       AppLogger.error('Failed to replace avatar', e, stackTrace);
-      return Err(mapExceptionToFailure(e));
+      return Err(failureFromError(e));
     } finally {
       state = null;
       link.close();

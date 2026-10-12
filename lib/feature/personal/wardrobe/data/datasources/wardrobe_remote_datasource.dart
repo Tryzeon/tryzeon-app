@@ -4,10 +4,11 @@ import 'package:mime/mime.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
-
 import 'package:tryzeon/feature/personal/wardrobe/data/dtos/create_wardrobe_item_request.dart';
+
 import 'package:tryzeon/feature/personal/wardrobe/data/dtos/update_wardrobe_item_request.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/dtos/wardrobe_item_dto.dart';
+import 'package:tryzeon/feature/personal/wardrobe/data/exceptions/wardrobe_full_exception.dart';
 
 class WardrobeRemoteDataSource {
   WardrobeRemoteDataSource(this._supabaseClient);
@@ -15,6 +16,9 @@ class WardrobeRemoteDataSource {
 
   static const _wardrobeItemTable = 'wardrobe_items';
   static const _bucket = 'wardrobe-images';
+
+  /// SQLSTATE the wardrobe_items insert trigger raises for a full wardrobe.
+  static const _wardrobeFullCode = 'TZ001';
 
   Future<List<WardrobeItemDto>> getWardrobeItems() async {
     final user = _supabaseClient.auth.currentUser;
@@ -39,7 +43,12 @@ class WardrobeRemoteDataSource {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();
 
-    await _supabaseClient.from(_wardrobeItemTable).insert(request.toJson());
+    try {
+      await _supabaseClient.from(_wardrobeItemTable).insert(request.toJson());
+    } on PostgrestException catch (e) {
+      if (e.code == _wardrobeFullCode) throw const WardrobeFullException();
+      rethrow;
+    }
   }
 
   Future<void> deleteWardrobeItem(final String id) async {

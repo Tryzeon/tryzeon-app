@@ -3,6 +3,7 @@ import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
+import 'package:tryzeon/feature/common/daily_usage/domain/failures/usage_limit_failure.dart';
 import 'package:tryzeon/feature/personal/usage/data/datasources/daily_usage_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/usage/data/repositories/daily_usage_repository_impl.dart';
 import 'package:tryzeon/feature/personal/usage/domain/repositories/daily_usage_repository.dart';
@@ -52,7 +53,7 @@ class DailyUsageToday extends _$DailyUsageToday {
   }
 
   void syncFromFailure(final Failure failure) {
-    if (failure case RateLimitFailure(:final usage?)) {
+    if (failure case UsageLimitFailure(:final usage?)) {
       state = AsyncData(usage);
     }
   }

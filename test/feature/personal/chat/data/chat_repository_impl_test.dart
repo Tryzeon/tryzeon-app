@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/core/data/utils/decode_function_response.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
+import 'package:tryzeon/feature/common/daily_usage/domain/failures/usage_limit_failure.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/personal/chat/data/datasources/chat_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/chat/data/dtos/chat_request.dart';
@@ -239,7 +240,7 @@ void main() {
 
       expect(
         events.single,
-        ChatStreamEvent.failed(RateLimitFailure(usage: _usage)),
+        ChatStreamEvent.failed(UsageLimitFailure(usage: _usage)),
       );
     });
 

@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:tryzeon/core/error/failure_from_error.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
@@ -8,6 +9,7 @@ import 'package:tryzeon/feature/personal/settings/providers/settings_providers.d
 import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_subject.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/failures/avatar_missing_failure.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/usecases/tryon.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
@@ -90,7 +92,7 @@ class TryonController extends _$TryonController {
       preferences = await ref.read(tryonPreferencesProvider.future);
     } catch (e, stackTrace) {
       AppLogger.error('Try-on setup failed', e, stackTrace);
-      state = TryonFailed(mapExceptionToFailure(e));
+      state = TryonFailed(failureFromError(e));
       return;
     }
 
@@ -138,7 +140,7 @@ class TryonController extends _$TryonController {
         stackTrace,
       );
       if (!galleryNotifier.removeById(id)) return;
-      state = TryonFailed(mapExceptionToFailure(e));
+      state = TryonFailed(failureFromError(e));
     }
   }
 }

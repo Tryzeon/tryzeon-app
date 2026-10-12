@@ -4,30 +4,19 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' show ClientException;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/core/data/errors/map_exception_to_failure.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/core/error/failures.dart';
-import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
 
 void main() {
   group('mapExceptionToFailure', () {
-    test('AuthException with otp_expired code maps to AuthFailure', () {
+    test('AuthException maps to AuthFailure with no message of its own', () {
       final failure = mapExceptionToFailure(
-        const AuthException('expired', code: 'otp_expired'),
+        const AuthException('bad password', code: 'invalid_credentials'),
       );
       expect(failure, isA<AuthFailure>());
-      expect(failure.message, '驗證碼錯誤或過期');
+      expect(failure.message, isNull);
     });
-
-    test(
-      'AuthException without otp_expired code falls back to AuthFailure',
-      () {
-        final failure = mapExceptionToFailure(
-          const AuthException('bad password', code: 'invalid_credentials'),
-        );
-        expect(failure, isA<AuthFailure>());
-        expect(failure.message, isNull);
-      },
-    );
 
     test('AuthRetryableFetchException maps to NetworkFailure', () {
       expect(
@@ -35,21 +24,6 @@ void main() {
         isA<NetworkFailure>(),
       );
     });
-
-    test(
-      'PostgrestException TZ001 (wardrobe limit) maps to WardrobeFullFailure',
-      () {
-        expect(
-          mapExceptionToFailure(
-            const PostgrestException(
-              message: 'Wardrobe limit exceeded',
-              code: 'TZ001',
-            ),
-          ),
-          const WardrobeFullFailure(),
-        );
-      },
-    );
 
     test('PostgrestException PGRST116 (no rows) maps to NotFoundFailure', () {
       expect(
@@ -114,17 +88,6 @@ void main() {
       );
     });
 
-    test('FunctionException AI_GENERATION_FAILED keeps its own copy', () {
-      final failure = mapExceptionToFailure(
-        const FunctionException(
-          status: 422,
-          details: {'code': 'AI_GENERATION_FAILED'},
-        ),
-      );
-      expect(failure, isA<ServerFailure>());
-      expect(failure.message, 'AI 無法辨識圖片，請換一張試試');
-    });
-
     test('FunctionException RATE_LIMIT_EXCEEDED maps to RateLimitFailure', () {
       final failure = mapExceptionToFailure(
         const FunctionException(
@@ -133,20 +96,6 @@ void main() {
         ),
       );
       expect(failure, const RateLimitFailure());
-    });
-
-    test('RateLimitException carries its usage into the failure', () {
-      final usage = DailyUsage(
-        userId: 'u1',
-        usageDate: DateTime(2026, 10, 11),
-        tryonCount: 3,
-        chatCount: 0,
-        videoCount: 0,
-      );
-      expect(
-        mapExceptionToFailure(RateLimitException(usage: usage)),
-        RateLimitFailure(usage: usage),
-      );
     });
 
     test('a malformed body is decoded, not thrown on', () {
@@ -172,8 +121,7 @@ void main() {
       final failure = mapExceptionToFailure(
         const FunctionException(status: 429),
       );
-      expect(failure, isA<RateLimitFailure>());
-      expect((failure as RateLimitFailure).usage, isNull);
+      expect(failure, const RateLimitFailure());
     });
 
     test('FunctionException 422 maps to ServerFailure', () {
@@ -216,22 +164,17 @@ void main() {
       expect(failure.message, 'down');
     });
 
+    test('a Failure rethrown by a provider passes through unchanged', () {
+      expect(
+        mapExceptionToFailure(const ServiceBusyFailure('busy')),
+        const ServiceBusyFailure('busy'),
+      );
+    });
+
     test('unrecognised error maps to UnknownFailure', () {
       expect(
         mapExceptionToFailure(const FormatException('nope')),
         isA<UnknownFailure>(),
-      );
-    });
-
-    test('FunctionException 400 NO_AVATAR maps to AvatarMissingFailure', () {
-      expect(
-        mapExceptionToFailure(
-          const FunctionException(
-            status: 400,
-            details: {'error': 'No model photo on file', 'code': 'NO_AVATAR'},
-          ),
-        ),
-        isA<AvatarMissingFailure>(),
       );
     });
 

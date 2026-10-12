@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
+import 'package:tryzeon/core/error/failure_from_error.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
@@ -216,7 +217,7 @@ class WardrobeEditNotifier extends _$WardrobeEditNotifier {
     } catch (e, stackTrace) {
       AppLogger.error('Wardrobe write failed', e, stackTrace);
       state = AsyncError(e, stackTrace);
-      return Err(mapExceptionToFailure(e));
+      return Err(failureFromError(e));
     } finally {
       link.close();
     }

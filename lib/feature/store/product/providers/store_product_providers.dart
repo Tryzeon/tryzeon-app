@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
+import 'package:tryzeon/core/error/failure_from_error.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
@@ -329,7 +330,7 @@ class ProductEditNotifier extends _$ProductEditNotifier {
       return result;
     } catch (e, stackTrace) {
       AppLogger.error('Product $mutation failed', e, stackTrace);
-      return Err(mapExceptionToFailure(e));
+      return Err(failureFromError(e));
     } finally {
       state = null;
       link.close();

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:tryzeon/core/data/errors/map_exception_to_failure.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/analytics/data/datasources/analytics_remote_datasource.dart';
 import 'package:tryzeon/core/modules/analytics/data/dtos/analytics_event_dto.dart';

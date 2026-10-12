@@ -1,9 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
+import 'package:tryzeon/feature/common/daily_usage/data/exceptions/usage_limit_exception.dart';
 import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
 import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_function_request.dart';
+import 'package:tryzeon/feature/personal/tryon/data/exceptions/avatar_missing_exception.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_engine.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 
@@ -76,7 +78,7 @@ void main() {
     await expectLater(
       call,
       throwsA(
-        isA<RateLimitException>().having(
+        isA<UsageLimitException>().having(
           (final e) => e.usage,
           'usage',
           DailyUsage(
@@ -100,7 +102,41 @@ void main() {
         ),
       ).tryon(_request),
       throwsA(
-        isA<RateLimitException>().having((final e) => e.usage, 'usage', isNull),
+        isA<UsageLimitException>().having(
+          (final e) => e.usage,
+          'usage',
+          isNull,
+        ),
+      ),
+    );
+  });
+
+  test('a missing avatar surfaces as an AvatarMissingException', () async {
+    await expectLater(
+      dataSource(
+        const FunctionException(
+          status: 400,
+          details: {'error': 'No model photo on file', 'code': 'NO_AVATAR'},
+        ),
+      ).tryon(_request),
+      throwsA(isA<AvatarMissingException>()),
+    );
+  });
+
+  test('a failed generation keeps its own copy', () async {
+    await expectLater(
+      dataSource(
+        const FunctionException(
+          status: 422,
+          details: {'code': 'AI_GENERATION_FAILED'},
+        ),
+      ).tryon(_request),
+      throwsA(
+        isA<ServerException>().having(
+          (final e) => e.message,
+          'message',
+          'AI 無法辨識圖片，請換一張試試',
+        ),
       ),
     );
   });

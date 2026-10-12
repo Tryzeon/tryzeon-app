@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/data/dtos/image_analysis_request.dart';
+import 'package:tryzeon/core/data/errors/map_exception_to_failure.dart';
 import 'package:tryzeon/core/data/utils/decode_function_response.dart';
 import 'package:tryzeon/core/data/utils/encode_image_for_analysis.dart';
 import 'package:tryzeon/core/error/failures.dart';

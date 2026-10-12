@@ -1,7 +1,7 @@
 -- The wardrobe limit is enforced only here; the app no longer pre-checks it.
 -- A dedicated SQLSTATE lets the app tell "wardrobe full" apart from every
 -- other CHECK failure (`check_violation` is shared by all of them) and offer
--- the upgrade dialog. Keep 'TZ001' in sync with mapExceptionToFailure.
+-- the upgrade dialog. Keep 'TZ001' in sync with WardrobeRemoteDataSource.
 
 CREATE OR REPLACE FUNCTION public.check_wardrobe_limit() RETURNS trigger
     LANGUAGE plpgsql SECURITY DEFINER

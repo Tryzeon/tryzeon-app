@@ -1,6 +1,7 @@
 import 'dart:async' show TimeoutException;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tryzeon/core/data/errors/map_exception_to_failure.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 

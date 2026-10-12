@@ -16,6 +16,7 @@ class AuthRemoteDataSource {
   final SupabaseClient _supabase;
   static const _lineAuthFunction = 'line-auth';
   static const _deleteAccountFunction = 'delete-account';
+  static const _otpExpiredCode = 'otp_expired';
 
   Future<void> signInWithOAuthProvider(final OAuthProvider provider) async {
     final success = await _supabase.auth.signInWithOAuth(
@@ -158,11 +159,19 @@ class AuthRemoteDataSource {
     required final String email,
     required final String token,
   }) async {
-    final response = await _supabase.auth.verifyOTP(
-      type: OtpType.email,
-      email: email,
-      token: token,
-    );
+    final AuthResponse response;
+    try {
+      response = await _supabase.auth.verifyOTP(
+        type: OtpType.email,
+        email: email,
+        token: token,
+      );
+    } on AuthException catch (e) {
+      if (e.code == _otpExpiredCode) {
+        throw const UnauthenticatedException('驗證碼錯誤或過期');
+      }
+      rethrow;
+    }
 
     if (response.session == null) {
       throw const UnauthenticatedException();

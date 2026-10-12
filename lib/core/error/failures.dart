@@ -1,16 +1,12 @@
-import 'dart:async' show TimeoutException;
-import 'dart:io';
-
 import 'package:equatable/equatable.dart';
-import 'package:http/http.dart' show ClientException;
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tryzeon/core/error/api_error_code.dart';
-import 'package:tryzeon/core/error/exceptions.dart';
-import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
 
-sealed class Failure extends Equatable {
+/// Open rather than sealed so a feature can declare a failure only it raises
+/// (e.g. `WardrobeFullFailure`) without core knowing about it.
+abstract class Failure extends Equatable {
   const Failure([this.message]);
   final String? message;
+
+  String get defaultMessage;
 
   @override
   List<Object?> get props => [message];
@@ -18,120 +14,70 @@ sealed class Failure extends Equatable {
 
 class NetworkFailure extends Failure {
   const NetworkFailure([super.message]);
+
+  @override
+  String get defaultMessage => '無網路連線，請檢查您的網路設定';
 }
 
 class ServerFailure extends Failure {
   const ServerFailure([super.message]);
+
+  @override
+  String get defaultMessage => '伺服器發生錯誤，請稍後再試';
 }
 
 class AuthFailure extends Failure {
   const AuthFailure([super.message]);
+
+  @override
+  String get defaultMessage => '登入狀態異常，請稍後再試';
 }
 
 class UnknownFailure extends Failure {
   const UnknownFailure([super.message]);
+
+  @override
+  String get defaultMessage => '發生未知錯誤，請稍後再試';
 }
 
 class ValidationFailure extends Failure {
   const ValidationFailure([super.message]);
+
+  @override
+  String get defaultMessage => '驗證失敗，請檢查您的輸入';
 }
 
 class RateLimitFailure extends Failure {
-  const RateLimitFailure({final String? message, this.usage}) : super(message);
-
-  final DailyUsage? usage;
+  const RateLimitFailure([super.message]);
 
   @override
-  List<Object?> get props => [message, usage];
+  String get defaultMessage => '使用次數已達上限，請升級您的方案';
 }
 
 class ServiceBusyFailure extends Failure {
   const ServiceBusyFailure([super.message]);
+
+  @override
+  String get defaultMessage => '目前使用人數較多，請稍後再試一次';
 }
 
 class UserCanceledFailure extends Failure {
   const UserCanceledFailure([super.message]);
+
+  @override
+  String get defaultMessage => '';
 }
 
 class NotFoundFailure extends Failure {
   const NotFoundFailure([super.message]);
-}
 
-class AvatarMissingFailure extends Failure {
-  const AvatarMissingFailure([super.message]);
-}
-
-class WardrobeFullFailure extends Failure {
-  const WardrobeFullFailure([super.message]);
+  @override
+  String get defaultMessage => '找不到資源，可能已被移除或失效';
 }
 
 class TimeoutFailure extends Failure {
   const TimeoutFailure([super.message]);
-}
 
-Failure mapExceptionToFailure(final Object e) {
-  if (e is AuthException && e.code == 'otp_expired') {
-    return const AuthFailure('驗證碼錯誤或過期');
-  }
-
-  // PGRST116 = `.single()` matched no rows.
-  if (e is PostgrestException && e.code == 'PGRST116') {
-    return const NotFoundFailure();
-  }
-
-  // TZ001 = the wardrobe_items insert trigger rejected a full wardrobe.
-  if (e is PostgrestException && e.code == 'TZ001') {
-    return const WardrobeFullFailure();
-  }
-
-  if (e is FunctionException) {
-    final body = e.details;
-    if (body is Map) {
-      final Failure? coded = switch (body['code']) {
-        ApiErrorCode.serviceBusy => const ServiceBusyFailure(),
-        ApiErrorCode.noAvatar => const AvatarMissingFailure(),
-        ApiErrorCode.aiGenerationFailed => const ServerFailure(
-          'AI 無法辨識圖片，請換一張試試',
-        ),
-        ApiErrorCode.rateLimitExceeded => const RateLimitFailure(),
-        _ => null,
-      };
-      if (coded != null) return coded;
-    }
-
-    // A 401 never reaches our handler — the platform rejects the JWT first, so
-    // there is no code of ours to read and the status is all we get.
-    if (e.status == 401) return const AuthFailure('驗證失敗，請重新登入');
-
-    // A 429 with no code of ours was imposed before our handler ran, so it
-    // carries no usage either — ours always sends the two together.
-    if (e.status == 429) return const RateLimitFailure();
-  }
-
-  return switch (e) {
-    ServerException(message: final msg) => ServerFailure(msg),
-    UnauthenticatedException(message: final msg) => AuthFailure(msg),
-    UserCanceledException(message: final msg) => UserCanceledFailure(msg),
-    NotFoundException(message: final msg) => NotFoundFailure(msg),
-    CacheDecodeException(message: final msg) => UnknownFailure(msg),
-    RateLimitException(:final usage) => RateLimitFailure(usage: usage),
-
-    PostgrestException() => const ServerFailure(),
-    StorageException() => const ServerFailure(),
-    FunctionException() => const ServerFailure(),
-    AuthRetryableFetchException() => const NetworkFailure(),
-    AuthException() => const AuthFailure(),
-
-    SocketException() => const NetworkFailure(),
-    // Client-side deadline: a half-open socket that never delivers bytes,
-    // EOF or an error.
-    TimeoutException() => const TimeoutFailure(),
-    // http wraps transport-level failures escaping Supabase in ClientException.
-    ClientException() => const NetworkFailure(),
-    HandshakeException() => const NetworkFailure(),
-    HttpException() => const ServerFailure(),
-    TlsException() => const ServerFailure(),
-
-    _ => const UnknownFailure(),
-  };
+  @override
+  String get defaultMessage => '處理時間過長而中斷，請重新嘗試；生成期間請讓 App 保持在前景';
 }
