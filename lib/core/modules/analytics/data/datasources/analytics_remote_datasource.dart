@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/core/modules/analytics/data/dtos/analytics_event_dto.dart';
 import 'package:tryzeon/core/modules/analytics/data/dtos/log_analytics_events_request.dart';
 
@@ -11,13 +12,9 @@ class AnalyticsRemoteDataSource {
   Future<void> uploadAnalyticsEvents(
     final List<AnalyticsEventDto> events,
   ) async {
-    if (events.isEmpty) {
-      return;
-    }
-
-    final user = _supabaseClient.auth.currentUser;
-    if (user == null) {
-      return;
+    if (events.isEmpty) return;
+    if (_supabaseClient.auth.currentUser == null) {
+      throw const UnauthenticatedException();
     }
 
     await _supabaseClient.rpc<void>(
