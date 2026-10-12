@@ -3,6 +3,11 @@ import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 abstract final class AppRoutes {
   static const String login = '/login';
 
+  static const String paramId = 'id';
+  static const String paramStoreId = 'storeId';
+  static const String paramProductId = 'productId';
+  static const String queryPath = 'path';
+
   static const String personalRoot = '/personal';
   static const String dashboardRoot = '/dashboard';
 
@@ -12,17 +17,17 @@ abstract final class AppRoutes {
   static const String personalHomePhoto =
       '$personalHome/$personalHomePhotoSegment';
   static const String personalShop = '$personalRoot/shop';
-  static const String personalShopProductSegment = 'product/:id';
+  static const String personalShopProductSegment = 'product/:$paramId';
   static const String personalShopProduct =
       '$personalShop/$personalShopProductSegment';
-  static const String personalShopStoreSegment = 'store/:storeId';
+  static const String personalShopStoreSegment = 'store/:$paramStoreId';
   static const String personalShopStore =
       '$personalShop/$personalShopStoreSegment';
   static const String personalShopProductPrefix = '$personalShop/product/';
   static const String personalShopStorePrefix = '$personalShop/store/';
   static const String personalChat = '$personalRoot/chat';
   static const String personalWardrobe = '$personalRoot/wardrobe';
-  static const String personalWardrobeItemSegment = 'item/:id';
+  static const String personalWardrobeItemSegment = 'item/:$paramId';
   static const String personalWardrobeItem =
       '$personalWardrobe/$personalWardrobeItemSegment';
   static const String personalAccount = '$personalRoot/account';
@@ -56,14 +61,15 @@ abstract final class AppRoutes {
   static const String dashboardSettingsProfile =
       '$dashboardSettings/$dashboardSettingsProfileSegment';
   static const String dashboardProductAdd = '$dashboardRoot/products/add';
-  static const String dashboardProductDetail = '$dashboardRoot/products/:id';
+  static const String dashboardProductDetail =
+      '$dashboardRoot/products/:$paramId';
 
   // Deep link content routes (top-level, redirect to feature routes).
   // Singular on purpose: tryzeon.com/products is the marketing section
   // (/products/virtual-try-on), and the AASA file declares /product/* and
   // /store/*. Pluralising these would collide and break live Universal Links.
-  static const String deepLinkProduct = '/product/:productId';
-  static const String deepLinkStore = '/store/:storeId';
+  static const String deepLinkProduct = '/product/:$paramProductId';
+  static const String deepLinkStore = '/store/:$paramStoreId';
 
   static String homeForUserType(final UserType userType) {
     return userType == UserType.store ? dashboardAccount : personalHome;
@@ -71,18 +77,18 @@ abstract final class AppRoutes {
 
   static String personalHomePhotoPath(final String filePath) => Uri(
     path: personalHomePhoto,
-    queryParameters: {'path': filePath},
+    queryParameters: {queryPath: filePath},
   ).toString();
 
   static String personalShopProductPath(final String productId) =>
-      personalShopProduct.replaceFirst(':id', productId);
+      personalShopProduct.replaceFirst(':$paramId', productId);
 
   static String personalShopStorePath(final String storeId) =>
-      personalShopStore.replaceFirst(':storeId', storeId);
+      personalShopStore.replaceFirst(':$paramStoreId', storeId);
 
   static String personalWardrobeItemPath(final String itemId) =>
-      personalWardrobeItem.replaceFirst(':id', itemId);
+      personalWardrobeItem.replaceFirst(':$paramId', itemId);
 
   static String dashboardProductDetailPath(final String productId) =>
-      dashboardProductDetail.replaceFirst(':id', productId);
+      dashboardProductDetail.replaceFirst(':$paramId', productId);
 }

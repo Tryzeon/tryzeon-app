@@ -58,7 +58,7 @@ final storeFullScreenRoutes = [
   GoRoute(
     path: AppRoutes.dashboardProductDetail,
     builder: (final context, final state) {
-      final productId = state.pathParameters['id']!;
+      final productId = state.pathParameters[AppRoutes.paramId]!;
       return EditProductPage(productId: productId);
     },
   ),

@@ -5,14 +5,14 @@ final deepLinkRoutes = [
   GoRoute(
     path: AppRoutes.deepLinkProduct,
     redirect: (final context, final state) {
-      final productId = state.pathParameters['productId']!;
+      final productId = state.pathParameters[AppRoutes.paramProductId]!;
       return AppRoutes.personalShopProductPath(productId);
     },
   ),
   GoRoute(
     path: AppRoutes.deepLinkStore,
     redirect: (final context, final state) {
-      final storeId = state.pathParameters['storeId']!;
+      final storeId = state.pathParameters[AppRoutes.paramStoreId]!;
       return AppRoutes.personalShopStorePath(storeId);
     },
   ),

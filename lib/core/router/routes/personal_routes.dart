@@ -33,7 +33,7 @@ final personalShellRoute = StatefulShellRoute.indexedStack(
             GoRoute(
               path: AppRoutes.personalHomePhotoSegment,
               builder: (final context, final state) => OutfitPhotoDetailPage(
-                path: state.uri.queryParameters['path']!,
+                path: state.uri.queryParameters[AppRoutes.queryPath]!,
               ),
             ),
           ],
@@ -50,7 +50,7 @@ final personalShellRoute = StatefulShellRoute.indexedStack(
             GoRoute(
               path: AppRoutes.personalShopProductSegment,
               builder: (final context, final state) {
-                final productId = state.pathParameters['id']!;
+                final productId = state.pathParameters[AppRoutes.paramId]!;
                 return ProductDetailPage(
                   productId: productId,
                   initialProduct: state.extra as ShopProduct?,
@@ -60,7 +60,7 @@ final personalShellRoute = StatefulShellRoute.indexedStack(
             GoRoute(
               path: AppRoutes.personalShopStoreSegment,
               builder: (final context, final state) {
-                final storeId = state.pathParameters['storeId']!;
+                final storeId = state.pathParameters[AppRoutes.paramStoreId]!;
                 return StorePage(storeId: storeId);
               },
             ),
@@ -87,7 +87,7 @@ final personalShellRoute = StatefulShellRoute.indexedStack(
             GoRoute(
               path: AppRoutes.personalWardrobeItemSegment,
               builder: (final context, final state) {
-                final itemId = state.pathParameters['id']!;
+                final itemId = state.pathParameters[AppRoutes.paramId]!;
                 return WardrobeItemDetailPage(itemId: itemId);
               },
             ),
