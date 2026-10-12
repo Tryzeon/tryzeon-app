@@ -13,6 +13,8 @@ class ShopRemoteDataSource {
   static const _storeProfileTable = 'store_profiles';
   static const _productSizesTable = ProductSizeTable.name;
   static const _productsStoreIdFk = 'products_store_id_fkey';
+  static const _storeInfoColumns =
+      'id, name, slug, address, logo_path, channels, order_contacts';
 
   Future<List<ShopProductDto>> listProducts(
     final ListShopProductsRequest request,
@@ -39,7 +41,7 @@ class ShopRemoteDataSource {
         .select('''
           *,
           $_productSizesTable(*),
-          $_storeProfileTable!$_productsStoreIdFk(id, name, slug, address, logo_path, channels)
+          $_storeProfileTable!$_productsStoreIdFk($_storeInfoColumns)
         ''')
         .eq('id', productId)
         .single();
@@ -53,7 +55,7 @@ class ShopRemoteDataSource {
     final column = _uuidPattern.hasMatch(storeIdOrSlug) ? 'id' : 'slug';
     final response = await _supabaseClient
         .from(_storeProfileTable)
-        .select('id, name, slug, address, logo_path, channels')
+        .select(_storeInfoColumns)
         .eq(column, storeIdOrSlug)
         .single();
     return ShopStoreInfoDto.fromJson(response);
