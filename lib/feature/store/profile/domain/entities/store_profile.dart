@@ -10,8 +10,6 @@ sealed class StoreProfileDraft with _$StoreProfileDraft {
     required final String name,
     required final Set<StoreChannel> channels,
     final String? address,
-    final double? latitude,
-    final double? longitude,
     @Default(<StoreOrderContact>[]) final List<StoreOrderContact> orderContacts,
   }) = _StoreProfileDraft;
 }
@@ -39,8 +37,6 @@ extension StoreProfileApplyDraft on StoreProfile {
   StoreProfile applyDraft(final StoreProfileDraft draft) => copyWith(
     name: draft.name,
     address: draft.address,
-    latitude: draft.latitude,
-    longitude: draft.longitude,
     channels: draft.channels,
     orderContacts: draft.orderContacts,
   );

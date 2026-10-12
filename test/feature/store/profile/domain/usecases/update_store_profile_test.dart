@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/modules/location/domain/entities/geo_coordinates.dart';
+import 'package:tryzeon/core/modules/location/domain/services/geocoding_service.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 import 'package:tryzeon/feature/store/profile/domain/repositories/store_profile_repository.dart';
@@ -47,9 +49,26 @@ class _FakeLogoStorage implements StoreLogoStorage {
   }
 }
 
+class _FakeGeocoding implements GeocodingService {
+  Result<GeoCoordinates?, Failure> result = const Ok((
+    latitude: 25.03,
+    longitude: 121.56,
+  ));
+  final List<String> queried = [];
+
+  @override
+  Future<Result<GeoCoordinates?, Failure>> geocodeAddress(
+    final String address,
+  ) async {
+    queried.add(address);
+    return result;
+  }
+}
+
 void main() {
   late _FakeRepository repository;
   late _FakeLogoStorage logoStorage;
+  late _FakeGeocoding geocoding;
   late UpdateStoreProfile updateStoreProfile;
 
   final original = StoreProfile(
@@ -60,18 +79,24 @@ void main() {
     updatedAt: DateTime(2026),
     channels: const {StoreChannel.physical},
     logoPath: 'logos/old.png',
+    address: '台北市信義區',
+    latitude: 25.0,
+    longitude: 121.5,
   );
   const draft = StoreProfileDraft(
     name: '新店名',
     channels: {StoreChannel.physical},
+    address: '台北市信義區',
   );
 
   setUp(() {
     repository = _FakeRepository();
     logoStorage = _FakeLogoStorage();
+    geocoding = _FakeGeocoding();
     updateStoreProfile = UpdateStoreProfile(
       repository: repository,
       logoStorage: logoStorage,
+      geocoding: geocoding,
     );
   });
 
@@ -131,5 +156,63 @@ void main() {
 
     expect(result.getError(), const ServerFailure());
     expect(repository.savedTarget, isNull);
+  });
+
+  group('coordinates', () {
+    Future<Result<({bool addressUnresolved}), Failure>> saveAddress(
+      final String? address,
+    ) => updateStoreProfile(
+      UpdateStoreProfileParams(
+        original: original,
+        draft: draft.copyWith(address: address),
+      ),
+    );
+
+    test(
+      'an unchanged address keeps its coordinates without geocoding',
+      () async {
+        final result = await saveAddress('台北市信義區');
+
+        expect(result.get(), (addressUnresolved: false));
+        expect(geocoding.queried, isEmpty);
+        expect(repository.savedTarget!.latitude, 25.0);
+        expect(repository.savedTarget!.longitude, 121.5);
+      },
+    );
+
+    test('a new address is geocoded', () async {
+      final result = await saveAddress('台北市大安區');
+
+      expect(result.get(), (addressUnresolved: false));
+      expect(geocoding.queried, ['台北市大安區']);
+      expect(repository.savedTarget!.latitude, 25.03);
+      expect(repository.savedTarget!.longitude, 121.56);
+    });
+
+    test('a new address with no match saves without coordinates', () async {
+      geocoding.result = const Ok(null);
+
+      final result = await saveAddress('不存在的地址');
+
+      expect(result.get(), (addressUnresolved: true));
+      expect(repository.savedTarget!.latitude, isNull);
+    });
+
+    test('a geocoder failure still saves, flagged as unresolved', () async {
+      geocoding.result = const Err(UnknownFailure());
+
+      final result = await saveAddress('台北市大安區');
+
+      expect(result.get(), (addressUnresolved: true));
+      expect(repository.savedTarget!.longitude, isNull);
+    });
+
+    test('a cleared address drops the coordinates', () async {
+      final result = await saveAddress(null);
+
+      expect(result.get(), (addressUnresolved: false));
+      expect(geocoding.queried, isEmpty);
+      expect(repository.savedTarget!.latitude, isNull);
+    });
   });
 }

@@ -60,6 +60,7 @@ UpdateStoreProfile updateStoreProfileUseCase(final Ref ref) {
   return UpdateStoreProfile(
     repository: ref.watch(storeProfileRepositoryProvider),
     logoStorage: ref.watch(storeLogoStorageProvider),
+    geocoding: ref.watch(geocodingServiceProvider),
   );
 }
 
@@ -91,10 +92,6 @@ class StoreProfileEditNotifier extends _$StoreProfileEditNotifier {
 
   /// The profile the edits merge onto is read here rather than taken from the
   /// form, so a stale form can't clobber server-owned fields.
-  ///
-  /// `addressUnresolved` reports a non-empty address that could not be
-  /// geocoded: the save still succeeded, but the store won't appear in
-  /// distance-sorted results.
   Future<Result<({bool addressUnresolved}), Failure>> save({
     required final String name,
     required final String? address,
@@ -113,19 +110,12 @@ class StoreProfileEditNotifier extends _$StoreProfileEditNotifier {
         return const Err(AuthFailure('無法獲取店家資訊，請重新登入'));
       }
 
-      final located = await _resolveCoordinates(
-        original: original,
-        address: address,
-      );
-
       final result = await ref.read(updateStoreProfileUseCaseProvider)(
         UpdateStoreProfileParams(
           original: original,
           draft: StoreProfileDraft(
             name: name,
             address: address,
-            latitude: located.latitude,
-            longitude: located.longitude,
             channels: channels,
             orderContacts: orderContacts,
           ),
@@ -135,12 +125,12 @@ class StoreProfileEditNotifier extends _$StoreProfileEditNotifier {
 
       if (result.isFailure) {
         state = AsyncError(result.getError()!, StackTrace.current);
-        return Err(result.getError()!);
+        return result;
       }
 
       ref.invalidate(storeProfileProvider);
       state = const AsyncData(null);
-      return Ok((addressUnresolved: located.addressUnresolved));
+      return result;
     } catch (e, stackTrace) {
       AppLogger.error('Failed to save store profile', e, stackTrace);
       state = AsyncError(e, stackTrace);
@@ -148,32 +138,5 @@ class StoreProfileEditNotifier extends _$StoreProfileEditNotifier {
     } finally {
       link.close();
     }
-  }
-
-  Future<({double? latitude, double? longitude, bool addressUnresolved})>
-  _resolveCoordinates({
-    required final StoreProfile original,
-    required final String? address,
-  }) async {
-    if (address == original.address) {
-      return (
-        latitude: original.latitude,
-        longitude: original.longitude,
-        addressUnresolved: false,
-      );
-    }
-
-    if (address == null || address.isEmpty) {
-      return (latitude: null, longitude: null, addressUnresolved: false);
-    }
-
-    final coords = await ref
-        .read(geocodingServiceProvider)
-        .geocodeAddress(address);
-    return (
-      latitude: coords?.latitude,
-      longitude: coords?.longitude,
-      addressUnresolved: coords == null,
-    );
   }
 }

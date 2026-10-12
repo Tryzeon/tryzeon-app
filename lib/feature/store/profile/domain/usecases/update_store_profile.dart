@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/modules/location/domain/services/geocoding_service.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 import 'package:tryzeon/feature/store/profile/domain/repositories/store_profile_repository.dart';
@@ -23,17 +24,24 @@ class UpdateStoreProfile {
   UpdateStoreProfile({
     required final StoreProfileRepository repository,
     required final StoreLogoStorage logoStorage,
+    required final GeocodingService geocoding,
   }) : _repository = repository,
-       _logoStorage = logoStorage;
+       _logoStorage = logoStorage,
+       _geocoding = geocoding;
 
   final StoreProfileRepository _repository;
   final StoreLogoStorage _logoStorage;
+  final GeocodingService _geocoding;
 
-  Future<Result<void, Failure>> call(
+
+  Future<Result<({bool addressUnresolved}), Failure>> call(
     final UpdateStoreProfileParams params,
   ) async {
     final original = params.original;
-    var target = original.applyDraft(params.draft);
+    final located = await _locate(original, params.draft.address);
+    var target = original
+        .applyDraft(params.draft)
+        .copyWith(latitude: located.latitude, longitude: located.longitude);
 
     String? uploadedLogoPath;
     final logoFile = params.logoFile;
@@ -66,7 +74,30 @@ class UpdateStoreProfile {
         oldLogoPath != uploadedLogoPath) {
       await _deleteLogo(original.id, oldLogoPath);
     }
-    return const Ok(null);
+    return Ok((addressUnresolved: located.unresolved));
+  }
+
+  Future<({double? latitude, double? longitude, bool unresolved})> _locate(
+    final StoreProfile original,
+    final String? address,
+  ) async {
+    if (address == original.address) {
+      return (
+        latitude: original.latitude,
+        longitude: original.longitude,
+        unresolved: false,
+      );
+    }
+    if (address == null || address.isEmpty) {
+      return (latitude: null, longitude: null, unresolved: false);
+    }
+
+    final coordinates = (await _geocoding.geocodeAddress(address)).get();
+    return (
+      latitude: coordinates?.latitude,
+      longitude: coordinates?.longitude,
+      unresolved: coordinates == null,
+    );
   }
 
   Future<void> _deleteLogo(final String storeId, final String path) async {
