@@ -8,6 +8,7 @@ import 'package:tryzeon/feature/store/analytics/data/datasources/product_analyti
 import 'package:tryzeon/feature/store/analytics/data/repositories/product_analytics_repository_impl.dart';
 import 'package:tryzeon/feature/store/analytics/domain/entities/analytics_month.dart';
 import 'package:tryzeon/feature/store/analytics/domain/entities/product_analytics_summary.dart';
+import 'package:tryzeon/feature/store/analytics/domain/entities/store_traffic_totals.dart';
 import 'package:tryzeon/feature/store/analytics/domain/repositories/product_analytics_repository.dart';
 import 'package:tryzeon/feature/store/analytics/domain/usecases/get_product_analytics_summaries.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
@@ -106,4 +107,10 @@ class ProductAnalyticsSummariesNotifier
       ),
     );
   }
+}
+
+@riverpod
+Future<StoreTrafficTotals> storeTrafficTotals(final Ref ref) async {
+  final summaries = await ref.watch(productAnalyticsSummariesProvider.future);
+  return StoreTrafficTotals.fromSummaries(summaries);
 }

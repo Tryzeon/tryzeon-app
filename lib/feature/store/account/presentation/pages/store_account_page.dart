@@ -3,8 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/refresh_feedback_extension.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/store/account/presentation/widgets/store_account_header.dart';
-import 'package:tryzeon/feature/store/analytics/presentation/widgets/month_filter_widget.dart';
-import 'package:tryzeon/feature/store/analytics/presentation/widgets/store_traffic_dashboard.dart';
+import 'package:tryzeon/feature/store/account/presentation/widgets/store_performance_section.dart';
 import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
 import 'package:tryzeon/feature/store/product/presentation/widgets/store_add_product_fab.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
@@ -14,9 +13,6 @@ class StoreAccountPage extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final theme = Theme.of(context);
-    final textTheme = theme.textTheme;
-
     return Scaffold(
       body: SafeArea(
         bottom: false,
@@ -31,20 +27,8 @@ class StoreAccountPage extends HookConsumerWidget {
             children: [
               const StoreAccountHeader(),
               const SizedBox(height: AppSpacing.lg),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: Row(
-                  children: [
-                    Expanded(child: Text('數據儀表板', style: textTheme.titleLarge)),
-                    const MonthFilterWidget(),
-                  ],
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: StoreTrafficDashboard(),
-              ),
+              const StorePerformanceSection(),
+              const SizedBox(height: AppSpacing.xl),
               SizedBox(
                 height:
                     MediaQuery.of(context).padding.bottom +
