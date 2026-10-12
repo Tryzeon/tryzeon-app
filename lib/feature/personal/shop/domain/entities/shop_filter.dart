@@ -27,6 +27,20 @@ sealed class ShopFilter with _$ShopFilter {
 
   const ShopFilter._();
 
+  /// An empty query or selection means "no filter", stored as null so equal
+  /// filters compare equal.
+  ShopFilter normalized() => copyWith(
+    searchQuery: (searchQuery?.isEmpty ?? true) ? null : searchQuery,
+    categories: _nonEmpty(categories),
+    channels: _nonEmpty(channels),
+    materials: _nonEmpty(materials),
+    elasticities: _nonEmpty(elasticities),
+    fits: _nonEmpty(fits),
+    thicknesses: _nonEmpty(thicknesses),
+    styles: _nonEmpty(styles),
+    seasons: _nonEmpty(seasons),
+  );
+
   /// Number of active sheet-managed filter groups (drives the filter button badge).
   int get activeFilterCount {
     var count = 0;
@@ -41,3 +55,6 @@ sealed class ShopFilter with _$ShopFilter {
     return count;
   }
 }
+
+Set<T>? _nonEmpty<T>(final Set<T>? values) =>
+    (values?.isEmpty ?? true) ? null : values;

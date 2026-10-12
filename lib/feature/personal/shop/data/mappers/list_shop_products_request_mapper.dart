@@ -3,50 +3,45 @@ import 'package:tryzeon/feature/personal/shop/data/dtos/list_shop_products_reque
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_filter.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_sort.dart';
 
-/// Empty filter groups and an all-channels selection are sent as null, which
-/// the RPC reads as "no filter".
+/// An all-channels selection is sent as null, which the RPC reads as "no
+/// filter" just like an empty group.
 ListShopProductsRequest toListShopProductsRequest(
   final ShopFilter filter, {
   required final int limit,
   required final int offset,
 }) {
-  final (column, ascending) = switch (filter.sort) {
+  final normalized = filter.normalized();
+  final (column, ascending) = switch (normalized.sort) {
     ShopSortLatest() => (ShopSortColumn.createdAt, false),
     ShopSortPriceLowToHigh() => (ShopSortColumn.price, true),
     ShopSortPriceHighToLow() => (ShopSortColumn.price, false),
     ShopSortProximity() => (ShopSortColumn.proximity, true),
   };
-  final (latitude, longitude) = switch (filter.sort) {
+  final (latitude, longitude) = switch (normalized.sort) {
     ShopSortProximity(:final latitude, :final longitude) => (
       latitude,
       longitude,
     ),
     _ => (null, null),
   };
-  final searchQuery = filter.searchQuery;
-  final channels = filter.channels;
+  final channels = normalized.channels;
 
   return ListShopProductsRequest(
-    storeId: filter.storeId,
-    searchQuery: searchQuery == null || searchQuery.isEmpty
-        ? null
-        : searchQuery,
-    categoryIds: _nonEmpty(filter.categories),
-    minPrice: filter.minPrice,
-    maxPrice: filter.maxPrice,
-    channels:
-        channels == null ||
-            channels.isEmpty ||
-            channels.length == StoreChannel.values.length
+    storeId: normalized.storeId,
+    searchQuery: normalized.searchQuery,
+    categoryIds: normalized.categories?.toList(),
+    minPrice: normalized.minPrice,
+    maxPrice: normalized.maxPrice,
+    channels: channels == null || channels.length == StoreChannel.values.length
         ? null
         : StoreChannel.listFromSet(channels),
-    gender: filter.gender,
-    materials: _nonEmpty(filter.materials),
-    elasticities: _nonEmpty(filter.elasticities),
-    fits: _nonEmpty(filter.fits),
-    thicknesses: _nonEmpty(filter.thicknesses),
-    styles: _nonEmpty(filter.styles),
-    seasons: _nonEmpty(filter.seasons),
+    gender: normalized.gender,
+    materials: normalized.materials?.toList(),
+    elasticities: normalized.elasticities?.toList(),
+    fits: normalized.fits?.toList(),
+    thicknesses: normalized.thicknesses?.toList(),
+    styles: normalized.styles?.toList(),
+    seasons: normalized.seasons?.toList(),
     sortColumn: column,
     sortAscending: ascending,
     userLatitude: latitude,
@@ -55,6 +50,3 @@ ListShopProductsRequest toListShopProductsRequest(
     offset: offset,
   );
 }
-
-List<T>? _nonEmpty<T>(final Iterable<T>? values) =>
-    values == null || values.isEmpty ? null : values.toList();

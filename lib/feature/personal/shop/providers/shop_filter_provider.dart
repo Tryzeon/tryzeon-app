@@ -12,68 +12,40 @@ class ShopFilterNotifier extends _$ShopFilterNotifier {
   @override
   ShopFilter build() => const ShopFilter();
 
-  void setSearch(final String? query) {
-    final normalized = (query == null || query.isEmpty) ? null : query;
-    state = state.copyWith(searchQuery: normalized);
-  }
+  void setSearch(final String? query) =>
+      _update(state.copyWith(searchQuery: query));
 
-  void setSort(final ShopSort sort) {
-    state = state.copyWith(sort: sort);
-  }
+  void setSort(final ShopSort sort) => _update(state.copyWith(sort: sort));
 
-  void setPriceRange({final int? min, final int? max}) {
-    state = state.copyWith(minPrice: min, maxPrice: max);
-  }
+  void setPriceRange({final int? min, final int? max}) =>
+      _update(state.copyWith(minPrice: min, maxPrice: max));
 
-  void setChannels(final Set<StoreChannel>? channels) {
-    state = state.copyWith(
-      channels: (channels == null || channels.isEmpty) ? null : channels,
-    );
-  }
+  void setChannels(final Set<StoreChannel>? channels) =>
+      _update(state.copyWith(channels: channels));
 
-  void setMaterials(final Set<String>? materials) {
-    state = state.copyWith(
-      materials: (materials == null || materials.isEmpty) ? null : materials,
-    );
-  }
+  void setMaterials(final Set<String>? materials) =>
+      _update(state.copyWith(materials: materials));
 
-  void setElasticities(final Set<ProductElasticity>? elasticities) {
-    state = state.copyWith(
-      elasticities: (elasticities == null || elasticities.isEmpty)
-          ? null
-          : elasticities,
-    );
-  }
+  void setElasticities(final Set<ProductElasticity>? elasticities) =>
+      _update(state.copyWith(elasticities: elasticities));
 
-  void setFits(final Set<ProductFit>? fits) {
-    state = state.copyWith(fits: (fits == null || fits.isEmpty) ? null : fits);
-  }
+  void setFits(final Set<ProductFit>? fits) =>
+      _update(state.copyWith(fits: fits));
 
-  void setThicknesses(final Set<ProductThickness>? thicknesses) {
-    state = state.copyWith(
-      thicknesses: (thicknesses == null || thicknesses.isEmpty)
-          ? null
-          : thicknesses,
-    );
-  }
+  void setThicknesses(final Set<ProductThickness>? thicknesses) =>
+      _update(state.copyWith(thicknesses: thicknesses));
 
-  void setStyles(final Set<ClothingStyle>? styles) {
-    state = state.copyWith(
-      styles: (styles == null || styles.isEmpty) ? null : styles,
-    );
-  }
+  void setStyles(final Set<ClothingStyle>? styles) =>
+      _update(state.copyWith(styles: styles));
 
-  void setSeasons(final Set<ProductSeason>? seasons) {
-    state = state.copyWith(
-      seasons: (seasons == null || seasons.isEmpty) ? null : seasons,
-    );
-  }
+  void setSeasons(final Set<ProductSeason>? seasons) =>
+      _update(state.copyWith(seasons: seasons));
 
-  void setCategories(final Set<String> categoryIds) {
-    state = state.copyWith(categories: categoryIds);
-  }
+  void setCategories(final Set<String> categoryIds) =>
+      _update(state.copyWith(categories: categoryIds));
 
-  void setGender(final ProductGender? gender) {
-    state = state.copyWith(gender: gender, categories: null);
-  }
+  void setGender(final ProductGender? gender) =>
+      _update(state.copyWith(gender: gender, categories: null));
+
+  void _update(final ShopFilter next) => state = next.normalized();
 }
