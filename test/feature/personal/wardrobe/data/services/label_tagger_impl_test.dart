@@ -1,53 +1,78 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tryzeon/core/data/services/image_analysis_api.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/services/label_tagger_impl.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/label_result.dart';
 import 'package:typed_result/typed_result.dart';
 
+import '../../../../../support/fake_functions_client.dart';
+
+Future<Result<LabelResult, Failure>> _analyze(
+  final FakeFunctionsClient functions, {
+  final String? encoded = 'aGVsbG8=',
+}) => LabelTaggerImpl(
+  FakeSupabaseClient(functions),
+  encodeImage: (_) async => encoded,
+).analyze(File('a.jpg'));
+
 void main() {
-  group('parseAnalysisResponse', () {
-    test('drops empty tags and parses a known garment type', () {
-      final result = parseAnalysisResponse({
-        'tags': ['a', ''],
-        'garment_type': 'skirt',
-      });
+  test('sends the encoded image to the wardrobe analysis function', () async {
+    final functions = FakeFunctionsClient(data: {'tags': <String>[]});
 
-      expect(result.tags, ['a']);
-      expect(result.garmentType, GarmentType.skirt);
-    });
+    await _analyze(functions);
 
-    test('returns null garment type for an unknown value', () {
-      final result = parseAnalysisResponse({'garment_type': 'bottoms'});
+    expect(functions.invokedFunction, 'analyze-wardrobe-image');
+    expect(functions.sentBody, {'base64': 'aGVsbG8='});
+  });
 
-      expect(result.garmentType, isNull);
-    });
+  test('maps the tags and garment type', () async {
+    final result = await _analyze(
+      FakeFunctionsClient(
+        data: {
+          'tags': ['denim'],
+          'garment_type': 'skirt',
+        },
+      ),
+    );
 
-    test('returns empty tags and null garment type for an empty response', () {
-      final result = parseAnalysisResponse({});
+    expect(
+      result.get(),
+      const LabelResult(tags: ['denim'], garmentType: GarmentType.skirt),
+    );
+  });
 
-      expect(result.tags, isEmpty);
-      expect(result.garmentType, isNull);
-    });
+  test('a garment type this client does not know decodes to null', () async {
+    final result = await _analyze(
+      FakeFunctionsClient(
+        data: {'tags': <String>[], 'garment_type': 'bottoms'},
+      ),
+    );
+
+    expect(result.get()?.garmentType, isNull);
+  });
+
+  test('an image that cannot be compressed yields an empty result', () async {
+    final functions = FakeFunctionsClient();
+
+    final result = await _analyze(functions, encoded: null);
+
+    expect(result.get(), const LabelResult());
+    expect(functions.invokedFunction, isNull);
+  });
+
+  test('a body that breaks the contract is a server failure', () async {
+    final result = await _analyze(FakeFunctionsClient(data: 'not an object'));
+
+    expect(result.getError(), const ServerFailure());
   });
 
   test('a failed analysis is reported as a failure', () async {
-    final result = await LabelTaggerImpl(_FailingApi()).analyze(File('a.jpg'));
+    final result = await _analyze(
+      FakeFunctionsClient(error: const SocketException('offline')),
+    );
 
     expect(result.getError(), const NetworkFailure());
   });
-}
-
-class _FailingApi implements ImageAnalysisApi {
-  @override
-  Future<Map<String, dynamic>?> analyze({
-    required final File image,
-    required final String functionName,
-  }) async => throw const SocketException('offline');
-
-  @override
-  dynamic noSuchMethod(final Invocation invocation) =>
-      throw UnimplementedError(invocation.memberName.toString());
 }

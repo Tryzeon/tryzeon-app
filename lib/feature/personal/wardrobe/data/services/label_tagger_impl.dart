@@ -1,43 +1,48 @@
 import 'dart:io';
 
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
-import 'package:tryzeon/core/data/services/image_analysis_api.dart';
+import 'package:tryzeon/core/data/dtos/image_analysis_request.dart';
+import 'package:tryzeon/core/data/utils/decode_function_response.dart';
+import 'package:tryzeon/core/data/utils/encode_image_for_analysis.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
-import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:typed_result/typed_result.dart';
 
 import '../../domain/entities/label_result.dart';
 import '../../domain/services/label_tagger.dart';
-
-LabelResult parseAnalysisResponse(final Map<String, dynamic> data) {
-  final rawTags = data['tags'];
-  final tags = rawTags is List
-      ? rawTags.whereType<String>().where((final t) => t.isNotEmpty).toList()
-      : <String>[];
-
-  final rawGarmentType = data['garment_type'];
-  final garmentType = rawGarmentType is String
-      ? GarmentType.tryFromString(rawGarmentType)
-      : null;
-
-  return LabelResult(tags: tags, garmentType: garmentType);
-}
+import '../dtos/label_result_dto.dart';
 
 class LabelTaggerImpl implements LabelTagger {
-  LabelTaggerImpl(this._api);
+  LabelTaggerImpl(
+    this._supabase, {
+    final ImageEncoder encodeImage = encodeImageForAnalysis,
+  }) : _encodeImage = encodeImage;
 
-  final ImageAnalysisApi _api;
+  final SupabaseClient _supabase;
+  final ImageEncoder _encodeImage;
+  static const _timeout = Duration(seconds: 20);
+  static const _mappr = PersonalMappr();
 
   @override
   Future<Result<LabelResult, Failure>> analyze(final File image) async {
     try {
-      final data = await _api.analyze(
-        image: image,
-        functionName: AppConstants.functionAnalyzeWardrobeImage,
+      final base64 = await _encodeImage(image);
+      if (base64 == null) return const Ok(LabelResult());
+
+      final response = await _supabase.functions
+          .invoke(
+            AppConstants.functionAnalyzeWardrobeImage,
+            body: ImageAnalysisRequest(base64: base64).toJson(),
+          )
+          .timeout(_timeout);
+
+      final dto = decodeFunctionResponse(
+        response.data,
+        LabelResultDto.fromJson,
       );
-      if (data == null) return const Ok(LabelResult());
-      return Ok(parseAnalysisResponse(data));
+      return Ok(_mappr.convert<LabelResultDto, LabelResult>(dto));
     } catch (e, stackTrace) {
       AppLogger.warning('Wardrobe label tagging failed', e, stackTrace);
       return Err(mapExceptionToFailure(e));

@@ -1,7 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
-import 'package:tryzeon/core/data/services/image_analysis_api.dart';
 import 'package:tryzeon/core/data/services/image_file_cache.dart';
 import 'package:tryzeon/core/data/services/image_file_cache_impl.dart';
 import 'package:tryzeon/core/data/services/isar_service.dart';
@@ -66,7 +65,3 @@ CacheEntryLocalDataSource cacheEntryLocalDataSource(final Ref ref) {
 AuthIdentityService authIdentityService(final Ref ref) {
   return AuthIdentityServiceImpl(Supabase.instance.client.auth);
 }
-
-@Riverpod(keepAlive: true)
-ImageAnalysisApi imageAnalysisApi(final Ref ref) =>
-    ImageAnalysisApi(Supabase.instance.client);
