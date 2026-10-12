@@ -82,19 +82,6 @@ class AppConstants {
   static const String entitlementProId = 'pro';
   static const String entitlementMaxId = 'max';
 
-  // Tryon Params
-  static const String paramMode = 'mode';
-  static const String paramGenerationId = 'generationId';
-  static const String paramScenePrompt = 'scenePrompt';
-  static const String paramStylingPrompt = 'stylingPrompt';
-  static const String paramTransitionPrompt = 'transitionPrompt';
-  static const String paramBaseImage = 'baseImage';
-  static const String paramGarmentImages = 'images';
-  static const String paramProductId = 'productId';
-  static const String paramSizeId = 'sizeId';
-  static const String paramWardrobeItemId = 'wardrobeItemId';
-  static const String paramEngine = 'engine';
-
   // Shared Preferences Keys
   static const String keyTryonScenePrompt = 'tryon_scene_prompt';
   static const String keyTryonStylingPrompt = 'tryon_styling_prompt';

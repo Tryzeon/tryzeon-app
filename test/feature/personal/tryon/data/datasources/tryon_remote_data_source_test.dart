@@ -4,15 +4,15 @@ import 'package:tryzeon/core/error/exceptions.dart';
 import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
 import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_function_request.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_engine.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 
 import '../../../../../support/fake_functions_client.dart';
 
 const _request = TryonFunctionRequest(
   generationId: 'g1',
-  garments: [],
-  mode: 'scene',
-  isVideo: false,
-  engine: 'standard',
+  mode: TryonMode.image,
+  engine: TryonEngine.standard,
 );
 
 void main() {

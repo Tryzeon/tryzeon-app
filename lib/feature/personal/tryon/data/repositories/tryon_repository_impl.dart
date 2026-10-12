@@ -3,6 +3,7 @@ import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/daily_usage/data/dtos/daily_usage_dto.dart';
 import 'package:tryzeon/feature/common/daily_usage/data/mappers/daily_usage_mappr.dart';
 import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
+import 'package:tryzeon/feature/personal/data/mappers/personal_mappr.dart';
 import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_function_request.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_request.dart';
@@ -16,13 +17,17 @@ class TryonRepositoryImpl implements TryonRepository {
 
   final TryonRemoteDataSource _remoteDataSource;
   static const _usageMappr = DailyUsageMappr();
+  static const _mappr = PersonalMappr();
 
   @override
   Future<Result<TryonResult, Failure>> tryon(final TryonRequest request) async {
     try {
-      final response = await _remoteDataSource.tryon(
-        TryonFunctionRequest.fromDomain(request),
-      );
+      final response = await _remoteDataSource.tryon(switch (request) {
+        TryonGenerateRequest() =>
+          _mappr.convert<TryonGenerateRequest, TryonFunctionRequest>(request),
+        TryonAnimateRequest() =>
+          _mappr.convert<TryonAnimateRequest, TryonFunctionRequest>(request),
+      });
       final usage = response.usage;
       return Ok(
         TryonResult(

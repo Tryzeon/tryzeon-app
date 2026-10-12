@@ -36,6 +36,11 @@ import '../../shop/shop.dart' show decodeShopProductRow;
 import '../../subscription/data/collections/subscription_tier_cache.dart';
 import '../../subscription/data/dtos/subscription_tier_dto.dart';
 import '../../subscription/domain/entities/subscription_capabilities.dart';
+import '../../tryon/data/dtos/base64_image_dto.dart';
+import '../../tryon/data/dtos/tryon_function_request.dart';
+import '../../tryon/data/dtos/tryon_garment_dto.dart';
+import '../../tryon/domain/entities/tryon_garment.dart';
+import '../../tryon/domain/entities/tryon_request.dart';
 import '../../wardrobe/data/collections/wardrobe_item_cache.dart';
 import '../../wardrobe/data/dtos/create_wardrobe_item_request.dart';
 import '../../wardrobe/data/dtos/label_result_dto.dart';
@@ -126,6 +131,20 @@ import 'personal_mappr.auto_mappr.dart';
     ),
     MapType<ChatToolUseEventDto, ToolUseBlock>(),
     MapType<ChatToolResultEventDto, ToolResultBlock>(),
+
+    MapType<TryonGenerateRequest, TryonFunctionRequest>(
+      fields: [
+        Field('generationId', from: 'requestId'),
+        Field('garments', custom: TryonMapprHelper.garmentsToDto),
+        Field('avatar', custom: TryonMapprHelper.avatarToDto),
+      ],
+    ),
+    MapType<TryonAnimateRequest, TryonFunctionRequest>(
+      fields: [
+        Field('generationId', from: 'requestId'),
+        Field('baseImage', custom: TryonMapprHelper.baseImageToDto),
+      ],
+    ),
   ],
   includes: [
     BodyMeasurementsMappr(), // UserProfile(Update).measurements
@@ -183,4 +202,31 @@ class ChatMapprHelper {
             ChatAnswerUnknownDto() => null,
           },
       ];
+}
+
+class TryonMapprHelper {
+  static List<TryonGarmentDto> garmentsToDto(
+    final TryonGenerateRequest source,
+  ) => [
+    for (final garment in source.garments)
+      switch (garment) {
+        TryonGarmentProduct(:final productId, :final sizeId) =>
+          TryonProductGarmentDto(productId: productId, sizeId: sizeId),
+        TryonGarmentWardrobe(:final wardrobeItemId) => TryonWardrobeGarmentDto(
+          wardrobeItemId: wardrobeItemId,
+        ),
+        TryonGarmentImages(:final base64Images) => TryonImagesGarmentDto(
+          images: base64Images.map(Base64ImageDto.new).toList(),
+        ),
+      },
+  ];
+
+  static Base64ImageDto? avatarToDto(final TryonGenerateRequest source) =>
+      switch (source.avatarBase64) {
+        final avatar? => Base64ImageDto(avatar),
+        null => null,
+      };
+
+  static Base64ImageDto baseImageToDto(final TryonAnimateRequest source) =>
+      Base64ImageDto(source.baseImageBase64);
 }
