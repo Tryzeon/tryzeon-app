@@ -14,8 +14,6 @@ class ProductCategoryDto {
     this.gender,
     this.imageMale,
     this.imageFemale,
-    this.imageMaleUrl,
-    this.imageFemaleUrl,
   });
 
   factory ProductCategoryDto.fromJson(final Map<String, dynamic> json) =>
@@ -34,11 +32,6 @@ class ProductCategoryDto {
   /// Per-gender model imagery (R2 paths).
   final String? imageMale;
   final String? imageFemale;
-
-  @JsonKey(includeToJson: false)
-  final String? imageMaleUrl;
-  @JsonKey(includeToJson: false)
-  final String? imageFemaleUrl;
 
   Map<String, dynamic> toJson() => _$ProductCategoryDtoToJson(this);
 }
