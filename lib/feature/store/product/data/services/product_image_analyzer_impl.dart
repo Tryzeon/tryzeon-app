@@ -1,55 +1,51 @@
 import 'dart:io';
 
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
-import 'package:tryzeon/core/data/services/image_analysis_api.dart';
+import 'package:tryzeon/core/data/dtos/image_analysis_request.dart';
+import 'package:tryzeon/core/data/utils/decode_function_response.dart';
+import 'package:tryzeon/core/data/utils/encode_image_for_analysis.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
-import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
-import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
+import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
+import 'package:tryzeon/feature/store/product/data/dtos/product_analysis_result_dto.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product_analysis_result.dart';
 import 'package:tryzeon/feature/store/product/domain/services/product_image_analyzer.dart';
 import 'package:typed_result/typed_result.dart';
 
-String? _str(final dynamic v) =>
-    v is String && v.trim().isNotEmpty ? v.trim() : null;
-
-List<String> _strList(final dynamic v) => v is List
-    ? v.whereType<String>().where((final s) => s.isNotEmpty).toList()
-    : const <String>[];
-
-ProductAnalysisResult parseProductAnalysisResponse(
-  final Map<String, dynamic> data,
-) {
-  return ProductAnalysisResult(
-    name: _str(data['name']),
-    categoryId: _str(data['categoryId']),
-    gender: ProductGender.tryFromString(_str(data['gender'])),
-    styles: ClothingStyle.listFromStrings(_strList(data['styles'])) ?? const [],
-    seasons:
-        ProductSeason.listFromStrings(_strList(data['seasons'])) ?? const [],
-    material: _str(data['material']),
-    fit: ProductFit.tryFromString(_str(data['fit'])),
-    thickness: ProductThickness.tryFromString(_str(data['thickness'])),
-    elasticity: ProductElasticity.tryFromString(_str(data['elasticity'])),
-  );
-}
-
 class ProductImageAnalyzerImpl implements ProductImageAnalyzer {
-  ProductImageAnalyzerImpl(this._api);
+  ProductImageAnalyzerImpl(
+    this._supabase, {
+    final ImageEncoder encodeImage = encodeImageForAnalysis,
+  }) : _encodeImage = encodeImage;
 
-  final ImageAnalysisApi _api;
+  final SupabaseClient _supabase;
+  final ImageEncoder _encodeImage;
+  static const _timeout = Duration(seconds: 20);
+  static const _mappr = StoreMappr();
 
   @override
   Future<Result<ProductAnalysisResult, Failure>> analyze(
     final File image,
   ) async {
     try {
-      final data = await _api.analyze(
-        image: image,
-        functionName: AppConstants.functionAnalyzeProductImage,
+      final base64 = await _encodeImage(image);
+      if (base64 == null) return const Ok(ProductAnalysisResult());
+
+      final response = await _supabase.functions
+          .invoke(
+            AppConstants.functionAnalyzeProductImage,
+            body: ImageAnalysisRequest(base64: base64).toJson(),
+          )
+          .timeout(_timeout);
+
+      final dto = decodeFunctionResponse(
+        response.data,
+        ProductAnalysisResultDto.fromJson,
       );
-      if (data == null) return const Ok(ProductAnalysisResult());
-      return Ok(parseProductAnalysisResponse(data));
+      return Ok(
+        _mappr.convert<ProductAnalysisResultDto, ProductAnalysisResult>(dto),
+      );
     } catch (e, stackTrace) {
       AppLogger.warning('Product image analysis failed', e, stackTrace);
       return Err(mapExceptionToFailure(e));

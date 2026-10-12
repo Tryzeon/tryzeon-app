@@ -206,7 +206,7 @@ Future<Product> productById(final Ref ref, final String productId) async {
 
 @riverpod
 ProductImageAnalyzer productImageAnalyzer(final Ref ref) =>
-    ProductImageAnalyzerImpl(ref.watch(imageAnalysisApiProvider));
+    ProductImageAnalyzerImpl(Supabase.instance.client);
 
 @Riverpod(keepAlive: true)
 AnalyzeProductImage analyzeProductImageUseCase(final Ref ref) =>

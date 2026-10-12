@@ -22,11 +22,13 @@ import '../../analytics/domain/entities/product_analytics_summary.dart';
 import '../../product/data/collections/product_cache.dart';
 import '../../product/data/dtos/create_product_request.dart';
 import '../../product/data/dtos/parse_size_voice_response_dto.dart';
+import '../../product/data/dtos/product_analysis_result_dto.dart';
 import '../../product/data/dtos/product_draft_dto.dart';
 import '../../product/data/dtos/product_dto.dart';
 import '../../product/data/dtos/product_size_draft_dto.dart';
 import '../../product/domain/entities/parsed_size.dart';
 import '../../product/domain/entities/product.dart';
+import '../../product/domain/entities/product_analysis_result.dart';
 import '../../product/domain/value_objects/size_item.dart';
 import '../../profile/data/collections/store_profile_cache.dart';
 import '../../profile/data/dtos/store_profile_dto.dart';
@@ -40,6 +42,7 @@ import 'store_mappr.auto_mappr.dart';
     MapType<ProductSize, ProductSizeEmbedded>(),
     MapType<ProductSizeEmbedded, ProductSize>(),
 
+    MapType<ProductAnalysisResultDto, ProductAnalysisResult>(),
     MapType<ParsedMeasurementDto, ParsedMeasurement>(),
     MapType<ParsedSizeDto, ParsedSize>(
       fields: [
