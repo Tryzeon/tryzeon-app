@@ -8,6 +8,7 @@ import 'package:tryzeon/feature/store/product/data/datasources/product_remote_da
 import 'package:tryzeon/feature/store/product/data/dtos/create_product_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/create_product_size_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/product_dto.dart';
+import 'package:tryzeon/feature/store/product/data/dtos/product_size_draft_dto.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/domain/repositories/product_repository.dart';
 import 'package:tryzeon/feature/store/product/domain/services/product_update_plan.dart';
@@ -24,6 +25,14 @@ class ProductRepositoryImpl implements ProductRepository {
   final ProductRemoteDataSource _remoteDataSource;
   final ProductLocalDataSource _localDataSource;
   static const _mappr = StoreMappr();
+
+  static CreateProductSizeRequest _sizeRequest(
+    final String productId,
+    final NewSizeItem size,
+  ) => CreateProductSizeRequest(
+    productId: productId,
+    size: _mappr.convert<NewSizeItem, ProductSizeDraftDto>(size),
+  );
 
   @override
   Future<Result<List<Product>, Failure>> listProducts({
@@ -119,12 +128,9 @@ class ProductRepositoryImpl implements ProductRepository {
       );
 
       if (product.sizes.isNotEmpty) {
-        await _remoteDataSource.insertProductSizes(
-          productId: product.id,
-          requests: _mappr.convertList<NewSizeItem, CreateProductSizeRequest>(
-            product.sizes,
-          ),
-        );
+        await _remoteDataSource.insertProductSizes([
+          for (final size in product.sizes) _sizeRequest(product.id, size),
+        ]);
       }
     } catch (e, stackTrace) {
       AppLogger.error('Failed to create product', e, stackTrace);
@@ -149,8 +155,7 @@ class ProductRepositoryImpl implements ProductRepository {
 
       for (final size in sizeDiff.toAdd) {
         await _remoteDataSource.insertProductSize(
-          productId: original.id,
-          request: _mappr.convert<NewSizeItem, CreateProductSizeRequest>(size),
+          _sizeRequest(original.id, size),
         );
       }
 

@@ -26,12 +26,11 @@ class ProductRemoteDataSource {
     await _supabaseClient.from(_productsTable).insert(request.toJson());
   }
 
-  Future<void> insertProductSizes({
-    required final String productId,
-    required final List<CreateProductSizeRequest> requests,
-  }) async {
+  Future<void> insertProductSizes(
+    final List<CreateProductSizeRequest> requests,
+  ) async {
     await _supabaseClient.from(_productSizesTable).insert([
-      for (final request in requests) _sizeRow(productId, request),
+      for (final request in requests) request.toJson(),
     ]);
   }
 
@@ -65,19 +64,9 @@ class ProductRemoteDataSource {
     await _supabaseClient.from(_productSizesTable).delete().eq('id', sizeId);
   }
 
-  Future<void> insertProductSize({
-    required final String productId,
-    required final CreateProductSizeRequest request,
-  }) async {
-    await _supabaseClient
-        .from(_productSizesTable)
-        .insert(_sizeRow(productId, request));
+  Future<void> insertProductSize(final CreateProductSizeRequest request) async {
+    await _supabaseClient.from(_productSizesTable).insert(request.toJson());
   }
-
-  static Map<String, dynamic> _sizeRow(
-    final String productId,
-    final CreateProductSizeRequest request,
-  ) => {...request.toJson(), 'product_id': productId};
 
   Future<void> updateProductSize(
     final String sizeId,

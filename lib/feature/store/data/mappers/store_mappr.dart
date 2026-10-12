@@ -20,9 +20,9 @@ import '../../analytics/data/dtos/product_analytics_summary_dto.dart';
 import '../../analytics/domain/entities/product_analytics_summary.dart';
 import '../../product/data/collections/product_cache.dart';
 import '../../product/data/dtos/create_product_request.dart';
-import '../../product/data/dtos/create_product_size_request.dart';
 import '../../product/data/dtos/product_draft_dto.dart';
 import '../../product/data/dtos/product_dto.dart';
+import '../../product/data/dtos/product_size_draft_dto.dart';
 import '../../product/domain/entities/product.dart';
 import '../../product/domain/value_objects/size_item.dart';
 import '../../profile/data/collections/store_profile_cache.dart';
@@ -60,7 +60,7 @@ import 'store_mappr.auto_mappr.dart';
         Field('seasons', custom: StoreMapprHelper.draftSeasonsToDto),
       ],
     ),
-    MapType<NewSizeItem, CreateProductSizeRequest>(),
+    MapType<NewSizeItem, ProductSizeDraftDto>(),
 
     MapType<Product, ProductCache>(
       fields: [Field('productId', from: 'id')],

@@ -1,24 +1,19 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:tryzeon/feature/common/product_size/data/dtos/body_measurement_ranges_dto.dart';
-import 'package:tryzeon/feature/common/product_size/data/dtos/garment_measurements_dto.dart';
+import 'package:tryzeon/feature/store/product/data/dtos/product_size_draft_dto.dart';
 
 part 'create_product_size_request.g.dart';
 
-@JsonSerializable(
-  fieldRename: FieldRename.snake,
-  createFactory: false,
-  explicitToJson: true,
-)
+/// [size] is flattened into the same row by [toJson].
+@JsonSerializable(fieldRename: FieldRename.snake, createFactory: false)
 class CreateProductSizeRequest {
-  const CreateProductSizeRequest({
-    required this.name,
-    this.garmentMeasurements,
-    this.bodyMeasurementRanges,
-  });
+  const CreateProductSizeRequest({required this.productId, required this.size});
 
-  final String name;
-  final GarmentMeasurementsDto? garmentMeasurements;
-  final BodyMeasurementRangesDto? bodyMeasurementRanges;
+  final String productId;
+  @JsonKey(includeToJson: false)
+  final ProductSizeDraftDto size;
 
-  Map<String, dynamic> toJson() => _$CreateProductSizeRequestToJson(this);
+  Map<String, dynamic> toJson() => {
+    ..._$CreateProductSizeRequestToJson(this),
+    ...size.toJson(),
+  };
 }

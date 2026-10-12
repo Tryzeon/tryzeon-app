@@ -5,6 +5,7 @@ import 'package:tryzeon/feature/store/data/mappers/store_mappr.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/create_product_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/create_product_size_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/product_dto.dart';
+import 'package:tryzeon/feature/store/product/data/dtos/product_size_draft_dto.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/size_item.dart';
 import 'package:tryzeon/feature/store/profile/data/collections/store_profile_cache.dart';
@@ -169,7 +170,7 @@ void main() {
   });
 
   test('a new size serializes its nested measurements', () {
-    final request = mappr.convert<NewSizeItem, CreateProductSizeRequest>(
+    final request = mappr.convert<NewSizeItem, ProductSizeDraftDto>(
       const NewSizeItem(
         name: 'M',
         garmentMeasurements: GarmentMeasurements(chestCircumference: 96),
@@ -179,6 +180,20 @@ void main() {
     expect(request.toJson(), {
       'name': 'M',
       'garment_measurements': {'chest_circumference': 96.0},
+      'body_measurement_ranges': null,
+    });
+  });
+
+  test('a size create request flattens the size into the product row', () {
+    const request = CreateProductSizeRequest(
+      productId: 'p1',
+      size: ProductSizeDraftDto(name: 'M'),
+    );
+
+    expect(request.toJson(), {
+      'product_id': 'p1',
+      'name': 'M',
+      'garment_measurements': null,
       'body_measurement_ranges': null,
     });
   });
