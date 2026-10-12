@@ -13,6 +13,7 @@ import 'package:tryzeon/feature/personal/wardrobe/domain/entities/label_result.d
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_capacity.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/remove_wardrobe_image_background.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/tag_wardrobe_image.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/upload_wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/sheets/upload_wardrobe_item_sheet.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 import 'package:typed_result/typed_result.dart';
@@ -41,14 +42,11 @@ class _FakeEdit extends WardrobeEditNotifier {
   AsyncValue<void> build() => const AsyncData(null);
 
   @override
-  Future<Result<void, Failure>> upload({
-    required final File image,
-    required final GarmentType garmentType,
-    required final List<String> tags,
-    final Uint8List? replacementBytes,
-  }) async {
+  Future<Result<void, Failure>> upload(
+    final UploadWardrobeItemParams params,
+  ) async {
     final link = ref.keepAlive();
-    uploadedTypes.add(garmentType);
+    uploadedTypes.add(params.garmentType);
     state = const AsyncLoading();
     final result = await uploadResult.future;
     state = const AsyncData(null);

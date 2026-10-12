@@ -20,14 +20,17 @@ class WardrobeImageStorageImpl implements WardrobeImageStorage {
   Future<Result<String, Failure>> upload({
     required final File image,
     required final GarmentType garmentType,
+    final Uint8List? backgroundRemovedPng,
   }) async {
     final String path;
     final Uint8List bytes;
     try {
-      bytes = await image.readAsBytes();
+      bytes = backgroundRemovedPng ?? await image.readAsBytes();
       path = await _remoteDataSource.uploadImage(
         garmentType: garmentType.value,
-        fileName: p.basename(image.path),
+        fileName: backgroundRemovedPng == null
+            ? p.basename(image.path)
+            : '${p.basenameWithoutExtension(image.path)}.png',
         bytes: bytes,
       );
     } catch (e, stackTrace) {

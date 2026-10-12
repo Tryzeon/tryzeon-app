@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
@@ -9,7 +8,6 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
-import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_local_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_remote_datasource.dart';
@@ -184,33 +182,8 @@ class WardrobeEditNotifier extends _$WardrobeEditNotifier {
   @override
   AsyncValue<void> build() => const AsyncData(null);
 
-  Future<Result<void, Failure>> upload({
-    required final File image,
-    required final GarmentType garmentType,
-    required final List<String> tags,
-    final Uint8List? replacementBytes,
-  }) {
-    return _write(() async {
-      final tempFile = replacementBytes == null
-          ? null
-          : await _writeTempPng(replacementBytes, basedOn: image);
-
-      try {
-        return await ref.read(uploadWardrobeItemUseCaseProvider)(
-          UploadWardrobeItemParams(
-            image: tempFile ?? image,
-            garmentType: garmentType,
-            tags: tags,
-          ),
-        );
-      } finally {
-        try {
-          await tempFile?.delete();
-        } catch (e, st) {
-          AppLogger.warning('Failed to delete temp upload file', e, st);
-        }
-      }
-    });
+  Future<Result<void, Failure>> upload(final UploadWardrobeItemParams params) {
+    return _write(() => ref.read(uploadWardrobeItemUseCaseProvider)(params));
   }
 
   Future<Result<void, Failure>> update(final UpdateWardrobeItemParams params) {
@@ -223,18 +196,6 @@ class WardrobeEditNotifier extends _$WardrobeEditNotifier {
 
   Future<Result<void, Failure>> delete(final WardrobeItem item) {
     return _write(() => ref.read(deleteWardrobeItemUseCaseProvider)(item));
-  }
-
-  Future<File> _writeTempPng(
-    final Uint8List bytes, {
-    required final File basedOn,
-  }) async {
-    final dir = await getTemporaryDirectory();
-    final file = File(
-      '${dir.path}/wardrobe_nobg_${basedOn.uri.pathSegments.last}.png',
-    );
-    await file.writeAsBytes(bytes);
-    return file;
   }
 
   /// Kept alive for the duration, so a sheet popped mid-write doesn't dispose

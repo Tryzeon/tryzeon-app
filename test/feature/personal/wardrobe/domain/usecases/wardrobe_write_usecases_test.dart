@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/core/error/failures.dart';
@@ -39,12 +40,17 @@ class _FakeRepository implements WardrobeRepository {
 
 class _FakeImageStorage implements WardrobeImageStorage {
   final List<String> deleted = [];
+  Uint8List? uploadedPng;
 
   @override
   Future<Result<String, Failure>> upload({
     required final File image,
     required final GarmentType garmentType,
-  }) async => const Ok('u1/top/new.jpg');
+    final Uint8List? backgroundRemovedPng,
+  }) async {
+    uploadedPng = backgroundRemovedPng;
+    return const Ok('u1/top/new.jpg');
+  }
 
   @override
   Future<Result<void, Failure>> delete(final String path) async {
@@ -77,6 +83,20 @@ void main() {
 
       expect(result.isSuccess, isTrue);
       expect(repository.createdImagePath, 'u1/top/new.jpg');
+    });
+
+    test('uploads the background-removed image when one is given', () async {
+      final png = Uint8List.fromList([1, 2, 3]);
+
+      await build()(
+        UploadWardrobeItemParams(
+          image: File('a.jpg'),
+          garmentType: GarmentType.top,
+          backgroundRemovedPng: png,
+        ),
+      );
+
+      expect(imageStorage.uploadedPng, png);
     });
 
     test('a failed create discards the uploaded image', () async {

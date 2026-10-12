@@ -11,6 +11,7 @@ import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/garment_type/presentation/mappers/garment_type_display.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/upload_wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/dialogs/wardrobe_full_dialog.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/widgets/wardrobe_tag_input.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
@@ -88,10 +89,12 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
       final result = await ref
           .read(wardrobeEditProvider.notifier)
           .upload(
-            image: image,
-            garmentType: selectedGarmentType.value!,
-            tags: tags.value,
-            replacementBytes: useRemovedBg.value ? removedBgImage : null,
+            UploadWardrobeItemParams(
+              image: image,
+              garmentType: selectedGarmentType.value!,
+              tags: tags.value,
+              backgroundRemovedPng: useRemovedBg.value ? removedBgImage : null,
+            ),
           );
 
       if (result.isSuccess) {
