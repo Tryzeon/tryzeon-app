@@ -9,7 +9,7 @@ import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/product_category/domain/entities/product_category.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
-import 'package:tryzeon/feature/store/product/domain/entities/product_analysis_result.dart';
+import 'package:tryzeon/feature/store/product/domain/entities/product_image_analysis.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.dart';
 
 class ProductFormData {
@@ -106,18 +106,14 @@ class ProductFormData {
     );
   }
 
-  void applyAnalysis(
-    final ProductAnalysisResult r,
-    final List<ProductCategory> categories,
-  ) {
+  void applyAnalysis(final ProductImageAnalysis analysis) {
+    final r = analysis.attributes;
     if (nameController.text.trim().isEmpty && (r.name?.isNotEmpty ?? false)) {
       nameController.text = r.name!;
     }
-    if (selectedCategoryId.value == null && r.categoryId != null) {
-      final category = categories
-          .where((final c) => c.id == r.categoryId)
-          .firstOrNull;
-      if (category != null) selectCategory(category);
+    final category = analysis.category;
+    if (selectedCategoryId.value == null && category != null) {
+      selectCategory(category);
     }
     if (selectedGender.value == null && r.gender != null) {
       selectedGender.value = r.gender;

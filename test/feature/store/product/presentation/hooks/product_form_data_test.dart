@@ -6,6 +6,7 @@ import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/product_category/domain/entities/product_category.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product_analysis_result.dart';
+import 'package:tryzeon/feature/store/product/domain/entities/product_image_analysis.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.dart';
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_form.dart';
 
@@ -22,8 +23,6 @@ const _top = ProductCategory(
   name: 'T 恤',
   defaultGarmentType: GarmentType.top,
 );
-
-const _categories = [_pants, _top];
 
 ProductFormData _formData() => ProductFormData(
   formKey: GlobalKey<FormState>(),
@@ -65,24 +64,27 @@ void main() {
       expect(form.visibleMeasurementTypes, GarmentType.pants.measurementTypes);
     });
 
-    test('applyAnalysis selects a known category', () {
+    test('applyAnalysis selects the analyzed category', () {
       final form = _formData();
 
       form.applyAnalysis(
-        const ProductAnalysisResult(categoryId: 'cat-top'),
-        _categories,
+        const ProductImageAnalysis(
+          attributes: ProductAnalysisResult(categoryId: 'cat-top'),
+          category: _top,
+        ),
       );
 
       expect(form.selectedCategoryId.value, _top.id);
       expect(form.selectedGarmentType.value, GarmentType.top);
     });
 
-    test('applyAnalysis leaves both unset for an unknown category', () {
+    test('applyAnalysis leaves both unset without a category', () {
       final form = _formData();
 
       form.applyAnalysis(
-        const ProductAnalysisResult(categoryId: 'cat-unknown'),
-        _categories,
+        const ProductImageAnalysis(
+          attributes: ProductAnalysisResult(categoryId: 'cat-unknown'),
+        ),
       );
 
       expect(form.selectedCategoryId.value, isNull);
@@ -93,8 +95,10 @@ void main() {
       final form = _formData()..selectCategory(_pants);
 
       form.applyAnalysis(
-        const ProductAnalysisResult(categoryId: 'cat-top'),
-        _categories,
+        const ProductImageAnalysis(
+          attributes: ProductAnalysisResult(categoryId: 'cat-top'),
+          category: _top,
+        ),
       );
 
       expect(form.selectedCategoryId.value, _pants.id);

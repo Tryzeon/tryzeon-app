@@ -7,9 +7,7 @@ import 'package:tryzeon/core/presentation/widgets/loading_button.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
-import 'package:tryzeon/feature/common/product_category/domain/entities/product_category.dart';
 import 'package:tryzeon/feature/common/product_category/providers/product_category_providers.dart';
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_form.dart';
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_size_manager.dart';
@@ -29,48 +27,22 @@ class AddProductPage extends HookConsumerWidget {
     final isSaving = ref.watch(productEditProvider) == ProductMutation.create;
     final productCategoriesAsync = ref.watch(productCategoriesProvider);
 
-    final isAnalyzing = useState(false);
-    final analyzedPath = useRef<String?>(null);
     final advancedController = useMemoized(ExpansibleController.new);
 
-    final newFiles = formData.newImageFiles;
-    final mainImageFile = newFiles.isEmpty ? null : newFiles.first;
-    useEffect(() {
-      final file = mainImageFile;
-      if (file == null || analyzedPath.value == file.path) return null;
-      analyzedPath.value = file.path;
-      isAnalyzing.value = true;
-      Future<void>(() async {
-        final analyzed = await ref.read(analyzeProductImageUseCaseProvider)(
-          file,
-        );
-        if (!context.mounted) return;
-        final result = analyzed.get();
-        if (result == null) {
-          isAnalyzing.value = false;
-          return;
+    final mainImagePath = formData.newImageFiles.firstOrNull?.path;
+    final analysisProvider = mainImagePath == null
+        ? null
+        : productImageAnalysisProvider(mainImagePath);
+    final isAnalyzing =
+        analysisProvider != null && ref.watch(analysisProvider).isLoading;
+    if (analysisProvider != null) {
+      ref.listen(analysisProvider, (_, final next) {
+        if (next case AsyncData(:final value)) {
+          formData.applyAnalysis(value);
+          if (value.attributes.hasAdvancedFields) advancedController.expand();
         }
-
-        List<ProductCategory> categories;
-        try {
-          categories = await ref.read(productCategoriesProvider.future);
-        } catch (e, stackTrace) {
-          AppLogger.warning(
-            'Categories unavailable for analysis pre-fill',
-            e,
-            stackTrace,
-          );
-          categories = const [];
-        }
-        if (!context.mounted) return;
-
-        formData.applyAnalysis(result, categories);
-
-        if (result.hasAdvancedFields) advancedController.expand();
-        isAnalyzing.value = false;
       });
-      return null;
-    }, [mainImageFile]);
+    }
 
     Future<void> addProduct() async {
       if (!formData.validate(context)) return;
@@ -119,7 +91,7 @@ class AddProductPage extends HookConsumerWidget {
           sizeManager: sizeManager,
           productCategoriesAsync: productCategoriesAsync,
           onRetryCategories: () => ref.invalidate(productCategoriesProvider),
-          isAnalyzing: isAnalyzing.value,
+          isAnalyzing: isAnalyzing,
           advancedController: advancedController,
           voiceStatus: voiceInput.status,
           onVoicePressed: voiceInput.toggle,

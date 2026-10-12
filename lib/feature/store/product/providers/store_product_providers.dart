@@ -7,6 +7,7 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/product_category/providers/product_category_providers.dart';
 import 'package:tryzeon/feature/store/analytics/domain/entities/product_analytics_summary.dart';
 import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
 import 'package:tryzeon/feature/store/product/data/datasources/product_local_datasource.dart';
@@ -17,6 +18,7 @@ import 'package:tryzeon/feature/store/product/data/services/product_image_analyz
 import 'package:tryzeon/feature/store/product/data/services/product_image_storage_impl.dart';
 import 'package:tryzeon/feature/store/product/data/services/size_voice_parser_impl.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
+import 'package:tryzeon/feature/store/product/domain/entities/product_image_analysis.dart';
 import 'package:tryzeon/feature/store/product/domain/repositories/product_repository.dart';
 import 'package:tryzeon/feature/store/product/domain/services/audio_recorder_service.dart';
 import 'package:tryzeon/feature/store/product/domain/services/product_image_analyzer.dart';
@@ -210,7 +212,22 @@ ProductImageAnalyzer productImageAnalyzer(final Ref ref) =>
 
 @Riverpod(keepAlive: true)
 AnalyzeProductImage analyzeProductImageUseCase(final Ref ref) =>
-    AnalyzeProductImage(ref.watch(productImageAnalyzerProvider));
+    AnalyzeProductImage(
+      ref.watch(productImageAnalyzerProvider),
+      ref.watch(productCategoryRepositoryProvider),
+    );
+
+@riverpod
+Future<ProductImageAnalysis> productImageAnalysis(
+  final Ref ref,
+  final String imagePath,
+) async {
+  final result = await ref.watch(analyzeProductImageUseCaseProvider)(
+    File(imagePath),
+  );
+  if (result.isFailure) throw result.getError()!;
+  return result.get()!;
+}
 
 @riverpod
 SizeVoiceParser sizeVoiceParser(final Ref ref) =>
