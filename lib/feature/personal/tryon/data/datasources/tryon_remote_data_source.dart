@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/error/exceptions.dart';
+import 'package:tryzeon/feature/common/daily_usage/data/mappers/daily_usage_payload.dart';
 import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_function_request.dart';
 import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_response_dto.dart';
 
@@ -16,9 +18,20 @@ class TryonRemoteDataSource {
   static const _videoTimeout = Duration(minutes: 7);
 
   Future<TryonResponseDto> tryon(final TryonFunctionRequest request) async {
-    final response = await _supabase.functions
-        .invoke(AppConstants.functionTryon, body: request.toJson())
-        .timeout(request.isVideo ? _videoTimeout : _imageTimeout);
-    return TryonResponseDto.fromJson(response.data as Map<String, dynamic>);
+    try {
+      final response = await _supabase.functions
+          .invoke(AppConstants.functionTryon, body: request.toJson())
+          .timeout(request.isVideo ? _videoTimeout : _imageTimeout);
+      return TryonResponseDto.fromJson(response.data as Map<String, dynamic>);
+    } on FunctionException catch (e) {
+      final body = e.details;
+      if (body is Map &&
+          body['code'] == AppConstants.functionErrorRateLimitExceeded) {
+        throw RateLimitException(
+          usage: tryParseDailyUsagePayload(body['usage']),
+        );
+      }
+      rethrow;
+    }
   }
 }

@@ -6,7 +6,6 @@ import 'package:http/http.dart' show ClientException;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
-import 'package:tryzeon/feature/common/daily_usage/data/mappers/daily_usage_payload.dart';
 import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
 
 sealed class Failure extends Equatable {
@@ -94,9 +93,7 @@ Failure mapExceptionToFailure(final Object e) {
         AppConstants.functionErrorAiGenerationFailed => const ServerFailure(
           'AI 無法辨識圖片，請換一張試試',
         ),
-        AppConstants.functionErrorRateLimitExceeded => RateLimitFailure(
-          usage: tryParseDailyUsagePayload(body['usage']),
-        ),
+        AppConstants.functionErrorRateLimitExceeded => const RateLimitFailure(),
         _ => null,
       };
       if (coded != null) return coded;
@@ -117,6 +114,7 @@ Failure mapExceptionToFailure(final Object e) {
     UserCanceledException(message: final msg) => UserCanceledFailure(msg),
     NotFoundException(message: final msg) => NotFoundFailure(msg),
     CacheDecodeException(message: final msg) => UnknownFailure(msg),
+    RateLimitException(:final usage) => RateLimitFailure(usage: usage),
 
     PostgrestException() => const ServerFailure(),
     StorageException() => const ServerFailure(),

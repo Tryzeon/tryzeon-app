@@ -125,32 +125,27 @@ void main() {
       expect(failure.message, 'AI 無法辨識圖片，請換一張試試');
     });
 
-    test('FunctionException RATE_LIMIT_EXCEEDED carries usage', () {
+    test('FunctionException RATE_LIMIT_EXCEEDED maps to RateLimitFailure', () {
       final failure = mapExceptionToFailure(
         const FunctionException(
           status: 429,
-          details: {
-            'code': 'RATE_LIMIT_EXCEEDED',
-            'usage': {
-              'user_id': 'u1',
-              'usage_date': '2026-10-11',
-              'tryon_count': 3,
-              'chat_count': 0,
-              'video_count': 0,
-            },
-          },
+          details: {'code': 'RATE_LIMIT_EXCEEDED'},
         ),
       );
-      expect(failure, isA<RateLimitFailure>());
+      expect(failure, const RateLimitFailure());
+    });
+
+    test('RateLimitException carries its usage into the failure', () {
+      final usage = DailyUsage(
+        userId: 'u1',
+        usageDate: DateTime(2026, 10, 11),
+        tryonCount: 3,
+        chatCount: 0,
+        videoCount: 0,
+      );
       expect(
-        (failure as RateLimitFailure).usage,
-        DailyUsage(
-          userId: 'u1',
-          usageDate: DateTime(2026, 10, 11),
-          tryonCount: 3,
-          chatCount: 0,
-          videoCount: 0,
-        ),
+        mapExceptionToFailure(RateLimitException(usage: usage)),
+        RateLimitFailure(usage: usage),
       );
     });
 
@@ -169,13 +164,6 @@ void main() {
         ),
         isA<ServerFailure>(),
       );
-      final failure = mapExceptionToFailure(
-        const FunctionException(
-          status: 429,
-          details: {'code': 'RATE_LIMIT_EXCEEDED', 'usage': 'not a map'},
-        ),
-      );
-      expect((failure as RateLimitFailure).usage, isNull);
     });
 
     test('a bare 429 with no code of ours is still a rate limit', () {

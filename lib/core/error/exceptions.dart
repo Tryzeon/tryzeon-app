@@ -1,3 +1,5 @@
+import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
+
 abstract class AppException implements Exception {
   const AppException([this.message]);
   final String? message;
@@ -24,4 +26,9 @@ class NotFoundException extends AppException {
 
 class CacheDecodeException extends AppException {
   const CacheDecodeException([super.message]);
+}
+
+class RateLimitException extends AppException {
+  const RateLimitException({this.usage});
+  final DailyUsage? usage;
 }
