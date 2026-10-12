@@ -7,7 +7,7 @@ import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/common/body_measurements/presentation/mappers/body_measurement_type_ui_mapper.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/garment_type/presentation/mappers/garment_type_display.dart';
-import 'package:tryzeon/feature/common/garment_type/presentation/measurement_guide_button.dart';
+import 'package:tryzeon/feature/common/garment_type/presentation/widgets/measurement_guide_button.dart';
 import 'package:tryzeon/feature/common/measurement/domain/entities/measurement_unit.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/standard_size_label.dart';
 import 'package:tryzeon/feature/common/product_size/presentation/mappers/garment_measurement_type_ui_mapper.dart';
