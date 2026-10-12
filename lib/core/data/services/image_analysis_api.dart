@@ -2,10 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-part 'image_analysis_api.g.dart';
 
 class ImageAnalysisApi {
   ImageAnalysisApi(this._supabase);
@@ -36,7 +33,3 @@ class ImageAnalysisApi {
     return data is Map<String, dynamic> ? data : null;
   }
 }
-
-@Riverpod(keepAlive: true)
-ImageAnalysisApi imageAnalysisApi(final Ref ref) =>
-    ImageAnalysisApi(Supabase.instance.client);
