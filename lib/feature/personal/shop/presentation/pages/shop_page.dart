@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/extensions/refresh_feedback_extension.dart';
+import 'package:tryzeon/core/modules/location/domain/entities/location_permission_status.dart';
 import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/router/shells/personal_tab.dart';
@@ -102,11 +102,11 @@ class ShopPage extends HookConsumerWidget {
         final permission = await locationService.requestPermission();
         if (!context.mounted) return;
 
-        if (permission == LocationPermission.denied) {
+        if (permission == LocationPermissionStatus.denied) {
           TopNotification.show(context, message: '需開啟定位才能依距離排序');
           return;
         }
-        if (permission == LocationPermission.deniedForever) {
+        if (permission == LocationPermissionStatus.deniedForever) {
           final result = await showAppOkCancelDialog(
             context: context,
             title: '需要定位權限',
@@ -115,7 +115,7 @@ class ShopPage extends HookConsumerWidget {
             cancelLabel: '取消',
           );
           if (result == OkCancelResult.ok) {
-            await Geolocator.openAppSettings();
+            await locationService.openAppSettings();
           }
           return;
         }

@@ -1,5 +1,6 @@
 import 'package:geolocator/geolocator.dart';
-import 'package:tryzeon/core/modules/location/domain/services/geocoding_service.dart';
+import 'package:tryzeon/core/modules/location/domain/entities/geo_coordinates.dart';
+import 'package:tryzeon/core/modules/location/domain/entities/location_permission_status.dart';
 import 'package:tryzeon/core/modules/location/domain/services/location_service.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 
@@ -15,10 +16,10 @@ class LocationServiceImpl implements LocationService {
   }
 
   @override
-  Future<LocationPermission> requestPermission() async {
+  Future<LocationPermissionStatus> requestPermission() async {
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      return LocationPermission.denied;
+      return LocationPermissionStatus.denied;
     }
 
     LocationPermission permission = await Geolocator.checkPermission();
@@ -27,7 +28,19 @@ class LocationServiceImpl implements LocationService {
       permission = await Geolocator.requestPermission();
     }
 
-    return permission;
+    return switch (permission) {
+      LocationPermission.always ||
+      LocationPermission.whileInUse => LocationPermissionStatus.granted,
+      LocationPermission.deniedForever =>
+        LocationPermissionStatus.deniedForever,
+      LocationPermission.denied ||
+      LocationPermission.unableToDetermine => LocationPermissionStatus.denied,
+    };
+  }
+
+  @override
+  Future<void> openAppSettings() async {
+    await Geolocator.openAppSettings();
   }
 
   @override

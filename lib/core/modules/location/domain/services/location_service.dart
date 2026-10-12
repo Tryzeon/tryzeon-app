@@ -1,10 +1,12 @@
-import 'package:geolocator/geolocator.dart';
-import 'package:tryzeon/core/modules/location/domain/services/geocoding_service.dart';
+import 'package:tryzeon/core/modules/location/domain/entities/geo_coordinates.dart';
+import 'package:tryzeon/core/modules/location/domain/entities/location_permission_status.dart';
 
 abstract class LocationService {
   Future<GeoCoordinates?> getCoordinates();
 
-  Future<LocationPermission> requestPermission();
+  Future<LocationPermissionStatus> requestPermission();
 
   Future<bool> hasPermission();
+
+  Future<void> openAppSettings();
 }

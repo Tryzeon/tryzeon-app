@@ -1,4 +1,5 @@
 import 'package:geocoding/geocoding.dart';
+import 'package:tryzeon/core/modules/location/domain/entities/geo_coordinates.dart';
 import 'package:tryzeon/core/modules/location/domain/services/geocoding_service.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 
