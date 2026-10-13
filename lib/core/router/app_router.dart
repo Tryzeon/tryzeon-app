@@ -31,7 +31,7 @@ Raw<GoRouter> appRouter(final Ref ref) {
     initialLocation: AppRoutes.login,
     refreshListenable: refreshListenable,
     observers: [
-      FirebaseAnalyticsObserver(analytics: FirebaseAnalytics.instance),
+      FirebaseAnalyticsObserver(analytics: ref.read(firebaseAnalyticsProvider)),
     ],
     redirect: (final context, final state) {
       final isLoggedIn = authIdentity.currentUserId != null;

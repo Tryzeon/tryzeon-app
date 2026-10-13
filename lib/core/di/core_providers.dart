@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,6 +24,10 @@ part 'core_providers.g.dart';
 
 @Riverpod(keepAlive: true)
 SupabaseClient supabaseClient(final Ref ref) => Supabase.instance.client;
+
+@Riverpod(keepAlive: true)
+FirebaseAnalytics firebaseAnalytics(final Ref ref) =>
+    FirebaseAnalytics.instance;
 
 @riverpod
 AnalyticsRemoteDataSource analyticsRemoteDataSource(final Ref ref) {
