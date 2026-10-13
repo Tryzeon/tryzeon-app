@@ -75,6 +75,12 @@
             android:name="com.yalantis.ucrop.UCropActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+        <!-- LINE SDK's Open Chat UI is unused (flutter_line_sdk only does login) and
+             crashes with "channel id is empty" when launched directly, e.g. by
+             automated crawlers on rooted test devices. -->
+        <activity
+            android:name="com.linecorp.linesdk.openchat.ui.CreateOpenChatActivity"
+            tools:node="remove" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
