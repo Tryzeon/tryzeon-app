@@ -92,7 +92,7 @@ export const vertexLocation = (): string => Deno.env.get("VERTEX_LOCATION") ?? "
 export const chatModel = (): string => requireEnv("CHAT_MODEL"); // gemini-3.8-flash
 export const analysisModel = (): string => requireEnv("ANALYSIS_MODEL"); // gemini-3.8-flash
 
-export const tryonImageModel = (): string => requireEnv("TRYON_MODEL"); // gemini-3.1-flash-image
+export const tryonImageModel = (): string => requireEnv("TRYON_MODEL"); // gemini-nano-banana-2.1
 export const tryonExperimentalImageModel = (): string => requireEnv("TRYON_MODEL_EXPERIMENTAL"); // gemini-3-pro-image
 
 export const tryonVideoModel = (): string => requireEnv("VIDEO_MODEL"); // gemini-omni-1.1-flash-preview
