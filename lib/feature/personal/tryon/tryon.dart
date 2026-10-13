@@ -4,6 +4,7 @@ library;
 export 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart';
 export 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 export 'package:tryzeon/feature/personal/tryon/presentation/actions/outfit_actions.dart';
+export 'package:tryzeon/feature/personal/tryon/presentation/actions/tryon_outcome_feedback.dart';
 export 'package:tryzeon/feature/personal/tryon/presentation/coordinators/tryon_coordinator.dart';
 export 'package:tryzeon/feature/personal/tryon/presentation/sheets/tryon_mode_sheet.dart';
 export 'package:tryzeon/feature/personal/tryon/presentation/state/outfit_tray_controller.dart';

@@ -31,15 +31,6 @@ class TryonController extends _$TryonController {
     return null;
   }
 
-  /// One-shot event lane: two identical outcomes in a row (e.g. two consecutive
-  /// successes, which Dart canonicalizes to the same `const` instance) must both
-  /// reach `ref.listen`, so every assignment notifies.
-  @override
-  bool updateShouldNotify(
-    final TryonOutcome? previous,
-    final TryonOutcome? next,
-  ) => true;
-
   Future<void> tryonFromOutfit(
     final List<OutfitPiece> pieces, {
     final TryonMode mode = TryonMode.image,
@@ -53,7 +44,7 @@ class TryonController extends _$TryonController {
   Future<void> animate(final FinishedTryonEntry entry) async {
     final imageUrl = entry.result.imageUrl;
     if (entry.mode != TryonMode.image || imageUrl == null || imageUrl.isEmpty) {
-      state = const TryonFailed(ValidationFailure());
+      state = TryonFailed(_uuid.v4(), const ValidationFailure());
       return;
     }
 
@@ -63,6 +54,8 @@ class TryonController extends _$TryonController {
   }
 
   Future<void> _start(final TryonSubject subject) async {
+    final id = _uuid.v4();
+
     // Setup runs before the placeholder exists, so its failures always speak up.
     String? customAvatarUrl;
     final TryonPreferences preferences;
@@ -81,7 +74,7 @@ class TryonController extends _$TryonController {
         // answers NO_AVATAR either way, so this only saves a round trip.
         final profile = await ref.read(userProfileProvider.future);
         if (!hasCustomAvatar && !(profile?.avatarPath?.isNotEmpty ?? false)) {
-          state = const TryonAvatarMissing();
+          state = TryonAvatarMissing(id);
           return;
         }
       }
@@ -92,18 +85,17 @@ class TryonController extends _$TryonController {
       preferences = await ref.read(tryonPreferencesProvider.future);
     } catch (e, stackTrace) {
       AppLogger.error('Try-on setup failed', e, stackTrace);
-      state = TryonFailed(failureFromError(e));
+      state = TryonFailed(id, failureFromError(e));
       return;
     }
 
     final galleryNotifier = ref.read(tryonGalleryProvider.notifier);
-    final id = _uuid.v4();
 
     // Before the request is built, because building it fetches images.
     galleryNotifier.addPending(id: id, subject: subject);
 
     // Past the placeholder everything recovers the same way. A `removeById`
-    // that finds nothing means the user cancelled, so that run stays silent.
+    // that finds nothing means the user cancelled.
     try {
       final result = await ref.read(tryonUseCaseProvider)(
         TryonParams(
@@ -119,18 +111,23 @@ class TryonController extends _$TryonController {
       if (result.isSuccess) {
         final tryonResult = result.get()!;
         usageCache.syncFromSnapshot(tryonResult.usage);
-        if (!galleryNotifier.complete(tryonResult)) return;
-        state = const TryonSucceeded();
+        state = galleryNotifier.complete(tryonResult)
+            ? TryonSucceeded(tryonResult)
+            : TryonCancelled(id);
       } else {
         final failure = result.getError()!;
         usageCache.syncFromFailure(failure);
-        if (!galleryNotifier.removeById(id)) return;
+        if (!galleryNotifier.removeById(id)) {
+          state = TryonCancelled(id);
+          return;
+        }
         state = switch (failure) {
           RateLimitFailure() => TryonRateLimited(
+            id,
             isVideo: subject.mode == TryonMode.video,
           ),
-          AvatarMissingFailure() => const TryonAvatarMissing(),
-          _ => TryonFailed(failure),
+          AvatarMissingFailure() => TryonAvatarMissing(id),
+          _ => TryonFailed(id, failure),
         };
       }
     } catch (e, stackTrace) {
@@ -139,8 +136,9 @@ class TryonController extends _$TryonController {
         e,
         stackTrace,
       );
-      if (!galleryNotifier.removeById(id)) return;
-      state = TryonFailed(failureFromError(e));
+      state = galleryNotifier.removeById(id)
+          ? TryonFailed(id, failureFromError(e))
+          : TryonCancelled(id);
     }
   }
 }

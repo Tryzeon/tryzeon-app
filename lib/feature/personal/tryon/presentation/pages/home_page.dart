@@ -8,7 +8,6 @@ import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/extensions/refresh_feedback_extension.dart';
-import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
@@ -18,12 +17,10 @@ import 'package:tryzeon/feature/personal/profile/providers/personal_profile_prov
 import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/actions/edit_outfit.dart';
-import 'package:tryzeon/feature/personal/tryon/presentation/controllers/tryon_controller.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/coordinators/tryon_coordinator.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/sheets/tryon_mode_sheet.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
-import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_outcome.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/home_primary_action_button.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/page_linked_reveal.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_avatar_badge.dart';
@@ -104,30 +101,6 @@ class HomePage extends HookConsumerWidget {
         await ref.read(avatarUploadProvider.notifier).upload(imageFile),
       );
     }
-
-    void handleTryonOutcome(final TryonOutcome outcome) {
-      if (!context.mounted) return;
-      switch (outcome) {
-        case TryonSucceeded():
-          HapticFeedback.heavyImpact();
-        case TryonAvatarMissing():
-          TopNotification.show(context, message: '請先選擇試穿模特才能開始試穿呦！');
-        case TryonRateLimited(:final isVideo):
-          UpgradeDialog.show(
-            context,
-            title: isVideo ? '影片試穿次數已達上限' : '試穿次數已達上限',
-            content: isVideo
-                ? '您的今日影片試穿次數已達上限\n升級至更高方案以獲得更多影片次數！'
-                : '您的今日試穿次數已達上限\n升級至更高方案以獲得更多次數！',
-          );
-        case TryonFailed(:final failure):
-          TopNotification.show(context, message: failure.displayMessage());
-      }
-    }
-
-    ref.listen(tryonControllerProvider, (final _, final outcome) {
-      if (outcome != null) handleTryonOutcome(outcome);
-    });
 
     Future<void> tryonFromLocal(final TryonMode mode) async {
       final File? garmentImage = await ImagePickerHelper.pickImage(

@@ -28,6 +28,8 @@ class PersonalShell extends HookConsumerWidget {
       return () => coordinator.unbindNavigation(navigateTo);
     }, [coordinator, navigationShell]);
 
+    listenToTryonOutcomes(context, ref);
+
     final lastTabTapTime = useState<DateTime?>(null);
 
     Future<void> switchToStore() async {
