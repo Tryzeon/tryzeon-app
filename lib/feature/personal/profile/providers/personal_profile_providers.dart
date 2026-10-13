@@ -137,11 +137,7 @@ class UserProfileNotifier extends _$UserProfileNotifier
 @riverpod
 Future<File?> avatarFile(final Ref ref) async {
   final profile = await ref.watch(userProfileProvider.future);
-  if (profile == null ||
-      profile.avatarPath == null ||
-      profile.avatarPath!.isEmpty) {
-    return null;
-  }
+  if (profile == null || !profile.hasAvatar) return null;
 
   final result = await ref.watch(getUserAvatarUseCaseProvider)(
     profile.avatarPath!,

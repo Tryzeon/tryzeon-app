@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
+import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_subject.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
@@ -44,6 +45,11 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
   @override
   TryonGalleryState build() {
     ref.watch(isAuthenticatedProvider);
+
+    ref.listen(userProfileProvider, (final previous, final next) {
+      if (previous?.value?.avatarPath == next.value?.avatarPath) return;
+      state = state.copyWith(currentId: null, customAvatarId: null);
+    });
     return const TryonGalleryState();
   }
 
@@ -54,10 +60,6 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
         : null;
     if (state.currentId == id) return;
     state = state.copyWith(currentId: id);
-  }
-
-  void avatarReplaced() {
-    state = state.copyWith(currentId: null, customAvatarId: null);
   }
 
   void addPending({

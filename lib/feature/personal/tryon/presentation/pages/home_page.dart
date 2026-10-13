@@ -43,8 +43,7 @@ class HomePage extends HookConsumerWidget {
     final avatarError = avatarAsync.isLoading || avatarAsync.hasValue
         ? null
         : avatarAsync.error;
-    final hasAvatar =
-        ref.watch(userProfileProvider).value?.avatarPath?.isNotEmpty ?? false;
+    final hasAvatar = ref.watch(userProfileProvider).value?.hasAvatar ?? false;
     final galleryState = ref.watch(tryonGalleryProvider);
     final galleryNotifier = ref.read(tryonGalleryProvider.notifier);
     final uploadingAvatarFile = ref.watch(avatarUploadProvider);
@@ -74,15 +73,11 @@ class HomePage extends HookConsumerWidget {
     }, [currentPage]);
 
     void onAvatarReplaced(final Result<void, Failure> result) {
-      if (!context.mounted) return;
-      if (result.isFailure) {
-        TopNotification.show(
-          context,
-          message: result.getError()!.displayMessage(),
-        );
-        return;
-      }
-      galleryNotifier.avatarReplaced();
+      if (!context.mounted || result.isSuccess) return;
+      TopNotification.show(
+        context,
+        message: result.getError()!.displayMessage(),
+      );
     }
 
     Future<void> uploadAvatar() async {

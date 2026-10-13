@@ -73,7 +73,7 @@ class TryonController extends _$TryonController {
         // it before inserting a placeholder so nothing flickers. The backend
         // answers NO_AVATAR either way, so this only saves a round trip.
         final profile = await ref.read(userProfileProvider.future);
-        if (!hasCustomAvatar && !(profile?.avatarPath?.isNotEmpty ?? false)) {
+        if (!hasCustomAvatar && !(profile?.hasAvatar ?? false)) {
           state = TryonAvatarMissing(id);
           return;
         }

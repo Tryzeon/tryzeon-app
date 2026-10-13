@@ -21,4 +21,8 @@ sealed class UserProfile with _$UserProfile {
     final List<ClothingStyle>? stylePreferences,
     @Default(false) final bool isOnboarded,
   }) = _UserProfile;
+
+  const UserProfile._();
+
+  bool get hasAvatar => avatarPath?.isNotEmpty ?? false;
 }

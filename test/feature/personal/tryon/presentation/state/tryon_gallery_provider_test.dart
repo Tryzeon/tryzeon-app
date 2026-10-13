@@ -2,12 +2,28 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
+import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_subject.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
+
+class _FakeUserProfileNotifier extends UserProfileNotifier {
+  @override
+  Future<UserProfile?> build() async => UserProfile(
+    userId: 'u1',
+    name: 'n',
+    createdAt: DateTime(2026),
+    updatedAt: DateTime(2026),
+    avatarPath: 'u1/avatar/old.jpg',
+  );
+
+  void replaceAvatar(final String path) =>
+      state = AsyncData(state.requireValue!.copyWith(avatarPath: path));
+}
 
 void main() {
   const piece = OutfitPiece.wardrobe(
@@ -91,22 +107,34 @@ void main() {
   });
 
   test(
-    'avatarReplaced drops the carried-over outfit and returns to the avatar page',
-    () {
-      final notifier = makeNotifier()
-        ..addPending(id: 'a', subject: imageSubject);
+    'replacing the saved avatar drops the carried-over outfit and returns to '
+    'the avatar page',
+    () async {
+      final container = ProviderContainer(
+        overrides: [
+          isAuthenticatedProvider.overrideWithValue(true),
+          userProfileProvider.overrideWith(_FakeUserProfileNotifier.new),
+        ],
+      );
+      addTearDown(container.dispose);
+      final notifier = container.read(tryonGalleryProvider.notifier);
+      await container.read(userProfileProvider.future);
+
       notifier
+        ..addPending(id: 'a', subject: imageSubject)
         ..complete(
           const TryonResult(id: 'a', mode: TryonMode.image, imageUrl: 'u'),
         )
         ..toggleAvatarForCurrent();
       expect(notifier.state.customAvatarId, 'a');
 
-      notifier.avatarReplaced();
+      (container.read(userProfileProvider.notifier) as _FakeUserProfileNotifier)
+          .replaceAvatar('u1/avatar/new.jpg');
 
-      expect(notifier.state.customAvatarId, isNull);
-      expect(notifier.state.isAvatarPage, isTrue);
-      expect(notifier.state.entries.single.id, 'a');
+      final state = container.read(tryonGalleryProvider);
+      expect(state.customAvatarId, isNull);
+      expect(state.isAvatarPage, isTrue);
+      expect(state.entries.single.id, 'a');
     },
   );
 }
