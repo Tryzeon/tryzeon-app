@@ -6,6 +6,7 @@ void main() {
   Map<String, dynamic> row({
     final List<String>? imagePaths,
     final String? logoPath,
+    final List<String>? sizeNames,
   }) => {
     'id': 'p1',
     'name': '碎花洋裝',
@@ -21,6 +22,16 @@ void main() {
       'channels': const <String>[],
       'logo_path': logoPath,
     },
+    'product_sizes': [
+      for (final (i, name) in (sizeNames ?? const <String>[]).indexed)
+        {
+          'id': 'size$i',
+          'product_id': 'p1',
+          'name': name,
+          'created_at': '2026-01-01T00:00:00Z',
+          'updated_at': '2026-01-01T00:00:00Z',
+        },
+    ],
   };
 
   test('derives image and logo URLs from their storage paths', () {
@@ -42,5 +53,20 @@ void main() {
     expect(product.imagePaths, isEmpty);
     expect(product.imageUrls, isEmpty);
     expect(product.storeInfo.logoUrl, isNull);
+  });
+
+  test('orders sizes by size label, not by row order', () {
+    final product = decodeShopProductRow(
+      row(sizeNames: ['均碼', 'L', '4XL', 'S', '3XL', 'M']),
+    );
+
+    expect(product.sizes!.map((final s) => s.name), [
+      'S',
+      'M',
+      'L',
+      '4XL',
+      '3XL',
+      '均碼',
+    ]);
   });
 }

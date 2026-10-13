@@ -30,16 +30,10 @@ enum StandardSizeLabel {
 }
 
 /// Standard sizes follow [StandardSizeLabel] declaration order; custom sizes
-/// sort after the other standard sizes and before `均碼`. All custom sizes share
-/// one rank, and the strict greater-than puts a new one after the existing
-/// custom rows (preserving insertion order) — `>=` would reverse it.
-int sizeRowInsertIndex(final List<String> existingLabels, final String label) {
-  final rank = _rank(label);
-  for (var i = 0; i < existingLabels.length; i++) {
-    if (_rank(existingLabels[i]) > rank) return i;
-  }
-  return existingLabels.length;
-}
+/// sort after the other standard sizes and before `均碼`. All custom sizes
+/// compare as equal, so only a stable sort keeps them in their existing order.
+int compareSizeLabels(final String a, final String b) =>
+    _rank(a).compareTo(_rank(b));
 
 int _rank(final String label) {
   final standard = StandardSizeLabel.tryParse(label);

@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/standard_size_label.dart';
 
@@ -49,35 +50,23 @@ void main() {
     });
   });
 
-  group('sizeRowInsertIndex', () {
-    test('inserts at the front of an empty list', () {
-      expect(sizeRowInsertIndex(const [], 'M'), 0);
+  group('compareSizeLabels', () {
+    test('orders standard sizes, then custom sizes, then free size', () {
+      final labels = ['均碼', '4XL', 'L', 'XS', '2XL', 'M']
+        ..sort(compareSizeLabels);
+
+      expect(labels, ['XS', 'M', 'L', '2XL', '4XL', '均碼']);
     });
 
-    test('standard sizes are inserted in XS→2XL order', () {
-      expect(sizeRowInsertIndex(const ['S', 'L'], 'M'), 1);
-      expect(sizeRowInsertIndex(const ['M', 'L'], 'XS'), 0);
-      expect(sizeRowInsertIndex(const ['S', 'M'], '2XL'), 2);
+    test('custom sizes compare as equal', () {
+      expect(compareSizeLabels('4XL', 'US 10'), 0);
     });
 
-    test('free size always sorts last', () {
-      expect(sizeRowInsertIndex(const ['S', 'M'], '均碼'), 2);
-      expect(sizeRowInsertIndex(const ['均碼'], 'M'), 0);
-    });
+    test('a stable sort keeps custom sizes in their existing order', () {
+      final labels = ['US 10', '均碼', '5XL', 'S', 'XXL', '4XL'];
+      mergeSort(labels, compare: compareSizeLabels);
 
-    test('custom sizes sort after the standard sizes and before free size', () {
-      expect(sizeRowInsertIndex(const ['S', 'M', '均碼'], '4XL'), 2);
-      expect(sizeRowInsertIndex(const ['S', '2XL'], '4XL'), 2);
-    });
-
-    test('multiple custom sizes keep their insertion order', () {
-      expect(sizeRowInsertIndex(const ['S', '4XL', '均碼'], '5XL'), 2);
-      expect(sizeRowInsertIndex(const ['4XL', '5XL'], 'US 10'), 2);
-    });
-
-    test('XXL is a custom size and sorts after the standard sizes', () {
-      expect(sizeRowInsertIndex(const ['S', 'M'], 'XXL'), 2);
-      expect(sizeRowInsertIndex(const ['S', 'XXL', '均碼'], '4XL'), 2);
+      expect(labels, ['S', 'US 10', '5XL', 'XXL', '4XL', '均碼']);
     });
   });
 }

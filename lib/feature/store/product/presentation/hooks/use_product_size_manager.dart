@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/feature/common/measurement/domain/entities/measurement_unit.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/standard_size_label.dart';
@@ -70,12 +71,11 @@ ProductSizeManager useProductSizeManager({
   }
 
   void insertEntry(final ProductSizeEntryController entry) {
-    final list = [...sizeEntries.value];
-    final index = sizeRowInsertIndex(
-      list.map((final e) => e.label).toList(),
-      entry.label,
+    final list = [...sizeEntries.value, entry];
+    mergeSort(
+      list,
+      compare: (final a, final b) => compareSizeLabels(a.label, b.label),
     );
-    list.insert(index, entry);
     sizeEntries.value = list;
   }
 
