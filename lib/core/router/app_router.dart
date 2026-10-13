@@ -8,6 +8,7 @@ import 'package:tryzeon/core/router/routes/auth_routes.dart';
 import 'package:tryzeon/core/router/routes/deep_link_routes.dart';
 import 'package:tryzeon/core/router/routes/personal_routes.dart';
 import 'package:tryzeon/core/router/routes/store_routes.dart';
+import 'package:tryzeon/core/router/shells/personal_tab_navigator.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
@@ -66,7 +67,7 @@ Raw<GoRouter> appRouter(final Ref ref) {
     },
     routes: [
       authRoutes,
-      personalShellRoute,
+      personalShellRoute(ref.read(personalTabNavigatorProvider).shellKey),
       ...personalFullScreenRoutes,
       storeShellRoute,
       ...storeFullScreenRoutes,

@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/router/shells/personal_tab.dart';
+import 'package:tryzeon/core/router/shells/personal_tab_navigator.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
@@ -19,6 +21,7 @@ import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_outcome.
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/outfit_dock.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 
+import '../../../../../support/tab_navigator_test_doubles.dart';
 import '../../../../../support/wardrobe_test_doubles.dart';
 
 class _RecordingTryonController extends TryonController {
@@ -36,11 +39,14 @@ class _RecordingTryonController extends TryonController {
 
 void main() {
   late ProviderContainer container;
+  late RecordingTabNavigator tabNavigator;
 
   setUp(() {
+    tabNavigator = RecordingTabNavigator();
     container = ProviderContainer(
       overrides: [
         isAuthenticatedProvider.overrideWithValue(true),
+        personalTabNavigatorProvider.overrideWithValue(tabNavigator),
         wardrobeItemsProvider.overrideWith(
           () => FakeWardrobeItems([
             for (final id in ['a', 'b', 'c', 'd']) wardrobeItem(id),
@@ -209,6 +215,7 @@ void main() {
       expect(controller.calls, hasLength(1));
       expect(controller.calls.single.$1.map((final p) => p.id), ['a', 'b']);
       expect(controller.calls.single.$2, TryonMode.image);
+      expect(tabNavigator.navigations, [PersonalTab.home]);
     },
   );
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tryzeon/core/modules/revenue_cat/presentation/pages/paywall_page.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
@@ -19,7 +20,10 @@ import 'package:tryzeon/feature/personal/tryon/presentation/pages/outfit_photo_d
 import 'package:tryzeon/feature/personal/wardrobe/presentation/pages/wardrobe_item_detail_page.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/pages/wardrobe_page.dart';
 
-final personalShellRoute = StatefulShellRoute.indexedStack(
+StatefulShellRoute personalShellRoute(
+  final GlobalKey<StatefulNavigationShellState> key,
+) => StatefulShellRoute.indexedStack(
+  key: key,
   builder: (final context, final state, final navigationShell) =>
       PersonalShell(navigationShell: navigationShell),
   branches: [

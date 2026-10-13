@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/router/shells/personal_tab.dart';
+import 'package:tryzeon/core/router/shells/personal_tab_navigator.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
@@ -10,11 +11,11 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_subject.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/actions/edit_outfit.dart';
-import 'package:tryzeon/feature/personal/tryon/presentation/coordinators/tryon_coordinator.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/outfit_tray_controller.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 
+import '../../../../../support/tab_navigator_test_doubles.dart';
 import '../../../../../support/wardrobe_test_doubles.dart';
 
 void main() {
@@ -29,20 +30,20 @@ void main() {
   late ProviderContainer container;
   late WidgetRef capturedRef;
   late BuildContext capturedContext;
-  final navigations = <PersonalTab>[];
+  late RecordingTabNavigator tabNavigator;
 
   setUp(() async {
-    navigations.clear();
+    tabNavigator = RecordingTabNavigator();
     container = ProviderContainer(
       overrides: [
         isAuthenticatedProvider.overrideWithValue(true),
+        personalTabNavigatorProvider.overrideWithValue(tabNavigator),
         wardrobeItemsProvider.overrideWith(
           () => FakeWardrobeItems([wardrobeItem('a')]),
         ),
       ],
     );
     addTearDown(container.dispose);
-    container.read(tryonCoordinatorProvider).bindNavigation(navigations.add);
     await container.read(wardrobeItemsProvider.future);
   });
 
@@ -73,7 +74,7 @@ void main() {
     final tray = container.read(outfitTrayProvider);
     expect(tray.isOpen, isTrue);
     expect(tray.pieces.map((final p) => p.id), ['a', 'b']);
-    expect(navigations, [PersonalTab.wardrobe]);
+    expect(tabNavigator.navigations, [PersonalTab.wardrobe]);
   });
 
   testWidgets('asks before replacing a non-empty dock and keeps it on 取消', (
@@ -91,7 +92,7 @@ void main() {
     await pending;
 
     expect(container.read(outfitTrayProvider).isOpen, isFalse);
-    expect(navigations, isEmpty);
+    expect(tabNavigator.navigations, isEmpty);
   });
 
   testWidgets('a pure shop outfit is edited in the shop', (final tester) async {
@@ -113,6 +114,6 @@ void main() {
     await editOutfit(capturedContext, capturedRef, shopEntry);
     await tester.pump();
 
-    expect(navigations, [PersonalTab.shop]);
+    expect(tabNavigator.navigations, [PersonalTab.shop]);
   });
 }

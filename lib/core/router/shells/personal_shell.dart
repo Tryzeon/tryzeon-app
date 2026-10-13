@@ -19,15 +19,6 @@ class PersonalShell extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final coordinator = ref.read(tryonCoordinatorProvider);
-
-    useEffect(() {
-      void navigateTo(final PersonalTab tab) =>
-          navigationShell.goBranch(tab.index);
-      coordinator.bindNavigation(navigateTo);
-      return () => coordinator.unbindNavigation(navigateTo);
-    }, [coordinator, navigationShell]);
-
     listenToTryonOutcomes(context, ref);
 
     final lastTabTapTime = useState<DateTime?>(null);
