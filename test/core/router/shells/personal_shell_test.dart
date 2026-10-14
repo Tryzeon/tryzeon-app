@@ -2,24 +2,88 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_anchor.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_hint.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/router/shells/personal_shell.dart';
+import 'package:tryzeon/core/router/shells/personal_tab.dart';
+import 'package:tryzeon/core/router/shells/personal_tab_navigator.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
-import 'package:tryzeon/feature/personal/tryon/presentation/state/outfit_tray_controller.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile_update.dart';
+import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
+import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
+import 'package:tryzeon/feature/personal/tryon/tryon.dart';
+import 'package:tryzeon/feature/personal/tutorial/domain/usecases/complete_tutorial.dart';
+import 'package:tryzeon/feature/personal/tutorial/presentation/controllers/tutorial_controller.dart';
+import 'package:tryzeon/feature/personal/tutorial/presentation/state/tutorial_state.dart';
+import 'package:tryzeon/feature/personal/tutorial/presentation/widgets/tutorial_overlay.dart';
+import 'package:tryzeon/feature/personal/tutorial/providers/tutorial_providers.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
+import 'package:typed_result/typed_result.dart';
 
 import '../../../support/wardrobe_test_doubles.dart';
 
 const _dock = Key('outfit-dock');
 
-GoRoute _page(final String path, {final List<RouteBase> routes = const []}) =>
-    GoRoute(
-      path: path,
-      builder: (final _, final state) =>
-          Scaffold(body: Text(state.matchedLocation)),
-      routes: routes,
-    );
+class _InactiveTutorial extends TutorialController {
+  @override
+  TutorialState build() => const TutorialState.inactive();
+}
+
+class _EmptyGallery extends TryonGalleryNotifier {
+  @override
+  TryonGalleryState build() => const TryonGalleryState();
+}
+
+GoRoute _page(
+  final String path, {
+  final List<RouteBase> routes = const [],
+  final List<Widget> anchors = const [],
+}) => GoRoute(
+  path: path,
+  builder: (final _, final state) => Scaffold(
+    body: Stack(
+      children: [
+        const SizedBox.expand(),
+        Text(state.matchedLocation),
+        ...anchors,
+      ],
+    ),
+  ),
+  routes: routes,
+);
+
+UserProfile _profile({final String? avatarPath}) => UserProfile(
+  userId: 'u1',
+  name: 'n',
+  createdAt: DateTime(2026),
+  updatedAt: DateTime(2026),
+  avatarPath: avatarPath,
+  isOnboarded: true,
+  isTutorialCompleted: false,
+);
+
+class _FakeProfile extends UserProfileNotifier {
+  @override
+  Future<UserProfile?> build() async => _profile();
+
+  void emit(final UserProfile profile) => state = AsyncData(profile);
+}
+
+class _FakeRepository implements UserProfileRepository {
+  @override
+  Future<Result<void, Failure>> updateUserProfile(
+    final UserProfileUpdate update,
+  ) async => const Ok(null);
+
+  @override
+  dynamic noSuchMethod(final Invocation invocation) =>
+      throw UnimplementedError(invocation.memberName.toString());
+}
 
 void main() {
   late ProviderContainer container;
@@ -29,6 +93,8 @@ void main() {
     container = ProviderContainer(
       overrides: [
         isAuthenticatedProvider.overrideWithValue(true),
+        tutorialControllerProvider.overrideWith(_InactiveTutorial.new),
+        tryonGalleryProvider.overrideWith(_EmptyGallery.new),
         wardrobeItemsProvider.overrideWith(
           () => FakeWardrobeItems([wardrobeItem('a')]),
         ),
@@ -123,5 +189,121 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(_dock), findsNothing);
+  });
+
+  group('first try-on tutorial', () {
+    late ProviderContainer tutorialContainer;
+    late GoRouter tutorialRouter;
+
+    setUp(() {
+      tutorialContainer = ProviderContainer(
+        overrides: [
+          isAuthenticatedProvider.overrideWithValue(true),
+          userProfileProvider.overrideWith(_FakeProfile.new),
+          completeTutorialUseCaseProvider.overrideWithValue(
+            CompleteTutorial(_FakeRepository()),
+          ),
+          wardrobeItemsProvider.overrideWith(() => FakeWardrobeItems([])),
+        ],
+      );
+      addTearDown(tutorialContainer.dispose);
+
+      tutorialRouter = GoRouter(
+        initialLocation: AppRoutes.personalHome,
+        routes: [
+          StatefulShellRoute.indexedStack(
+            key: tutorialContainer.read(personalTabNavigatorProvider).shellKey,
+            builder: (final _, final _, final navigationShell) =>
+                PersonalShell(navigationShell: navigationShell),
+            branches: [
+              StatefulShellBranch(routes: [_page(AppRoutes.personalHome)]),
+              StatefulShellBranch(
+                routes: [
+                  _page(
+                    AppRoutes.personalShop,
+                    anchors: const [
+                      Center(
+                        child: CoachMarkAnchor(
+                          target: CoachMarkTarget.firstProductTryon,
+                          child: SizedBox(width: 80, height: 32),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              StatefulShellBranch(routes: [_page(AppRoutes.personalChat)]),
+              StatefulShellBranch(routes: [_page(AppRoutes.personalWardrobe)]),
+              StatefulShellBranch(routes: [_page(AppRoutes.personalAccount)]),
+            ],
+          ),
+        ],
+      );
+      addTearDown(tutorialRouter.dispose);
+    });
+
+    Future<void> settle(final WidgetTester tester) async {
+      for (var i = 0; i < 4; i++) {
+        await tester.pump();
+      }
+    }
+
+    Finder visible(final String text) => find.text(text).hitTestable();
+
+    testWidgets('walks from picking a model to the shop tab', (
+      final tester,
+    ) async {
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: tutorialContainer,
+          child: MaterialApp.router(
+            theme: AppTheme.lightTheme,
+            routerConfig: tutorialRouter,
+            builder: (final context, final child) => MediaQuery(
+              data: MediaQuery.of(context).copyWith(disableAnimations: true),
+              child: child!,
+            ),
+          ),
+        ),
+      );
+      await tutorialContainer.read(userProfileProvider.future);
+      await settle(tester);
+
+      expect(find.byKey(CoachMarkHint.bubbleKey), findsNothing);
+
+      (tutorialContainer.read(userProfileProvider.notifier) as _FakeProfile)
+          .emit(_profile(avatarPath: 'u1/avatar/a.jpg'));
+      await settle(tester);
+
+      final shopTab = find.text(PersonalTab.shop.label);
+      expect(visible(TutorialOverlay.shopTabMessage), findsOneWidget);
+      expect(
+        tester.getRect(find.byKey(CoachMarkHint.bubbleKey)).bottom,
+        lessThan(tester.getRect(shopTab).top),
+      );
+      expect(
+        tester.getCenter(find.byKey(CoachMarkHint.caretKey)).dx,
+        moreOrLessEquals(tester.getCenter(shopTab).dx),
+      );
+
+      await tester.tap(shopTab);
+      await settle(tester);
+
+      expect(find.text(AppRoutes.personalShop), findsOneWidget);
+      expect(find.text(TutorialOverlay.shopTabMessage), findsNothing);
+      expect(visible(TutorialOverlay.tapTryonMessage), findsOneWidget);
+      expect(
+        tutorialContainer.read(tutorialControllerProvider),
+        const TutorialState.startTryon(),
+      );
+
+      tutorialContainer
+          .read(personalTabNavigatorProvider)
+          .goTo(PersonalTab.home);
+      await settle(tester);
+
+      expect(visible(TutorialOverlay.shopTabMessage), findsOneWidget);
+      expect(find.text(TutorialOverlay.tapTryonMessage), findsNothing);
+    });
   });
 }

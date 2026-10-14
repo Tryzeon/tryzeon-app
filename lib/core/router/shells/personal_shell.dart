@@ -13,6 +13,7 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
+import 'package:tryzeon/feature/personal/tutorial/presentation/widgets/tutorial_overlay.dart';
 
 class PersonalShell extends HookConsumerWidget {
   const PersonalShell({super.key, required this.navigationShell});
@@ -87,25 +88,28 @@ class PersonalShell extends HookConsumerWidget {
               bottom: mediaQuery.padding.bottom + dockInset,
             ),
           ),
-          child: Stack(
-            children: [
-              navigationShell,
-              Positioned(
-                left: AppSpacing.md,
-                right: AppSpacing.md,
-                bottom:
-                    mediaQuery.padding.bottom +
-                    AppSpacing.bottomNavBarOverlap +
-                    AppSpacing.smMd,
-                child: OutfitDock(isVisible: showsDock),
-              ),
-              if (usesNativeTabBar)
-                Positioned.fill(
-                  child: NativeTabBarAnchors(
-                    anchors: PersonalTab.values.map(_anchorOf).toList(),
-                  ),
+          child: TutorialOverlay(
+            currentTab: PersonalTab.values[navigationShell.currentIndex],
+            child: Stack(
+              children: [
+                navigationShell,
+                Positioned(
+                  left: AppSpacing.md,
+                  right: AppSpacing.md,
+                  bottom:
+                      mediaQuery.padding.bottom +
+                      AppSpacing.bottomNavBarOverlap +
+                      AppSpacing.smMd,
+                  child: OutfitDock(isVisible: showsDock),
                 ),
-            ],
+                if (usesNativeTabBar)
+                  Positioned.fill(
+                    child: NativeTabBarAnchors(
+                      anchors: PersonalTab.values.map(_anchorOf).toList(),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
