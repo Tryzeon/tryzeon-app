@@ -563,6 +563,7 @@ export type Database = {
           email: string | null
           gender: Database["public"]["Enums"]["user_gender"] | null
           is_onboarded: boolean
+          is_tutorial_completed: boolean
           measurements: Json | null
           name: string
           style_preferences: string[] | null
@@ -576,6 +577,7 @@ export type Database = {
           email?: string | null
           gender?: Database["public"]["Enums"]["user_gender"] | null
           is_onboarded?: boolean
+          is_tutorial_completed?: boolean
           measurements?: Json | null
           name: string
           style_preferences?: string[] | null
@@ -589,6 +591,7 @@ export type Database = {
           email?: string | null
           gender?: Database["public"]["Enums"]["user_gender"] | null
           is_onboarded?: boolean
+          is_tutorial_completed?: boolean
           measurements?: Json | null
           name?: string
           style_preferences?: string[] | null
