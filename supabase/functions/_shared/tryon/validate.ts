@@ -199,9 +199,8 @@ export function validateTryonParams(params: TryonParams): TryonParams {
     }
     // The scene and styling prompts are not contradictions, just inapplicable:
     // ambient user config a client may send uniformly, dropped here so the job
-    // runs on params that say what will actually happen. The engine survives —
-    // nothing on this path reads it, but it names a model tier a video model
-    // that grows tiers would need back.
+    // runs on params that say what will actually happen. The engine survives:
+    // it picks the video model.
     return {
       ...params,
       avatar: undefined,

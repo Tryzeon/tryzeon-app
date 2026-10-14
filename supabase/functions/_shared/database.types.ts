@@ -463,30 +463,36 @@ export type Database = {
           created_at: string
           error_message: string | null
           id: string
+          image_model: string | null
           mode: Database["public"]["Enums"]["tryon_generation_mode"]
           result_key: string | null
           status: Database["public"]["Enums"]["tryon_generation_status"]
           user_id: string
+          video_model: string | null
         }
         Insert: {
           completed_at?: string | null
           created_at?: string
           error_message?: string | null
           id?: string
+          image_model?: string | null
           mode: Database["public"]["Enums"]["tryon_generation_mode"]
           result_key?: string | null
           status?: Database["public"]["Enums"]["tryon_generation_status"]
           user_id: string
+          video_model?: string | null
         }
         Update: {
           completed_at?: string | null
           created_at?: string
           error_message?: string | null
           id?: string
+          image_model?: string | null
           mode?: Database["public"]["Enums"]["tryon_generation_mode"]
           result_key?: string | null
           status?: Database["public"]["Enums"]["tryon_generation_status"]
           user_id?: string
+          video_model?: string | null
         }
         Relationships: []
       }

@@ -104,11 +104,12 @@ Deno.test("generateTryonVideo runs the standard engine through the Interactions 
     }])
   );
   try {
-    const bytes = await generateTryonVideo(IMAGE_BASE64, {
+    const video = await generateTryonVideo(IMAGE_BASE64, {
       transitionPrompt: "slow dolly in",
     });
 
-    assertEquals(new TextDecoder().decode(bytes), "mp4-bytes");
+    assertEquals(new TextDecoder().decode(video.bytes), "mp4-bytes");
+    assertEquals(video.model, STANDARD_MODEL);
     assertEquals(captured.length, 1);
     const [{ url, body }] = captured;
     assertStringIncludes(url, "/locations/global/interactions");
@@ -161,11 +162,12 @@ Deno.test("generateTryonVideo keeps the experimental engine on Veo", async () =>
     }
   );
   try {
-    const bytes = await generateTryonVideo(IMAGE_BASE64, {
+    const video = await generateTryonVideo(IMAGE_BASE64, {
       engine: "experimental",
     });
 
-    assertEquals(new TextDecoder().decode(bytes), "mp4-bytes");
+    assertEquals(new TextDecoder().decode(video.bytes), "mp4-bytes");
+    assertEquals(video.model, EXPERIMENTAL_MODEL);
     assertStringIncludes(
       captured[0].url,
       `/models/${EXPERIMENTAL_MODEL}:predictLongRunning`,
@@ -189,7 +191,7 @@ Deno.test("generateTryonImage asks for a 2K JPEG portrait", async () => {
   try {
     const image = await generateTryonImage(IMAGE_BASE64, [[IMAGE_BASE64]]);
 
-    assertEquals(image, IMAGE_BASE64);
+    assertEquals(image, { base64: IMAGE_BASE64, model: IMAGE_MODEL });
     assertEquals(captured.length, 1);
     const [{ url, body }] = captured;
     assertStringIncludes(url, `/models/${IMAGE_MODEL}:generateContent`);
@@ -271,7 +273,7 @@ Deno.test("generateTryonImage falls back to the fallback model when the standard
   try {
     const image = await generateTryonImage(IMAGE_BASE64, [[IMAGE_BASE64]]);
 
-    assertEquals(image, IMAGE_BASE64);
+    assertEquals(image, { base64: IMAGE_BASE64, model: FALLBACK_MODEL });
     assertEquals(captured.map(modelOf), [IMAGE_MODEL, FALLBACK_MODEL]);
   } finally {
     restore();
@@ -293,7 +295,7 @@ Deno.test("generateTryonImage falls back to the fallback model when the standard
   try {
     const image = await generateTryonImage(IMAGE_BASE64, [[IMAGE_BASE64]]);
 
-    assertEquals(image, IMAGE_BASE64);
+    assertEquals(image, { base64: IMAGE_BASE64, model: FALLBACK_MODEL });
     assertEquals(captured.map(modelOf), [IMAGE_MODEL, FALLBACK_MODEL]);
   } finally {
     restore();
@@ -308,7 +310,7 @@ Deno.test("generateTryonImage falls back to the fallback model on a failure that
   try {
     const image = await generateTryonImage(IMAGE_BASE64, [[IMAGE_BASE64]]);
 
-    assertEquals(image, IMAGE_BASE64);
+    assertEquals(image, { base64: IMAGE_BASE64, model: FALLBACK_MODEL });
     assertEquals(captured.map(modelOf), [IMAGE_MODEL, FALLBACK_MODEL]);
   } finally {
     restore();
@@ -386,7 +388,10 @@ Deno.test("generateTryonImage answers the experimental engine from its own model
       engine: "experimental",
     });
 
-    assertEquals(image, IMAGE_BASE64);
+    assertEquals(image, {
+      base64: IMAGE_BASE64,
+      model: EXPERIMENTAL_IMAGE_MODEL,
+    });
     assertEquals(captured.map(modelOf), [EXPERIMENTAL_IMAGE_MODEL]);
   } finally {
     restore();

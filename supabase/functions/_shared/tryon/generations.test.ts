@@ -92,18 +92,32 @@ Deno.test("start rejects a generation id that is already taken", async () => {
   );
 });
 
-Deno.test("succeed stores the result key and completes the row", async () => {
+Deno.test("succeed stores the result key and the models that produced it, and completes the row", async () => {
   const admin = fakeAdmin();
-  await supabaseGenerationLog(admin.client).succeed(
-    "g1",
-    "u1/tryon-1.png",
-  );
+  await supabaseGenerationLog(admin.client).succeed("g1", {
+    resultKey: "u1/tryon-1.mp4",
+    imageModel: "gemini-3-pro-image",
+    videoModel: "veo-3.1-fast-generate-001",
+  });
   const call = only(admin.calls);
   assertEquals(call.op, "update");
   assertEquals(call.eq, ["id", "g1"]);
   assertEquals(call.payload?.status, "succeeded");
-  assertEquals(call.payload?.result_key, "u1/tryon-1.png");
+  assertEquals(call.payload?.result_key, "u1/tryon-1.mp4");
+  assertEquals(call.payload?.image_model, "gemini-3-pro-image");
+  assertEquals(call.payload?.video_model, "veo-3.1-fast-generate-001");
   assertEquals(typeof call.payload?.completed_at, "string");
+});
+
+Deno.test("succeed stores null for a model the job never ran", async () => {
+  const admin = fakeAdmin();
+  await supabaseGenerationLog(admin.client).succeed("g1", {
+    resultKey: "u1/tryon-1.png",
+    imageModel: "gemini-nano-banana-2.1",
+  });
+  const call = only(admin.calls);
+  assertEquals(call.payload?.image_model, "gemini-nano-banana-2.1");
+  assertEquals(call.payload?.video_model, null);
 });
 
 Deno.test("fail stores the error message and completes the row", async () => {
@@ -128,6 +142,10 @@ Deno.test("each operation surfaces a database error", async () => {
     Error,
     "permission denied",
   );
-  await assertRejects(() => log.succeed("g1", "k"), Error, "permission denied");
+  await assertRejects(
+    () => log.succeed("g1", { resultKey: "k" }),
+    Error,
+    "permission denied",
+  );
   await assertRejects(() => log.fail("g1", "busy"), Error, "permission denied");
 });

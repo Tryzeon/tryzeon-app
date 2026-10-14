@@ -12,7 +12,10 @@ export { supabaseGenerationLog } from "./generations.ts";
 export type { GarmentBrief } from "./prompt.ts";
 export type {
   AvatarResolver,
+  GeneratedImage,
+  GeneratedVideo,
   GenerationLog,
+  GenerationOutcome,
   GenerationStart,
   ImageGenerationOptions,
   ImageGenerator,

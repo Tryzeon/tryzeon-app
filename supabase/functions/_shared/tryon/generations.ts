@@ -21,12 +21,14 @@ export const supabaseGenerationLog = (admin: DbClient): GenerationLog => ({
     return data.id;
   },
 
-  async succeed(id, resultKey) {
+  async succeed(id, { resultKey, imageModel, videoModel }) {
     const { error } = await admin
       .from(TRYON_GENERATIONS_TABLE)
       .update({
         status: "succeeded",
         result_key: resultKey,
+        image_model: imageModel ?? null,
+        video_model: videoModel ?? null,
         completed_at: new Date().toISOString(),
       })
       .eq("id", id);

@@ -106,9 +106,10 @@ export async function runTryonJob<M extends TryonMode>(
       mode: job.mode,
     });
 
-    let generated: string | null;
+    let imageBase64: string;
+    let imageModel: string | undefined;
     if (source.kind === "animate") {
-      generated = source.base64;
+      imageBase64 = source.base64;
     } else {
       // Stage 1: resolve product and wardrobe refs to concrete garment material.
       // The resolvers are the gatekeepers — a client can only reach a real
@@ -137,42 +138,49 @@ export async function runTryonJob<M extends TryonMode>(
         detail: g.detail,
       }));
 
-      generated = await generate(avatarBase64, garmentGroups, {
+      const image = await generate(avatarBase64, garmentGroups, {
         engine: job.engine,
         scenePrompt: job.scenePrompt,
         stylingPrompt: job.stylingPrompt,
         garments,
       });
-    }
-
-    if (!generated) {
-      throw new GenerationFailedError("image generation returned null");
+      if (!image) {
+        throw new GenerationFailedError("image generation returned null");
+      }
+      imageBase64 = image.base64;
+      imageModel = image.model;
     }
 
     // Stage 3: persist. The two casts are the single point where the
     // mode -> result-variant correspondence is asserted.
     let result: TryonResultFor<M>;
     let resultKey: string;
+    let videoModel: string | undefined;
     if (job.mode === "video") {
-      const bytes = await generateVideo(generated, {
+      const video = await generateVideo(imageBase64, {
         engine: job.engine,
         transitionPrompt: job.transitionPrompt,
       });
+      videoModel = video.model;
       resultKey = assetKey(job.userId, now(), "mp4");
-      const videoUrl = await uploadVideo(bytes, resultKey);
+      const videoUrl = await uploadVideo(video.bytes, resultKey);
       result = { kind: "video", videoUrl, usage } as TryonResultFor<M>;
     } else {
-      const mimeType = detectMimeType(generated);
+      const mimeType = detectMimeType(imageBase64);
       resultKey = assetKey(job.userId, now(), mimeTypeToExtension(mimeType));
       const imageUrl = await upload(
-        decodeBase64(generated),
+        decodeBase64(imageBase64),
         resultKey,
         mimeType,
       );
       result = { kind: "image", imageUrl, usage } as TryonResultFor<M>;
     }
 
-    await deps.generations.succeed(generationId, resultKey);
+    await deps.generations.succeed(generationId, {
+      resultKey,
+      imageModel,
+      videoModel,
+    });
 
     await recordProductTryons(deps.recordTryon, job);
 

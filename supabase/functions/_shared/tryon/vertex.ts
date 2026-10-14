@@ -26,7 +26,12 @@ import {
   buildVideoPrompt,
   SYSTEM_INSTRUCTION,
 } from "./prompt.ts";
-import type { ImageGenerationOptions, VideoGenerationOptions } from "./types.ts";
+import type {
+  GeneratedImage,
+  GeneratedVideo,
+  ImageGenerationOptions,
+  VideoGenerationOptions,
+} from "./types.ts";
 
 /**
  * An `image` part rather than a `file` one so the SDK settles the media type: a
@@ -49,16 +54,25 @@ export async function generateTryonImage(
   avatarImage: string,
   garmentGroups: string[][],
   opts: ImageGenerationOptions = {},
-): Promise<string | null> {
+): Promise<GeneratedImage | null> {
   const taskPrompt = buildTaskPrompt(garmentGroups, opts);
   console.log("[tryon] task prompt:\n" + taskPrompt);
 
   const images = [avatarImage, ...garmentGroups.flat()];
-  const generate = (
-    modelId: string,
+  const generate = async (
+    model: string,
     maxRetries: number,
     abortSignal: AbortSignal,
-  ) => generateWithModel(modelId, taskPrompt, images, maxRetries, abortSignal);
+  ): Promise<GeneratedImage | null> => {
+    const base64 = await generateWithModel(
+      model,
+      taskPrompt,
+      images,
+      maxRetries,
+      abortSignal,
+    );
+    return base64 ? { base64, model } : null;
+  };
 
   // Our own signal, not the SDK's `timeout`: the SDK aborts a retry backoff with
   // a plain `AbortError`, so only the signal can tell the deadline fired.
@@ -166,9 +180,10 @@ async function generateWithModel(
 async function generateInteractionsVideo(
   tryonImageBase64: string,
   opts: VideoGenerationOptions,
-): Promise<Uint8Array> {
+): Promise<GeneratedVideo> {
+  const model = tryonVideoModel();
   const { files, finishReason } = await generateText({
-    model: vertexInteractionsModel(tryonVideoModel()),
+    model: vertexInteractionsModel(model),
     messages: [{
       role: "user",
       content: [
@@ -194,7 +209,7 @@ async function generateInteractionsVideo(
       `No video in Vertex response, finishReason: ${finishReason}`,
     );
   }
-  return decodeBase64(video.base64);
+  return { bytes: decodeBase64(video.base64), model };
 }
 
 /**
@@ -216,9 +231,10 @@ const POLL_INTERVAL_MS = 5000;
 async function generateVeoVideo(
   tryonImageBase64: string,
   opts: VideoGenerationOptions,
-): Promise<Uint8Array> {
+): Promise<GeneratedVideo> {
+  const model = tryonExperimentalVideoModel();
   const { video } = await experimental_generateVideo({
-    model: vertexVideoModel(tryonExperimentalVideoModel()),
+    model: vertexVideoModel(model),
     prompt: {
       image: decodeBase64(tryonImageBase64),
       text: buildVideoPrompt(opts),
@@ -228,13 +244,13 @@ async function generateVeoVideo(
     maxRetries: QUOTA_WINDOW_RETRIES,
   }).catch(rethrowAsBusy);
 
-  return decodeBase64(video.base64);
+  return { bytes: decodeBase64(video.base64), model };
 }
 
 export function generateTryonVideo(
   tryonImageBase64: string,
   opts: VideoGenerationOptions = {},
-): Promise<Uint8Array> {
+): Promise<GeneratedVideo> {
   return opts.engine === "experimental"
     ? generateVeoVideo(tryonImageBase64, opts)
     : generateInteractionsVideo(tryonImageBase64, opts);

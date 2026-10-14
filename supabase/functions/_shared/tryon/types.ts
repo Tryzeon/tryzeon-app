@@ -189,25 +189,41 @@ export interface GenerationStart {
 }
 
 /**
+ * The models that actually produced the result, which the engine alone does
+ * not say: the standard engine may have answered from its fallback. An animate
+ * job generates no image, and an image job no video.
+ */
+export interface GenerationOutcome {
+  resultKey: string;
+  imageModel?: string;
+  videoModel?: string;
+}
+
+/**
  * One row per generation, written on the service role for the same reason as
  * {@link TryonRecorder}. The adapter binds the channel, so the core never
  * learns where a job came from.
  */
 export interface GenerationLog {
   start(entry: GenerationStart): Promise<string>;
-  succeed(id: string, resultKey: string): Promise<void>;
+  succeed(id: string, outcome: GenerationOutcome): Promise<void>;
   fail(id: string, errorMessage: string): Promise<void>;
 }
 
 /**
- * Resolves to clean base64 image data: no data-URI prefix — stripping any
- * provider preamble is the implementation's job.
+ * `base64` is clean image data: no data-URI prefix — stripping any provider
+ * preamble is the implementation's job.
  */
+export interface GeneratedImage {
+  base64: string;
+  model: string;
+}
+
 export type ImageGenerator = (
   avatarBase64: string,
   garmentGroups: string[][],
   opts?: ImageGenerationOptions,
-) => Promise<string | null>;
+) => Promise<GeneratedImage | null>;
 
 /** `engine` names a model rather than text, so the prompt builders ignore it. */
 export interface ImageGenerationOptions extends ImagePromptOptions {
@@ -218,10 +234,15 @@ export interface VideoGenerationOptions extends VideoPromptOptions {
   engine?: TryonEngine;
 }
 
+export interface GeneratedVideo {
+  bytes: Uint8Array;
+  model: string;
+}
+
 export type VideoGenerator = (
   tryonImageBase64: string,
   opts?: VideoGenerationOptions,
-) => Promise<Uint8Array>;
+) => Promise<GeneratedVideo>;
 
 export type ImageUploader = (
   bytes: Uint8Array,
