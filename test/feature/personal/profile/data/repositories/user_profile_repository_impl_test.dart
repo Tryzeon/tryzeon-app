@@ -79,7 +79,8 @@ void main() {
         ..gender = gender
         ..ageRange = ageRange
         ..stylePreferences = stylePreferences
-        ..isOnboarded = true,
+        ..isOnboarded = true
+        ..isTutorialCompleted = true,
     );
     await harness.isar.cacheEntrys.putByCacheKey(
       CacheEntry()
@@ -91,6 +92,7 @@ void main() {
 
   final remoteProfile = UserProfileDto(
     userId: 'u1',
+    isTutorialCompleted: true,
     name: 'Eric',
     createdAt: DateTime(2026),
     updatedAt: DateTime(2026),
@@ -237,4 +239,18 @@ void main() {
       expect(await harness.isar.userProfileCaches.count(), 1);
     },
   );
+
+  test('updateUserProfile sends the tutorial flag', () async {
+    await seedCache();
+    final remote = _FakeRemote(remoteProfile);
+
+    final result = await buildRepository(
+      remote,
+    ).updateUserProfile(const UserProfileUpdate(isTutorialCompleted: true));
+
+    expect(result.isSuccess, isTrue);
+    expect(remote.updates, [
+      {'is_tutorial_completed': true},
+    ]);
+  });
 }

@@ -42,4 +42,10 @@ void main() {
       },
     );
   });
+
+  test('encodes the tutorial flag', () {
+    expect(const UpdateUserProfileRequest(isTutorialCompleted: true).toJson(), {
+      'is_tutorial_completed': true,
+    });
+  });
 }

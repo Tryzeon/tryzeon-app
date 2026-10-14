@@ -17,5 +17,6 @@ sealed class UserProfileUpdate with _$UserProfileUpdate {
     final List<ClothingStyle>? stylePreferences,
     final String? avatarPath,
     final bool? isOnboarded,
+    final bool? isTutorialCompleted,
   }) = _UserProfileUpdate;
 }

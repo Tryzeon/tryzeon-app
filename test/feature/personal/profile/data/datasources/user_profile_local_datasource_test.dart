@@ -39,6 +39,7 @@ void main() {
   test('reads back exactly the profile it saved', () async {
     final profile = UserProfile(
       userId: 'u1',
+      isTutorialCompleted: true,
       name: 'Amy',
       email: 'amy@example.com',
       avatarPath: 'u1/avatar.jpg',
@@ -78,7 +79,8 @@ void main() {
             ..name = 'Amy'
             ..createdAt = DateTime(2026)
             ..updatedAt = DateTime(2026)
-            ..isOnboarded = false,
+            ..isOnboarded = false
+            ..isTutorialCompleted = true,
         );
         await harness.isar.cacheEntrys.putByCacheKey(
           CacheEntry()

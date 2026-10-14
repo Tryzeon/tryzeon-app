@@ -22,4 +22,5 @@ class UserProfileCache {
   String? ageRange;
   List<String>? stylePreferences;
   late bool isOnboarded;
+  late bool isTutorialCompleted;
 }

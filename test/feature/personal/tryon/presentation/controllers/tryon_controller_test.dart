@@ -66,6 +66,7 @@ class _FakeUserProfileNotifier extends UserProfileNotifier {
   @override
   Future<UserProfile?> build() async => UserProfile(
     userId: 'u1',
+    isTutorialCompleted: true,
     name: 'n',
     createdAt: DateTime(2026),
     updatedAt: DateTime(2026),

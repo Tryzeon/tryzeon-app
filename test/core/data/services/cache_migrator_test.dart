@@ -81,7 +81,8 @@ void main() {
         ..name = 'x'
         ..createdAt = DateTime(2026)
         ..updatedAt = DateTime(2026)
-        ..isOnboarded = true,
+        ..isOnboarded = true
+        ..isTutorialCompleted = true,
     );
     await isar.cacheEntrys.putAll([
       entry('product_categories', 'hasData'),

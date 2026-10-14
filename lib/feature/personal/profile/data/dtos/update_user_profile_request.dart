@@ -21,6 +21,7 @@ class UpdateUserProfileRequest {
     this.stylePreferences,
     this.avatarPath,
     this.isOnboarded,
+    this.isTutorialCompleted,
   });
 
   final String? name;
@@ -30,6 +31,7 @@ class UpdateUserProfileRequest {
   final List<ClothingStyle>? stylePreferences;
   final String? avatarPath;
   final bool? isOnboarded;
+  final bool? isTutorialCompleted;
 
   Map<String, dynamic> toJson() => _$UpdateUserProfileRequestToJson(this);
 }

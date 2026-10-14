@@ -20,6 +20,7 @@ sealed class UserProfile with _$UserProfile {
     final AgeRange? ageRange,
     final List<ClothingStyle>? stylePreferences,
     @Default(false) final bool isOnboarded,
+    required final bool isTutorialCompleted,
   }) = _UserProfile;
 
   const UserProfile._();

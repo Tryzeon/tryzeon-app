@@ -11,6 +11,7 @@ import 'package:typed_result/typed_result.dart';
 
 UserProfile _profile({final String? avatarPath}) => UserProfile(
   userId: 'u1',
+  isTutorialCompleted: true,
   name: 'n',
   createdAt: DateTime(2026),
   updatedAt: DateTime(2026),

@@ -20,6 +20,7 @@ class UserProfileDto {
     this.ageRange,
     this.stylePreferences,
     this.isOnboarded = false,
+    required this.isTutorialCompleted,
   });
 
   factory UserProfileDto.fromJson(final Map<String, dynamic> json) =>
@@ -40,6 +41,7 @@ class UserProfileDto {
   final List<ClothingStyle>? stylePreferences;
   @JsonKey(defaultValue: false)
   final bool isOnboarded;
+  final bool isTutorialCompleted;
 }
 
 List<ClothingStyle>? _stylePreferencesFromJson(final List<dynamic>? json) =>
