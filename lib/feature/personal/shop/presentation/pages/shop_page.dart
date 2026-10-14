@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/extensions/refresh_feedback_extension.dart';
 import 'package:tryzeon/core/modules/location/domain/entities/location_permission_status.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/router/shells/personal_tab.dart';
@@ -332,6 +333,7 @@ class ShopPage extends HookConsumerWidget {
                 ProductSliverGrid(
                   productsAsync: productsAsync,
                   onRetry: () => ref.invalidate(shopProductsProvider(filter)),
+                  firstTryonAnchor: CoachMarkTarget.firstProductTryon,
                 ),
 
                 SliverToBoxAdapter(

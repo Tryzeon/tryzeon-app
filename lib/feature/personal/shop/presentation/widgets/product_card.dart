@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/extensions/price_format_extension.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/presentation/widgets/image_placeholder.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
@@ -17,10 +18,16 @@ import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 class ProductCard extends HookConsumerWidget {
-  const ProductCard({super.key, required this.product, this.fitResult});
+  const ProductCard({
+    super.key,
+    required this.product,
+    this.fitResult,
+    this.tryonAnchor,
+  });
 
   final ShopProduct product;
   final FitResult? fitResult;
+  final CoachMarkTarget? tryonAnchor;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
@@ -93,6 +100,7 @@ class ProductCard extends HookConsumerWidget {
                         child: Skeleton.ignore(
                           child: TryonFab(
                             label: '試穿',
+                            coachMarkTarget: tryonAnchor,
                             onTap: () =>
                                 triggerProductTryon(context, ref, product),
                           ),

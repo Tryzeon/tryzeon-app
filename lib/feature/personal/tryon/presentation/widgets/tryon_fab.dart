@@ -1,16 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_anchor.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/presentation/widgets/glass_pill.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
 class TryonFab extends StatelessWidget {
-  const TryonFab({super.key, required this.onTap, this.label, this.icon});
+  const TryonFab({
+    super.key,
+    required this.onTap,
+    this.label,
+    this.icon,
+    this.coachMarkTarget,
+  });
 
   static const double _iconSize = 24;
 
   final VoidCallback onTap;
   final String? label;
   final IconData? icon;
+
+  /// Anchors a coach mark on the visible pill, not the larger tap area.
+  final CoachMarkTarget? coachMarkTarget;
 
   @override
   Widget build(final BuildContext context) {
@@ -28,7 +39,13 @@ class TryonFab extends StatelessWidget {
         child: Center(
           widthFactor: 1,
           heightFactor: 1,
-          child: _buildPill(colorScheme, textTheme),
+          child: switch (coachMarkTarget) {
+            final target? => CoachMarkAnchor(
+              target: target,
+              child: _buildPill(colorScheme, textTheme),
+            ),
+            null => _buildPill(colorScheme, textTheme),
+          },
         ),
       ),
     );

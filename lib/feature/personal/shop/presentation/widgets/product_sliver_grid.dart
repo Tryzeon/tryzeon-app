@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
@@ -18,10 +19,12 @@ class ProductSliverGrid extends ConsumerWidget {
     super.key,
     required this.productsAsync,
     required this.onRetry,
+    this.firstTryonAnchor,
   });
 
   final AsyncValue<ShopProductsState> productsAsync;
   final VoidCallback onRetry;
+  final CoachMarkTarget? firstTryonAnchor;
 
   static const _gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
     crossAxisCount: 2,
@@ -101,6 +104,7 @@ class ProductSliverGrid extends ConsumerWidget {
                 return ProductCard(
                   product: product,
                   fitResult: fitResolver.resolve(product),
+                  tryonAnchor: index == 0 ? firstTryonAnchor : null,
                 );
               },
             ),

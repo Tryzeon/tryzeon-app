@@ -8,6 +8,8 @@ import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/extensions/refresh_feedback_extension.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_anchor.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
@@ -243,9 +245,12 @@ class HomePage extends HookConsumerWidget {
                       ),
                       if (entry is FinishedTryonEntry) ...[
                         const SizedBox(height: AppSpacing.smMd),
-                        TryonRatingButtons(
-                          key: ValueKey(entry.id),
-                          tryonId: entry.id,
+                        CoachMarkAnchor(
+                          target: CoachMarkTarget.tryonRating,
+                          child: TryonRatingButtons(
+                            key: ValueKey(entry.id),
+                            tryonId: entry.id,
+                          ),
                         ),
                       ],
                     ],

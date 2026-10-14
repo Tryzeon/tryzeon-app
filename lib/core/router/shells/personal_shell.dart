@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/presentation/widgets/app_bottom_nav_bar.dart';
 import 'package:tryzeon/core/presentation/widgets/bottom_nav_bar_inset.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
+import 'package:tryzeon/core/router/shells/native_tab_bar_anchors.dart';
 import 'package:tryzeon/core/router/shells/personal_tab.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
@@ -16,6 +18,11 @@ class PersonalShell extends HookConsumerWidget {
   const PersonalShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
+
+  static CoachMarkTarget? _anchorOf(final PersonalTab tab) => switch (tab) {
+    PersonalTab.shop => CoachMarkTarget.shopTab,
+    _ => null,
+  };
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
@@ -53,6 +60,7 @@ class PersonalShell extends HookConsumerWidget {
       }
     }
 
+    final usesNativeTabBar = PlatformInfo.isIOS26OrHigher();
     final mediaQuery = MediaQuery.of(context);
     // Garment pages can be pushed onto any branch (e.g. a product opened from a
     // try-on result on Home), so gate on the page on top, not the tab.
@@ -91,6 +99,12 @@ class PersonalShell extends HookConsumerWidget {
                     AppSpacing.smMd,
                 child: OutfitDock(isVisible: showsDock),
               ),
+              if (usesNativeTabBar)
+                Positioned.fill(
+                  child: NativeTabBarAnchors(
+                    anchors: PersonalTab.values.map(_anchorOf).toList(),
+                  ),
+                ),
             ],
           ),
         ),
@@ -101,7 +115,7 @@ class PersonalShell extends HookConsumerWidget {
       data: mediaQuery.copyWith(
         viewInsets: mediaQuery.viewInsets.copyWith(bottom: 0),
       ),
-      child: PlatformInfo.isIOS26OrHigher()
+      child: usesNativeTabBar
           ? AdaptiveScaffold(
               minimizeBehavior: TabBarMinimizeBehavior.never,
               body: body,
@@ -131,6 +145,7 @@ class PersonalShell extends HookConsumerWidget {
                         icon: tab.icon,
                         selectedIcon: tab.selectedIcon,
                         label: tab.label,
+                        anchor: _anchorOf(tab),
                       ),
                     )
                     .toList(),
