@@ -8,6 +8,7 @@ import { detectMimeType } from "../image-utils.ts";
 import {
   tryonExperimentalImageModel,
   tryonExperimentalVideoModel,
+  tryonFallbackImageModel,
   tryonImageModel,
   tryonVideoModel,
 } from "../vertex/config.ts";
@@ -63,27 +64,33 @@ export async function generateTryonImage(
   // a plain `AbortError`, so only the signal can tell the deadline fired.
   const deadline = AbortSignal.timeout(GENERATION_DEADLINE_MS);
   try {
-    if (opts.engine !== "experimental") {
-      const primaryModel = tryonImageModel();
-      const attempt = AbortSignal.timeout(PRIMARY_ATTEMPT_TIMEOUT_MS);
-      try {
-        const image = await generate(
-          primaryModel,
-          0,
-          AbortSignal.any([deadline, attempt]),
-        );
-        if (image) return image;
-      } catch (err) {
-        if (deadline.aborted) throw err;
-        console.warn(
-          attempt.aborted
-            ? `vertex: model=${primaryModel} timed out after ${PRIMARY_ATTEMPT_TIMEOUT_MS}ms`
-            : `vertex: model=${primaryModel} failed: ${err}`,
-        );
-      }
+    if (opts.engine === "experimental") {
+      return await generate(
+        tryonExperimentalImageModel(),
+        QUOTA_WINDOW_RETRIES,
+        deadline,
+      );
+    }
+
+    const primaryModel = tryonImageModel();
+    const attempt = AbortSignal.timeout(PRIMARY_ATTEMPT_TIMEOUT_MS);
+    try {
+      const image = await generate(
+        primaryModel,
+        0,
+        AbortSignal.any([deadline, attempt]),
+      );
+      if (image) return image;
+    } catch (err) {
+      if (deadline.aborted) throw err;
+      console.warn(
+        attempt.aborted
+          ? `vertex: model=${primaryModel} timed out after ${PRIMARY_ATTEMPT_TIMEOUT_MS}ms`
+          : `vertex: model=${primaryModel} failed: ${err}`,
+      );
     }
     return await generate(
-      tryonExperimentalImageModel(),
+      tryonFallbackImageModel(),
       QUOTA_WINDOW_RETRIES,
       deadline,
     );

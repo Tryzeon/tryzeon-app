@@ -4,7 +4,8 @@ import { GenerationFailedError } from "./errors.ts";
 import { generateTryonImage, generateTryonVideo } from "./vertex.ts";
 
 const IMAGE_MODEL = "gemini-nano-banana-2.1";
-const PRO_MODEL = "gemini-3-pro-image";
+const FALLBACK_MODEL = "gemini-3-pro-image";
+const EXPERIMENTAL_IMAGE_MODEL = "gemini-3.1-flash-image";
 const STANDARD_MODEL = "gemini-omni-1.1-flash-preview";
 const EXPERIMENTAL_MODEL = "veo-3.1-fast-generate-001";
 const VIDEO_BASE64 = btoa("mp4-bytes");
@@ -40,7 +41,8 @@ async function installServiceAccount() {
     }),
   );
   Deno.env.set("TRYON_MODEL", IMAGE_MODEL);
-  Deno.env.set("TRYON_MODEL_EXPERIMENTAL", PRO_MODEL);
+  Deno.env.set("TRYON_MODEL_FALLBACK", FALLBACK_MODEL);
+  Deno.env.set("TRYON_MODEL_EXPERIMENTAL", EXPERIMENTAL_IMAGE_MODEL);
   Deno.env.set("VIDEO_MODEL", STANDARD_MODEL);
   Deno.env.set("VIDEO_MODEL_EXPERIMENTAL", EXPERIMENTAL_MODEL);
 }
@@ -222,7 +224,7 @@ Deno.test("generateTryonImage asks the standard model once, then retries the fal
     );
     assertEquals(captured.map(modelOf), [
       IMAGE_MODEL,
-      ...Array(6).fill(PRO_MODEL),
+      ...Array(6).fill(FALLBACK_MODEL),
     ]);
   } finally {
     restore();
@@ -261,7 +263,7 @@ function badRequest(): Response {
   });
 }
 
-Deno.test("generateTryonImage falls back to the experimental model when the standard one refuses for quota", async () => {
+Deno.test("generateTryonImage falls back to the fallback model when the standard one refuses for quota", async () => {
   await installServiceAccount();
   const { captured, restore } = stubFetch((url) =>
     url.includes(`/models/${IMAGE_MODEL}:`) ? quotaRefusal() : imageAnswer()
@@ -270,13 +272,13 @@ Deno.test("generateTryonImage falls back to the experimental model when the stan
     const image = await generateTryonImage(IMAGE_BASE64, [[IMAGE_BASE64]]);
 
     assertEquals(image, IMAGE_BASE64);
-    assertEquals(captured.map(modelOf), [IMAGE_MODEL, PRO_MODEL]);
+    assertEquals(captured.map(modelOf), [IMAGE_MODEL, FALLBACK_MODEL]);
   } finally {
     restore();
   }
 });
 
-Deno.test("generateTryonImage falls back to the experimental model when the standard one answers without an image", async () => {
+Deno.test("generateTryonImage falls back to the fallback model when the standard one answers without an image", async () => {
   await installServiceAccount();
   const { captured, restore } = stubFetch((url) =>
     url.includes(`/models/${IMAGE_MODEL}:`)
@@ -292,13 +294,13 @@ Deno.test("generateTryonImage falls back to the experimental model when the stan
     const image = await generateTryonImage(IMAGE_BASE64, [[IMAGE_BASE64]]);
 
     assertEquals(image, IMAGE_BASE64);
-    assertEquals(captured.map(modelOf), [IMAGE_MODEL, PRO_MODEL]);
+    assertEquals(captured.map(modelOf), [IMAGE_MODEL, FALLBACK_MODEL]);
   } finally {
     restore();
   }
 });
 
-Deno.test("generateTryonImage falls back to the experimental model on a failure that is not about capacity", async () => {
+Deno.test("generateTryonImage falls back to the fallback model on a failure that is not about capacity", async () => {
   await installServiceAccount();
   const { captured, restore } = stubFetch((url) =>
     url.includes(`/models/${IMAGE_MODEL}:`) ? badRequest() : imageAnswer()
@@ -307,7 +309,7 @@ Deno.test("generateTryonImage falls back to the experimental model on a failure 
     const image = await generateTryonImage(IMAGE_BASE64, [[IMAGE_BASE64]]);
 
     assertEquals(image, IMAGE_BASE64);
-    assertEquals(captured.map(modelOf), [IMAGE_MODEL, PRO_MODEL]);
+    assertEquals(captured.map(modelOf), [IMAGE_MODEL, FALLBACK_MODEL]);
   } finally {
     restore();
   }
@@ -320,7 +322,7 @@ Deno.test("generateTryonImage stops at a fallback failure that is not about capa
     await assertRejects(() =>
       generateTryonImage(IMAGE_BASE64, [[IMAGE_BASE64]])
     );
-    assertEquals(captured.map(modelOf), [IMAGE_MODEL, PRO_MODEL]);
+    assertEquals(captured.map(modelOf), [IMAGE_MODEL, FALLBACK_MODEL]);
   } finally {
     restore();
   }
@@ -345,7 +347,7 @@ Deno.test("generateTryonImage logs why the standard model was passed over", asyn
       [
         `vertex: model=${IMAGE_MODEL} region=global`,
         `vertex: model=${IMAGE_MODEL} failed`,
-        `vertex: model=${PRO_MODEL} region=global`,
+        `vertex: model=${FALLBACK_MODEL} region=global`,
       ],
     );
   } finally {
@@ -367,7 +369,25 @@ Deno.test("generateTryonImage keeps the experimental engine on its one model", a
       ServiceBusyError,
     );
     assertEquals(captured.length, 6);
-    assertEquals(new Set(captured.map(modelOf)), new Set([PRO_MODEL]));
+    assertEquals(
+      new Set(captured.map(modelOf)),
+      new Set([EXPERIMENTAL_IMAGE_MODEL]),
+    );
+  } finally {
+    restore();
+  }
+});
+
+Deno.test("generateTryonImage answers the experimental engine from its own model, never the standard one or its fallback", async () => {
+  await installServiceAccount();
+  const { captured, restore } = stubFetch(imageAnswer);
+  try {
+    const image = await generateTryonImage(IMAGE_BASE64, [[IMAGE_BASE64]], {
+      engine: "experimental",
+    });
+
+    assertEquals(image, IMAGE_BASE64);
+    assertEquals(captured.map(modelOf), [EXPERIMENTAL_IMAGE_MODEL]);
   } finally {
     restore();
   }

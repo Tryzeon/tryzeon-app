@@ -14,22 +14,26 @@
  * | `CHAT_MODEL`               | yes          | chat                                 |
  * | `ANALYSIS_MODEL`           | yes          | image analysis, audio analysis       |
  * | `TRYON_MODEL`              | yes          | try-on images, standard engine       |
+ * | `TRYON_MODEL_FALLBACK`     | yes          | try-on images, standard engine's     |
+ * |                            |              | fallback                             |
  * | `TRYON_MODEL_EXPERIMENTAL` | yes          | try-on images, experimental engine   |
- * |                            |              | and the standard engine's fallback   |
  * | `VIDEO_MODEL`              | yes          | try-on video, standard engine        |
  * | `VIDEO_MODEL_EXPERIMENTAL` | yes          | try-on video, experimental engine    |
  * | `VERTEX_LOCATION`          | no, `global` | everything — the endpoint region     |
  *
  * `GOOGLE_SERVICE_ACCOUNT` is the downloaded key file, pasted whole.
  *
- * The standard engine falls back to `TRYON_MODEL_EXPERIMENTAL` when its own
- * model fails, stalls, or answers without an image (see `provider.ts`). Vertex
+ * The standard engine falls back to `TRYON_MODEL_FALLBACK` when its own model
+ * fails, stalls, or answers without an image (see `tryon/vertex.ts`). Vertex
  * meters image generation per model, so the fallback draws on its own
- * allowance.
+ * allowance. The fallback is its own variable rather than the experimental
+ * engine's model so that pointing the experimental engine at an unproven model
+ * never puts that model behind every standard request.
  *
  * Image engine tiers follow the Artificial Analysis image-editing arena
  * restricted to Google models on Vertex: the standard engine is the top-ranked
- * one, the experimental engine the runner-up. Re-rank when the arena moves.
+ * one, its fallback the runner-up. Re-rank when the arena moves. The
+ * experimental engine is whatever model is under evaluation.
  *
  * Video engines name an API as well as a model: the standard engine goes
  * through the Interactions API, the experimental engine through Veo's
@@ -93,6 +97,7 @@ export const chatModel = (): string => requireEnv("CHAT_MODEL"); // gemini-3.8-f
 export const analysisModel = (): string => requireEnv("ANALYSIS_MODEL"); // gemini-3.8-flash
 
 export const tryonImageModel = (): string => requireEnv("TRYON_MODEL"); // gemini-nano-banana-2.1
+export const tryonFallbackImageModel = (): string => requireEnv("TRYON_MODEL_FALLBACK"); // gemini-3-pro-image
 export const tryonExperimentalImageModel = (): string => requireEnv("TRYON_MODEL_EXPERIMENTAL"); // gemini-3-pro-image
 
 export const tryonVideoModel = (): string => requireEnv("VIDEO_MODEL"); // gemini-omni-1.1-flash-preview
