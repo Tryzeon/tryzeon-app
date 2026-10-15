@@ -23,6 +23,7 @@ export interface ChatHandlerDeps {
   admin: DbClient;
   line: LineApi;
   imagesBaseUrl: string;
+  liffUrl: string;
   conversations: ConversationStore;
   getOrCreateUserId?: typeof defaultGetOrCreateUserId;
   runChat?: typeof runChatAgent;
@@ -103,7 +104,7 @@ export async function handleTextMessage(
       },
     );
 
-    await deliver(deps, event, renderAnswer(messages[messages.length - 1].content, items));
+    await deliver(deps, event, renderAnswer(messages[messages.length - 1].content, items, deps.liffUrl));
 
     await deps.conversations.save(
       event.sourceUserId,

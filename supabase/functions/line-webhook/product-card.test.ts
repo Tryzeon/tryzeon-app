@@ -5,7 +5,9 @@ import {
   fetchProductInfo,
   fetchProductRows,
   type LineProduct,
+  productDetailUrl,
   productInfoContents,
+  productOverlayContents,
   purchaseAction,
   toLineProduct,
 } from "./product-card.ts";
@@ -240,4 +242,36 @@ Deno.test("clampProductName leaves a short name untouched", () => {
 Deno.test("clampProductName truncates a long name with an ellipsis", () => {
   const long = "a".repeat(41);
   assertEquals(clampProductName(long), `${"a".repeat(40)}…`);
+});
+
+Deno.test("the overlay is store, name and price, all in light type", () => {
+  // deno-lint-ignore no-explicit-any
+  const [store, name, price] = productOverlayContents(product({ storeName: "Studio Muji" })) as any[];
+
+  assertEquals(store.text, "STUDIO MUJI");
+  assertEquals(store.color, CARD_COLOR.onImageMuted);
+  assertEquals(name.text, product().name);
+  assertEquals(name.weight, "bold");
+  assertEquals(name.color, CARD_COLOR.onImage);
+  assertEquals(price.contents.map((s: { text: string }) => s.text), ["NT$ ", "1,200"]);
+  assertEquals(price.contents[1].color, CARD_COLOR.onImage);
+});
+
+Deno.test("the overlay name stays on one line", () => {
+  // deno-lint-ignore no-explicit-any
+  const [, name] = productOverlayContents(product({ storeName: "某店", name: "衣".repeat(60) })) as any[];
+
+  assertEquals(name.wrap, undefined);
+});
+
+Deno.test("an overlay with no store is name and price only", () => {
+  // deno-lint-ignore no-explicit-any
+  const contents = productOverlayContents(product({ storeName: null })) as any[];
+
+  assertEquals(contents.length, 2);
+  assertEquals(contents[0].text, product().name);
+});
+
+Deno.test("productDetailUrl points at the LIFF product page", () => {
+  assertEquals(productDetailUrl("https://liff.line.me/123-abc", "p1"), "https://liff.line.me/123-abc/product/p1");
 });

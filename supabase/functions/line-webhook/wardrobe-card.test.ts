@@ -9,6 +9,7 @@ import {
   toWardrobeItemInfo,
   type WardrobeCardRow,
   wardrobeInfoContents,
+  wardrobeOverlayContents,
 } from "./wardrobe-card.ts";
 import { CARD_COLOR } from "./card-kit.ts";
 import { GARMENT_TYPE_VALUES } from "../_shared/vocabularies.ts";
@@ -126,6 +127,22 @@ Deno.test("an item with no tags shows two lines, not an empty middle one", () =>
   assertEquals(contents.length, 2);
   assertEquals(contents[0].text, "上衣");
   assertEquals(contents[1].text, "你的衣櫃");
+});
+
+Deno.test("the overlay is garment type, tags and the wardrobe label, in light type", () => {
+  // deno-lint-ignore no-explicit-any
+  const contents = wardrobeOverlayContents(item()) as any[];
+
+  assertEquals(contents.map((c) => c.text), [item().garmentTypeLabel, tagLine(item().tags), "你的衣櫃"]);
+  assertEquals(contents[0].color, CARD_COLOR.onImage);
+  assertEquals(contents[1].color, CARD_COLOR.onImageMuted);
+});
+
+Deno.test("an overlay with no tags skips the tag line", () => {
+  // deno-lint-ignore no-explicit-any
+  const contents = wardrobeOverlayContents(item({ tags: [] })) as any[];
+
+  assertEquals(contents.map((c) => c.text), [item().garmentTypeLabel, "你的衣櫃"]);
 });
 
 function fakeAdmin(

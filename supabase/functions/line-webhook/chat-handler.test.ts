@@ -71,6 +71,7 @@ function deps(over: Partial<ChatHandlerDeps> = {}): ChatHandlerDeps {
     admin: {} as any,
     line: fakeLine().line,
     imagesBaseUrl: "https://img.example",
+    liffUrl: "https://liff.example",
     conversations: fakeConversations().store,
     getOrCreateUserId: () => Promise.resolve("user-uuid"),
     ...over,
@@ -336,4 +337,34 @@ Deno.test("an expired reply token costs a push, not the answer", async () => {
   assertEquals(replied, []);
   assertEquals(pushed, [[{ type: "text", text: "為你找到" }]]);
   assertEquals(warnings.length, 1);
+});
+
+Deno.test("a recommended product in the reply opens its LIFF product page", async () => {
+  const { line, replied } = fakeLine();
+  const chat = fakeChat({
+    blocks: [{ type: "recommendation", items: [{ type: "product", id: PID }] }],
+    items: {
+      products: {
+        [PID]: {
+          id: PID,
+          name: "短版牛仔外套",
+          price: 1280,
+          imageUrl: "https://img.example/p.jpg",
+          storeName: "某店",
+          purchaseUrl: null,
+        },
+      },
+      wardrobe: {},
+    },
+  });
+
+  await handleTextMessage(deps({ line, runChat: chat.runChat }), {
+    replyToken: "rt",
+    sourceUserId: USER,
+    text: "找外套",
+  });
+
+  // deno-lint-ignore no-explicit-any
+  const [bubble] = (replied[0][0] as any).contents.contents;
+  assertEquals(bubble.hero.action.uri, `https://liff.example/product/${PID}`);
 });

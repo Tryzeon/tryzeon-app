@@ -5,14 +5,9 @@
  * meant for as long as it fits in a single send.
  */
 import { type AnswerItems, type ContentBlock, recommendedItems } from "../_shared/chat/index.ts";
-import {
-  clampProductName,
-  type LineProduct,
-  productInfoContents,
-  purchaseAction,
-} from "./product-card.ts";
-import { garmentNoun, type LineWardrobeItem, wardrobeInfoContents } from "./wardrobe-card.ts";
-import { CARD_COLOR, primaryButton, secondaryButton } from "./card-kit.ts";
+import { clampProductName, type LineProduct, productDetailUrl, productOverlayContents } from "./product-card.ts";
+import { garmentNoun, type LineWardrobeItem, wardrobeOverlayContents } from "./wardrobe-card.ts";
+import { CARD_COLOR, overlayHero, primaryButton, secondaryButton } from "./card-kit.ts";
 import { chatErrorMessage } from "./messages.ts";
 import { productTryonPostbackData, wardrobeTryonPostbackData } from "./postback.ts";
 import { dressLast, messageChip } from "./quick-reply.ts";
@@ -65,52 +60,42 @@ function textMessage(lines: string[]): object {
   return { type: "text", text: lines.join("\n").slice(0, MAX_TEXT_CHARS) };
 }
 
-function productBubble(product: LineProduct): object {
-  const purchase = purchaseAction(product);
-  const buttons: object[] = [
-    primaryButton("試穿這件", {
-      type: "postback",
-      label: "試穿這件",
-      data: productTryonPostbackData(product.id),
-      // Clamped: `displayText` fails the whole send past 300 characters, and a
-      // product name has no length constraint.
-      displayText: `試穿「${clampProductName(product.name)}」`,
-    }),
-  ];
-  if (purchase) {
-    buttons.push(secondaryButton("前往購買", purchase));
-  }
-
+function productBubble(product: LineProduct, liffUrl: string): object {
+  const detail = { type: "uri", label: "商品詳情", uri: productDetailUrl(liffUrl, product.id) };
   return {
     type: "bubble",
     size: "kilo",
-    hero: {
-      type: "image",
-      url: product.imageUrl,
-      size: "full",
-      aspectRatio: "1:1",
-      aspectMode: "cover",
-    },
-    body: {
-      type: "box",
-      layout: "vertical",
-      paddingAll: "16px",
-      contents: productInfoContents(product),
-    },
+    hero: overlayHero({
+      image: {
+        type: "image",
+        url: product.imageUrl,
+        size: "full",
+        aspectRatio: "1:1",
+        aspectMode: "cover",
+      },
+      overlay: productOverlayContents(product),
+      action: detail,
+    }),
     footer: {
       type: "box",
-      layout: "vertical",
+      layout: "horizontal",
       // `spacing` is the one gap here that cannot be stated in px: LINE accepts
       // only keywords for it, unlike `margin` and `padding`.
       spacing: "sm",
       paddingAll: "16px",
-      paddingTop: "0px",
-      contents: buttons,
+      contents: [
+        primaryButton("試穿", {
+          type: "postback",
+          label: "試穿",
+          data: productTryonPostbackData(product.id),
+          // Clamped: `displayText` fails the whole send past 300 characters, and a
+          // product name has no length constraint.
+          displayText: `試穿「${clampProductName(product.name)}」`,
+        }),
+        secondaryButton("商品詳情", detail),
+      ],
     },
-    styles: {
-      body: { backgroundColor: CARD_COLOR.surface },
-      footer: { backgroundColor: CARD_COLOR.surface },
-    },
+    styles: { footer: { backgroundColor: CARD_COLOR.surface } },
   };
 }
 
@@ -118,36 +103,31 @@ function productBubble(product: LineProduct): object {
  * `fit` rather than the product card's `cover` because these images are usually
  * background-removed and cropping cuts the sleeves off; the pinned background
  * keeps a transparent PNG from rendering as a black silhouette on LINE's dark
- * chat surface.
+ * chat surface. No tap target: the LIFF has no page for a wardrobe item.
  */
 function wardrobeBubble(item: LineWardrobeItem): object {
   return {
     type: "bubble",
     size: "kilo",
-    hero: {
-      type: "image",
-      url: item.imageUrl,
-      size: "full",
-      aspectRatio: "1:1",
-      aspectMode: "fit",
-      backgroundColor: CARD_COLOR.surface,
-    },
-    body: {
-      type: "box",
-      layout: "vertical",
-      paddingAll: "16px",
-      contents: wardrobeInfoContents(item),
-    },
+    hero: overlayHero({
+      image: {
+        type: "image",
+        url: item.imageUrl,
+        size: "full",
+        aspectRatio: "1:1",
+        aspectMode: "fit",
+        backgroundColor: CARD_COLOR.surfaceVariant,
+      },
+      overlay: wardrobeOverlayContents(item),
+    }),
     footer: {
       type: "box",
       layout: "vertical",
-      spacing: "sm",
       paddingAll: "16px",
-      paddingTop: "0px",
       contents: [
-        primaryButton("試穿這件", {
+        primaryButton("試穿", {
           type: "postback",
-          label: "試穿這件",
+          label: "試穿",
           data: wardrobeTryonPostbackData(item.id),
           // Not clamped, unlike a product's: `garmentNoun` bounds the word to
           // a fixed set of short labels, far from displayText's 300-character cap.
@@ -155,15 +135,12 @@ function wardrobeBubble(item: LineWardrobeItem): object {
         }),
       ],
     },
-    styles: {
-      body: { backgroundColor: CARD_COLOR.surface },
-      footer: { backgroundColor: CARD_COLOR.surface },
-    },
+    styles: { footer: { backgroundColor: CARD_COLOR.surface } },
   };
 }
 
-const bubble = (card: LineCard): object =>
-  card.kind === "product" ? productBubble(card.item) : wardrobeBubble(card.item);
+const bubble = (card: LineCard, liffUrl: string): object =>
+  card.kind === "product" ? productBubble(card.item, liffUrl) : wardrobeBubble(card.item);
 
 /**
  * What a carousel is called when it cannot be shown — a notification, or a
@@ -179,11 +156,11 @@ function carouselAltText(items: LineCard[]): string {
   return `為你找到 ${items.length} 件`;
 }
 
-function carouselMessage(items: LineCard[]): object {
+function carouselMessage(items: LineCard[], liffUrl: string): object {
   return {
     type: "flex",
     altText: carouselAltText(items),
-    contents: { type: "carousel", contents: items.map(bubble) },
+    contents: { type: "carousel", contents: items.map((card) => bubble(card, liffUrl)) },
   };
 }
 
@@ -193,10 +170,10 @@ function chunk<T>(items: T[], size: number): T[][] {
   return out;
 }
 
-const sectionMessages = (section: Section): object[] =>
+const sectionMessages = (section: Section, liffUrl: string): object[] =>
   section.kind === "text"
     ? [textMessage(section.lines)]
-    : chunk(section.items, MAX_BUBBLES).map(carouselMessage);
+    : chunk(section.items, MAX_BUBBLES).map((items) => carouselMessage(items, liffUrl));
 
 /**
  * All the prose, then every row in order — each still its own carousel, so a
@@ -232,7 +209,7 @@ function answerChips(sections: Section[]): object[] {
  * The chips are attached last, after any fold and its slice: a message the slice
  * drops must not take its chip's would-be home down with it.
  */
-export function renderAnswer(blocks: ContentBlock[], items: AnswerItems): object[] {
+export function renderAnswer(blocks: ContentBlock[], items: AnswerItems, liffUrl: string): object[] {
   const sections = toSections(blocks, items);
 
   // Unreachable today (`runChatAgent` guarantees at least one block), but LINE
@@ -240,10 +217,10 @@ export function renderAnswer(blocks: ContentBlock[], items: AnswerItems): object
   // future change broke the guarantee than a generic apology is.
   if (sections.length === 0) return [chatErrorMessage("unknown")];
 
-  const detailed = sections.flatMap(sectionMessages);
+  const detailed = sections.flatMap((s) => sectionMessages(s, liffUrl));
   const messages = detailed.length <= MAX_LINE_MESSAGES
     ? detailed
-    : foldSections(sections).flatMap(sectionMessages).slice(0, MAX_LINE_MESSAGES);
+    : foldSections(sections).flatMap((s) => sectionMessages(s, liffUrl)).slice(0, MAX_LINE_MESSAGES);
 
   return dressLast(messages, answerChips(sections));
 }

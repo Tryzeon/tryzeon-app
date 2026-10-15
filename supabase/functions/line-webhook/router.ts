@@ -100,6 +100,7 @@ function routeMessage(
           admin,
           line,
           imagesBaseUrl: deps.imagesBaseUrl,
+          liffUrl: deps.liffUrl,
           conversations: deps.conversations,
         },
         { replyToken: ev.replyToken, sourceUserId, text },

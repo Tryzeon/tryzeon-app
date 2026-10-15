@@ -169,6 +169,49 @@ export function productInfoContents(product: ProductInfo): object[] {
   return contents;
 }
 
+const LIFF_PRODUCT_PATH = "/product";
+
+export function productDetailUrl(liffUrl: string, productId: string): string {
+  return `${liffUrl}${LIFF_PRODUCT_PATH}/${productId}`;
+}
+
+export function productOverlayContents(product: ProductInfo): object[] {
+  const contents: object[] = [];
+  if (product.storeName) {
+    contents.push({
+      type: "text",
+      text: product.storeName.toUpperCase(),
+      size: "xxs",
+      color: CARD_COLOR.onImageMuted,
+    });
+  }
+  contents.push(
+    {
+      type: "text",
+      margin: "4px",
+      text: product.name,
+      size: "sm",
+      weight: "bold",
+      color: CARD_COLOR.onImage,
+    },
+    {
+      type: "text",
+      margin: "4px",
+      contents: [
+        { type: "span", text: "NT$ ", size: "xs", color: CARD_COLOR.onImageMuted },
+        {
+          type: "span",
+          text: amountText(product.price),
+          size: "lg",
+          weight: "bold",
+          color: CARD_COLOR.onImage,
+        },
+      ],
+    },
+  );
+  return contents;
+}
+
 /**
  * A product name capped for a field LINE limits as one all-or-nothing check on
  * the whole message — postback `displayText` at 300 characters, flex `altText`

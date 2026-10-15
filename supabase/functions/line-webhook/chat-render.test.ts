@@ -24,6 +24,8 @@ type Part =
   | { type: "text"; text: string }
   | { type: "row"; cards: Card[] };
 
+const LIFF = "https://liff.example";
+
 const text = (t: string): Part => ({ type: "text", text: t });
 const card = (p: LineProduct): Card => ({ type: "product", item: p });
 const row = (...cards: Card[]): Part => ({ type: "row", cards });
@@ -41,7 +43,7 @@ function render(parts: Part[]): object[] {
       }),
     };
   });
-  return renderAnswer(content, items);
+  return renderAnswer(content, items, LIFF);
 }
 
 // deno-lint-ignore no-explicit-any
@@ -89,7 +91,7 @@ Deno.test("every product card offers a try-on, keyed by its own id", () => {
 
   assertEquals(first.footer.contents[0].action, {
     type: "postback",
-    label: "試穿這件",
+    label: "試穿",
     data: productTryonPostbackData("p1"),
     displayText: "試穿「商品 p1」",
   });
@@ -106,51 +108,47 @@ Deno.test("an over-long product name is clamped in the postback displayText", ()
   assertEquals(displayText, `試穿「${"衣".repeat(40)}…」`);
 });
 
-Deno.test("the try-on button is filled and the purchase button is outlined", () => {
-  const out = render([
-    row(card(product("p1", { purchaseUrl: "https://shop.example/p1" }))),
-  ]);
-  const [{ footer }] = bubbles(out[0]);
+Deno.test("a product card opens its LIFF product page from the photo and the detail button", () => {
+  const [bubble] = bubbles(render([row(card(product("p1")))])[0]);
+  const detail = { type: "uri", label: "商品詳情", uri: `${LIFF}/product/p1` };
 
-  assertEquals(footer.contents.length, 2);
-  assertEquals(footer.contents[0].backgroundColor, "#1A1A1A");
-  assertEquals(footer.contents[0].cornerRadius, "8px");
-  assertEquals(footer.contents[1].backgroundColor, undefined);
-  assertEquals(footer.contents[1].borderWidth, "1px");
-  assertEquals(footer.contents[1].action.uri, "https://shop.example/p1");
+  assertEquals(bubble.hero.action, detail);
+  assertEquals(bubble.footer.contents[1].action, detail);
+  assertEquals(bubble.footer.contents[1].contents[0].text, "商品詳情");
 });
 
-Deno.test("a product with no purchase link still gets its try-on button", () => {
-  const out = render([row(card(product("p1")))]);
-  const [{ footer }] = bubbles(out[0]);
+Deno.test("a product card offers try-on and detail side by side, and never a purchase button", () => {
+  const [bubble] = bubbles(
+    render([row(card(product("p1", { purchaseUrl: "https://shop.example/p1" })))])[0],
+  );
 
-  assertEquals(footer.contents.length, 1);
-  assertEquals(footer.contents[0].action.type, "postback");
+  assertEquals(bubble.footer.layout, "horizontal");
+  assertEquals(bubble.footer.contents.length, 2);
+  assertEquals(bubble.footer.contents[0].backgroundColor, CARD_COLOR.primary);
+  assertEquals(bubble.footer.contents[0].contents[0].text, "試穿");
+  assertEquals(bubble.footer.contents[1].borderWidth, "1px");
+  assertEquals(JSON.stringify(bubble).includes("shop.example"), false);
 });
 
-Deno.test("a link LINE would reject is dropped, and takes nothing else with it", () => {
-  const out = render([row(card(product("p1", { purchaseUrl: "shop.example/p1" })))]);
-  const [{ footer }] = bubbles(out[0]);
-
-  assertEquals(footer.contents.length, 1);
-  assertEquals(footer.contents[0].action.type, "postback");
-});
-
-Deno.test("the card pins its own surface, so no theme can dim the type", () => {
+Deno.test("a product card lays its details over the photo instead of a body", () => {
   const [bubble] = bubbles(render([row(card(product("p1")))])[0]);
 
-  assertEquals(bubble.styles.body.backgroundColor, "#FFFFFF");
-  assertEquals(bubble.styles.footer.backgroundColor, "#FFFFFF");
+  assertEquals(bubble.body, undefined);
+  assertEquals(bubble.hero.contents[0].url, "https://img.example/p1.jpg");
+  assertEquals(bubble.hero.contents[0].aspectRatio, "1:1");
+  assertEquals(bubble.hero.contents[0].aspectMode, "cover");
+  assertEquals(
+    // deno-lint-ignore no-explicit-any
+    bubble.hero.contents[1].contents.map((c: any) => c.text ?? c.contents.map((s: any) => s.text).join("")),
+    ["某店", "商品 p1", "NT$ 1,200"],
+  );
 });
 
-Deno.test("the body and footer sit on the 8px grid, and do not double up", () => {
+Deno.test("the product card footer pins its own surface", () => {
   const [bubble] = bubbles(render([row(card(product("p1")))])[0]);
 
-  assertEquals(bubble.body.paddingAll, "16px");
+  assertEquals(bubble.styles.footer.backgroundColor, CARD_COLOR.surface);
   assertEquals(bubble.footer.paddingAll, "16px");
-  // Without this the body's bottom padding and the footer's top padding stack
-  // into a 32px gap, which is too much air for a kilo card.
-  assertEquals(bubble.footer.paddingTop, "0px");
 });
 
 const chipActions = (message: object): object[] =>
@@ -195,16 +193,21 @@ Deno.test("the chips survive the fold that drops messages", () => {
   assertEquals(chipActions(out.at(-1)!), NARROW_CHIPS);
 });
 
-Deno.test("a wardrobe block becomes a card", () => {
+Deno.test("a wardrobe card shows its photo whole, on a pinned light surface, with nothing to open", () => {
   const out = render([text("你衣櫃裡這件可以"), row(wardrobeCard(wardrobeItem("w1")))]);
 
   assertEquals(out.length, 2);
   // deno-lint-ignore no-explicit-any
   const bubble = bubbles(out[1])[0] as any;
-  assertEquals(bubble.hero.url, "https://sig.example/w1.png?token=abc");
+  const photo = bubble.hero.contents[0];
+  assertEquals(photo.url, "https://sig.example/w1.png?token=abc");
   // LINE accepts only `cover` and `fit` here and 400s the whole send otherwise.
-  assertEquals(bubble.hero.aspectMode, "fit");
-  assertEquals(bubble.hero.backgroundColor, CARD_COLOR.surface);
+  assertEquals(photo.aspectMode, "fit");
+  assertEquals(photo.backgroundColor, CARD_COLOR.surfaceVariant);
+  assertEquals(bubble.hero.action, undefined);
+  assertEquals(bubble.body, undefined);
+  assertEquals(bubble.footer.contents.length, 1);
+  assertEquals(bubble.footer.contents[0].contents[0].text, "試穿");
 });
 
 Deno.test("the carousel altText names what is actually in it", () => {
@@ -248,14 +251,6 @@ Deno.test("the others bucket's card button reads 單品, not 其他", () => {
   const bubble = bubbles(out[0])[0] as any;
 
   assertEquals(bubble.footer.contents[0].action.displayText, "試穿「你的單品」");
-});
-
-Deno.test("a product card still offers only its own actions", () => {
-  const out = render([row(card(product("p1")))]);
-  // deno-lint-ignore no-explicit-any
-  const bubble = bubbles(out[0])[0] as any;
-  assertEquals(bubble.footer.contents.length, 1);
-  assertEquals(bubble.footer.contents[0].action.data, productTryonPostbackData("p1"));
 });
 
 Deno.test("a row's items share one carousel", () => {
@@ -336,6 +331,7 @@ Deno.test("a card whose row is missing is left out rather than drawn empty", () 
       { type: "recommendation", items: [{ type: "product", id: "gone" }, { type: "product", id: "p1" }] },
     ],
     { products: { p1: product("p1") }, wardrobe: {} },
+    LIFF,
   );
 
   assertEquals(out.length, 2);
@@ -346,6 +342,7 @@ Deno.test("a row whose items are all missing draws no carousel", () => {
   const out = renderAnswer(
     [{ type: "text", text: "為你找到" }, { type: "recommendation", items: [{ type: "product", id: "gone" }] }],
     { products: {}, wardrobe: {} },
+    LIFF,
   );
 
   assertEquals(out.length, 1);

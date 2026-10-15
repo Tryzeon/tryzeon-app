@@ -120,6 +120,35 @@ export function wardrobeInfoContents(item: WardrobeItemInfo): object[] {
   return contents;
 }
 
+export function wardrobeOverlayContents(item: WardrobeItemInfo): object[] {
+  const contents: object[] = [
+    {
+      type: "text",
+      text: item.garmentTypeLabel,
+      size: "sm",
+      weight: "bold",
+      color: CARD_COLOR.onImage,
+    },
+  ];
+  if (item.tags.length > 0) {
+    contents.push({
+      type: "text",
+      margin: "4px",
+      text: tagLine(item.tags),
+      size: "xxs",
+      color: CARD_COLOR.onImageMuted,
+    });
+  }
+  contents.push({
+    type: "text",
+    margin: "4px",
+    text: "你的衣櫃",
+    size: "xxs",
+    color: CARD_COLOR.onImageMuted,
+  });
+  return contents;
+}
+
 /**
  * Seven days, not the app's hour: a LINE message is scrolled back to, and an
  * expired URL is a card that renders as a hole. Deliberately not shared with
