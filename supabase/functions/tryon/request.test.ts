@@ -33,17 +33,6 @@ Deno.test("parseTryonParams shapes wire body, keeps mode, attaches userId", () =
   assertEquals(params.transitionPrompt, "spin");
 });
 
-Deno.test("parseTryonParams defers a path garment to the core", () => {
-  const params = parse(
-    { garments: [{ images: [{ path: "u1/top/x.jpg" }] }] },
-    "u1",
-  );
-  assertEquals(params.garments, [
-    { images: [{ path: "u1/top/x.jpg" }] } as unknown as typeof params
-      .garments[number],
-  ]);
-});
-
 Deno.test("parseTryonParams hands garments to the core without narrowing them", () => {
   // Stripping the model-facing detail is `validateGarment`'s job, asserted in
   // "validateTryonParams strips a garment detail a caller tried to set".

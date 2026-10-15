@@ -51,33 +51,15 @@ Deno.test("validateTryonParams rejects too many images in a garment", () => {
   );
 });
 
-Deno.test("validateTryonParams rejects a garment image named by path", () => {
+Deno.test("validateTryonParams rejects a garment image without bytes", () => {
   assertThrows(
     () =>
       validateTryonParams({
         ...validParams,
-        garments: [{
-          images: [{ path: "p" } as unknown as { base64: string }],
-        }],
+        garments: [{ images: [{ base64: "" }] }],
       }),
     ValidationError,
     "garment image",
-  );
-});
-
-Deno.test("validateTryonParams rejects a path even alongside usable bytes", () => {
-  assertThrows(
-    () =>
-      validateTryonParams({
-        ...validParams,
-        garments: [{
-          images: [
-            { path: "p", base64: "BBBB" } as unknown as { base64: string },
-          ],
-        }],
-      }),
-    ValidationError,
-    "not a path",
   );
 });
 

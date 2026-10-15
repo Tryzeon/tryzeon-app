@@ -33,12 +33,6 @@ function requireBase64(value: unknown, label: string): string {
   return value;
 }
 
-/**
- * A `{ path }` is rejected rather than ignored: silently dropping it would run
- * the job against whatever else the garment carried, which is not what the
- * caller asked for. Checked before the bytes so a client still sending the
- * retired shape is told what is actually wrong with it.
- */
 function requireInlineImage(
   source: unknown,
   label: string,
@@ -46,11 +40,8 @@ function requireInlineImage(
   if (typeof source !== "object" || source === null) {
     throw new ValidationError(`${label} must be an object`);
   }
-  const s = source as Record<string, unknown>;
-  if (typeof s.path === "string" && s.path.length > 0) {
-    throw new ValidationError(`${label} must be inline bytes, not a path`);
-  }
-  return { base64: requireBase64(s.base64, label) };
+  const base64 = (source as Record<string, unknown>).base64;
+  return { base64: requireBase64(base64, label) };
 }
 
 function optionalBaseImage(source: unknown): BaseImage | undefined {
