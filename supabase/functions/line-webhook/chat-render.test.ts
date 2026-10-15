@@ -16,24 +16,38 @@ const product = (id: string, over: Partial<LineProduct> = {}): LineProduct => ({
   ...over,
 });
 
-type Part =
-  | { type: "text"; text: string }
+type Card =
   | { type: "product"; item: LineProduct }
   | { type: "wardrobe"; item: LineWardrobeItem };
 
-const text = (t: string): Part => ({ type: "text", text: t });
-const card = (p: LineProduct): Part => ({ type: "product", item: p });
+type Part =
+  | { type: "text"; text: string }
+  | { type: "row"; cards: Card[] };
 
-/** Splits fixture parts into what the core hands over: id refs plus the rows they name. */
+const text = (t: string): Part => ({ type: "text", text: t });
+const card = (p: LineProduct): Card => ({ type: "product", item: p });
+const row = (...cards: Card[]): Part => ({ type: "row", cards });
+
+/** Splits fixture parts into what the core hands over: rows of id refs plus the rows they name. */
 function render(parts: Part[]): object[] {
   const items: AnswerItems = { products: {}, wardrobe: {} };
   const content: ContentBlock[] = parts.map((part) => {
     if (part.type === "text") return part;
-    (part.type === "product" ? items.products : items.wardrobe)[part.item.id] = part.item;
-    return { type: part.type, id: part.item.id };
+    return {
+      type: "recommendation",
+      items: part.cards.map((c) => {
+        (c.type === "product" ? items.products : items.wardrobe)[c.item.id] = c.item;
+        return { type: c.type, id: c.item.id };
+      }),
+    };
   });
   return renderAnswer(content, items);
 }
+
+// deno-lint-ignore no-explicit-any
+const tryonIdsOf = (message: any) =>
+  // deno-lint-ignore no-explicit-any
+  bubbles(message).map((b: any) => b.footer.contents[0].action.data);
 
 // deno-lint-ignore no-explicit-any
 const bubbles = (message: any) => message.contents.contents as any[];
@@ -49,75 +63,18 @@ const wardrobeItem = (
   ...over,
 });
 
-const wardrobeCard = (w: LineWardrobeItem): Part => ({ type: "wardrobe", item: w });
+const wardrobeCard = (w: LineWardrobeItem): Card => ({ type: "wardrobe", item: w });
 
 Deno.test("a text-only answer is a single text message", () => {
   const out = render([text("你想找什麼樣的衣服？")]);
   assertEquals(out, [{ type: "text", text: "你想找什麼樣的衣服？" }]);
 });
 
-Deno.test("consecutive products collapse into one carousel", () => {
-  const out = render([
-    text("為你找到這幾件"),
-    card(product("p1")),
-    card(product("p2")),
-  ]);
-
-  assertEquals(out.length, 2);
-  assertEquals(out[0], { type: "text", text: "為你找到這幾件" });
-  assertEquals(bubbles(out[1]).length, 2);
-});
-
 Deno.test("adjacent text blocks merge into one message", () => {
-  const out = render([text("第一句"), text("第二句"), card(product("p1"))]);
+  const out = render([text("第一句"), text("第二句"), row(card(product("p1")))]);
 
   assertEquals(out.length, 2);
   assertEquals(out[0], { type: "text", text: "第一句\n第二句" });
-});
-
-Deno.test("a two-part outfit keeps its interleaving", () => {
-  const out = render([
-    text("上身"),
-    card(product("p1")),
-    text("下身"),
-    card(product("p2")),
-  ]);
-
-  assertEquals(out.length, 4);
-  assertEquals(out.map((m) => (m as { type: string }).type), [
-    "text",
-    "flex",
-    "text",
-    "flex",
-  ]);
-});
-
-Deno.test("more sections than LINE allows fold into prose plus one carousel", () => {
-  const out = render([
-    text("上身"),
-    card(product("p1")),
-    text("下身"),
-    card(product("p2")),
-    text("外套"),
-    card(product("p3")),
-  ]);
-
-  assertEquals(out.length, 2);
-  assertEquals(out[0], { type: "text", text: "上身\n下身\n外套" });
-  assertEquals(bubbles(out[1]).map((b) => b.body.contents[0].text), [
-    "商品 p1",
-    "商品 p2",
-    "商品 p3",
-  ]);
-});
-
-Deno.test("a run longer than one carousel splits rather than truncates", () => {
-  const items = Array.from({ length: 15 }, (_, i) => card(product(`p${i}`)));
-  const out = render(items);
-
-  assertEquals(out.length, 2);
-  assertEquals(bubbles(out[0]).length, 12);
-  assertEquals(bubbles(out[1]).length, 3);
 });
 
 Deno.test("an empty answer degrades to text rather than an empty send", () => {
@@ -127,7 +84,7 @@ Deno.test("an empty answer degrades to text rather than an empty send", () => {
 });
 
 Deno.test("every product card offers a try-on, keyed by its own id", () => {
-  const out = render([card(product("p1")), card(product("p2"))]);
+  const out = render([row(card(product("p1")), card(product("p2")))]);
   const [first, second] = bubbles(out[0]);
 
   assertEquals(first.footer.contents[0].action, {
@@ -139,9 +96,19 @@ Deno.test("every product card offers a try-on, keyed by its own id", () => {
   assertEquals(second.footer.contents[0].action.data, productTryonPostbackData("p2"));
 });
 
+Deno.test("an over-long product name is clamped in the postback displayText", () => {
+  const longName = "衣".repeat(60);
+  const out = render([row(card(product("p1", { name: longName })))]);
+  const [{ footer }] = bubbles(out[0]);
+
+  const displayText = footer.contents[0].action.displayText as string;
+  assertEquals(displayText.length <= 300, true);
+  assertEquals(displayText, `試穿「${"衣".repeat(40)}…」`);
+});
+
 Deno.test("the try-on button is filled and the purchase button is outlined", () => {
   const out = render([
-    card(product("p1", { purchaseUrl: "https://shop.example/p1" })),
+    row(card(product("p1", { purchaseUrl: "https://shop.example/p1" }))),
   ]);
   const [{ footer }] = bubbles(out[0]);
 
@@ -154,7 +121,7 @@ Deno.test("the try-on button is filled and the purchase button is outlined", () 
 });
 
 Deno.test("a product with no purchase link still gets its try-on button", () => {
-  const out = render([card(product("p1"))]);
+  const out = render([row(card(product("p1")))]);
   const [{ footer }] = bubbles(out[0]);
 
   assertEquals(footer.contents.length, 1);
@@ -162,32 +129,22 @@ Deno.test("a product with no purchase link still gets its try-on button", () => 
 });
 
 Deno.test("a link LINE would reject is dropped, and takes nothing else with it", () => {
-  const out = render([card(product("p1", { purchaseUrl: "shop.example/p1" }))]);
+  const out = render([row(card(product("p1", { purchaseUrl: "shop.example/p1" })))]);
   const [{ footer }] = bubbles(out[0]);
 
   assertEquals(footer.contents.length, 1);
   assertEquals(footer.contents[0].action.type, "postback");
 });
 
-Deno.test("an over-long product name is clamped in the postback displayText", () => {
-  const longName = "衣".repeat(60);
-  const out = render([card(product("p1", { name: longName }))]);
-  const [{ footer }] = bubbles(out[0]);
-
-  const displayText = footer.contents[0].action.displayText as string;
-  assertEquals(displayText.length <= 300, true);
-  assertEquals(displayText, `試穿「${"衣".repeat(40)}…」`);
-});
-
 Deno.test("the card pins its own surface, so no theme can dim the type", () => {
-  const [bubble] = bubbles(render([card(product("p1"))])[0]);
+  const [bubble] = bubbles(render([row(card(product("p1")))])[0]);
 
   assertEquals(bubble.styles.body.backgroundColor, "#FFFFFF");
   assertEquals(bubble.styles.footer.backgroundColor, "#FFFFFF");
 });
 
 Deno.test("the body and footer sit on the 8px grid, and do not double up", () => {
-  const [bubble] = bubbles(render([card(product("p1"))])[0]);
+  const [bubble] = bubbles(render([row(card(product("p1")))])[0]);
 
   assertEquals(bubble.body.paddingAll, "16px");
   assertEquals(bubble.footer.paddingAll, "16px");
@@ -207,7 +164,7 @@ const NARROW_CHIPS = [
 ];
 
 Deno.test("an answer with products offers ways to narrow it", () => {
-  const out = render([text("為你找到"), card(product("p1"))]);
+  const out = render([text("為你找到"), row(card(product("p1")))]);
 
   // Only the last message carries them: LINE does not document which one wins
   // when several in one send do, so the design never creates that situation.
@@ -229,7 +186,7 @@ Deno.test("the chips survive the fold that drops messages", () => {
   // carousel. A chip attached before that slice would go down with it.
   const blocks = [
     text("找到好多"),
-    ...Array.from({ length: 49 }, (_, i) => card(product(`p${i}`))),
+    row(...Array.from({ length: 49 }, (_, i) => card(product(`p${i}`)))),
   ];
 
   const out = render(blocks);
@@ -239,7 +196,7 @@ Deno.test("the chips survive the fold that drops messages", () => {
 });
 
 Deno.test("a wardrobe block becomes a card", () => {
-  const out = render([text("你衣櫃裡這件可以"), wardrobeCard(wardrobeItem("w1"))]);
+  const out = render([text("你衣櫃裡這件可以"), row(wardrobeCard(wardrobeItem("w1")))]);
 
   assertEquals(out.length, 2);
   // deno-lint-ignore no-explicit-any
@@ -250,21 +207,10 @@ Deno.test("a wardrobe block becomes a card", () => {
   assertEquals(bubble.hero.backgroundColor, CARD_COLOR.surface);
 });
 
-Deno.test("products and wardrobe items share one carousel", () => {
-  const out = render([
-    text("配起來像這樣"),
-    card(product("p1")),
-    wardrobeCard(wardrobeItem("w1")),
-  ]);
-
-  assertEquals(out.length, 2);
-  assertEquals(bubbles(out[1]).length, 2);
-});
-
 Deno.test("the carousel altText names what is actually in it", () => {
-  const alt = (blocks: object[]) =>
+  const alt = (cards: Card[]) =>
     // deno-lint-ignore no-explicit-any
-    (render(blocks as Part[]).at(-1) as any).altText;
+    (render([row(...cards)]).at(-1) as any).altText;
 
   assertEquals(alt([card(product("p1"))]), "為你找到 1 件商品");
   assertEquals(alt([wardrobeCard(wardrobeItem("w1"))]), "你衣櫃裡的 1 件");
@@ -275,14 +221,14 @@ Deno.test("the carousel altText names what is actually in it", () => {
 });
 
 Deno.test("a wardrobe-only answer offers no shopping chips", () => {
-  const out = render([wardrobeCard(wardrobeItem("w1"))]);
+  const out = render([row(wardrobeCard(wardrobeItem("w1")))]);
 
   // deno-lint-ignore no-explicit-any
   assertEquals((out.at(-1) as any).quickReply, undefined);
 });
 
 Deno.test("a wardrobe card offers a try-on keyed by its own id", () => {
-  const out = render([wardrobeCard(wardrobeItem("44444444-4444-4444-4444-444444444444"))]);
+  const out = render([row(wardrobeCard(wardrobeItem("44444444-4444-4444-4444-444444444444")))]);
   // deno-lint-ignore no-explicit-any
   const bubble = bubbles(out[0])[0] as any;
   const [button] = bubble.footer.contents;
@@ -297,7 +243,7 @@ Deno.test("a wardrobe card offers a try-on keyed by its own id", () => {
 
 Deno.test("the others bucket's card button reads 單品, not 其他", () => {
   // 「試穿「你的其他」」 is broken Chinese, and `others` is not a rare code.
-  const out = render([wardrobeCard(wardrobeItem("w1", { garmentTypeLabel: "其他" }))]);
+  const out = render([row(wardrobeCard(wardrobeItem("w1", { garmentTypeLabel: "其他" })))]);
   // deno-lint-ignore no-explicit-any
   const bubble = bubbles(out[0])[0] as any;
 
@@ -305,16 +251,100 @@ Deno.test("the others bucket's card button reads 單品, not 其他", () => {
 });
 
 Deno.test("a product card still offers only its own actions", () => {
-  const out = render([card(product("p1"))]);
+  const out = render([row(card(product("p1")))]);
   // deno-lint-ignore no-explicit-any
   const bubble = bubbles(out[0])[0] as any;
   assertEquals(bubble.footer.contents.length, 1);
   assertEquals(bubble.footer.contents[0].action.data, productTryonPostbackData("p1"));
 });
 
+Deno.test("a row's items share one carousel", () => {
+  const out = render([text("為你找到這幾件"), row(card(product("p1")), card(product("p2")))]);
+
+  assertEquals(out.length, 2);
+  assertEquals(out[0], { type: "text", text: "為你找到這幾件" });
+  assertEquals(bubbles(out[1]).length, 2);
+});
+
+Deno.test("adjacent rows stay separate carousels", () => {
+  const out = render([row(card(product("p1"))), row(card(product("p2")), card(product("p3")))]);
+
+  assertEquals(out.length, 2);
+  assertEquals(tryonIdsOf(out[0]), [productTryonPostbackData("p1")]);
+  assertEquals(tryonIdsOf(out[1]), [productTryonPostbackData("p2"), productTryonPostbackData("p3")]);
+});
+
+Deno.test("an outfit that fits keeps its interleaving", () => {
+  const out = render([
+    text("這套清爽"),
+    row(card(product("p1"))),
+    text("下面配寬褲"),
+    row(card(product("p2"))),
+  ]);
+
+  assertEquals(out.map((m) => (m as { type: string }).type), ["text", "flex", "text", "flex"]);
+});
+
+Deno.test("more sections than LINE allows fold the prose to the top and keep every row", () => {
+  const out = render([
+    text("這套清爽"),
+    row(card(product("p1"))),
+    text("下面配寬褲"),
+    row(card(product("p2"))),
+    text("早晚涼加外套"),
+    row(card(product("p3"))),
+  ]);
+
+  assertEquals(out.length, 4);
+  assertEquals(out[0], { type: "text", text: "這套清爽\n下面配寬褲\n早晚涼加外套" });
+  assertEquals(tryonIdsOf(out[1]), [productTryonPostbackData("p1")]);
+  assertEquals(tryonIdsOf(out[2]), [productTryonPostbackData("p2")]);
+  assertEquals(tryonIdsOf(out[3]), [productTryonPostbackData("p3")]);
+});
+
+Deno.test("rows beyond LINE's limit are dropped after the fold, chips kept on the last message", () => {
+  const out = render([
+    text("這幾套都可以"),
+    ...Array.from({ length: 6 }, (_, i) => row(card(product(`p${i}`)))),
+  ]);
+
+  assertEquals(out.length, 5);
+  assertEquals(out[0], { type: "text", text: "這幾套都可以" });
+  assertEquals(out.slice(1).map((m) => tryonIdsOf(m)[0]), [0, 1, 2, 3].map((i) => productTryonPostbackData(`p${i}`)));
+  assertEquals(chipActions(out.at(-1)!), NARROW_CHIPS);
+});
+
+Deno.test("a row longer than one carousel splits rather than truncates", () => {
+  const out = render([row(...Array.from({ length: 15 }, (_, i) => card(product(`p${i}`))))]);
+
+  assertEquals(out.length, 2);
+  assertEquals(bubbles(out[0]).length, 12);
+  assertEquals(bubbles(out[1]).length, 3);
+});
+
+Deno.test("products and wardrobe items in one row share one carousel", () => {
+  const out = render([text("配起來像這樣"), row(card(product("p1")), wardrobeCard(wardrobeItem("w1")))]);
+
+  assertEquals(out.length, 2);
+  assertEquals(bubbles(out[1]).length, 2);
+});
+
 Deno.test("a card whose row is missing is left out rather than drawn empty", () => {
   const out = renderAnswer(
-    [{ type: "text", text: "為你找到" }, { type: "product", id: "gone" }],
+    [
+      { type: "text", text: "為你找到" },
+      { type: "recommendation", items: [{ type: "product", id: "gone" }, { type: "product", id: "p1" }] },
+    ],
+    { products: { p1: product("p1") }, wardrobe: {} },
+  );
+
+  assertEquals(out.length, 2);
+  assertEquals(tryonIdsOf(out[1]), [productTryonPostbackData("p1")]);
+});
+
+Deno.test("a row whose items are all missing draws no carousel", () => {
+  const out = renderAnswer(
+    [{ type: "text", text: "為你找到" }, { type: "recommendation", items: [{ type: "product", id: "gone" }] }],
     { products: {}, wardrobe: {} },
   );
 

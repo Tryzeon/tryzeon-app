@@ -27,6 +27,7 @@ import type {
   ChatEvent,
   ChatMessage,
   ContentBlock,
+  ItemRef,
 } from "./types.ts";
 
 export const SEARCH_LIMIT = 10;
@@ -286,11 +287,26 @@ export async function recordRounds(
   return rounds;
 }
 
+export function recommendedItems(block: ContentBlock): ItemRef[] {
+  if (block?.type !== "recommendation" || !Array.isArray(block.items)) return [];
+  const refs: ItemRef[] = [];
+  for (const entry of block.items) {
+    const item = asRecord(entry);
+    const type = item?.type;
+    const id = nonEmptyStr(item?.id);
+    if ((type === "product" || type === "wardrobe") && id !== null) refs.push({ type, id });
+  }
+  return refs;
+}
+
+const replayName = ({ type, id }: ItemRef): string =>
+  `${type === "product" ? "商品" : "衣櫃單品"} id:${id}`;
+
 // The whole history is replayed verbatim and uncompressed: assistant tool_use →
 // a `tool-call` part, the paired user tool_result → a `tool` message with a
 // `tool-result` part (its tool name resolved from the tool_use id), text passes
-// through. A recommended item is named by its id alone: its full data is
-// already replayed in the tool_result.
+// through. A recommended row is named by its items' ids alone: their full data
+// is already replayed in the tool_result.
 export function toModelMessages(messages: ChatMessage[]): ModelMessage[] {
   const nameOf = new Map<string, string>();
   for (const m of messages ?? []) {
@@ -332,8 +348,10 @@ export function toModelMessages(messages: ChatMessage[]): ModelMessage[] {
     for (const b of blocks) {
       const t = b?.type === "text" ? nonEmptyStr(b.text) : null;
       if (t) lines.push(t);
-      else if (b?.type === "product") lines.push(`（推薦商品 id:${nonEmptyStr(b.id) ?? ""}）`);
-      else if (b?.type === "wardrobe") lines.push(`（推薦衣櫃單品 id:${nonEmptyStr(b.id) ?? ""}）`);
+      else if (b?.type === "recommendation") {
+        const named = recommendedItems(b).map(replayName);
+        if (named.length > 0) lines.push(`（推薦：${named.join("、")}）`);
+      }
     }
     const text = lines.join("\n").trim();
 
@@ -356,26 +374,32 @@ export function toModelMessages(messages: ChatMessage[]): ModelMessage[] {
   return out;
 }
 
-// The model picks the block type (product = shop, wardrobe = wardrobe) and gives
-// the id; the edge fetches each id from the matching table. Empty text and
-// id-less product/wardrobe blocks drop.
+// The model groups its picks into rows (one recommendation per row) and labels
+// each item product = shop or wardrobe = wardrobe; the edge fetches each id from
+// the matching table. Empty text, bad items and rows left empty drop, and an
+// item repeated within its row is kept once.
 //
-// So does a block whose id is not a uuid. The model quotes ids back from tool
+// So does an item whose id is not a uuid. The model quotes ids back from tool
 // results and can misquote one — a dropped character is enough — and every id
 // here is spent as a uuid literal in the hydrator's `.in("id", ids)`, where
 // Postgres rejects the malformed one by failing the whole batch (22P02). That
 // would cost the caller the answer, valid ids and all, so the check belongs to
-// the parse: an id that cannot name a row is an id-less block, and the assembler
-// already drops those.
+// the parse: an id that cannot name a row is a bad item, and the parse drops those.
 export function parseAnswerRefs(args: Record<string, unknown>): AnswerRef[] {
   const rawBlocks = Array.isArray(args?.blocks) ? args.blocks : [];
   const refs: AnswerRef[] = [];
   for (const raw of rawBlocks) {
     const b = asRecord(raw);
     if (b === null) continue;
-    if (b.type === "product" || b.type === "wardrobe") {
-      const id = nonEmptyStr(b.id);
-      if (id && isUuid(id)) refs.push({ type: b.type, id });
+    if (b.type === "recommendation") {
+      const seen = new Set<string>();
+      const items = recommendedItems(b).filter(({ type, id }) => {
+        const key = `${type}:${id}`;
+        if (!isUuid(id) || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      if (items.length > 0) refs.push({ type: "recommendation", items });
     } else if (b.type === "text") {
       const text = nonEmptyStr(b.text);
       if (text) refs.push({ type: "text", text });
@@ -385,9 +409,10 @@ export function parseAnswerRefs(args: Record<string, unknown>): AnswerRef[] {
 }
 
 /**
- * The answer as it is stored — item refs by id, in the model's order — and the
- * rows those ids render as. A ref whose row is gone is dropped from both, so
- * the model is never told it recommended something the user did not see.
+ * The answer as it is stored — rows of item refs by id, in the model's order —
+ * and the rows those ids render as. An item whose row is gone is dropped from
+ * both, and a recommendation left with no items is dropped whole, so the model
+ * is never told it recommended something the user did not see.
  */
 export function assembleAnswer(
   refs: AnswerRef[],
@@ -400,10 +425,14 @@ export function assembleAnswer(
       content.push({ type: "text", text: ref.text });
       continue;
     }
-    const row = (ref.type === "product" ? rows.products : rows.wardrobe).get(ref.id);
-    if (row === undefined) continue;
-    content.push({ type: ref.type, id: ref.id });
-    (ref.type === "product" ? items.products : items.wardrobe)[ref.id] = row;
+    const kept: ItemRef[] = [];
+    for (const item of ref.items) {
+      const row = (item.type === "product" ? rows.products : rows.wardrobe).get(item.id);
+      if (row === undefined) continue;
+      kept.push(item);
+      (item.type === "product" ? items.products : items.wardrobe)[item.id] = row;
+    }
+    if (kept.length > 0) content.push({ type: "recommendation", items: kept });
   }
   return { content, items };
 }

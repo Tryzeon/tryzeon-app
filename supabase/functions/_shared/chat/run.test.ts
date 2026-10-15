@@ -88,8 +88,10 @@ Deno.test("answers with item refs in the model's order and their rows alongside"
       output: {
         blocks: [
           { type: "text", text: "上身" },
-          { type: "product", id: PRODUCT_ID },
-          { type: "wardrobe", id: WARDROBE_ID },
+          {
+            type: "recommendation",
+            items: [{ type: "product", id: PRODUCT_ID }, { type: "wardrobe", id: WARDROBE_ID }],
+          },
         ],
       },
     }).runner,
@@ -103,8 +105,10 @@ Deno.test("answers with item refs in the model's order and their rows alongside"
     role: "assistant",
     content: [
       { type: "text", text: "上身" },
-      { type: "product", id: PRODUCT_ID },
-      { type: "wardrobe", id: WARDROBE_ID },
+      {
+        type: "recommendation",
+        items: [{ type: "product", id: PRODUCT_ID }, { type: "wardrobe", id: WARDROBE_ID }],
+      },
     ],
   }]);
   assertEquals(result.items, {
@@ -158,8 +162,9 @@ Deno.test("an answer whose rows have all vanished falls back to text", async () 
   const result = await runChatAgent(client, params, {
     quota: fakeQuota().factory,
     loadContext: context,
-    runAgent: fakeAgent({ output: { blocks: [{ type: "product", id: "gone" }] } })
-      .runner,
+    runAgent: fakeAgent({
+      output: { blocks: [{ type: "recommendation", items: [{ type: "product", id: PRODUCT_ID }] }] },
+    }).runner,
     hydrate: hydrator({}),
   });
 
@@ -227,8 +232,9 @@ Deno.test("refunds when hydration fails — a lost row is not a graceful answer"
       runChatAgent(client, params, {
         quota: quota.factory,
         loadContext: context,
-        runAgent: fakeAgent({ output: { blocks: [{ type: "product", id: PRODUCT_ID }] } })
-          .runner,
+        runAgent: fakeAgent({
+          output: { blocks: [{ type: "recommendation", items: [{ type: "product", id: PRODUCT_ID }] }] },
+        }).runner,
         hydrate: () => Promise.reject(new Error("db down")),
       }),
     Error,

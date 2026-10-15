@@ -1,5 +1,5 @@
 import { PRODUCT_SELECT, WARDROBE_SELECT } from "./logic.ts";
-import type { AnswerHydrator, AnswerRef } from "./types.ts";
+import type { AnswerHydrator, AnswerRef, ItemRef } from "./types.ts";
 import type { DbClient } from "../supabase.ts";
 
 /**
@@ -30,10 +30,13 @@ export async function fetchRowsByIds<Row extends { id: string }, Block = Row>(
   return map;
 }
 
-type ItemRef = Extract<AnswerRef, { id: string }>;
-
-export const idsOf = (refs: AnswerRef[], type: ItemRef["type"]): string[] =>
-  refs.filter((r): r is ItemRef => r.type === type).map((r) => r.id);
+export const idsOf = (refs: AnswerRef[], type: ItemRef["type"]): string[] => [
+  ...new Set(
+    refs.flatMap((ref) => ref.type === "recommendation" ? ref.items : [])
+      .filter((item) => item.type === type)
+      .map((item) => item.id),
+  ),
+];
 
 export const supabaseAnswerRows: AnswerHydrator = async (
   client: DbClient,

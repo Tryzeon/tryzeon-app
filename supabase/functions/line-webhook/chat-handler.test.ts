@@ -190,7 +190,10 @@ Deno.test("the turn runs on the stored conversation plus this message", async ()
     { role: "user", content: [{ type: "text", text: "找外套" }] },
     {
       role: "assistant",
-      content: [{ type: "text", text: "為你找到" }, { type: "product", id: PID }],
+      content: [
+        { type: "text", text: "為你找到" },
+        { type: "recommendation", items: [{ type: "product", id: PID }] },
+      ],
     },
   ];
   const conversations = fakeConversations({ prior });
@@ -212,7 +215,7 @@ Deno.test("the whole turn is written back as the core recorded it", async () => 
   const chat = fakeChat({
     blocks: [
       { type: "text", text: "為你找到" },
-      { type: "product", id: PID },
+      { type: "recommendation", items: [{ type: "product", id: PID }] },
     ],
     items: {
       products: {
@@ -257,7 +260,10 @@ Deno.test("the whole turn is written back as the core recorded it", async () => 
     },
     {
       role: "assistant",
-      content: [{ type: "text", text: "為你找到" }, { type: "product", id: PID }],
+      content: [
+        { type: "text", text: "為你找到" },
+        { type: "recommendation", items: [{ type: "product", id: PID }] },
+      ],
     },
   ]);
 });

@@ -1,10 +1,10 @@
 /**
  * LINE has no equivalent of the core's ordered block list — it has messages, and
- * a bubble carousel is one message. So consecutive cards collapse into one
- * carousel and each text block stays its own message, preserving the ordering
- * the model meant for as long as it fits in a single send.
+ * a bubble carousel is one message. So each recommendation row becomes its own
+ * carousel and each run of text one message, preserving the ordering the model
+ * meant for as long as it fits in a single send.
  */
-import type { AnswerItems, ContentBlock } from "../_shared/chat/index.ts";
+import { type AnswerItems, type ContentBlock, recommendedItems } from "../_shared/chat/index.ts";
 import {
   clampProductName,
   type LineProduct,
@@ -31,27 +31,31 @@ type Section =
   | { kind: "text"; lines: string[] }
   | { kind: "cards"; items: LineCard[] };
 
+function rowCards(block: ContentBlock, items: AnswerItems): LineCard[] {
+  const cards: LineCard[] = [];
+  for (const { type, id } of recommendedItems(block)) {
+    if (type === "product") {
+      const item = items.products[id];
+      if (item) cards.push({ kind: "product", item: item as LineProduct });
+    } else {
+      const item = items.wardrobe[id];
+      if (item) cards.push({ kind: "wardrobe", item: item as LineWardrobeItem });
+    }
+  }
+  return cards;
+}
+
 function toSections(blocks: ContentBlock[], items: AnswerItems): Section[] {
   const sections: Section[] = [];
-
-  const pushCard = (card: LineCard) => {
-    const last = sections.at(-1);
-    if (last?.kind === "cards") last.items.push(card);
-    else sections.push({ kind: "cards", items: [card] });
-  };
-
   for (const block of blocks) {
     if (block.type === "text") {
       const text = typeof block.text === "string" ? block.text : "";
       const last = sections.at(-1);
       if (last?.kind === "text") last.lines.push(text);
       else sections.push({ kind: "text", lines: [text] });
-    } else if (block.type === "product") {
-      const item = items.products[String(block.id)];
-      if (item) pushCard({ kind: "product", item: item as LineProduct });
-    } else if (block.type === "wardrobe") {
-      const item = items.wardrobe[String(block.id)];
-      if (item) pushCard({ kind: "wardrobe", item: item as LineWardrobeItem });
+    } else if (block.type === "recommendation") {
+      const cards = rowCards(block, items);
+      if (cards.length > 0) sections.push({ kind: "cards", items: cards });
     }
   }
   return sections;
@@ -195,18 +199,16 @@ const sectionMessages = (section: Section): object[] =>
     : chunk(section.items, MAX_BUBBLES).map(carouselMessage);
 
 /**
- * All the prose, then all the cards — collapsed to sections rather than straight
- * to messages, so `sectionMessages` stays the one route to a message and the
- * chunk size, the altText and the character cap cannot drift.
+ * All the prose, then every row in order — each still its own carousel, so a
+ * fold never mixes one part of an outfit into another's row. Collapsed to
+ * sections rather than straight to messages, so `sectionMessages` stays the one
+ * route to a message and the chunk size, the altText and the character cap
+ * cannot drift.
  */
 function foldSections(sections: Section[]): Section[] {
   const lines = sections.flatMap((s) => s.kind === "text" ? s.lines : []);
-  const items = sections.flatMap((s) => s.kind === "cards" ? s.items : []);
-
-  const folded: Section[] = [];
-  if (lines.length > 0) folded.push({ kind: "text", lines });
-  if (items.length > 0) folded.push({ kind: "cards", items });
-  return folded;
+  const rows = sections.filter((s) => s.kind === "cards");
+  return lines.length > 0 ? [{ kind: "text", lines }, ...rows] : rows;
 }
 
 /** Only when the answer recommended something: the chips narrow a set of products. */
@@ -223,9 +225,9 @@ function answerChips(sections: Section[]): object[] {
 }
 
 /**
- * When the interleaving fits it is kept; when it does not, everything folds into
- * one block of prose followed by the carousels. Only the fold can drop anything,
- * and only once the carousels alone outrun `MAX_LINE_MESSAGES`.
+ * When the interleaving fits it is kept; when it does not, the prose folds into
+ * one message ahead of the rows. Only the fold can drop anything, and only once
+ * the rows alone outrun `MAX_LINE_MESSAGES`.
  *
  * The chips are attached last, after any fold and its slice: a message the slice
  * drops must not take its chip's would-be home down with it.

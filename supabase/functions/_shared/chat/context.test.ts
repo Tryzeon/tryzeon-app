@@ -1,4 +1,4 @@
-import { assertStringIncludes } from "@std/assert";
+import { assertEquals, assertStringIncludes } from "@std/assert";
 import { buildChatContext } from "./context.ts";
 import { STYLING_GUIDE } from "./styling-guide.ts";
 import type { DbClient } from "../supabase.ts";
@@ -25,4 +25,10 @@ const client = {
 Deno.test("buildChatContext grounds the system instruction in the styling guide", async () => {
   const { systemInstruction } = await buildChatContext(client, "u1");
   assertStringIncludes(systemInstruction, STYLING_GUIDE);
+});
+
+Deno.test("buildChatContext asks for rows of recommendations, not part labels", async () => {
+  const { systemInstruction } = await buildChatContext(client, "u1");
+  assertStringIncludes(systemInstruction, "每個 block 的 type 只能是 text 或 recommendation");
+  assertEquals(systemInstruction.includes("部位短標"), false);
 });

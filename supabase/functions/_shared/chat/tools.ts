@@ -113,11 +113,16 @@ const SEARCH_WARDROBE_SCHEMA = z.object({
 export const answerSchema = z.object({
   blocks: z.array(
     z.object({
-      type: z.enum(["text", "product", "wardrobe"]).describe("text、product 或 wardrobe"),
+      type: z.enum(["text", "recommendation"]).describe("text 或 recommendation"),
       text: z.string().optional().describe("type=text 時的文字內容"),
-      id: z.string().optional().describe(
-        "type=product 時為 search_products 回傳的商品 id；type=wardrobe 時為 search_wardrobe 回傳的衣櫃單品 id",
-      ),
+      items: z.array(
+        z.object({
+          type: z.enum(["product", "wardrobe"]).describe("product 或 wardrobe"),
+          id: z.string().describe(
+            "product 為 search_products 回傳的商品 id；wardrobe 為 search_wardrobe 回傳的衣櫃單品 id",
+          ),
+        }),
+      ).optional().describe("type=recommendation 時這一列的單品，依顯示順序"),
     }),
   ),
 });

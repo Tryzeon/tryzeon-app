@@ -1,5 +1,5 @@
 export { runChatAgent, type RunChatAgentDeps } from "./run.ts";
-export { windowHistory } from "./logic.ts";
+export { recommendedItems, windowHistory } from "./logic.ts";
 export { supabaseChatQuota } from "./quota.ts";
 export type {
   AgentAnswer,
@@ -23,6 +23,7 @@ export type {
   ChatResult,
   ChatRole,
   ContentBlock,
+  ItemRef,
 } from "./types.ts";
 
 export { classifyCoreError, CORE_ERROR_CODE, type CoreErrorInfo } from "../errors.ts";

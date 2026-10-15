@@ -73,8 +73,7 @@ Deno.test("hydrates only the referenced product ids", async () => {
   const hydrate = makeLineAnswerRows(BASE);
   const refs: AnswerRef[] = [
     { type: "text", text: "為你找到" },
-    { type: "product", id: "p1" },
-    { type: "product", id: "p2" },
+    { type: "recommendation", items: [{ type: "product", id: "p1" }, { type: "product", id: "p2" }] },
   ];
 
   const rows = await hydrate(admin, "u1", refs);
@@ -88,7 +87,7 @@ Deno.test("hydrates only the referenced product ids", async () => {
 Deno.test("the base url reaches the card", async () => {
   const { admin } = fakeAdmin([row()]);
   const rows = await makeLineAnswerRows(`${BASE}/`)(admin, "u1", [
-    { type: "product", id: "p1" },
+    { type: "recommendation", items: [{ type: "product", id: "p1" }] },
   ]);
 
   assertEquals(
@@ -107,7 +106,7 @@ Deno.test("a wardrobe ref reads the wardrobe, bound to the asking user", async (
   const { admin, tables, eqCalls } = fakeAdmin([], [wardrobeRow]);
 
   const rows = await makeLineAnswerRows(BASE)(admin, "u1", [
-    { type: "wardrobe", id: "w1" },
+    { type: "recommendation", items: [{ type: "wardrobe", id: "w1" }] },
   ]);
 
   assertEquals(tables, ["wardrobe_items"]);
@@ -120,8 +119,19 @@ Deno.test("neither kind of ref queries the other's table", async () => {
 
   await makeLineAnswerRows(BASE)(admin, "u1", [
     { type: "text", text: "再多說一點" },
-    { type: "product", id: "p1" },
+    { type: "recommendation", items: [{ type: "product", id: "p1" }] },
   ]);
 
   assertEquals(tables, ["products"]);
+});
+
+Deno.test("idsOf asks for an id once however many rows name it", async () => {
+  const { admin, queried } = fakeAdmin([row()]);
+
+  await makeLineAnswerRows(BASE)(admin, "u1", [
+    { type: "recommendation", items: [{ type: "product", id: "p1" }] },
+    { type: "recommendation", items: [{ type: "product", id: "p1" }] },
+  ]);
+
+  assertEquals(queried, [["p1"]]);
 });
