@@ -5,7 +5,6 @@ import { LIMITS, type TryonParams } from "./types.ts";
 
 const validParams: TryonParams = {
   userId: "u1",
-  avatar: { base64: "AAAA" },
   garments: [{ images: [{ base64: "BBBB" }] }],
   mode: "image",
 };
@@ -108,91 +107,6 @@ Deno.test("validateTryonParams accepts a garment image exactly at the limit", ()
   );
 });
 
-Deno.test("validateTryonParams rejects an oversized avatar override", () => {
-  assertThrows(
-    () =>
-      validateTryonParams({
-        ...validParams,
-        avatar: { base64: "x".repeat(LIMITS.MAX_BASE64_LENGTH + 1) },
-      }),
-    ValidationError,
-    "too large",
-  );
-});
-
-Deno.test("validateTryonParams keeps an inline avatar override", () => {
-  const job = validateTryonParams({
-    ...validParams,
-    avatar: { base64: "AAAA" },
-  });
-  assertEquals(job.avatar, { base64: "AAAA" });
-});
-
-Deno.test("validateTryonParams treats an omitted avatar as no override", () => {
-  const job = validateTryonParams({ ...validParams, avatar: undefined });
-  assertEquals(job.avatar, undefined);
-});
-
-Deno.test("validateTryonParams treats a legacy path avatar as no override", () => {
-  // Shipped app builds still send the profile path; the job falls back to the
-  // stored photo, which is the same picture, only current.
-  const job = validateTryonParams({
-    ...validParams,
-    avatar: { path: "u1/a.jpg" } as unknown as TryonParams["avatar"],
-  });
-  assertEquals(job.avatar, undefined);
-});
-
-Deno.test("validateTryonParams rejects an unusable avatar base64", () => {
-  assertThrows(
-    () => validateTryonParams({ ...validParams, avatar: { base64: "" } }),
-    ValidationError,
-    "avatar",
-  );
-  assertThrows(
-    () =>
-      validateTryonParams({
-        ...validParams,
-        avatar: { base64: 5 as unknown as string },
-      }),
-    ValidationError,
-    "avatar",
-  );
-});
-
-Deno.test("validateTryonParams treats a null avatar as no override", () => {
-  // Some JSON encoders serialize an absent field as null rather than omitting it.
-  const job = validateTryonParams({
-    ...validParams,
-    avatar: null as unknown as TryonParams["avatar"],
-  });
-  assertEquals(job.avatar, undefined);
-});
-
-Deno.test("validateTryonParams rejects a non-object avatar", () => {
-  assertThrows(
-    () =>
-      validateTryonParams({
-        ...validParams,
-        avatar: "AAAA" as unknown as TryonParams["avatar"],
-      }),
-    ValidationError,
-    "avatar",
-  );
-});
-
-Deno.test("validateTryonParams rejects an empty-object avatar", () => {
-  assertThrows(
-    () =>
-      validateTryonParams({
-        ...validParams,
-        avatar: {} as unknown as TryonParams["avatar"],
-      }),
-    ValidationError,
-    "avatar",
-  );
-});
-
 Deno.test("validateTryonParams strips a garment detail a caller tried to set", () => {
   const job = validateTryonParams({
     ...validParams,
@@ -272,11 +186,9 @@ Deno.test("validateTryonParams rejects an overlong transitionPrompt", () => {
 Deno.test("validateTryonParams returns params with sources narrowed", () => {
   const job = validateTryonParams({
     ...validParams,
-    avatar: { base64: "AAAA" },
     garments: [{ images: [{ base64: "BBBB" }] }],
     scenePrompt: "beach",
   });
-  assertEquals(job.avatar, { base64: "AAAA" });
   assertEquals(job.garments, [{ images: [{ base64: "BBBB" }] }]);
   assertEquals(job.userId, "u1");
   assertEquals(job.mode, "image");
@@ -369,7 +281,6 @@ Deno.test("validateTryonParams accepts an animate job with no garments", () => {
   const out = validateTryonParams(animateParams);
   assertEquals(out.baseImage, { base64: "FINISHED" });
   assertEquals(out.garments, []);
-  assertEquals(out.avatar, undefined);
 });
 
 Deno.test("validateTryonParams rejects baseImage in image mode", () => {
@@ -389,14 +300,6 @@ Deno.test("validateTryonParams rejects baseImage combined with garments", () => 
       }),
     ValidationError,
     "garments",
-  );
-});
-
-Deno.test("validateTryonParams rejects baseImage combined with an avatar", () => {
-  assertThrows(
-    () => validateTryonParams({ ...animateParams, avatar: { base64: "A" } }),
-    ValidationError,
-    "avatar",
   );
 });
 

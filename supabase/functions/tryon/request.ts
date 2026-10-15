@@ -30,7 +30,6 @@ export function parseTryonParams(rawBody: string, userId: string): TryonParams {
 
   return {
     userId,
-    avatar: b.avatar as TryonParams["avatar"],
     garments: (b.garments ?? []) as GarmentInput[],
     // An unknown mode is passed through for the core to reject: mapping it onto
     // "image" would charge the image quota for a job nobody asked for.

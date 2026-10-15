@@ -87,10 +87,7 @@ export async function runTryonJob<M extends TryonMode>(
   // either way, so a missing avatar is still reported before anyone is billed.
   const source: TryonSource = job.baseImage
     ? { kind: "animate", base64: job.baseImage.base64 }
-    : {
-      kind: "generate",
-      avatar: job.avatar ?? await resolveAvatar(client, job.userId),
-    };
+    : { kind: "generate", avatar: await resolveAvatar(client, job.userId) };
 
   const quota = deps.quota(job.userId, job.mode);
   const { allowed, usage } = await quota.charge();

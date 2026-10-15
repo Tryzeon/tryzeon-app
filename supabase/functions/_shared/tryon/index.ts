@@ -32,7 +32,6 @@ export type {
 // Describing a job and reading its result.
 export { LIMITS } from "./types.ts";
 export type {
-  AvatarOverride,
   GarmentCategory,
   BaseImage,
   GarmentInput,

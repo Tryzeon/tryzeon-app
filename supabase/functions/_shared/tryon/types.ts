@@ -44,12 +44,6 @@ export function isGarmentType(value: unknown): value is GarmentType {
 export type ImageSource = { path: string } | { base64: string };
 
 /**
- * The only way a caller can name an avatar: the stored photo is resolved
- * server-side from the user's profile, so a path is not part of the contract.
- */
-export type AvatarOverride = { base64: string };
-
-/**
  * Inline bytes only: a finished result lives in the R2 try-on bucket, which
  * `fetchImageAsBase64` does not route, so `{ path }` would be an option that
  * always fails.
@@ -115,7 +109,6 @@ export type TryonEngine = "standard" | "experimental";
 
 export interface TryonParams {
   userId: string;
-  avatar?: AvatarOverride;
   garments: GarmentInput[];
   mode: TryonMode;
   engine?: TryonEngine;
