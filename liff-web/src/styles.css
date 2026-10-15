@@ -654,20 +654,6 @@ button, label { touch-action: manipulation; }
   color: #fff;
 }
 .home__topright { display: flex; align-items: center; gap: 8px; }
-.home__badge {
-  display: inline-flex;
-  align-items: center;
-  height: 28px;
-  padding: 0 12px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: var(--r-pill);
-  background: rgba(26, 26, 26, 0.42);
-  backdrop-filter: blur(12px);
-  color: #fff;
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  animation: fade 0.2s ease both;
-}
 .home__more {
   width: 40px;
   height: 40px;

@@ -4,7 +4,6 @@ import { toApiError } from "./errors";
 export type Garment = { productId: string } | { images: { base64: string }[] };
 
 export interface TryonOptions {
-  avatarBase64?: string;
   scenePrompt?: string;
   stylingPrompt?: string;
 }
@@ -17,24 +16,21 @@ export interface TryonOptions {
 interface TryonBody extends TryonOptions {
   mode: "image";
   garments: Garment[];
-  avatar?: { base64: string };
 }
 
 /**
  * Calls the same tryon function the app uses, with the JWT attached by
  * supabase-js, so the whole job runs under RLS. An omitted field means
  * "unspecified" — an empty string would be taken by the backend as a real
- * prompt, and without an avatar the core reads the one on the profile, which is
- * the only copy that never expires.
+ * prompt.
  */
 export async function runTryon(
   garment: Garment,
-  { avatarBase64, scenePrompt, stylingPrompt }: TryonOptions = {},
+  { scenePrompt, stylingPrompt }: TryonOptions = {},
 ): Promise<string> {
   const body: TryonBody = {
     mode: "image",
     garments: [garment],
-    ...(avatarBase64 ? { avatar: { base64: avatarBase64 } } : {}),
     ...(scenePrompt ? { scenePrompt } : {}),
     ...(stylingPrompt ? { stylingPrompt } : {}),
   };

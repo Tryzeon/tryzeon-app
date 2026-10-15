@@ -3,11 +3,9 @@ import {
   currentEntry,
   currentImageUrl,
   currentPage,
-  customAvatarUrl,
   galleryReducer,
   initialGalleryState,
   isAvatarPage,
-  isCurrentTheAvatar,
   type GalleryState,
 } from "./gallery";
 
@@ -80,50 +78,6 @@ describe("removing", () => {
   it("leaves the page in view alone when some other entry goes", () => {
     const state = galleryReducer(withEntries("a", "b"), { type: "remove", id: "a" });
     expect(state.currentId).toBe("b");
-  });
-});
-
-describe("custom avatar", () => {
-  it("toggles the page in view on and off", () => {
-    const done = galleryReducer(withEntries("a"), {
-      type: "complete",
-      id: "a",
-      imageUrl: "https://r2/a.jpg",
-    });
-
-    const on = galleryReducer(done, { type: "toggleAvatar" });
-    expect(isCurrentTheAvatar(on)).toBe(true);
-    expect(customAvatarUrl(on)).toBe("https://r2/a.jpg");
-
-    const off = galleryReducer(on, { type: "toggleAvatar" });
-    expect(isCurrentTheAvatar(off)).toBe(false);
-    expect(customAvatarUrl(off)).toBeNull();
-  });
-
-  it("cannot be set from the model page", () => {
-    const state = galleryReducer(initialGalleryState, { type: "toggleAvatar" });
-    expect(state).toBe(initialGalleryState);
-  });
-
-  // Once the avatar image is deleted, the next try-on must fall back to the one
-  // on the profile rather than point at an id that no longer exists.
-  it("is dropped along with the entry it points at", () => {
-    const done = galleryReducer(withEntries("a"), {
-      type: "complete",
-      id: "a",
-      imageUrl: "https://r2/a.jpg",
-    });
-    const on = galleryReducer(done, { type: "toggleAvatar" });
-    const state = galleryReducer(on, { type: "remove", id: "a" });
-    expect(state.customAvatarId).toBeNull();
-    expect(customAvatarUrl(state)).toBeNull();
-  });
-
-  // A page still generating has no image to serve as an avatar, and the menu
-  // does not offer the option — but the state layer still has to be safe.
-  it("yields no url while the entry it points at is still pending", () => {
-    const on = galleryReducer(withEntries("a"), { type: "toggleAvatar" });
-    expect(customAvatarUrl(on)).toBeNull();
   });
 });
 

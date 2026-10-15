@@ -68,28 +68,3 @@ export function blobToBase64(blob: Blob): Promise<string> {
 export async function downscaleToBase64(file: File, maxDim = UPLOAD_MAX_DIM): Promise<string> {
   return blobToBase64(await downscaleToBlob(file, maxDim));
 }
-
-/**
- * Requires the R2 bucket to allow CORS from the LIFF origin — `<img src>` does
- * not need it, fetch does. Without it this throws, and callers should treat that
- * as a retryable failure rather than a broken state.
- *
- * `no-store` is not about getting fresh data, it is about bypassing the unusable
- * copy in the cache: the photo stream's `<img>` already loaded the same URL
- * no-cors, without an Origin header, so R2 correctly answered without
- * `Access-Control-Allow-Origin`, and that header-less response went into the
- * cache. Reading the same URL here makes the browser revalidate against it, R2
- * replies 304, the 304 likewise carries no such header, and the CORS check fails
- * — the image displays fine, yet the fetch is blocked.
- *
- * The other route is putting `crossOrigin` on that `<img>` so it caches a copy
- * with the header from the start. Not taken: that would make "the image renders
- * at all" depend on CORS configuration, and a preview domain missing from
- * AllowedOrigins would break every result image — far worse than one failing
- * feature.
- */
-export async function urlToBase64(url: string): Promise<string> {
-  const resp = await fetch(url, { cache: "no-store" });
-  if (!resp.ok) throw new Error(`failed to fetch image: ${resp.status}`);
-  return blobToBase64(await resp.blob());
-}

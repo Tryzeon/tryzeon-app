@@ -25,7 +25,6 @@ export interface Notice {
 export interface GalleryState {
   entries: GalleryEntry[];
   currentId: string | null;
-  customAvatarId: string | null;
   /**
    * Kept in the gallery rather than as home-page local state: a try-on started
    * from the product page has already moved the user to home by the time it
@@ -37,7 +36,6 @@ export interface GalleryState {
 export const initialGalleryState: GalleryState = {
   entries: [],
   currentId: null,
-  customAvatarId: null,
   notice: null,
 };
 
@@ -47,7 +45,6 @@ export type GalleryAction =
   | { type: "complete"; id: string; imageUrl: string }
   | { type: "remove"; id: string }
   | { type: "fail"; id: string; message: string }
-  | { type: "toggleAvatar" }
   | { type: "notify"; message: string }
   | { type: "dismissNotice" };
 
@@ -73,15 +70,6 @@ export function currentImageUrl(state: GalleryState): string | null {
   return entry?.kind === "finished" ? entry.imageUrl : null;
 }
 
-export function customAvatarUrl(state: GalleryState): string | null {
-  const entry = state.entries.find((e) => e.id === state.customAvatarId);
-  return entry?.kind === "finished" ? entry.imageUrl : null;
-}
-
-export function isCurrentTheAvatar(state: GalleryState): boolean {
-  return state.currentId !== null && state.currentId === state.customAvatarId;
-}
-
 /** Returns null when no such entry exists, so callers can tell "removed" from
  * "was never there". */
 function withoutEntry(state: GalleryState, id: string): GalleryState | null {
@@ -97,12 +85,7 @@ function withoutEntry(state: GalleryState, id: string): GalleryState | null {
     ? null
     : entries[Math.min(index, entries.length - 1)].id;
 
-  return {
-    ...state,
-    entries,
-    currentId,
-    customAvatarId: state.customAvatarId === id ? null : state.customAvatarId,
-  };
+  return { ...state, entries, currentId };
 }
 
 export function galleryReducer(
@@ -156,12 +139,6 @@ export function galleryReducer(
       return next === null
         ? state
         : { ...next, notice: nextNotice(state, action.message) };
-    }
-
-    case "toggleAvatar": {
-      const id = state.currentId;
-      if (id === null) return state;
-      return { ...state, customAvatarId: state.customAvatarId === id ? null : id };
     }
 
     case "notify":

@@ -14,7 +14,6 @@ import {
   currentImageUrl,
   currentPage,
   isAvatarPage,
-  isCurrentTheAvatar,
 } from "../state/gallery";
 import { useAvatar } from "../state/AvatarProvider";
 import { useGallery } from "../state/GalleryProvider";
@@ -143,13 +142,6 @@ export function Home() {
         subtitle: "長按圖片可存到相簿",
         onSelect: () => notify("長按畫面上的照片，就能儲存到相簿。"),
       },
-      {
-        title: isCurrentTheAvatar(state) ? "取消沿用穿搭" : "沿用這套穿搭",
-        subtitle: isCurrentTheAvatar(state)
-          ? "下次試穿不再帶上這套衣服"
-          : "下次試穿在這套衣服上繼續搭配",
-        onSelect: () => dispatch({ type: "toggleAvatar" }),
-      },
       replace,
       style,
       {
@@ -181,9 +173,6 @@ export function Home() {
         <span className="home__mark">Tryzeon</span>
         {!isBlankAvatarPage && (
           <div className="home__topright">
-            {isCurrentTheAvatar(state) && (
-              <span className="home__badge">★ 沿用中</span>
-            )}
             <button
               type="button"
               className="home__more"
