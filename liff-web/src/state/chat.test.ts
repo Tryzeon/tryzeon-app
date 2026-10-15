@@ -43,7 +43,10 @@ describe("chat reducer", () => {
         content: [{ type: "tool_use", id: "t1", name: "search_products", input: {} }],
       },
       { role: "user", content: [{ type: "tool_result", tool_use_id: "t1", content: { items: [] } }] },
-      { role: "assistant", content: [{ type: "text", text: "推薦這件" }, { type: "product", id: "p1" }] },
+      {
+        role: "assistant",
+        content: [{ type: "text", text: "推薦這件" }, { type: "recommendation", items: [{ type: "product", id: "p1" }] }],
+      },
     ];
     let s = sent();
     s = reduce(s, {
@@ -57,7 +60,7 @@ describe("chat reducer", () => {
     ]);
     expect(s.entries.slice(1)).toEqual([
       { kind: "text", text: "推薦這件" },
-      { kind: "product", item: buildCatalogItem(PRODUCT, "https://img") },
+      { kind: "row", cards: [{ kind: "product", item: buildCatalogItem(PRODUCT, "https://img") }] },
     ]);
   });
 
@@ -84,20 +87,53 @@ describe("chat reducer", () => {
     expect(reduce(done, { type: "ended" })).toBe(done);
   });
 
-  it("shows a recommended wardrobe item by its image and sends it back by id", () => {
+  it("shows a recommended wardrobe item by its image and sends the row back by id", () => {
+    const row = { type: "recommendation", items: [{ type: "wardrobe", id: "w1" }] };
     const s = reduce(sent(), {
       type: "event",
       event: {
         type: "done",
-        messages: [answer([{ type: "wardrobe", id: "w1" }])],
+        messages: [answer([row])],
         items: { products: {}, wardrobe: { w1: { id: "w1", image_path: "u1/w1.jpg" } } },
       },
     });
-    expect(lastEntry(s)).toEqual({ kind: "wardrobe", imagePath: "u1/w1.jpg" });
-    expect(s.history[s.history.length - 1]).toEqual({
-      role: "assistant",
-      content: [{ type: "wardrobe", id: "w1" }],
+    expect(lastEntry(s)).toEqual({ kind: "row", cards: [{ kind: "wardrobe", imagePath: "u1/w1.jpg" }] });
+    expect(s.history[s.history.length - 1]).toEqual({ role: "assistant", content: [row] });
+  });
+
+  it("keeps adjacent recommendations as separate rows", () => {
+    const s = reduce(sent(), {
+      type: "event",
+      event: {
+        type: "done",
+        messages: [answer([
+          { type: "recommendation", items: [{ type: "product", id: "p1" }] },
+          { type: "recommendation", items: [{ type: "product", id: "p2" }] },
+        ])],
+        items: { products: { p1: PRODUCT, p2: { ...PRODUCT, id: "p2" } }, wardrobe: {} },
+      },
     });
+    expect(s.entries.slice(1).map((e) => e.kind)).toEqual(["row", "row"]);
+  });
+
+  it("drops items it has no data for, and draws no row left empty", () => {
+    const s = reduce(sent(), {
+      type: "event",
+      event: {
+        type: "done",
+        messages: [answer([
+          { type: "text", text: "這些" },
+          { type: "recommendation", items: [{ type: "product", id: "gone" }, { type: "product", id: "p1" }] },
+          { type: "recommendation", items: [{ type: "wardrobe", id: "w-no-image" }, { type: "hat", id: "h1" }] },
+          { type: "recommendation", items: "p1" },
+        ])],
+        items: { products: { p1: PRODUCT }, wardrobe: { "w-no-image": { id: "w-no-image" } } },
+      },
+    });
+    expect(s.entries.slice(1)).toEqual([
+      { kind: "text", text: "這些" },
+      { kind: "row", cards: [{ kind: "product", item: buildCatalogItem(PRODUCT, "https://img") }] },
+    ]);
   });
 });
 

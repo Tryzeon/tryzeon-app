@@ -3,15 +3,19 @@ import {
   type ChatEvent,
   isRecord,
   userText,
+  type WireBlock,
   type WireItems,
   type WireMessage,
 } from "../api/chat-wire";
 
+export type ChatCard =
+  | { kind: "product"; item: CatalogItem }
+  | { kind: "wardrobe"; imagePath: string };
+
 export type ChatEntry =
   | { kind: "user"; text: string }
   | { kind: "text"; text: string }
-  | { kind: "product"; item: CatalogItem }
-  | { kind: "wardrobe"; imagePath: string }
+  | { kind: "row"; cards: ChatCard[] }
   | { kind: "notice"; text: string };
 
 /**
@@ -63,19 +67,31 @@ function fail(state: ChatState, code: string): ChatState {
 }
 
 export function createChatReducer(toItem: (row: unknown) => CatalogItem) {
+  function rowCards(block: WireBlock, items: WireItems): ChatCard[] {
+    const refs = Array.isArray(block.items) ? block.items.filter(isRecord) : [];
+    const cards: ChatCard[] = [];
+    for (const ref of refs) {
+      const id = String(ref.id);
+      if (ref.type === "product" && isRecord(items.products[id])) {
+        cards.push({ kind: "product", item: toItem(items.products[id]) });
+      } else if (ref.type === "wardrobe" && isRecord(items.wardrobe[id])) {
+        const imagePath = items.wardrobe[id].image_path;
+        if (typeof imagePath === "string" && imagePath.length > 0) {
+          cards.push({ kind: "wardrobe", imagePath });
+        }
+      }
+    }
+    return cards;
+  }
+
   function answerEntries(answer: WireMessage | undefined, items: WireItems): ChatEntry[] {
     const entries: ChatEntry[] = [];
     for (const block of answer?.content ?? []) {
-      const id = String(block.id);
       if (block.type === "text" && typeof block.text === "string" && block.text.trim().length > 0) {
         entries.push({ kind: "text", text: block.text });
-      } else if (block.type === "product" && isRecord(items.products[id])) {
-        entries.push({ kind: "product", item: toItem(items.products[id]) });
-      } else if (block.type === "wardrobe" && isRecord(items.wardrobe[id])) {
-        const imagePath = items.wardrobe[id].image_path;
-        if (typeof imagePath === "string" && imagePath.length > 0) {
-          entries.push({ kind: "wardrobe", imagePath });
-        }
+      } else if (block.type === "recommendation") {
+        const cards = rowCards(block, items);
+        if (cards.length > 0) entries.push({ kind: "row", cards });
       }
     }
     return entries.length > 0 ? entries : [{ kind: "notice", text: EMPTY_ANSWER_TEXT }];

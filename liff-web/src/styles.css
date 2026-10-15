@@ -951,7 +951,21 @@ button, label { touch-action: manipulation; }
   font-size: 13px;
 }
 
-.chat__product { align-self: flex-start; width: 56%; max-width: 220px; }
+/* Bleeds past the log's 16px padding so a row scrolls edge to edge, like the
+   app's card rail. */
+.chat__row {
+  display: flex;
+  gap: 10px;
+  margin: 0 -16px;
+  padding: 0 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 0 16px;
+  scrollbar-width: none;
+}
+.chat__row::-webkit-scrollbar { display: none; }
+.chat__rowcard { flex: none; width: 150px; scroll-snap-align: start; }
+.chat__rowcard > .card { height: 100%; }
 
 .chat__step {
   align-self: flex-start;

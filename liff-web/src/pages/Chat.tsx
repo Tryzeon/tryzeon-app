@@ -53,16 +53,16 @@ export function Chat() {
               return <p key={i} className="chat__bubble chat__bubble--bot">{entry.text}</p>;
             case "notice":
               return <p key={i} className="chat__notice">{entry.text}</p>;
-            case "product":
+            case "row":
               return (
-                <div key={i} className="chat__product">
-                  <ProductCard item={entry.item} onOpen={() => openProduct(entry.item)} />
-                </div>
-              );
-            case "wardrobe":
-              return (
-                <div key={i} className="chat__product">
-                  <WardrobeCard imagePath={entry.imagePath} />
+                <div key={i} className="chat__row">
+                  {entry.cards.map((card, j) => (
+                    <div key={j} className="chat__rowcard">
+                      {card.kind === "product"
+                        ? <ProductCard item={card.item} onOpen={() => openProduct(card.item)} />
+                        : <WardrobeCard imagePath={card.imagePath} />}
+                    </div>
+                  ))}
                 </div>
               );
           }
