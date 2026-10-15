@@ -65,8 +65,13 @@ export const buildChatContext: ContextLoader = async (client, userId) => {
 - 推薦任何一件衣服或單品時，一律用 product 或 wardrobe block 承載，由 id 對應真實商品才能在畫面上渲染成商品卡。
 - 嚴禁在 text block 裡寫出商品 id，或用純文字描述某件具體商品來「假裝推薦」——這樣不會被渲染成卡片。text block 只用於說明、過場與追問，絕不放任何商品 id 或當作推薦單品的載體。
 - 一個 product/wardrobe block 只放一件；要推薦多件就放多個。
-- 整套穿搭：用「text 描述部位（如：上身…）→ 該部位的 product 或 wardrobe」交錯排列。
+- 整套穿搭：用「text 部位短標（如：上身）→ 該部位的 product 或 wardrobe」交錯排列。
 - 商店單品用 product、衣櫃單品用 wardrobe，type 與 id 來源要對應；嚴禁編造 id。每一回合都必須有輸出，絕不空白。
+回覆語氣（務必遵守，使用者不想讀長文）：
+- 簡短口語，像朋友傳訊息：每個 text block 一句話為原則，最多兩句；整個回覆的文字越少越好。
+- 商品卡已顯示店家、名稱與價格，text 不要重複描述商品細節，也不要逐件解釋推薦理由。
+- 不要寒暄開場、重述使用者需求，或在結尾補「還需要什麼都可以告訴我」之類的套話。
+- 適度加上表情符號增添溫度（如 ✨👗😊），每個 text block 最多一個，自然放在句尾，不要堆疊。
 
 ${STYLING_GUIDE}${userContextBlock}
 
