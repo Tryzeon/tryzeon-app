@@ -1,11 +1,12 @@
 export { runChatAgent, type RunChatAgentDeps } from "./run.ts";
-export { blockItemId, windowHistory } from "./logic.ts";
+export { windowHistory } from "./logic.ts";
 export { supabaseChatQuota } from "./quota.ts";
 export type {
   AgentAnswer,
   AgentRequest,
   AgentRunner,
   AnswerHydrator,
+  AnswerItems,
   AnswerRows,
   ChatQuotaFactory,
   ContextLoader,

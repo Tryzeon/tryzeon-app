@@ -1,5 +1,5 @@
-import { blockItemId, windowHistory } from "../_shared/chat/index.ts";
-import type { ChatMessage, ContentBlock } from "../_shared/chat/index.ts";
+import { windowHistory } from "../_shared/chat/index.ts";
+import type { ChatMessage } from "../_shared/chat/index.ts";
 import { clampProductName, type ProductInfo } from "./product-card.ts";
 import { tagLine, type WardrobeItemInfo } from "./wardrobe-card.ts";
 import { redis } from "../_shared/redis.ts";
@@ -45,26 +45,6 @@ export function redisConversations(client: RedisLike = redis()): ConversationSto
       }
     },
   };
-}
-
-/**
- * A recommended item keeps its id and loses its row: the full data was already
- * replayed to the model in the paired `tool_result`, and `toModelMessages` reads
- * `b.id ?? b.item?.id`.
- */
-function dehydrateBlock(block: ContentBlock): ContentBlock | null {
-  if (block?.type !== "product" && block?.type !== "wardrobe") return block;
-  const id = blockItemId(block);
-  return id ? { type: block.type, id } : null;
-}
-
-export function dehydrateMessages(messages: ChatMessage[]): ChatMessage[] {
-  return messages.map((message) => ({
-    role: message.role,
-    content: message.content
-      .map(dehydrateBlock)
-      .filter((block): block is ContentBlock => block !== null),
-  }));
 }
 
 export function tryonNote(product: ProductInfo): ChatMessage {

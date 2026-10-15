@@ -43,7 +43,11 @@ function fakeChat(blocks: ContentBlock[]) {
   const seen: { params: ChatParams; deps: RunChatAgentDeps }[] = [];
   const runChat: typeof runChatAgent = (_client, params, deps) => {
     seen.push({ params, deps });
-    return Promise.resolve({ blocks, messages: [], usage: null });
+    return Promise.resolve({
+      messages: [{ role: "assistant", content: blocks }],
+      items: { products: {}, wardrobe: {} },
+      usage: null,
+    });
   };
   return { runChat, seen };
 }

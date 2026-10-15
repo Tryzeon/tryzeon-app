@@ -8,7 +8,7 @@ import {
 } from "../_shared/chat/index.ts";
 import { makeLineAnswerRows } from "./chat-hydrate.ts";
 import { renderAnswer } from "./chat-render.ts";
-import { type ConversationStore, dehydrateMessages } from "./conversation.ts";
+import type { ConversationStore } from "./conversation.ts";
 import { chatErrorMessage, type ChatErrorKind } from "./messages.ts";
 import { LineApi } from "./line-api.ts";
 import type { DbClient } from "../_shared/supabase.ts";
@@ -94,7 +94,7 @@ export async function handleTextMessage(
     // A LINE event carries no Supabase session, so there is no user-scoped
     // client to bound these reads; every query the core runs here is
     // server-composed and scoped by `userId`.
-    const { blocks, messages } = await runChat(
+    const { messages, items } = await runChat(
       deps.admin,
       { userId, messages: transcript },
       {
@@ -103,11 +103,11 @@ export async function handleTextMessage(
       },
     );
 
-    await deliver(deps, event, renderAnswer(blocks));
+    await deliver(deps, event, renderAnswer(messages[messages.length - 1].content, items));
 
     await deps.conversations.save(
       event.sourceUserId,
-      dehydrateMessages([...transcript, ...messages]),
+      [...transcript, ...messages],
     );
   } catch (err) {
     const kind = chatFailureKind(err);

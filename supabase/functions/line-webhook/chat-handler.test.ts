@@ -1,6 +1,7 @@
 import { assertEquals, assertStringIncludes } from "@std/assert";
 import { type ChatHandlerDeps, handleTextMessage } from "./chat-handler.ts";
 import {
+  type AnswerItems,
   type ChatParams,
   type ContentBlock,
   LIMITS,
@@ -47,15 +48,17 @@ function fakeLine(opts: { loadingFails?: boolean; replyFails?: boolean } = {}) {
  * here rather than leaving the assertions below silently reading `undefined`.
  */
 function fakeChat(
-  outcome: { blocks: ContentBlock[]; messages?: ChatMessage[] } | { throws: unknown },
+  outcome:
+    | { blocks: ContentBlock[]; rounds?: ChatMessage[]; items?: AnswerItems }
+    | { throws: unknown },
 ) {
   const seen: { params: ChatParams; deps: RunChatAgentDeps }[] = [];
   const runChat: typeof runChatAgent = (_client, params, deps) => {
     seen.push({ params, deps });
     if ("throws" in outcome) return Promise.reject(outcome.throws);
     return Promise.resolve({
-      blocks: outcome.blocks,
-      messages: outcome.messages ?? [],
+      messages: [...outcome.rounds ?? [], { role: "assistant", content: outcome.blocks }],
+      items: outcome.items ?? { products: {}, wardrobe: {} },
       usage: null,
     });
   };
@@ -204,18 +207,27 @@ Deno.test("the turn runs on the stored conversation plus this message", async ()
   ]);
 });
 
-Deno.test("the whole turn is written back, with recommended items reduced to ids", async () => {
+Deno.test("the whole turn is written back as the core recorded it", async () => {
   const conversations = fakeConversations();
-  const answer: ChatMessage = {
-    role: "assistant",
-    content: [
-      { type: "text", text: "為你找到" },
-      { type: "product", item: { id: PID, name: "短版牛仔外套" } },
-    ],
-  };
   const chat = fakeChat({
-    blocks: answer.content,
-    messages: [
+    blocks: [
+      { type: "text", text: "為你找到" },
+      { type: "product", id: PID },
+    ],
+    items: {
+      products: {
+        [PID]: {
+          id: PID,
+          name: "短版牛仔外套",
+          price: 1280,
+          imageUrl: "https://img.example/p.jpg",
+          storeName: "某店",
+          purchaseUrl: null,
+        },
+      },
+      wardrobe: {},
+    },
+    rounds: [
       {
         role: "assistant",
         content: [{ type: "tool_use", id: "t1", name: "search_products", input: {} }],
@@ -224,7 +236,6 @@ Deno.test("the whole turn is written back, with recommended items reduced to ids
         role: "user",
         content: [{ type: "tool_result", tool_use_id: "t1", content: { items: [] } }],
       },
-      answer,
     ],
   });
 

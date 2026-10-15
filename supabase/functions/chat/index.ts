@@ -33,18 +33,14 @@ Deno.serve(async (req) => {
       async start(controller) {
         const send = (ev: Record<string, unknown>) => controller.enqueue(encodeEvent(ev));
         try {
-          // `result.messages` is not sent: this client rebuilds the turn from
-          // the events it already receives.
-          const { blocks, usage } = await runChatAgent(
+          // The client stores `messages` as sent rather than rebuilding the
+          // turn from the tool events, which only drive its progress display.
+          const { messages, items, usage } = await runChatAgent(
             userClient!,
             { ...params, onEvent: send },
             { quota },
           );
-          send({
-            type: "done",
-            message: { role: "assistant", content: blocks },
-            usage,
-          });
+          send({ type: "done", messages, items, usage });
         } catch (err) {
           send(errorEvent(err));
         } finally {

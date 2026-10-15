@@ -4,7 +4,7 @@
  * carousel and each text block stays its own message, preserving the ordering
  * the model meant for as long as it fits in a single send.
  */
-import type { ContentBlock } from "../_shared/chat/index.ts";
+import type { AnswerItems, ContentBlock } from "../_shared/chat/index.ts";
 import {
   clampProductName,
   type LineProduct,
@@ -31,7 +31,7 @@ type Section =
   | { kind: "text"; lines: string[] }
   | { kind: "cards"; items: LineCard[] };
 
-function toSections(blocks: ContentBlock[]): Section[] {
+function toSections(blocks: ContentBlock[], items: AnswerItems): Section[] {
   const sections: Section[] = [];
 
   const pushCard = (card: LineCard) => {
@@ -47,9 +47,11 @@ function toSections(blocks: ContentBlock[]): Section[] {
       if (last?.kind === "text") last.lines.push(text);
       else sections.push({ kind: "text", lines: [text] });
     } else if (block.type === "product") {
-      pushCard({ kind: "product", item: block.item as LineProduct });
+      const item = items.products[String(block.id)];
+      if (item) pushCard({ kind: "product", item: item as LineProduct });
     } else if (block.type === "wardrobe") {
-      pushCard({ kind: "wardrobe", item: block.item as LineWardrobeItem });
+      const item = items.wardrobe[String(block.id)];
+      if (item) pushCard({ kind: "wardrobe", item: item as LineWardrobeItem });
     }
   }
   return sections;
@@ -208,8 +210,11 @@ function foldSections(sections: Section[]): Section[] {
 }
 
 /** Only when the answer recommended something: the chips narrow a set of products. */
-function answerChips(blocks: ContentBlock[]): object[] {
-  if (!blocks.some((b) => b.type === "product")) return [];
+function answerChips(sections: Section[]): object[] {
+  const recommended = sections.some((s) =>
+    s.kind === "cards" && s.items.some((card) => card.kind === "product")
+  );
+  if (!recommended) return [];
   return [
     messageChip("便宜一點的", "有便宜一點的嗎"),
     messageChip("換個風格", "換個風格看看"),
@@ -225,8 +230,8 @@ function answerChips(blocks: ContentBlock[]): object[] {
  * The chips are attached last, after any fold and its slice: a message the slice
  * drops must not take its chip's would-be home down with it.
  */
-export function renderAnswer(blocks: ContentBlock[]): object[] {
-  const sections = toSections(blocks);
+export function renderAnswer(blocks: ContentBlock[], items: AnswerItems): object[] {
+  const sections = toSections(blocks, items);
 
   // Unreachable today (`runChatAgent` guarantees at least one block), but LINE
   // rejects an empty send outright, and a 400 is a worse way to learn that a
@@ -238,5 +243,5 @@ export function renderAnswer(blocks: ContentBlock[]): object[] {
     ? detailed
     : foldSections(sections).flatMap(sectionMessages).slice(0, MAX_LINE_MESSAGES);
 
-  return dressLast(messages, answerChips(blocks));
+  return dressLast(messages, answerChips(sections));
 }

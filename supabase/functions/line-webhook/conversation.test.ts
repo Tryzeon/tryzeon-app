@@ -1,7 +1,6 @@
 import { assertEquals } from "@std/assert";
 import { LIMITS } from "../_shared/chat/index.ts";
 import {
-  dehydrateMessages,
   photoNote,
   redisConversations,
   type RedisLike,
@@ -21,73 +20,6 @@ const someProduct = (over: Partial<LineProduct> = {}): LineProduct => ({
   storeName: "某店",
   purchaseUrl: null,
   ...over,
-});
-
-Deno.test("a recommended item is stored as a reference, not as its row", () => {
-  const messages: ChatMessage[] = [{
-    role: "assistant",
-    content: [
-      { type: "text", text: "為你找到" },
-      { type: "product", item: someProduct() },
-      { type: "wardrobe", item: { id: "w1", name: "白襯衫" } },
-    ],
-  }];
-
-  assertEquals(dehydrateMessages(messages), [{
-    role: "assistant",
-    content: [
-      { type: "text", text: "為你找到" },
-      { type: "product", id: PID },
-      { type: "wardrobe", id: "w1" },
-    ],
-  }]);
-});
-
-Deno.test("tool rounds are stored verbatim", () => {
-  const messages: ChatMessage[] = [
-    {
-      role: "assistant",
-      content: [{
-        type: "tool_use",
-        id: "t1",
-        name: "search_products",
-        input: { query: "外套" },
-      }],
-    },
-    {
-      role: "user",
-      content: [{
-        type: "tool_result",
-        tool_use_id: "t1",
-        content: { items: [{ id: PID, name: "短版牛仔外套" }] },
-      }],
-    },
-  ];
-
-  assertEquals(dehydrateMessages(messages), messages);
-});
-
-Deno.test("dehydrating what was already stored changes nothing", () => {
-  // Every turn re-dehydrates the whole transcript, prior turns included, so
-  // this has to be a fixed point or storage would degrade on each pass.
-  const stored: ChatMessage[] = [{
-    role: "assistant",
-    content: [{ type: "text", text: "好" }, { type: "product", id: PID }],
-  }];
-
-  assertEquals(dehydrateMessages(stored), stored);
-});
-
-Deno.test("an item block naming nothing is dropped", () => {
-  const messages: ChatMessage[] = [{
-    role: "assistant",
-    content: [{ type: "text", text: "好" }, { type: "product", item: {} }],
-  }];
-
-  assertEquals(dehydrateMessages(messages), [{
-    role: "assistant",
-    content: [{ type: "text", text: "好" }],
-  }]);
 });
 
 Deno.test("a try-on is recorded as a user turn naming the product", () => {

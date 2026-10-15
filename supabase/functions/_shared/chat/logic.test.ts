@@ -1,6 +1,6 @@
 import { assertEquals, assertStringIncludes } from "@std/assert";
 import {
-  assembleAnswerBlocks,
+  assembleAnswer,
   mapSearchProductsArgs,
   parseAnswerRefs,
   resolveCategoryFilter,
@@ -73,29 +73,34 @@ Deno.test("mapSearchProductsArgs takes the enum-backed filters from the validate
   assertEquals(p.p_channels, undefined);
 });
 
-Deno.test("assembleAnswerBlocks keeps the model's order across both kinds", () => {
-  const blocks = assembleAnswerBlocks(
+Deno.test("assembleAnswer keeps the model's order and ships each item once, keyed by id", () => {
+  const answer = assembleAnswer(
     [
       { type: "text", text: "上身" },
       { type: "product", id: "p1" },
       { type: "text", text: "下身" },
       { type: "wardrobe", id: "w1" },
+      { type: "product", id: "p1" },
     ],
     {
       products: new Map([["p1", { id: "p1", name: "襯衫" }]]),
       wardrobe: new Map([["w1", { id: "w1" }]]),
     },
   );
-  assertEquals(blocks, [
-    { type: "text", text: "上身" },
-    { type: "product", item: { id: "p1", name: "襯衫" } },
-    { type: "text", text: "下身" },
-    { type: "wardrobe", item: { id: "w1" } },
-  ]);
+  assertEquals(answer, {
+    content: [
+      { type: "text", text: "上身" },
+      { type: "product", id: "p1" },
+      { type: "text", text: "下身" },
+      { type: "wardrobe", id: "w1" },
+      { type: "product", id: "p1" },
+    ],
+    items: { products: { p1: { id: "p1", name: "襯衫" } }, wardrobe: { w1: { id: "w1" } } },
+  });
 });
 
-Deno.test("assembleAnswerBlocks drops a ref whose row is gone, keeping the rest", () => {
-  const blocks = assembleAnswerBlocks(
+Deno.test("assembleAnswer drops a ref whose row is gone, keeping the rest", () => {
+  const answer = assembleAnswer(
     [
       { type: "product", id: "deleted" },
       { type: "text", text: "還有這件" },
@@ -103,10 +108,10 @@ Deno.test("assembleAnswerBlocks drops a ref whose row is gone, keeping the rest"
     ],
     { products: new Map([["p1", { id: "p1" }]]), wardrobe: new Map() },
   );
-  assertEquals(blocks, [
-    { type: "text", text: "還有這件" },
-    { type: "product", item: { id: "p1" } },
-  ]);
+  assertEquals(answer, {
+    content: [{ type: "text", text: "還有這件" }, { type: "product", id: "p1" }],
+    items: { products: { p1: { id: "p1" } }, wardrobe: {} },
+  });
 });
 
 Deno.test("parseAnswerRefs keeps ordered text + labelled product/wardrobe ids", () => {

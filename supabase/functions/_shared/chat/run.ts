@@ -1,22 +1,24 @@
 import { QuotaExceededError } from "../quota.ts";
 import { buildChatContext } from "./context.ts";
 import { supabaseAnswerRows } from "./hydrate.ts";
-import { assembleAnswerBlocks, parseAnswerRefs } from "./logic.ts";
+import { assembleAnswer, parseAnswerRefs } from "./logic.ts";
 import { validateChatParams } from "./validate.ts";
 import { runVertexAgent } from "./vertex.ts";
 import type {
   AgentRunner,
   AnswerHydrator,
+  AnswerRows,
   ChatMessage,
   ChatParams,
   ChatQuotaFactory,
   ChatResult,
-  ContentBlock,
   ContextLoader,
 } from "./types.ts";
 import type { DbClient } from "../supabase.ts";
 
 const FALLBACK_TEXT = "抱歉，我這次沒能幫你找到，可以再多說一點你的需求嗎？";
+
+const NO_ROWS: AnswerRows = { products: new Map(), wardrobe: new Map() };
 
 export interface RunChatAgentDeps {
   quota: ChatQuotaFactory;
@@ -71,17 +73,15 @@ export async function runChatAgent(
       onEvent: turn.onEvent,
     });
 
-    let blocks: ContentBlock[] = [];
-    if (output) {
-      const refs = parseAnswerRefs(output);
-      blocks = assembleAnswerBlocks(refs, await hydrate(client, turn.userId, refs));
-    }
-    if (blocks.length === 0) {
-      blocks = [{ type: "text", text: FALLBACK_TEXT }];
-    }
+    const refs = output ? parseAnswerRefs(output) : [];
+    const rows = refs.length > 0 ? await hydrate(client, turn.userId, refs) : NO_ROWS;
+    const { content, items } = assembleAnswer(refs, rows);
+    const answer: ChatMessage = {
+      role: "assistant",
+      content: content.length > 0 ? content : [{ type: "text", text: FALLBACK_TEXT }],
+    };
 
-    const answer: ChatMessage = { role: "assistant", content: blocks };
-    return { blocks, messages: [...rounds, answer], usage };
+    return { messages: [...rounds, answer], items, usage };
   } catch (err) {
     // Refund is best-effort: a failure here must not replace the error that
     // actually caused the turn to fail, or callers would report the wrong thing.

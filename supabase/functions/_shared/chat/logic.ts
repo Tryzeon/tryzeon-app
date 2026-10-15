@@ -14,6 +14,7 @@ import { LIMITS } from "./types.ts";
 import type { JSONValue, ModelMessage, TextPart, ToolCallPart } from "ai";
 import type { Database } from "../database.types.ts";
 import type {
+  AnswerItems,
   AnswerRef,
   AnswerRows,
   ChatMessage,
@@ -199,11 +200,6 @@ export function toSearchResultItem(row: Record<string, unknown>): Record<string,
   });
 }
 
-// A recommended item is stored either hydrated (`item`) or dehydrated (`id`),
-// depending on whether it survived a round trip through conversation storage.
-export const blockItemId = (block: ContentBlock): string | null =>
-  nonEmptyStr(block.id) ?? nonEmptyStr(asRecord(block.item)?.id);
-
 const isTurnStart = (m: ChatMessage): boolean =>
   m.role === "user" && !m.content.some((b) => b?.type === "tool_result");
 
@@ -223,8 +219,8 @@ export function windowHistory(
 // The whole history is replayed verbatim and uncompressed: assistant tool_use →
 // a `tool-call` part, the paired user tool_result → a `tool` message with a
 // `tool-result` part (its tool name resolved from the tool_use id), text passes
-// through. Recommended product blocks collapse to a short id reference (their
-// full data is already replayed in the tool_result, so nothing is lost).
+// through. A recommended item is named by its id alone: its full data is
+// already replayed in the tool_result.
 export function toModelMessages(messages: ChatMessage[]): ModelMessage[] {
   const nameOf = new Map<string, string>();
   for (const m of messages ?? []) {
@@ -266,8 +262,8 @@ export function toModelMessages(messages: ChatMessage[]): ModelMessage[] {
     for (const b of blocks) {
       const t = b?.type === "text" ? nonEmptyStr(b.text) : null;
       if (t) lines.push(t);
-      else if (b?.type === "product") lines.push(`（推薦商品 id:${blockItemId(b) ?? ""}）`);
-      else if (b?.type === "wardrobe") lines.push(`（推薦衣櫃單品 id:${blockItemId(b) ?? ""}）`);
+      else if (b?.type === "product") lines.push(`（推薦商品 id:${nonEmptyStr(b.id) ?? ""}）`);
+      else if (b?.type === "wardrobe") lines.push(`（推薦衣櫃單品 id:${nonEmptyStr(b.id) ?? ""}）`);
     }
     const text = lines.join("\n").trim();
 
@@ -318,21 +314,26 @@ export function parseAnswerRefs(args: Record<string, unknown>): AnswerRef[] {
   return refs;
 }
 
-export function assembleAnswerBlocks(
+/**
+ * The answer as it is stored — item refs by id, in the model's order — and the
+ * rows those ids render as. A ref whose row is gone is dropped from both, so
+ * the model is never told it recommended something the user did not see.
+ */
+export function assembleAnswer(
   refs: AnswerRef[],
   rows: AnswerRows,
-): ContentBlock[] {
-  const blocks: ContentBlock[] = [];
+): { content: ContentBlock[]; items: AnswerItems } {
+  const content: ContentBlock[] = [];
+  const items: AnswerItems = { products: {}, wardrobe: {} };
   for (const ref of refs) {
     if (ref.type === "text") {
-      blocks.push({ type: "text", text: ref.text });
-    } else if (ref.type === "product") {
-      const item = rows.products.get(ref.id);
-      if (item) blocks.push({ type: "product", item });
-    } else {
-      const item = rows.wardrobe.get(ref.id);
-      if (item) blocks.push({ type: "wardrobe", item });
+      content.push({ type: "text", text: ref.text });
+      continue;
     }
+    const row = (ref.type === "product" ? rows.products : rows.wardrobe).get(ref.id);
+    if (row === undefined) continue;
+    content.push({ type: ref.type, id: ref.id });
+    (ref.type === "product" ? items.products : items.wardrobe)[ref.id] = row;
   }
-  return blocks;
+  return { content, items };
 }

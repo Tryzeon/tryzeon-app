@@ -79,7 +79,7 @@ const hydrator = (
     wardrobe: new Map(Object.entries(wardrobe)),
   });
 
-Deno.test("assembles blocks in the model's order and appends the answer turn", async () => {
+Deno.test("answers with item refs in the model's order and their rows alongside", async () => {
   const quota = fakeQuota();
   const result = await runChatAgent(client, params, {
     quota: quota.factory,
@@ -99,11 +99,18 @@ Deno.test("assembles blocks in the model's order and appends the answer turn", a
     ),
   });
 
-  assertEquals(result.blocks, [
-    { type: "text", text: "上身" },
-    { type: "product", item: { id: PRODUCT_ID, name: "襯衫" } },
-    { type: "wardrobe", item: { id: WARDROBE_ID } },
-  ]);
+  assertEquals(result.messages, [{
+    role: "assistant",
+    content: [
+      { type: "text", text: "上身" },
+      { type: "product", id: PRODUCT_ID },
+      { type: "wardrobe", id: WARDROBE_ID },
+    ],
+  }]);
+  assertEquals(result.items, {
+    products: { [PRODUCT_ID]: { id: PRODUCT_ID, name: "襯衫" } },
+    wardrobe: { [WARDROBE_ID]: { id: WARDROBE_ID } },
+  });
   assertEquals(result.usage, USAGE);
   assertEquals(quota.calls, ["charge"]);
 });
@@ -131,7 +138,6 @@ Deno.test("returns the tool rounds followed by the answer, ready to append", asy
     ...rounds,
     { role: "assistant", content: [{ type: "text", text: "好" }] },
   ]);
-  assertEquals(result.messages.at(-1)!.content, result.blocks);
 });
 
 Deno.test("an unusable model output falls back to text and keeps quota spent", async () => {
@@ -143,8 +149,8 @@ Deno.test("an unusable model output falls back to text and keeps quota spent", a
     hydrate: hydrator({}),
   });
 
-  assertEquals(result.blocks.length, 1);
-  assertEquals(result.blocks[0].type, "text");
+  assertEquals(result.messages.length, 1);
+  assertEquals(result.messages[0].content.map((b) => b.type), ["text"]);
   assertEquals(quota.calls, ["charge"]);
 });
 
@@ -157,8 +163,8 @@ Deno.test("an answer whose rows have all vanished falls back to text", async () 
     hydrate: hydrator({}),
   });
 
-  assertEquals(result.blocks.length, 1);
-  assertEquals(result.blocks[0].type, "text");
+  assertEquals(result.messages[0].content.map((b) => b.type), ["text"]);
+  assertEquals(result.items, { products: {}, wardrobe: {} });
 });
 
 Deno.test("passes the loaded grounding through to the agent", async () => {

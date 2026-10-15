@@ -31,12 +31,14 @@ export interface ChatParams {
 }
 
 export interface ChatResult {
-  blocks: ContentBlock[];
   /**
-   * Every turn this run added to the conversation, in order: one message per
-   * tool call, one per tool result, then the assistant's answer.
+   * Every message this run added to the conversation, in order, stored exactly
+   * as given: one message per tool call, one per tool result, then the answer.
+   * The answer names recommended items by id only.
    */
   messages: ChatMessage[];
+  /** What the answer's item ids render as; never stored, never sent back. */
+  items: AnswerItems;
   usage: DailyUsage | null;
 }
 
@@ -82,11 +84,17 @@ export type AgentRunner = (req: AgentRequest) => Promise<AgentAnswer>;
 /**
  * Read-only and item-typed as `unknown`: an adapter hydrates whatever shape its
  * renderer needs (a db row for the app, a LINE card model for the webhook), and
- * the assembler only ever hands the item straight to a block.
+ * the assembler only ever passes the item through to `AnswerItems`.
  */
 export interface AnswerRows {
   products: ReadonlyMap<string, unknown>;
   wardrobe: ReadonlyMap<string, unknown>;
+}
+
+/** Keyed by id, as plain objects so the result goes on the wire unconverted. */
+export interface AnswerItems {
+  products: Record<string, unknown>;
+  wardrobe: Record<string, unknown>;
 }
 
 export type AnswerHydrator = (
