@@ -47,13 +47,13 @@ class Tryon {
 
     switch (params.subject) {
       case TryonSubjectAnimated(:final baseImageUrl):
-        final image = await _loadRemoteBase64(baseImageUrl);
-        if (image.isFailure) return Err(image.getError()!);
+        final bytes = await _mediaRepository.loadImageBytes(baseImageUrl);
+        if (bytes.isFailure) return Err(bytes.getError()!);
 
         return Ok(
           TryonRequest.animate(
             requestId: params.requestId,
-            baseImageBase64: image.get()!,
+            baseImageBase64: base64Encode(bytes.get()!),
             transitionPrompt: preferences.transitionPrompt,
             engine: preferences.engine,
           ),
@@ -98,11 +98,5 @@ class Tryon {
       }
     }
     return Ok(garments);
-  }
-
-  Future<Result<String, Failure>> _loadRemoteBase64(final String url) async {
-    final bytes = await _mediaRepository.loadImageBytes(url);
-    if (bytes.isFailure) return Err(bytes.getError()!);
-    return Ok(base64Encode(bytes.get()!));
   }
 }

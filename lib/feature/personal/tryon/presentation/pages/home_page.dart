@@ -209,21 +209,14 @@ class HomePage extends HookConsumerWidget {
               ),
             ),
 
-            // 3. Top Right — Avatar Badge + More Options (parallel). Always up:
-            // the sheet adapts its actions to the page in view.
-            Positioned(
-              top: MediaQuery.paddingOf(context).top + AppSpacing.xs,
-              right: AppSpacing.md,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  if (!isBlankAvatarPage) ...[
-                    TryonGalleryActions(onReplaceAvatar: uploadAvatar),
-                  ],
-                ],
+            // 3. Top Right — More Options. The sheet adapts its actions to the
+            // page in view.
+            if (!isBlankAvatarPage)
+              Positioned(
+                top: MediaQuery.paddingOf(context).top + AppSpacing.xs,
+                right: AppSpacing.md,
+                child: TryonGalleryActions(onReplaceAvatar: uploadAvatar),
               ),
-            ),
 
             if (galleryState.currentEntry case final entry?)
               Positioned(
