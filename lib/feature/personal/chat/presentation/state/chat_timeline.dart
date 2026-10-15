@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/feature/personal/chat/domain/entities/chat_items.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/state/tool_step_label.dart';
@@ -62,15 +63,6 @@ class _OpenTurn {
   ChatAssistantEntry toEntry(final ChatTurnStatus status) =>
       ChatAssistantEntry(steps: steps, segments: segments, status: status);
 
-  void addCard(final ChatRecommendation card) {
-    final last = segments.isEmpty ? null : segments.last;
-    if (last is ChatCardSegment) {
-      segments[segments.length - 1] = ChatCardSegment([...last.cards, card]);
-    } else {
-      segments.add(ChatCardSegment([card]));
-    }
-  }
-
   void attachResult(final ToolResultBlock block) {
     final index = steps.indexWhere(
       (final step) => step.use.id == block.toolUseId,
@@ -79,6 +71,20 @@ class _OpenTurn {
     steps[index] = steps[index].copyWith(result: block);
   }
 }
+
+ChatRecommendation? _resolve(
+  final RecommendedItem item,
+  final ChatItems items,
+) => switch (item) {
+  RecommendedProduct(:final id) => switch (items.products[id]) {
+    final product? => ChatRecommendation.product(product),
+    null => null,
+  },
+  RecommendedWardrobeItem(:final id) => switch (items.wardrobe[id]) {
+    final wardrobeItem? => ChatRecommendation.wardrobe(wardrobeItem),
+    null => null,
+  },
+};
 
 List<ChatTimelineEntry> buildChatTimeline(final ChatState state) {
   final entries = <ChatTimelineEntry>[
@@ -107,17 +113,13 @@ List<ChatTimelineEntry> buildChatTimeline(final ChatState state) {
         case TextBlock(:final text):
           hasNonToolBlock = true;
           (turn ??= _OpenTurn()).segments.add(ChatTextSegment(text));
-        case ShopProductBlock(:final id):
+        case RecommendationBlock(:final items):
           hasNonToolBlock = true;
-          final product = state.items.products[id];
-          if (product != null) {
-            (turn ??= _OpenTurn()).addCard(ChatRecommendation.product(product));
-          }
-        case WardrobeProductBlock(:final id):
-          hasNonToolBlock = true;
-          final item = state.items.wardrobe[id];
-          if (item != null) {
-            (turn ??= _OpenTurn()).addCard(ChatRecommendation.wardrobe(item));
+          final cards = [
+            for (final item in items) ?_resolve(item, state.items),
+          ];
+          if (cards.isNotEmpty) {
+            (turn ??= _OpenTurn()).segments.add(ChatCardSegment(cards));
           }
       }
     }

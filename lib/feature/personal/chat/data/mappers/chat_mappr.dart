@@ -2,6 +2,7 @@ import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
 import 'package:tryzeon/feature/personal/chat/data/dtos/chat_content_block_dto.dart';
 import 'package:tryzeon/feature/personal/chat/data/dtos/chat_items_dto.dart';
 import 'package:tryzeon/feature/personal/chat/data/dtos/chat_message_dto.dart';
+import 'package:tryzeon/feature/personal/chat/data/dtos/chat_recommended_item_dto.dart';
 import 'package:tryzeon/feature/personal/chat/data/dtos/chat_stream_event_dto.dart';
 import 'package:tryzeon/feature/personal/chat/data/mappers/chat_mappr.auto_mappr.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_items.dart';
@@ -46,8 +47,18 @@ class ChatMapprHelper {
             toolUseId: toolUseId,
             content: content,
           ),
-        ShopProductBlock(:final id) => ChatContentBlockDto.product(id: id),
-        WardrobeProductBlock(:final id) => ChatContentBlockDto.wardrobe(id: id),
+        RecommendationBlock(:final items) => ChatContentBlockDto.recommendation(
+          items: [
+            for (final item in items)
+              switch (item) {
+                RecommendedProduct(:final id) => ChatRecommendedItemDto.product(
+                  id: id,
+                ),
+                RecommendedWardrobeItem(:final id) =>
+                  ChatRecommendedItemDto.wardrobe(id: id),
+              },
+          ],
+        ),
       },
   ];
 
@@ -59,8 +70,18 @@ class ChatMapprHelper {
           ContentBlock.toolUse(id: id, name: name, input: input),
         ChatToolResultBlockDto(:final toolUseId, :final content) =>
           ContentBlock.toolResult(toolUseId: toolUseId, content: content),
-        ChatProductBlockDto(:final id) => ContentBlock.shopProduct(id),
-        ChatWardrobeBlockDto(:final id) => ContentBlock.wardrobeProduct(id),
+        ChatRecommendationBlockDto(:final items) =>
+          ContentBlock.recommendation([
+            for (final item in items)
+              ?switch (item) {
+                ChatRecommendedProductDto(:final id) => RecommendedItem.product(
+                  id,
+                ),
+                ChatRecommendedWardrobeDto(:final id) =>
+                  RecommendedItem.wardrobe(id),
+                ChatRecommendedUnknownDto() => null,
+              },
+          ]),
         ChatUnknownBlockDto() => null,
       },
   ];

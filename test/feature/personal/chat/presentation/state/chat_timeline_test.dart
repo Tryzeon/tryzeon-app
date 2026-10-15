@@ -106,10 +106,12 @@ void main() {
           _user([_toolResult]),
           _assistant([
             const ContentBlock.text('a'),
-            const ContentBlock.shopProduct('p1'),
-            const ContentBlock.shopProduct('p2'),
+            const ContentBlock.recommendation([
+              RecommendedItem.product('p1'),
+              RecommendedItem.product('p2'),
+            ]),
             const ContentBlock.text('b'),
-            const ContentBlock.wardrobeProduct('w1'),
+            const ContentBlock.recommendation([RecommendedItem.wardrobe('w1')]),
           ]),
         ],
         items: ChatItems(
@@ -150,8 +152,10 @@ void main() {
           _greeting,
           _user([const ContentBlock.text('找白襯衫')]),
           _assistant([
-            const ContentBlock.shopProduct('gone'),
-            const ContentBlock.shopProduct('p1'),
+            const ContentBlock.recommendation([
+              RecommendedItem.product('gone'),
+              RecommendedItem.product('p1'),
+            ]),
           ]),
         ],
         items: ChatItems(products: {'p1': _product('p1')}),
@@ -162,6 +166,50 @@ void main() {
     expect(turn.segments, [
       ChatCardSegment([ChatRecommendation.product(_product('p1'))]),
     ]);
+  });
+
+  test('each recommendation is its own row, even side by side', () {
+    final entries = buildChatTimeline(
+      ChatState(
+        messages: [
+          _greeting,
+          _user([const ContentBlock.text('配一套')]),
+          _assistant([
+            const ContentBlock.recommendation([RecommendedItem.product('p1')]),
+            const ContentBlock.recommendation([RecommendedItem.product('p2')]),
+          ]),
+        ],
+        items: ChatItems(
+          products: {'p1': _product('p1'), 'p2': _product('p2')},
+        ),
+      ),
+    );
+
+    final turn = entries[2] as ChatAssistantEntry;
+    expect(turn.segments, [
+      ChatCardSegment([ChatRecommendation.product(_product('p1'))]),
+      ChatCardSegment([ChatRecommendation.product(_product('p2'))]),
+    ]);
+  });
+
+  test('a recommendation whose items all vanished draws no row', () {
+    final entries = buildChatTimeline(
+      ChatState(
+        messages: [
+          _greeting,
+          _user([const ContentBlock.text('找白襯衫')]),
+          _assistant([
+            const ContentBlock.text('a'),
+            const ContentBlock.recommendation([
+              RecommendedItem.product('gone'),
+            ]),
+          ]),
+        ],
+      ),
+    );
+
+    final turn = entries[2] as ChatAssistantEntry;
+    expect(turn.segments, [const ChatTextSegment('a')]);
   });
 
   group('live turn status', () {

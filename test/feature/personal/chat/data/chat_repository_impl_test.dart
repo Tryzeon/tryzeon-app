@@ -81,7 +81,12 @@ void main() {
       ),
       const ChatMessage(
         role: ChatRole.assistant,
-        content: [ContentBlock.wardrobeProduct('w1')],
+        content: [
+          ContentBlock.recommendation([
+            RecommendedItem.wardrobe('w1'),
+            RecommendedItem.product('p1'),
+          ]),
+        ],
       ),
     ]).drain<void>();
 
@@ -117,7 +122,13 @@ void main() {
         {
           'role': 'assistant',
           'content': [
-            {'type': 'wardrobe', 'id': 'w1'},
+            {
+              'type': 'recommendation',
+              'items': [
+                {'type': 'wardrobe', 'id': 'w1'},
+                {'type': 'product', 'id': 'p1'},
+              ],
+            },
           ],
         },
       ],
@@ -165,7 +176,13 @@ void main() {
             'role': 'assistant',
             'content': [
               {'type': 'text', 'text': '這件很適合'},
-              {'type': 'wardrobe', 'id': 'w1'},
+              {
+                'type': 'recommendation',
+                'items': [
+                  {'type': 'wardrobe', 'id': 'w1'},
+                  {'type': 'hat', 'id': 'h1'},
+                ],
+              },
               {'type': 'sticker', 'id': 's1'},
             ],
           },
@@ -207,7 +224,10 @@ void main() {
       ),
       ChatMessage(
         role: ChatRole.assistant,
-        content: [TextBlock('這件很適合'), WardrobeProductBlock('w1')],
+        content: [
+          TextBlock('這件很適合'),
+          RecommendationBlock([RecommendedWardrobeItem('w1')]),
+        ],
       ),
     ]);
     expect(replied.items.products, isEmpty);
