@@ -17,7 +17,6 @@ class TryonFunctionRequest {
     required this.mode,
     required this.engine,
     this.garments,
-    this.avatar,
     this.baseImage,
     this.scenePrompt,
     this.stylingPrompt,
@@ -28,7 +27,6 @@ class TryonFunctionRequest {
   final TryonMode mode;
   final TryonEngine engine;
   final List<TryonGarmentDto>? garments;
-  final Base64ImageDto? avatar;
   final Base64ImageDto? baseImage;
   final String? scenePrompt;
   final String? stylingPrompt;

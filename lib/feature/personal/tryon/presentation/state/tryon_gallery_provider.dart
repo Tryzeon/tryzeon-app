@@ -14,7 +14,6 @@ sealed class TryonGalleryState with _$TryonGalleryState {
   const factory TryonGalleryState({
     @Default(<TryonGalleryEntry>[]) final List<TryonGalleryEntry> entries,
     final String? currentId,
-    final String? customAvatarId,
   }) = _TryonGalleryState;
 
   const TryonGalleryState._();
@@ -32,12 +31,6 @@ sealed class TryonGalleryState with _$TryonGalleryState {
   TryonResult? get currentResult => currentEntry?.result;
 
   bool get isCurrentPending => currentEntry is PendingTryonEntry;
-
-  TryonResult? get customAvatarResult =>
-      entries.where((final e) => e.id == customAvatarId).firstOrNull?.result;
-
-  bool get isCurrentTheAvatar =>
-      currentId != null && currentId == customAvatarId;
 }
 
 @Riverpod(keepAlive: true)
@@ -48,7 +41,7 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
 
     ref.listen(userProfileProvider, (final previous, final next) {
       if (previous?.value?.avatarPath == next.value?.avatarPath) return;
-      state = state.copyWith(currentId: null, customAvatarId: null);
+      state = state.copyWith(currentId: null);
     });
     return const TryonGalleryState();
   }
@@ -102,19 +95,7 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
               ? null
               : nextEntries[index.clamp(0, nextEntries.length - 1)].id);
 
-    state = state.copyWith(
-      entries: nextEntries,
-      currentId: nextCurrent,
-      customAvatarId: state.customAvatarId == id ? null : state.customAvatarId,
-    );
+    state = state.copyWith(entries: nextEntries, currentId: nextCurrent);
     return true;
-  }
-
-  void toggleAvatarForCurrent() {
-    final id = state.currentId;
-    if (id == null) return;
-    state = state.copyWith(
-      customAvatarId: state.customAvatarId == id ? null : id,
-    );
   }
 }

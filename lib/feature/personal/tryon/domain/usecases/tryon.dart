@@ -21,7 +21,6 @@ sealed class TryonParams with _$TryonParams {
     required final String requestId,
     required final TryonSubject subject,
     required final TryonPreferences preferences,
-    final String? customAvatarUrl,
   }) = _TryonParams;
 }
 
@@ -64,21 +63,11 @@ class Tryon {
         final garments = await _garmentsFor(pieces);
         if (garments.isFailure) return Err(garments.getError()!);
 
-        // Sending none makes the backend fall back to the profile photo.
-        String? avatarBase64;
-        final customAvatarUrl = params.customAvatarUrl;
-        if (customAvatarUrl != null && customAvatarUrl.isNotEmpty) {
-          final loaded = await _loadRemoteBase64(customAvatarUrl);
-          if (loaded.isFailure) return Err(loaded.getError()!);
-          avatarBase64 = loaded.get();
-        }
-
         return Ok(
           TryonRequest.generate(
             requestId: params.requestId,
             garments: garments.get()!,
             mode: mode,
-            avatarBase64: avatarBase64,
             scenePrompt: preferences.scenePrompt,
             stylingPrompt: preferences.stylingPrompt,
             transitionPrompt: mode == TryonMode.video

@@ -107,35 +107,29 @@ void main() {
     expect(notifier.state.entries.single.pieces, const [piece]);
   });
 
-  test(
-    'replacing the saved avatar drops the carried-over outfit and returns to '
-    'the avatar page',
-    () async {
-      final container = ProviderContainer(
-        overrides: [
-          isAuthenticatedProvider.overrideWithValue(true),
-          userProfileProvider.overrideWith(_FakeUserProfileNotifier.new),
-        ],
+  test('replacing the saved avatar returns to the avatar page', () async {
+    final container = ProviderContainer(
+      overrides: [
+        isAuthenticatedProvider.overrideWithValue(true),
+        userProfileProvider.overrideWith(_FakeUserProfileNotifier.new),
+      ],
+    );
+    addTearDown(container.dispose);
+    final notifier = container.read(tryonGalleryProvider.notifier);
+    await container.read(userProfileProvider.future);
+
+    notifier
+      ..addPending(id: 'a', subject: imageSubject)
+      ..complete(
+        const TryonResult(id: 'a', mode: TryonMode.image, imageUrl: 'u'),
       );
-      addTearDown(container.dispose);
-      final notifier = container.read(tryonGalleryProvider.notifier);
-      await container.read(userProfileProvider.future);
+    expect(notifier.state.isAvatarPage, isFalse);
 
-      notifier
-        ..addPending(id: 'a', subject: imageSubject)
-        ..complete(
-          const TryonResult(id: 'a', mode: TryonMode.image, imageUrl: 'u'),
-        )
-        ..toggleAvatarForCurrent();
-      expect(notifier.state.customAvatarId, 'a');
+    (container.read(userProfileProvider.notifier) as _FakeUserProfileNotifier)
+        .replaceAvatar('u1/avatar/new.jpg');
 
-      (container.read(userProfileProvider.notifier) as _FakeUserProfileNotifier)
-          .replaceAvatar('u1/avatar/new.jpg');
-
-      final state = container.read(tryonGalleryProvider);
-      expect(state.customAvatarId, isNull);
-      expect(state.isAvatarPage, isTrue);
-      expect(state.entries.single.id, 'a');
-    },
-  );
+    final state = container.read(tryonGalleryProvider);
+    expect(state.isAvatarPage, isTrue);
+    expect(state.entries.single.id, 'a');
+  });
 }

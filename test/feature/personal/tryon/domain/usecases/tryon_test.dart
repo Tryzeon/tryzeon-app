@@ -91,7 +91,6 @@ void main() {
     ]);
     expect(request.scenePrompt, 'beach');
     expect(request.transitionPrompt, isNull);
-    expect(request.avatarBase64, isNull);
   });
 
   test('a video generate request carries the transition prompt', () async {
@@ -110,10 +109,8 @@ void main() {
     expect(request.transitionPrompt, 'spin');
   });
 
-  test('local pieces and a custom avatar are sent as base64', () async {
-    media
-      ..local['g.jpg'] = [1, 2, 3]
-      ..remote['https://x/avatar.jpg'] = [4, 5];
+  test('local pieces are sent as base64', () async {
+    media.local['g.jpg'] = [1, 2, 3];
 
     await tryon(
       TryonParams(
@@ -123,7 +120,6 @@ void main() {
           mode: TryonMode.image,
         ),
         preferences: preferences,
-        customAvatarUrl: 'https://x/avatar.jpg',
       ),
     );
 
@@ -135,7 +131,6 @@ void main() {
         ],
       ),
     ]);
-    expect(request.avatarBase64, base64Encode([4, 5]));
   });
 
   test('an animate request sends the base picture', () async {

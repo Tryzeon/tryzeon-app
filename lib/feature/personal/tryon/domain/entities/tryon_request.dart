@@ -7,14 +7,11 @@ part 'tryon_request.freezed.dart';
 
 @freezed
 sealed class TryonRequest with _$TryonRequest {
-  /// A null [avatarBase64] means the backend uses the model photo on the user's
-  /// profile, which is the only authoritative copy of it.
   const factory TryonRequest.generate({
     required final String requestId,
     required final List<TryonGarment> garments,
     required final TryonMode mode,
     required final TryonEngine engine,
-    final String? avatarBase64,
     final String? scenePrompt,
     final String? stylingPrompt,
     final String? transitionPrompt,

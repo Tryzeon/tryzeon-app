@@ -25,7 +25,6 @@ import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/home_primary_action_button.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/page_linked_reveal.dart';
-import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_avatar_badge.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_avatar_page.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_disclaimer.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_gallery.dart';
@@ -60,7 +59,6 @@ class HomePage extends HookConsumerWidget {
         (uploadingAvatarFile ?? avatarAsync.value) == null;
 
     final currentPage = galleryState.currentPage;
-    final isCurrentTheAvatar = galleryState.isCurrentTheAvatar;
 
     useEffect(() {
       if (pageController.hasClients &&
@@ -221,8 +219,6 @@ class HomePage extends HookConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   if (!isBlankAvatarPage) ...[
-                    TryonAvatarBadge(isVisible: isCurrentTheAvatar),
-                    const SizedBox(width: AppSpacing.sm),
                     TryonGalleryActions(onReplaceAvatar: uploadAvatar),
                   ],
                 ],

@@ -57,23 +57,15 @@ class TryonController extends _$TryonController {
     final id = _uuid.v4();
 
     // Setup runs before the placeholder exists, so its failures always speak up.
-    String? customAvatarUrl;
     final TryonPreferences preferences;
     try {
       // An animate job dresses a finished picture, so it needs no avatar.
       if (subject is TryonSubjectGenerate) {
-        customAvatarUrl = ref
-            .read(tryonGalleryProvider)
-            .customAvatarResult
-            ?.imageUrl;
-        final hasCustomAvatar =
-            customAvatarUrl != null && customAvatarUrl.isNotEmpty;
-
         // Precondition: "no avatar at all" is a UI prompt, not a failure — check
         // it before inserting a placeholder so nothing flickers. The backend
         // answers NO_AVATAR either way, so this only saves a round trip.
         final profile = await ref.read(userProfileProvider.future);
-        if (!hasCustomAvatar && !(profile?.hasAvatar ?? false)) {
+        if (!(profile?.hasAvatar ?? false)) {
           state = TryonAvatarMissing(id);
           return;
         }
@@ -98,12 +90,7 @@ class TryonController extends _$TryonController {
     // that finds nothing means the user cancelled.
     try {
       final result = await ref.read(tryonUseCaseProvider)(
-        TryonParams(
-          requestId: id,
-          subject: subject,
-          preferences: preferences,
-          customAvatarUrl: customAvatarUrl,
-        ),
+        TryonParams(requestId: id, subject: subject, preferences: preferences),
       );
 
       // Usage syncs even for a cancelled run — the generation was still spent.

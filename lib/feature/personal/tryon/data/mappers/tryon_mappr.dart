@@ -13,7 +13,6 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_request.dar
       fields: [
         Field('generationId', from: 'requestId'),
         Field('garments', custom: TryonMapprHelper.garmentsToDto),
-        Field('avatar', custom: TryonMapprHelper.avatarToDto),
       ],
     ),
     MapType<TryonAnimateRequest, TryonFunctionRequest>(
@@ -45,12 +44,6 @@ class TryonMapprHelper {
         ),
       },
   ];
-
-  static Base64ImageDto? avatarToDto(final TryonGenerateRequest source) =>
-      switch (source.avatarBase64) {
-        final avatar? => Base64ImageDto(avatar),
-        null => null,
-      };
 
   static Base64ImageDto baseImageToDto(final TryonAnimateRequest source) =>
       Base64ImageDto(source.baseImageBase64);

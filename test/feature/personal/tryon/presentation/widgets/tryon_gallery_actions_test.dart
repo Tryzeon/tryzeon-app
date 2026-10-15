@@ -161,21 +161,6 @@ void main() {
     expect(find.text('已收到此檢舉，謝謝您！'), findsOneWidget);
   });
 
-  testWidgets('reporting the try-on used as the avatar clears the avatar', (
-    final tester,
-  ) async {
-    setUpContainer();
-    addFinished('a');
-    gallery().toggleAvatarForCurrent();
-    await pumpActions(tester);
-
-    await confirmReport(tester);
-
-    final state = container.read(tryonGalleryProvider);
-    expect(state.entries, isEmpty);
-    expect(state.customAvatarId, isNull);
-  });
-
   testWidgets('cancelling the confirmation reports nothing', (
     final tester,
   ) async {

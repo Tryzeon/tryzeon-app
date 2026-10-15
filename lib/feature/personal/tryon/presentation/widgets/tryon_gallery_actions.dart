@@ -23,7 +23,6 @@ class TryonGalleryActions extends ConsumerWidget {
     final gallery = ref.watch(tryonGalleryProvider);
     final entry = gallery.currentEntry;
     final result = gallery.currentResult;
-    final isCurrentTheAvatar = gallery.isCurrentTheAvatar;
     final isVideo = result?.mode == TryonMode.video;
 
     Future<void> shareMedia() async {
@@ -152,16 +151,6 @@ class TryonGalleryActions extends ConsumerWidget {
             icon: Icons.movie_creation_outlined,
             title: '轉成影片',
             onTap: animateToVideo,
-          ),
-        if (result?.mode == TryonMode.image)
-          AppMenuAction(
-            icon: isCurrentTheAvatar
-                ? Icons.person_off_outlined
-                : Icons.person_outline_rounded,
-            title: isCurrentTheAvatar ? '取消沿用穿搭' : '沿用這套穿搭',
-            onTap: ref
-                .read(tryonGalleryProvider.notifier)
-                .toggleAvatarForCurrent,
           ),
         AppMenuAction(
           icon: Icons.flag_outlined,

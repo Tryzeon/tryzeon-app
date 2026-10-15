@@ -20,7 +20,7 @@ Map<String, dynamic> _body(final TryonRequest request) => switch (request) {
 void main() {
   const garments = [TryonGarment.product(productId: 'p1')];
 
-  test('omits the avatar field entirely when there is no override', () {
+  test('sends a product garment without a size when none is known', () {
     final body = _body(
       const TryonRequest.generate(
         requestId: 'r1',
@@ -30,24 +30,9 @@ void main() {
       ),
     );
 
-    expect(body.containsKey('avatar'), isFalse);
     expect(body['garments'], [
       {'productId': 'p1'},
     ]);
-  });
-
-  test('sends a custom avatar as inline base64', () {
-    final body = _body(
-      const TryonRequest.generate(
-        requestId: 'r1',
-        garments: garments,
-        mode: TryonMode.image,
-        engine: TryonEngine.standard,
-        avatarBase64: 'AAAA',
-      ),
-    );
-
-    expect(body['avatar'], {'base64': 'AAAA'});
   });
 
   test('sends a product garment with its size when one is known', () {
