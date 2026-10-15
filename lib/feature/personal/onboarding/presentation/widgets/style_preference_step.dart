@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/router/shells/personal_tab.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/clothing_style/presentation/widgets/style_preference_grid.dart';
 
@@ -28,7 +29,7 @@ class StylePreferenceStep extends HookConsumerWidget {
                 Text('你喜歡的風格', style: textTheme.headlineMedium),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  '僅用於推薦你喜歡的風格，不會公開顯示，可略過，日後可在設定中修改。',
+                  '僅用於推薦你喜歡的風格，不會公開顯示，可略過，日後可在「${PersonalTab.account.label}」頁面修改。',
                   style: textTheme.bodyMedium,
                 ),
               ],
