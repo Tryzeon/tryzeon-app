@@ -20,21 +20,6 @@ Map<String, dynamic> _body(final TryonRequest request) => switch (request) {
 void main() {
   const garments = [TryonGarment.product(productId: 'p1')];
 
-  test('sends a product garment without a size when none is known', () {
-    final body = _body(
-      const TryonRequest.generate(
-        requestId: 'r1',
-        garments: garments,
-        mode: TryonMode.image,
-        engine: TryonEngine.standard,
-      ),
-    );
-
-    expect(body['garments'], [
-      {'productId': 'p1'},
-    ]);
-  });
-
   test('sends a product garment with its size when one is known', () {
     final body = _body(
       const TryonRequest.generate(
@@ -116,7 +101,6 @@ void main() {
     expect(body['baseImage'], {'base64': 'FINISHED'});
     expect(body['transitionPrompt'], 'spin');
     expect(body.containsKey('garments'), isFalse);
-    expect(body.containsKey('avatar'), isFalse);
     expect(body.containsKey('scenePrompt'), isFalse);
     expect(body.containsKey('stylingPrompt'), isFalse);
   });

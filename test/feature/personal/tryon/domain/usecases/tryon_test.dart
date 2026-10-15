@@ -33,8 +33,12 @@ class _FakeMediaRepository implements TryonMediaRepository {
   final Map<String, List<int>> local = {};
 
   @override
-  Future<Result<Uint8List, Failure>> loadImageBytes(final String url) async =>
-      Ok(Uint8List.fromList(remote[url]!));
+  Future<Result<Uint8List, Failure>> loadImageBytes(final String url) async {
+    final bytes = remote[url];
+    return bytes == null
+        ? const Err(UnknownFailure())
+        : Ok(Uint8List.fromList(bytes));
+  }
 
   @override
   Future<Result<Uint8List, Failure>> loadLocalImageBytes(
@@ -154,6 +158,28 @@ void main() {
     expect(request.baseImageBase64, base64Encode([9]));
     expect(request.transitionPrompt, 'spin');
   });
+
+  test(
+    'an unreadable base picture fails without calling the backend',
+    () async {
+      final result = await tryon(
+        TryonParams(
+          requestId: 'r1',
+          subject: TryonSubject.animated(
+            baseImageUrl: 'https://x/missing.jpg',
+            origin: TryonSubject.generate(
+              pieces: const [wardrobe],
+              mode: TryonMode.image,
+            ),
+          ),
+          preferences: preferences,
+        ),
+      );
+
+      expect(result.isFailure, isTrue);
+      expect(tryonRepository.requests, isEmpty);
+    },
+  );
 
   test('an unreadable local piece fails without calling the backend', () async {
     final result = await tryon(
