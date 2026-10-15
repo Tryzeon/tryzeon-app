@@ -1,30 +1,45 @@
 import { describe, expect, it } from "vitest";
-import { dehydrateBlock, parseChatLine, userText } from "./chat-wire";
+import { parseChatLine, userText } from "./chat-wire";
 
 describe("parseChatLine", () => {
-  it("turns a tool_use event into a transcript block", () => {
-    expect(parseChatLine('{"type":"tool_use","id":"t1","name":"search_products","input":{"query":"襯衫"}}'))
-      .toEqual({
-        type: "tool_use",
-        block: { type: "tool_use", id: "t1", name: "search_products", input: { query: "襯衫" } },
-      });
+  it("takes the turn's messages and the items they name off done", () => {
+    const messages = [
+      {
+        role: "assistant",
+        content: [
+          { type: "tool_use", id: "t1", name: "search_wardrobe", input: {} },
+          { type: "tool_use", id: "t2", name: "search_products", input: { query: "襯衫" } },
+        ],
+      },
+      {
+        role: "user",
+        content: [
+          { type: "tool_result", tool_use_id: "t1", content: { items: [] } },
+          { type: "tool_result", tool_use_id: "t2", content: { items: [] } },
+        ],
+      },
+      { role: "assistant", content: [{ type: "text", text: "好" }, { type: "product", id: "p1" }] },
+    ];
+    const items = { products: { p1: { id: "p1", name: "襯衫" } }, wardrobe: {} };
+    const line = JSON.stringify({ type: "done", messages, items, usage: null });
+    expect(parseChatLine(line)).toEqual({ type: "done", messages, items });
   });
 
-  it("turns a tool_result event into a transcript block", () => {
-    expect(parseChatLine('{"type":"tool_result","tool_use_id":"t1","content":{"items":[]}}'))
-      .toEqual({
-        type: "tool_result",
-        block: { type: "tool_result", tool_use_id: "t1", content: { items: [] } },
-      });
-  });
-
-  it("takes the answer blocks off done", () => {
+  it("drops a malformed message and a malformed item map", () => {
     const line = JSON.stringify({
       type: "done",
-      message: { role: "assistant", content: [{ type: "text", text: "好" }] },
-      usage: null,
+      messages: [
+        { role: "system", content: [] },
+        { role: "assistant" },
+        { role: "assistant", content: [{ type: "text", text: "好" }] },
+      ],
+      items: { products: [], wardrobe: { w1: { id: "w1" } } },
     });
-    expect(parseChatLine(line)).toEqual({ type: "done", blocks: [{ type: "text", text: "好" }] });
+    expect(parseChatLine(line)).toEqual({
+      type: "done",
+      messages: [{ role: "assistant", content: [{ type: "text", text: "好" }] }],
+      items: { products: {}, wardrobe: { w1: { id: "w1" } } },
+    });
   });
 
   it("keeps the error code", () => {
@@ -32,22 +47,11 @@ describe("parseChatLine", () => {
       .toEqual({ type: "error", code: "RATE_LIMIT_EXCEEDED" });
   });
 
-  it("ignores blank, malformed and unknown lines", () => {
+  it("ignores blank, malformed, unknown and progress-only lines", () => {
     expect(parseChatLine("")).toBeNull();
     expect(parseChatLine("{nope")).toBeNull();
     expect(parseChatLine('{"type":"ping"}')).toBeNull();
-  });
-});
-
-describe("dehydrateBlock", () => {
-  it("sends a recommended product back by id only", () => {
-    expect(dehydrateBlock({ type: "product", item: { id: "p1", name: "襯衫" } }))
-      .toEqual({ type: "product", id: "p1" });
-  });
-
-  it("drops a product with no id and passes text through", () => {
-    expect(dehydrateBlock({ type: "product", item: {} })).toBeNull();
-    expect(dehydrateBlock({ type: "text", text: "嗨" })).toEqual({ type: "text", text: "嗨" });
+    expect(parseChatLine('{"type":"tool_use","id":"t1","name":"search_products","input":{}}')).toBeNull();
   });
 });
 

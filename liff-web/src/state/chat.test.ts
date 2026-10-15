@@ -19,10 +19,14 @@ function sent(text = "找襯衫"): ChatState {
 
 const lastEntry = (s: ChatState) => s.entries[s.entries.length - 1];
 
+const NO_ITEMS = { products: {}, wardrobe: {} };
+
+const answer = (content: WireMessage["content"]): WireMessage => ({ role: "assistant", content });
+
 describe("chat reducer", () => {
   it("opens a turn with the user's message", () => {
     const s = sent();
-    expect(s.turn).toEqual([{ role: "user", content: [{ type: "text", text: "找襯衫" }] }]);
+    expect(s.turn).toEqual({ role: "user", content: [{ type: "text", text: "找襯衫" }] });
     expect(s.history).toEqual([]);
     expect(s.entries).toEqual([{ kind: "user", text: "找襯衫" }]);
   });
@@ -32,36 +36,24 @@ describe("chat reducer", () => {
     expect(reduce(s, { type: "send", text: "再一次" })).toBe(s);
   });
 
-  it("keeps tool rounds in the turn, out of the committed history", () => {
+  it("commits the question and the turn's messages exactly as sent", () => {
+    const messages: WireMessage[] = [
+      {
+        role: "assistant",
+        content: [{ type: "tool_use", id: "t1", name: "search_products", input: {} }],
+      },
+      { role: "user", content: [{ type: "tool_result", tool_use_id: "t1", content: { items: [] } }] },
+      { role: "assistant", content: [{ type: "text", text: "推薦這件" }, { type: "product", id: "p1" }] },
+    ];
     let s = sent();
     s = reduce(s, {
       type: "event",
-      event: {
-        type: "tool_use",
-        block: { type: "tool_use", id: "t1", name: "search_products", input: {} },
-      },
-    });
-    s = reduce(s, {
-      type: "event",
-      event: { type: "tool_result", block: { type: "tool_result", tool_use_id: "t1", content: {} } },
-    });
-    expect(s.turn).toHaveLength(3);
-    expect(s.history).toEqual([]);
-  });
-
-  it("commits the turn and the dehydrated answer on done", () => {
-    let s = sent();
-    s = reduce(s, {
-      type: "event",
-      event: {
-        type: "done",
-        blocks: [{ type: "text", text: "推薦這件" }, { type: "product", item: PRODUCT }],
-      },
+      event: { type: "done", messages, items: { products: { p1: PRODUCT }, wardrobe: {} } },
     });
     expect(s.turn).toBeNull();
     expect(s.history).toEqual([
       { role: "user", content: [{ type: "text", text: "找襯衫" }] },
-      { role: "assistant", content: [{ type: "text", text: "推薦這件" }, { type: "product", id: "p1" }] },
+      ...messages,
     ]);
     expect(s.entries.slice(1)).toEqual([
       { kind: "text", text: "推薦這件" },
@@ -85,7 +77,10 @@ describe("chat reducer", () => {
   });
 
   it("does nothing on ended once the turn is settled", () => {
-    const done = reduce(sent(), { type: "event", event: { type: "done", blocks: [{ type: "text", text: "好" }] } });
+    const done = reduce(sent(), {
+      type: "event",
+      event: { type: "done", messages: [answer([{ type: "text", text: "好" }])], items: NO_ITEMS },
+    });
     expect(reduce(done, { type: "ended" })).toBe(done);
   });
 
@@ -94,7 +89,8 @@ describe("chat reducer", () => {
       type: "event",
       event: {
         type: "done",
-        blocks: [{ type: "wardrobe", item: { id: "w1", image_path: "u1/w1.jpg" } }],
+        messages: [answer([{ type: "wardrobe", id: "w1" }])],
+        items: { products: {}, wardrobe: { w1: { id: "w1", image_path: "u1/w1.jpg" } } },
       },
     });
     expect(lastEntry(s)).toEqual({ kind: "wardrobe", imagePath: "u1/w1.jpg" });
@@ -138,16 +134,8 @@ describe("chat reducer history cap", () => {
       s = reduce(s, { type: "send", text: `q${i}` });
       s = reduce(s, {
         type: "event",
-        event: {
-          type: "tool_use",
-          block: { type: "tool_use", id: `t${i}`, name: "search_products", input: {} },
-        },
+        event: { type: "done", messages: turn(i).slice(1), items: NO_ITEMS },
       });
-      s = reduce(s, {
-        type: "event",
-        event: { type: "tool_result", block: { type: "tool_result", tool_use_id: `t${i}`, content: {} } },
-      });
-      s = reduce(s, { type: "event", event: { type: "done", blocks: [{ type: "text", text: `a${i}` }] } });
     }
     expect(s.history.length).toBeLessThanOrEqual(HISTORY_LIMIT);
     expect(s.history[0]).toEqual({ role: "user", content: [{ type: "text", text: expect.stringMatching(/^q/) }] });

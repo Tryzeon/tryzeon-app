@@ -1,9 +1,9 @@
 import type { CatalogItem } from "../api/catalog-row";
 import {
   type ChatEvent,
-  dehydrateBlock,
+  isRecord,
   userText,
-  type WireBlock,
+  type WireItems,
   type WireMessage,
 } from "../api/chat-wire";
 
@@ -15,14 +15,14 @@ export type ChatEntry =
   | { kind: "notice"; text: string };
 
 /**
- * `turn` is the exchange still in flight — the user's message and its tool
- * rounds. It joins `history` only once an answer arrives; a failed turn is
- * dropped whole, because the next request would otherwise replay a question
+ * `turn` is the user's message still awaiting an answer. It joins `history`,
+ * followed by the messages `done` brings, only once they arrive; a failed turn
+ * is dropped whole, because the next request would otherwise replay a question
  * the model reads as ignored.
  */
 export interface ChatState {
   history: WireMessage[];
-  turn: WireMessage[] | null;
+  turn: WireMessage | null;
   entries: ChatEntry[];
 }
 
@@ -63,15 +63,16 @@ function fail(state: ChatState, code: string): ChatState {
 }
 
 export function createChatReducer(toItem: (row: unknown) => CatalogItem) {
-  function answerEntries(blocks: WireBlock[]): ChatEntry[] {
+  function answerEntries(answer: WireMessage | undefined, items: WireItems): ChatEntry[] {
     const entries: ChatEntry[] = [];
-    for (const block of blocks) {
+    for (const block of answer?.content ?? []) {
+      const id = String(block.id);
       if (block.type === "text" && typeof block.text === "string" && block.text.trim().length > 0) {
         entries.push({ kind: "text", text: block.text });
-      } else if (block.type === "product" && typeof block.item === "object" && block.item !== null) {
-        entries.push({ kind: "product", item: toItem(block.item) });
-      } else if (block.type === "wardrobe" && typeof block.item === "object" && block.item !== null) {
-        const imagePath = (block.item as Record<string, unknown>).image_path;
+      } else if (block.type === "product" && isRecord(items.products[id])) {
+        entries.push({ kind: "product", item: toItem(items.products[id]) });
+      } else if (block.type === "wardrobe" && isRecord(items.wardrobe[id])) {
+        const imagePath = items.wardrobe[id].image_path;
         if (typeof imagePath === "string" && imagePath.length > 0) {
           entries.push({ kind: "wardrobe", imagePath });
         }
@@ -83,23 +84,12 @@ export function createChatReducer(toItem: (row: unknown) => CatalogItem) {
   function onEvent(state: ChatState, event: ChatEvent): ChatState {
     if (state.turn === null) return state;
     switch (event.type) {
-      case "tool_use":
-        return { ...state, turn: [...state.turn, { role: "assistant", content: [event.block] }] };
-      case "tool_result":
-        return { ...state, turn: [...state.turn, { role: "user", content: [event.block] }] };
-      case "done": {
-        const answer: WireMessage = {
-          role: "assistant",
-          content: event.blocks
-            .map(dehydrateBlock)
-            .filter((b): b is WireBlock => b !== null),
-        };
+      case "done":
         return {
-          history: trimHistory([...state.history, ...state.turn, answer], HISTORY_LIMIT),
+          history: trimHistory([...state.history, state.turn, ...event.messages], HISTORY_LIMIT),
           turn: null,
-          entries: [...state.entries, ...answerEntries(event.blocks)],
+          entries: [...state.entries, ...answerEntries(event.messages[event.messages.length - 1], event.items)],
         };
-      }
       case "error":
         return fail(state, event.code);
     }
@@ -111,7 +101,7 @@ export function createChatReducer(toItem: (row: unknown) => CatalogItem) {
         if (state.turn !== null) return state;
         return {
           ...state,
-          turn: [userText(action.text)],
+          turn: userText(action.text),
           entries: [...state.entries, { kind: "user", text: action.text }],
         };
       case "event":
