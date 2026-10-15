@@ -3,14 +3,17 @@ import {
   assembleAnswer,
   mapSearchProductsArgs,
   parseAnswerRefs,
+  recordRounds,
   resolveCategoryFilter,
   SEARCH_LIMIT,
+  TOOL_FAILURE_TEXT,
   toModelMessages,
   toSearchResultItem,
   validateVocabularyFilters,
   windowHistory,
 } from "./logic.ts";
-import type { ChatMessage } from "./types.ts";
+import type { ChatEvent, ChatMessage } from "./types.ts";
+import type { TextStreamPart, ToolSet } from "ai";
 
 const CATEGORIES = new Map([["tops", "cat-1"], ["dresses", "cat-2"]]);
 
@@ -188,6 +191,53 @@ Deno.test("toModelMessages maps a paired tool_use/tool_result conversation to Mo
   ]);
 });
 
+Deno.test("toModelMessages replays a parallel step as one assistant message and one tool message", () => {
+  const out = toModelMessages([
+    { role: "user", content: [{ type: "text", text: "幫我配這件" }] },
+    {
+      role: "assistant",
+      content: [
+        { type: "tool_use", id: "tu_0", name: "search_wardrobe", input: {} },
+        { type: "tool_use", id: "tu_1", name: "search_products", input: { query: "褲" } },
+      ],
+    },
+    {
+      role: "user",
+      content: [
+        { type: "tool_result", tool_use_id: "tu_0", content: { items: [] } },
+        { type: "tool_result", tool_use_id: "tu_1", content: { items: [] } },
+      ],
+    },
+  ]);
+  assertEquals(out, [
+    { role: "user", content: "幫我配這件" },
+    {
+      role: "assistant",
+      content: [
+        { type: "tool-call", toolCallId: "tu_0", toolName: "search_wardrobe", input: {} },
+        { type: "tool-call", toolCallId: "tu_1", toolName: "search_products", input: { query: "褲" } },
+      ],
+    },
+    {
+      role: "tool",
+      content: [
+        {
+          type: "tool-result",
+          toolCallId: "tu_0",
+          toolName: "search_wardrobe",
+          output: { type: "json", value: { items: [] } },
+        },
+        {
+          type: "tool-result",
+          toolCallId: "tu_1",
+          toolName: "search_products",
+          output: { type: "json", value: { items: [] } },
+        },
+      ],
+    },
+  ]);
+});
+
 Deno.test("toModelMessages drops blank text and empty turns", () => {
   const out = toModelMessages([
     { role: "user", content: [{ type: "text", text: "   " }] },
@@ -355,4 +405,154 @@ Deno.test("windowHistory drops the oldest whole turns, never half a tool round",
 
 Deno.test("windowHistory is empty when the window holds no turn start", () => {
   assertEquals(windowHistory(toolTurn(1), 3), []);
+});
+
+type StreamPart = TextStreamPart<ToolSet>;
+
+const USAGE_ZERO = {
+  inputTokens: 0,
+  inputTokenDetails: { noCacheTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 },
+  outputTokens: 0,
+  outputTokenDetails: { textTokens: 0, reasoningTokens: 0 },
+  totalTokens: 0,
+};
+
+const startStep = (): StreamPart => ({
+  type: "start-step",
+  request: {},
+  warnings: [],
+});
+
+const finishStep = (finishReason: "tool-calls" | "stop"): StreamPart => ({
+  type: "finish-step",
+  response: { id: "r", timestamp: new Date(0), modelId: "gemini" },
+  usage: USAGE_ZERO,
+  finishReason,
+  rawFinishReason: undefined,
+  providerMetadata: undefined,
+} as StreamPart);
+
+const toolCall = (id: string, name: string, signature?: string): StreamPart => ({
+  type: "tool-call",
+  toolCallId: id,
+  toolName: name,
+  input: { query: id },
+  dynamic: true,
+  ...(signature ? { providerMetadata: { vertex: { thoughtSignature: signature } } } : {}),
+});
+
+const toolResult = (id: string, name: string): StreamPart => ({
+  type: "tool-result",
+  toolCallId: id,
+  toolName: name,
+  input: { query: id },
+  output: { items: [{ id: `${id}-item` }] },
+  dynamic: true,
+});
+
+async function* streamOf(parts: StreamPart[]): AsyncIterable<StreamPart> {
+  yield* parts;
+}
+
+Deno.test("recordRounds puts a parallel step's calls in one assistant message and their results in one user message", async () => {
+  const rounds = await recordRounds(streamOf([
+    startStep(),
+    toolCall("tu_0", "search_wardrobe", "sig-0"),
+    toolCall("tu_1", "search_products"),
+    toolResult("tu_1", "search_products"),
+    toolResult("tu_0", "search_wardrobe"),
+    finishStep("tool-calls"),
+    startStep(),
+    finishStep("stop"),
+  ]));
+
+  assertEquals(rounds, [
+    {
+      role: "assistant",
+      content: [
+        { type: "tool_use", id: "tu_0", name: "search_wardrobe", input: { query: "tu_0" } },
+        { type: "tool_use", id: "tu_1", name: "search_products", input: { query: "tu_1" } },
+      ],
+    },
+    {
+      role: "user",
+      content: [
+        { type: "tool_result", tool_use_id: "tu_1", content: { items: [{ id: "tu_1-item" }] } },
+        { type: "tool_result", tool_use_id: "tu_0", content: { items: [{ id: "tu_0-item" }] } },
+      ],
+    },
+  ]);
+});
+
+Deno.test("recordRounds keeps sequential steps as separate rounds", async () => {
+  const rounds = await recordRounds(streamOf([
+    startStep(),
+    toolCall("tu_0", "search_products", "sig-0"),
+    toolResult("tu_0", "search_products"),
+    finishStep("tool-calls"),
+    startStep(),
+    toolCall("tu_1", "search_products", "sig-1"),
+    toolResult("tu_1", "search_products"),
+    finishStep("tool-calls"),
+  ]));
+
+  assertEquals(rounds.map((m) => [m.role, m.content.map((b) => b.id ?? b.tool_use_id)]), [
+    ["assistant", ["tu_0"]],
+    ["user", ["tu_0"]],
+    ["assistant", ["tu_1"]],
+    ["user", ["tu_1"]],
+  ]);
+});
+
+Deno.test("recordRounds answers a failed call with an error result so the round stays paired", async () => {
+  const rounds = await recordRounds(streamOf([
+    startStep(),
+    toolCall("tu_0", "search_products", "sig-0"),
+    {
+      type: "tool-error",
+      toolCallId: "tu_0",
+      toolName: "search_products",
+      input: { query: "tu_0" },
+      error: new Error("connection reset"),
+      dynamic: true,
+    },
+    finishStep("tool-calls"),
+  ]));
+
+  assertEquals(rounds[1], {
+    role: "user",
+    content: [{ type: "tool_result", tool_use_id: "tu_0", content: { error: TOOL_FAILURE_TEXT } }],
+  });
+});
+
+Deno.test("recordRounds leaves out a step the stream never finished", async () => {
+  const rounds = await recordRounds(streamOf([
+    startStep(),
+    toolCall("tu_0", "search_products", "sig-0"),
+    toolResult("tu_0", "search_products"),
+    finishStep("tool-calls"),
+    startStep(),
+    toolCall("tu_1", "search_products", "sig-1"),
+    { type: "error", error: new Error("stream dropped") },
+  ]));
+
+  assertEquals(rounds.map((m) => m.role), ["assistant", "user"]);
+});
+
+Deno.test("recordRounds reports each call and result as it streams", async () => {
+  const events: ChatEvent[] = [];
+  await recordRounds(
+    streamOf([
+      startStep(),
+      toolCall("tu_0", "search_products", "sig-0"),
+      toolResult("tu_0", "search_products"),
+      finishStep("tool-calls"),
+    ]),
+    (ev) => events.push(ev),
+  );
+
+  assertEquals(events, [
+    { type: "tool_use", id: "tu_0", name: "search_products", input: { query: "tu_0" } },
+    { type: "tool_result", tool_use_id: "tu_0", content: { items: [{ id: "tu_0-item" }] } },
+  ]);
 });

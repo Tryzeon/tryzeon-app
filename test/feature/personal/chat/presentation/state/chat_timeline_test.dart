@@ -57,6 +57,45 @@ void main() {
     expect(entries, [const ChatWelcomeEntry(showStarters: true)]);
   });
 
+  test(
+    'a step whose calls share one message shows each call with its result',
+    () {
+      const wardrobeUse = ContentBlock.toolUse(
+        id: 't2',
+        name: 'search_wardrobe',
+      );
+      const wardrobeResult = ContentBlock.toolResult(
+        toolUseId: 't2',
+        content: {
+          'items': [1],
+        },
+      );
+      final entries = buildChatTimeline(
+        ChatState(
+          messages: [
+            _greeting,
+            _user([const ContentBlock.text('幫我配這件')]),
+            _assistant([_toolUse, wardrobeUse]),
+            _user([wardrobeResult, _toolResult]),
+            _assistant([const ContentBlock.text('a')]),
+          ],
+        ),
+      );
+
+      final turn = entries[2] as ChatAssistantEntry;
+      expect(turn.steps, const [
+        ChatToolStep(
+          use: _toolUse as ToolUseBlock,
+          result: _toolResult as ToolResultBlock,
+        ),
+        ChatToolStep(
+          use: wardrobeUse as ToolUseBlock,
+          result: wardrobeResult as ToolResultBlock,
+        ),
+      ]);
+    },
+  );
+
   test('groups a finished turn into steps and segments', () {
     final entries = buildChatTimeline(
       ChatState(

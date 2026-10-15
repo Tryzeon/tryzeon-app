@@ -11,12 +11,20 @@ import {
   THICKNESS_VALUES,
 } from "../vocabularies.ts";
 import { LIMITS } from "./types.ts";
-import type { JSONValue, ModelMessage, TextPart, ToolCallPart } from "ai";
+import type {
+  JSONValue,
+  ModelMessage,
+  TextPart,
+  TextStreamPart,
+  ToolCallPart,
+  ToolSet,
+} from "ai";
 import type { Database } from "../database.types.ts";
 import type {
   AnswerItems,
   AnswerRef,
   AnswerRows,
+  ChatEvent,
   ChatMessage,
   ContentBlock,
 } from "./types.ts";
@@ -214,6 +222,68 @@ export function windowHistory(
   const tail = messages.slice(-max);
   const start = tail.findIndex(isTurnStart);
   return start === -1 ? [] : tail.slice(start);
+}
+
+export const TOOL_FAILURE_TEXT = "工具執行失敗，沒有取得結果。";
+
+/**
+ * Turns the agent loop's stream into the transcript it adds: per finished step,
+ * one assistant message with every call the model made in it, then one user
+ * message with their results — the shape the model answered in, so a replay
+ * hands it back the turn it actually took. Each call is reported to `onEvent`
+ * as it streams, each result as it lands.
+ *
+ * A failed call is answered with an error result, so no call is replayed
+ * without one. A step the stream never finished is left out.
+ *
+ * Gemini's thought signatures are not kept: they would ride through every
+ * client as opaque provider state, and only the current turn's are validated,
+ * which the SDK holds itself. On replay it stands in a placeholder for the
+ * missing ones and logs a warning saying so.
+ */
+export async function recordRounds(
+  stream: AsyncIterable<TextStreamPart<ToolSet>>,
+  onEvent?: (ev: ChatEvent) => void,
+): Promise<ChatMessage[]> {
+  const rounds: ChatMessage[] = [];
+  let calls: ContentBlock[] = [];
+  let results: ContentBlock[] = [];
+
+  const answer = (toolUseId: string, content: unknown) => {
+    const event: ChatEvent = { type: "tool_result", tool_use_id: toolUseId, content };
+    results.push(event);
+    onEvent?.(event);
+  };
+
+  for await (const part of stream) {
+    switch (part.type) {
+      case "tool-call": {
+        const event: ChatEvent = {
+          type: "tool_use",
+          id: part.toolCallId,
+          name: part.toolName,
+          input: part.input,
+        };
+        calls.push(event);
+        onEvent?.(event);
+        break;
+      }
+      case "tool-result":
+        answer(part.toolCallId, part.output);
+        break;
+      case "tool-error":
+        answer(part.toolCallId, { error: TOOL_FAILURE_TEXT });
+        break;
+      case "finish-step":
+        if (calls.length > 0) {
+          rounds.push({ role: "assistant", content: calls }, { role: "user", content: results });
+        }
+        calls = [];
+        results = [];
+        break;
+    }
+  }
+  return rounds;
 }
 
 // The whole history is replayed verbatim and uncompressed: assistant tool_use →

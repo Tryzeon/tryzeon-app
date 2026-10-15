@@ -6,9 +6,9 @@ export type { UsageCounter };
 /**
  * The conversation schema, shared by client storage, the wire (both
  * directions), and rendering. Standard chat-API shape: only user/assistant
- * roles, each a list of content blocks. A tool round spans messages — a
- * `tool_use` block in an assistant message paired (by id) with a `tool_result`
- * block in a user message.
+ * roles, each a list of content blocks. A tool round spans messages — the
+ * `tool_use` blocks of one agent step in an assistant message, paired (by id)
+ * with their `tool_result` blocks in the next user message.
  */
 export type ContentBlock = Record<string, unknown>;
 export type ChatMessage = { role: ChatRole; content: ContentBlock[] };
@@ -33,7 +33,7 @@ export interface ChatParams {
 export interface ChatResult {
   /**
    * Every message this run added to the conversation, in order, stored exactly
-   * as given: one message per tool call, one per tool result, then the answer.
+   * as given: per agent step its calls then their results, and last the answer.
    * The answer names recommended items by id only.
    */
   messages: ChatMessage[];

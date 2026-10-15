@@ -5,8 +5,9 @@ part 'content_block.freezed.dart';
 /// One content block of a chat message — the standard chat-API shape (Anthropic
 /// content blocks / OpenAI). A tool round spans messages: a [ToolUseBlock] in an
 /// assistant message is paired (by [ToolUseBlock.id] ↔ [ToolResultBlock.toolUseId])
-/// with a [ToolResultBlock] in the following user message. Recommended items
-/// are referenced by id; what they render as lives in `ChatItems`.
+/// with a [ToolResultBlock] in the following user message. The calls of one
+/// agent step share a message. Recommended items are referenced by id; what
+/// they render as lives in `ChatItems`.
 @freezed
 sealed class ContentBlock with _$ContentBlock {
   const factory ContentBlock.text(final String text) = TextBlock;
