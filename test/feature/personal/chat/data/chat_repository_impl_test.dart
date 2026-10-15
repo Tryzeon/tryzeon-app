@@ -3,15 +3,14 @@ import 'package:tryzeon/core/data/utils/decode_function_response.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
 import 'package:tryzeon/feature/common/daily_usage/domain/failures/usage_limit_failure.dart';
-import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/personal/chat/data/datasources/chat_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/chat/data/dtos/chat_request.dart';
 import 'package:tryzeon/feature/personal/chat/data/dtos/chat_stream_event_dto.dart';
 import 'package:tryzeon/feature/personal/chat/data/repositories/chat_repository_impl.dart';
+import 'package:tryzeon/feature/personal/chat/domain/entities/chat_items.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_stream_event.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
-import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 
 class _FakeChatRemoteDataSource implements ChatRemoteDataSource {
   _FakeChatRemoteDataSource(this.events);
@@ -63,15 +62,8 @@ void main() {
     remoteDataSource: _FakeChatRemoteDataSource(events),
   ).sendMessageStream(history).toList();
 
-  test('sends products and wardrobe items by id only', () async {
+  test('sends the transcript in its wire shape, items by id', () async {
     final dataSource = _FakeChatRemoteDataSource(const []);
-    final item = WardrobeItem(
-      id: 'w1',
-      imagePath: 'u1/w1.jpg',
-      garmentType: GarmentType.top,
-      createdAt: DateTime(2026),
-      updatedAt: DateTime(2026),
-    );
 
     await ChatRepositoryImpl(remoteDataSource: dataSource).sendMessageStream([
       const ChatMessage(role: ChatRole.user, content: [TextBlock('想找外套')]),
@@ -87,9 +79,9 @@ void main() {
           ToolResultBlock(toolUseId: 't1', content: {'items': <Object>[]}),
         ],
       ),
-      ChatMessage(
+      const ChatMessage(
         role: ChatRole.assistant,
-        content: [ContentBlock.wardrobeProduct(item)],
+        content: [ContentBlock.wardrobeProduct('w1')],
       ),
     ]).drain<void>();
 
@@ -147,13 +139,40 @@ void main() {
       },
       {
         'type': 'done',
-        'message': {
-          'role': 'assistant',
-          'content': [
-            {'type': 'text', 'text': '這件很適合'},
-            {'type': 'wardrobe', 'item': _wardrobeRow},
-            {'type': 'sticker', 'id': 's1'},
-          ],
+        'messages': [
+          {
+            'role': 'assistant',
+            'content': [
+              {
+                'type': 'tool_use',
+                'id': 't1',
+                'name': 'search',
+                'input': {'q': '外套'},
+              },
+            ],
+          },
+          {
+            'role': 'user',
+            'content': [
+              {
+                'type': 'tool_result',
+                'tool_use_id': 't1',
+                'content': {'items': <Object>[]},
+              },
+            ],
+          },
+          {
+            'role': 'assistant',
+            'content': [
+              {'type': 'text', 'text': '這件很適合'},
+              {'type': 'wardrobe', 'id': 'w1'},
+              {'type': 'sticker', 'id': 's1'},
+            ],
+          },
+        ],
+        'items': {
+          'products': <String, Object>{},
+          'wardrobe': {'w1': _wardrobeRow},
         },
         'usage': _usageJson,
       },
@@ -173,27 +192,46 @@ void main() {
       ),
     );
     final replied = events[2] as ChatReplied;
+    expect(replied.messages, const [
+      ChatMessage(
+        role: ChatRole.assistant,
+        content: [
+          ToolUseBlock(id: 't1', name: 'search', input: {'q': '外套'}),
+        ],
+      ),
+      ChatMessage(
+        role: ChatRole.user,
+        content: [
+          ToolResultBlock(toolUseId: 't1', content: {'items': <Object>[]}),
+        ],
+      ),
+      ChatMessage(
+        role: ChatRole.assistant,
+        content: [TextBlock('這件很適合'), WardrobeProductBlock('w1')],
+      ),
+    ]);
+    expect(replied.items.products, isEmpty);
+    expect(replied.items.wardrobe.keys, ['w1']);
+    expect(replied.items.wardrobe['w1']!.imagePath, 'u1/w1.jpg');
     expect(replied.usage, _usage);
-    expect(replied.answer.role, ChatRole.assistant);
-    expect(replied.answer.content, hasLength(2));
-    expect(replied.answer.content[0], const TextBlock('這件很適合'));
-    expect((replied.answer.content[1] as WardrobeProductBlock).item.id, 'w1');
   });
 
   test('a malformed usage snapshot only drops the usage', () async {
     final events = await run([
       {
         'type': 'done',
-        'message': {'role': 'assistant', 'content': <Object>[]},
+        'messages': <Object>[],
+        'items': {
+          'products': <String, Object>{},
+          'wardrobe': <String, Object>{},
+        },
         'usage': {'user_id': 'u1'},
       },
     ]);
 
     expect(
       events.single,
-      const ChatStreamEvent.replied(
-        answer: ChatMessage(role: ChatRole.assistant),
-      ),
+      const ChatStreamEvent.replied(messages: [], items: ChatItems()),
     );
   });
 

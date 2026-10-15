@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/personal/chat/domain/entities/chat_items.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/state/chat_timeline.dart';
@@ -66,12 +67,16 @@ void main() {
           _user([_toolResult]),
           _assistant([
             const ContentBlock.text('a'),
-            ContentBlock.shopProduct(_product('p1')),
-            ContentBlock.shopProduct(_product('p2')),
+            const ContentBlock.shopProduct('p1'),
+            const ContentBlock.shopProduct('p2'),
             const ContentBlock.text('b'),
-            ContentBlock.wardrobeProduct(_wardrobe('w1')),
+            const ContentBlock.wardrobeProduct('w1'),
           ]),
         ],
+        items: ChatItems(
+          products: {'p1': _product('p1'), 'p2': _product('p2')},
+          wardrobe: {'w1': _wardrobe('w1')},
+        ),
       ),
     );
 
@@ -85,9 +90,39 @@ void main() {
     expect(turn.steps.single.itemCount, 3);
     expect(turn.segments, hasLength(4));
     expect(turn.segments[0], const ChatTextSegment('a'));
-    expect((turn.segments[1] as ChatCardSegment).cards, hasLength(2));
+    expect(
+      turn.segments[1],
+      ChatCardSegment([
+        ChatRecommendation.product(_product('p1')),
+        ChatRecommendation.product(_product('p2')),
+      ]),
+    );
     expect(turn.segments[2], const ChatTextSegment('b'));
-    expect((turn.segments[3] as ChatCardSegment).cards, hasLength(1));
+    expect(
+      turn.segments[3],
+      ChatCardSegment([ChatRecommendation.wardrobe(_wardrobe('w1'))]),
+    );
+  });
+
+  test('a recommendation whose item never arrived is left out', () {
+    final entries = buildChatTimeline(
+      ChatState(
+        messages: [
+          _greeting,
+          _user([const ContentBlock.text('找白襯衫')]),
+          _assistant([
+            const ContentBlock.shopProduct('gone'),
+            const ContentBlock.shopProduct('p1'),
+          ]),
+        ],
+        items: ChatItems(products: {'p1': _product('p1')}),
+      ),
+    );
+
+    final turn = entries[2] as ChatAssistantEntry;
+    expect(turn.segments, [
+      ChatCardSegment([ChatRecommendation.product(_product('p1'))]),
+    ]);
   });
 
   group('live turn status', () {

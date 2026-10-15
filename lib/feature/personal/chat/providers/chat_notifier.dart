@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/feature/personal/chat/domain/entities/chat_items.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_stream_event.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
@@ -14,15 +15,11 @@ part 'chat_notifier.g.dart';
 
 const String _greetingText =
     '嗨！我是你的穿搭顧問 👗 告訴我你的需求吧 — 例如場合、風格，或想搭配的某件單品，我會幫你推薦合適的穿搭。';
-const String _emptyReplyMessage = '抱歉，我沒有理解，可以再說一次你的需求嗎？';
 
 const ChatMessage _greetingMessage = ChatMessage(
   role: ChatRole.assistant,
   content: [ContentBlock.text(_greetingText)],
 );
-
-ChatMessage _assistantText(final String text) =>
-    ChatMessage(role: ChatRole.assistant, content: [ContentBlock.text(text)]);
 
 ChatMessage _userText(final String text) =>
     ChatMessage(role: ChatRole.user, content: [ContentBlock.text(text)]);
@@ -31,6 +28,7 @@ ChatMessage _userText(final String text) =>
 sealed class ChatState with _$ChatState {
   const factory ChatState({
     @Default([]) final List<ChatMessage> messages,
+    @Default(ChatItems()) final ChatItems items,
     @Default(false) final bool isLoading,
     @Default(0) final int generation,
     final Failure? failure,
@@ -102,12 +100,13 @@ class ChatNotifier extends _$ChatNotifier {
           _append(ChatMessage(role: ChatRole.assistant, content: [block]));
         case ChatToolFinished(:final block):
           _append(ChatMessage(role: ChatRole.user, content: [block]));
-        case ChatReplied(:final answer):
+        case ChatReplied(:final messages, :final items):
           terminated = true;
-          _append(
-            answer.content.isEmpty
-                ? _assistantText(_emptyReplyMessage)
-                : answer,
+          // The streamed steps were progress; the server's messages are the
+          // record the next request replays.
+          state = state.copyWith(
+            messages: [...state.messages.sublist(0, turnStart), ...messages],
+            items: state.items.merge(items),
           );
         case ChatFailed(:final failure):
           terminated = true;

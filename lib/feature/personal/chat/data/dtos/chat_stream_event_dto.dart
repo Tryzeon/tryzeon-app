@@ -1,7 +1,8 @@
 // ignore_for_file: invalid_annotation_target
 
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:tryzeon/feature/personal/chat/data/dtos/chat_answer_dto.dart';
+import 'package:tryzeon/feature/personal/chat/data/dtos/chat_items_dto.dart';
+import 'package:tryzeon/feature/personal/chat/data/dtos/chat_message_dto.dart';
 
 part 'chat_stream_event_dto.freezed.dart';
 part 'chat_stream_event_dto.g.dart';
@@ -30,7 +31,8 @@ sealed class ChatStreamEventDto with _$ChatStreamEventDto {
 
   @JsonSerializable(createToJson: false, checked: true)
   const factory ChatStreamEventDto.done({
-    required final ChatAnswerDto message,
+    required final List<ChatMessageDto> messages,
+    required final ChatItemsDto items,
     final Map<String, dynamic>? usage,
   }) = ChatDoneEventDto;
 

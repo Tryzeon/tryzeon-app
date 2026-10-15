@@ -1,14 +1,16 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
-import 'package:tryzeon/feature/personal/chat/data/dtos/chat_answer_block_dto.dart';
-import 'package:tryzeon/feature/personal/chat/data/dtos/chat_answer_dto.dart';
 import 'package:tryzeon/feature/personal/chat/data/dtos/chat_content_block_dto.dart';
+import 'package:tryzeon/feature/personal/chat/data/dtos/chat_items_dto.dart';
 import 'package:tryzeon/feature/personal/chat/data/dtos/chat_message_dto.dart';
 import 'package:tryzeon/feature/personal/chat/data/dtos/chat_stream_event_dto.dart';
 import 'package:tryzeon/feature/personal/chat/data/mappers/chat_mappr.auto_mappr.dart';
+import 'package:tryzeon/feature/personal/chat/domain/entities/chat_items.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
+import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/shop.dart'
     show decodeShopProductRow;
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/wardrobe.dart'
     show decodeWardrobeItemRow;
 
@@ -16,8 +18,14 @@ import 'package:tryzeon/feature/personal/wardrobe/wardrobe.dart'
   MapType<ChatMessage, ChatMessageDto>(
     fields: [Field('content', custom: ChatMapprHelper.contentToDto)],
   ),
-  MapType<ChatAnswerDto, ChatMessage>(
-    fields: [Field('content', custom: ChatMapprHelper.answerContentToEntity)],
+  MapType<ChatMessageDto, ChatMessage>(
+    fields: [Field('content', custom: ChatMapprHelper.contentToEntity)],
+  ),
+  MapType<ChatItemsDto, ChatItems>(
+    fields: [
+      Field('products', custom: ChatMapprHelper.productsToEntity),
+      Field('wardrobe', custom: ChatMapprHelper.wardrobeToEntity),
+    ],
   ),
   MapType<ChatToolUseEventDto, ToolUseBlock>(),
   MapType<ChatToolResultEventDto, ToolResultBlock>(),
@@ -38,27 +46,33 @@ class ChatMapprHelper {
             toolUseId: toolUseId,
             content: content,
           ),
-        ShopProductBlock(:final product) => ChatContentBlockDto.product(
-          id: product.id,
-        ),
-        WardrobeProductBlock(:final item) => ChatContentBlockDto.wardrobe(
-          id: item.id,
-        ),
+        ShopProductBlock(:final id) => ChatContentBlockDto.product(id: id),
+        WardrobeProductBlock(:final id) => ChatContentBlockDto.wardrobe(id: id),
       },
   ];
 
-  static List<ContentBlock> answerContentToEntity(final ChatAnswerDto source) =>
-      [
-        for (final block in source.content)
-          ?switch (block) {
-            ChatAnswerTextDto(:final text) => ContentBlock.text(text),
-            ChatAnswerProductDto(:final item) => ContentBlock.shopProduct(
-              decodeShopProductRow(item),
-            ),
-            ChatAnswerWardrobeDto(:final item) => ContentBlock.wardrobeProduct(
-              decodeWardrobeItemRow(item),
-            ),
-            ChatAnswerUnknownDto() => null,
-          },
-      ];
+  static List<ContentBlock> contentToEntity(final ChatMessageDto source) => [
+    for (final block in source.content)
+      ?switch (block) {
+        ChatTextBlockDto(:final text) => ContentBlock.text(text),
+        ChatToolUseBlockDto(:final id, :final name, :final input) =>
+          ContentBlock.toolUse(id: id, name: name, input: input),
+        ChatToolResultBlockDto(:final toolUseId, :final content) =>
+          ContentBlock.toolResult(toolUseId: toolUseId, content: content),
+        ChatProductBlockDto(:final id) => ContentBlock.shopProduct(id),
+        ChatWardrobeBlockDto(:final id) => ContentBlock.wardrobeProduct(id),
+        ChatUnknownBlockDto() => null,
+      },
+  ];
+
+  static Map<String, ShopProduct> productsToEntity(final ChatItemsDto source) =>
+      source.products.map(
+        (final id, final row) => MapEntry(id, decodeShopProductRow(row)),
+      );
+
+  static Map<String, WardrobeItem> wardrobeToEntity(
+    final ChatItemsDto source,
+  ) => source.wardrobe.map(
+    (final id, final row) => MapEntry(id, decodeWardrobeItemRow(row)),
+  );
 }

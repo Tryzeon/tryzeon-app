@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
-import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/state/chat_timeline.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_assistant_turn.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
@@ -25,7 +24,7 @@ final _reply = ChatAssistantEntry(
   status: ChatTurnStatus.done,
   segments: [
     const ChatTextSegment('reply'),
-    ChatCardSegment([ShopProductBlock(_product)]),
+    ChatCardSegment([ChatRecommendation.product(_product)]),
   ],
 );
 
