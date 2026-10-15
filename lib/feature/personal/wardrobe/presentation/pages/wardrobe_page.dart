@@ -9,6 +9,7 @@ import 'package:tryzeon/core/extensions/refresh_feedback_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/app_page_header.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
+import 'package:tryzeon/core/router/shells/personal_tab.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
@@ -114,7 +115,10 @@ class WardrobePage extends HookConsumerWidget {
             );
     }
 
-    Widget buildEmptyState() {
+    Widget buildEmptyState({
+      required final String title,
+      required final String message,
+    }) {
       return LayoutBuilder(
         builder: (final context, final constraints) {
           return SingleChildScrollView(
@@ -122,31 +126,37 @@ class WardrobePage extends HookConsumerWidget {
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(AppSpacing.lg),
-                      decoration: BoxDecoration(
-                        color: colorScheme.surfaceContainer,
-                        shape: BoxShape.circle,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xl,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        decoration: BoxDecoration(
+                          color: colorScheme.surfaceContainer,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.checkroom_rounded,
+                          size: AppSpacing.xxl,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
-                      child: Icon(
-                        Icons.checkroom_rounded,
-                        size: AppSpacing.xxl,
-                        color: colorScheme.onSurfaceVariant,
+                      const SizedBox(height: AppSpacing.md),
+                      Text(title, style: textTheme.titleMedium),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        message,
+                        textAlign: TextAlign.center,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    Text('此分類沒有衣物', style: textTheme.titleMedium),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      isComposing ? '試試其他分類，或結束搭配後上傳' : '點擊右下角 + 上傳第一件衣服',
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -219,7 +229,22 @@ class WardrobePage extends HookConsumerWidget {
                                 )
                                 .toList();
 
-                      if (filtered.isEmpty) return buildEmptyState();
+                      if (wardrobeItems.isEmpty) {
+                        return buildEmptyState(
+                          title: '把你的衣服放進衣櫃',
+                          message: isComposing
+                              ? '上傳自己的衣服，就能直接試穿，或和${PersonalTab.shop.label}的商品一起搭配。結束搭配後即可上傳。'
+                              : '上傳自己的衣服，就能直接試穿，或和${PersonalTab.shop.label}的商品一起搭配。點擊右下角 + 開始上傳。',
+                        );
+                      }
+                      if (filtered.isEmpty) {
+                        return buildEmptyState(
+                          title: '此分類沒有衣物',
+                          message: isComposing
+                              ? '試試其他分類，或結束搭配後上傳'
+                              : '點擊右下角 + 上傳第一件衣服',
+                        );
+                      }
 
                       return GridView.builder(
                         padding: EdgeInsets.fromLTRB(

@@ -58,16 +58,20 @@ Widget _harness(final ProviderContainer container) {
 Future<ProviderContainer> pumpPage(
   final WidgetTester tester, {
   final int limit = 100,
+  final List<WardrobeItem>? items,
 }) async {
   tester.view.physicalSize = const Size(800, 1400);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
 
-  final items = [
-    for (final id in ['a', 'b', 'c', 'd']) wardrobeItem(id),
-  ];
-  final container = _makeContainer(items, limit: limit);
+  final container = _makeContainer(
+    items ??
+        [
+          for (final id in ['a', 'b', 'c', 'd']) wardrobeItem(id),
+        ],
+    limit: limit,
+  );
   addTearDown(container.dispose);
   await tester.pumpWidget(_harness(container));
   await tester.pump(AppDuration.slow);
@@ -81,6 +85,27 @@ Future<void> pumpDockTransition(final WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets('an empty wardrobe explains what the wardrobe is for', (
+    final tester,
+  ) async {
+    await pumpPage(tester, items: const []);
+
+    expect(find.text('把你的衣服放進衣櫃'), findsOneWidget);
+    expect(find.text('此分類沒有衣物'), findsNothing);
+  });
+
+  testWidgets('an empty category says only that category is empty', (
+    final tester,
+  ) async {
+    await pumpPage(tester);
+
+    await tester.tap(find.widgetWithText(ChoiceChip, '褲子'));
+    await tester.pump();
+
+    expect(find.text('此分類沒有衣物'), findsOneWidget);
+    expect(find.text('把你的衣服放進衣櫃'), findsNothing);
+  });
+
   testWidgets('header button enters compose mode and cancel leaves it', (
     final tester,
   ) async {
