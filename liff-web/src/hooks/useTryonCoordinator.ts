@@ -9,38 +9,28 @@ import { loadPromptConfig } from "../lib/promptConfig";
 import type { TryonProduct } from "../state/gallery";
 import { useGallery } from "../state/GalleryProvider";
 
-class SetupError extends Error {}
-
-const SETUP_FALLBACK = "準備試穿失敗，請稍後再試。";
-
 /** The single entry point for every try-on: those started from the product page
  * and from home all land in the same gallery. */
 export function useTryonCoordinator() {
   const { dispatch } = useGallery();
   const navigate = useNavigate();
 
-  const run = useCallback(
-    async (buildGarment: () => Promise<Garment>, product: TryonProduct | null) => {
-      // The placeholder page and the navigation come before any work: preparing a
-      // try-on reads a file and downscales it. All of it happens after the button
-      // is pressed, so doing it first would freeze the screen until it finished —
-      // the animation goes up first and the work runs underneath it.
+  // The placeholder page and the navigation come before any work: reading and
+  // downscaling a photo happens after the button is pressed, so doing it first
+  // would freeze the screen until it finished — the animation goes up first and
+  // the work runs underneath it.
+  const begin = useCallback(
+    (product: TryonProduct | null) => {
       const id = newId();
       dispatch({ type: "addPending", id, product });
       navigate("/home");
+      return id;
+    },
+    [dispatch, navigate],
+  );
 
-      let garment: Garment;
-      try {
-        garment = await buildGarment();
-      } catch (err) {
-        dispatch({
-          type: "fail",
-          id,
-          message: err instanceof SetupError ? err.message : SETUP_FALLBACK,
-        });
-        return;
-      }
-
+  const submit = useCallback(
+    async (id: string, garment: Garment) => {
       try {
         const imageUrl = await runTryon(garment, loadPromptConfig());
         dispatch({ type: "complete", id, imageUrl });
@@ -51,28 +41,30 @@ export function useTryonCoordinator() {
         dispatch({ type: "fail", id, message: tryonFailureMessage(err) });
       }
     },
-    [dispatch, navigate],
+    [dispatch],
   );
 
   const fromGarmentPhoto = useCallback(
-    (file: File) =>
-      run(async () => {
-        try {
-          return { images: [{ base64: await downscaleToBase64(file) }] };
-        } catch {
-          throw new SetupError("讀取照片失敗，換一張再試。");
-        }
-      }, null),
-    [run],
+    async (file: File) => {
+      const id = begin(null);
+      let base64: string;
+      try {
+        base64 = await downscaleToBase64(file);
+      } catch {
+        dispatch({ type: "fail", id, message: "讀取照片失敗，換一張再試。" });
+        return;
+      }
+      await submit(id, { images: [{ base64 }] });
+    },
+    [begin, submit, dispatch],
   );
 
   const fromProduct = useCallback(
     (item: CatalogItem) =>
-      run(async () => ({ productId: item.productId }), {
+      submit(begin({ productId: item.productId, name: item.name }), {
         productId: item.productId,
-        name: item.name,
       }),
-    [run],
+    [begin, submit],
   );
 
   return { fromGarmentPhoto, fromProduct };

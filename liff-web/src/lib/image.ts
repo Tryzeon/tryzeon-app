@@ -52,7 +52,7 @@ export function downscaleToBlob(file: File, maxDim = UPLOAD_MAX_DIM): Promise<Bl
  * Without the `data:` prefix — the edge function's `{ base64 }` expects raw
  * data, and sending the prefix along hands the decoder garbage bytes.
  */
-export function blobToBase64(blob: Blob): Promise<string> {
+function blobToBase64(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {

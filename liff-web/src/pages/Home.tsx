@@ -172,16 +172,14 @@ export function Home() {
       <div className="home__top">
         <span className="home__mark">Tryzeon</span>
         {!isBlankAvatarPage && (
-          <div className="home__topright">
-            <button
-              type="button"
-              className="home__more"
-              aria-label="更多選項"
-              onClick={() => setPopup({ kind: "menu" })}
-            >
-              ⋮
-            </button>
-          </div>
+          <button
+            type="button"
+            className="home__more"
+            aria-label="更多選項"
+            onClick={() => setPopup({ kind: "menu" })}
+          >
+            ⋮
+          </button>
         )}
       </div>
 

@@ -653,7 +653,6 @@ button, label { touch-action: manipulation; }
   font-weight: 600;
   color: #fff;
 }
-.home__topright { display: flex; align-items: center; gap: 8px; }
 .home__more {
   width: 40px;
   height: 40px;
