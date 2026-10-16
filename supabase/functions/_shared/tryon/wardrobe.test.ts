@@ -1,7 +1,7 @@
 import { assertEquals, assertRejects } from "@std/assert";
 import { buildWardrobeGarmentDetail, resolveWardrobeGarment } from "./wardrobe.ts";
 import { LIMITS } from "./types.ts";
-import { WARDROBE_IMAGES_BUCKET } from "../storage.ts";
+import { WARDROBE_IMAGES_BUCKET } from "../supabase-storage.ts";
 import { ValidationError } from "./errors.ts";
 import type { DbClient } from "../supabase.ts";
 

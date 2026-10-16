@@ -1,4 +1,4 @@
-import { ownsUserObjectPath, WARDROBE_IMAGES_BUCKET } from "../storage.ts";
+import { ownsUserObjectPath, WARDROBE_IMAGES_BUCKET } from "../supabase-storage.ts";
 import { isUuid, textArrayValues } from "../text.ts";
 import { ValidationError } from "./errors.ts";
 import { garmentCategoryOf, LIMITS } from "./types.ts";

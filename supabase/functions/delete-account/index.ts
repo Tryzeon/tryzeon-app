@@ -1,6 +1,6 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 import { json } from "../_shared/http.ts";
-import { USER_AVATARS_BUCKET, WARDROBE_IMAGES_BUCKET } from "../_shared/storage.ts";
+import { USER_AVATARS_BUCKET, WARDROBE_IMAGES_BUCKET } from "../_shared/supabase-storage.ts";
 import { type DbClient, getAdminClient, getAuthenticatedUserClient } from "../_shared/supabase.ts";
 
 class AppError extends Error {
@@ -68,9 +68,9 @@ class StorageCleanupService {
    * would notice going missing, is what keeps it off everyone else's.
    *
    * Only the user-scoped Supabase buckets: store logos and product images live
-   * in R2 under `stores/` (`_shared/storage.ts`, written by `store-images`), so
-   * nothing here names them. Deleting the auth user orphans those R2 keys;
-   * nothing collects them today.
+   * in R2 under `stores/` (written by `store-images`), so nothing here names
+   * them. Deleting the auth user orphans those R2 keys; nothing collects them
+   * today.
    */
   async cleanupUserStorage(userId: string): Promise<void> {
     const userBuckets = [USER_AVATARS_BUCKET, WARDROBE_IMAGES_BUCKET];

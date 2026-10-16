@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert";
-import { ownsUserObjectPath } from "./storage.ts";
+import { ownsUserObjectPath } from "./supabase-storage.ts";
 
 Deno.test("ownsUserObjectPath accepts a key in the user's own folder", () => {
   assertEquals(ownsUserObjectPath("u1", "u1/top/a.png"), true);

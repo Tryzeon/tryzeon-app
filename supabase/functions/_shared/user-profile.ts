@@ -1,4 +1,4 @@
-import { ownsUserObjectPath } from "./storage.ts";
+import { ownsUserObjectPath } from "./supabase-storage.ts";
 import { nonEmptyStr, textArrayValues } from "./text.ts";
 import type { Enums } from "./database.types.ts";
 import type { DbClient } from "./supabase.ts";

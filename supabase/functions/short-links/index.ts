@@ -1,6 +1,6 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 import { type DbClient, getAnonClient } from "../_shared/supabase.ts";
-import { publicImageUrl } from "../_shared/storage.ts";
+import { publicImageUrl } from "../_shared/public-images.ts";
 import { json, jsonError, noStore } from "../_shared/http.ts";
 import {
   channelFromUserAgent,

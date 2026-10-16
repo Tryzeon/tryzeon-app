@@ -1,6 +1,6 @@
 import { fetchRowsByIds } from "../_shared/chat/hydrate.ts";
 import { textArrayValues } from "../_shared/text.ts";
-import { ownsUserObjectPath, WARDROBE_IMAGES_BUCKET } from "../_shared/storage.ts";
+import { ownsUserObjectPath, WARDROBE_IMAGES_BUCKET } from "../_shared/supabase-storage.ts";
 import { CARD_COLOR } from "./card-kit.ts";
 import type { Enums, Tables } from "../_shared/database.types.ts";
 import type { DbClient } from "../_shared/supabase.ts";

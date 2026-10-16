@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert";
 import { loadGarments, makeSourceLoader } from "./sources.ts";
-import { USER_AVATARS_BUCKET, WARDROBE_IMAGES_BUCKET } from "../storage.ts";
+import { USER_AVATARS_BUCKET, WARDROBE_IMAGES_BUCKET } from "../supabase-storage.ts";
 import type { SourceLoader } from "./sources.ts";
 
 function fakeClient() {

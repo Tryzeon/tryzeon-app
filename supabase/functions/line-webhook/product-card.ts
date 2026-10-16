@@ -1,5 +1,5 @@
 import { fetchRowsByIds } from "../_shared/chat/hydrate.ts";
-import { publicImageUrl } from "../_shared/storage.ts";
+import { publicImageUrl } from "../_shared/public-images.ts";
 import { CARD_COLOR } from "./card-kit.ts";
 import { asJsonObject, type DbClient } from "../_shared/supabase.ts";
 

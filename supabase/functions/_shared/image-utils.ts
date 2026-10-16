@@ -1,6 +1,6 @@
 import { encodeBase64 } from "@std/encoding/base64";
 import { downloadPublicImageFromR2 } from "./r2.ts";
-import type { SupabaseImageBucket } from "./storage.ts";
+import type { SupabaseImageBucket } from "./supabase-storage.ts";
 import type { DbClient } from "./supabase.ts";
 
 export async function downloadStorageImageAsBase64(

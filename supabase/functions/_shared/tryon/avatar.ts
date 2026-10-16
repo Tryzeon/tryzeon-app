@@ -1,4 +1,4 @@
-import { USER_AVATARS_BUCKET } from "../storage.ts";
+import { USER_AVATARS_BUCKET } from "../supabase-storage.ts";
 import { getAvatarPath } from "../user-profile.ts";
 import { MissingAvatarError } from "./errors.ts";
 import type { ImageSource } from "./types.ts";

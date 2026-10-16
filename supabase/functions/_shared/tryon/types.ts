@@ -1,7 +1,7 @@
 import type { DailyUsage, UsageCounter } from "../quota.ts";
 import { GARMENT_TYPE_VALUES } from "../vocabularies.ts";
 import type { Enums } from "../database.types.ts";
-import type { SupabaseImageBucket } from "../storage.ts";
+import type { SupabaseImageBucket } from "../supabase-storage.ts";
 import type { ImagePromptOptions, VideoPromptOptions } from "./prompt.ts";
 import type { DbClient } from "../supabase.ts";
 
