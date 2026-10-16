@@ -16,6 +16,8 @@ class WardrobeRemoteDataSource {
 
   static const _wardrobeItemTable = 'wardrobe_items';
   static const _bucket = 'wardrobe-images';
+  static const _itemColumns =
+      'id, image_path, garment_type, tags, created_at, updated_at';
 
   /// SQLSTATE the wardrobe_items insert trigger raises for a full wardrobe.
   static const _wardrobeFullCode = 'TZ001';
@@ -26,7 +28,7 @@ class WardrobeRemoteDataSource {
 
     final response = await _supabaseClient
         .from(_wardrobeItemTable)
-        .select('id, image_path, garment_type, tags, created_at, updated_at')
+        .select(_itemColumns)
         .eq('user_id', user.id)
         .order('created_at', ascending: false);
 
@@ -37,14 +39,19 @@ class WardrobeRemoteDataSource {
     }).toList();
   }
 
-  Future<void> createWardrobeItem(
+  Future<WardrobeItemDto> createWardrobeItem(
     final CreateWardrobeItemRequest request,
   ) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();
 
     try {
-      await _supabaseClient.from(_wardrobeItemTable).insert(request.toJson());
+      final response = await _supabaseClient
+          .from(_wardrobeItemTable)
+          .insert(request.toJson())
+          .select(_itemColumns)
+          .single();
+      return WardrobeItemDto.fromJson(response);
     } on PostgrestException catch (e) {
       if (e.code == _wardrobeFullCode) throw const WardrobeFullException();
       rethrow;
@@ -74,7 +81,7 @@ class WardrobeRemoteDataSource {
         .update(request.toJson())
         .eq('id', id)
         .eq('user_id', user.id)
-        .select()
+        .select(_itemColumns)
         .single();
 
     return WardrobeItemDto.fromJson(response);

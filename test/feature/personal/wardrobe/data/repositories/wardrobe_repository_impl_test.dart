@@ -34,15 +34,24 @@ class _FakeRemote implements WardrobeRemoteDataSource {
       throw UnimplementedError(invocation.memberName.toString());
 }
 
-class _FakeRemoteFailingRefresh implements WardrobeRemoteDataSource {
+class _FakeRemoteCreate implements WardrobeRemoteDataSource {
+  int listCalls = 0;
+
   @override
-  Future<void> createWardrobeItem(
+  Future<WardrobeItemDto> createWardrobeItem(
     final CreateWardrobeItemRequest request,
-  ) async {}
+  ) async => WardrobeItemDto(
+    id: request.id,
+    imagePath: request.imagePath,
+    garmentType: request.garmentType,
+    createdAt: DateTime(2026),
+    updatedAt: DateTime(2026),
+  );
 
   @override
   Future<List<WardrobeItemDto>> getWardrobeItems() async {
-    throw Exception('refresh failed');
+    listCalls++;
+    return [];
   }
 
   @override
@@ -163,20 +172,45 @@ void main() {
     expect(items.single.garmentType, GarmentType.top);
   });
 
+  const newItem = NewWardrobeItem(
+    id: 'w2',
+    imagePath: 'w2.jpg',
+    garmentType: GarmentType.top,
+    tags: [],
+  );
+
   test(
-    'createWardrobeItem invalidates the cache when the refresh fails',
+    'createWardrobeItem adds the returned item to the cache without refetching the list',
     () async {
       await seedCache('top');
+      final remote = _FakeRemoteCreate();
 
-      final result = await buildRepository(_FakeRemoteFailingRefresh())
-          .createWardrobeItem(
-            const NewWardrobeItem(
-              id: 'w2',
-              imagePath: 'w2.jpg',
-              garmentType: GarmentType.top,
-              tags: [],
-            ),
-          );
+      final result = await buildRepository(remote).createWardrobeItem(newItem);
+
+      expect(result.isSuccess, isTrue);
+      expect(remote.listCalls, 0);
+      expect(await harness.isar.wardrobeItemCaches.count(), 2);
+      expect(
+        await harness.isar.wardrobeItemCaches.getByItemId('w2'),
+        isNotNull,
+      );
+    },
+  );
+
+  test(
+    'createWardrobeItem succeeds and drops the cache when caching the item fails',
+    () async {
+      await seedCache('top');
+      final repository = WardrobeRepositoryImpl(
+        remoteDataSource: _FakeRemoteCreate(),
+        localDataSource: _FailingSaveLocal(
+          harness.service,
+          _NoopImageFileCache(),
+          CacheEntryLocalDataSource(harness.service),
+        ),
+      );
+
+      final result = await repository.createWardrobeItem(newItem);
 
       expect(result.isSuccess, isTrue);
       expect(

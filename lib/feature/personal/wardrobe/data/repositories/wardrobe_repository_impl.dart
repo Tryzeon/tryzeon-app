@@ -81,33 +81,19 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
   Future<Result<void, Failure>> createWardrobeItem(
     final NewWardrobeItem item,
   ) async {
+    final WardrobeItem createdItem;
     try {
-      await _remoteDataSource.createWardrobeItem(
-        _mappr.convert<NewWardrobeItem, CreateWardrobeItemRequest>(item),
+      createdItem = _mappr.convert<WardrobeItemDto, WardrobeItem>(
+        await _remoteDataSource.createWardrobeItem(
+          _mappr.convert<NewWardrobeItem, CreateWardrobeItemRequest>(item),
+        ),
       );
     } catch (e, stackTrace) {
       AppLogger.error('Failed to create wardrobe item', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
 
-    try {
-      await _localDataSource.saveWardrobeItems(
-        _mappr.convertList<WardrobeItemDto, WardrobeItem>(
-          await _remoteDataSource.getWardrobeItems(),
-        ),
-      );
-    } catch (e, stackTrace) {
-      AppLogger.warning(
-        'Wardrobe refresh failed, invalidating cache',
-        e,
-        stackTrace,
-      );
-      try {
-        await _localDataSource.invalidateWardrobeItems();
-      } catch (e, stackTrace) {
-        AppLogger.error('Failed to invalidate wardrobe cache', e, stackTrace);
-      }
-    }
+    await _cacheWrittenItem(createdItem);
     return const Ok(null);
   }
 
@@ -151,11 +137,16 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
       return Err(mapExceptionToFailure(e));
     }
 
+    await _cacheWrittenItem(updatedItem);
+    return Ok(updatedItem);
+  }
+
+  Future<void> _cacheWrittenItem(final WardrobeItem item) async {
     try {
-      await _localDataSource.saveWardrobeItem(updatedItem);
+      await _localDataSource.saveWardrobeItem(item);
     } catch (e, stackTrace) {
       AppLogger.warning(
-        'Failed to cache updated wardrobe item, invalidating cache',
+        'Failed to cache written wardrobe item, invalidating cache',
         e,
         stackTrace,
       );
@@ -165,7 +156,6 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
         AppLogger.error('Failed to invalidate wardrobe cache', e, stackTrace);
       }
     }
-    return Ok(updatedItem);
   }
 
   @override

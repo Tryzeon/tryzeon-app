@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/dtos/create_wardrobe_item_request.dart';
+import 'package:tryzeon/feature/personal/wardrobe/data/dtos/wardrobe_item_dto.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/exceptions/wardrobe_full_exception.dart';
 
 import '../../../../../support/fake_supabase_http.dart';
@@ -15,7 +16,9 @@ void main() {
     tags: [],
   );
 
-  Future<void> insertAnswering(final Map<String, dynamic> error) async {
+  Future<WardrobeItemDto> insertAnswering(
+    final Map<String, dynamic> error,
+  ) async {
     final client = supabaseAnswering(400, error);
     await signIn(client);
     return WardrobeRemoteDataSource(client).createWardrobeItem(request);
