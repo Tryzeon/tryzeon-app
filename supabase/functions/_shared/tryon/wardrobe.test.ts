@@ -1,6 +1,7 @@
 import { assertEquals, assertRejects } from "@std/assert";
 import { buildWardrobeGarmentDetail, resolveWardrobeGarment } from "./wardrobe.ts";
 import { LIMITS } from "./types.ts";
+import { WARDROBE_IMAGES_BUCKET } from "../storage.ts";
 import { ValidationError } from "./errors.ts";
 import type { DbClient } from "../supabase.ts";
 
@@ -120,7 +121,7 @@ Deno.test("resolveWardrobeGarment yields one image source, the category, and the
   const garment = await resolveWardrobeGarment(admin, "u1", ID);
 
   assertEquals(garment, {
-    images: [{ path: "u1/top/a.png" }],
+    images: [{ bucket: WARDROBE_IMAGES_BUCKET, path: "u1/top/a.png" }],
     category: "full_body",
     detail: "Garment type: one_piece. Tags: 寬鬆",
   });
@@ -133,7 +134,7 @@ Deno.test("resolveWardrobeGarment leaves a scopeless row uncategorized", async (
   const garment = await resolveWardrobeGarment(admin, "u1", ID);
 
   assertEquals(garment, {
-    images: [{ path: "u1/top/a.png" }],
+    images: [{ bucket: WARDROBE_IMAGES_BUCKET, path: "u1/top/a.png" }],
     detail: "Garment type: others",
   });
 });
@@ -145,7 +146,7 @@ Deno.test("resolveWardrobeGarment still describes a row with no tags", async () 
   const garment = await resolveWardrobeGarment(admin, "u1", ID);
 
   assertEquals(garment, {
-    images: [{ path: "u1/top/a.png" }],
+    images: [{ bucket: WARDROBE_IMAGES_BUCKET, path: "u1/top/a.png" }],
     category: "top",
     detail: "Garment type: top",
   });

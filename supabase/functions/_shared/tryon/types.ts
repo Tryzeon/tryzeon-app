@@ -1,6 +1,7 @@
 import type { DailyUsage, UsageCounter } from "../quota.ts";
 import { GARMENT_TYPE_VALUES } from "../vocabularies.ts";
 import type { Enums } from "../database.types.ts";
+import type { SupabaseImageBucket } from "../storage.ts";
 import type { ImagePromptOptions, VideoPromptOptions } from "./prompt.ts";
 import type { DbClient } from "../supabase.ts";
 
@@ -41,7 +42,10 @@ export function isGarmentType(value: unknown): value is GarmentType {
  * ownership on, so it is never decoded from untrusted input and needs no
  * runtime guard.
  */
-export type ImageSource = { path: string } | { base64: string };
+export type ImageSource =
+  | { base64: string }
+  | { publicImageKey: string }
+  | { bucket: SupabaseImageBucket; path: string };
 
 /**
  * `sizeId` is accepted and carried through unchanged but nothing reads it: the

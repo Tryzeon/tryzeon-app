@@ -1,18 +1,13 @@
 import { encodeBase64 } from "@std/encoding/base64";
 import { downloadPublicImageFromR2 } from "./r2.ts";
-import { isR2PublicKey, type SupabaseImageBucket } from "./storage.ts";
+import type { SupabaseImageBucket } from "./storage.ts";
 import type { DbClient } from "./supabase.ts";
 
-export async function fetchImageAsBase64(
+export async function downloadStorageImageAsBase64(
   supabase: DbClient,
-  path: string,
   bucket: SupabaseImageBucket,
+  path: string,
 ): Promise<string> {
-  if (isR2PublicKey(path)) {
-    const bytes = await downloadPublicImageFromR2(path);
-    return encodeBase64(bytes);
-  }
-
   const { data, error } = await supabase.storage.from(bucket).download(path);
 
   if (error) {
@@ -25,6 +20,10 @@ export async function fetchImageAsBase64(
 
   const arrayBuffer = await data.arrayBuffer();
   return encodeBase64(arrayBuffer);
+}
+
+export async function downloadPublicImageAsBase64(key: string): Promise<string> {
+  return encodeBase64(await downloadPublicImageFromR2(key));
 }
 
 export function detectMimeType(base64Data: string): string {

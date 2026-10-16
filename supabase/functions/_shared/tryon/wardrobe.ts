@@ -1,4 +1,4 @@
-import { ownsUserObjectPath } from "../storage.ts";
+import { ownsUserObjectPath, WARDROBE_IMAGES_BUCKET } from "../storage.ts";
 import { isUuid, textArrayValues } from "../text.ts";
 import { ValidationError } from "./errors.ts";
 import { garmentCategoryOf, LIMITS } from "./types.ts";
@@ -65,7 +65,7 @@ export async function resolveWardrobeGarment(
   }
 
   const garment: ResolvedGarment = {
-    images: [{ path }],
+    images: [{ bucket: WARDROBE_IMAGES_BUCKET, path }],
     detail: buildWardrobeGarmentDetail(data),
   };
   const category = garmentCategoryOf(data.garment_type);

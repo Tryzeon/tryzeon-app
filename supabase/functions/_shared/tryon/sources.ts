@@ -1,23 +1,24 @@
-import { fetchImageAsBase64 } from "../image-utils.ts";
-import type { SupabaseImageBucket } from "../storage.ts";
+import {
+  downloadPublicImageAsBase64,
+  downloadStorageImageAsBase64,
+} from "../image-utils.ts";
 import type { ImageSource, ResolvedGarment } from "./types.ts";
 import type { DbClient } from "../supabase.ts";
 
 export type SourceLoader = (source: ImageSource) => Promise<string>;
 
-/**
- * `path` is routed by `fetchImageAsBase64`: R2 for 'stores/' keys, else the
- * given Supabase `bucket` — so a caller loading avatars and wardrobe garments
- * needs one loader per bucket.
- */
 export function makeSourceLoader(
   client: DbClient,
-  bucket: SupabaseImageBucket,
+  downloadPublicImage: (key: string) => Promise<string> =
+    downloadPublicImageAsBase64,
 ): SourceLoader {
-  return (source: ImageSource): Promise<string> =>
-    "base64" in source
-      ? Promise.resolve(source.base64)
-      : fetchImageAsBase64(client, source.path, bucket);
+  return (source: ImageSource): Promise<string> => {
+    if ("base64" in source) return Promise.resolve(source.base64);
+    if ("publicImageKey" in source) {
+      return downloadPublicImage(source.publicImageKey);
+    }
+    return downloadStorageImageAsBase64(client, source.bucket, source.path);
+  };
 }
 
 export function loadGarments(

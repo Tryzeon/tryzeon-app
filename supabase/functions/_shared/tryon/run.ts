@@ -1,7 +1,6 @@
 import { decodeBase64 } from "@std/encoding/base64";
 import { detectMimeType, mimeTypeToExtension } from "../image-utils.ts";
 import { uploadTryonImageToR2, uploadTryonVideoToR2 } from "../r2.ts";
-import { USER_AVATARS_BUCKET, WARDROBE_IMAGES_BUCKET } from "../storage.ts";
 import { resolveStoredAvatar } from "./avatar.ts";
 import { resolveProductGarment } from "./catalog.ts";
 import { resolveWardrobeGarment } from "./wardrobe.ts";
@@ -110,11 +109,10 @@ export async function runTryonJob<M extends TryonMode>(
     );
 
     // Stage 2: load avatar + garment images as base64.
-    const loadAvatar = makeSourceLoader(client, USER_AVATARS_BUCKET);
-    const loadGarment = makeSourceLoader(client, WARDROBE_IMAGES_BUCKET);
+    const load = makeSourceLoader(client);
     const [avatarBase64, garmentGroups] = await Promise.all([
-      loadAvatar(avatar),
-      loadGarments(materialGarments, loadGarment),
+      load(avatar),
+      loadGarments(materialGarments, load),
     ]);
 
     const garments = materialGarments.map((g) => ({

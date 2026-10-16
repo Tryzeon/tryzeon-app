@@ -142,7 +142,7 @@ Deno.test("resolveProductGarment sends only the product's first image", async ()
 
   const garment = await resolveProductGarment(admin, { productId: PRODUCT_ID });
 
-  assertEquals(garment.images, [{ path: "stores/main.jpg" }]);
+  assertEquals(garment.images, [{ publicImageKey: "stores/main.jpg" }]);
 });
 
 Deno.test("resolveProductGarment carries the product's garment type as a category", async () => {

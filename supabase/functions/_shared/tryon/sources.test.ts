@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert";
 import { loadGarments, makeSourceLoader } from "./sources.ts";
-import { USER_AVATARS_BUCKET } from "../storage.ts";
+import { USER_AVATARS_BUCKET, WARDROBE_IMAGES_BUCKET } from "../storage.ts";
 import type { SourceLoader } from "./sources.ts";
 
 function fakeClient() {
@@ -24,29 +24,61 @@ function fakeClient() {
   return { client: client as any, downloads };
 }
 
-Deno.test("makeSourceLoader passes base64 through without touching storage", async () => {
+function fakePublicImages() {
+  const keys: string[] = [];
+  const download = (key: string) => {
+    keys.push(key);
+    return Promise.resolve("UFVCTElD");
+  };
+  return { download, keys };
+}
+
+Deno.test("makeSourceLoader passes base64 through without touching any store", async () => {
   const { client, downloads } = fakeClient();
-  const load = makeSourceLoader(client, USER_AVATARS_BUCKET);
+  const publicImages = fakePublicImages();
+  const load = makeSourceLoader(client, publicImages.download);
   assertEquals(await load({ base64: "ALREADY" }), "ALREADY");
   assertEquals(downloads, []);
+  assertEquals(publicImages.keys, []);
 });
 
-Deno.test("makeSourceLoader downloads a path from the loader's bucket", async () => {
+Deno.test("makeSourceLoader downloads a storage object from the bucket it names", async () => {
   const { client, downloads } = fakeClient();
-  const load = makeSourceLoader(client, USER_AVATARS_BUCKET);
-  assertEquals(await load({ path: "u1/avatar.jpg" }), "QQ==");
-  assertEquals(downloads, [`${USER_AVATARS_BUCKET}/u1/avatar.jpg`]);
+  const publicImages = fakePublicImages();
+  const load = makeSourceLoader(client, publicImages.download);
+  assertEquals(await load({ bucket: USER_AVATARS_BUCKET, path: "u1/avatar.jpg" }), "QQ==");
+  assertEquals(await load({ bucket: WARDROBE_IMAGES_BUCKET, path: "u1/top/a.jpg" }), "QQ==");
+  assertEquals(downloads, [
+    `${USER_AVATARS_BUCKET}/u1/avatar.jpg`,
+    `${WARDROBE_IMAGES_BUCKET}/u1/top/a.jpg`,
+  ]);
+  assertEquals(publicImages.keys, []);
+});
+
+Deno.test("makeSourceLoader fetches a public image key from the public images store", async () => {
+  const { client, downloads } = fakeClient();
+  const publicImages = fakePublicImages();
+  const load = makeSourceLoader(client, publicImages.download);
+  assertEquals(await load({ publicImageKey: "presets/female.jpg" }), "UFVCTElD");
+  assertEquals(publicImages.keys, ["presets/female.jpg"]);
+  assertEquals(downloads, []);
 });
 
 Deno.test("loadGarments preserves garment grouping and image order", async () => {
   const load: SourceLoader = (source) =>
-    Promise.resolve("base64" in source ? source.base64 : `@${source.path}`);
+    Promise.resolve(
+      "base64" in source
+        ? source.base64
+        : "publicImageKey" in source
+        ? `@${source.publicImageKey}`
+        : `@${source.bucket}/${source.path}`,
+    );
   const groups = await loadGarments(
     [
-      { images: [{ base64: "A1" }, { path: "p/a2.jpg" }] },
-      { images: [{ base64: "B1" }] },
+      { images: [{ base64: "A1" }, { publicImageKey: "stores/a2.jpg" }] },
+      { images: [{ bucket: WARDROBE_IMAGES_BUCKET, path: "u1/b1.jpg" }] },
     ],
     load,
   );
-  assertEquals(groups, [["A1", "@p/a2.jpg"], ["B1"]]);
+  assertEquals(groups, [["A1", "@stores/a2.jpg"], [`@${WARDROBE_IMAGES_BUCKET}/u1/b1.jpg`]]);
 });

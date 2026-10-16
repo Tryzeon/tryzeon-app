@@ -73,7 +73,7 @@ export async function resolveProductGarment(
   // The main shot only: a store's later images are detail macros carrying no
   // garment silhouette, and passing them off as extra angles dilutes the person
   // photo instead of describing the garment.
-  const images = [{ path: paths[0] }];
+  const images = [{ publicImageKey: paths[0] }];
 
   const category = isGarmentType(row.garment_type)
     ? garmentCategoryOf(row.garment_type)
