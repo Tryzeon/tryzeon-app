@@ -7,5 +7,7 @@ abstract class SettingsRepository {
   Future<Result<void, Failure>> setTryonPreferences(
     final TryonPreferences config,
   );
-  Future<Result<void, Failure>> clearTryonPreferences();
+  Future<Result<bool, Failure>> isOwnPhotoInviteDismissed();
+  Future<Result<void, Failure>> dismissOwnPhotoInvite();
+  Future<Result<void, Failure>> clearDevicePreferences();
 }

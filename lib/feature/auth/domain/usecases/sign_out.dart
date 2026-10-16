@@ -32,7 +32,7 @@ class SignOut {
     _logIgnored('clear local data', await _localDataStore.clear());
     _logIgnored(
       'clear device preferences',
-      await _settingsRepository.clearTryonPreferences(),
+      await _settingsRepository.clearDevicePreferences(),
     );
 
     return signedOut;

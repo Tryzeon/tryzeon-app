@@ -2,11 +2,14 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/personal/settings/data/datasources/own_photo_invite_local_datasource.dart';
 import 'package:tryzeon/feature/personal/settings/data/datasources/tryon_preferences_local_datasource.dart';
 import 'package:tryzeon/feature/personal/settings/data/repositories/settings_repository_impl.dart';
 import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_preferences.dart';
 import 'package:tryzeon/feature/personal/settings/domain/repositories/settings_repository.dart';
+import 'package:tryzeon/feature/personal/settings/domain/usecases/dismiss_own_photo_invite.dart';
 import 'package:tryzeon/feature/personal/settings/domain/usecases/get_tryon_preferences.dart';
+import 'package:tryzeon/feature/personal/settings/domain/usecases/is_own_photo_invite_dismissed.dart';
 import 'package:tryzeon/feature/personal/settings/domain/usecases/set_tryon_preferences.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -18,9 +21,15 @@ TryonPreferencesLocalDataSource tryonPreferencesLocalDataSource(final Ref ref) {
 }
 
 @riverpod
+OwnPhotoInviteLocalDataSource ownPhotoInviteLocalDataSource(final Ref ref) {
+  return OwnPhotoInviteLocalDataSource(ref.watch(sharedPreferencesProvider));
+}
+
+@riverpod
 SettingsRepository settingsRepository(final Ref ref) {
   return SettingsRepositoryImpl(
     ref.watch(tryonPreferencesLocalDataSourceProvider),
+    ref.watch(ownPhotoInviteLocalDataSourceProvider),
   );
 }
 
@@ -31,6 +40,14 @@ GetTryonPreferences getTryonPreferencesUseCase(final Ref ref) =>
 @riverpod
 SetTryonPreferences setTryonPreferencesUseCase(final Ref ref) =>
     SetTryonPreferences(ref.watch(settingsRepositoryProvider));
+
+@riverpod
+IsOwnPhotoInviteDismissed isOwnPhotoInviteDismissedUseCase(final Ref ref) =>
+    IsOwnPhotoInviteDismissed(ref.watch(settingsRepositoryProvider));
+
+@riverpod
+DismissOwnPhotoInvite dismissOwnPhotoInviteUseCase(final Ref ref) =>
+    DismissOwnPhotoInvite(ref.watch(settingsRepositoryProvider));
 
 @riverpod
 class TryonPreferencesNotifier extends _$TryonPreferencesNotifier {

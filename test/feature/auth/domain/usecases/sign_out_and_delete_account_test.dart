@@ -71,7 +71,7 @@ class _FakeSettingsRepository implements SettingsRepository {
   final _Journal _journal;
 
   @override
-  Future<Result<void, Failure>> clearTryonPreferences() async {
+  Future<Result<void, Failure>> clearDevicePreferences() async {
     _journal.steps.add('clearPreferences');
     return const Ok(null);
   }
