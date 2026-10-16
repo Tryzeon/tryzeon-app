@@ -39,20 +39,6 @@ class TryonController extends _$TryonController {
   Future<void> regenerate(final TryonGalleryEntry entry) =>
       _start(entry.subject);
 
-  /// Image generation is skipped, so only the transition style shapes the
-  /// result. Takes the entry, not its result: the video inherits its subject.
-  Future<void> animate(final FinishedTryonEntry entry) async {
-    final imageUrl = entry.result.imageUrl;
-    if (entry.mode != TryonMode.image || imageUrl == null || imageUrl.isEmpty) {
-      state = TryonFailed(_uuid.v4(), const ValidationFailure());
-      return;
-    }
-
-    await _start(
-      TryonSubject.animated(baseImageUrl: imageUrl, origin: entry.subject),
-    );
-  }
-
   Future<void> _start(final TryonSubject subject) async {
     final id = _uuid.v4();
 

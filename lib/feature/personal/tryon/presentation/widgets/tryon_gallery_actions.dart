@@ -7,7 +7,6 @@ import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/controllers/tryon_controller.dart';
-import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/providers/tryon_providers.dart';
 
@@ -43,12 +42,6 @@ class TryonGalleryActions extends ConsumerWidget {
         (final async) => async.value?.hasVideoAccess != false,
       ),
     );
-
-    Future<void> animateToVideo() async {
-      if (entry is! FinishedTryonEntry) return;
-
-      await ref.read(tryonControllerProvider.notifier).animate(entry);
-    }
 
     Future<void> regenerate() async {
       if (entry == null) return;
@@ -145,12 +138,6 @@ class TryonGalleryActions extends ConsumerWidget {
             icon: Icons.refresh_rounded,
             title: '重新生成',
             onTap: regenerate,
-          ),
-        if (result?.mode == TryonMode.image && hasVideoAccess)
-          AppMenuAction(
-            icon: Icons.movie_creation_outlined,
-            title: '轉成影片',
-            onTap: animateToVideo,
           ),
         AppMenuAction(
           icon: Icons.flag_outlined,
