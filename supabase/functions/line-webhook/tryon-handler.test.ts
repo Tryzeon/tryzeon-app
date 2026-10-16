@@ -51,7 +51,8 @@ function baseDeps(): TryonHandlerDeps {
     liffUrl: "https://liff.example",
     conversations: fakeConversations().store,
     getOrCreateUserId: () => Promise.resolve("user-1"),
-    getAvatarPath: () => Promise.resolve("user-1/avatar.jpg"),
+    getAvatar: () =>
+      Promise.resolve({ kind: "uploaded", path: "user-1/avatar.jpg" }),
     runJob: () =>
       Promise.resolve({
         kind: "image",
@@ -95,7 +96,7 @@ Deno.test("a sender with no model is asked to choose one, and nothing is generat
   await handleImageTryon(
     makeDeps({
       line,
-      getAvatarPath: () => Promise.resolve(null),
+      getAvatar: () => Promise.resolve(null),
       runJob: () => {
         ran = true;
         // deno-lint-ignore no-explicit-any
@@ -110,6 +111,30 @@ Deno.test("a sender with no model is asked to choose one, and nothing is generat
   assertEquals(sent.replies.length, 1);
   // deno-lint-ignore no-explicit-any
   assertEquals((sent.replies[0][0] as any).type, "template");
+});
+
+Deno.test("a sender on a preset model is tried on, not asked to choose one", async () => {
+  const { line, sent } = fakeLine();
+  let ran = false;
+  await handleImageTryon(
+    makeDeps({
+      line,
+      getAvatar: () => Promise.resolve({ kind: "preset", id: "female" }),
+      runJob: () => {
+        ran = true;
+        return Promise.resolve({
+          kind: "image",
+          imageUrl: "https://img.example/result.jpg",
+          usage: null,
+          // deno-lint-ignore no-explicit-any
+        } as any);
+      },
+    }),
+    event,
+  );
+
+  assertEquals(ran, true);
+  assertEquals(textOf(sent.replies[0][0]), "收到，正在試穿，請稍等！");
 });
 
 Deno.test("a garment image is acknowledged, then the result is pushed", async () => {
@@ -291,7 +316,7 @@ Deno.test("a product that is gone is said so, and no quota is spent", async () =
 Deno.test("tapping try-on with no model asks to choose one first", async () => {
   const { line, sent } = fakeLine();
   await handleProductTryon(
-    makeProductDeps({ line, getAvatarPath: () => Promise.resolve(null) }),
+    makeProductDeps({ line, getAvatar: () => Promise.resolve(null) }),
     productEvent,
   );
 
@@ -651,7 +676,7 @@ Deno.test("a wardrobe try-on with no model photo generates nothing", async () =>
   await handleWardrobeTryon(
     makeWardrobeDeps({
       line,
-      getAvatarPath: () => Promise.resolve(null),
+      getAvatar: () => Promise.resolve(null),
       runJob: () => {
         ran = true;
         return Promise.reject(new Error("must not run"));

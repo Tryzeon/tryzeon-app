@@ -1,5 +1,5 @@
 import { assertEquals, assertRejects } from "@std/assert";
-import { getAvatarPath } from "./user-profile.ts";
+import { getAvatar } from "./user-profile.ts";
 import type { DbClient } from "./supabase.ts";
 
 interface LookupStub {
@@ -34,43 +34,50 @@ function fakeAdmin(stub: LookupStub) {
   return { admin, filters };
 }
 
-Deno.test("getAvatarPath returns a key in the user's own folder", async () => {
+Deno.test("getAvatar reads a preset as its id", async () => {
   const { admin, filters } = fakeAdmin({
-    row: { user_id: "u1", avatar_path: "u1/avatar/1.jpg" },
+    row: { user_id: "u1", avatar_path: null, avatar_preset: "female" },
   });
-  assertEquals(await getAvatarPath(admin, "u1"), "u1/avatar/1.jpg");
+  assertEquals(await getAvatar(admin, "u1"), { kind: "preset", id: "female" });
   assertEquals(filters, [["user_id", "u1"]]);
 });
 
-Deno.test("getAvatarPath treats a missing profile or empty path as no avatar", async () => {
-  assertEquals(await getAvatarPath(fakeAdmin({ row: null }).admin, "u1"), null);
-  assertEquals(
-    await getAvatarPath(
-      fakeAdmin({ row: { user_id: "u1", avatar_path: "  " } }).admin,
-      "u1",
-    ),
-    null,
-  );
-});
-
-Deno.test("SECURITY: getAvatarPath refuses a profile whose avatar_path sits in another user's folder", async () => {
-  // avatar_path is client-written free text, and the LINE adapter reads it on
-  // the admin client with no storage policy beneath it. A row of u1's that
-  // names u2's object must read as "no avatar", not as u2's photo.
-  const { admin } = fakeAdmin({
-    row: { user_id: "u1", avatar_path: "u2/avatar/1.jpg" },
+Deno.test("getAvatar reads an uploaded photo in the user's own folder", async () => {
+  const { admin, filters } = fakeAdmin({
+    row: { user_id: "u1", avatar_path: "u1/avatar/1.jpg", avatar_preset: null },
   });
-  assertEquals(await getAvatarPath(admin, "u1"), null);
-});
-
-Deno.test("SECURITY: getAvatarPath needs the folder separator, not just the prefix", async () => {
-  const { admin } = fakeAdmin({
-    row: { user_id: "u1", avatar_path: "u10/avatar/1.jpg" },
+  assertEquals(await getAvatar(admin, "u1"), {
+    kind: "uploaded",
+    path: "u1/avatar/1.jpg",
   });
-  assertEquals(await getAvatarPath(admin, "u1"), null);
+  assertEquals(filters, [["user_id", "u1"]]);
 });
 
-Deno.test("getAvatarPath surfaces a lookup error", async () => {
+Deno.test("getAvatar treats a missing profile, or one with neither source, as no avatar", async () => {
+  assertEquals(await getAvatar(fakeAdmin({ row: null }).admin, "u1"), null);
+  for (const avatarPath of [null, "  "]) {
+    const { admin } = fakeAdmin({
+      row: { user_id: "u1", avatar_path: avatarPath, avatar_preset: null },
+    });
+    assertEquals(await getAvatar(admin, "u1"), null);
+  }
+});
+
+Deno.test("SECURITY: getAvatar refuses an avatar_path in another user's folder", async () => {
+  const { admin } = fakeAdmin({
+    row: { user_id: "u1", avatar_path: "u2/avatar/1.jpg", avatar_preset: null },
+  });
+  assertEquals(await getAvatar(admin, "u1"), null);
+});
+
+Deno.test("SECURITY: getAvatar needs the folder separator, not just the prefix", async () => {
+  const { admin } = fakeAdmin({
+    row: { user_id: "u1", avatar_path: "u10/avatar/1.jpg", avatar_preset: null },
+  });
+  assertEquals(await getAvatar(admin, "u1"), null);
+});
+
+Deno.test("getAvatar surfaces a lookup error", async () => {
   const { admin } = fakeAdmin({ row: null, error: { message: "boom" } });
-  await assertRejects(() => getAvatarPath(admin, "u1"), Error, "boom");
+  await assertRejects(() => getAvatar(admin, "u1"), Error, "boom");
 });

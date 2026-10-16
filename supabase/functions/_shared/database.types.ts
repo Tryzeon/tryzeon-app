@@ -559,6 +559,7 @@ export type Database = {
         Row: {
           age_range: string | null
           avatar_path: string | null
+          avatar_preset: Database["public"]["Enums"]["preset_avatar"] | null
           created_at: string
           email: string | null
           gender: Database["public"]["Enums"]["user_gender"] | null
@@ -573,6 +574,7 @@ export type Database = {
         Insert: {
           age_range?: string | null
           avatar_path?: string | null
+          avatar_preset?: Database["public"]["Enums"]["preset_avatar"] | null
           created_at?: string
           email?: string | null
           gender?: Database["public"]["Enums"]["user_gender"] | null
@@ -587,6 +589,7 @@ export type Database = {
         Update: {
           age_range?: string | null
           avatar_path?: string | null
+          avatar_preset?: Database["public"]["Enums"]["preset_avatar"] | null
           created_at?: string
           email?: string | null
           gender?: Database["public"]["Enums"]["user_gender"] | null
@@ -741,6 +744,7 @@ export type Database = {
         | "skirt"
         | "one_piece"
         | "others"
+      preset_avatar: "female" | "male"
       product_elasticity: "none" | "low" | "medium" | "high"
       product_fit: "slim" | "regular" | "loose" | "oversize"
       product_gender: "male" | "female" | "unisex"
@@ -890,6 +894,7 @@ export const Constants = {
         "one_piece",
         "others",
       ],
+      preset_avatar: ["female", "male"],
       product_elasticity: ["none", "low", "medium", "high"],
       product_fit: ["slim", "regular", "loose", "oversize"],
       product_gender: ["male", "female", "unisex"],

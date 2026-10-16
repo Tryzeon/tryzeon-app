@@ -8,7 +8,7 @@ import {
   supabaseTryonRecorder,
 } from "../_shared/tryon/index.ts";
 import type { GarmentInput } from "../_shared/tryon/types.ts";
-import { getAvatarPath as defaultGetAvatarPath } from "../_shared/user-profile.ts";
+import { getAvatar as defaultGetAvatar } from "../_shared/user-profile.ts";
 import { fetchProductInfo } from "./product-card.ts";
 import { fetchWardrobeItemInfo } from "./wardrobe-card.ts";
 import { describeGarment as defaultDescribeGarment } from "./garment-analysis.ts";
@@ -41,7 +41,7 @@ export interface TryonHandlerDeps {
   line: LineApi;
   liffUrl: string;
   conversations: ConversationStore;
-  getAvatarPath?: typeof defaultGetAvatarPath;
+  getAvatar?: typeof defaultGetAvatar;
   getOrCreateUserId?: typeof defaultGetOrCreateUserId;
   runJob?: typeof runTryonJob;
 }
@@ -56,7 +56,7 @@ async function resolveActor(
   sourceUserId: string,
 ): Promise<Actor> {
   const getOrCreateUserId = deps.getOrCreateUserId ?? defaultGetOrCreateUserId;
-  const getAvatarPath = deps.getAvatarPath ?? defaultGetAvatarPath;
+  const getAvatar = deps.getAvatar ?? defaultGetAvatar;
 
   const userId = await getOrCreateUserId(
     deps.admin,
@@ -65,7 +65,7 @@ async function resolveActor(
   );
   return {
     userId,
-    hasAvatar: await getAvatarPath(deps.admin, userId) !== null,
+    hasAvatar: (await getAvatar(deps.admin, userId)) !== null,
   };
 }
 
