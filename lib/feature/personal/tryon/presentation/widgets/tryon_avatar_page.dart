@@ -10,12 +10,14 @@ import 'package:tryzeon/feature/personal/tryon/presentation/widgets/model_choice
 class TryonAvatarPage extends HookConsumerWidget {
   const TryonAvatarPage({
     super.key,
-    required this.onUploadOwnPhoto,
+    required this.onReplaceAvatar,
     required this.onPresetSelected,
+    required this.onUploadOwnPhoto,
   });
 
-  final VoidCallback onUploadOwnPhoto;
+  final VoidCallback onReplaceAvatar;
   final ValueChanged<PresetAvatar> onPresetSelected;
+  final VoidCallback onUploadOwnPhoto;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
@@ -28,7 +30,7 @@ class TryonAvatarPage extends HookConsumerWidget {
     final file = ref.watch(pendingAvatarPreviewProvider) ?? avatarAsync.value;
     if (file != null) {
       return GestureDetector(
-        onTap: onUploadOwnPhoto,
+        onTap: onReplaceAvatar,
         child: _AvatarImageItem(imageProvider: FileImage(file), isBusy: isBusy),
       );
     }

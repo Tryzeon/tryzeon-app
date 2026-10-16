@@ -47,6 +47,7 @@ void main() {
     final Future<File?> Function(Ref ref)? avatarFile,
     final PendingAvatar? replacement,
     final Future<File> Function(Ref ref, PresetAvatar preset)? presetFile,
+    final VoidCallback? onReplaceAvatar,
     final ValueChanged<PresetAvatar>? onPresetSelected,
     final VoidCallback? onUploadOwnPhoto,
   }) async {
@@ -68,8 +69,9 @@ void main() {
           theme: AppTheme.lightTheme,
           home: Scaffold(
             body: TryonAvatarPage(
-              onUploadOwnPhoto: onUploadOwnPhoto ?? () {},
+              onReplaceAvatar: onReplaceAvatar ?? () {},
               onPresetSelected: onPresetSelected ?? (final _) {},
+              onUploadOwnPhoto: onUploadOwnPhoto ?? () {},
             ),
           ),
         ),
@@ -100,6 +102,24 @@ void main() {
 
     await tester.tap(find.widgetWithText(ModelChoiceTile, '上傳全身照'));
     expect(choseUpload, isTrue);
+  });
+
+  testWidgets('tapping the model photo asks to replace it', (
+    final tester,
+  ) async {
+    var replaced = false;
+    var choseUpload = false;
+    await pumpPage(
+      tester,
+      avatarFile: (final ref) async => File('me.jpg'),
+      onReplaceAvatar: () => replaced = true,
+      onUploadOwnPhoto: () => choseUpload = true,
+    );
+
+    await tester.tap(find.byType(TryonAvatarPage));
+
+    expect(replaced, isTrue);
+    expect(choseUpload, isFalse);
   });
 
   testWidgets(

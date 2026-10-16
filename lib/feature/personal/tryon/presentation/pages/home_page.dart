@@ -15,11 +15,14 @@ import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/crop_options.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/preset_avatar.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/actions/edit_outfit.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/coordinators/tryon_coordinator.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/sheets/model_choice_sheet.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/sheets/tryon_mode_sheet.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
@@ -98,6 +101,24 @@ class HomePage extends HookConsumerWidget {
       );
     }
 
+    Future<void> applyPreset(final PresetAvatar preset) async =>
+        onAvatarReplaced(
+          await ref.read(avatarUploadProvider.notifier).applyPreset(preset),
+        );
+
+    void replaceAvatar() {
+      if (ref.read(avatarUploadProvider) != null) return;
+      ModelChoiceSheet.show(
+        context: context,
+        current: switch (ref.read(userProfileProvider).value?.avatar) {
+          AvatarFromPreset(:final preset) => preset,
+          _ => null,
+        },
+        onPresetSelected: applyPreset,
+        onUploadOwnPhoto: uploadAvatar,
+      );
+    }
+
     Future<void> tryonFromLocal(final TryonMode mode) async {
       final File? garmentImage = await ImagePickerHelper.pickImage(
         context,
@@ -169,13 +190,9 @@ class HomePage extends HookConsumerWidget {
                         onPageChanged: galleryNotifier.setCurrentPage,
                         entries: galleryState.entries,
                         avatarPage: TryonAvatarPage(
+                          onReplaceAvatar: replaceAvatar,
+                          onPresetSelected: applyPreset,
                           onUploadOwnPhoto: uploadAvatar,
-                          onPresetSelected: (final preset) async =>
-                              onAvatarReplaced(
-                                await ref
-                                    .read(avatarUploadProvider.notifier)
-                                    .applyPreset(preset),
-                              ),
                         ),
                         showScrims: !isBlankAvatarPage,
                       ),
@@ -216,7 +233,7 @@ class HomePage extends HookConsumerWidget {
               right: AppSpacing.md,
               child: isBlankAvatarPage
                   ? const SizedBox.shrink()
-                  : TryonGalleryActions(onReplaceAvatar: uploadAvatar),
+                  : TryonGalleryActions(onReplaceAvatar: replaceAvatar),
             ),
 
             if (galleryState.currentEntry case final entry?)

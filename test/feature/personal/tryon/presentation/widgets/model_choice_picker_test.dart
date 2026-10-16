@@ -22,10 +22,26 @@ void main() {
   Finder tileOf(final PresetAvatar preset) =>
       find.widgetWithText(ModelChoiceTile, preset.label);
 
+  OutlinedBorder outlineOf(
+    final WidgetTester tester,
+    final PresetAvatar preset,
+  ) {
+    final card = find.descendant(
+      of: tileOf(preset),
+      matching: find.byType(Card),
+    );
+    final material = tester.widget<Material>(
+      find.descendant(of: card, matching: find.byType(Material)).first,
+    );
+    return material.shape! as OutlinedBorder;
+  }
+
   Future<void> pumpPicker(
     final WidgetTester tester, {
     required final Future<File> Function(PresetAvatar preset) presetFile,
+    final PresetAvatar? selected,
     final ValueChanged<PresetAvatar>? onPresetSelected,
+    final ThemeData? theme,
   }) async {
     await tester.pumpWidget(
       ProviderScope(
@@ -36,11 +52,12 @@ void main() {
           ),
         ],
         child: MaterialApp(
-          theme: AppTheme.lightTheme,
+          theme: theme ?? AppTheme.lightTheme,
           home: Scaffold(
             body: Center(
               child: ModelChoicePicker(
                 presets: PresetAvatar.values,
+                selected: selected,
                 onPresetSelected: onPresetSelected ?? (final _) {},
                 onUploadOwnPhoto: () {},
               ),
@@ -68,6 +85,70 @@ void main() {
       images,
       containsAll([FileImage(File('female.jpg')), FileImage(File('male.jpg'))]),
     );
+  });
+
+  testWidgets('marks only the selected preset as in use', (final tester) async {
+    await pumpPicker(
+      tester,
+      presetFile: (final preset) async => File('${preset.name}.jpg'),
+      selected: PresetAvatar.male,
+    );
+
+    expect(
+      find.descendant(
+        of: tileOf(PresetAvatar.male),
+        matching: find.text('使用中'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: tileOf(PresetAvatar.female),
+        matching: find.text('使用中'),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.descendant(
+        of: tileOf(PresetAvatar.female),
+        matching: find.text('立即開始試穿'),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('outlines only the selected preset, in the primary color', (
+    final tester,
+  ) async {
+    await pumpPicker(
+      tester,
+      presetFile: (final preset) async => File('${preset.name}.jpg'),
+      selected: PresetAvatar.male,
+    );
+
+    final primary = AppTheme.lightTheme.colorScheme.primary;
+    expect(outlineOf(tester, PresetAvatar.male).side.color, primary);
+    expect(outlineOf(tester, PresetAvatar.female).side.color, isNot(primary));
+  });
+
+  testWidgets('the selected outline keeps the themed card shape', (
+    final tester,
+  ) async {
+    final themedShape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(3),
+      side: BorderSide(color: AppTheme.lightTheme.colorScheme.outline),
+    );
+    await pumpPicker(
+      tester,
+      presetFile: (final preset) async => File('${preset.name}.jpg'),
+      selected: PresetAvatar.male,
+      theme: AppTheme.lightTheme.copyWith(
+        cardTheme: AppTheme.lightTheme.cardTheme.copyWith(shape: themedShape),
+      ),
+    );
+
+    final selected = outlineOf(tester, PresetAvatar.male);
+    expect(selected.copyWith(side: themedShape.side), themedShape);
   });
 
   testWidgets('a preset whose photo failed to download can still be picked', (

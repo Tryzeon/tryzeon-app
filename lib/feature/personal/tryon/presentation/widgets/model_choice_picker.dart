@@ -13,6 +13,7 @@ class ModelChoicePicker extends StatelessWidget {
   const ModelChoicePicker({
     super.key,
     required this.presets,
+    this.selected,
     required this.onPresetSelected,
     required this.onUploadOwnPhoto,
   });
@@ -20,6 +21,7 @@ class ModelChoicePicker extends StatelessWidget {
   static const double _maxTileWidth = 168;
 
   final List<PresetAvatar> presets;
+  final PresetAvatar? selected;
   final ValueChanged<PresetAvatar> onPresetSelected;
   final VoidCallback onUploadOwnPhoto;
 
@@ -28,9 +30,9 @@ class ModelChoicePicker extends StatelessWidget {
     final tiles = [
       for (final preset in presets)
         ModelChoiceTile(
-          frame: _PresetFrame(preset: preset),
+          frame: _PresetFrame(preset: preset, isSelected: preset == selected),
           title: preset.label,
-          caption: '立即開始試穿',
+          caption: preset == selected ? '使用中' : '立即開始試穿',
           onTap: () => onPresetSelected(preset),
         ),
       ModelChoiceTile(
@@ -113,13 +115,15 @@ class ModelChoiceTile extends StatelessWidget {
 }
 
 class _PresetFrame extends ConsumerWidget {
-  const _PresetFrame({required this.preset});
+  const _PresetFrame({required this.preset, required this.isSelected});
 
   final PresetAvatar preset;
+  final bool isSelected;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final file = ref.watch(presetAvatarFileProvider(preset)).value;
     final placeholder = Center(
       child: Icon(
@@ -131,6 +135,15 @@ class _PresetFrame extends ConsumerWidget {
 
     return Card(
       clipBehavior: Clip.antiAlias,
+      shape: switch (theme.cardTheme.shape) {
+        final OutlinedBorder shape when isSelected => shape.copyWith(
+          side: shape.side.copyWith(
+            color: colorScheme.primary,
+            width: AppStroke.regular,
+          ),
+        ),
+        _ => null,
+      },
       child: file == null
           ? placeholder
           : Image.file(
