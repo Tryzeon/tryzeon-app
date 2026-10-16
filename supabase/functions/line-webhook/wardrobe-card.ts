@@ -1,7 +1,8 @@
 import { fetchRowsByIds } from "../_shared/chat/hydrate.ts";
 import { textArrayValues } from "../_shared/text.ts";
 import { ownsUserObjectPath, WARDROBE_IMAGES_BUCKET } from "../_shared/supabase-storage.ts";
-import { CARD_COLOR } from "./card-kit.ts";
+import { CARD_COLOR, cornerTag, overlayHero, pillButton } from "./card-kit.ts";
+import { wardrobeTryonPostbackData } from "./postback.ts";
 import type { Enums, Tables } from "../_shared/database.types.ts";
 import type { DbClient } from "../_shared/supabase.ts";
 
@@ -121,32 +122,62 @@ export function wardrobeInfoContents(item: WardrobeItemInfo): object[] {
 }
 
 export function wardrobeOverlayContents(item: WardrobeItemInfo): object[] {
-  const contents: object[] = [
-    {
-      type: "text",
-      text: item.garmentTypeLabel,
-      size: "sm",
-      weight: "bold",
-      color: CARD_COLOR.onImage,
-    },
-  ];
+  const contents: object[] = [];
   if (item.tags.length > 0) {
     contents.push({
       type: "text",
-      margin: "4px",
       text: tagLine(item.tags),
       size: "xxs",
+      weight: "bold",
       color: CARD_COLOR.onImageMuted,
     });
   }
   contents.push({
     type: "text",
-    margin: "4px",
-    text: "你的衣櫃",
-    size: "xxs",
-    color: CARD_COLOR.onImageMuted,
+    margin: "2px",
+    text: item.garmentTypeLabel,
+    size: "sm",
+    weight: "bold",
+    color: CARD_COLOR.onImage,
   });
   return contents;
+}
+
+/**
+ * `fit` rather than the product card's `cover` because these images are usually
+ * background-removed and cropping cuts the sleeves off; the pinned background
+ * keeps a transparent PNG from rendering as a black silhouette on LINE's dark
+ * chat surface. No tap target: the LIFF has no page for a wardrobe item.
+ */
+export function wardrobeItemBubble(item: LineWardrobeItem): object {
+  return {
+    type: "bubble",
+    size: "kilo",
+    hero: overlayHero({
+      media: {
+        type: "image",
+        url: item.imageUrl,
+        size: "full",
+        aspectRatio: "4:5",
+        aspectMode: "fit",
+        backgroundColor: CARD_COLOR.surfaceVariant,
+      },
+      overlay: [
+        ...wardrobeOverlayContents(item),
+        pillButton("✦ 試穿", {
+          type: "postback",
+          label: "試穿",
+          data: wardrobeTryonPostbackData(item.id),
+          // Not clamped, unlike a product's: `garmentNoun` bounds the word to
+          // a fixed set of short labels, far from displayText's 300-character cap.
+          displayText: `試穿「你的${garmentNoun(item.garmentTypeLabel)}」`,
+        }),
+      ],
+      badges: [cornerTag("你的衣櫃", "dark")],
+      paddingAll: "14px",
+      paddingTop: "72px",
+    }),
+  };
 }
 
 /**

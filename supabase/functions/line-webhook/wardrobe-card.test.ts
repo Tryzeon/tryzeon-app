@@ -129,20 +129,21 @@ Deno.test("an item with no tags shows two lines, not an empty middle one", () =>
   assertEquals(contents[1].text, "你的衣櫃");
 });
 
-Deno.test("the overlay is garment type, tags and the wardrobe label, in light type", () => {
+Deno.test("the overlay is the tag line over the garment type, in light type", () => {
   // deno-lint-ignore no-explicit-any
   const contents = wardrobeOverlayContents(item()) as any[];
 
-  assertEquals(contents.map((c) => c.text), [item().garmentTypeLabel, tagLine(item().tags), "你的衣櫃"]);
-  assertEquals(contents[0].color, CARD_COLOR.onImage);
-  assertEquals(contents[1].color, CARD_COLOR.onImageMuted);
+  assertEquals(contents.map((c) => c.text), [tagLine(item().tags), item().garmentTypeLabel]);
+  assertEquals(contents[0].color, CARD_COLOR.onImageMuted);
+  assertEquals(contents[1].color, CARD_COLOR.onImage);
+  assertEquals(contents[1].weight, "bold");
 });
 
-Deno.test("an overlay with no tags skips the tag line", () => {
+Deno.test("an overlay with no tags is the garment type alone", () => {
   // deno-lint-ignore no-explicit-any
   const contents = wardrobeOverlayContents(item({ tags: [] })) as any[];
 
-  assertEquals(contents.map((c) => c.text), [item().garmentTypeLabel, "你的衣櫃"]);
+  assertEquals(contents.map((c) => c.text), [item().garmentTypeLabel]);
 });
 
 function fakeAdmin(

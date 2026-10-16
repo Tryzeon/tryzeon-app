@@ -1,6 +1,7 @@
 import { fetchRowsByIds } from "../_shared/chat/hydrate.ts";
 import { publicImageUrl } from "../_shared/public-images.ts";
-import { CARD_COLOR } from "./card-kit.ts";
+import { CARD_COLOR, cornerTag, detailDot, overlayHero, pillButton } from "./card-kit.ts";
+import { productTryonPostbackData } from "./postback.ts";
 import { asJsonObject, type DbClient } from "../_shared/supabase.ts";
 
 export const PRODUCT_CARD_SELECT =
@@ -182,13 +183,14 @@ export function productOverlayContents(product: ProductInfo): object[] {
       type: "text",
       text: product.storeName.toUpperCase(),
       size: "xxs",
+      weight: "bold",
       color: CARD_COLOR.onImageMuted,
     });
   }
   contents.push(
     {
       type: "text",
-      margin: "4px",
+      margin: "2px",
       text: product.name,
       size: "sm",
       weight: "bold",
@@ -196,7 +198,7 @@ export function productOverlayContents(product: ProductInfo): object[] {
     },
     {
       type: "text",
-      margin: "4px",
+      margin: "2px",
       contents: [
         { type: "span", text: "NT$ ", size: "xs", color: CARD_COLOR.onImageMuted },
         {
@@ -210,6 +212,41 @@ export function productOverlayContents(product: ProductInfo): object[] {
     },
   );
   return contents;
+}
+
+export function productItemBubble(
+  product: LineProduct,
+  highlight: string | undefined,
+  liffUrl: string,
+): object {
+  return {
+    type: "bubble",
+    size: "kilo",
+    hero: overlayHero({
+      media: {
+        type: "image",
+        url: product.imageUrl,
+        size: "full",
+        aspectRatio: "4:5",
+        aspectMode: "cover",
+      },
+      overlay: [
+        ...productOverlayContents(product),
+        pillButton("✦ 試穿", {
+          type: "postback",
+          label: "試穿",
+          data: productTryonPostbackData(product.id),
+          // Clamped: `displayText` fails the whole send past 300 characters, and a
+          // product name has no length constraint.
+          displayText: `試穿「${clampProductName(product.name)}」`,
+        }),
+      ],
+      badges: [...(highlight ? [cornerTag(highlight, "light")] : []), detailDot()],
+      action: { type: "uri", label: "商品詳情", uri: productDetailUrl(liffUrl, product.id) },
+      paddingAll: "14px",
+      paddingTop: "72px",
+    }),
+  };
 }
 
 /**

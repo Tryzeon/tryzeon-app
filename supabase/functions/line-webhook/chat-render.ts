@@ -1,15 +1,14 @@
 /**
  * LINE has no equivalent of the core's ordered block list — it has messages, and
- * a bubble carousel is one message. So each recommendation row becomes its own
- * carousel and each run of text one message, preserving the ordering the model
+ * a bubble carousel is one message. So each `picks` row and each `outfits` row
+ * becomes its own carousel and each run of text one message, preserving the ordering the model
  * meant for as long as it fits in a single send.
  */
-import { type AnswerItems, type ContentBlock, recommendedItems } from "../_shared/chat/index.ts";
-import { clampProductName, type LineProduct, productDetailUrl, productOverlayContents } from "./product-card.ts";
-import { garmentNoun, type LineWardrobeItem, wardrobeOverlayContents } from "./wardrobe-card.ts";
-import { CARD_COLOR, overlayHero, primaryButton, secondaryButton } from "./card-kit.ts";
+import { type AnswerItems, type ContentBlock, outfitsOf, picksOf } from "../_shared/chat/index.ts";
+import { type LineProduct, productItemBubble } from "./product-card.ts";
+import { type LineWardrobeItem, wardrobeItemBubble } from "./wardrobe-card.ts";
+import { type LineOutfit, outfitBubble, resolveOutfitPieces } from "./outfit-card.ts";
 import { chatErrorMessage } from "./messages.ts";
-import { productTryonPostbackData, wardrobeTryonPostbackData } from "./postback.ts";
 import { dressLast, messageChip } from "./quick-reply.ts";
 
 const MAX_LINE_MESSAGES = 5;
@@ -19,19 +18,20 @@ const MAX_TEXT_CHARS = 5000;
 
 /** A union rather than two section kinds: the two sit side by side in one carousel. */
 type LineCard =
-  | { kind: "product"; item: LineProduct }
+  | { kind: "product"; item: LineProduct; highlight?: string }
   | { kind: "wardrobe"; item: LineWardrobeItem };
 
 type Section =
   | { kind: "text"; lines: string[] }
-  | { kind: "cards"; items: LineCard[] };
+  | { kind: "picks"; picks: LineCard[] }
+  | { kind: "outfits"; outfits: LineOutfit[] };
 
-function rowCards(block: ContentBlock, items: AnswerItems): LineCard[] {
+function pickCards(block: ContentBlock, items: AnswerItems): LineCard[] {
   const cards: LineCard[] = [];
-  for (const { type, id } of recommendedItems(block)) {
+  for (const { type, id, highlight } of picksOf(block)) {
     if (type === "product") {
       const item = items.products[id];
-      if (item) cards.push({ kind: "product", item: item as LineProduct });
+      if (item) cards.push({ kind: "product", item: item as LineProduct, ...(highlight ? { highlight } : {}) });
     } else {
       const item = items.wardrobe[id];
       if (item) cards.push({ kind: "wardrobe", item: item as LineWardrobeItem });
@@ -40,17 +40,33 @@ function rowCards(block: ContentBlock, items: AnswerItems): LineCard[] {
   return cards;
 }
 
+function rowOutfits(block: ContentBlock, items: AnswerItems): LineOutfit[] {
+  const looks: LineOutfit[] = [];
+  for (const look of outfitsOf(block)) {
+    const pieces = resolveOutfitPieces(look.pieces, {
+      product: (id) => items.products[id] as LineProduct | undefined,
+      wardrobe: (id) => items.wardrobe[id] as LineWardrobeItem | undefined,
+    });
+    if (pieces) looks.push({ title: look.title, ...(look.reason ? { reason: look.reason } : {}), pieces });
+  }
+  return looks;
+}
+
 function toSections(blocks: ContentBlock[], items: AnswerItems): Section[] {
   const sections: Section[] = [];
   for (const block of blocks) {
     if (block.type === "text") {
       const text = typeof block.text === "string" ? block.text : "";
+      if (text.trim().length === 0) continue;
       const last = sections.at(-1);
       if (last?.kind === "text") last.lines.push(text);
       else sections.push({ kind: "text", lines: [text] });
-    } else if (block.type === "recommendation") {
-      const cards = rowCards(block, items);
-      if (cards.length > 0) sections.push({ kind: "cards", items: cards });
+    } else if (block.type === "picks") {
+      const picks = pickCards(block, items);
+      if (picks.length > 0) sections.push({ kind: "picks", picks });
+    } else if (block.type === "outfits") {
+      const outfits = rowOutfits(block, items);
+      if (outfits.length > 0) sections.push({ kind: "outfits", outfits });
     }
   }
   return sections;
@@ -60,87 +76,10 @@ function textMessage(lines: string[]): object {
   return { type: "text", text: lines.join("\n").slice(0, MAX_TEXT_CHARS) };
 }
 
-function productBubble(product: LineProduct, liffUrl: string): object {
-  const detail = { type: "uri", label: "商品詳情", uri: productDetailUrl(liffUrl, product.id) };
-  return {
-    type: "bubble",
-    size: "kilo",
-    hero: overlayHero({
-      image: {
-        type: "image",
-        url: product.imageUrl,
-        size: "full",
-        aspectRatio: "1:1",
-        aspectMode: "cover",
-      },
-      overlay: productOverlayContents(product),
-      action: detail,
-    }),
-    footer: {
-      type: "box",
-      layout: "horizontal",
-      // `spacing` is the one gap here that cannot be stated in px: LINE accepts
-      // only keywords for it, unlike `margin` and `padding`.
-      spacing: "sm",
-      paddingAll: "16px",
-      contents: [
-        primaryButton("試穿", {
-          type: "postback",
-          label: "試穿",
-          data: productTryonPostbackData(product.id),
-          // Clamped: `displayText` fails the whole send past 300 characters, and a
-          // product name has no length constraint.
-          displayText: `試穿「${clampProductName(product.name)}」`,
-        }),
-        secondaryButton("商品詳情", detail),
-      ],
-    },
-    styles: { footer: { backgroundColor: CARD_COLOR.surface } },
-  };
-}
-
-/**
- * `fit` rather than the product card's `cover` because these images are usually
- * background-removed and cropping cuts the sleeves off; the pinned background
- * keeps a transparent PNG from rendering as a black silhouette on LINE's dark
- * chat surface. No tap target: the LIFF has no page for a wardrobe item.
- */
-function wardrobeBubble(item: LineWardrobeItem): object {
-  return {
-    type: "bubble",
-    size: "kilo",
-    hero: overlayHero({
-      image: {
-        type: "image",
-        url: item.imageUrl,
-        size: "full",
-        aspectRatio: "1:1",
-        aspectMode: "fit",
-        backgroundColor: CARD_COLOR.surfaceVariant,
-      },
-      overlay: wardrobeOverlayContents(item),
-    }),
-    footer: {
-      type: "box",
-      layout: "vertical",
-      paddingAll: "16px",
-      contents: [
-        primaryButton("試穿", {
-          type: "postback",
-          label: "試穿",
-          data: wardrobeTryonPostbackData(item.id),
-          // Not clamped, unlike a product's: `garmentNoun` bounds the word to
-          // a fixed set of short labels, far from displayText's 300-character cap.
-          displayText: `試穿「你的${garmentNoun(item.garmentTypeLabel)}」`,
-        }),
-      ],
-    },
-    styles: { footer: { backgroundColor: CARD_COLOR.surface } },
-  };
-}
-
 const bubble = (card: LineCard, liffUrl: string): object =>
-  card.kind === "product" ? productBubble(card.item, liffUrl) : wardrobeBubble(card.item);
+  card.kind === "product"
+    ? productItemBubble(card.item, card.highlight, liffUrl)
+    : wardrobeItemBubble(card.item);
 
 /**
  * What a carousel is called when it cannot be shown — a notification, or a
@@ -164,34 +103,65 @@ function carouselMessage(items: LineCard[], liffUrl: string): object {
   };
 }
 
+function outfitsMessage(
+  outfits: LineOutfit[],
+  offset: number,
+  total: number,
+  liffUrl: string,
+): object {
+  return {
+    type: "flex",
+    altText: `為你搭了 ${outfits.length} 套穿搭`,
+    contents: {
+      type: "carousel",
+      contents: outfits.map((outfit, i) => outfitBubble(outfit, offset + i, total, liffUrl)),
+    },
+  };
+}
+
 function chunk<T>(items: T[], size: number): T[][] {
   const out: T[][] = [];
   for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
   return out;
 }
 
-const sectionMessages = (section: Section, liffUrl: string): object[] =>
-  section.kind === "text"
-    ? [textMessage(section.lines)]
-    : chunk(section.items, MAX_BUBBLES).map((items) => carouselMessage(items, liffUrl));
+function sectionMessages(section: Section, liffUrl: string): object[] {
+  switch (section.kind) {
+    case "text":
+      return [textMessage(section.lines)];
+    case "picks":
+      return chunk(section.picks, MAX_BUBBLES).map((cards) => carouselMessage(cards, liffUrl));
+    case "outfits":
+      return chunk(section.outfits, MAX_BUBBLES).map((looks, i) =>
+        outfitsMessage(looks, i * MAX_BUBBLES, section.outfits.length, liffUrl)
+      );
+  }
+}
 
 /**
  * All the prose, then every row in order — each still its own carousel, so a
- * fold never mixes one part of an outfit into another's row. Collapsed to
+ * fold never merges two rows into one carousel. Collapsed to
  * sections rather than straight to messages, so `sectionMessages` stays the one
  * route to a message and the chunk size, the altText and the character cap
  * cannot drift.
  */
 function foldSections(sections: Section[]): Section[] {
   const lines = sections.flatMap((s) => s.kind === "text" ? s.lines : []);
-  const rows = sections.filter((s) => s.kind === "cards");
+  const rows = sections.filter((s) => s.kind !== "text");
   return lines.length > 0 ? [{ kind: "text", lines }, ...rows] : rows;
 }
 
-/** Only when the answer recommended something: the chips narrow a set of products. */
+/** Only when the answer recommended something: the chips steer the next set of picks. */
 function answerChips(sections: Section[]): object[] {
+  if (sections.some((s) => s.kind === "outfits")) {
+    return [
+      messageChip("換個風格", "換個風格看看"),
+      messageChip("便宜一點的", "有便宜一點的嗎"),
+      messageChip("用我衣櫃的搭", "用我衣櫃裡的衣服幫我搭"),
+    ];
+  }
   const recommended = sections.some((s) =>
-    s.kind === "cards" && s.items.some((card) => card.kind === "product")
+    s.kind === "picks" && s.picks.some((card) => card.kind === "product")
   );
   if (!recommended) return [];
   return [
@@ -212,9 +182,8 @@ function answerChips(sections: Section[]): object[] {
 export function renderAnswer(blocks: ContentBlock[], items: AnswerItems, liffUrl: string): object[] {
   const sections = toSections(blocks, items);
 
-  // Unreachable today (`runChatAgent` guarantees at least one block), but LINE
-  // rejects an empty send outright, and a 400 is a worse way to learn that a
-  // future change broke the guarantee than a generic apology is.
+  // The stored answer is the model's raw blocks, so nothing renderable can
+  // remain (blank text, unhydrated items); LINE rejects an empty send outright.
   if (sections.length === 0) return [chatErrorMessage("unknown")];
 
   const detailed = sections.flatMap((s) => sectionMessages(s, liffUrl));

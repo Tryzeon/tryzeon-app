@@ -7,11 +7,12 @@ import {
   type LineProduct,
   productDetailUrl,
   productInfoContents,
+  productItemBubble,
   productOverlayContents,
   purchaseAction,
   toLineProduct,
 } from "./product-card.ts";
-import { CARD_COLOR } from "./card-kit.ts";
+import { CARD_COLOR, cornerTag, detailDot } from "./card-kit.ts";
 
 const BASE = "https://img.example";
 
@@ -264,6 +265,8 @@ Deno.test("the overlay is store, name and price, all in light type", () => {
   const [store, name, price] = productOverlayContents(product({ storeName: "Studio Muji" })) as any[];
 
   assertEquals(store.text, "STUDIO MUJI");
+  assertEquals(store.size, "xxs");
+  assertEquals(store.weight, "bold");
   assertEquals(store.color, CARD_COLOR.onImageMuted);
   assertEquals(name.text, product().name);
   assertEquals(name.weight, "bold");
@@ -289,4 +292,30 @@ Deno.test("an overlay with no store is name and price only", () => {
 
 Deno.test("productDetailUrl points at the LIFF product page", () => {
   assertEquals(productDetailUrl("https://liff.line.me/123-abc", "p1"), "https://liff.line.me/123-abc/product/p1");
+});
+
+Deno.test("an item bubble is a 4:5 photo opening its LIFF page, with try-on laid over it", () => {
+  // deno-lint-ignore no-explicit-any
+  const bubble = productItemBubble(product(), undefined, "https://liff.example") as any;
+  const detail = { type: "uri", label: "商品詳情", uri: "https://liff.example/product/p1" };
+
+  assertEquals(bubble.size, "kilo");
+  assertEquals(bubble.footer, undefined);
+  assertEquals(bubble.body, undefined);
+  assertEquals(bubble.hero.action, detail);
+  assertEquals(bubble.hero.contents[0].aspectRatio, "4:5");
+  assertEquals(bubble.hero.contents[0].aspectMode, "cover");
+  const cta = bubble.hero.contents[1].contents.at(-1);
+  assertEquals(cta.contents[0].text, "✦ 試穿");
+  assertEquals(cta.action.label, "試穿");
+});
+
+Deno.test("an item bubble pins its highlight top-left and the detail dot top-right", () => {
+  // deno-lint-ignore no-explicit-any
+  const withHighlight = productItemBubble(product(), "顯瘦直筒", "https://liff.example") as any;
+  // deno-lint-ignore no-explicit-any
+  const without = productItemBubble(product(), undefined, "https://liff.example") as any;
+
+  assertEquals(withHighlight.hero.contents.slice(2), [cornerTag("顯瘦直筒", "light"), detailDot()]);
+  assertEquals(without.hero.contents.slice(2), [detailDot()]);
 });

@@ -1,4 +1,4 @@
-/** Every value is a token from `docs/ui-design-system.md`, or a translucent step of one for type laid over a photo. */
+/** Every value is a design-system token, or a translucent step of one for type and controls laid over a photo. */
 export const CARD_COLOR = {
   primary: "#1A1A1A",
   onPrimary: "#FFFFFF",
@@ -8,7 +8,10 @@ export const CARD_COLOR = {
   surfaceVariant: "#F7F7F7",
   onImage: "#FFFFFF",
   onImageMuted: "#FFFFFFCC",
-  scrim: "#000000B8",
+  onImageFaint: "#FFFFFF99",
+  chip: "#FFFFFFF2",
+  scrimStrong: "#000000D6",
+  scrimMid: "#0000008C",
   scrimClear: "#00000000",
 } as const;
 
@@ -37,19 +40,19 @@ export function primaryButton(label: string, action: object): object {
   };
 }
 
-export function secondaryButton(label: string, action: object): object {
+export function pillButton(label: string, action: object, size: "sm" | "md" = "sm"): object {
   return {
     type: "box",
     layout: "vertical",
     action,
-    borderWidth: "1px",
-    borderColor: CARD_COLOR.outline,
-    cornerRadius: "8px",
-    paddingAll: "12px",
+    margin: "12px",
+    backgroundColor: CARD_COLOR.chip,
+    cornerRadius: "100px",
+    paddingAll: size === "md" ? "12px" : "10px",
     contents: [{
       type: "text",
       text: label,
-      size: "sm",
+      size,
       weight: "bold",
       color: CARD_COLOR.primary,
       align: "center",
@@ -57,19 +60,72 @@ export function secondaryButton(label: string, action: object): object {
   };
 }
 
+export type TagTone = "light" | "dark";
+
+export function tag(label: string, tone: TagTone): object {
+  return {
+    type: "box",
+    layout: "vertical",
+    flex: 0,
+    backgroundColor: tone === "light" ? CARD_COLOR.chip : CARD_COLOR.primary,
+    cornerRadius: "100px",
+    paddingTop: "4px",
+    paddingBottom: "4px",
+    paddingStart: "9px",
+    paddingEnd: "9px",
+    contents: [{
+      type: "text",
+      text: label,
+      size: "xxs",
+      weight: "bold",
+      color: tone === "light" ? CARD_COLOR.primary : CARD_COLOR.onPrimary,
+    }],
+  };
+}
+
+export function cornerTag(label: string, tone: TagTone): object {
+  return { ...tag(label, tone), position: "absolute", offsetTop: "8px", offsetStart: "8px" };
+}
+
+/** A tappable photo looks like any other photo, so the ones that open a page say so. */
+export function detailDot(): object {
+  return {
+    type: "box",
+    layout: "vertical",
+    position: "absolute",
+    offsetTop: "8px",
+    offsetEnd: "8px",
+    width: "22px",
+    height: "22px",
+    cornerRadius: "100px",
+    backgroundColor: CARD_COLOR.chip,
+    justifyContent: "center",
+    contents: [{ type: "text", text: "›", size: "sm", weight: "bold", color: CARD_COLOR.primary, align: "center" }],
+  };
+}
+
+export interface OverlayHeroOptions {
+  media: object;
+  overlay: object[];
+  badges?: object[];
+  action?: object;
+  paddingAll: string;
+  paddingTop: string;
+}
+
 /**
- * A photo with text laid over its bottom edge on a gradient, so light and busy
- * photos alike keep the type legible. The photo leads because Flex refuses an
- * absolutely positioned first child.
+ * Media with text laid over its bottom edge on a gradient, so light and busy
+ * photos alike keep the type legible. The media leads because Flex refuses an
+ * absolutely positioned first child; the badges follow for the same reason.
  */
-export function overlayHero(opts: { image: object; overlay: object[]; action?: object }): object {
+export function overlayHero(opts: OverlayHeroOptions): object {
   return {
     type: "box",
     layout: "vertical",
     paddingAll: "0px",
     ...(opts.action ? { action: opts.action } : {}),
     contents: [
-      opts.image,
+      opts.media,
       {
         type: "box",
         layout: "vertical",
@@ -77,16 +133,19 @@ export function overlayHero(opts: { image: object; overlay: object[]; action?: o
         offsetBottom: "0px",
         offsetStart: "0px",
         offsetEnd: "0px",
-        paddingAll: "16px",
-        paddingTop: "48px",
+        paddingAll: opts.paddingAll,
+        paddingTop: opts.paddingTop,
         background: {
           type: "linearGradient",
           angle: "0deg",
-          startColor: CARD_COLOR.scrim,
+          startColor: CARD_COLOR.scrimStrong,
+          centerColor: CARD_COLOR.scrimMid,
+          centerPosition: "55%",
           endColor: CARD_COLOR.scrimClear,
         },
         contents: opts.overlay,
       },
+      ...(opts.badges ?? []),
     ],
   };
 }
