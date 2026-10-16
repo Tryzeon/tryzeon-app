@@ -5,14 +5,9 @@ import 'package:tryzeon/core/presentation/widgets/pinch_to_zoom.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
 class ProductImageViewer extends HookWidget {
-  const ProductImageViewer({
-    required this.imageUrls,
-    required this.imagePaths,
-    super.key,
-  });
+  const ProductImageViewer({required this.imageUrls, super.key});
 
   final List<String> imageUrls;
-  final List<String> imagePaths;
 
   @override
   Widget build(final BuildContext context) {
@@ -39,10 +34,6 @@ class ProductImageViewer extends HookWidget {
             itemCount: imageUrls.length,
             itemBuilder: (final context, final index) {
               final imageUrl = imageUrls[index];
-              final imagePath = imagePaths.length > index
-                  ? imagePaths[index]
-                  : null;
-
               return GestureDetector(
                 onTap: () {
                   Navigator.of(context).push<void>(
@@ -61,7 +52,6 @@ class ProductImageViewer extends HookWidget {
                             child: InteractiveViewer(
                               child: CachedNetworkImage(
                                 imageUrl: imageUrl,
-                                cacheKey: imagePath,
                                 fit: BoxFit.contain,
                                 width: double.infinity,
                                 height: double.infinity,
@@ -82,7 +72,6 @@ class ProductImageViewer extends HookWidget {
                     borderRadius: AppRadius.cardAll,
                     child: CachedNetworkImage(
                       imageUrl: imageUrl,
-                      cacheKey: imagePath,
                       width: double.infinity,
                       height: 400,
                       fit: BoxFit.cover,

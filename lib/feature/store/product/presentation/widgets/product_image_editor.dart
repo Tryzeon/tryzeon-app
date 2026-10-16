@@ -131,9 +131,8 @@ class _ImageCard extends StatelessWidget {
           ClipRRect(
             borderRadius: AppRadius.buttonAll,
             child: switch (item) {
-              ExistingImageItem(:final url, :final path) => CachedNetworkImage(
+              ExistingImageItem(:final url) => CachedNetworkImage(
                 imageUrl: url,
-                cacheKey: path,
                 fit: BoxFit.cover,
                 width: double.infinity,
                 height: double.infinity,

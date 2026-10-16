@@ -107,10 +107,7 @@ class _ProductDetailContent extends HookConsumerWidget {
         children: [
           Stack(
             children: [
-              ProductImageViewer(
-                imageUrls: product.imageUrls,
-                imagePaths: product.imagePaths,
-              ),
+              ProductImageViewer(imageUrls: product.imageUrls),
               Positioned(
                 bottom: AppSpacing.sm,
                 right: AppSpacing.sm,

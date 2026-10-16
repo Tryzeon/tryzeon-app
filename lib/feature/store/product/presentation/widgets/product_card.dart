@@ -51,9 +51,6 @@ class StoreProductCard extends HookConsumerWidget {
                     ? const ImagePlaceholder()
                     : CachedNetworkImage(
                         imageUrl: product.imageUrls.first,
-                        cacheKey: product.imagePaths.isNotEmpty
-                            ? product.imagePaths.first
-                            : null,
                         fit: BoxFit.cover,
                         width: double.infinity,
                         fadeInDuration: Duration.zero,

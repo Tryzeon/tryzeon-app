@@ -257,7 +257,6 @@ class _ProductImage extends StatelessWidget {
     if (product.imageUrls.isEmpty) return const ImagePlaceholder();
     return CachedNetworkImage(
       imageUrl: product.imageUrls.first,
-      cacheKey: product.imagePaths.isNotEmpty ? product.imagePaths.first : null,
       fit: BoxFit.cover,
       fadeInDuration: Duration.zero,
       fadeOutDuration: Duration.zero,

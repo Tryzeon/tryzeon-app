@@ -65,7 +65,6 @@ class _ProductImage extends StatelessWidget {
     }
     return CachedNetworkImage(
       imageUrl: product.imageUrls.first,
-      cacheKey: product.imagePaths.isNotEmpty ? product.imagePaths.first : null,
       fit: BoxFit.cover,
       placeholder: (final _, final _) => const SizedBox.shrink(),
       errorWidget: (final _, final _, final _) => Icon(
