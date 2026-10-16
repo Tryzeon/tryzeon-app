@@ -10,6 +10,7 @@ import 'package:tryzeon/feature/personal/onboarding/presentation/widgets/age_ste
 import 'package:tryzeon/feature/personal/onboarding/presentation/widgets/gender_selection_step.dart';
 import 'package:tryzeon/feature/personal/onboarding/presentation/widgets/style_preference_step.dart';
 import 'package:tryzeon/feature/personal/onboarding/providers/onboarding_notifier.dart';
+import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 class PersonalOnboardingPage extends HookConsumerWidget {
@@ -24,6 +25,10 @@ class PersonalOnboardingPage extends HookConsumerWidget {
     final onboardingState = ref.watch(onboardingProvider);
     final notifier = ref.read(onboardingProvider.notifier);
     final currentStep = onboardingState.currentStep;
+
+    if (onboardingState.gender case final gender?) {
+      ref.watch(presetAvatarsPrefetchProvider(gender));
+    }
 
     ref.listen(onboardingProvider, (final previous, final next) {
       if ((previous?.currentStep ?? 0) != next.currentStep) {

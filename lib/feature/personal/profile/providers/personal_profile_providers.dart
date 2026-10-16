@@ -16,6 +16,7 @@ import 'package:tryzeon/feature/personal/profile/data/repositories/user_profile_
 import 'package:tryzeon/feature/personal/profile/data/services/avatar_storage_impl.dart';
 import 'package:tryzeon/feature/personal/profile/data/services/preset_avatar_source_impl.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/preset_avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
@@ -23,6 +24,7 @@ import 'package:tryzeon/feature/personal/profile/domain/services/avatar_storage.
 import 'package:tryzeon/feature/personal/profile/domain/services/preset_avatar_source.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/get_user_avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/get_user_profile.dart';
+import 'package:tryzeon/feature/personal/profile/domain/usecases/prefetch_preset_avatars.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/select_preset_avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/update_style_preferences.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/update_user_body_measurements.dart';
@@ -103,6 +105,11 @@ GetUserAvatar getUserAvatarUseCase(final Ref ref) {
 }
 
 @riverpod
+PrefetchPresetAvatars prefetchPresetAvatarsUseCase(final Ref ref) {
+  return PrefetchPresetAvatars(ref.watch(presetAvatarSourceProvider));
+}
+
+@riverpod
 UpdateUserBodyMeasurements updateUserBodyMeasurementsUseCase(final Ref ref) {
   return UpdateUserBodyMeasurements(ref.watch(userProfileRepositoryProvider));
 }
@@ -158,6 +165,16 @@ Future<File> presetAvatarFile(final Ref ref, final PresetAvatar preset) async {
   );
   if (result.isFailure) throw result.getError()!;
   return result.get()!;
+}
+
+/// Warms the disk cache so the preset picker renders instantly; a failure only
+/// logs, since the picker downloads on its own when it is shown.
+@riverpod
+Future<void> presetAvatarsPrefetch(final Ref ref, final Gender? gender) async {
+  final result = await ref.watch(prefetchPresetAvatarsUseCaseProvider)(gender);
+  if (result case Err(:final error)) {
+    AppLogger.warning('Failed to prefetch preset avatars', error);
+  }
 }
 
 @riverpod
