@@ -8,6 +8,7 @@ import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.da
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
 import 'package:tryzeon/feature/personal/profile/domain/services/avatar_storage.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/upload_user_avatar.dart';
+import 'package:tryzeon/feature/personal/settings/domain/repositories/settings_repository.dart';
 import 'package:typed_result/typed_result.dart';
 
 UserProfile _profile(final Avatar? avatar) => UserProfile(
@@ -65,9 +66,25 @@ class _FakeAvatarStorage implements AvatarStorage {
   }
 }
 
+class _FakeSettingsRepository implements SettingsRepository {
+  Result<void, Failure> dismissResult = const Ok(null);
+  var dismissCount = 0;
+
+  @override
+  Future<Result<void, Failure>> dismissOwnPhotoInvite() async {
+    dismissCount++;
+    return dismissResult;
+  }
+
+  @override
+  dynamic noSuchMethod(final Invocation invocation) =>
+      throw UnimplementedError(invocation.memberName.toString());
+}
+
 void main() {
   late _FakeRepository repository;
   late _FakeAvatarStorage storage;
+  late _FakeSettingsRepository settings;
   late UploadUserAvatar uploadUserAvatar;
 
   final avatarFile = File('a.jpg');
@@ -75,9 +92,11 @@ void main() {
   setUp(() {
     repository = _FakeRepository();
     storage = _FakeAvatarStorage();
+    settings = _FakeSettingsRepository();
     uploadUserAvatar = UploadUserAvatar(
       repository: repository,
       avatarStorage: storage,
+      settingsRepository: settings,
     );
   });
 
@@ -140,8 +159,24 @@ void main() {
 
       expect(result.getError(), const ServerFailure());
       expect(storage.deleted, ['u1/avatar/new.jpg']);
+      expect(settings.dismissCount, 0);
     },
   );
+
+  test('a saved photo retires the own-photo invite', () async {
+    await uploadUserAvatar(avatarFile);
+
+    expect(settings.dismissCount, 1);
+  });
+
+  test('a photo saved but not recorded on the device still succeeds', () async {
+    settings.dismissResult = const Err(UnknownFailure());
+
+    final result = await uploadUserAvatar(avatarFile);
+
+    expect(result.isSuccess, isTrue);
+    expect(storage.deleted, ['u1/avatar/old.jpg']);
+  });
 
   test('a failed upload never writes the profile', () async {
     storage.uploadResult = const Err(NetworkFailure());

@@ -5,17 +5,21 @@ import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
 import 'package:tryzeon/feature/personal/profile/domain/services/avatar_storage.dart';
+import 'package:tryzeon/feature/personal/settings/domain/repositories/settings_repository.dart';
 import 'package:typed_result/typed_result.dart';
 
 class UploadUserAvatar {
   UploadUserAvatar({
     required final UserProfileRepository repository,
     required final AvatarStorage avatarStorage,
+    required final SettingsRepository settingsRepository,
   }) : _repository = repository,
-       _avatarStorage = avatarStorage;
+       _avatarStorage = avatarStorage,
+       _settingsRepository = settingsRepository;
 
   final UserProfileRepository _repository;
   final AvatarStorage _avatarStorage;
+  final SettingsRepository _settingsRepository;
 
   Future<Result<void, Failure>> call(final File avatarFile) async {
     final profile = await _repository.getUserProfile(forceRefresh: true);
@@ -30,6 +34,14 @@ class UploadUserAvatar {
     if (saved.isFailure) {
       await _delete(path);
       return saved;
+    }
+
+    final retired = await _settingsRepository.dismissOwnPhotoInvite();
+    if (retired.isFailure) {
+      AppLogger.warning(
+        'Failed to retire the own-photo invite',
+        retired.getError(),
+      );
     }
 
     if (previous case AvatarFromUpload(

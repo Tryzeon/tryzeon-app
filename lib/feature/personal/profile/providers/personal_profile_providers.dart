@@ -30,6 +30,7 @@ import 'package:tryzeon/feature/personal/profile/domain/usecases/update_style_pr
 import 'package:tryzeon/feature/personal/profile/domain/usecases/update_user_body_measurements.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/update_user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/upload_user_avatar.dart';
+import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 part 'personal_profile_providers.freezed.dart';
@@ -80,6 +81,7 @@ UploadUserAvatar uploadUserAvatarUseCase(final Ref ref) {
   return UploadUserAvatar(
     repository: ref.watch(userProfileRepositoryProvider),
     avatarStorage: ref.watch(avatarStorageProvider),
+    settingsRepository: ref.watch(settingsRepositoryProvider),
   );
 }
 

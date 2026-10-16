@@ -1,31 +1,22 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
-import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 part 'own_photo_invite_provider.g.dart';
 
-/// Once the user has had their own photo, the invite is retired for good, even
-/// if they switch back to a preset. An unreadable flag reads as dismissed: a
-/// broken store must not keep showing an invite the user may already have
-/// closed.
+/// Uploading a photo retires the invite in the same store (`UploadUserAvatar`),
+/// so the flag is re-read whenever the avatar changes. An unreadable flag reads
+/// as dismissed: a broken store must not keep showing an invite the user may
+/// already have closed.
 @riverpod
 class OwnPhotoInviteDismissedNotifier
     extends _$OwnPhotoInviteDismissedNotifier {
   @override
   Future<bool> build() async {
-    final hasOwnPhoto = ref.watch(
-      userProfileProvider.select(
-        (final async) => async.value?.avatar is AvatarFromUpload,
-      ),
-    );
-    if (hasOwnPhoto) {
-      await _persistDismissal();
-      return true;
-    }
+    ref.watch(userProfileProvider.select((final async) => async.value?.avatar));
 
     final result = await ref.read(isOwnPhotoInviteDismissedUseCaseProvider)();
     return result.isSuccess ? result.get()! : true;

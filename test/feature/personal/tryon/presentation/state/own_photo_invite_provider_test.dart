@@ -11,18 +11,18 @@ import 'package:tryzeon/feature/personal/tryon/presentation/state/own_photo_invi
 import 'package:typed_result/typed_result.dart';
 
 class _FakeSettingsRepository implements SettingsRepository {
-  _FakeSettingsRepository(this._read);
+  _FakeSettingsRepository(this.stored);
 
-  Result<bool, Failure> _read;
+  Result<bool, Failure> stored;
   var dismissCount = 0;
 
   @override
-  Future<Result<bool, Failure>> isOwnPhotoInviteDismissed() async => _read;
+  Future<Result<bool, Failure>> isOwnPhotoInviteDismissed() async => stored;
 
   @override
   Future<Result<void, Failure>> dismissOwnPhotoInvite() async {
     dismissCount++;
-    _read = const Ok(true);
+    stored = const Ok(true);
     return const Ok(null);
   }
 
@@ -97,20 +97,11 @@ void main() {
     expect(repository.dismissCount, 1);
   });
 
-  test('having your own photo retires the invite for good', () async {
-    final container = await containerWith(
-      stored: const Ok(false),
-      avatar: ownPhoto,
-    );
-
-    expect(await container.read(ownPhotoInviteDismissedProvider.future), true);
-    expect(repository.dismissCount, 1);
-  });
-
-  test('switching back to a preset after uploading keeps it retired', () async {
+  test('re-reads the stored flag when the avatar changes', () async {
     final container = await containerWith(stored: const Ok(false));
     expect(await container.read(ownPhotoInviteDismissedProvider.future), false);
 
+    repository.stored = const Ok(true);
     profile.switchTo(ownPhoto);
     expect(await container.read(ownPhotoInviteDismissedProvider.future), true);
 
