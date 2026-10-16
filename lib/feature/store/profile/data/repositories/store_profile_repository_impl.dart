@@ -89,6 +89,7 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
     required final StoreProfile original,
     required final StoreProfile target,
   }) async {
+    final StoreProfileDto updated;
     try {
       final changes = jsonDiff(
         _mappr.convert<StoreProfile, StoreProfileDto>(original).toJson(),
@@ -96,29 +97,24 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
       );
       if (changes.isEmpty) return const Ok(null);
 
-      await _remoteDataSource.updateStoreProfile(changes);
+      updated = await _remoteDataSource.updateStoreProfile(changes);
     } catch (e, stackTrace) {
       AppLogger.error('Failed to update store profile', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
 
-    await _refreshCache();
+    await _cacheUpdatedProfile(updated);
     return const Ok(null);
   }
 
-  Future<void> _refreshCache() async {
+  Future<void> _cacheUpdatedProfile(final StoreProfileDto updated) async {
     try {
-      final remoteProfile = await _remoteDataSource.getStoreProfile();
-      if (remoteProfile == null) {
-        await _localDataSource.invalidateStoreProfile();
-        return;
-      }
       await _localDataSource.saveStoreProfile(
-        _mappr.convert<StoreProfileDto, StoreProfile>(remoteProfile),
+        _mappr.convert<StoreProfileDto, StoreProfile>(updated),
       );
     } catch (e, stackTrace) {
       AppLogger.warning(
-        'Store profile refresh failed, invalidating cache',
+        'Failed to cache the updated store profile, invalidating cache',
         e,
         stackTrace,
       );

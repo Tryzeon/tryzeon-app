@@ -7,6 +7,8 @@ class StoreProfileRemoteDataSource {
 
   final SupabaseClient _supabaseClient;
   static const _storeProfileTable = 'store_profiles';
+  static const _profileColumns =
+      'id, owner_id, name, slug, address, latitude, longitude, logo_path, channels, order_contacts, created_at, updated_at';
 
   Future<StoreProfileDto?> getStoreProfile() async {
     final user = _supabaseClient.auth.currentUser;
@@ -14,9 +16,7 @@ class StoreProfileRemoteDataSource {
 
     final response = await _supabaseClient
         .from(_storeProfileTable)
-        .select(
-          'id, owner_id, name, slug, address, latitude, longitude, logo_path, channels, order_contacts, created_at, updated_at',
-        )
+        .select(_profileColumns)
         .eq('owner_id', user.id)
         .maybeSingle();
 
@@ -24,15 +24,19 @@ class StoreProfileRemoteDataSource {
     return StoreProfileDto.fromJson(response);
   }
 
-  Future<void> updateStoreProfile(final Map<String, dynamic> changes) async {
+  Future<StoreProfileDto> updateStoreProfile(
+    final Map<String, dynamic> changes,
+  ) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();
 
-    await _supabaseClient
+    final response = await _supabaseClient
         .from(_storeProfileTable)
         .update(changes)
         .eq('owner_id', user.id)
-        .select('id')
+        .select(_profileColumns)
         .single();
+
+    return StoreProfileDto.fromJson(response);
   }
 }
