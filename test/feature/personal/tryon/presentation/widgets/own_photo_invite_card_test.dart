@@ -13,6 +13,8 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_subject.dar
 import 'package:tryzeon/feature/personal/tryon/presentation/state/own_photo_invite_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/own_photo_invite_card.dart';
+import 'package:tryzeon/feature/personal/tutorial/presentation/controllers/tutorial_controller.dart';
+import 'package:tryzeon/feature/personal/tutorial/presentation/state/tutorial_state.dart';
 
 class _FakeUserProfileNotifier extends UserProfileNotifier {
   _FakeUserProfileNotifier(this._profile);
@@ -30,6 +32,15 @@ class _FakeAvatarUploadNotifier extends AvatarUploadNotifier {
 
   @override
   PendingAvatar? build() => _replacement;
+}
+
+class _FakeTutorial extends TutorialController {
+  _FakeTutorial(this._state);
+
+  final TutorialState _state;
+
+  @override
+  TutorialState build() => _state;
 }
 
 class _FakeInviteDismissal extends OwnPhotoInviteDismissedNotifier {
@@ -59,6 +70,7 @@ void main() {
     final WidgetTester tester, {
     final TryonGalleryEntry? entry,
     final Avatar avatar = preset,
+    final TutorialState tutorial = const TutorialState.inactive(),
     final bool isTutorialCompleted = true,
     final PendingAvatar? replacement,
     final bool isDismissed = false,
@@ -77,6 +89,9 @@ void main() {
                 isTutorialCompleted: isTutorialCompleted,
               ),
             ),
+          ),
+          tutorialControllerProvider.overrideWith(
+            () => _FakeTutorial(tutorial),
           ),
           avatarUploadProvider.overrideWith(
             () => _FakeAvatarUploadNotifier(replacement),
@@ -121,8 +136,16 @@ void main() {
     expect(find.text(title), findsNothing);
   });
 
-  testWidgets('waits until the tutorial is completed', (final tester) async {
+  testWidgets('follows the tutorial, not a profile flag not yet reloaded', (
+    final tester,
+  ) async {
     await pumpCard(tester, isTutorialCompleted: false);
+
+    expect(find.text(title), findsOneWidget);
+  });
+
+  testWidgets('stays out of the tutorial review step', (final tester) async {
+    await pumpCard(tester, tutorial: const TutorialState.reviewResult('img'));
 
     expect(find.text(title), findsNothing);
   });

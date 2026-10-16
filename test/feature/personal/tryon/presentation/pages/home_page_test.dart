@@ -24,9 +24,16 @@ import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/model_choice_picker.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_avatar_page.dart';
+import 'package:tryzeon/feature/personal/tutorial/presentation/controllers/tutorial_controller.dart';
+import 'package:tryzeon/feature/personal/tutorial/presentation/state/tutorial_state.dart';
 import 'package:typed_result/typed_result.dart';
 
 import '../../../../../support/sheet_test_host.dart';
+
+class _InactiveTutorial extends TutorialController {
+  @override
+  TutorialState build() => const TutorialState.inactive();
+}
 
 class _FakeUserProfileNotifier extends UserProfileNotifier {
   _FakeUserProfileNotifier(this._profile);
@@ -110,7 +117,6 @@ void main() {
   Future<void> pumpHome(
     final WidgetTester tester, {
     required final Avatar avatar,
-    final bool isTutorialCompleted = true,
     final PendingAvatar? replacement,
     final TryonGalleryState gallery = const TryonGalleryState(),
   }) async {
@@ -128,10 +134,11 @@ void main() {
                 createdAt: DateTime(2026),
                 updatedAt: DateTime(2026),
                 avatar: avatar,
-                isTutorialCompleted: isTutorialCompleted,
+                isTutorialCompleted: true,
               ),
             ),
           ),
+          tutorialControllerProvider.overrideWith(_InactiveTutorial.new),
           avatarFileProvider.overrideWith(
             (final ref) async => File('model.jpg'),
           ),

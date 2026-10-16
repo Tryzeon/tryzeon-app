@@ -7,9 +7,13 @@ import 'package:tryzeon/feature/personal/profile/providers/personal_profile_prov
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/own_photo_invite_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
+import 'package:tryzeon/feature/personal/tutorial/presentation/controllers/tutorial_controller.dart';
+import 'package:tryzeon/feature/personal/tutorial/presentation/state/tutorial_state.dart';
 
 /// Only a finished photo try-on qualifies: retrying a video would spend the
-/// video quota.
+/// video quota. Gated on the tutorial's live state rather than the profile's
+/// `isTutorialCompleted`, which flips while the tutorial's review step is still
+/// on screen.
 class OwnPhotoInviteCard extends ConsumerWidget {
   const OwnPhotoInviteCard({
     super.key,
@@ -22,13 +26,15 @@ class OwnPhotoInviteCard extends ConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final isPresetAfterTutorial = ref.watch(
-      userProfileProvider.select((final async) {
-        final profile = async.value;
-        return profile != null &&
-            profile.avatar is AvatarFromPreset &&
-            profile.isTutorialCompleted;
-      }),
+    final isPreset = ref.watch(
+      userProfileProvider.select(
+        (final async) => async.value?.avatar is AvatarFromPreset,
+      ),
+    );
+    final isTutorialInactive = ref.watch(
+      tutorialControllerProvider.select(
+        (final state) => state is TutorialInactive,
+      ),
     );
     final isReplacing = ref.watch(avatarUploadProvider) != null;
     final isDismissed =
@@ -36,7 +42,11 @@ class OwnPhotoInviteCard extends ConsumerWidget {
     final isPhotoTryon =
         entry is FinishedTryonEntry && entry.mode == TryonMode.image;
 
-    if (!isPresetAfterTutorial || isReplacing || isDismissed || !isPhotoTryon) {
+    if (!isPreset ||
+        !isTutorialInactive ||
+        isReplacing ||
+        isDismissed ||
+        !isPhotoTryon) {
       return const SizedBox.shrink();
     }
 
