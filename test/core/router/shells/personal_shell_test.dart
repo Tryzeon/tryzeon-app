@@ -12,6 +12,7 @@ import 'package:tryzeon/core/router/shells/personal_tab.dart';
 import 'package:tryzeon/core/router/shells/personal_tab_navigator.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile_update.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
@@ -57,12 +58,12 @@ GoRoute _page(
   routes: routes,
 );
 
-UserProfile _profile({final String? avatarPath}) => UserProfile(
+UserProfile _profile({final Avatar? avatar}) => UserProfile(
   userId: 'u1',
   name: 'n',
   createdAt: DateTime(2026),
   updatedAt: DateTime(2026),
-  avatarPath: avatarPath,
+  avatar: avatar,
   isOnboarded: true,
   isTutorialCompleted: false,
 );
@@ -272,7 +273,7 @@ void main() {
       expect(find.byKey(CoachMarkHint.bubbleKey), findsNothing);
 
       (tutorialContainer.read(userProfileProvider.notifier) as _FakeProfile)
-          .emit(_profile(avatarPath: 'u1/avatar/a.jpg'));
+          .emit(_profile(avatar: const Avatar.uploaded('u1/avatar/a.jpg')));
       await settle(tester);
 
       final shopTab = find.text(PersonalTab.shop.label);

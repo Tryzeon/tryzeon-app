@@ -40,7 +40,7 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
     ref.watch(isAuthenticatedProvider);
 
     ref.listen(userProfileProvider, (final previous, final next) {
-      if (previous?.value?.avatarPath == next.value?.avatarPath) return;
+      if (previous?.value?.avatar == next.value?.avatar) return;
       state = state.copyWith(currentId: null);
     });
     return const TryonGalleryState();

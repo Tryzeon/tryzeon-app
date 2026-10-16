@@ -4,10 +4,11 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/preset_avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/prepare_preset_avatar.dart';
-import 'package:tryzeon/feature/personal/profile/domain/usecases/update_user_avatar.dart';
+import 'package:tryzeon/feature/personal/profile/domain/usecases/upload_user_avatar.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -19,11 +20,11 @@ class _FakeUserProfileNotifier extends UserProfileNotifier {
     name: 'n',
     createdAt: DateTime(2026),
     updatedAt: DateTime(2026),
-    avatarPath: 'u1/avatar/old.jpg',
+    avatar: const Avatar.uploaded('u1/avatar/old.jpg'),
   );
 }
 
-class _FakeUpdateUserAvatar implements UpdateUserAvatar {
+class _FakeUploadUserAvatar implements UploadUserAvatar {
   Completer<Result<void, Failure>>? pending;
   final List<File> calls = [];
 
@@ -54,7 +55,7 @@ class _FakePreparePresetAvatar implements PreparePresetAvatar {
 }
 
 void main() {
-  late _FakeUpdateUserAvatar updateUserAvatar;
+  late _FakeUploadUserAvatar uploadUserAvatar;
   late _FakePreparePresetAvatar preparePresetAvatar;
 
   ProviderContainer makeContainer({
@@ -64,7 +65,7 @@ void main() {
       retry: (final _, final _) => null,
       overrides: [
         userProfileProvider.overrideWith(_FakeUserProfileNotifier.new),
-        updateUserAvatarUseCaseProvider.overrideWithValue(updateUserAvatar),
+        uploadUserAvatarUseCaseProvider.overrideWithValue(uploadUserAvatar),
         preparePresetAvatarUseCaseProvider.overrideWithValue(
           preparePresetAvatar,
         ),
@@ -80,7 +81,7 @@ void main() {
   }
 
   setUp(() {
-    updateUserAvatar = _FakeUpdateUserAvatar();
+    uploadUserAvatar = _FakeUploadUserAvatar();
     preparePresetAvatar = _FakePreparePresetAvatar();
   });
 
@@ -105,7 +106,7 @@ void main() {
 
     await container.read(avatarUploadProvider.notifier).upload(File('me.jpg'));
 
-    expect(updateUserAvatar.calls.single.path, 'me.jpg');
+    expect(uploadUserAvatar.calls.single.path, 'me.jpg');
   });
 
   test('a preset is uploaded as the avatar', () async {
@@ -117,7 +118,7 @@ void main() {
 
     expect(result.isSuccess, isTrue);
     expect(preparePresetAvatar.calls.single, PresetAvatar.male);
-    expect(updateUserAvatar.calls.single.path, 'preset_male.jpg');
+    expect(uploadUserAvatar.calls.single.path, 'preset_male.jpg');
   });
 
   test('a preset that cannot be prepared uploads nothing', () async {
@@ -129,12 +130,12 @@ void main() {
         .applyPreset(PresetAvatar.male);
 
     expect(result.getError(), const UnknownFailure());
-    expect(updateUserAvatar.calls, isEmpty);
+    expect(uploadUserAvatar.calls, isEmpty);
   });
 
   test('rejects a second replacement while one is in flight', () async {
     final container = makeContainer();
-    updateUserAvatar.pending = Completer();
+    uploadUserAvatar.pending = Completer();
     final notifier = container.read(avatarUploadProvider.notifier);
 
     final first = notifier.upload(File('me.jpg'));
@@ -144,14 +145,14 @@ void main() {
     expect(second.getError(), isA<ValidationFailure>());
     expect(preparePresetAvatar.calls, isEmpty);
 
-    updateUserAvatar.pending!.complete(const Ok(null));
+    uploadUserAvatar.pending!.complete(const Ok(null));
     expect((await first).isSuccess, isTrue);
     expect(container.read(avatarUploadProvider), isNull);
   });
 
   test('exposes the photo being uploaded until it is in place', () async {
     final container = makeContainer();
-    updateUserAvatar.pending = Completer();
+    uploadUserAvatar.pending = Completer();
 
     final applying = container
         .read(avatarUploadProvider.notifier)
@@ -160,7 +161,7 @@ void main() {
 
     expect(container.read(avatarUploadProvider)?.path, 'preset_male.jpg');
 
-    updateUserAvatar.pending!.complete(const Ok(null));
+    uploadUserAvatar.pending!.complete(const Ok(null));
     await applying;
     expect(container.read(avatarUploadProvider), isNull);
   });

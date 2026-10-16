@@ -8,7 +8,9 @@ import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_s
 import 'package:tryzeon/feature/personal/profile/data/collections/user_profile_cache.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_local_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/preset_avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 
 import '../../../../../support/isar_test_harness.dart';
@@ -42,7 +44,7 @@ void main() {
       isTutorialCompleted: true,
       name: 'Amy',
       email: 'amy@example.com',
-      avatarPath: 'u1/avatar.jpg',
+      avatar: const Avatar.uploaded('u1/avatar.jpg'),
       createdAt: DateTime(2026),
       updatedAt: DateTime(2026, 5),
       measurements: const BodyMeasurements(
@@ -58,6 +60,25 @@ void main() {
       ageRange: AgeRange.age25to34,
       stylePreferences: const [ClothingStyle.korean, ClothingStyle.minimalist],
       isOnboarded: true,
+    );
+    final local = build();
+
+    await local.saveUserProfile(profile);
+
+    expect(
+      (await local.getUserProfile() as CacheHit<UserProfile>).data,
+      profile,
+    );
+  });
+
+  test('reads back a preset avatar it saved', () async {
+    final profile = UserProfile(
+      userId: 'u1',
+      isTutorialCompleted: true,
+      name: 'Amy',
+      createdAt: DateTime(2026),
+      updatedAt: DateTime(2026),
+      avatar: const Avatar.preset(PresetAvatar.female),
     );
     final local = build();
 

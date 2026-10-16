@@ -7,6 +7,7 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile_update.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
@@ -24,14 +25,14 @@ import 'package:typed_result/typed_result.dart';
 UserProfile _profile({
   final bool isOnboarded = true,
   final bool isTutorialCompleted = false,
-  final String? avatarPath,
+  final Avatar? avatar,
   final String name = 'n',
 }) => UserProfile(
   userId: 'u1',
   name: name,
   createdAt: DateTime(2026),
   updatedAt: DateTime(2026),
-  avatarPath: avatarPath,
+  avatar: avatar,
   isOnboarded: isOnboarded,
   isTutorialCompleted: isTutorialCompleted,
 );
@@ -166,13 +167,13 @@ void main() {
     await start(_profile());
     expect(state(), const TutorialState.pickModel());
 
-    profile().emit(_profile(avatarPath: 'u1/avatar/a.jpg'));
+    profile().emit(_profile(avatar: const Avatar.uploaded('u1/avatar/a.jpg')));
 
     expect(state(), const TutorialState.startTryon());
   });
 
   test('a new pending try-on starts generating', () async {
-    await start(_profile(avatarPath: 'u1/avatar/a.jpg'));
+    await start(_profile(avatar: const Avatar.uploaded('u1/avatar/a.jpg')));
 
     addPending('r1');
 
@@ -180,20 +181,24 @@ void main() {
   });
 
   test('keeps generating when the profile re-emits', () async {
-    await start(_profile(avatarPath: 'u1/avatar/a.jpg'));
+    await start(_profile(avatar: const Avatar.uploaded('u1/avatar/a.jpg')));
     addPending('r1');
 
-    profile().emit(_profile(avatarPath: 'u1/avatar/a.jpg', name: 'n2'));
+    profile().emit(
+      _profile(avatar: const Avatar.uploaded('u1/avatar/a.jpg'), name: 'n2'),
+    );
 
     expect(state(), const TutorialState.generating({'r1'}));
   });
 
   test('keeps the review step when the profile re-emits', () async {
-    await start(_profile(avatarPath: 'u1/avatar/a.jpg'));
+    await start(_profile(avatar: const Avatar.uploaded('u1/avatar/a.jpg')));
     addPending('r1');
     succeed('r1');
 
-    profile().emit(_profile(avatarPath: 'u1/avatar/a.jpg', name: 'n2'));
+    profile().emit(
+      _profile(avatar: const Avatar.uploaded('u1/avatar/a.jpg'), name: 'n2'),
+    );
 
     expect(state(), const TutorialState.reviewResult('r1'));
   });
@@ -227,7 +232,7 @@ void main() {
   });
 
   test('a missing-avatar outcome with an avatar present retries', () async {
-    await start(_profile(avatarPath: 'u1/avatar/a.jpg'));
+    await start(_profile(avatar: const Avatar.uploaded('u1/avatar/a.jpg')));
     addPending('r1');
 
     tryon().outcome = const TryonAvatarMissing('r1');
@@ -236,7 +241,7 @@ void main() {
   });
 
   test('ignores outcomes for other requests', () async {
-    await start(_profile(avatarPath: 'u1/avatar/a.jpg'));
+    await start(_profile(avatar: const Avatar.uploaded('u1/avatar/a.jpg')));
     addPending('r1');
 
     tryon().outcome = TryonSucceeded(
@@ -247,7 +252,7 @@ void main() {
   });
 
   test('success moves to the review step and persists completion', () async {
-    await start(_profile(avatarPath: 'u1/avatar/a.jpg'));
+    await start(_profile(avatar: const Avatar.uploaded('u1/avatar/a.jpg')));
     addPending('r1');
 
     succeed('r1');
@@ -260,7 +265,7 @@ void main() {
   });
 
   test('done after the review step hides without writing again', () async {
-    await start(_profile(avatarPath: 'u1/avatar/a.jpg'));
+    await start(_profile(avatar: const Avatar.uploaded('u1/avatar/a.jpg')));
     addPending('r1');
     succeed('r1');
     await pumpEventQueue();
@@ -272,27 +277,35 @@ void main() {
   });
 
   test('the review step survives a profile re-emit marked completed', () async {
-    await start(_profile(avatarPath: 'u1/avatar/a.jpg'));
+    await start(_profile(avatar: const Avatar.uploaded('u1/avatar/a.jpg')));
     addPending('r1');
     succeed('r1');
     await pumpEventQueue();
 
     profile().emit(
-      _profile(avatarPath: 'u1/avatar/a.jpg', isTutorialCompleted: true),
+      _profile(
+        avatar: const Avatar.uploaded('u1/avatar/a.jpg'),
+        isTutorialCompleted: true,
+      ),
     );
 
     expect(state(), const TutorialState.reviewResult('r1'));
   });
 
   test('a failed persist keeps the review step, then stays done', () async {
-    await start(_profile(avatarPath: 'u1/avatar/a.jpg'), fails: true);
+    await start(
+      _profile(avatar: const Avatar.uploaded('u1/avatar/a.jpg')),
+      fails: true,
+    );
     addPending('r1');
     succeed('r1');
     await pumpEventQueue();
     expect(state(), const TutorialState.reviewResult('r1'));
 
     await controller().complete();
-    profile().emit(_profile(avatarPath: 'u1/avatar/a.jpg', name: 'n2'));
+    profile().emit(
+      _profile(avatar: const Avatar.uploaded('u1/avatar/a.jpg'), name: 'n2'),
+    );
 
     expect(state(), const TutorialState.inactive());
     expect(repository.updates, hasLength(1));
@@ -300,7 +313,10 @@ void main() {
 
   test('a failed persist is logged as an error', () async {
     AppLogger.talker.cleanHistory();
-    await start(_profile(avatarPath: 'u1/avatar/a.jpg'), fails: true);
+    await start(
+      _profile(avatar: const Avatar.uploaded('u1/avatar/a.jpg')),
+      fails: true,
+    );
     addPending('r1');
     succeed('r1');
     await pumpEventQueue();
@@ -316,7 +332,7 @@ void main() {
   });
 
   test('tracks every try-on started while waiting', () async {
-    await start(_profile(avatarPath: 'u1/avatar/a.jpg'));
+    await start(_profile(avatar: const Avatar.uploaded('u1/avatar/a.jpg')));
     addPending('r1');
     addPending('r2');
     expect(state(), const TutorialState.generating({'r1', 'r2'}));
@@ -331,7 +347,7 @@ void main() {
   test(
     'returns to starting a try-on only once every tracked one failed',
     () async {
-      await start(_profile(avatarPath: 'u1/avatar/a.jpg'));
+      await start(_profile(avatar: const Avatar.uploaded('u1/avatar/a.jpg')));
       addPending('r1');
       addPending('r2');
 
@@ -343,7 +359,7 @@ void main() {
   );
 
   test('failure and cancel return to starting a try-on', () async {
-    await start(_profile(avatarPath: 'u1/avatar/a.jpg'));
+    await start(_profile(avatar: const Avatar.uploaded('u1/avatar/a.jpg')));
     addPending('r1');
     tryon().outcome = const TryonFailed('r1', ValidationFailure());
     expect(state(), const TutorialState.startTryon());
@@ -354,7 +370,7 @@ void main() {
   });
 
   test('hitting the daily limit completes the tutorial', () async {
-    await start(_profile(avatarPath: 'u1/avatar/a.jpg'));
+    await start(_profile(avatar: const Avatar.uploaded('u1/avatar/a.jpg')));
     addPending('r1');
 
     tryon().outcome = const TryonRateLimited('r1', isVideo: false);
@@ -367,7 +383,7 @@ void main() {
   });
 
   test('rating the reviewed result hides without writing again', () async {
-    await start(_profile(avatarPath: 'u1/avatar/a.jpg'));
+    await start(_profile(avatar: const Avatar.uploaded('u1/avatar/a.jpg')));
     addPending('r1');
     succeed('r1');
     await pumpEventQueue();
@@ -393,7 +409,7 @@ void main() {
     await start(_profile(), fails: true);
 
     await controller().complete();
-    profile().emit(_profile(avatarPath: 'u1/avatar/a.jpg'));
+    profile().emit(_profile(avatar: const Avatar.uploaded('u1/avatar/a.jpg')));
 
     expect(state(), const TutorialState.inactive());
   });

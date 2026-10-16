@@ -19,7 +19,6 @@ class UpdateUserProfileRequest {
     this.ageRange,
     this.measurements,
     this.stylePreferences,
-    this.avatarPath,
     this.isOnboarded,
     this.isTutorialCompleted,
   });
@@ -29,7 +28,6 @@ class UpdateUserProfileRequest {
   final AgeRange? ageRange;
   final BodyMeasurementsDto? measurements;
   final List<ClothingStyle>? stylePreferences;
-  final String? avatarPath;
   final bool? isOnboarded;
   final bool? isTutorialCompleted;
 

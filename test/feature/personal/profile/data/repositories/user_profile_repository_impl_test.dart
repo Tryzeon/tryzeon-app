@@ -8,14 +8,18 @@ import 'package:tryzeon/core/data/services/image_file_cache.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/body_measurements/domain/entities/body_measurements.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
+import 'package:tryzeon/feature/personal/profile/data/collections/avatar_embedded.dart';
 import 'package:tryzeon/feature/personal/profile/data/collections/user_profile_cache.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_local_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_remote_datasource.dart';
+import 'package:tryzeon/feature/personal/profile/data/dtos/update_avatar_request.dart';
 import 'package:tryzeon/feature/personal/profile/data/dtos/update_user_profile_request.dart';
 import 'package:tryzeon/feature/personal/profile/data/dtos/user_profile_dto.dart';
 import 'package:tryzeon/feature/personal/profile/data/repositories/user_profile_repository_impl.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/preset_avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile_update.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -27,6 +31,7 @@ class _FakeRemote implements UserProfileRemoteDataSource {
   final UserProfileDto profile;
   int calls = 0;
   final List<Map<String, dynamic>> updates = [];
+  final List<Map<String, dynamic>> avatarUpdates = [];
   Object? getError;
   Object? updateError;
 
@@ -40,6 +45,12 @@ class _FakeRemote implements UserProfileRemoteDataSource {
   @override
   Future<void> updateUserProfile(final UpdateUserProfileRequest request) async {
     updates.add(request.toJson());
+    if (updateError case final error?) throw error;
+  }
+
+  @override
+  Future<void> updateAvatar(final UpdateAvatarRequest request) async {
+    avatarUpdates.add(request.toJson());
     if (updateError case final error?) throw error;
   }
 
@@ -69,6 +80,7 @@ void main() {
     final String? gender = 'female',
     final String? ageRange = '25_34',
     final List<String>? stylePreferences = const ['korean'],
+    final AvatarEmbedded? avatar,
   }) => harness.isar.writeTxn(() async {
     await harness.isar.userProfileCaches.putByUserId(
       UserProfileCache()
@@ -79,6 +91,7 @@ void main() {
         ..gender = gender
         ..ageRange = ageRange
         ..stylePreferences = stylePreferences
+        ..avatar = avatar
         ..isOnboarded = true
         ..isTutorialCompleted = true,
     );
@@ -99,6 +112,7 @@ void main() {
     gender: Gender.female,
     ageRange: AgeRange.age25to34,
     stylePreferences: const [ClothingStyle.korean],
+    avatarPreset: PresetAvatar.male,
     isOnboarded: true,
   );
 
@@ -148,6 +162,19 @@ void main() {
     expect(profile.gender, Gender.female);
   });
 
+  test('re-fetches when a cached preset avatar no longer decodes', () async {
+    await seedCache(avatar: AvatarEmbedded()..preset = 'female_2');
+
+    final remote = _FakeRemote(remoteProfile);
+    final profile = (await buildRepository(remote).getUserProfile()).get()!;
+
+    expect(remote.calls, 1);
+    expect(profile.avatar, const Avatar.preset(PresetAvatar.male));
+
+    final cached = await harness.isar.userProfileCaches.getByUserId('u1');
+    expect(cached!.avatar?.preset, 'male');
+  });
+
   test('serves the cache untouched when every cached value decodes', () async {
     await seedCache();
 
@@ -182,9 +209,9 @@ void main() {
       final remote = _FakeRemote(remoteProfile)
         ..getError = const SocketException('offline');
 
-      final result = await buildRepository(remote).updateUserProfile(
-        const UserProfileUpdate(avatarPath: 'u1/avatar/new.jpg'),
-      );
+      final result = await buildRepository(
+        remote,
+      ).updateUserProfile(const UserProfileUpdate(name: 'Amy'));
 
       expect(result.isSuccess, isTrue);
       expect(
@@ -206,9 +233,9 @@ void main() {
           code: 'PGRST116',
         );
 
-      final result = await buildRepository(remote).updateUserProfile(
-        const UserProfileUpdate(avatarPath: 'u1/avatar/new.jpg'),
-      );
+      final result = await buildRepository(
+        remote,
+      ).updateUserProfile(const UserProfileUpdate(name: 'Amy'));
 
       expect(result.getError(), const NotFoundFailure());
       expect(remote.calls, 0);
@@ -252,5 +279,48 @@ void main() {
     expect(remote.updates, [
       {'is_tutorial_completed': true},
     ]);
+  });
+
+  test(
+    'updateAvatar to a preset clears the uploaded path and caches the refetched row',
+    () async {
+      await seedCache();
+      final remote = _FakeRemote(remoteProfile);
+
+      final result = await buildRepository(
+        remote,
+      ).updateAvatar(const Avatar.preset(PresetAvatar.female));
+
+      expect(result.isSuccess, isTrue);
+      expect(remote.avatarUpdates, [
+        {'avatar_path': null, 'avatar_preset': 'female'},
+      ]);
+      expect(remote.calls, 1);
+      expect(await harness.isar.userProfileCaches.count(), 1);
+    },
+  );
+
+  test('updateAvatar to an uploaded photo clears the preset', () async {
+    final remote = _FakeRemote(remoteProfile);
+
+    await buildRepository(
+      remote,
+    ).updateAvatar(const Avatar.uploaded('u1/avatar/me.jpg'));
+
+    expect(remote.avatarUpdates, [
+      {'avatar_path': 'u1/avatar/me.jpg', 'avatar_preset': null},
+    ]);
+  });
+
+  test('a rejected updateAvatar is a failure and skips the refresh', () async {
+    final remote = _FakeRemote(remoteProfile)
+      ..updateError = const PostgrestException(message: 'check violation');
+
+    final result = await buildRepository(
+      remote,
+    ).updateAvatar(const Avatar.preset(PresetAvatar.male));
+
+    expect(result.getError(), const ServerFailure());
+    expect(remote.calls, 0);
   });
 }

@@ -10,9 +10,6 @@ void main() {
     expect(const UpdateUserProfileRequest(name: 'Eric').toJson(), {
       'name': 'Eric',
     });
-    expect(const UpdateUserProfileRequest(avatarPath: 'u1/a.jpg').toJson(), {
-      'avatar_path': 'u1/a.jpg',
-    });
   });
 
   test('encodes enums by their wire value', () {

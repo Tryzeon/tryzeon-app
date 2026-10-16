@@ -6,9 +6,11 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_local_datasource.dart';
 import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_remote_datasource.dart';
+import 'package:tryzeon/feature/personal/profile/data/dtos/update_avatar_request.dart';
 import 'package:tryzeon/feature/personal/profile/data/dtos/update_user_profile_request.dart';
 import 'package:tryzeon/feature/personal/profile/data/dtos/user_profile_dto.dart';
 import 'package:tryzeon/feature/personal/profile/data/mappers/user_profile_mappr.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile_update.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
@@ -86,6 +88,25 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       return Err(mapExceptionToFailure(e));
     }
 
+    await _refreshCachedProfile();
+    return const Ok(null);
+  }
+
+  @override
+  Future<Result<void, Failure>> updateAvatar(final Avatar avatar) async {
+    try {
+      await _remoteDataSource.updateAvatar(
+        _mappr.convert<Avatar, UpdateAvatarRequest>(avatar),
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to update avatar', e, stackTrace);
+      return Err(mapExceptionToFailure(e));
+    }
+    await _refreshCachedProfile();
+    return const Ok(null);
+  }
+
+  Future<void> _refreshCachedProfile() async {
     try {
       await _localDataSource.saveUserProfile(
         _mappr.convert<UserProfileDto, UserProfile>(
@@ -108,7 +129,6 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
         );
       }
     }
-    return const Ok(null);
   }
 
   @override

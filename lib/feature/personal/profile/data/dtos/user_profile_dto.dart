@@ -3,6 +3,7 @@ import 'package:tryzeon/feature/common/body_measurements/data/dtos/body_measurem
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/preset_avatar.dart';
 
 part 'user_profile_dto.g.dart';
 
@@ -16,6 +17,7 @@ class UserProfileDto {
     this.email,
     this.measurements,
     this.avatarPath,
+    this.avatarPreset,
     this.gender,
     this.ageRange,
     this.stylePreferences,
@@ -33,6 +35,8 @@ class UserProfileDto {
   final String? email;
   final BodyMeasurementsDto? measurements;
   final String? avatarPath;
+  @JsonKey(unknownEnumValue: JsonKey.nullForUndefinedEnumValue)
+  final PresetAvatar? avatarPreset;
   @JsonKey(unknownEnumValue: JsonKey.nullForUndefinedEnumValue)
   final Gender? gender;
   @JsonKey(unknownEnumValue: JsonKey.nullForUndefinedEnumValue)

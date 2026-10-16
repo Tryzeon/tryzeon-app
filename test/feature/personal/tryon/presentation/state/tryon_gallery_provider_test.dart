@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/preset_avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart';
@@ -12,6 +14,10 @@ import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
 
 class _FakeUserProfileNotifier extends UserProfileNotifier {
+  _FakeUserProfileNotifier(this._initial);
+
+  final Avatar _initial;
+
   @override
   Future<UserProfile?> build() async => UserProfile(
     userId: 'u1',
@@ -19,11 +25,11 @@ class _FakeUserProfileNotifier extends UserProfileNotifier {
     name: 'n',
     createdAt: DateTime(2026),
     updatedAt: DateTime(2026),
-    avatarPath: 'u1/avatar/old.jpg',
+    avatar: _initial,
   );
 
-  void replaceAvatar(final String path) =>
-      state = AsyncData(state.requireValue!.copyWith(avatarPath: path));
+  void replaceAvatar(final Avatar avatar) =>
+      state = AsyncData(state.requireValue!.copyWith(avatar: avatar));
 }
 
 void main() {
@@ -107,29 +113,40 @@ void main() {
     expect(notifier.state.entries.single.pieces, const [piece]);
   });
 
-  test('replacing the saved avatar returns to the avatar page', () async {
-    final container = ProviderContainer(
-      overrides: [
-        isAuthenticatedProvider.overrideWithValue(true),
-        userProfileProvider.overrideWith(_FakeUserProfileNotifier.new),
-      ],
-    );
-    addTearDown(container.dispose);
-    final notifier = container.read(tryonGalleryProvider.notifier);
-    await container.read(userProfileProvider.future);
-
-    notifier
-      ..addPending(id: 'a', subject: imageSubject)
-      ..complete(
-        const TryonResult(id: 'a', mode: TryonMode.image, imageUrl: 'u'),
+  for (final (from, to) in const [
+    (
+      Avatar.uploaded('u1/avatar/old.jpg'),
+      Avatar.uploaded('u1/avatar/new.jpg'),
+    ),
+    (Avatar.preset(PresetAvatar.female), Avatar.preset(PresetAvatar.male)),
+    (Avatar.preset(PresetAvatar.female), Avatar.uploaded('u1/avatar/new.jpg')),
+  ]) {
+    test('replacing $from with $to returns to the avatar page', () async {
+      final container = ProviderContainer(
+        overrides: [
+          isAuthenticatedProvider.overrideWithValue(true),
+          userProfileProvider.overrideWith(
+            () => _FakeUserProfileNotifier(from),
+          ),
+        ],
       );
-    expect(notifier.state.isAvatarPage, isFalse);
+      addTearDown(container.dispose);
+      final notifier = container.read(tryonGalleryProvider.notifier);
+      await container.read(userProfileProvider.future);
 
-    (container.read(userProfileProvider.notifier) as _FakeUserProfileNotifier)
-        .replaceAvatar('u1/avatar/new.jpg');
+      notifier
+        ..addPending(id: 'a', subject: imageSubject)
+        ..complete(
+          const TryonResult(id: 'a', mode: TryonMode.image, imageUrl: 'u'),
+        );
+      expect(notifier.state.isAvatarPage, isFalse);
 
-    final state = container.read(tryonGalleryProvider);
-    expect(state.isAvatarPage, isTrue);
-    expect(state.entries.single.id, 'a');
-  });
+      (container.read(userProfileProvider.notifier) as _FakeUserProfileNotifier)
+          .replaceAvatar(to);
+
+      final state = container.read(tryonGalleryProvider);
+      expect(state.isAvatarPage, isTrue);
+      expect(state.entries.single.id, 'a');
+    });
+  }
 }

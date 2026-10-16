@@ -7,6 +7,7 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_preferences.dart';
@@ -55,9 +56,11 @@ class _UncalledTryonMediaRepository implements TryonMediaRepository {
 }
 
 class _FakeUserProfileNotifier extends UserProfileNotifier {
-  _FakeUserProfileNotifier({this.avatarPath = 'u1/avatar.jpg'});
+  _FakeUserProfileNotifier({
+    this.avatar = const Avatar.uploaded('u1/avatar.jpg'),
+  });
 
-  final String? avatarPath;
+  final Avatar? avatar;
 
   @override
   Future<UserProfile?> build() async => UserProfile(
@@ -66,7 +69,7 @@ class _FakeUserProfileNotifier extends UserProfileNotifier {
     name: 'n',
     createdAt: DateTime(2026),
     updatedAt: DateTime(2026),
-    avatarPath: avatarPath,
+    avatar: avatar,
   );
 }
 
@@ -231,7 +234,7 @@ void main() {
         overrides: [
           isAuthenticatedProvider.overrideWithValue(true),
           userProfileProvider.overrideWith(
-            () => _FakeUserProfileNotifier(avatarPath: null),
+            () => _FakeUserProfileNotifier(avatar: null),
           ),
         ],
       );

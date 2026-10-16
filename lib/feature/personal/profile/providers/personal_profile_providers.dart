@@ -25,9 +25,9 @@ import 'package:tryzeon/feature/personal/profile/domain/usecases/get_user_avatar
 import 'package:tryzeon/feature/personal/profile/domain/usecases/get_user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/prepare_preset_avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/update_style_preferences.dart';
-import 'package:tryzeon/feature/personal/profile/domain/usecases/update_user_avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/update_user_body_measurements.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/update_user_profile.dart';
+import 'package:tryzeon/feature/personal/profile/domain/usecases/upload_user_avatar.dart';
 import 'package:typed_result/typed_result.dart';
 
 part 'personal_profile_providers.g.dart';
@@ -73,8 +73,8 @@ AvatarStorage avatarStorage(final Ref ref) {
 }
 
 @riverpod
-UpdateUserAvatar updateUserAvatarUseCase(final Ref ref) {
-  return UpdateUserAvatar(
+UploadUserAvatar uploadUserAvatarUseCase(final Ref ref) {
+  return UploadUserAvatar(
     repository: ref.watch(userProfileRepositoryProvider),
     avatarStorage: ref.watch(avatarStorageProvider),
   );
@@ -95,7 +95,10 @@ PreparePresetAvatar preparePresetAvatarUseCase(final Ref ref) {
 
 @riverpod
 GetUserAvatar getUserAvatarUseCase(final Ref ref) {
-  return GetUserAvatar(ref.watch(userProfileRepositoryProvider));
+  return GetUserAvatar(
+    repository: ref.watch(userProfileRepositoryProvider),
+    presetAvatarSource: ref.watch(presetAvatarSourceProvider),
+  );
 }
 
 @riverpod
@@ -136,12 +139,10 @@ class UserProfileNotifier extends _$UserProfileNotifier
 
 @riverpod
 Future<File?> avatarFile(final Ref ref) async {
-  final profile = await ref.watch(userProfileProvider.future);
-  if (profile == null || !profile.hasAvatar) return null;
+  final avatar = (await ref.watch(userProfileProvider.future))?.avatar;
+  if (avatar == null) return null;
 
-  final result = await ref.watch(getUserAvatarUseCaseProvider)(
-    profile.avatarPath!,
-  );
+  final result = await ref.watch(getUserAvatarUseCaseProvider)(avatar);
 
   if (result.isFailure) {
     throw result.getError()!;
@@ -227,7 +228,7 @@ class AvatarUploadNotifier extends _$AvatarUploadNotifier {
     final link = ref.keepAlive();
     state = image;
     try {
-      final result = await ref.read(updateUserAvatarUseCaseProvider)(image);
+      final result = await ref.read(uploadUserAvatarUseCaseProvider)(image);
 
       if (result.isSuccess) {
         ref.invalidate(userProfileProvider);

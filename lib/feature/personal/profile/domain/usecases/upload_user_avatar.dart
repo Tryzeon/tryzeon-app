@@ -2,13 +2,13 @@ import 'dart:io';
 
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
-import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile_update.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
 import 'package:tryzeon/feature/personal/profile/domain/services/avatar_storage.dart';
 import 'package:typed_result/typed_result.dart';
 
-class UpdateUserAvatar {
-  UpdateUserAvatar({
+class UploadUserAvatar {
+  UploadUserAvatar({
     required final UserProfileRepository repository,
     required final AvatarStorage avatarStorage,
   }) : _repository = repository,
@@ -18,25 +18,23 @@ class UpdateUserAvatar {
   final AvatarStorage _avatarStorage;
 
   Future<Result<void, Failure>> call(final File avatarFile) async {
-    final profile = await _repository.getUserProfile();
+    final profile = await _repository.getUserProfile(forceRefresh: true);
     if (profile.isFailure) return Err(profile.getError()!);
-    final previousPath = profile.get()!.avatarPath;
+    final previous = profile.get()!.avatar;
 
     final uploaded = await _avatarStorage.upload(avatarFile);
     if (uploaded.isFailure) return Err(uploaded.getError()!);
-    final newPath = uploaded.get()!;
+    final path = uploaded.get()!;
 
-    final saved = await _repository.updateUserProfile(
-      UserProfileUpdate(avatarPath: newPath),
-    );
+    final saved = await _repository.updateAvatar(Avatar.uploaded(path));
     if (saved.isFailure) {
-      await _delete(newPath);
+      await _delete(path);
       return saved;
     }
 
-    if (previousPath != null &&
-        previousPath.isNotEmpty &&
-        previousPath != newPath) {
+    if (previous case AvatarFromUpload(
+      path: final previousPath,
+    ) when previousPath != path) {
       await _delete(previousPath);
     }
     return const Ok(null);

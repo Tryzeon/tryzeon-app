@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
+import 'package:tryzeon/feature/personal/profile/data/dtos/update_avatar_request.dart';
 import 'package:tryzeon/feature/personal/profile/data/dtos/update_user_profile_request.dart';
 import 'package:tryzeon/feature/personal/profile/data/dtos/user_profile_dto.dart';
 
@@ -22,7 +23,7 @@ class UserProfileRemoteDataSource {
     final response = await _supabaseClient
         .from(_userProfileTable)
         .select(
-          'user_id, name, email, avatar_path, measurements, gender, age_range, style_preferences, is_onboarded, is_tutorial_completed, created_at, updated_at',
+          'user_id, name, email, avatar_path, avatar_preset, measurements, gender, age_range, style_preferences, is_onboarded, is_tutorial_completed, created_at, updated_at',
         )
         .eq('user_id', user.id)
         .single();
@@ -30,13 +31,19 @@ class UserProfileRemoteDataSource {
     return UserProfileDto.fromJson(response);
   }
 
-  Future<void> updateUserProfile(final UpdateUserProfileRequest request) async {
+  Future<void> updateUserProfile(final UpdateUserProfileRequest request) =>
+      _updateRow(request.toJson());
+
+  Future<void> updateAvatar(final UpdateAvatarRequest request) =>
+      _updateRow(request.toJson());
+
+  Future<void> _updateRow(final Map<String, dynamic> values) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();
 
     await _supabaseClient
         .from(_userProfileTable)
-        .update(request.toJson())
+        .update(values)
         .eq('user_id', user.id)
         .select('user_id')
         .single();
