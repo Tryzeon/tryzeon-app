@@ -28,6 +28,7 @@ import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/home_primary_action_button.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/page_linked_reveal.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/widgets/preset_model_tag.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_avatar_page.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_disclaimer.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_gallery.dart';
@@ -234,6 +235,17 @@ class HomePage extends HookConsumerWidget {
               child: isBlankAvatarPage
                   ? const SizedBox.shrink()
                   : TryonGalleryActions(onReplaceAvatar: replaceAvatar),
+            ),
+
+            Positioned(
+              left: AppSpacing.lg,
+              bottom: bottomOffset + AppSpacing.md + AppSpacing.smMd,
+              child: PageLinkedReveal(
+                controller: pageController,
+                interval: const Interval(0, 0.5),
+                showOnAvatarPage: true,
+                child: const PresetModelTag(),
+              ),
             ),
 
             if (galleryState.currentEntry case final entry?)

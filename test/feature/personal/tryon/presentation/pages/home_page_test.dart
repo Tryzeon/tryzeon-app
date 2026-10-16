@@ -48,6 +48,9 @@ class _RecordingAvatarUpload extends AvatarUploadNotifier {
 
 void main() {
   const photoSourceTitle = '選擇模特來源';
+  const presetTag = '預設模特';
+  const preset = Avatar.preset(PresetAvatar.female);
+  const ownPhoto = Avatar.uploaded('u1/avatar/me.jpg');
 
   late _RecordingAvatarUpload avatarUpload;
 
@@ -186,4 +189,32 @@ void main() {
       expect(find.byType(ModelChoiceSheet), findsNothing);
     },
   );
+
+  group('preset tag', () {
+    testWidgets('marks a preset model on the model page', (final tester) async {
+      await pumpHome(tester, avatar: preset);
+
+      expect(find.text(presetTag), findsOneWidget);
+    });
+
+    testWidgets('is absent once the model is your own photo', (
+      final tester,
+    ) async {
+      await pumpHome(tester, avatar: ownPhoto);
+
+      expect(find.text(presetTag), findsNothing);
+    });
+
+    testWidgets('hides while the model is being replaced', (
+      final tester,
+    ) async {
+      await pumpHome(
+        tester,
+        avatar: preset,
+        replacement: const PendingAvatar.preset(PresetAvatar.male),
+      );
+
+      expect(find.text(presetTag), findsNothing);
+    });
+  });
 }
