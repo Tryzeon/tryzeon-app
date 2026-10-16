@@ -4,11 +4,15 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF'
-Usage: scripts/release-beta.sh <version> [--ios | --android]
+Usage: scripts/release-beta.sh [<version>] [--ios | --android]
 
-The version may be given with or without a leading 'v'.
+The version may be given with or without a leading 'v'. When omitted, it
+defaults to the next minor version after the highest vX.Y.Z tag on origin
+(e.g. v1.22.0 -> 1.23.0).
 
 Examples:
+  scripts/release-beta.sh
+  scripts/release-beta.sh --ios
   scripts/release-beta.sh v1.2.0
   scripts/release-beta.sh 1.2.0
   scripts/release-beta.sh v1.2.0 --ios
@@ -21,20 +25,43 @@ if ! command -v gh >/dev/null 2>&1; then
   exit 1
 fi
 
-if [[ $# -lt 1 || $# -gt 2 ]]; then
-  usage >&2
-  exit 1
+version=""
+platform="all"
+
+for arg in "$@"; do
+  case "$arg" in
+    --ios | --android)
+      if [[ "$platform" != all ]]; then
+        usage >&2
+        exit 1
+      fi
+      platform="$arg"
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    *)
+      if [[ -n "$version" || ! "$arg" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        usage >&2
+        exit 1
+      fi
+      version="${arg#v}"
+      ;;
+  esac
+done
+
+if [[ -z "$version" ]]; then
+  git fetch --tags --quiet origin
+  latest_tag=$(git tag --list 'v*' --sort=v:refname | grep -Ex 'v[0-9]+\.[0-9]+\.[0-9]+' | tail -n 1 || true)
+  if [[ -z "$latest_tag" ]]; then
+    echo "Error: no vX.Y.Z tag found; pass the version explicitly" >&2
+    exit 1
+  fi
+  IFS=. read -r major minor _ <<<"${latest_tag#v}"
+  version="$major.$((minor + 1)).0"
+  echo "Latest tag: $latest_tag -> next version: $version"
 fi
-
-version="$1"
-platform="${2:-all}"
-
-if [[ ! "$version" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-  echo "Version must be a semantic version, for example v1.2.0 or 1.2.0" >&2
-  exit 1
-fi
-
-version="${version#v}"
 
 current_branch=$(git branch --show-current)
 if [[ "$current_branch" != "main" ]]; then
@@ -61,10 +88,6 @@ case "$platform" in
     ;;
   --android)
     run_android=true
-    ;;
-  *)
-    usage >&2
-    exit 1
     ;;
 esac
 
