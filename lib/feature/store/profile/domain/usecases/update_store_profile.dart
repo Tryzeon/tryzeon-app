@@ -43,8 +43,13 @@ class UpdateStoreProfile {
         .copyWith(latitude: located.latitude, longitude: located.longitude);
 
     String? uploadedLogoPath;
+    String? replacedLogoPath;
     final logoFile = params.logoFile;
     if (logoFile != null) {
+      final current = await _repository.getStoreProfile(forceRefresh: true);
+      if (current.isFailure) return Err(current.getError()!);
+      replacedLogoPath = current.get()?.logoPath;
+
       final uploaded = await _logoStorage.upload(
         storeId: original.id,
         logo: logoFile,
@@ -66,12 +71,11 @@ class UpdateStoreProfile {
       return Err(failure);
     }
 
-    final oldLogoPath = original.logoPath;
     if (uploadedLogoPath != null &&
-        oldLogoPath != null &&
-        oldLogoPath.isNotEmpty &&
-        oldLogoPath != uploadedLogoPath) {
-      await _deleteLogo(original.id, oldLogoPath);
+        replacedLogoPath != null &&
+        replacedLogoPath.isNotEmpty &&
+        replacedLogoPath != uploadedLogoPath) {
+      await _deleteLogo(original.id, replacedLogoPath);
     }
     return Ok((addressUnresolved: located.unresolved));
   }

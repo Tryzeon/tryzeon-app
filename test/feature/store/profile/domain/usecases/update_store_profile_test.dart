@@ -12,8 +12,18 @@ import 'package:tryzeon/feature/store/profile/domain/usecases/update_store_profi
 import 'package:typed_result/typed_result.dart';
 
 class _FakeRepository implements StoreProfileRepository {
+  Result<StoreProfile?, Failure> profileResult = const Ok(null);
+  final List<bool> profileReads = [];
   Result<void, Failure> updateResult = const Ok(null);
   StoreProfile? savedTarget;
+
+  @override
+  Future<Result<StoreProfile?, Failure>> getStoreProfile({
+    final bool forceRefresh = false,
+  }) async {
+    profileReads.add(forceRefresh);
+    return profileResult;
+  }
 
   @override
   Future<Result<void, Failure>> updateStoreProfile({
@@ -31,13 +41,17 @@ class _FakeRepository implements StoreProfileRepository {
 
 class _FakeLogoStorage implements StoreLogoStorage {
   Result<String, Failure> uploadResult = const Ok('logos/new.png');
+  final List<File> uploaded = [];
   final List<String> deleted = [];
 
   @override
   Future<Result<String, Failure>> upload({
     required final String storeId,
     required final File logo,
-  }) async => uploadResult;
+  }) async {
+    uploaded.add(logo);
+    return uploadResult;
+  }
 
   @override
   Future<Result<void, Failure>> delete({
@@ -90,7 +104,7 @@ void main() {
   );
 
   setUp(() {
-    repository = _FakeRepository();
+    repository = _FakeRepository()..profileResult = Ok(original);
     logoStorage = _FakeLogoStorage();
     geocoding = _FakeGeocoding();
     updateStoreProfile = UpdateStoreProfile(
@@ -111,6 +125,7 @@ void main() {
       expect(repository.savedTarget!.name, '新店名');
       expect(repository.savedTarget!.logoPath, 'logos/old.png');
       expect(logoStorage.deleted, isEmpty);
+      expect(repository.profileReads, isEmpty);
     },
   );
 
@@ -127,6 +142,46 @@ void main() {
     expect(repository.savedTarget!.logoPath, 'logos/new.png');
     expect(logoStorage.deleted, ['logos/old.png']);
   });
+
+  test(
+    'deletes the logo the server holds, not the one cached when the form opened',
+    () async {
+      repository.profileResult = Ok(
+        original.copyWith(logoPath: 'logos/from-another-device.png'),
+      );
+
+      final result = await updateStoreProfile(
+        UpdateStoreProfileParams(
+          original: original,
+          draft: draft,
+          logoFile: File('n.png'),
+        ),
+      );
+
+      expect(result.isSuccess, isTrue);
+      expect(repository.profileReads, [true]);
+      expect(logoStorage.deleted, ['logos/from-another-device.png']);
+    },
+  );
+
+  test(
+    'an unreadable current logo uploads nothing and writes nothing',
+    () async {
+      repository.profileResult = const Err(NetworkFailure());
+
+      final result = await updateStoreProfile(
+        UpdateStoreProfileParams(
+          original: original,
+          draft: draft,
+          logoFile: File('n.png'),
+        ),
+      );
+
+      expect(result.getError(), const NetworkFailure());
+      expect(logoStorage.uploaded, isEmpty);
+      expect(repository.savedTarget, isNull);
+    },
+  );
 
   test('a failed write discards the new logo and keeps the old one', () async {
     repository.updateResult = const Err(ServerFailure());
