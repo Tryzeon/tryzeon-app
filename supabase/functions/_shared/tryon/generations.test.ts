@@ -146,7 +146,7 @@ Deno.test("each operation surfaces a database error", async () => {
     "permission denied",
   );
   await assertRejects(
-    () => log.succeed("g1", { resultKey: "k" }),
+    () => log.succeed("g1", { resultKey: "k", imageModel: "m" }),
     Error,
     "permission denied",
   );

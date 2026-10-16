@@ -27,7 +27,7 @@ export const supabaseGenerationLog = (admin: DbClient): GenerationLog => ({
       .update({
         status: "succeeded",
         result_key: resultKey,
-        image_model: imageModel ?? null,
+        image_model: imageModel,
         video_model: videoModel ?? null,
         completed_at: new Date().toISOString(),
       })

@@ -174,12 +174,12 @@ export interface GenerationStart {
 
 /**
  * The models that actually produced the result, which the engine alone does
- * not say: the standard engine may have answered from its fallback. An animate
- * job generates no image, and an image job no video.
+ * not say: the standard engine may have answered from its fallback. An image
+ * job generates no video.
  */
 export interface GenerationOutcome {
   resultKey: string;
-  imageModel?: string;
+  imageModel: string;
   videoModel?: string;
 }
 
