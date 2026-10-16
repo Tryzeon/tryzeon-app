@@ -47,7 +47,8 @@ class HomePage extends HookConsumerWidget {
     final hasAvatar = ref.watch(userProfileProvider).value?.hasAvatar ?? false;
     final galleryState = ref.watch(tryonGalleryProvider);
     final galleryNotifier = ref.read(tryonGalleryProvider.notifier);
-    final uploadingAvatarFile = ref.watch(avatarUploadProvider);
+    final isReplacingAvatar = ref.watch(avatarUploadProvider) != null;
+    final pendingAvatarPreview = ref.watch(pendingAvatarPreviewProvider);
     final pageController = usePageController(initialPage: 0);
 
     final colorScheme = Theme.of(context).colorScheme;
@@ -56,7 +57,7 @@ class HomePage extends HookConsumerWidget {
     // on the plain surface instead.
     final isBlankAvatarPage =
         galleryState.isAvatarPage &&
-        (uploadingAvatarFile ?? avatarAsync.value) == null;
+        (pendingAvatarPreview ?? avatarAsync.value) == null;
 
     final currentPage = galleryState.currentPage;
 
@@ -137,7 +138,7 @@ class HomePage extends HookConsumerWidget {
                     height: 20,
                     fit: BoxFit.contain,
                   ),
-                  isDisabled: uploadingAvatarFile != null,
+                  isDisabled: isReplacingAvatar,
                   onTap: startTryon,
                 ),
               ),

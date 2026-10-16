@@ -25,12 +25,12 @@ class _FakeUserProfileNotifier extends UserProfileNotifier {
 }
 
 class _FakeAvatarUploadNotifier extends AvatarUploadNotifier {
-  _FakeAvatarUploadNotifier(this._uploading);
+  _FakeAvatarUploadNotifier(this._replacement);
 
-  final File? _uploading;
+  final PendingAvatar? _replacement;
 
   @override
-  File? build() => _uploading;
+  PendingAvatar? build() => _replacement;
 }
 
 void main() {
@@ -45,7 +45,8 @@ void main() {
   Future<void> pumpPage(
     final WidgetTester tester, {
     final Future<File?> Function(Ref ref)? avatarFile,
-    final File? uploading,
+    final PendingAvatar? replacement,
+    final Future<File> Function(Ref ref, PresetAvatar preset)? presetFile,
     final ValueChanged<PresetAvatar>? onPresetSelected,
     final VoidCallback? onUploadOwnPhoto,
   }) async {
@@ -57,7 +58,10 @@ void main() {
             avatarFile ?? (final ref) async => null,
           ),
           avatarUploadProvider.overrideWith(
-            () => _FakeAvatarUploadNotifier(uploading),
+            () => _FakeAvatarUploadNotifier(replacement),
+          ),
+          presetAvatarFileProvider.overrideWith(
+            presetFile ?? (final ref, final preset) => Completer<File>().future,
           ),
         ],
         child: MaterialApp(
@@ -114,13 +118,47 @@ void main() {
   testWidgets(
     'a photo being uploaded shows right away, with progress over it',
     (final tester) async {
-      await pumpPage(tester, uploading: File('preset_male.jpg'));
+      await pumpPage(tester, replacement: PendingAvatar.photo(File('me.jpg')));
+
+      final images = tester.widgetList<Image>(find.byType(Image));
+      expect(
+        images.map((final i) => i.image),
+        contains(FileImage(File('me.jpg'))),
+      );
+      expect(find.text('選擇你的試穿模特'), findsNothing);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'a preset being applied shows its image once downloaded, with progress',
+    (final tester) async {
+      await pumpPage(
+        tester,
+        replacement: const PendingAvatar.preset(PresetAvatar.male),
+        presetFile: (final ref, final preset) async =>
+            File('preset_${preset.name}.jpg'),
+      );
+      await tester.pump();
 
       final images = tester.widgetList<Image>(find.byType(Image));
       expect(
         images.map((final i) => i.image),
         contains(FileImage(File('preset_male.jpg'))),
       );
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'a preset being applied before its preview arrives shows progress, '
+    'not the choice',
+    (final tester) async {
+      await pumpPage(
+        tester,
+        replacement: const PendingAvatar.preset(PresetAvatar.male),
+      );
+
       expect(find.text('選擇你的試穿模特'), findsNothing);
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     },

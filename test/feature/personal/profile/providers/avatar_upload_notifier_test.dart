@@ -7,7 +7,8 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/preset_avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
-import 'package:tryzeon/feature/personal/profile/domain/usecases/prepare_preset_avatar.dart';
+import 'package:tryzeon/feature/personal/profile/domain/usecases/get_user_avatar.dart';
+import 'package:tryzeon/feature/personal/profile/domain/usecases/select_preset_avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/upload_user_avatar.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:typed_result/typed_result.dart';
@@ -26,11 +27,13 @@ class _FakeUserProfileNotifier extends UserProfileNotifier {
 
 class _FakeUploadUserAvatar implements UploadUserAvatar {
   Completer<Result<void, Failure>>? pending;
+  Object? thrown;
   final List<File> calls = [];
 
   @override
-  Future<Result<void, Failure>> call(final File avatarFile) {
+  Future<Result<void, Failure>> call(final File avatarFile) async {
     calls.add(avatarFile);
+    if (thrown case final error?) throw error;
     return pending?.future ?? Future.value(const Ok(null));
   }
 
@@ -39,14 +42,31 @@ class _FakeUploadUserAvatar implements UploadUserAvatar {
       throw UnimplementedError(invocation.memberName.toString());
 }
 
-class _FakePreparePresetAvatar implements PreparePresetAvatar {
-  Result<File, Failure> result = Ok(File('preset_male.jpg'));
+class _FakeSelectPresetAvatar implements SelectPresetAvatar {
+  Completer<Result<void, Failure>>? pending;
+  Result<void, Failure> result = const Ok(null);
   final List<PresetAvatar> calls = [];
 
   @override
-  Future<Result<File, Failure>> call(final PresetAvatar preset) async {
+  Future<Result<void, Failure>> call(final PresetAvatar preset) {
     calls.add(preset);
-    return result;
+    return pending?.future ?? Future.value(result);
+  }
+
+  @override
+  dynamic noSuchMethod(final Invocation invocation) =>
+      throw UnimplementedError(invocation.memberName.toString());
+}
+
+class _FakeGetUserAvatar implements GetUserAvatar {
+  Result<File, Failure> result = Ok(File('preset_male.jpg'));
+  Completer<Result<File, Failure>>? pending;
+  final List<Avatar> calls = [];
+
+  @override
+  Future<Result<File, Failure>> call(final Avatar avatar) {
+    calls.add(avatar);
+    return pending?.future ?? Future.value(result);
   }
 
   @override
@@ -56,7 +76,8 @@ class _FakePreparePresetAvatar implements PreparePresetAvatar {
 
 void main() {
   late _FakeUploadUserAvatar uploadUserAvatar;
-  late _FakePreparePresetAvatar preparePresetAvatar;
+  late _FakeSelectPresetAvatar selectPresetAvatar;
+  late _FakeGetUserAvatar getUserAvatar;
 
   ProviderContainer makeContainer({
     final Future<File?> Function(Ref ref)? avatarFile,
@@ -66,9 +87,8 @@ void main() {
       overrides: [
         userProfileProvider.overrideWith(_FakeUserProfileNotifier.new),
         uploadUserAvatarUseCaseProvider.overrideWithValue(uploadUserAvatar),
-        preparePresetAvatarUseCaseProvider.overrideWithValue(
-          preparePresetAvatar,
-        ),
+        selectPresetAvatarUseCaseProvider.overrideWithValue(selectPresetAvatar),
+        getUserAvatarUseCaseProvider.overrideWithValue(getUserAvatar),
         avatarFileProvider.overrideWith(
           avatarFile ?? (final ref) async => null,
         ),
@@ -82,7 +102,8 @@ void main() {
 
   setUp(() {
     uploadUserAvatar = _FakeUploadUserAvatar();
-    preparePresetAvatar = _FakePreparePresetAvatar();
+    selectPresetAvatar = _FakeSelectPresetAvatar();
+    getUserAvatar = _FakeGetUserAvatar();
   });
 
   test(
@@ -107,9 +128,10 @@ void main() {
     await container.read(avatarUploadProvider.notifier).upload(File('me.jpg'));
 
     expect(uploadUserAvatar.calls.single.path, 'me.jpg');
+    expect(selectPresetAvatar.calls, isEmpty);
   });
 
-  test('a preset is uploaded as the avatar', () async {
+  test('a preset is selected, never uploaded', () async {
     final container = makeContainer();
 
     final result = await container
@@ -117,20 +139,52 @@ void main() {
         .applyPreset(PresetAvatar.male);
 
     expect(result.isSuccess, isTrue);
-    expect(preparePresetAvatar.calls.single, PresetAvatar.male);
-    expect(uploadUserAvatar.calls.single.path, 'preset_male.jpg');
+    expect(selectPresetAvatar.calls, [PresetAvatar.male]);
+    expect(uploadUserAvatar.calls, isEmpty);
   });
 
-  test('a preset that cannot be prepared uploads nothing', () async {
+  test('names the preset being applied until it is in place', () async {
     final container = makeContainer();
-    preparePresetAvatar.result = const Err(UnknownFailure());
+    selectPresetAvatar.pending = Completer();
 
-    final result = await container
+    final applying = container
         .read(avatarUploadProvider.notifier)
         .applyPreset(PresetAvatar.male);
 
-    expect(result.getError(), const UnknownFailure());
-    expect(uploadUserAvatar.calls, isEmpty);
+    expect(
+      container.read(avatarUploadProvider),
+      const PendingAvatar.preset(PresetAvatar.male),
+    );
+
+    selectPresetAvatar.pending!.complete(const Ok(null));
+    await applying;
+    expect(container.read(avatarUploadProvider), isNull);
+  });
+
+  test('names the photo being uploaded until it is in place', () async {
+    final container = makeContainer();
+    uploadUserAvatar.pending = Completer();
+    final photo = File('me.jpg');
+
+    final uploading = container
+        .read(avatarUploadProvider.notifier)
+        .upload(photo);
+
+    expect(container.read(avatarUploadProvider), PendingAvatar.photo(photo));
+
+    uploadUserAvatar.pending!.complete(const Ok(null));
+    await uploading;
+    expect(container.read(avatarUploadProvider), isNull);
+  });
+
+  test('applying a preset never fetches its image itself', () async {
+    final container = makeContainer();
+
+    await container
+        .read(avatarUploadProvider.notifier)
+        .applyPreset(PresetAvatar.male);
+
+    expect(getUserAvatar.calls, isEmpty);
   });
 
   test('rejects a second replacement while one is in flight', () async {
@@ -139,30 +193,107 @@ void main() {
     final notifier = container.read(avatarUploadProvider.notifier);
 
     final first = notifier.upload(File('me.jpg'));
-    await Future<void>.delayed(Duration.zero);
     final second = await notifier.applyPreset(PresetAvatar.female);
 
     expect(second.getError(), isA<ValidationFailure>());
-    expect(preparePresetAvatar.calls, isEmpty);
+    expect(selectPresetAvatar.calls, isEmpty);
 
     uploadUserAvatar.pending!.complete(const Ok(null));
     expect((await first).isSuccess, isTrue);
     expect(container.read(avatarUploadProvider), isNull);
   });
 
-  test('exposes the photo being uploaded until it is in place', () async {
-    final container = makeContainer();
-    uploadUserAvatar.pending = Completer();
+  group('pendingAvatarPreview', () {
+    File? preview(final ProviderContainer container) =>
+        container.read(pendingAvatarPreviewProvider);
 
-    final applying = container
-        .read(avatarUploadProvider.notifier)
-        .applyPreset(PresetAvatar.male);
-    await Future<void>.delayed(Duration.zero);
+    test('is the photo being uploaded', () async {
+      final container = makeContainer();
+      container.listen(pendingAvatarPreviewProvider, (final _, final _) {});
+      uploadUserAvatar.pending = Completer();
 
-    expect(container.read(avatarUploadProvider)?.path, 'preset_male.jpg');
+      final uploading = container
+          .read(avatarUploadProvider.notifier)
+          .upload(File('me.jpg'));
 
-    uploadUserAvatar.pending!.complete(const Ok(null));
-    await applying;
-    expect(container.read(avatarUploadProvider), isNull);
+      expect(preview(container)?.path, 'me.jpg');
+
+      uploadUserAvatar.pending!.complete(const Ok(null));
+      await uploading;
+      expect(preview(container), isNull);
+    });
+
+    test('is the preset image once it has downloaded', () async {
+      final container = makeContainer();
+      container.listen(pendingAvatarPreviewProvider, (final _, final _) {});
+      getUserAvatar.pending = Completer();
+      selectPresetAvatar.pending = Completer();
+
+      final applying = container
+          .read(avatarUploadProvider.notifier)
+          .applyPreset(PresetAvatar.male);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(preview(container), isNull);
+      expect(selectPresetAvatar.calls, [PresetAvatar.male]);
+
+      getUserAvatar.pending!.complete(Ok(File('preset_male.jpg')));
+      await Future<void>.delayed(Duration.zero);
+      expect(preview(container)?.path, 'preset_male.jpg');
+
+      selectPresetAvatar.pending!.complete(const Ok(null));
+      expect((await applying).isSuccess, isTrue);
+      expect(preview(container), isNull);
+    });
+
+    test('stays empty when the preset image cannot be fetched, while the '
+        'preset is still applied', () async {
+      final container = makeContainer();
+      container.listen(pendingAvatarPreviewProvider, (final _, final _) {});
+      getUserAvatar.result = const Err(NetworkFailure());
+      selectPresetAvatar.pending = Completer();
+
+      final applying = container
+          .read(avatarUploadProvider.notifier)
+          .applyPreset(PresetAvatar.male);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(preview(container), isNull);
+      expect(container.read(avatarUploadProvider), isNotNull);
+
+      selectPresetAvatar.pending!.complete(const Ok(null));
+      expect((await applying).isSuccess, isTrue);
+      expect(selectPresetAvatar.calls, [PresetAvatar.male]);
+    });
   });
+
+  test(
+    'no longer busy once a replacement fails, so another can start',
+    () async {
+      final container = makeContainer();
+      selectPresetAvatar.result = const Err(NetworkFailure());
+      final notifier = container.read(avatarUploadProvider.notifier);
+
+      final failed = await notifier.applyPreset(PresetAvatar.male);
+
+      expect(failed.getError(), isA<NetworkFailure>());
+      expect(container.read(avatarUploadProvider), isNull);
+      expect((await notifier.upload(File('me.jpg'))).isSuccess, isTrue);
+    },
+  );
+
+  test(
+    'no longer busy once a replacement throws, so another can start',
+    () async {
+      final container = makeContainer();
+      uploadUserAvatar.thrown = StateError('boom');
+      final notifier = container.read(avatarUploadProvider.notifier);
+
+      final failed = await notifier.upload(File('me.jpg'));
+
+      expect(failed.isFailure, isTrue);
+      expect(container.read(avatarUploadProvider), isNull);
+      expect((await notifier.applyPreset(PresetAvatar.male)).isSuccess, isTrue);
+    },
+  );
 }

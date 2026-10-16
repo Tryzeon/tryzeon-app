@@ -21,20 +21,18 @@ class TryonAvatarPage extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     useAutomaticKeepAlive();
 
-    final uploadingFile = ref.watch(avatarUploadProvider);
+    final isReplacing = ref.watch(avatarUploadProvider) != null;
     final avatarAsync = ref.watch(avatarFileProvider);
+    final isBusy = isReplacing || avatarAsync.isLoading;
 
-    final file = uploadingFile ?? avatarAsync.value;
+    final file = ref.watch(pendingAvatarPreviewProvider) ?? avatarAsync.value;
     if (file != null) {
       return GestureDetector(
         onTap: onUploadOwnPhoto,
-        child: _AvatarImageItem(
-          imageProvider: FileImage(file),
-          isBusy: uploadingFile != null || avatarAsync.isLoading,
-        ),
+        child: _AvatarImageItem(imageProvider: FileImage(file), isBusy: isBusy),
       );
     }
-    if (avatarAsync.isLoading) return const _AvatarLoadingItem();
+    if (isBusy) return const _AvatarLoadingItem();
 
     final gender = ref.watch(userProfileProvider).value?.gender;
     return _AvatarEmptyState(

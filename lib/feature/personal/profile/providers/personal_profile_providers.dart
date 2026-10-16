@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
@@ -16,6 +17,7 @@ import 'package:tryzeon/feature/personal/profile/data/datasources/user_profile_r
 import 'package:tryzeon/feature/personal/profile/data/repositories/user_profile_repository_impl.dart';
 import 'package:tryzeon/feature/personal/profile/data/services/avatar_storage_impl.dart';
 import 'package:tryzeon/feature/personal/profile/data/services/preset_avatar_source_impl.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/preset_avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
@@ -23,13 +25,14 @@ import 'package:tryzeon/feature/personal/profile/domain/services/avatar_storage.
 import 'package:tryzeon/feature/personal/profile/domain/services/preset_avatar_source.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/get_user_avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/get_user_profile.dart';
-import 'package:tryzeon/feature/personal/profile/domain/usecases/prepare_preset_avatar.dart';
+import 'package:tryzeon/feature/personal/profile/domain/usecases/select_preset_avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/update_style_preferences.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/update_user_body_measurements.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/update_user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/domain/usecases/upload_user_avatar.dart';
 import 'package:typed_result/typed_result.dart';
 
+part 'personal_profile_providers.freezed.dart';
 part 'personal_profile_providers.g.dart';
 
 @riverpod
@@ -89,8 +92,11 @@ PresetAvatarSource presetAvatarSource(final Ref ref) {
 }
 
 @riverpod
-PreparePresetAvatar preparePresetAvatarUseCase(final Ref ref) {
-  return PreparePresetAvatar(ref.watch(presetAvatarSourceProvider));
+SelectPresetAvatar selectPresetAvatarUseCase(final Ref ref) {
+  return SelectPresetAvatar(
+    repository: ref.watch(userProfileRepositoryProvider),
+    avatarStorage: ref.watch(avatarStorageProvider),
+  );
 }
 
 @riverpod
@@ -151,6 +157,15 @@ Future<File?> avatarFile(final Ref ref) async {
 }
 
 @riverpod
+Future<File> presetAvatarFile(final Ref ref, final PresetAvatar preset) async {
+  final result = await ref.watch(getUserAvatarUseCaseProvider)(
+    Avatar.preset(preset),
+  );
+  if (result.isFailure) throw result.getError()!;
+  return result.get()!;
+}
+
+@riverpod
 class ProfileEditNotifier extends _$ProfileEditNotifier {
   @override
   AsyncValue<void> build() => const AsyncData(null);
@@ -207,28 +222,55 @@ class ProfileEditNotifier extends _$ProfileEditNotifier {
   }
 }
 
-/// Holds the photo being uploaded, so it can be shown before it is saved.
+/// What a replacement in flight is putting in place: the intent, not an image,
+/// so the preview is resolved by the same providers that serve it elsewhere.
+@freezed
+sealed class PendingAvatar with _$PendingAvatar {
+  const factory PendingAvatar.preset(final PresetAvatar preset) = PendingPreset;
+  const factory PendingAvatar.photo(final File file) = PendingPhoto;
+}
+
+/// Null while nothing is being replaced, and while a preset's image is still
+/// downloading or could not be fetched; the write proceeds either way, since
+/// the backend reads a preset from R2 itself.
+@riverpod
+File? pendingAvatarPreview(final Ref ref) =>
+    switch (ref.watch(avatarUploadProvider)) {
+      PendingPhoto(:final file) => file,
+      PendingPreset(:final preset) =>
+        ref.watch(presetAvatarFileProvider(preset)).value,
+      null => null,
+    };
+
+/// Non-null for as long as a replacement is in flight, so it is the one busy
+/// signal.
 @riverpod
 class AvatarUploadNotifier extends _$AvatarUploadNotifier {
   @override
-  File? build() => null;
+  PendingAvatar? build() => null;
 
-  Future<Result<void, Failure>> applyPreset(final PresetAvatar preset) async {
+  Future<Result<void, Failure>> applyPreset(final PresetAvatar preset) =>
+      _replace(
+        PendingAvatar.preset(preset),
+        () => ref.read(selectPresetAvatarUseCaseProvider)(preset),
+      );
+
+  Future<Result<void, Failure>> upload(final File image) => _replace(
+    PendingAvatar.photo(image),
+    () => ref.read(uploadUserAvatarUseCaseProvider)(image),
+  );
+
+  /// Exclusive through the reload: interleaved replacements would each read
+  /// the same previous avatar, orphaning one upload in storage.
+  Future<Result<void, Failure>> _replace(
+    final PendingAvatar pending,
+    final Future<Result<void, Failure>> Function() write,
+  ) async {
     if (state != null) return const Err(ValidationFailure());
-    final file = await ref.read(preparePresetAvatarUseCaseProvider)(preset);
-    if (file.isFailure) return Err(file.getError()!);
-    return upload(file.get()!);
-  }
-
-  /// Exclusive through the reload: interleaved replacements would each keep
-  /// the same previous path, orphaning one upload in storage.
-  Future<Result<void, Failure>> upload(final File image) async {
-    if (state != null) return const Err(ValidationFailure());
-
+    state = pending;
     final link = ref.keepAlive();
-    state = image;
     try {
-      final result = await ref.read(uploadUserAvatarUseCaseProvider)(image);
+      final result = await write();
 
       if (result.isSuccess) {
         ref.invalidate(userProfileProvider);
