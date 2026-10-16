@@ -41,7 +41,7 @@ class _FakeInviteDismissal extends OwnPhotoInviteDismissedNotifier {
   Future<bool> build() async => _isDismissed;
 }
 
-TryonSubject _generated(final TryonMode mode) => TryonSubject.generate(
+TryonSubject _generated(final TryonMode mode) => TryonSubject(
   pieces: const [OutfitPiece.local(path: 'shirt.jpg')],
   mode: mode,
 );
@@ -153,23 +153,6 @@ void main() {
       entry: FinishedTryonEntry(
         const TryonResult(id: 'vid', mode: TryonMode.video, videoUrl: 'v'),
         _generated(TryonMode.video),
-      ),
-    );
-
-    expect(find.text(title), findsNothing);
-  });
-
-  testWidgets('is absent on a video made from a try-on photo', (
-    final tester,
-  ) async {
-    await pumpCard(
-      tester,
-      entry: FinishedTryonEntry(
-        const TryonResult(id: 'anim', mode: TryonMode.video, videoUrl: 'v'),
-        TryonSubject.animated(
-          baseImageUrl: 'u',
-          origin: _generated(TryonMode.image),
-        ),
       ),
     );
 

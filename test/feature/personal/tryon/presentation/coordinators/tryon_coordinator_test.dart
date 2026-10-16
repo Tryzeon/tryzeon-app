@@ -46,7 +46,7 @@ void main() {
   final photo = File('me.jpg');
   final entry = FinishedTryonEntry(
     const TryonResult(id: 't1', mode: TryonMode.image, imageUrl: 'u'),
-    TryonSubject.generate(
+    TryonSubject(
       pieces: const [OutfitPiece.local(path: 'shirt.jpg')],
       mode: TryonMode.image,
     ),

@@ -77,7 +77,7 @@ class _RecordingInviteDismissal extends OwnPhotoInviteDismissedNotifier {
 
 final _imageResult = FinishedTryonEntry(
   const TryonResult(id: 'img', mode: TryonMode.image, imageUrl: 'u'),
-  TryonSubject.generate(
+  TryonSubject(
     pieces: const [OutfitPiece.local(path: 'shirt.jpg')],
     mode: TryonMode.image,
   ),

@@ -5,13 +5,11 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
-import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_subject.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/own_photo_invite_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
 
 /// Only a finished photo try-on qualifies: retrying a video would spend the
-/// video quota, and a video made from a photo keeps the preset whatever the
-/// model becomes.
+/// video quota.
 class OwnPhotoInviteCard extends ConsumerWidget {
   const OwnPhotoInviteCard({
     super.key,
@@ -36,9 +34,7 @@ class OwnPhotoInviteCard extends ConsumerWidget {
     final isDismissed =
         ref.watch(ownPhotoInviteDismissedProvider).value ?? true;
     final isPhotoTryon =
-        entry is FinishedTryonEntry &&
-        entry.subject is TryonSubjectGenerate &&
-        entry.mode == TryonMode.image;
+        entry is FinishedTryonEntry && entry.mode == TryonMode.image;
 
     if (!isPresetAfterTutorial || isReplacing || isDismissed || !isPhotoTryon) {
       return const SizedBox.shrink();
