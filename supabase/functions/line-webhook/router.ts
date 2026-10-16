@@ -5,6 +5,7 @@
  */
 import {
   handleImageTryon,
+  handleOutfitTryon,
   handleProductTryon,
   handleWardrobeTryon,
 } from "./tryon-handler.ts";
@@ -149,6 +150,22 @@ function routePostback(
           replyToken: ev.replyToken,
           sourceUserId,
           wardrobeItemId: postback.wardrobeItemId,
+        },
+      );
+    case "outfit":
+      return handleOutfitTryon(
+        {
+          admin: deps.admin,
+          line: deps.line,
+          liffUrl: deps.liffUrl,
+          imagesBaseUrl: deps.imagesBaseUrl,
+          conversations: deps.conversations,
+        },
+        {
+          replyToken: ev.replyToken,
+          sourceUserId,
+          pieces: postback.pieces,
+          title: postback.title,
         },
       );
   }

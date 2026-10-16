@@ -9,11 +9,16 @@ import {
 } from "../_shared/tryon/index.ts";
 import type { GarmentInput } from "../_shared/tryon/types.ts";
 import { getAvatar as defaultGetAvatar } from "../_shared/user-profile.ts";
-import { fetchProductInfo } from "./product-card.ts";
-import { fetchWardrobeItemInfo } from "./wardrobe-card.ts";
+import type { ItemRef } from "../_shared/chat/index.ts";
+import { fetchProductInfo, fetchProductRows } from "./product-card.ts";
+import { fetchWardrobeItemInfo, fetchWardrobeRows } from "./wardrobe-card.ts";
+import { type LineOutfit, outfitResultMessage, resolveOutfitPieces } from "./outfit-card.ts";
 import { describeGarment as defaultDescribeGarment } from "./garment-analysis.ts";
 import {
   chooseModelMessage,
+  outfitProcessingMessage,
+  outfitTryonErrorMessage,
+  outfitUnavailableMessage,
   processingMessage,
   productProcessingMessage,
   productResultMessage,
@@ -30,6 +35,7 @@ import {
 import { LineApi } from "./line-api.ts";
 import {
   type ConversationStore,
+  outfitTryonNote,
   photoNote,
   tryonNote,
   wardrobeTryonNote,
@@ -75,7 +81,7 @@ type TryonOutcome =
 
 async function runTryon(
   deps: TryonHandlerDeps,
-  params: { userId: string; garment: GarmentInput },
+  params: { userId: string; garments: GarmentInput[] },
 ): Promise<TryonOutcome> {
   const runJob = deps.runJob ?? runTryonJob;
   try {
@@ -86,7 +92,7 @@ async function runTryon(
     // `job.userId`, so this adapter never forwards a client-supplied path.
     const result = await runJob(
       deps.admin,
-      { userId: params.userId, garments: [params.garment], mode: "image" },
+      { userId: params.userId, garments: params.garments, mode: "image" },
       {
         quota: supabaseQuota(deps.admin),
         recordTryon: supabaseTryonRecorder(deps.admin),
@@ -147,7 +153,7 @@ export async function handleImageTryon(
 
   const outcome = await runTryon(deps, {
     userId,
-    garment: { images: [{ base64 }] },
+    garments: [{ images: [{ base64 }] }],
   });
 
   await deps.line.push(event.sourceUserId, [
@@ -199,7 +205,7 @@ export async function handleProductTryon(
 
   const outcome = await runTryon(deps, {
     userId,
-    garment: { productId: product.id },
+    garments: [{ productId: product.id }],
   });
 
   await deps.line.push(event.sourceUserId, [
@@ -259,7 +265,7 @@ export async function handleWardrobeTryon(
 
   const outcome = await runTryon(deps, {
     userId,
-    garment: { wardrobeItemId: item.id },
+    garments: [{ wardrobeItemId: item.id }],
   });
 
   await deps.line.push(event.sourceUserId, [
@@ -274,6 +280,71 @@ export async function handleWardrobeTryon(
       ...prior,
       wardrobeTryonNote(item),
     ]);
+  }
+}
+
+export interface OutfitTryonEvent {
+  replyToken: string;
+  sourceUserId: string;
+  pieces: ItemRef[];
+  title: string;
+}
+
+export interface OutfitTryonDeps extends TryonHandlerDeps {
+  imagesBaseUrl: string;
+  fetchProducts?: typeof fetchProductRows;
+  fetchWardrobe?: typeof fetchWardrobeRows;
+}
+
+const garmentOf = ({ type, id }: ItemRef): GarmentInput =>
+  type === "product" ? { productId: id } : { wardrobeItemId: id };
+
+/**
+ * Every piece is read before anything is charged, with the same rules the
+ * core applies: an unlisted product or another sender's wardrobe item is
+ * simply absent, and one absent piece means the look cannot be worn whole.
+ */
+export async function handleOutfitTryon(
+  deps: OutfitTryonDeps,
+  event: OutfitTryonEvent,
+): Promise<void> {
+  const fetchProducts = deps.fetchProducts ?? fetchProductRows;
+  const fetchWardrobe = deps.fetchWardrobe ?? fetchWardrobeRows;
+  const { userId, hasAvatar } = await resolveActor(deps, event.sourceUserId);
+
+  if (!hasAvatar) {
+    await deps.line.reply(event.replyToken, [chooseModelMessage(deps.liffUrl)]);
+    return;
+  }
+
+  const idsOf = (type: ItemRef["type"]) => event.pieces.filter((piece) => piece.type === type).map((piece) => piece.id);
+  const [products, wardrobe] = await Promise.all([
+    fetchProducts(deps.admin, idsOf("product"), deps.imagesBaseUrl),
+    fetchWardrobe(deps.admin, userId, idsOf("wardrobe")),
+  ]);
+  const pieces = resolveOutfitPieces(event.pieces, {
+    product: (id) => products.get(id),
+    wardrobe: (id) => wardrobe.get(id),
+  });
+  if (pieces === null) {
+    await deps.line.reply(event.replyToken, [outfitUnavailableMessage()]);
+    return;
+  }
+  const outfit: LineOutfit = { title: event.title, pieces };
+
+  await deps.line.reply(event.replyToken, [outfitProcessingMessage(outfit.title)]);
+
+  const outcome = await runTryon(deps, { userId, garments: event.pieces.map(garmentOf) });
+
+  await deps.line.push(event.sourceUserId, [
+    outcome.ok
+      ? outfitResultMessage(outcome.imageUrl, outfit, deps.liffUrl)
+      : outfitTryonErrorMessage(outcome.kind, outfit),
+  ]);
+
+  if (outcome.ok) {
+    const prior = await deps.conversations.load(event.sourceUserId);
+    await deps.conversations.save(event.sourceUserId, [...prior, outfitTryonNote(outfit)]);
   }
 }
 

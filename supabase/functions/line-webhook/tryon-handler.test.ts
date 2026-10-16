@@ -1,9 +1,11 @@
 import { assertEquals } from "@std/assert";
 import {
   handleImageTryon,
+  handleOutfitTryon,
   handleProductTryon,
   handleWardrobeTryon,
   type ImageTryonDeps,
+  type OutfitTryonDeps,
   type ProductTryonDeps,
   type TryonHandlerDeps,
   type WardrobeTryonDeps,
@@ -14,8 +16,9 @@ import { GenerationFailedError } from "../_shared/tryon/errors.ts";
 import type { LineApi } from "./line-api.ts";
 import type { LineProduct } from "./product-card.ts";
 import { fakeConversations } from "./conversation.testing.ts";
-import { photoNote, wardrobeTryonNote } from "./conversation.ts";
-import { productTryonPostbackData } from "./postback.ts";
+import { outfitTryonNote, photoNote, wardrobeTryonNote } from "./conversation.ts";
+import { outfitTryonPostbackData, productTryonPostbackData } from "./postback.ts";
+import type { LineWardrobeItem } from "./wardrobe-card.ts";
 
 const USER = "Uline123";
 
@@ -762,4 +765,185 @@ Deno.test("a wardrobe try-on that failed is not remembered as one that happened"
 
   assertEquals(conversations.writes.length, 0);
   assertEquals(textOf(sent.pushes[0][0]), "這件沒能生成，請換一件或再試一次看看！");
+});
+
+const OUTFIT_P = "11111111-1111-4111-8111-111111111111";
+const OUTFIT_W = "22222222-2222-4222-8222-222222222222";
+
+const outfitProduct: LineProduct = {
+  id: OUTFIT_P,
+  name: "白色寬鬆棉質襯衫",
+  price: 1280,
+  imageUrl: "https://img.example/p.jpg",
+  storeName: "某店",
+  purchaseUrl: null,
+};
+
+const outfitWardrobe: LineWardrobeItem = {
+  id: OUTFIT_W,
+  imageUrl: "https://sig.example/w.png",
+  garmentTypeLabel: "褲子",
+  tags: ["深藍"],
+};
+
+const outfitEvent = {
+  replyToken: "rt",
+  sourceUserId: USER,
+  pieces: [{ type: "product" as const, id: OUTFIT_P }, { type: "wardrobe" as const, id: OUTFIT_W }],
+  title: "週末休閒",
+};
+
+function outfitDeps(over: Partial<OutfitTryonDeps> = {}): OutfitTryonDeps {
+  return {
+    ...baseDeps(),
+    imagesBaseUrl: "https://img.example",
+    fetchProducts: () => Promise.resolve(new Map([[OUTFIT_P, outfitProduct]])),
+    fetchWardrobe: () => Promise.resolve(new Map([[OUTFIT_W, outfitWardrobe]])),
+    ...over,
+  };
+}
+
+Deno.test("an outfit try-on with no model photo generates nothing", async () => {
+  const { line, sent } = fakeLine();
+  let ran = false;
+  await handleOutfitTryon(
+    outfitDeps({
+      line,
+      getAvatar: () => Promise.resolve(null),
+      runJob: () => {
+        ran = true;
+        // deno-lint-ignore no-explicit-any
+        return Promise.resolve({} as any);
+      },
+    }),
+    outfitEvent,
+  );
+
+  assertEquals(ran, false);
+  // deno-lint-ignore no-explicit-any
+  assertEquals((sent.replies[0][0] as any).type, "template");
+});
+
+Deno.test("an outfit with a piece that is gone costs the sender no quota", async () => {
+  const { line, sent } = fakeLine();
+  let ran = false;
+  await handleOutfitTryon(
+    outfitDeps({
+      line,
+      fetchWardrobe: () => Promise.resolve(new Map()),
+      runJob: () => {
+        ran = true;
+        // deno-lint-ignore no-explicit-any
+        return Promise.resolve({} as any);
+      },
+    }),
+    outfitEvent,
+  );
+
+  assertEquals(ran, false);
+  assertEquals(sent.pushes, []);
+  assertEquals(textOf(sent.replies[0][0]), "這套有單品已經下架或不在衣櫃裡了，換一套試試。");
+});
+
+Deno.test("an outfit holding a delisted product costs the sender no quota", async () => {
+  const { line, sent } = fakeLine();
+  let ran = false;
+  await handleOutfitTryon(
+    outfitDeps({
+      line,
+      fetchProducts: () => Promise.resolve(new Map()),
+      runJob: () => {
+        ran = true;
+        // deno-lint-ignore no-explicit-any
+        return Promise.resolve({} as any);
+      },
+    }),
+    outfitEvent,
+  );
+
+  assertEquals(ran, false);
+  assertEquals(sent.pushes, []);
+  assertEquals(textOf(sent.replies[0][0]), "這套有單品已經下架或不在衣櫃裡了，換一套試試。");
+});
+
+Deno.test("an outfit reads its products on the image base and its wardrobe bound to the sender", async () => {
+  const seen: unknown[] = [];
+  await handleOutfitTryon(
+    outfitDeps({
+      fetchProducts: (_admin, ids, base) => {
+        seen.push(["products", ids, base]);
+        return Promise.resolve(new Map([[OUTFIT_P, outfitProduct]]));
+      },
+      fetchWardrobe: (_admin, userId, ids) => {
+        seen.push(["wardrobe", userId, ids]);
+        return Promise.resolve(new Map([[OUTFIT_W, outfitWardrobe]]));
+      },
+    }),
+    outfitEvent,
+  );
+
+  assertEquals(seen, [
+    ["products", [OUTFIT_P], "https://img.example"],
+    ["wardrobe", "user-1", [OUTFIT_W]],
+  ]);
+});
+
+Deno.test("an outfit is named while waiting, worn whole in its order, and its card pushed", async () => {
+  const { line, sent } = fakeLine();
+  // deno-lint-ignore no-explicit-any
+  let params: any = null;
+  await handleOutfitTryon(
+    outfitDeps({
+      line,
+      runJob: (_client, p) => {
+        params = p;
+        return Promise.resolve({
+          kind: "image",
+          imageUrl: "https://img.example/result.jpg",
+          usage: null,
+          // deno-lint-ignore no-explicit-any
+        } as any);
+      },
+    }),
+    outfitEvent,
+  );
+
+  assertEquals(textOf(sent.replies[0][0]), "收到，正在幫你試穿「週末休閒」，請稍等！");
+  assertEquals(params.garments, [{ productId: OUTFIT_P }, { wardrobeItemId: OUTFIT_W }]);
+  assertEquals(params.mode, "image");
+  // deno-lint-ignore no-explicit-any
+  assertEquals((sent.pushes[0][0] as any).altText, "為你試穿了「週末休閒」");
+});
+
+Deno.test("a finished outfit try-on is remembered by its pieces", async () => {
+  const conversations = fakeConversations();
+  await handleOutfitTryon(outfitDeps({ conversations: conversations.store }), outfitEvent);
+
+  const saved = await conversations.store.load(USER);
+  assertEquals(saved.at(-1), outfitTryonNote({
+    title: "週末休閒",
+    pieces: [{ kind: "product", item: outfitProduct }, { kind: "wardrobe", item: outfitWardrobe }],
+  }));
+});
+
+Deno.test("an outfit that would not generate can be retried by the same card data", async () => {
+  const { line, sent } = fakeLine();
+  const conversations = fakeConversations();
+  await handleOutfitTryon(
+    outfitDeps({
+      line,
+      conversations: conversations.store,
+      runJob: () => Promise.reject(new GenerationFailedError("nope")),
+    }),
+    outfitEvent,
+  );
+
+  assertEquals(textOf(sent.pushes[0][0]), "這套沒能生成，請換一套或再試一次看看！");
+  assertEquals(chipActions(sent.pushes[0][0])[0], {
+    type: "postback",
+    label: "再試一次",
+    data: outfitTryonPostbackData({ title: "週末休閒", pieces: outfitEvent.pieces }),
+    displayText: "試穿「週末休閒」",
+  });
+  assertEquals(await conversations.store.load(USER), []);
 });

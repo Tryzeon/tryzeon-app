@@ -2,6 +2,7 @@ import { assertEquals } from "@std/assert";
 import {
   chatErrorMessage,
   chooseModelMessage,
+  outfitTryonErrorMessage,
   productTryonErrorMessage,
   productUnavailableMessage,
   tryonErrorMessage,
@@ -219,4 +220,19 @@ Deno.test("a busy service offers no button to press", () => {
   // deno-lint-ignore no-explicit-any
   const message = wardrobeTryonErrorMessage("busy", wardrobeItem) as any;
   assertEquals(message.quickReply, undefined);
+});
+
+Deno.test("an outfit retry chip clamps an over-long title in its displayText and data", () => {
+  const clamped = "長".repeat(12);
+  const outfit = {
+    title: "長".repeat(200),
+    pieces: [{ kind: "product" as const, item: product }, { kind: "product" as const, item: { ...product, id: "a1b2c3d4-e5f6-4789-8abc-def012345678" } }],
+  };
+  // deno-lint-ignore no-explicit-any
+  const message = outfitTryonErrorMessage("generation", outfit) as any;
+  const [retry] = message.quickReply.items;
+
+  assertEquals(retry.action.displayText, `試穿「${clamped}」`);
+  assertEquals(new URLSearchParams(retry.action.data).get("t"), clamped);
+  assertEquals(retry.action.data.length <= 300, true);
 });

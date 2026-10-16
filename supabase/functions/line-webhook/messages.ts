@@ -13,7 +13,8 @@ import {
   uriChip,
   withQuickReply,
 } from "./quick-reply.ts";
-import { productTryonPostbackData, wardrobeTryonPostbackData } from "./postback.ts";
+import { clampOutfitTitle, outfitTryonPostbackData, productTryonPostbackData, wardrobeTryonPostbackData } from "./postback.ts";
+import { type LineOutfit, outfitPieceRefs } from "./outfit-card.ts";
 import {
   garmentNoun,
   type WardrobeItemInfo,
@@ -213,6 +214,37 @@ export function wardrobeTryonErrorMessage(
         retry,
         messageChip("換一件試", "我衣櫃裡還有什麼可以試"),
       ]);
+    case "busy":
+      return message;
+    case "unknown":
+      return withQuickReply(message, [retry]);
+  }
+}
+
+export function outfitProcessingMessage(title: string): object {
+  return { type: "text", text: `收到，正在幫你試穿「${title}」，請稍等！` };
+}
+
+export function outfitUnavailableMessage(): object {
+  return withQuickReply({ type: "text", text: "這套有單品已經下架或不在衣櫃裡了，換一套試試。" }, [
+    messageChip("再配一套", "再幫我配一套"),
+  ]);
+}
+
+export function outfitTryonErrorMessage(kind: TryonJobErrorKind, outfit: LineOutfit): object {
+  const text = kind === "generation" ? "這套沒能生成，請換一套或再試一次看看！" : TRYON_ERROR_TEXT[kind];
+  const message = { type: "text", text };
+  const retry = postbackChip(
+    "再試一次",
+    outfitTryonPostbackData({ title: outfit.title, pieces: outfitPieceRefs(outfit) }),
+    `試穿「${clampOutfitTitle(outfit.title)}」`,
+  );
+
+  switch (kind) {
+    case "quota":
+      return withQuickReply(message, [messageChip("找衣服看看", "有什麼推薦的商品")]);
+    case "generation":
+      return withQuickReply(message, [retry, messageChip("再配一套", "再幫我配一套")]);
     case "busy":
       return message;
     case "unknown":

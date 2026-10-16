@@ -1,6 +1,7 @@
 import { windowHistory } from "../_shared/chat/index.ts";
 import type { ChatMessage } from "../_shared/chat/index.ts";
 import { clampProductName, type ProductInfo } from "./product-card.ts";
+import type { LineOutfit } from "./outfit-card.ts";
 import { tagLine, type WardrobeItemInfo } from "./wardrobe-card.ts";
 import { redis } from "../_shared/redis.ts";
 
@@ -87,5 +88,17 @@ export function wardrobeTryonNote(item: WardrobeItemInfo): ChatMessage {
       text:
         `（使用者剛試穿了自己衣櫃裡的單品 id:${item.id}「${item.garmentTypeLabel}${tags}」）`,
     }],
+  };
+}
+
+export function outfitTryonNote(outfit: LineOutfit): ChatMessage {
+  const named = outfit.pieces.map((piece) =>
+    piece.kind === "product"
+      ? `商品 id:${piece.item.id}「${clampProductName(piece.item.name)}」`
+      : `衣櫃單品 id:${piece.item.id}「${piece.item.garmentTypeLabel}」`
+  );
+  return {
+    role: "user",
+    content: [{ type: "text", text: `（使用者剛試穿了整套「${outfit.title}」：${named.join("、")}）` }],
   };
 }

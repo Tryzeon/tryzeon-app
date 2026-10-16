@@ -2,7 +2,7 @@ import { assertEquals, assertStringIncludes } from "@std/assert";
 import { type RouterDeps, routeEvent } from "./router.ts";
 import type { LineApi } from "./line-api.ts";
 import { fakeConversations } from "./conversation.testing.ts";
-import { productTryonPostbackData, wardrobeTryonPostbackData } from "./postback.ts";
+import { outfitTryonPostbackData, productTryonPostbackData, wardrobeTryonPostbackData } from "./postback.ts";
 
 const line: LineApi = {
   reply: () => Promise.resolve(),
@@ -198,4 +198,14 @@ Deno.test("a wardrobe postback with no sender is nudged", async () => {
     }))[0]),
     "傳一張衣服的照片",
   );
+});
+
+Deno.test("an outfit try-on postback is routed to a handler, not nudged", async () => {
+  const data = outfitTryonPostbackData({
+    title: "週末休閒",
+    pieces: [{ type: "product", id: PID }, { type: "wardrobe", id: WID }],
+  });
+  assertEquals(routed(postbackEvent(data)), true);
+  const replies = await repliedWith(postbackEvent(data));
+  assertEquals(replies.some((m) => JSON.stringify(m).includes("傳一張衣服的照片")), false);
 });
