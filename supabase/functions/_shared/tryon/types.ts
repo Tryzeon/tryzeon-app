@@ -44,13 +44,6 @@ export function isGarmentType(value: unknown): value is GarmentType {
 export type ImageSource = { path: string } | { base64: string };
 
 /**
- * Inline bytes only: a finished result lives in the R2 try-on bucket, which
- * `fetchImageAsBase64` does not route, so `{ path }` would be an option that
- * always fails.
- */
-export type BaseImage = { base64: string };
-
-/**
  * `sizeId` is accepted and carried through unchanged but nothing reads it: the
  * prompt no longer describes how a size sits on the wearer, and the model is
  * left to judge that from the images alone.
@@ -103,7 +96,7 @@ export type TryonMode = "image" | "video";
 
 /**
  * Video goes through the same image pass, so this is not an image-mode-only
- * setting; only an animate job escapes it. Defaults to `standard`.
+ * setting. Defaults to `standard`.
  */
 export type TryonEngine = "standard" | "experimental";
 
@@ -115,8 +108,6 @@ export interface TryonParams {
   scenePrompt?: string;
   stylingPrompt?: string;
   transitionPrompt?: string;
-  /** Only valid with `mode: "video"`. */
-  baseImage?: BaseImage;
   generationId?: string;
 }
 

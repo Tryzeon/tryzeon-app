@@ -9,7 +9,6 @@ import { requireString, ValidationError } from "../validation.ts";
 import { isUuid } from "../text.ts";
 import { isProductRef, isWardrobeRef, LIMITS } from "./types.ts";
 import type {
-  BaseImage,
   GarmentInput,
   ProductRef,
   TryonEngine,
@@ -42,15 +41,6 @@ function requireInlineImage(
   }
   const base64 = (source as Record<string, unknown>).base64;
   return { base64: requireBase64(base64, label) };
-}
-
-function optionalBaseImage(source: unknown): BaseImage | undefined {
-  if (source === undefined || source === null) return undefined;
-  if (typeof source !== "object") {
-    throw new ValidationError("baseImage must be an object");
-  }
-  const base64 = (source as Record<string, unknown>).base64;
-  return { base64: requireBase64(base64, "baseImage") };
 }
 
 function assertOptionalText(value: unknown, label: string, max: number): void {
@@ -151,32 +141,6 @@ export function validateTryonParams(params: TryonParams): TryonParams {
     LIMITS.MAX_PROMPT_LENGTH,
   );
 
-  const baseImage = optionalBaseImage(params.baseImage);
-  if (baseImage) {
-    // A garment or a non-video mode alongside a finished picture is a
-    // contradiction the server must not resolve by guessing — an animate job
-    // always spends video quota, so the body it charges for has to be the body
-    // the caller meant.
-    if (params.mode !== "video") {
-      throw new ValidationError("baseImage requires mode 'video'");
-    }
-    if (Array.isArray(params.garments) && params.garments.length > 0) {
-      throw new ValidationError("baseImage cannot be combined with garments");
-    }
-    // The scene and styling prompts are not contradictions, just inapplicable:
-    // ambient user config a client may send uniformly, dropped here so the job
-    // runs on params that say what will actually happen. The engine survives:
-    // it picks the video model.
-    return {
-      ...params,
-      garments: [],
-      engine,
-      scenePrompt: undefined,
-      stylingPrompt: undefined,
-      baseImage,
-    };
-  }
-
   if (!Array.isArray(params.garments) || params.garments.length === 0) {
     throw new ValidationError("garments must be a non-empty array");
   }
@@ -185,5 +149,5 @@ export function validateTryonParams(params: TryonParams): TryonParams {
   }
   const garments = params.garments.map(validateGarment);
 
-  return { ...params, engine, garments, baseImage: undefined };
+  return { ...params, engine, garments };
 }

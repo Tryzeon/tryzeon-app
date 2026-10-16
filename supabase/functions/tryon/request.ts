@@ -23,14 +23,13 @@ import type {
 export function parseTryonParams(rawBody: string, userId: string): TryonParams {
   const b = parseJsonObject(rawBody);
 
-  // Absent is legal: an animate request names a finished picture instead.
-  if (b.garments !== undefined && !Array.isArray(b.garments)) {
+  if (!Array.isArray(b.garments)) {
     throw new ValidationError("garments must be an array");
   }
 
   return {
     userId,
-    garments: (b.garments ?? []) as GarmentInput[],
+    garments: b.garments as GarmentInput[],
     // An unknown mode is passed through for the core to reject: mapping it onto
     // "image" would charge the image quota for a job nobody asked for.
     mode: (b.mode ?? "image") as TryonParams["mode"],
@@ -38,7 +37,6 @@ export function parseTryonParams(rawBody: string, userId: string): TryonParams {
     scenePrompt: normalizeText(b.scenePrompt),
     stylingPrompt: normalizeText(b.stylingPrompt),
     transitionPrompt: normalizeText(b.transitionPrompt),
-    baseImage: b.baseImage as TryonParams["baseImage"],
     generationId: b.generationId as TryonParams["generationId"],
   };
 }

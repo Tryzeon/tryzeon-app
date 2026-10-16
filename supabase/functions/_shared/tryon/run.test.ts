@@ -1,10 +1,6 @@
 import { assertEquals, assertRejects } from "@std/assert";
 import { runTryonJob, type RunTryonJobDeps } from "./run.ts";
-import {
-  GenerationFailedError,
-  MissingAvatarError,
-  ValidationError,
-} from "./errors.ts";
+import { GenerationFailedError, MissingAvatarError } from "./errors.ts";
 import { type DailyUsage, QuotaExceededError } from "../quota.ts";
 import type { GarmentBrief } from "./prompt.ts";
 import type {
@@ -537,129 +533,6 @@ Deno.test("runTryonJob hands the resolver the whole ref, size included", async (
   assertEquals(seenRef, { productId: "p1", sizeId: "s1" });
 });
 
-const animateParams: TryonParams = {
-  userId: "u1",
-  garments: [],
-  mode: "video",
-  baseImage: { base64: "FINISHED" },
-};
-
-Deno.test("a baseImage job animates that image without generating one", async () => {
-  const quota = fakeQuota();
-  let generateCalled = false;
-  let animatedImage = "";
-  const result = await runJob(animateParams, {
-    quota: quota.factory,
-    recordTryon: ignoreTryons,
-    generations: ignoreGenerations,
-    generate: () => {
-      generateCalled = true;
-      return Promise.resolve({ base64: "SHOULD-NOT-HAPPEN", model: IMAGE_MODEL });
-    },
-    generateVideo: (image) => {
-      animatedImage = image;
-      return Promise.resolve(video(new Uint8Array([9])));
-    },
-    uploadVideo: () => Promise.resolve("https://vid/animated.mp4"),
-    now: () => 789,
-  });
-  assertEquals(generateCalled, false);
-  assertEquals(animatedImage, "FINISHED");
-  assertEquals(result, {
-    kind: "video",
-    videoUrl: "https://vid/animated.mp4",
-    usage: USAGE,
-  });
-});
-
-Deno.test("a baseImage job never resolves an avatar", async () => {
-  const quota = fakeQuota();
-  let avatarResolved = false;
-  await runJob(animateParams, {
-    quota: quota.factory,
-    recordTryon: ignoreTryons,
-    generations: ignoreGenerations,
-    resolveAvatar: () => {
-      avatarResolved = true;
-      return Promise.reject(new MissingAvatarError("none"));
-    },
-    generateVideo: () => Promise.resolve(video(new Uint8Array([1]))),
-    uploadVideo: () => Promise.resolve("https://vid/x.mp4"),
-    now: () => 1,
-  });
-  assertEquals(avatarResolved, false);
-});
-
-Deno.test("a baseImage job resolves no garment", async () => {
-  const quota = fakeQuota();
-  let productResolved = false;
-  let wardrobeResolved = false;
-  await runJob(animateParams, {
-    quota: quota.factory,
-    recordTryon: ignoreTryons,
-    generations: ignoreGenerations,
-    resolveProduct: () => {
-      productResolved = true;
-      return Promise.reject(new Error("should not happen"));
-    },
-    resolveWardrobe: () => {
-      wardrobeResolved = true;
-      return Promise.reject(new Error("should not happen"));
-    },
-    generateVideo: () => Promise.resolve(video(new Uint8Array([1]))),
-    uploadVideo: () => Promise.resolve("https://vid/x.mp4"),
-    now: () => 1,
-  });
-  assertEquals(productResolved, false);
-  assertEquals(wardrobeResolved, false);
-});
-
-Deno.test("a baseImage job charges the video quota", async () => {
-  const quota = fakeQuota();
-  await runJob(animateParams, {
-    quota: quota.factory,
-    recordTryon: ignoreTryons,
-    generations: ignoreGenerations,
-    generateVideo: () => Promise.resolve(video(new Uint8Array([1]))),
-    uploadVideo: () => Promise.resolve("https://vid/x.mp4"),
-    now: () => 1,
-  });
-  assertEquals(quota.modes, ["video"]);
-  assertEquals(quota.calls, ["charge"]);
-});
-
-Deno.test("a baseImage job refunds when animation fails", async () => {
-  const quota = fakeQuota();
-  await assertRejects(
-    () =>
-      runJob(animateParams, {
-        quota: quota.factory,
-        recordTryon: ignoreTryons,
-        generations: ignoreGenerations,
-        generateVideo: () => Promise.reject(new Error("vertex exploded")),
-        uploadVideo: () => Promise.resolve("https://vid/x.mp4"),
-        now: () => 1,
-      }),
-    Error,
-    "vertex exploded",
-  );
-  assertEquals(quota.calls, ["charge", "refund"]);
-});
-
-Deno.test("a baseImage job is rejected before quota when the mode is image", async () => {
-  const quota = fakeQuota();
-  await assertRejects(
-    () =>
-      runJob({ ...animateParams, mode: "image" }, {
-        quota: quota.factory,
-        recordTryon: ignoreTryons,
-        generations: ignoreGenerations,
-      }),
-    ValidationError,
-  );
-  assertEquals(quota.calls, []);
-});
-
 Deno.test("runTryonJob forwards the styling prompt to the image generator", async () => {
   const quota = fakeQuota();
   let seenStyling: string | undefined;
@@ -719,24 +592,6 @@ Deno.test("runTryonJob forwards the engine to the video generator", async () => 
       uploadVideo: () => Promise.resolve("https://vid/x.mp4"),
     },
   );
-
-  assertEquals(seenEngine, "experimental");
-});
-
-Deno.test("animate mode forwards the engine to the video generator", async () => {
-  const quota = fakeQuota();
-  let seenEngine: string | undefined;
-
-  await runJob({ ...animateParams, engine: "experimental" }, {
-    quota: quota.factory,
-    recordTryon: ignoreTryons,
-    generations: ignoreGenerations,
-    generateVideo: (_image, opts) => {
-      seenEngine = opts?.engine;
-      return Promise.resolve(video(new Uint8Array([1])));
-    },
-    uploadVideo: () => Promise.resolve("https://vid/x.mp4"),
-  });
 
   assertEquals(seenEngine, "experimental");
 });
@@ -931,30 +786,6 @@ Deno.test("a finished video job logs its generation under the uploaded video key
       videoModel: VIDEO_MODEL,
     }],
   });
-});
-
-Deno.test("an animate job logs only the video model, having generated no image", async () => {
-  const generations = fakeGenerations();
-  await runJob({ ...animateParams, engine: "experimental" }, {
-    quota: fakeQuota().factory,
-    recordTryon: ignoreTryons,
-    generations: generations.log,
-    generateVideo: () => Promise.resolve(video(new Uint8Array([1]))),
-    uploadVideo: () => Promise.resolve("https://vid/x.mp4"),
-    now: () => 1,
-  });
-
-  assertEquals(generations.calls, [
-    { op: "start", args: [{ id: undefined, userId: "u1", mode: "video" }] },
-    {
-      op: "succeed",
-      args: ["g1", {
-        resultKey: "u1/tryon-1.mp4",
-        imageModel: undefined,
-        videoModel: VIDEO_MODEL,
-      }],
-    },
-  ]);
 });
 
 Deno.test("a quota rejection logs no generation", async () => {

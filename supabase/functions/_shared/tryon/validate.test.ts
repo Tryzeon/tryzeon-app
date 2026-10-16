@@ -252,99 +252,13 @@ Deno.test("validateTryonParams rejects a non-string sizeId", () => {
   );
 });
 
-const animateParams: TryonParams = {
-  userId: "u1",
-  garments: [],
-  mode: "video",
-  baseImage: { base64: "FINISHED" },
-};
-
-Deno.test("validateTryonParams accepts an animate job with no garments", () => {
-  const out = validateTryonParams(animateParams);
-  assertEquals(out.baseImage, { base64: "FINISHED" });
-  assertEquals(out.garments, []);
-});
-
-Deno.test("validateTryonParams rejects baseImage in image mode", () => {
-  assertThrows(
-    () => validateTryonParams({ ...animateParams, mode: "image" }),
-    ValidationError,
-    "baseImage requires mode 'video'",
-  );
-});
-
-Deno.test("validateTryonParams rejects baseImage combined with garments", () => {
-  assertThrows(
-    () =>
-      validateTryonParams({
-        ...animateParams,
-        garments: [{ images: [{ base64: "G" }] }],
-      }),
-    ValidationError,
-    "garments",
-  );
-});
-
-Deno.test("validateTryonParams accepts a scenePrompt with baseImage and drops it", () => {
-  const out = validateTryonParams({ ...animateParams, scenePrompt: "studio" });
-  assertEquals(out.scenePrompt, undefined);
-  assertEquals(out.baseImage, { base64: "FINISHED" });
-});
-
-Deno.test("validateTryonParams keeps the transitionPrompt with baseImage", () => {
-  const out = validateTryonParams({
-    ...animateParams,
+Deno.test("validateTryonParams keeps the transitionPrompt on a video job", () => {
+  const job = validateTryonParams({
+    ...validParams,
+    mode: "video",
     transitionPrompt: "spin",
   });
-  assertEquals(out.transitionPrompt, "spin");
-});
-
-Deno.test("validateTryonParams rejects an empty baseImage base64", () => {
-  assertThrows(
-    () => validateTryonParams({ ...animateParams, baseImage: { base64: "" } }),
-    ValidationError,
-    "baseImage",
-  );
-});
-
-Deno.test("validateTryonParams rejects an oversized baseImage", () => {
-  assertThrows(
-    () =>
-      validateTryonParams({
-        ...animateParams,
-        baseImage: { base64: "x".repeat(LIMITS.MAX_BASE64_LENGTH + 1) },
-      }),
-    ValidationError,
-    "too large",
-  );
-});
-
-Deno.test("validateTryonParams accepts a baseImage exactly at the limit", () => {
-  const out = validateTryonParams({
-    ...animateParams,
-    baseImage: { base64: "x".repeat(LIMITS.MAX_BASE64_LENGTH) },
-  });
-  assertEquals(out.baseImage?.base64.length, LIMITS.MAX_BASE64_LENGTH);
-});
-
-Deno.test("validateTryonParams rejects a non-object baseImage", () => {
-  assertThrows(
-    () =>
-      validateTryonParams({
-        ...animateParams,
-        baseImage: "nope" as unknown as TryonParams["baseImage"],
-      }),
-    ValidationError,
-    "baseImage",
-  );
-});
-
-Deno.test("validateTryonParams still requires garments without a baseImage", () => {
-  assertThrows(
-    () => validateTryonParams({ ...animateParams, baseImage: undefined }),
-    ValidationError,
-    "garments",
-  );
+  assertEquals(job.transitionPrompt, "spin");
 });
 
 Deno.test("validateTryonParams rejects an overlong stylingPrompt", () => {
@@ -365,15 +279,6 @@ Deno.test("validateTryonParams keeps the stylingPrompt on a generate job", () =>
     stylingPrompt: "tucked into the waistband",
   });
   assertEquals(job.stylingPrompt, "tucked into the waistband");
-});
-
-Deno.test("validateTryonParams accepts a stylingPrompt with baseImage and drops it", () => {
-  const out = validateTryonParams({
-    ...animateParams,
-    stylingPrompt: "tucked in",
-  });
-  assertEquals(out.stylingPrompt, undefined);
-  assertEquals(out.baseImage, { base64: "FINISHED" });
 });
 
 Deno.test("validateTryonParams defaults a missing engine to standard", () => {
@@ -401,16 +306,6 @@ Deno.test("validateTryonParams falls back to standard on a non-string engine", (
   assertEquals(job.engine, "standard");
 });
 
-Deno.test("validateTryonParams keeps the engine on an animate job", () => {
-  const out = validateTryonParams({ ...animateParams, engine: "experimental" });
-  assertEquals(out.engine, "experimental");
-  assertEquals(out.baseImage, { base64: "FINISHED" });
-});
-
-Deno.test("validateTryonParams defaults an animate job's engine to standard", () => {
-  assertEquals(validateTryonParams(animateParams).engine, "standard");
-});
-
 Deno.test("validateTryonParams keeps a uuid generation id", () => {
   const id = "6f1c2a4e-8b3d-4c7a-9e21-0a5b7c9d1e3f";
   assertEquals(
@@ -435,16 +330,4 @@ Deno.test("validateTryonParams rejects a generation id that is not a uuid", () =
       "generationId",
     );
   }
-});
-
-Deno.test("validateTryonParams keeps the generation id on an animate job", () => {
-  const id = "6f1c2a4e-8b3d-4c7a-9e21-0a5b7c9d1e3f";
-  const job = validateTryonParams({
-    userId: "u1",
-    garments: [],
-    mode: "video",
-    baseImage: { base64: "FINISHED" },
-    generationId: id,
-  });
-  assertEquals(job.generationId, id);
 });

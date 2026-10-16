@@ -33,7 +33,6 @@ export type {
 export { LIMITS } from "./types.ts";
 export type {
   GarmentCategory,
-  BaseImage,
   GarmentInput,
   GarmentMaterial,
   ProductRef,

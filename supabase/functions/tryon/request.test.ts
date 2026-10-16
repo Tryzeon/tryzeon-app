@@ -77,6 +77,14 @@ Deno.test("parseTryonParams rejects a non-array garments field", () => {
   );
 });
 
+Deno.test("parseTryonParams rejects a missing garments field", () => {
+  assertThrows(
+    () => parse({ mode: "video" }, "u1"),
+    ValidationError,
+    "garments must be an array",
+  );
+});
+
 Deno.test("parseTryonParams accepts a product-ref garment", () => {
   const params = parse(
     {
@@ -140,32 +148,16 @@ Deno.test("parseTryonParams drops a blank scenePrompt", () => {
   assertEquals(params.scenePrompt, undefined);
 });
 
-Deno.test("parseTryonParams decodes an animate body with no garments", () => {
+Deno.test("parseTryonParams trims the transitionPrompt", () => {
   const params = parse(
     {
       mode: "video",
-      baseImage: { base64: "FINISHED" },
+      garments: [{ images: [{ base64: "B" }] }],
       transitionPrompt: "  spin  ",
     },
     "u1",
   );
-  assertEquals(params.garments, []);
-  assertEquals(params.baseImage, { base64: "FINISHED" });
-  assertEquals(params.mode, "video");
   assertEquals(params.transitionPrompt, "spin");
-});
-
-Deno.test("parseTryonParams defers an unusable baseImage to the core", () => {
-  const params = parse({ mode: "video", baseImage: { base64: "" } }, "u1");
-  assertEquals(
-    params.baseImage,
-    { base64: "" } as unknown as TryonParams["baseImage"],
-  );
-});
-
-Deno.test("parseTryonParams keeps an omitted baseImage omitted", () => {
-  const params = parse({ garments: [{ images: [{ base64: "B" }] }] }, "u1");
-  assertEquals(params.baseImage, undefined);
 });
 
 Deno.test("parseTryonParams trims the stylingPrompt", () => {

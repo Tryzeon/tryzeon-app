@@ -16,7 +16,6 @@ import {
   type AvatarResolver,
   type GenerationLog,
   type ImageGenerator,
-  type ImageSource,
   type ImageUploader,
   type ProductResolver,
   type WardrobeResolver,
@@ -30,10 +29,6 @@ import {
   type VideoUploader,
 } from "./types.ts";
 import type { DbClient } from "../supabase.ts";
-
-type TryonSource =
-  | { kind: "animate"; base64: string }
-  | { kind: "generate"; avatar: ImageSource };
 
 export interface RunTryonJobDeps {
   /**
@@ -82,12 +77,9 @@ export async function runTryonJob<M extends TryonMode>(
 
   const resolveAvatar = deps.resolveAvatar ?? resolveStoredAvatar;
 
-  // An animate job resolves no avatar: looking one up would fail a user with no
-  // stored photo for a job that never needed it. Stays above the quota charge
-  // either way, so a missing avatar is still reported before anyone is billed.
-  const source: TryonSource = job.baseImage
-    ? { kind: "animate", base64: job.baseImage.base64 }
-    : { kind: "generate", avatar: await resolveAvatar(client, job.userId) };
+  // Above the quota charge, so a missing avatar is reported before anyone is
+  // billed.
+  const avatar = await resolveAvatar(client, job.userId);
 
   const quota = deps.quota(job.userId, job.mode);
   const { allowed, usage } = await quota.charge();
@@ -103,49 +95,41 @@ export async function runTryonJob<M extends TryonMode>(
       mode: job.mode,
     });
 
-    let imageBase64: string;
-    let imageModel: string | undefined;
-    if (source.kind === "animate") {
-      imageBase64 = source.base64;
-    } else {
-      // Stage 1: resolve product and wardrobe refs to concrete garment material.
-      // The resolvers are the gatekeepers — a client can only reach a real
-      // product's image or its own wardrobe item, whether or not RLS sits
-      // beneath `client`.
-      const materialGarments: ResolvedGarment[] = await Promise.all(
-        job.garments.map((g) =>
-          isProductRef(g)
-            ? resolveProduct(client, g)
-            : isWardrobeRef(g)
-            ? resolveWardrobe(client, job.userId, g.wardrobeItemId)
-            : g
-        ),
-      );
+    // Stage 1: resolve product and wardrobe refs to concrete garment material.
+    // The resolvers are the gatekeepers — a client can only reach a real
+    // product's image or its own wardrobe item, whether or not RLS sits
+    // beneath `client`.
+    const materialGarments: ResolvedGarment[] = await Promise.all(
+      job.garments.map((g) =>
+        isProductRef(g)
+          ? resolveProduct(client, g)
+          : isWardrobeRef(g)
+          ? resolveWardrobe(client, job.userId, g.wardrobeItemId)
+          : g
+      ),
+    );
 
-      // Stage 2: load avatar + garment images as base64.
-      const loadAvatar = makeSourceLoader(client, USER_AVATARS_BUCKET);
-      const loadGarment = makeSourceLoader(client, WARDROBE_IMAGES_BUCKET);
-      const [avatarBase64, garmentGroups] = await Promise.all([
-        loadAvatar(source.avatar),
-        loadGarments(materialGarments, loadGarment),
-      ]);
+    // Stage 2: load avatar + garment images as base64.
+    const loadAvatar = makeSourceLoader(client, USER_AVATARS_BUCKET);
+    const loadGarment = makeSourceLoader(client, WARDROBE_IMAGES_BUCKET);
+    const [avatarBase64, garmentGroups] = await Promise.all([
+      loadAvatar(avatar),
+      loadGarments(materialGarments, loadGarment),
+    ]);
 
-      const garments = materialGarments.map((g) => ({
-        category: g.category,
-        detail: g.detail,
-      }));
+    const garments = materialGarments.map((g) => ({
+      category: g.category,
+      detail: g.detail,
+    }));
 
-      const image = await generate(avatarBase64, garmentGroups, {
-        engine: job.engine,
-        scenePrompt: job.scenePrompt,
-        stylingPrompt: job.stylingPrompt,
-        garments,
-      });
-      if (!image) {
-        throw new GenerationFailedError("image generation returned null");
-      }
-      imageBase64 = image.base64;
-      imageModel = image.model;
+    const image = await generate(avatarBase64, garmentGroups, {
+      engine: job.engine,
+      scenePrompt: job.scenePrompt,
+      stylingPrompt: job.stylingPrompt,
+      garments,
+    });
+    if (!image) {
+      throw new GenerationFailedError("image generation returned null");
     }
 
     // Stage 3: persist. The two casts are the single point where the
@@ -154,7 +138,7 @@ export async function runTryonJob<M extends TryonMode>(
     let resultKey: string;
     let videoModel: string | undefined;
     if (job.mode === "video") {
-      const video = await generateVideo(imageBase64, {
+      const video = await generateVideo(image.base64, {
         engine: job.engine,
         transitionPrompt: job.transitionPrompt,
       });
@@ -163,10 +147,10 @@ export async function runTryonJob<M extends TryonMode>(
       const videoUrl = await uploadVideo(video.bytes, resultKey);
       result = { kind: "video", videoUrl, usage } as TryonResultFor<M>;
     } else {
-      const mimeType = detectMimeType(imageBase64);
+      const mimeType = detectMimeType(image.base64);
       resultKey = assetKey(job.userId, now(), mimeTypeToExtension(mimeType));
       const imageUrl = await upload(
-        decodeBase64(imageBase64),
+        decodeBase64(image.base64),
         resultKey,
         mimeType,
       );
@@ -175,7 +159,7 @@ export async function runTryonJob<M extends TryonMode>(
 
     await deps.generations.succeed(generationId, {
       resultKey,
-      imageModel,
+      imageModel: image.model,
       videoModel,
     });
 
