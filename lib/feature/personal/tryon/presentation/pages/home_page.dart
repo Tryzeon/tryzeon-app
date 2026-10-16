@@ -27,6 +27,7 @@ import 'package:tryzeon/feature/personal/tryon/presentation/sheets/tryon_mode_sh
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/home_primary_action_button.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/widgets/own_photo_invite_card.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/page_linked_reveal.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/preset_model_tag.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_avatar_page.dart';
@@ -85,20 +86,33 @@ class HomePage extends HookConsumerWidget {
       );
     }
 
+    Future<File?> pickAvatarPhoto() => ImagePickerHelper.pickImage(
+      context,
+      title: '選擇模特來源',
+      hint: '建議上傳短袖短褲的正面全身照，雙手自然下垂、手上不要拿手機等物品。',
+      crop: const LockedCrop(
+        ratio: AppConstants.avatarAspectRatio,
+        title: '框出全身',
+      ),
+    );
+
     Future<void> uploadAvatar() async {
       if (ref.read(avatarUploadProvider) != null) return;
-      final File? imageFile = await ImagePickerHelper.pickImage(
-        context,
-        title: '選擇模特來源',
-        hint: '建議上傳短袖短褲的正面全身照，雙手自然下垂、手上不要拿手機等物品。',
-        crop: const LockedCrop(
-          ratio: AppConstants.avatarAspectRatio,
-          title: '框出全身',
-        ),
-      );
+      final File? imageFile = await pickAvatarPhoto();
       if (imageFile == null) return;
       onAvatarReplaced(
         await ref.read(avatarUploadProvider.notifier).upload(imageFile),
+      );
+    }
+
+    Future<void> retryWithOwnPhoto(final TryonGalleryEntry entry) async {
+      if (ref.read(avatarUploadProvider) != null) return;
+      final File? imageFile = await pickAvatarPhoto();
+      if (imageFile == null) return;
+      onAvatarReplaced(
+        await ref
+            .read(tryonCoordinatorProvider)
+            .retryWithOwnPhoto(imageFile, entry),
       );
     }
 
@@ -285,6 +299,7 @@ class HomePage extends HookConsumerWidget {
               Positioned(
                 bottom: bottomOffset + AppSpacing.smMd,
                 left: AppSpacing.xxl,
+                right: AppSpacing.lg + TryonOutfitRail.width + AppSpacing.md,
                 child: PageLinkedReveal(
                   controller: pageController,
                   interval: const Interval(0.5, 1),
@@ -292,6 +307,11 @@ class HomePage extends HookConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (galleryState.currentEntry case final entry?)
+                        OwnPhotoInviteCard(
+                          entry: entry,
+                          onUpload: () => retryWithOwnPhoto(entry),
+                        ),
                       TryonIndicator(
                         currentTryonIndex: galleryState.currentIndex,
                         tryonImagesCount: galleryState.entries.length,

@@ -12,6 +12,8 @@ class TryonOutfitRail extends StatelessWidget {
     required this.onEdit,
   });
 
+  static const double width = _RailTile._size;
+
   final List<OutfitPiece> pieces;
   final VoidCallback onEdit;
 

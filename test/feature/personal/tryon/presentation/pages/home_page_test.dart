@@ -13,8 +13,15 @@ import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.da
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription_capabilities.dart';
 import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_subject.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/pages/home_page.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/sheets/model_choice_sheet.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/state/own_photo_invite_provider.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
+import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/model_choice_picker.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_avatar_page.dart';
 import 'package:typed_result/typed_result.dart';
@@ -46,13 +53,48 @@ class _RecordingAvatarUpload extends AvatarUploadNotifier {
   }
 }
 
+class _FakeGallery extends TryonGalleryNotifier {
+  _FakeGallery(this._initial);
+
+  final TryonGalleryState _initial;
+
+  @override
+  TryonGalleryState build() => _initial;
+}
+
+class _RecordingInviteDismissal extends OwnPhotoInviteDismissedNotifier {
+  var dismissCount = 0;
+
+  @override
+  Future<bool> build() async => false;
+
+  @override
+  Future<void> dismiss() async {
+    dismissCount++;
+    state = const AsyncData(true);
+  }
+}
+
+final _imageResult = FinishedTryonEntry(
+  const TryonResult(id: 'img', mode: TryonMode.image, imageUrl: 'u'),
+  TryonSubject.generate(
+    pieces: const [OutfitPiece.local(path: 'shirt.jpg')],
+    mode: TryonMode.image,
+  ),
+);
+
+TryonGalleryState _showing(final TryonGalleryEntry entry) =>
+    TryonGalleryState(entries: [entry], currentId: entry.id);
+
 void main() {
   const photoSourceTitle = '選擇模特來源';
   const presetTag = '預設模特';
+  const inviteTitle = '穿在你身上會是什麼樣子？';
   const preset = Avatar.preset(PresetAvatar.female);
   const ownPhoto = Avatar.uploaded('u1/avatar/me.jpg');
 
   late _RecordingAvatarUpload avatarUpload;
+  late _RecordingInviteDismissal inviteDismissal;
 
   setUp(() {
     final view =
@@ -70,8 +112,10 @@ void main() {
     required final Avatar avatar,
     final bool isTutorialCompleted = true,
     final PendingAvatar? replacement,
+    final TryonGalleryState gallery = const TryonGalleryState(),
   }) async {
     avatarUpload = _RecordingAvatarUpload(replacement);
+    inviteDismissal = _RecordingInviteDismissal();
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -92,6 +136,10 @@ void main() {
             (final ref) async => File('model.jpg'),
           ),
           avatarUploadProvider.overrideWith(() => avatarUpload),
+          tryonGalleryProvider.overrideWith(
+            () => _FakeGallery(TryonGalleryState(entries: gallery.entries)),
+          ),
+          ownPhotoInviteDismissedProvider.overrideWith(() => inviteDismissal),
           presetAvatarFileProvider.overrideWith(
             (final ref, final preset) => Completer<File>().future,
           ),
@@ -107,6 +155,13 @@ void main() {
         child: MaterialApp(theme: AppTheme.lightTheme, home: const HomePage()),
       ),
     );
+    await settle(tester);
+
+    // The page view only follows the gallery once attached, so open the page
+    // in view after the first frame, as a swipe would.
+    ProviderScope.containerOf(
+      tester.element(find.byType(HomePage)),
+    ).read(tryonGalleryProvider.notifier).setCurrentPage(gallery.currentPage);
     await settle(tester);
   }
 
@@ -215,6 +270,40 @@ void main() {
       );
 
       expect(find.text(presetTag), findsNothing);
+    });
+  });
+
+  group('own-photo invite', () {
+    testWidgets('appears on a finished image try-on of a preset model', (
+      final tester,
+    ) async {
+      await pumpHome(tester, avatar: preset, gallery: _showing(_imageResult));
+
+      expect(find.text(inviteTitle).hitTestable(), findsOneWidget);
+    });
+
+    testWidgets('uploading from it asks for the photo source', (
+      final tester,
+    ) async {
+      await pumpHome(tester, avatar: preset, gallery: _showing(_imageResult));
+
+      await tester.tap(find.widgetWithText(FilledButton, '上傳全身照'));
+      await settle(tester);
+
+      expect(find.text(photoSourceTitle), findsOneWidget);
+      expect(find.byType(ModelChoiceSheet), findsNothing);
+    });
+
+    testWidgets('closing it remembers the dismissal and hides it', (
+      final tester,
+    ) async {
+      await pumpHome(tester, avatar: preset, gallery: _showing(_imageResult));
+
+      await tester.tap(find.byTooltip('關閉'));
+      await settle(tester);
+
+      expect(inviteDismissal.dismissCount, 1);
+      expect(find.text(inviteTitle), findsNothing);
     });
   });
 }
