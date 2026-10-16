@@ -79,8 +79,9 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
   Future<Result<void, Failure>> updateUserProfile(
     final UserProfileUpdate update,
   ) async {
+    final UserProfileDto updated;
     try {
-      await _remoteDataSource.updateUserProfile(
+      updated = await _remoteDataSource.updateUserProfile(
         _mappr.convert<UserProfileUpdate, UpdateUserProfileRequest>(update),
       );
     } catch (e, stackTrace) {
@@ -88,34 +89,34 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       return Err(mapExceptionToFailure(e));
     }
 
-    await _refreshCachedProfile();
+    await _cacheUpdatedProfile(updated);
     return const Ok(null);
   }
 
   @override
   Future<Result<void, Failure>> updateAvatar(final Avatar avatar) async {
+    final UserProfileDto updated;
     try {
-      await _remoteDataSource.updateAvatar(
+      updated = await _remoteDataSource.updateAvatar(
         _mappr.convert<Avatar, UpdateAvatarRequest>(avatar),
       );
     } catch (e, stackTrace) {
       AppLogger.error('Failed to update avatar', e, stackTrace);
       return Err(mapExceptionToFailure(e));
     }
-    await _refreshCachedProfile();
+
+    await _cacheUpdatedProfile(updated);
     return const Ok(null);
   }
 
-  Future<void> _refreshCachedProfile() async {
+  Future<void> _cacheUpdatedProfile(final UserProfileDto updated) async {
     try {
       await _localDataSource.saveUserProfile(
-        _mappr.convert<UserProfileDto, UserProfile>(
-          await _remoteDataSource.getUserProfile(),
-        ),
+        _mappr.convert<UserProfileDto, UserProfile>(updated),
       );
     } catch (e, stackTrace) {
       AppLogger.warning(
-        'User profile refresh failed, invalidating cache',
+        'Failed to cache the updated user profile, invalidating cache',
         e,
         stackTrace,
       );

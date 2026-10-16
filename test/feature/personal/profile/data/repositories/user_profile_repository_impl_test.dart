@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/data/collections/cache_entry.dart';
@@ -20,6 +18,7 @@ import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart'
 import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/preset_avatar.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile_update.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -32,27 +31,44 @@ class _FakeRemote implements UserProfileRemoteDataSource {
   int calls = 0;
   final List<Map<String, dynamic>> updates = [];
   final List<Map<String, dynamic>> avatarUpdates = [];
-  Object? getError;
   Object? updateError;
 
   @override
   Future<UserProfileDto> getUserProfile() async {
     calls++;
-    if (getError case final error?) throw error;
     return profile;
   }
 
   @override
-  Future<void> updateUserProfile(final UpdateUserProfileRequest request) async {
+  Future<UserProfileDto> updateUserProfile(
+    final UpdateUserProfileRequest request,
+  ) async {
     updates.add(request.toJson());
     if (updateError case final error?) throw error;
+    return profile;
   }
 
   @override
-  Future<void> updateAvatar(final UpdateAvatarRequest request) async {
+  Future<UserProfileDto> updateAvatar(final UpdateAvatarRequest request) async {
     avatarUpdates.add(request.toJson());
     if (updateError case final error?) throw error;
+    return profile;
   }
+
+  @override
+  dynamic noSuchMethod(final Invocation invocation) =>
+      throw UnimplementedError(invocation.memberName.toString());
+}
+
+class _UnwritableLocal implements UserProfileLocalDataSource {
+  var invalidated = false;
+
+  @override
+  Future<void> saveUserProfile(final UserProfile profile) async =>
+      throw StateError('disk full');
+
+  @override
+  Future<void> invalidateUserProfile() async => invalidated = true;
 
   @override
   dynamic noSuchMethod(final Invocation invocation) =>
@@ -203,29 +219,25 @@ void main() {
   );
 
   test(
-    'updateUserProfile succeeds and drops the cache when the refresh fails',
+    'updateUserProfile succeeds and drops the cache when caching the row fails',
     () async {
-      await seedCache();
-      final remote = _FakeRemote(remoteProfile)
-        ..getError = const SocketException('offline');
+      final local = _UnwritableLocal();
+      final repository = UserProfileRepositoryImpl(
+        remoteDataSource: _FakeRemote(remoteProfile),
+        localDataSource: local,
+      );
 
-      final result = await buildRepository(
-        remote,
-      ).updateUserProfile(const UserProfileUpdate(name: 'Amy'));
+      final result = await repository.updateUserProfile(
+        const UserProfileUpdate(name: 'Amy'),
+      );
 
       expect(result.isSuccess, isTrue);
-      expect(
-        await CacheEntryLocalDataSource(
-          harness.service,
-        ).getEntryStatus(UserProfileLocalDataSource.cacheKey),
-        isNull,
-      );
-      expect(await harness.isar.userProfileCaches.count(), 0);
+      expect(local.invalidated, isTrue);
     },
   );
 
   test(
-    'updateUserProfile returns not-found and skips the refresh when no row matched',
+    'updateUserProfile returns not-found and leaves the cache when no row matched',
     () async {
       final remote = _FakeRemote(remoteProfile)
         ..updateError = const PostgrestException(
@@ -238,12 +250,12 @@ void main() {
       ).updateUserProfile(const UserProfileUpdate(name: 'Amy'));
 
       expect(result.getError(), const NotFoundFailure());
-      expect(remote.calls, 0);
+      expect(await harness.isar.userProfileCaches.count(), 0);
     },
   );
 
   test(
-    'updateUserProfile sends only the changed fields and caches the refetched row',
+    'updateUserProfile sends only the changed fields and caches the returned row without refetching',
     () async {
       await seedCache();
       final remote = _FakeRemote(remoteProfile);
@@ -262,8 +274,9 @@ void main() {
           'is_onboarded': true,
         },
       ]);
-      expect(remote.calls, 1);
-      expect(await harness.isar.userProfileCaches.count(), 1);
+      expect(remote.calls, 0);
+      final cached = await harness.isar.userProfileCaches.getByUserId('u1');
+      expect(cached!.avatar?.preset, 'male');
     },
   );
 
@@ -282,7 +295,7 @@ void main() {
   });
 
   test(
-    'updateAvatar to a preset clears the uploaded path and caches the refetched row',
+    'updateAvatar to a preset clears the uploaded path and caches the returned row without refetching',
     () async {
       await seedCache();
       final remote = _FakeRemote(remoteProfile);
@@ -295,8 +308,9 @@ void main() {
       expect(remote.avatarUpdates, [
         {'avatar_path': null, 'avatar_preset': 'female'},
       ]);
-      expect(remote.calls, 1);
-      expect(await harness.isar.userProfileCaches.count(), 1);
+      expect(remote.calls, 0);
+      final cached = await harness.isar.userProfileCaches.getByUserId('u1');
+      expect(cached!.avatar?.preset, 'male');
     },
   );
 
@@ -312,7 +326,8 @@ void main() {
     ]);
   });
 
-  test('a rejected updateAvatar is a failure and skips the refresh', () async {
+  test('a rejected updateAvatar is a failure and leaves the cache', () async {
+    await seedCache();
     final remote = _FakeRemote(remoteProfile)
       ..updateError = const PostgrestException(message: 'check violation');
 
@@ -321,6 +336,7 @@ void main() {
     ).updateAvatar(const Avatar.preset(PresetAvatar.male));
 
     expect(result.getError(), const ServerFailure());
-    expect(remote.calls, 0);
+    final cached = await harness.isar.userProfileCaches.getByUserId('u1');
+    expect(cached!.avatar, isNull);
   });
 }

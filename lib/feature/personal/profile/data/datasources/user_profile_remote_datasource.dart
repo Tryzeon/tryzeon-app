@@ -15,6 +15,8 @@ class UserProfileRemoteDataSource {
   final SupabaseClient _supabaseClient;
   static const _userProfileTable = 'user_profiles';
   static const _avatarBucket = 'user-avatars';
+  static const _profileColumns =
+      'user_id, name, email, avatar_path, avatar_preset, measurements, gender, age_range, style_preferences, is_onboarded, is_tutorial_completed, created_at, updated_at';
 
   Future<UserProfileDto> getUserProfile() async {
     final user = _supabaseClient.auth.currentUser;
@@ -22,31 +24,32 @@ class UserProfileRemoteDataSource {
 
     final response = await _supabaseClient
         .from(_userProfileTable)
-        .select(
-          'user_id, name, email, avatar_path, avatar_preset, measurements, gender, age_range, style_preferences, is_onboarded, is_tutorial_completed, created_at, updated_at',
-        )
+        .select(_profileColumns)
         .eq('user_id', user.id)
         .single();
 
     return UserProfileDto.fromJson(response);
   }
 
-  Future<void> updateUserProfile(final UpdateUserProfileRequest request) =>
+  Future<UserProfileDto> updateUserProfile(
+    final UpdateUserProfileRequest request,
+  ) => _updateRow(request.toJson());
+
+  Future<UserProfileDto> updateAvatar(final UpdateAvatarRequest request) =>
       _updateRow(request.toJson());
 
-  Future<void> updateAvatar(final UpdateAvatarRequest request) =>
-      _updateRow(request.toJson());
-
-  Future<void> _updateRow(final Map<String, dynamic> values) async {
+  Future<UserProfileDto> _updateRow(final Map<String, dynamic> values) async {
     final user = _supabaseClient.auth.currentUser;
     if (user == null) throw const UnauthenticatedException();
 
-    await _supabaseClient
+    final response = await _supabaseClient
         .from(_userProfileTable)
         .update(values)
         .eq('user_id', user.id)
-        .select('user_id')
+        .select(_profileColumns)
         .single();
+
+    return UserProfileDto.fromJson(response);
   }
 
   Future<String> uploadAvatar(final File image) async {
