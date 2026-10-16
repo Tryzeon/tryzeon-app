@@ -68,6 +68,7 @@ button, label { touch-action: manipulation; }
 }
 .menu__item:active,
 .home__more:active,
+.home__caption--action:active,
 .searchbar__clear:active,
 .tabbar__tab:active {
   opacity: 0.55;
@@ -406,6 +407,9 @@ button, label { touch-action: manipulation; }
 .models__tile:active:not(:disabled):not(.is-disabled) { opacity: 0.7; }
 .models__tile:disabled,
 .models__tile.is-disabled { opacity: 0.55; cursor: default; }
+.models__tile.is-selected .models__frame {
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ink);
+}
 .models__frame {
   display: grid;
   place-items: center;
@@ -699,6 +703,14 @@ button, label { touch-action: manipulation; }
   overflow: hidden;
 }
 .home__caption b { color: #fff; font-weight: 600; }
+.home__caption--action {
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
 
 .home__disclaimer,
 .home__status {

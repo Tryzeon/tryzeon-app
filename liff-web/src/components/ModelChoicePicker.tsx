@@ -1,4 +1,4 @@
-import { type PresetAvatar, presetAvatarUrl } from "../lib/presetAvatars";
+import { type PresetAvatar, presetAvatarUrl, type PresetAvatarId } from "../lib/presetAvatars";
 import { CameraPlusIcon } from "./icons";
 
 export const MODEL_CHOICE_HINT = "先用預設模特試穿，或上傳自己的全身照";
@@ -16,29 +16,34 @@ export function OwnPhotoTip() {
 
 interface Props {
   presets: readonly PresetAvatar[];
+  selected: PresetAvatarId | null;
   disabled: boolean;
   onPreset(preset: PresetAvatar): void;
   onUpload(file: File): void;
 }
 
-export function ModelChoicePicker({ presets, disabled, onPreset, onUpload }: Props) {
+export function ModelChoicePicker({ presets, selected, disabled, onPreset, onUpload }: Props) {
   return (
     <div className="models">
-      {presets.map((preset) => (
-        <button
-          key={preset.id}
-          type="button"
-          className="models__tile"
-          disabled={disabled}
-          onClick={() => onPreset(preset)}
-        >
-          <span className="models__frame">
-            <img className="models__img" src={presetAvatarUrl(preset.id)} alt={preset.label} />
-          </span>
-          <span className="models__title">{preset.label}</span>
-          <span className="models__caption">立即開始試穿</span>
-        </button>
-      ))}
+      {presets.map((preset) => {
+        const isSelected = preset.id === selected;
+        return (
+          <button
+            key={preset.id}
+            type="button"
+            className={`models__tile${isSelected ? " is-selected" : ""}`}
+            aria-current={isSelected || undefined}
+            disabled={disabled}
+            onClick={() => onPreset(preset)}
+          >
+            <span className="models__frame">
+              <img className="models__img" src={presetAvatarUrl(preset.id)} alt={preset.label} />
+            </span>
+            <span className="models__title">{preset.label}</span>
+            <span className="models__caption">{isSelected ? "使用中" : "立即開始試穿"}</span>
+          </button>
+        );
+      })}
 
       <label className={`models__tile${disabled ? " is-disabled" : ""}`}>
         <span className="models__frame models__frame--upload">

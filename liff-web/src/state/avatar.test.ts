@@ -1,10 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { StoredAvatar } from "../api/avatar-wire";
 import {
+  avatarCaption,
   type AvatarPreview,
   avatarStatus,
+  selectedPresetId,
   settleOnSave,
   settleOnSigned,
+  shouldApplyPreset,
   shownUrl,
 } from "./avatar";
 
@@ -98,5 +101,52 @@ describe("settleOnSigned", () => {
   it("leaves a preset preview to its own save", () => {
     const preset: AvatarPreview = { kind: "preset", id: "male" };
     expect(settleOnSigned(preset, "u1/avatar/1.jpg")).toBe(preset);
+  });
+});
+
+describe("selectedPresetId", () => {
+  it("marks the preset in use", () => {
+    expect(selectedPresetId({ kind: "preset", id: "male" })).toBe("male");
+  });
+
+  it("marks nothing for an own photo or no model", () => {
+    expect(selectedPresetId(OLD_UPLOAD)).toBeNull();
+    expect(selectedPresetId(null)).toBeNull();
+  });
+});
+
+describe("shouldApplyPreset", () => {
+  it("applies a preset other than the one in use", () => {
+    expect(shouldApplyPreset("female", "male")).toBe(true);
+    expect(shouldApplyPreset(null, "female")).toBe(true);
+  });
+
+  it("only closes on the preset already in use", () => {
+    expect(shouldApplyPreset("female", "female")).toBe(false);
+  });
+});
+
+describe("avatarCaption", () => {
+  it("invites a preset user to upload their own photo", () => {
+    expect(avatarCaption(PRESET, false)).toEqual({
+      text: "預設模特・換成我的照片",
+      action: "uploadPhoto",
+    });
+  });
+
+  it("offers an own-photo user the model choice", () => {
+    expect(avatarCaption(OLD_UPLOAD, false)).toEqual({
+      text: "我的 model 照 · 點一下更換",
+      action: "chooseModel",
+    });
+  });
+
+  it("shows nothing before a model is chosen", () => {
+    expect(avatarCaption(null, false)).toBeNull();
+  });
+
+  it("hides while a new model is saving, so it never describes the outgoing one", () => {
+    expect(avatarCaption(PRESET, true)).toBeNull();
+    expect(avatarCaption(OLD_UPLOAD, true)).toBeNull();
   });
 });

@@ -7,6 +7,7 @@ import { ModelChoiceSheet } from "../components/ModelChoiceSheet";
 import { ProductGallery } from "../components/ProductGallery";
 import { useTryonCoordinator } from "../hooks/useTryonCoordinator";
 import { isExternalUrl, openExternal } from "../lib/liff";
+import { selectedPresetId } from "../state/avatar";
 import { useAvatar } from "../state/AvatarProvider";
 
 type Load =
@@ -179,6 +180,7 @@ function Detail({ item, back }: { item: CatalogItem; back: ReactNode }) {
       {choosingModel && (
         <ModelChoiceSheet
           presets={avatar.presets}
+          selected={selectedPresetId(avatar.avatar)}
           onPreset={(preset) => chooseModelAndTryon(() => avatar.applyPreset(preset))}
           onUpload={(file) => chooseModelAndTryon(() => avatar.replace(file))}
           onClose={() => setChoosingModel(false)}

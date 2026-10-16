@@ -1,15 +1,17 @@
-import type { PresetAvatar } from "../lib/presetAvatars";
+import type { PresetAvatar, PresetAvatarId } from "../lib/presetAvatars";
+import { shouldApplyPreset } from "../state/avatar";
 import { MODEL_CHOICE_HINT, ModelChoicePicker, OwnPhotoTip } from "./ModelChoicePicker";
 import { Overlay } from "./Overlay";
 
 interface Props {
   presets: readonly PresetAvatar[];
+  selected: PresetAvatarId | null;
   onPreset(preset: PresetAvatar): void;
   onUpload(file: File): void;
   onClose(): void;
 }
 
-export function ModelChoiceSheet({ presets, onPreset, onUpload, onClose }: Props) {
+export function ModelChoiceSheet({ presets, selected, onPreset, onUpload, onClose }: Props) {
   return (
     <Overlay>
       <div className="sheet" role="dialog" aria-modal="true" aria-label="選擇試穿模特">
@@ -20,10 +22,11 @@ export function ModelChoiceSheet({ presets, onPreset, onUpload, onClose }: Props
             <p className="sheet__hint">{MODEL_CHOICE_HINT}</p>
             <ModelChoicePicker
               presets={presets}
+              selected={selected}
               disabled={false}
               onPreset={(preset) => {
                 onClose();
-                onPreset(preset);
+                if (shouldApplyPreset(selected, preset.id)) onPreset(preset);
               }}
               onUpload={(file) => {
                 onClose();

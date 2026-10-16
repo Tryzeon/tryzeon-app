@@ -34,6 +34,7 @@ export function AvatarPage({ onReplaceTap, onPreset, onUpload }: Props) {
         <p className="page__choicehint">{MODEL_CHOICE_HINT}</p>
         <ModelChoicePicker
           presets={avatar.presets}
+          selected={null}
           disabled={avatar.busy}
           onPreset={onPreset}
           onUpload={onUpload}

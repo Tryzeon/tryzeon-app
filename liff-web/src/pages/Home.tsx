@@ -3,6 +3,7 @@ import { ActionSheet, type SheetAction } from "../components/ActionSheet";
 import { AvatarPage } from "../components/AvatarPage";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { FullscreenViewer } from "../components/FullscreenViewer";
+import { ModelChoiceSheet } from "../components/ModelChoiceSheet";
 import { Overlay } from "../components/Overlay";
 import { StyleSheet } from "../components/StyleSheet";
 import { TryonPager } from "../components/TryonPager";
@@ -15,12 +16,14 @@ import {
   currentPage,
   isAvatarPage,
 } from "../state/gallery";
+import { avatarCaption, selectedPresetId } from "../state/avatar";
 import { useAvatar } from "../state/AvatarProvider";
 import { useGallery } from "../state/GalleryProvider";
 
 type Popup =
   | { kind: "none" }
   | { kind: "menu" }
+  | { kind: "models" }
   | { kind: "style" }
   | { kind: "viewer"; imageUrl: string }
   | { kind: "confirm"; message: string; confirmLabel: string; onConfirm(): void };
@@ -60,9 +63,14 @@ export function Home() {
   // Scrims and white chrome are for photos; the model picker sits on the plain
   // surface instead.
   const isBlankAvatarPage = isAvatarPage(state) && !avatar.hasAvatar && avatar.url === null;
+  const caption = avatarCaption(avatar.avatar, avatar.busy);
 
   function pickAvatar() {
     if (!avatar.busy) avatarInput.current?.click();
+  }
+
+  function openModelChoice() {
+    if (!avatar.busy) setPopup({ kind: "models" });
   }
 
   // The first model is where a LINE user sent here by the chat lands, so the
@@ -114,8 +122,8 @@ export function Home() {
   };
   const replace: SheetAction = {
     title: "更換模特圖片",
-    subtitle: "上傳照片更換試穿模特",
-    onSelect: pickAvatar,
+    subtitle: "換成預設模特或自己的全身照",
+    onSelect: openModelChoice,
   };
 
   function menuActions(): SheetAction[] {
@@ -159,7 +167,7 @@ export function Home() {
         entries={state.entries}
         avatarPage={
           <AvatarPage
-            onReplaceTap={pickAvatar}
+            onReplaceTap={openModelChoice}
             onPreset={applyPreset}
             onUpload={replaceAvatar}
           />
@@ -185,8 +193,14 @@ export function Home() {
 
       <div className="home__bottomleft">
         {isAvatarPage(state)
-          ? avatar.hasAvatar && (
-            <p className="home__caption">我的 model 照 · 點一下更換</p>
+          ? caption !== null && (
+            <button
+              type="button"
+              className="home__caption home__caption--action"
+              onClick={caption.action === "uploadPhoto" ? pickAvatar : openModelChoice}
+            >
+              {caption.text}
+            </button>
           )
           : (
             <>
@@ -232,6 +246,15 @@ export function Home() {
 
       {popup.kind === "menu" && (
         <ActionSheet actions={menuActions()} onClose={() => setPopup(CLOSED)} />
+      )}
+      {popup.kind === "models" && (
+        <ModelChoiceSheet
+          presets={avatar.presets}
+          selected={selectedPresetId(avatar.avatar)}
+          onPreset={applyPreset}
+          onUpload={replaceAvatar}
+          onClose={() => setPopup(CLOSED)}
+        />
       )}
       {popup.kind === "style" && <StyleSheet onClose={() => setPopup(CLOSED)} />}
       {popup.kind === "viewer" && (
