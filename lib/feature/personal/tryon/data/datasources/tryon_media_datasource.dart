@@ -2,22 +2,15 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 
 /// Throws on failure — the repository maps exceptions to [Failure]s.
 class TryonMediaDataSource {
-  TryonMediaDataSource(this._dio, this._cacheManager);
+  TryonMediaDataSource(this._dio);
 
   final Dio _dio;
-  final BaseCacheManager _cacheManager;
-
-  Future<Uint8List> downloadImageBytes(final String url) async {
-    final file = await _cacheManager.getSingleFile(url);
-    return file.readAsBytes();
-  }
 
   Future<Uint8List> readLocalFile(final String path) =>
       File(path).readAsBytes();

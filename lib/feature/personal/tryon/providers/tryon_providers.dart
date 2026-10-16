@@ -41,10 +41,7 @@ Tryon tryonUseCase(final Ref ref) {
 
 @riverpod
 TryonMediaDataSource tryonMediaDataSource(final Ref ref) {
-  return TryonMediaDataSource(
-    ref.watch(dioProvider),
-    ref.watch(cacheManagerProvider),
-  );
+  return TryonMediaDataSource(ref.watch(dioProvider));
 }
 
 @riverpod

@@ -15,16 +15,6 @@ class TryonMediaRepositoryImpl implements TryonMediaRepository {
   final TryonMediaDataSource _dataSource;
 
   @override
-  Future<Result<Uint8List, Failure>> loadImageBytes(final String url) async {
-    try {
-      return Ok(await _dataSource.downloadImageBytes(url));
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to load try-on image bytes', e, stackTrace);
-      return Err(mapExceptionToFailure(e));
-    }
-  }
-
-  @override
   Future<Result<Uint8List, Failure>> loadLocalImageBytes(
     final String path,
   ) async {

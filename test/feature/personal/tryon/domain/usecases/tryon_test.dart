@@ -29,16 +29,7 @@ class _CapturingTryonRepository implements TryonRepository {
 }
 
 class _FakeMediaRepository implements TryonMediaRepository {
-  final Map<String, List<int>> remote = {};
   final Map<String, List<int>> local = {};
-
-  @override
-  Future<Result<Uint8List, Failure>> loadImageBytes(final String url) async {
-    final bytes = remote[url];
-    return bytes == null
-        ? const Err(UnknownFailure())
-        : Ok(Uint8List.fromList(bytes));
-  }
 
   @override
   Future<Result<Uint8List, Failure>> loadLocalImageBytes(
