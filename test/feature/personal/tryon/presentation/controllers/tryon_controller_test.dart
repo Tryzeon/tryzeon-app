@@ -141,7 +141,7 @@ void main() {
       w2,
     ], mode: TryonMode.image);
 
-    final request = repository.requests.single as TryonGenerateRequest;
+    final request = repository.requests.single;
     expect(request.garments, const [
       TryonGarment.wardrobe(wardrobeItemId: 'w1'),
       TryonGarment.product(productId: 'p1', sizeId: 'M'),
@@ -161,7 +161,7 @@ void main() {
     expect(entry.pieces, [w1, w2]);
     expect(
       entry.subject,
-      TryonSubject.generate(pieces: const [w1, w2], mode: TryonMode.video),
+      TryonSubject(pieces: const [w1, w2], mode: TryonMode.video),
     );
   });
 

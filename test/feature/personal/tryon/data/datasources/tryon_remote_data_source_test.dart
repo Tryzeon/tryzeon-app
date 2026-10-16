@@ -15,6 +15,7 @@ const _request = TryonFunctionRequest(
   generationId: 'g1',
   mode: TryonMode.image,
   engine: TryonEngine.standard,
+  garments: [],
 );
 
 void main() {

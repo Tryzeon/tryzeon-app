@@ -100,7 +100,7 @@ class _FakeRepository implements UserProfileRepository {
       throw UnimplementedError(invocation.memberName.toString());
 }
 
-final _subject = TryonSubject.generate(
+final _subject = TryonSubject(
   pieces: const [
     OutfitPiece.wardrobe(
       wardrobeItemId: 'w1',

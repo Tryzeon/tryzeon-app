@@ -34,7 +34,7 @@ class TryonController extends _$TryonController {
   Future<void> tryonFromOutfit(
     final List<OutfitPiece> pieces, {
     final TryonMode mode = TryonMode.image,
-  }) => _start(TryonSubject.generate(pieces: pieces, mode: mode));
+  }) => _start(TryonSubject(pieces: pieces, mode: mode));
 
   Future<void> regenerate(final TryonGalleryEntry entry) =>
       _start(entry.subject);
@@ -45,16 +45,13 @@ class TryonController extends _$TryonController {
     // Setup runs before the placeholder exists, so its failures always speak up.
     final TryonPreferences preferences;
     try {
-      // An animate job dresses a finished picture, so it needs no avatar.
-      if (subject is TryonSubjectGenerate) {
-        // Precondition: "no avatar at all" is a UI prompt, not a failure — check
-        // it before inserting a placeholder so nothing flickers. The backend
-        // answers NO_AVATAR either way, so this only saves a round trip.
-        final profile = await ref.read(userProfileProvider.future);
-        if (!(profile?.hasAvatar ?? false)) {
-          state = TryonAvatarMissing(id);
-          return;
-        }
+      // Precondition: "no avatar at all" is a UI prompt, not a failure — check
+      // it before inserting a placeholder so nothing flickers. The backend
+      // answers NO_AVATAR either way, so this only saves a round trip.
+      final profile = await ref.read(userProfileProvider.future);
+      if (!(profile?.hasAvatar ?? false)) {
+        state = TryonAvatarMissing(id);
+        return;
       }
 
       // Scene and styling apply to both modes — video renders its first frame

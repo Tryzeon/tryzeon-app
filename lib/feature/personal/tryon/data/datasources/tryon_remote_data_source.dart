@@ -7,6 +7,7 @@ import 'package:tryzeon/feature/common/daily_usage/data/mappers/daily_usage_payl
 import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_function_request.dart';
 import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_response_dto.dart';
 import 'package:tryzeon/feature/personal/tryon/data/exceptions/avatar_missing_exception.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 
 class TryonRemoteDataSource {
   TryonRemoteDataSource(this._supabase);
@@ -28,7 +29,10 @@ class TryonRemoteDataSource {
     try {
       final response = await _supabase.functions
           .invoke(_tryonFunction, body: request.toJson())
-          .timeout(request.isVideo ? _videoTimeout : _imageTimeout);
+          .timeout(switch (request.mode) {
+            TryonMode.video => _videoTimeout,
+            TryonMode.image => _imageTimeout,
+          });
       return decodeFunctionResponse<TryonResponseDto>(
         response.data,
         TryonResponseDto.fromJson,

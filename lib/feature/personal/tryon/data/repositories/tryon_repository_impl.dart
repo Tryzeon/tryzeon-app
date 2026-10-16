@@ -21,12 +21,9 @@ class TryonRepositoryImpl implements TryonRepository {
   @override
   Future<Result<TryonResult, Failure>> tryon(final TryonRequest request) async {
     try {
-      final response = await _remoteDataSource.tryon(switch (request) {
-        TryonGenerateRequest() =>
-          _mappr.convert<TryonGenerateRequest, TryonFunctionRequest>(request),
-        TryonAnimateRequest() =>
-          _mappr.convert<TryonAnimateRequest, TryonFunctionRequest>(request),
-      });
+      final response = await _remoteDataSource.tryon(
+        _mappr.convert<TryonRequest, TryonFunctionRequest>(request),
+      );
       return Ok(
         TryonResult(
           id: request.requestId,

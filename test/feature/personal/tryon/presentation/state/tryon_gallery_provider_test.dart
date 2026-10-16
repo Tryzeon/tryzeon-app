@@ -32,11 +32,11 @@ void main() {
     imagePath: 'w1.jpg',
     garmentType: GarmentType.top,
   );
-  final imageSubject = TryonSubject.generate(
+  final imageSubject = TryonSubject(
     pieces: const [piece],
     mode: TryonMode.image,
   );
-  final videoSubject = TryonSubject.generate(
+  final videoSubject = TryonSubject(
     pieces: const [piece],
     mode: TryonMode.video,
   );

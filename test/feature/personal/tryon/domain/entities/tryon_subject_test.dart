@@ -5,7 +5,7 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_subject.dart';
 
 void main() {
-  final product = TryonSubject.generate(
+  final product = TryonSubject(
     pieces: const [
       OutfitPiece.product(
         productId: 'p1',
@@ -17,30 +17,18 @@ void main() {
     mode: TryonMode.image,
   );
 
-  test('a generate subject reports the mode it was asked for', () {
+  test('a subject reports the mode it was asked for', () {
     expect(product.mode, TryonMode.image);
     expect(
-      TryonSubject.generate(pieces: product.pieces, mode: TryonMode.video).mode,
+      TryonSubject(pieces: product.pieces, mode: TryonMode.video).mode,
       TryonMode.video,
     );
   });
 
-  test('a generate subject needs at least one piece', () {
+  test('a subject needs at least one piece', () {
     expect(
-      () => TryonSubject.generate(pieces: [], mode: TryonMode.video),
+      () => TryonSubject(pieces: [], mode: TryonMode.video),
       throwsA(isA<AssertionError>()),
     );
-  });
-
-  test('an animated subject is always a video', () {
-    final subject = TryonSubject.animated(baseImageUrl: 'u', origin: product);
-
-    expect(subject.mode, TryonMode.video);
-  });
-
-  test('an animated subject shows the pieces its base image was made from', () {
-    final subject = TryonSubject.animated(baseImageUrl: 'u', origin: product);
-
-    expect(subject.pieces, product.pieces);
   });
 }

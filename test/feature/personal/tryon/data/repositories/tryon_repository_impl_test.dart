@@ -6,6 +6,7 @@ import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_function_request.
 import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_response_dto.dart';
 import 'package:tryzeon/feature/personal/tryon/data/repositories/tryon_repository_impl.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_engine.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_garment.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_request.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
@@ -22,9 +23,10 @@ class _FakeRemoteDataSource implements TryonRemoteDataSource {
 }
 
 void main() {
-  const request = TryonRequest.animate(
+  const request = TryonRequest(
     requestId: 'r1',
-    baseImageBase64: 'FINISHED',
+    garments: [TryonGarment.product(productId: 'p1')],
+    mode: TryonMode.video,
     engine: TryonEngine.standard,
   );
 

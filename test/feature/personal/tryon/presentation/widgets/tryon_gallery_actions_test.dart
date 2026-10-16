@@ -42,7 +42,7 @@ void main() {
   );
 
   TryonSubject subjectFor(final TryonMode mode) =>
-      TryonSubject.generate(pieces: const [piece], mode: mode);
+      TryonSubject(pieces: const [piece], mode: mode);
 
   late _FakeReportRepository repository;
   late ProviderContainer container;

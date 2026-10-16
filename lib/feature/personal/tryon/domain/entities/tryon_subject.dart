@@ -10,27 +10,8 @@ part 'tryon_subject.freezed.dart';
 @freezed
 sealed class TryonSubject with _$TryonSubject {
   @Assert('pieces.isNotEmpty')
-  factory TryonSubject.generate({
+  factory TryonSubject({
     required final List<OutfitPiece> pieces,
     required final TryonMode mode,
-  }) = TryonSubjectGenerate;
-
-  /// An animate request carries no garments, so [origin] is the only thing that
-  /// can say what the video shows.
-  const factory TryonSubject.animated({
-    required final String baseImageUrl,
-    required final TryonSubject origin,
-  }) = TryonSubjectAnimated;
-
-  const TryonSubject._();
-
-  TryonMode get mode => switch (this) {
-    TryonSubjectGenerate(:final mode) => mode,
-    TryonSubjectAnimated() => TryonMode.video,
-  };
-
-  List<OutfitPiece> get pieces => switch (this) {
-    TryonSubjectGenerate(:final pieces) => pieces,
-    TryonSubjectAnimated(:final origin) => origin.pieces,
-  };
+  }) = _TryonSubject;
 }

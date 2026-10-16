@@ -77,19 +77,16 @@ void main() {
     tryon = Tryon(tryonRepository: tryonRepository, mediaRepository: media);
   });
 
-  test('an image generate request carries prompts but no transition', () async {
+  test('an image request carries prompts but no transition', () async {
     await tryon(
       TryonParams(
         requestId: 'r1',
-        subject: TryonSubject.generate(
-          pieces: const [wardrobe],
-          mode: TryonMode.image,
-        ),
+        subject: TryonSubject(pieces: const [wardrobe], mode: TryonMode.image),
         preferences: preferences,
       ),
     );
 
-    final request = tryonRepository.requests.single as TryonGenerateRequest;
+    final request = tryonRepository.requests.single;
     expect(request.garments, const [
       TryonGarment.wardrobe(wardrobeItemId: 'w1'),
     ]);
@@ -97,19 +94,16 @@ void main() {
     expect(request.transitionPrompt, isNull);
   });
 
-  test('a video generate request carries the transition prompt', () async {
+  test('a video request carries the transition prompt', () async {
     await tryon(
       TryonParams(
         requestId: 'r1',
-        subject: TryonSubject.generate(
-          pieces: const [wardrobe],
-          mode: TryonMode.video,
-        ),
+        subject: TryonSubject(pieces: const [wardrobe], mode: TryonMode.video),
         preferences: preferences,
       ),
     );
 
-    final request = tryonRepository.requests.single as TryonGenerateRequest;
+    final request = tryonRepository.requests.single;
     expect(request.transitionPrompt, 'spin');
   });
 
@@ -119,7 +113,7 @@ void main() {
     await tryon(
       TryonParams(
         requestId: 'r1',
-        subject: TryonSubject.generate(
+        subject: TryonSubject(
           pieces: const [OutfitPiece.local(path: 'g.jpg')],
           mode: TryonMode.image,
         ),
@@ -127,7 +121,7 @@ void main() {
       ),
     );
 
-    final request = tryonRepository.requests.single as TryonGenerateRequest;
+    final request = tryonRepository.requests.single;
     expect(request.garments, [
       TryonGarment.images(
         base64Images: [
@@ -137,55 +131,11 @@ void main() {
     ]);
   });
 
-  test('an animate request sends the base picture', () async {
-    media.remote['https://x/base.jpg'] = [9];
-
-    await tryon(
-      TryonParams(
-        requestId: 'r1',
-        subject: TryonSubject.animated(
-          baseImageUrl: 'https://x/base.jpg',
-          origin: TryonSubject.generate(
-            pieces: const [wardrobe],
-            mode: TryonMode.image,
-          ),
-        ),
-        preferences: preferences,
-      ),
-    );
-
-    final request = tryonRepository.requests.single as TryonAnimateRequest;
-    expect(request.baseImageBase64, base64Encode([9]));
-    expect(request.transitionPrompt, 'spin');
-  });
-
-  test(
-    'an unreadable base picture fails without calling the backend',
-    () async {
-      final result = await tryon(
-        TryonParams(
-          requestId: 'r1',
-          subject: TryonSubject.animated(
-            baseImageUrl: 'https://x/missing.jpg',
-            origin: TryonSubject.generate(
-              pieces: const [wardrobe],
-              mode: TryonMode.image,
-            ),
-          ),
-          preferences: preferences,
-        ),
-      );
-
-      expect(result.isFailure, isTrue);
-      expect(tryonRepository.requests, isEmpty);
-    },
-  );
-
   test('an unreadable local piece fails without calling the backend', () async {
     final result = await tryon(
       TryonParams(
         requestId: 'r1',
-        subject: TryonSubject.generate(
+        subject: TryonSubject(
           pieces: const [OutfitPiece.local(path: 'missing.jpg')],
           mode: TryonMode.image,
         ),

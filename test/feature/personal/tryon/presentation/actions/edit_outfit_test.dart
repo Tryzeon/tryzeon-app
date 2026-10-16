@@ -21,7 +21,7 @@ import '../../../../../support/wardrobe_test_doubles.dart';
 void main() {
   final entry = FinishedTryonEntry(
     const TryonResult(id: 'r', mode: TryonMode.image, imageUrl: 'u'),
-    TryonSubject.generate(
+    TryonSubject(
       pieces: [wardrobePiece('a'), wardrobePiece('b')],
       mode: TryonMode.image,
     ),
@@ -99,7 +99,7 @@ void main() {
     await pump(tester);
     final shopEntry = FinishedTryonEntry(
       entry.result,
-      TryonSubject.generate(
+      TryonSubject(
         pieces: const [
           OutfitPiece.product(
             productId: 'p1',

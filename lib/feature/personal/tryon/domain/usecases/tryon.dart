@@ -43,40 +43,27 @@ class Tryon {
   Future<Result<TryonRequest, Failure>> _buildRequest(
     final TryonParams params,
   ) async {
-    final preferences = params.preferences;
+    final TryonParams(
+      :requestId,
+      subject: TryonSubject(:pieces, :mode),
+      :preferences,
+    ) = params;
+    final garments = await _garmentsFor(pieces);
+    if (garments.isFailure) return Err(garments.getError()!);
 
-    switch (params.subject) {
-      case TryonSubjectAnimated(:final baseImageUrl):
-        final bytes = await _mediaRepository.loadImageBytes(baseImageUrl);
-        if (bytes.isFailure) return Err(bytes.getError()!);
-
-        return Ok(
-          TryonRequest.animate(
-            requestId: params.requestId,
-            baseImageBase64: base64Encode(bytes.get()!),
-            transitionPrompt: preferences.transitionPrompt,
-            engine: preferences.engine,
-          ),
-        );
-
-      case TryonSubjectGenerate(:final pieces, :final mode):
-        final garments = await _garmentsFor(pieces);
-        if (garments.isFailure) return Err(garments.getError()!);
-
-        return Ok(
-          TryonRequest.generate(
-            requestId: params.requestId,
-            garments: garments.get()!,
-            mode: mode,
-            scenePrompt: preferences.scenePrompt,
-            stylingPrompt: preferences.stylingPrompt,
-            transitionPrompt: mode == TryonMode.video
-                ? preferences.transitionPrompt
-                : null,
-            engine: preferences.engine,
-          ),
-        );
-    }
+    return Ok(
+      TryonRequest(
+        requestId: requestId,
+        garments: garments.get()!,
+        mode: mode,
+        scenePrompt: preferences.scenePrompt,
+        stylingPrompt: preferences.stylingPrompt,
+        transitionPrompt: mode == TryonMode.video
+            ? preferences.transitionPrompt
+            : null,
+        engine: preferences.engine,
+      ),
+    );
   }
 
   /// Local photos are read here, at launch, so a regenerate re-reads the file

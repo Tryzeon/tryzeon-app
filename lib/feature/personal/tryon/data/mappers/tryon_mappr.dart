@@ -9,16 +9,10 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_request.dar
 
 @AutoMappr(
   [
-    MapType<TryonGenerateRequest, TryonFunctionRequest>(
+    MapType<TryonRequest, TryonFunctionRequest>(
       fields: [
         Field('generationId', from: 'requestId'),
         Field('garments', custom: TryonMapprHelper.garmentsToDto),
-      ],
-    ),
-    MapType<TryonAnimateRequest, TryonFunctionRequest>(
-      fields: [
-        Field('generationId', from: 'requestId'),
-        Field('baseImage', custom: TryonMapprHelper.baseImageToDto),
       ],
     ),
   ],
@@ -29,9 +23,7 @@ class TryonMappr extends $TryonMappr {
 }
 
 class TryonMapprHelper {
-  static List<TryonGarmentDto> garmentsToDto(
-    final TryonGenerateRequest source,
-  ) => [
+  static List<TryonGarmentDto> garmentsToDto(final TryonRequest source) => [
     for (final garment in source.garments)
       switch (garment) {
         TryonGarmentProduct(:final productId, :final sizeId) =>
@@ -44,7 +36,4 @@ class TryonMapprHelper {
         ),
       },
   ];
-
-  static Base64ImageDto baseImageToDto(final TryonAnimateRequest source) =>
-      Base64ImageDto(source.baseImageBase64);
 }
