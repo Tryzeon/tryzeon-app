@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCatalogItem, publicImageUrl } from "./catalog-row";
+import { buildCatalogItem } from "./catalog-row";
 
 const BASE = "https://img.test";
 
@@ -11,17 +11,6 @@ const row = {
   purchase_link: "https://shop.test/p/1",
   store_profiles: { id: "s1", name: "Island Select" },
 };
-
-describe("publicImageUrl", () => {
-  it("joins base and key with exactly one slash", () => {
-    expect(publicImageUrl("https://img.test", "a/1.jpg")).toBe(
-      "https://img.test/a/1.jpg",
-    );
-    expect(publicImageUrl("https://img.test///", "a/1.jpg")).toBe(
-      "https://img.test/a/1.jpg",
-    );
-  });
-});
 
 describe("buildCatalogItem", () => {
   it("projects every image path, not just the first", () => {

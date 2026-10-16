@@ -1,3 +1,5 @@
+import { publicImageUrl } from "../lib/publicImage";
+
 export interface CatalogItem {
   productId: string;
   name: string;
@@ -11,10 +13,6 @@ export interface CatalogItem {
 export interface CatalogStore {
   id: string;
   name: string;
-}
-
-export function publicImageUrl(baseUrl: string, key: string): string {
-  return `${baseUrl.replace(/\/+$/, "")}/${key}`;
 }
 
 /**
