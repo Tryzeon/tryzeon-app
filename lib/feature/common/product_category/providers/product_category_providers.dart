@@ -8,6 +8,7 @@ import 'package:tryzeon/feature/common/product_category/data/repositories/produc
 import 'package:tryzeon/feature/common/product_category/domain/entities/product_category.dart';
 import 'package:tryzeon/feature/common/product_category/domain/repositories/product_category_repository.dart';
 import 'package:tryzeon/feature/common/product_category/domain/usecases/get_product_categories.dart';
+import 'package:tryzeon/feature/common/product_category/domain/usecases/prefetch_product_category_images.dart';
 import 'package:typed_result/typed_result.dart';
 
 part 'product_category_providers.g.dart';
@@ -37,6 +38,16 @@ ProductCategoryRepository productCategoryRepository(final Ref ref) {
 @riverpod
 GetProductCategories getProductCategoriesUseCase(final Ref ref) {
   return GetProductCategories(ref.watch(productCategoryRepositoryProvider));
+}
+
+@riverpod
+PrefetchProductCategoryImages prefetchProductCategoryImagesUseCase(
+  final Ref ref,
+) {
+  return PrefetchProductCategoryImages(
+    repository: ref.watch(productCategoryRepositoryProvider),
+    imagePrefetcher: ref.watch(imagePrefetcherProvider),
+  );
 }
 
 @riverpod

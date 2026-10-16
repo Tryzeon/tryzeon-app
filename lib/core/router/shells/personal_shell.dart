@@ -12,6 +12,7 @@ import 'package:tryzeon/core/router/shells/personal_tab.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
+import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 import 'package:tryzeon/feature/personal/tutorial/presentation/widgets/tutorial_overlay.dart';
 
@@ -28,6 +29,7 @@ class PersonalShell extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     listenToTryonOutcomes(context, ref);
+    ref.listen(shopCategoryImagesPrefetchProvider, (final _, final _) {});
 
     final lastTabTapTime = useState<DateTime?>(null);
 

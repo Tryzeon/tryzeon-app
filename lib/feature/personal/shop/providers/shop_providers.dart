@@ -2,6 +2,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
+import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/common/product_category/providers/product_category_providers.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/ad_local_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/shop/data/repositories/ad_repository_impl.dart';
@@ -91,6 +93,18 @@ Future<ShopProduct> shopProductById(
     throw result.getError()!;
   }
   return result.get()!;
+}
+
+/// Warms the disk cache so the category grid renders instantly on the first
+/// visit to the shop; a failure only logs, since the grid downloads on its own.
+@riverpod
+Future<void> shopCategoryImagesPrefetch(final Ref ref) async {
+  final result = await ref.watch(
+    prefetchProductCategoryImagesUseCaseProvider,
+  )();
+  if (result case Err(:final error)) {
+    AppLogger.warning('Failed to prefetch shop category images', error);
+  }
 }
 
 @riverpod

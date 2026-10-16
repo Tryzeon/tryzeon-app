@@ -15,6 +15,8 @@ import 'package:tryzeon/core/modules/analytics/data/services/analytics_event_que
 import 'package:tryzeon/core/modules/analytics/domain/services/analytics_event_queue.dart';
 import 'package:tryzeon/core/modules/auth_identity/data/services/auth_identity_service_impl.dart';
 import 'package:tryzeon/core/modules/auth_identity/domain/services/auth_identity_service.dart';
+import 'package:tryzeon/core/modules/image_prefetch/data/services/image_prefetcher_impl.dart';
+import 'package:tryzeon/core/modules/image_prefetch/domain/services/image_prefetcher.dart';
 import 'package:tryzeon/core/modules/location/data/services/geocoding_service_impl.dart';
 import 'package:tryzeon/core/modules/location/data/services/location_service_impl.dart';
 import 'package:tryzeon/core/modules/location/domain/services/geocoding_service.dart';
@@ -69,6 +71,11 @@ BaseCacheManager cacheManager(final Ref ref) {
 @Riverpod(keepAlive: true)
 ImageFileCache imageFileCache(final Ref ref) {
   return ImageFileCacheImpl(ref.watch(cacheManagerProvider));
+}
+
+@Riverpod(keepAlive: true)
+ImagePrefetcher imagePrefetcher(final Ref ref) {
+  return ImagePrefetcherImpl(ref.watch(cacheManagerProvider));
 }
 
 @Riverpod(keepAlive: true)

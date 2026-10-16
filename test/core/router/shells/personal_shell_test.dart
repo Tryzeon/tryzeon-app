@@ -17,6 +17,7 @@ import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.da
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile_update.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
+import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 import 'package:tryzeon/feature/personal/tutorial/domain/usecases/complete_tutorial.dart';
 import 'package:tryzeon/feature/personal/tutorial/presentation/controllers/tutorial_controller.dart';
@@ -89,11 +90,16 @@ class _FakeRepository implements UserProfileRepository {
 void main() {
   late ProviderContainer container;
   late GoRouter router;
+  late int prefetches;
 
   setUp(() {
+    prefetches = 0;
     container = ProviderContainer(
       overrides: [
         isAuthenticatedProvider.overrideWithValue(true),
+        shopCategoryImagesPrefetchProvider.overrideWith((final _) async {
+          prefetches++;
+        }),
         tutorialControllerProvider.overrideWith(_InactiveTutorial.new),
         tryonGalleryProvider.overrideWith(_EmptyGallery.new),
         wardrobeItemsProvider.overrideWith(
@@ -139,6 +145,16 @@ void main() {
       ),
     ),
   );
+
+  testWidgets('prefetches the shop category images once the shell opens', (
+    final tester,
+  ) async {
+    await pumpShell(tester);
+    router.go(AppRoutes.personalChat);
+    await tester.pumpAndSettle();
+
+    expect(prefetches, 1);
+  });
 
   testWidgets('dock shows on a product page pushed from the home tab', (
     final tester,
@@ -200,6 +216,7 @@ void main() {
       tutorialContainer = ProviderContainer(
         overrides: [
           isAuthenticatedProvider.overrideWithValue(true),
+          shopCategoryImagesPrefetchProvider.overrideWith((final _) async {}),
           userProfileProvider.overrideWith(_FakeProfile.new),
           completeTutorialUseCaseProvider.overrideWithValue(
             CompleteTutorial(_FakeRepository()),
