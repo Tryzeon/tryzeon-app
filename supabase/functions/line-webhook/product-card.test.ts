@@ -62,14 +62,20 @@ function fakeAdmin(result: { data: any; error: any }) {
 // deno-lint-ignore no-explicit-any
 function fakeBatchAdmin(result: { data: any; error: any }) {
   const queried: string[][] = [];
+  const eqCalls: Array<[string, string]> = [];
+  const runIn = (_column: string, ids: string[]) => {
+    queried.push(ids);
+    return Promise.resolve(result);
+  };
   const client = {
     from() {
       return {
         select() {
           return {
-            in(_column: string, ids: string[]) {
-              queried.push(ids);
-              return Promise.resolve(result);
+            in: runIn,
+            eq(column: string, value: string) {
+              eqCalls.push([column, value]);
+              return { in: runIn };
             },
           };
         },
@@ -77,7 +83,7 @@ function fakeBatchAdmin(result: { data: any; error: any }) {
     },
   };
   // deno-lint-ignore no-explicit-any
-  return { admin: client as any, queried };
+  return { admin: client as any, queried, eqCalls };
 }
 
 Deno.test("toLineProduct joins the image key onto the public base", () => {
@@ -164,6 +170,15 @@ Deno.test("fetchProductRows queries nothing for an empty id list", async () => {
 Deno.test("fetchProductRows throws when the lookup itself failed", async () => {
   const { admin } = fakeBatchAdmin({ data: null, error: { message: "boom" } });
   await assertRejects(() => fetchProductRows(admin, ["p1"], BASE));
+});
+
+Deno.test("fetchProductRows reads only listed products, as get_shop_product does", async () => {
+  const { admin, eqCalls } = fakeBatchAdmin({ data: [row()], error: null });
+  await fetchProductRows(admin, ["p1"], BASE);
+
+  // A card can be tapped days after it was sent; a try-on the core would refuse
+  // for an unlisted product has to be refused before quota is charged.
+  assertEquals(eqCalls, [["status", "active"]]);
 });
 
 Deno.test("fetchProductInfo will not act on an unlisted product", async () => {

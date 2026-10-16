@@ -5,10 +5,10 @@ import { fetchProductRows } from "./product-card.ts";
 import { fetchWardrobeRows } from "./wardrobe-card.ts";
 
 export function makeLineAnswerRows(imagesBaseUrl: string): AnswerHydrator {
-  return async (admin, userId, refs) => {
+  return async (admin, userId, blocks) => {
     const [products, wardrobe] = await Promise.all([
-      fetchProductRows(admin, idsOf(refs, "product"), imagesBaseUrl),
-      fetchWardrobeRows(admin, userId, idsOf(refs, "wardrobe")),
+      fetchProductRows(admin, idsOf(blocks, "product"), imagesBaseUrl),
+      fetchWardrobeRows(admin, userId, idsOf(blocks, "wardrobe")),
     ]);
     return { products, wardrobe };
   };

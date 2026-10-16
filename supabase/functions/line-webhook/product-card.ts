@@ -59,7 +59,7 @@ export function fetchProductRows(
   imagesBaseUrl: string,
 ): Promise<Map<string, LineProduct>> {
   return fetchRowsByIds(
-    admin.from("products").select(PRODUCT_CARD_SELECT),
+    admin.from("products").select(PRODUCT_CARD_SELECT).eq("status", "active"),
     ids,
     (row) => toLineProduct(row, imagesBaseUrl),
   );

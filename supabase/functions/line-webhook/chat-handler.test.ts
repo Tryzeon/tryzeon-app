@@ -193,7 +193,7 @@ Deno.test("the turn runs on the stored conversation plus this message", async ()
       role: "assistant",
       content: [
         { type: "text", text: "為你找到" },
-        { type: "recommendation", items: [{ type: "product", id: PID }] },
+        { type: "picks", picks: [{ type: "product", id: PID }] },
       ],
     },
   ];
@@ -216,7 +216,7 @@ Deno.test("the whole turn is written back as the core recorded it", async () => 
   const chat = fakeChat({
     blocks: [
       { type: "text", text: "為你找到" },
-      { type: "recommendation", items: [{ type: "product", id: PID }] },
+      { type: "picks", picks: [{ type: "product", id: PID }] },
     ],
     items: {
       products: {
@@ -263,7 +263,7 @@ Deno.test("the whole turn is written back as the core recorded it", async () => 
       role: "assistant",
       content: [
         { type: "text", text: "為你找到" },
-        { type: "recommendation", items: [{ type: "product", id: PID }] },
+        { type: "picks", picks: [{ type: "product", id: PID }] },
       ],
     },
   ]);
@@ -342,7 +342,7 @@ Deno.test("an expired reply token costs a push, not the answer", async () => {
 Deno.test("a recommended product in the reply opens its LIFF product page", async () => {
   const { line, replied } = fakeLine();
   const chat = fakeChat({
-    blocks: [{ type: "recommendation", items: [{ type: "product", id: PID }] }],
+    blocks: [{ type: "picks", picks: [{ type: "product", id: PID }] }],
     items: {
       products: {
         [PID]: {
