@@ -110,20 +110,41 @@ const SEARCH_WARDROBE_SCHEMA = z.object({
   tags: z.array(z.string()).optional(),
 });
 
+const answerItemRef = z.object({
+  type: z.enum(["product", "wardrobe"]).describe("product 或 wardrobe"),
+  id: z.string().describe(
+    "product 為 search_products 回傳的商品 id；wardrobe 為 search_wardrobe 回傳的衣櫃單品 id",
+  ),
+});
+
 export const answerSchema = z.object({
   blocks: z.array(
-    z.object({
-      type: z.enum(["text", "recommendation"]).describe("text 或 recommendation"),
-      text: z.string().optional().describe("type=text 時的文字內容"),
-      items: z.array(
-        z.object({
-          type: z.enum(["product", "wardrobe"]).describe("product 或 wardrobe"),
-          id: z.string().describe(
-            "product 為 search_products 回傳的商品 id；wardrobe 為 search_wardrobe 回傳的衣櫃單品 id",
+    // `z.union`, not `z.discriminatedUnion`: zod emits the latter as `oneOf`,
+    // which Vertex's responseSchema ignores, and decoding goes unconstrained.
+    z.union([
+      z.object({
+        type: z.literal("text"),
+        text: z.string().describe("文字內容"),
+      }),
+      z.object({
+        type: z.literal("picks"),
+        picks: z.array(answerItemRef.extend({
+          highlight: z.string().optional().describe(
+            "這件跟同列其他件的差異，≤ 6 字，只能根據搜尋結果的屬性或衣櫃 tags（例：復古刷色、麻料透氣）",
           ),
-        }),
-      ).optional().describe("type=recommendation 時這一列的單品，依顯示順序"),
-    }),
+        })).describe("這一列可互換的單品，依顯示順序"),
+      }),
+      z.object({
+        type: z.literal("outfits"),
+        outfits: z.array(z.object({
+          title: z.string().describe("套名，≤ 8 字，描述場合或風格（例：週末休閒）"),
+          reason: z.string().optional().describe("這套最關鍵的搭配依據，≤ 20 字，只引用確知的顏色與屬性"),
+          pieces: z.array(answerItemRef).describe(
+            "這套的 2–3 件，每個部位最多一件，依上身（或連身）→ 下身 → 外套排序",
+          ),
+        })).describe("這一列的整套穿搭，1–3 套"),
+      }),
+    ]),
   ),
 });
 

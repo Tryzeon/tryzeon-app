@@ -1,5 +1,6 @@
-import { assertEquals, assertStringIncludes } from "@std/assert";
-import { runSearchProducts, runSearchWardrobe } from "./tools.ts";
+import { assert, assertEquals, assertStringIncludes } from "@std/assert";
+import { z } from "zod";
+import { answerSchema, runSearchProducts, runSearchWardrobe } from "./tools.ts";
 import type { DbClient } from "../supabase.ts";
 
 const CATEGORIES = new Map([["pants", "cat-pants"]]);
@@ -76,4 +77,30 @@ Deno.test("runSearchWardrobe applies no garment_type filter when none is given",
 
   assertEquals(eqCalls, [["user_id", "u1"]]);
   assertEquals(containsCalls, [["tags", ["寬鬆"]]]);
+});
+
+Deno.test("answerSchema emits its block union as anyOf, which Vertex constrains, never oneOf", () => {
+  const json = JSON.stringify(z.toJSONSchema(answerSchema));
+  assertStringIncludes(json, '"anyOf"');
+  assert(!json.includes('"oneOf"'));
+});
+
+Deno.test("answerSchema rejects a block missing the field its type requires", () => {
+  for (const block of [{ type: "text" }, { type: "picks" }, { type: "outfits" }]) {
+    assertEquals(answerSchema.safeParse({ blocks: [block] }).success, false, block.type);
+  }
+});
+
+Deno.test("answerSchema accepts each block type with its field", () => {
+  const parsed = answerSchema.safeParse({
+    blocks: [
+      { type: "text", text: "hi" },
+      { type: "picks", picks: [{ type: "product", id: "p1", highlight: "麻料" }] },
+      {
+        type: "outfits",
+        outfits: [{ title: "週末", pieces: [{ type: "product", id: "p1" }, { type: "wardrobe", id: "w1" }] }],
+      },
+    ],
+  });
+  assertEquals(parsed.success, true);
 });

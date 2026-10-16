@@ -27,8 +27,18 @@ Deno.test("buildChatContext grounds the system instruction in the styling guide"
   assertStringIncludes(systemInstruction, STYLING_GUIDE);
 });
 
-Deno.test("buildChatContext asks for rows of recommendations, not part labels", async () => {
+Deno.test("buildChatContext asks for rows of picks or of whole outfits, never part rows", async () => {
   const { systemInstruction } = await buildChatContext(client, "u1");
-  assertStringIncludes(systemInstruction, "每個 block 的 type 只能是 text 或 recommendation");
+  assertStringIncludes(systemInstruction, "每個 block 的 type 只能是 text、picks 或 outfits");
+  assertStringIncludes(systemInstruction, "每套 2–3 件");
+  assertStringIncludes(systemInstruction, "highlight");
+  assertEquals(systemInstruction.includes("recommendation"), false);
+  assertEquals(systemInstruction.includes("每個部位一個"), false);
   assertEquals(systemInstruction.includes("部位短標"), false);
+});
+
+Deno.test("buildChatContext points the styling rationale at an outfit's reason", async () => {
+  const { systemInstruction } = await buildChatContext(client, "u1");
+  assertStringIncludes(STYLING_GUIDE, "寫進該套的 reason");
+  assertStringIncludes(systemInstruction, "reason");
 });

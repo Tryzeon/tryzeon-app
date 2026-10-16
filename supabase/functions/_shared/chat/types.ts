@@ -17,9 +17,10 @@ export type ChatRole = "user" | "assistant";
 
 export type ItemRef = { type: "product" | "wardrobe"; id: string };
 
-export type AnswerRef =
-  | { type: "text"; text: string }
-  | { type: "recommendation"; items: ItemRef[] };
+export type PickRef = ItemRef & { highlight?: string };
+
+/** Rendered, and tried on, only whole: a look missing a piece is not the look the model put together. */
+export type OutfitRef = { title: string; reason?: string; pieces: ItemRef[] };
 
 export type ChatEvent =
   | { type: "tool_use"; id: string; name: string; input: unknown }
@@ -34,11 +35,11 @@ export interface ChatParams {
 export interface ChatResult {
   /**
    * Every message this run added to the conversation, in order, stored exactly
-   * as given: per agent step its calls then their results, and last the answer.
-   * The answer names recommended items by id only, one recommendation block per row.
+   * as given: per agent step its calls then their results, and last the answer,
+   * which is the model's output blocks verbatim.
    */
   messages: ChatMessage[];
-  /** What the answer's item ids render as; never stored, never sent back. */
+  /** The hydrated rows of every id the answer names; never stored, never sent back. */
   items: AnswerItems;
   usage: DailyUsage | null;
 }
@@ -85,7 +86,7 @@ export type AgentRunner = (req: AgentRequest) => Promise<AgentAnswer>;
 /**
  * Read-only and item-typed as `unknown`: an adapter hydrates whatever shape its
  * renderer needs (a db row for the app, a LINE card model for the webhook), and
- * the assembler only ever passes the item through to `AnswerItems`.
+ * `runChatAgent` only ever passes the item through to `AnswerItems`.
  */
 export interface AnswerRows {
   products: ReadonlyMap<string, unknown>;
@@ -101,5 +102,5 @@ export interface AnswerItems {
 export type AnswerHydrator = (
   client: DbClient,
   userId: string,
-  refs: AnswerRef[],
+  blocks: ContentBlock[],
 ) => Promise<AnswerRows>;
