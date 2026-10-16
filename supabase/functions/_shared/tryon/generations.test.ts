@@ -122,7 +122,10 @@ Deno.test("succeed stores null for a model the job never ran", async () => {
 
 Deno.test("fail stores the error message and completes the row", async () => {
   const admin = fakeAdmin();
-  await supabaseGenerationLog(admin.client).fail("g1", "image generation returned null");
+  await supabaseGenerationLog(admin.client).fail(
+    "g1",
+    "image generation returned null",
+  );
   const call = only(admin.calls);
   assertEquals(call.eq, ["id", "g1"]);
   assertEquals(call.payload?.status, "failed");

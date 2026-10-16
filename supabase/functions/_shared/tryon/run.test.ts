@@ -1,5 +1,5 @@
 import { assertEquals, assertRejects } from "@std/assert";
-import { type RunTryonJobDeps, runTryonJob } from "./run.ts";
+import { runTryonJob, type RunTryonJobDeps } from "./run.ts";
 import {
   GenerationFailedError,
   MissingAvatarError,
@@ -31,7 +31,8 @@ const USAGE: DailyUsage = {
 // through a port — so an empty object is an honest stand-in.
 const client = {} as unknown as DbClient;
 
-const storedAvatar: AvatarResolver = () => Promise.resolve({ base64: "AVATAR" });
+const storedAvatar: AvatarResolver = () =>
+  Promise.resolve({ base64: "AVATAR" });
 
 function runJob<M extends TryonMode>(
   params: TryonParams & { mode: M },
@@ -44,7 +45,10 @@ const ignoreTryons: TryonRecorder = () => Promise.resolve();
 
 const IMAGE_MODEL = "test-image-model";
 const VIDEO_MODEL = "test-video-model";
-const GENERATED: GeneratedImage = { base64: "GENERATEDB64", model: IMAGE_MODEL };
+const GENERATED: GeneratedImage = {
+  base64: "GENERATEDB64",
+  model: IMAGE_MODEL,
+};
 
 function video(bytes: Uint8Array): GeneratedVideo {
   return { bytes, model: VIDEO_MODEL };
@@ -54,7 +58,9 @@ function fakeRecorder(fail = false) {
   const calls: Array<[string, string[]]> = [];
   const record: TryonRecorder = (userId, productIds) => {
     calls.push([userId, productIds]);
-    return fail ? Promise.reject(new Error("analytics down")) : Promise.resolve();
+    return fail
+      ? Promise.reject(new Error("analytics down"))
+      : Promise.resolve();
   };
   return { record, calls };
 }
@@ -255,7 +261,8 @@ Deno.test("invalid params are rejected before quota is charged", async () => {
 Deno.test("quota rejection throws QuotaExceededError with usage", async () => {
   const quota = fakeQuota(false);
   const err = await assertRejects(
-    () => runJob(imageParams, {
+    () =>
+      runJob(imageParams, {
         quota: quota.factory,
         recordTryon: ignoreTryons,
         generations: ignoreGenerations,
