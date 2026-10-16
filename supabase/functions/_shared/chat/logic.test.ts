@@ -1,11 +1,10 @@
 import { assertEquals, assertStringIncludes } from "@std/assert";
 import {
-  assembleAnswer,
   mapSearchProductsArgs,
-  parseAnswerRefs,
-  recommendedItems,
+  outfitsOf,
   recordRounds,
   resolveCategoryFilter,
+  picksOf,
   SEARCH_LIMIT,
   TOOL_FAILURE_TEXT,
   toModelMessages,
@@ -18,10 +17,10 @@ import type { TextStreamPart, ToolSet } from "ai";
 
 const CATEGORIES = new Map([["tops", "cat-1"], ["dresses", "cat-2"]]);
 
-// Answer-block ids are row ids, so the fixtures are uuids: `parseAnswerRefs`
-// rejects anything else.
 const PRODUCT_ID = "f8f49d33-e34a-4121-a6b9-f654e0614971";
 const WARDROBE_ID = "0b2c3d4e-5f60-4718-8293-a4b5c6d7e8f9";
+const PRODUCT_ID_2 = "a1b2c3d4-e5f6-4789-8abc-def012345678";
+const PRODUCT_ID_3 = "b2c3d4e5-f6a7-4890-9bcd-ef0123456789";
 
 Deno.test("resolveCategoryFilter maps a known code to its id", () => {
   const r = resolveCategoryFilter("tops", CATEGORIES);
@@ -77,137 +76,84 @@ Deno.test("mapSearchProductsArgs takes the enum-backed filters from the validate
   assertEquals(p.p_channels, undefined);
 });
 
-const rec = (...items: { type: "product" | "wardrobe"; id: string }[]) => ({
-  type: "recommendation" as const,
-  items,
+type Ref = { type: "product" | "wardrobe"; id: string; highlight?: string };
+
+const picks = (...refs: Ref[]) => ({ type: "picks" as const, picks: refs });
+const outfit = (title: string, refs: Ref[], reason?: string) => ({
+  title,
+  ...(reason === undefined ? {} : { reason }),
+  pieces: refs,
+});
+const outfits = (...looks: ReturnType<typeof outfit>[]) => ({ type: "outfits" as const, outfits: looks });
+
+const p = (id: string, highlight?: string): Ref => ({
+  type: "product",
+  id,
+  ...(highlight === undefined ? {} : { highlight }),
+});
+const w = (id: string): Ref => ({ type: "wardrobe", id });
+
+Deno.test("picksOf reads a stored row without judging its ids", () => {
+  assertEquals(picksOf(picks(p("p1", "顯瘦"), w("w1"))), [p("p1", "顯瘦"), w("w1")]);
 });
 
-Deno.test("assembleAnswer keeps the model's rows and order, shipping each item once", () => {
-  const answer = assembleAnswer(
-    [
-      { type: "text", text: "這套清爽" },
-      rec({ type: "product", id: "p1" }, { type: "wardrobe", id: "w1" }),
-      rec({ type: "product", id: "p2" }),
-    ],
-    {
-      products: new Map([["p1", { id: "p1", name: "襯衫" }], ["p2", { id: "p2" }]]),
-      wardrobe: new Map([["w1", { id: "w1" }]]),
-    },
-  );
-  assertEquals(answer, {
-    content: [
-      { type: "text", text: "這套清爽" },
-      rec({ type: "product", id: "p1" }, { type: "wardrobe", id: "w1" }),
-      rec({ type: "product", id: "p2" }),
-    ],
-    items: {
-      products: { p1: { id: "p1", name: "襯衫" }, p2: { id: "p2" } },
-      wardrobe: { w1: { id: "w1" } },
-    },
-  });
-});
-
-Deno.test("assembleAnswer drops an item whose row is gone, and a row left empty", () => {
-  const answer = assembleAnswer(
-    [
-      rec({ type: "product", id: "deleted" }),
-      { type: "text", text: "還有這件" },
-      rec({ type: "product", id: "deleted" }, { type: "product", id: "p1" }),
-    ],
-    { products: new Map([["p1", { id: "p1" }]]), wardrobe: new Map() },
-  );
-  assertEquals(answer, {
-    content: [{ type: "text", text: "還有這件" }, rec({ type: "product", id: "p1" })],
-    items: { products: { p1: { id: "p1" } }, wardrobe: {} },
-  });
-});
-
-Deno.test("assembleAnswer keeps an item that two rows share", () => {
-  const answer = assembleAnswer(
-    [rec({ type: "product", id: "p1" }), rec({ type: "product", id: "p1" })],
-    { products: new Map([["p1", { id: "p1" }]]), wardrobe: new Map() },
-  );
-  assertEquals(answer.content, [rec({ type: "product", id: "p1" }), rec({ type: "product", id: "p1" })]);
-  assertEquals(answer.items, { products: { p1: { id: "p1" } }, wardrobe: {} });
-});
-
-Deno.test("parseAnswerRefs keeps ordered text and rows of labelled ids", () => {
-  const refs = parseAnswerRefs({
-    blocks: [
-      { type: "text", text: "這套清爽" },
-      { type: "recommendation", items: [{ type: "product", id: PRODUCT_ID }, { type: "wardrobe", id: WARDROBE_ID }] },
-    ],
-  });
-  assertEquals(refs, [
-    { type: "text", text: "這套清爽" },
-    rec({ type: "product", id: PRODUCT_ID }, { type: "wardrobe", id: WARDROBE_ID }),
-  ]);
-});
-
-Deno.test("parseAnswerRefs drops empty text, bad items and rows left empty", () => {
-  const refs = parseAnswerRefs({
-    blocks: [
-      { type: "text", text: "   " },
-      { type: "recommendation" },
-      { type: "recommendation", items: [] },
-      { type: "recommendation", items: [{ type: "product" }, { type: "hat", id: PRODUCT_ID }, "x"] },
-      { type: "recommendation", items: [{ type: "wardrobe", id: "" }, { type: "product", id: PRODUCT_ID }] },
-    ],
-  });
-  assertEquals(refs, [rec({ type: "product", id: PRODUCT_ID })]);
-});
-
-Deno.test("parseAnswerRefs drops ids that are not uuids", () => {
-  const refs = parseAnswerRefs({
-    blocks: [
-      {
-        type: "recommendation",
-        items: [
-          { type: "product", id: "f8f49d33-e34a-4121-a6b9-f654e061497" }, // one char short
-          { type: "wardrobe", id: "不是 uuid" },
-          { type: "product", id: PRODUCT_ID },
-        ],
-      },
-    ],
-  });
-  assertEquals(refs, [rec({ type: "product", id: PRODUCT_ID })]);
-});
-
-Deno.test("parseAnswerRefs keeps a repeated item once per row", () => {
-  const refs = parseAnswerRefs({
-    blocks: [
-      { type: "recommendation", items: [{ type: "product", id: PRODUCT_ID }, { type: "product", id: PRODUCT_ID }] },
-      { type: "recommendation", items: [{ type: "product", id: PRODUCT_ID }] },
-    ],
-  });
-  assertEquals(refs, [rec({ type: "product", id: PRODUCT_ID }), rec({ type: "product", id: PRODUCT_ID })]);
-});
-
-Deno.test("parseAnswerRefs ignores a stale single-item block", () => {
-  const refs = parseAnswerRefs({
-    blocks: [{ type: "text", text: "這件" }, { type: "product", id: PRODUCT_ID }],
-  });
-  assertEquals(refs, [{ type: "text", text: "這件" }]);
-});
-
-Deno.test("recommendedItems reads a stored row without judging its ids", () => {
+Deno.test("picksOf trims a highlight, omits a blank one and keeps the first of a repeated item", () => {
   assertEquals(
-    recommendedItems(rec({ type: "product", id: "p1" }, { type: "wardrobe", id: "w1" })),
-    [{ type: "product", id: "p1" }, { type: "wardrobe", id: "w1" }],
+    picksOf(picks(p("p1", "  顯瘦  "), p("p2", "   "), p("p1", "重複"), w("p1"))),
+    [p("p1", "顯瘦"), p("p2"), w("p1")],
   );
 });
 
-Deno.test("recommendedItems reads nothing from a malformed block", () => {
-  assertEquals(recommendedItems({ type: "text", text: "x" }), []);
-  assertEquals(recommendedItems({ type: "recommendation" }), []);
-  assertEquals(recommendedItems({ type: "recommendation", items: "p1" }), []);
+Deno.test("picksOf reads nothing from a malformed block", () => {
+  assertEquals(picksOf({ type: "text", text: "x" }), []);
+  assertEquals(picksOf({ type: "picks" }), []);
+  assertEquals(picksOf({ type: "picks", picks: "p1" }), []);
+  assertEquals(picksOf({ type: "picks", picks: [null, 3, { type: "product" }, { type: "hat", id: "h" }] }), []);
+});
+
+Deno.test("outfitsOf reads stored outfits and skips one it cannot read whole", () => {
   assertEquals(
-    recommendedItems({ type: "recommendation", items: [null, 3, { type: "product" }, { type: "hat", id: "h" }] }),
-    [],
+    outfitsOf({
+      type: "outfits",
+      outfits: [
+        outfit("週末休閒", [p("p1"), w("w1")], "白襯衫配深藍直筒"),
+        { title: "缺件", pieces: [{ type: "product", id: "p1" }, { type: "hat", id: "h" }] },
+        { title: "", pieces: [{ type: "product", id: "p1" }] },
+        null,
+      ],
+    }),
+    [outfit("週末休閒", [p("p1"), w("w1")], "白襯衫配深藍直筒")],
+  );
+  assertEquals(outfitsOf({ type: "picks", picks: [] }), []);
+});
+
+Deno.test("outfitsOf counts a repeated piece once, then keeps two or three pieces only", () => {
+  const look = (...pieces: Ref[]) => outfit("L", pieces);
+  const read = (...pieces: Ref[]) => outfitsOf(outfits(look(...pieces)));
+  assertEquals(read(p("p1")), []);
+  assertEquals(read(p("p1"), p("p1")), []);
+  assertEquals(read(p("p1"), p("p1"), w("w1")), [look(p("p1"), w("w1"))]);
+  assertEquals(read(p("p1"), p("p2"), p("p3")), [look(p("p1"), p("p2"), p("p3"))]);
+  assertEquals(read(p("p1"), p("p2"), p("p3"), p("p4")), []);
+});
+
+Deno.test("outfitsOf skips a blank title and omits a blank reason", () => {
+  assertEquals(
+    outfitsOf(outfits(
+      outfit("   ", [p("p1"), p("p2")], "好看"),
+      outfit("  週末  ", [p("p1"), p("p2")], "  "),
+      outfit("通勤", [p("p1"), p("p2")], "  理由  "),
+    )),
+    [outfit("週末", [p("p1"), p("p2")]), outfit("通勤", [p("p1"), p("p2")], "理由")],
   );
 });
 
 Deno.test("toModelMessages maps a paired tool_use/tool_result conversation to ModelMessages", () => {
+  const answer = [
+    { type: "text", text: "找到這幾件" },
+    picks(p("p1", "顯瘦"), w("w1")),
+    outfits(outfit("週末休閒", [p("p2"), w("w1")], "白襯衫配深藍直筒")),
+  ];
   const out = toModelMessages([
     { role: "user", content: [{ type: "text", text: "找裙子" }] },
     {
@@ -220,11 +166,7 @@ Deno.test("toModelMessages maps a paired tool_use/tool_result conversation to Mo
     },
     {
       role: "assistant",
-      content: [
-        { type: "text", text: "找到這幾件" },
-        rec({ type: "product", id: "p1" }, { type: "wardrobe", id: "w1" }),
-        rec({ type: "product", id: "p2" }),
-      ],
+      content: answer,
     },
   ]);
   assertEquals(out, [
@@ -244,16 +186,37 @@ Deno.test("toModelMessages maps a paired tool_use/tool_result conversation to Mo
     },
     {
       role: "assistant",
-      content: "找到這幾件\n（推薦：商品 id:p1、衣櫃單品 id:w1）\n（推薦：商品 id:p2）",
+      content: JSON.stringify({ blocks: answer }),
     },
   ]);
 });
 
-Deno.test("toModelMessages skips a stale single-item block", () => {
-  const out = toModelMessages([
-    { role: "assistant", content: [{ type: "text", text: "這件" }, { type: "product", id: "p1" }] },
+Deno.test("toModelMessages replays a final answer verbatim, highlight, reason and title included", () => {
+  const blocks = [
+    { type: "text", text: "這幾件" },
+    picks(p("not-a-uuid", "顯瘦")),
+    outfits(outfit("週末休閒", [p("p1"), w("w1")], "白襯衫配深藍直筒")),
+  ];
+  assertEquals(toModelMessages([{ role: "assistant", content: blocks }]), [
+    { role: "assistant", content: JSON.stringify({ blocks }) },
   ]);
-  assertEquals(out, [{ role: "assistant", content: "這件" }]);
+});
+
+Deno.test("toModelMessages keeps text beside tool calls as a text part", () => {
+  const out = toModelMessages([{
+    role: "assistant",
+    content: [
+      { type: "text", text: "我先找找" },
+      { type: "tool_use", id: "tu_0", name: "search_products", input: {} },
+    ],
+  }]);
+  assertEquals(out, [{
+    role: "assistant",
+    content: [
+      { type: "text", text: "我先找找" },
+      { type: "tool-call", toolCallId: "tu_0", toolName: "search_products", input: {} },
+    ],
+  }]);
 });
 
 Deno.test("toModelMessages replays a parallel step as one assistant message and one tool message", () => {
@@ -303,12 +266,13 @@ Deno.test("toModelMessages replays a parallel step as one assistant message and 
   ]);
 });
 
-Deno.test("toModelMessages drops blank text and empty turns", () => {
+Deno.test("toModelMessages drops a blank user turn and an empty assistant one", () => {
   const out = toModelMessages([
     { role: "user", content: [{ type: "text", text: "   " }] },
+    { role: "assistant", content: [] },
     { role: "assistant", content: [{ type: "text", text: "嗨" }] },
   ]);
-  assertEquals(out, [{ role: "assistant", content: "嗨" }]);
+  assertEquals(out, [{ role: "assistant", content: JSON.stringify({ blocks: [{ type: "text", text: "嗨" }] }) }]);
 });
 
 const SHOP_ROW = {

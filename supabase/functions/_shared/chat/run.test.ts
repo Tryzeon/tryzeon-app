@@ -25,8 +25,6 @@ const USAGE: DailyUsage = {
 
 const client = {} as unknown as DbClient;
 
-// Answer-block ids are row ids, so the fixtures are uuids: `parseAnswerRefs`
-// rejects anything else.
 const PRODUCT_ID = "f8f49d33-e34a-4121-a6b9-f654e0614971";
 const WARDROBE_ID = "0b2c3d4e-5f60-4718-8293-a4b5c6d7e8f9";
 
@@ -89,8 +87,8 @@ Deno.test("answers with item refs in the model's order and their rows alongside"
         blocks: [
           { type: "text", text: "上身" },
           {
-            type: "recommendation",
-            items: [{ type: "product", id: PRODUCT_ID }, { type: "wardrobe", id: WARDROBE_ID }],
+            type: "picks",
+            picks: [{ type: "product", id: PRODUCT_ID }, { type: "wardrobe", id: WARDROBE_ID }],
           },
         ],
       },
@@ -106,8 +104,8 @@ Deno.test("answers with item refs in the model's order and their rows alongside"
     content: [
       { type: "text", text: "上身" },
       {
-        type: "recommendation",
-        items: [{ type: "product", id: PRODUCT_ID }, { type: "wardrobe", id: WARDROBE_ID }],
+        type: "picks",
+        picks: [{ type: "product", id: PRODUCT_ID }, { type: "wardrobe", id: WARDROBE_ID }],
       },
     ],
   }]);
@@ -158,18 +156,119 @@ Deno.test("an unusable model output falls back to text and keeps quota spent", a
   assertEquals(quota.calls, ["charge"]);
 });
 
-Deno.test("an answer whose rows have all vanished falls back to text", async () => {
+Deno.test("stores the model's blocks verbatim, even ids with no row or no uuid", async () => {
+  const blocks = [
+    { type: "text", text: "  " },
+    {
+      type: "picks",
+      picks: [
+        { type: "product", id: PRODUCT_ID, highlight: "超過八個字的亮點說明文字" },
+        { type: "product", id: PRODUCT_ID },
+        { type: "wardrobe", id: "not-a-uuid" },
+      ],
+    },
+  ];
+  const result = await runChatAgent(client, params, {
+    quota: fakeQuota().factory,
+    loadContext: context,
+    runAgent: fakeAgent({ output: { blocks } }).runner,
+    hydrate: hydrator({}),
+  });
+
+  assertEquals(result.messages, [{ role: "assistant", content: blocks }]);
+  assertEquals(result.items, { products: {}, wardrobe: {} });
+});
+
+Deno.test("items holds every hydrated row", async () => {
+  const other = "a1b2c3d4-e5f6-4789-8abc-def012345678";
   const result = await runChatAgent(client, params, {
     quota: fakeQuota().factory,
     loadContext: context,
     runAgent: fakeAgent({
-      output: { blocks: [{ type: "recommendation", items: [{ type: "product", id: PRODUCT_ID }] }] },
+      output: { blocks: [{ type: "picks", picks: [{ type: "product", id: PRODUCT_ID }] }] },
+    }).runner,
+    hydrate: hydrator({ [PRODUCT_ID]: { id: PRODUCT_ID }, [other]: { id: other } }),
+  });
+
+  assertEquals(Object.keys(result.items.products).sort(), [PRODUCT_ID, other].sort());
+});
+
+Deno.test("empty blocks fall back to text without hydrating", async () => {
+  let hydrated = false;
+  const result = await runChatAgent(client, params, {
+    quota: fakeQuota().factory,
+    loadContext: context,
+    runAgent: fakeAgent({ output: { blocks: [] } }).runner,
+    hydrate: () => {
+      hydrated = true;
+      return Promise.resolve({ products: new Map(), wardrobe: new Map() });
+    },
+  });
+
+  assertEquals(result.messages[0].content.map((b) => b.type), ["text"]);
+  assertEquals(hydrated, false);
+});
+
+Deno.test("a non-object entry in blocks is dropped", async () => {
+  const result = await runChatAgent(client, params, {
+    quota: fakeQuota().factory,
+    loadContext: context,
+    runAgent: fakeAgent({
+      output: { blocks: [null, "x", 3, [1], { type: "text", text: "好" }] },
     }).runner,
     hydrate: hydrator({}),
   });
 
+  assertEquals(result.messages[0].content, [{ type: "text", text: "好" }]);
+});
+
+Deno.test("blocks that are all non-objects fall back to text", async () => {
+  const result = await runChatAgent(client, params, {
+    quota: fakeQuota().factory,
+    loadContext: context,
+    runAgent: fakeAgent({ output: { blocks: [null, "x"] } }).runner,
+    hydrate: hydrator({}),
+  });
+
   assertEquals(result.messages[0].content.map((b) => b.type), ["text"]);
-  assertEquals(result.items, { products: {}, wardrobe: {} });
+});
+
+const OUTFIT_BLOCK = {
+  type: "outfits",
+  outfits: [{
+    title: "週末休閒",
+    reason: "好搭",
+    pieces: [{ type: "product", id: PRODUCT_ID }, { type: "wardrobe", id: WARDROBE_ID }],
+  }],
+};
+
+Deno.test("answers with an outfits block as stored, and every piece's row alongside", async () => {
+  const result = await runChatAgent(client, params, {
+    quota: fakeQuota().factory,
+    loadContext: context,
+    runAgent: fakeAgent({ output: { blocks: [OUTFIT_BLOCK] } }).runner,
+    hydrate: hydrator(
+      { [PRODUCT_ID]: { id: PRODUCT_ID, name: "襯衫" } },
+      { [WARDROBE_ID]: { id: WARDROBE_ID } },
+    ),
+  });
+
+  assertEquals(result.messages, [{ role: "assistant", content: [OUTFIT_BLOCK] }]);
+  assertEquals(result.items, {
+    products: { [PRODUCT_ID]: { id: PRODUCT_ID, name: "襯衫" } },
+    wardrobe: { [WARDROBE_ID]: { id: WARDROBE_ID } },
+  });
+});
+
+Deno.test("an outfit with a missing row is stored whole", async () => {
+  const result = await runChatAgent(client, params, {
+    quota: fakeQuota().factory,
+    loadContext: context,
+    runAgent: fakeAgent({ output: { blocks: [OUTFIT_BLOCK] } }).runner,
+    hydrate: hydrator({ [PRODUCT_ID]: { id: PRODUCT_ID, name: "襯衫" } }),
+  });
+
+  assertEquals(result.messages, [{ role: "assistant", content: [OUTFIT_BLOCK] }]);
 });
 
 Deno.test("passes the loaded grounding through to the agent", async () => {
@@ -233,7 +332,7 @@ Deno.test("refunds when hydration fails — a lost row is not a graceful answer"
         quota: quota.factory,
         loadContext: context,
         runAgent: fakeAgent({
-          output: { blocks: [{ type: "recommendation", items: [{ type: "product", id: PRODUCT_ID }] }] },
+          output: { blocks: [{ type: "picks", picks: [{ type: "product", id: PRODUCT_ID }] }] },
         }).runner,
         hydrate: () => Promise.reject(new Error("db down")),
       }),

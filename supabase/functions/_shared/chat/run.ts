@@ -1,17 +1,19 @@
 import { QuotaExceededError } from "../quota.ts";
 import { buildChatContext } from "./context.ts";
 import { supabaseAnswerRows } from "./hydrate.ts";
-import { assembleAnswer, parseAnswerRefs } from "./logic.ts";
+import { asRecord } from "../validation.ts";
 import { validateChatParams } from "./validate.ts";
 import { runVertexAgent } from "./vertex.ts";
 import type {
   AgentRunner,
   AnswerHydrator,
+  AnswerItems,
   AnswerRows,
   ChatMessage,
   ChatParams,
   ChatQuotaFactory,
   ChatResult,
+  ContentBlock,
   ContextLoader,
 } from "./types.ts";
 import type { DbClient } from "../supabase.ts";
@@ -29,7 +31,11 @@ export interface RunChatAgentDeps {
 
 /**
  * Single chat entry point: validate -> quota -> ground -> agent loop ->
- * hydrate -> assemble.
+ * hydrate.
+ *
+ * The stored answer is the model's output blocks verbatim; hydration only
+ * builds the render rows for the ids they name, and what is renderable is each
+ * client's call.
  *
  * One client, and it is the caller's own: grounding, the tool searches and
  * hydration all go through it, so an adapter with a session (the app) has RLS
@@ -73,12 +79,17 @@ export async function runChatAgent(
       onEvent: turn.onEvent,
     });
 
-    const refs = output ? parseAnswerRefs(output) : [];
-    const rows = refs.length > 0 ? await hydrate(client, turn.userId, refs) : NO_ROWS;
-    const { content, items } = assembleAnswer(refs, rows);
-    const answer: ChatMessage = {
-      role: "assistant",
-      content: content.length > 0 ? content : [{ type: "text", text: FALLBACK_TEXT }],
+    const blocks: ContentBlock[] = Array.isArray(output?.blocks)
+      ? output.blocks.filter((entry: unknown) => asRecord(entry) !== null)
+      : [];
+    const content: ContentBlock[] = blocks.length > 0
+      ? blocks
+      : [{ type: "text", text: FALLBACK_TEXT }];
+    const rows = blocks.length > 0 ? await hydrate(client, turn.userId, content) : NO_ROWS;
+    const answer: ChatMessage = { role: "assistant", content };
+    const items: AnswerItems = {
+      products: Object.fromEntries(rows.products),
+      wardrobe: Object.fromEntries(rows.wardrobe),
     };
 
     return { messages: [...rounds, answer], items, usage };

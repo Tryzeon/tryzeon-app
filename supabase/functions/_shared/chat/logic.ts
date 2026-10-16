@@ -1,6 +1,6 @@
 // Pure helpers for the chat agent loop. No runtime SDK or network imports, so
 // they unit-test offline.
-import { isUuid, nonEmptyStr } from "../text.ts";
+import { nonEmptyStr } from "../text.ts";
 import { asRecord } from "../validation.ts";
 import {
   CHANNEL_VALUES,
@@ -10,6 +10,7 @@ import {
   SEASON_VALUES,
   THICKNESS_VALUES,
 } from "../vocabularies.ts";
+import { LIMITS as TRYON_LIMITS } from "../tryon/types.ts";
 import { LIMITS } from "./types.ts";
 import type {
   JSONValue,
@@ -21,16 +22,21 @@ import type {
 } from "ai";
 import type { Database } from "../database.types.ts";
 import type {
-  AnswerItems,
-  AnswerRef,
-  AnswerRows,
   ChatEvent,
   ChatMessage,
   ContentBlock,
   ItemRef,
+  OutfitRef,
+  PickRef,
 } from "./types.ts";
 
 export const SEARCH_LIMIT = 10;
+
+export const ANSWER_LIMITS = {
+  MIN_OUTFIT_PIECES: 2,
+  // An outfit is tried on whole, so it holds no more than one try-on can wear.
+  MAX_OUTFIT_PIECES: TRYON_LIMITS.MAX_GARMENTS,
+} as const;
 
 export const WARDROBE_SELECT = "id, image_path, garment_type, tags, created_at, updated_at";
 
@@ -287,26 +293,56 @@ export async function recordRounds(
   return rounds;
 }
 
-export function recommendedItems(block: ContentBlock): ItemRef[] {
-  if (block?.type !== "recommendation" || !Array.isArray(block.items)) return [];
-  const refs: ItemRef[] = [];
-  for (const entry of block.items) {
-    const item = asRecord(entry);
-    const type = item?.type;
-    const id = nonEmptyStr(item?.id);
-    if ((type === "product" || type === "wardrobe") && id !== null) refs.push({ type, id });
-  }
-  return refs;
+function readItemRef(entry: unknown): ItemRef | null {
+  const item = asRecord(entry);
+  const type = item?.type;
+  const id = nonEmptyStr(item?.id);
+  return (type === "product" || type === "wardrobe") && id !== null ? { type, id } : null;
 }
 
-const replayName = ({ type, id }: ItemRef): string =>
-  `${type === "product" ? "商品" : "衣櫃單品"} id:${id}`;
+const refKey = ({ type, id }: ItemRef): string => `${type}:${id}`;
+
+function dedupeRefs<T extends ItemRef>(refs: T[]): T[] {
+  const seen = new Set<string>();
+  return refs.filter((ref) => !seen.has(refKey(ref)) && seen.add(refKey(ref)));
+}
+
+export function picksOf(block: ContentBlock): PickRef[] {
+  if (block?.type !== "picks" || !Array.isArray(block.picks)) return [];
+  const picks: PickRef[] = [];
+  for (const entry of block.picks) {
+    const ref = readItemRef(entry);
+    if (ref === null) continue;
+    const highlight = nonEmptyStr(asRecord(entry)?.highlight);
+    picks.push(highlight === null ? ref : { ...ref, highlight });
+  }
+  return dedupeRefs(picks);
+}
+
+export function outfitsOf(block: ContentBlock): OutfitRef[] {
+  if (block?.type !== "outfits" || !Array.isArray(block.outfits)) return [];
+  const looks: OutfitRef[] = [];
+  for (const entry of block.outfits) {
+    const look = asRecord(entry);
+    const title = nonEmptyStr(look?.title);
+    const read = (Array.isArray(look?.pieces) ? look.pieces : []).map(readItemRef);
+    if (title === null || read.some((piece) => piece === null)) continue;
+    const pieces = dedupeRefs(read as ItemRef[]);
+    if (
+      pieces.length < ANSWER_LIMITS.MIN_OUTFIT_PIECES ||
+      pieces.length > ANSWER_LIMITS.MAX_OUTFIT_PIECES
+    ) continue;
+    const reason = nonEmptyStr(look?.reason);
+    looks.push({ title, ...(reason === null ? {} : { reason }), pieces });
+  }
+  return looks;
+}
 
 // The whole history is replayed verbatim and uncompressed: assistant tool_use →
 // a `tool-call` part, the paired user tool_result → a `tool` message with a
 // `tool-result` part (its tool name resolved from the tool_use id), text passes
-// through. A recommended row is named by its items' ids alone: their full data
-// is already replayed in the tool_result.
+// through. A final answer (an assistant message with no tool_use) is replayed as
+// the structured output the model produced, so it sees its own answer exactly.
 export function toModelMessages(messages: ChatMessage[]): ModelMessage[] {
   const nameOf = new Map<string, string>();
   for (const m of messages ?? []) {
@@ -344,19 +380,14 @@ export function toModelMessages(messages: ChatMessage[]): ModelMessage[] {
 
     // assistant
     const toolUses = blocks.filter((b) => b?.type === "tool_use" && b.name);
-    const lines: string[] = [];
-    for (const b of blocks) {
-      const t = b?.type === "text" ? nonEmptyStr(b.text) : null;
-      if (t) lines.push(t);
-      else if (b?.type === "recommendation") {
-        const named = recommendedItems(b).map(replayName);
-        if (named.length > 0) lines.push(`（推薦：${named.join("、")}）`);
-      }
-    }
-    const text = lines.join("\n").trim();
 
     if (toolUses.length) {
       const content: Array<TextPart | ToolCallPart> = [];
+      const text = blocks
+        .map((b) => (b?.type === "text" ? nonEmptyStr(b.text) : null))
+        .filter((t): t is string => t !== null)
+        .join("\n")
+        .trim();
       if (text) content.push({ type: "text", text });
       for (const b of toolUses) {
         content.push({
@@ -367,72 +398,9 @@ export function toModelMessages(messages: ChatMessage[]): ModelMessage[] {
         });
       }
       out.push({ role: "assistant", content });
-    } else if (text) {
-      out.push({ role: "assistant", content: text });
+    } else if (blocks.length > 0) {
+      out.push({ role: "assistant", content: JSON.stringify({ blocks }) });
     }
   }
   return out;
-}
-
-// The model groups its picks into rows (one recommendation per row) and labels
-// each item product = shop or wardrobe = wardrobe; the edge fetches each id from
-// the matching table. Empty text, bad items and rows left empty drop, and an
-// item repeated within its row is kept once.
-//
-// So does an item whose id is not a uuid. The model quotes ids back from tool
-// results and can misquote one — a dropped character is enough — and every id
-// here is spent as a uuid literal in the hydrator's `.in("id", ids)`, where
-// Postgres rejects the malformed one by failing the whole batch (22P02). That
-// would cost the caller the answer, valid ids and all, so the check belongs to
-// the parse: an id that cannot name a row is a bad item, and the parse drops those.
-export function parseAnswerRefs(args: Record<string, unknown>): AnswerRef[] {
-  const rawBlocks = Array.isArray(args?.blocks) ? args.blocks : [];
-  const refs: AnswerRef[] = [];
-  for (const raw of rawBlocks) {
-    const b = asRecord(raw);
-    if (b === null) continue;
-    if (b.type === "recommendation") {
-      const seen = new Set<string>();
-      const items = recommendedItems(b).filter(({ type, id }) => {
-        const key = `${type}:${id}`;
-        if (!isUuid(id) || seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-      if (items.length > 0) refs.push({ type: "recommendation", items });
-    } else if (b.type === "text") {
-      const text = nonEmptyStr(b.text);
-      if (text) refs.push({ type: "text", text });
-    }
-  }
-  return refs;
-}
-
-/**
- * The answer as it is stored — rows of item refs by id, in the model's order —
- * and the rows those ids render as. An item whose row is gone is dropped from
- * both, and a recommendation left with no items is dropped whole, so the model
- * is never told it recommended something the user did not see.
- */
-export function assembleAnswer(
-  refs: AnswerRef[],
-  rows: AnswerRows,
-): { content: ContentBlock[]; items: AnswerItems } {
-  const content: ContentBlock[] = [];
-  const items: AnswerItems = { products: {}, wardrobe: {} };
-  for (const ref of refs) {
-    if (ref.type === "text") {
-      content.push({ type: "text", text: ref.text });
-      continue;
-    }
-    const kept: ItemRef[] = [];
-    for (const item of ref.items) {
-      const row = (item.type === "product" ? rows.products : rows.wardrobe).get(item.id);
-      if (row === undefined) continue;
-      kept.push(item);
-      (item.type === "product" ? items.products : items.wardrobe)[item.id] = row;
-    }
-    if (kept.length > 0) content.push({ type: "recommendation", items: kept });
-  }
-  return { content, items };
 }

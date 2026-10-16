@@ -1,5 +1,6 @@
-import { PRODUCT_SELECT, WARDROBE_SELECT } from "./logic.ts";
-import type { AnswerHydrator, AnswerRef, ItemRef } from "./types.ts";
+import { isUuid } from "../text.ts";
+import { outfitsOf, picksOf, PRODUCT_SELECT, WARDROBE_SELECT } from "./logic.ts";
+import type { AnswerHydrator, ContentBlock, ItemRef } from "./types.ts";
 import type { DbClient } from "../supabase.ts";
 
 /**
@@ -30,10 +31,18 @@ export async function fetchRowsByIds<Row extends { id: string }, Block = Row>(
   return map;
 }
 
-export const idsOf = (refs: AnswerRef[], type: ItemRef["type"]): string[] => [
+const blockItems = (block: ContentBlock): ItemRef[] => [
+  ...picksOf(block),
+  ...outfitsOf(block).flatMap((look) => look.pieces),
+];
+
+// The model can misquote an id, and Postgres fails the whole `.in("id", …)`
+// batch (22P02) on a malformed uuid, so only uuid ids are queried.
+export const idsOf = (blocks: ContentBlock[], type: ItemRef["type"]): string[] => [
   ...new Set(
-    refs.flatMap((ref) => ref.type === "recommendation" ? ref.items : [])
-      .filter((item) => item.type === type)
+    blocks
+      .flatMap(blockItems)
+      .filter((item) => item.type === type && isUuid(item.id))
       .map((item) => item.id),
   ),
 ];
@@ -41,16 +50,16 @@ export const idsOf = (refs: AnswerRef[], type: ItemRef["type"]): string[] => [
 export const supabaseAnswerRows: AnswerHydrator = async (
   client: DbClient,
   userId: string,
-  refs: AnswerRef[],
+  blocks: ContentBlock[],
 ) => {
   const [products, wardrobe] = await Promise.all([
     fetchRowsByIds(
       client.from("products").select(PRODUCT_SELECT),
-      idsOf(refs, "product"),
+      idsOf(blocks, "product"),
     ),
     fetchRowsByIds(
       client.from("wardrobe_items").select(WARDROBE_SELECT).eq("user_id", userId),
-      idsOf(refs, "wardrobe"),
+      idsOf(blocks, "wardrobe"),
     ),
   ]);
   return { products, wardrobe };
