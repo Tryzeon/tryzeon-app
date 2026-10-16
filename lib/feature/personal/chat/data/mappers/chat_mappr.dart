@@ -1,8 +1,10 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
 import 'package:tryzeon/feature/personal/chat/data/dtos/chat_content_block_dto.dart';
+import 'package:tryzeon/feature/personal/chat/data/dtos/chat_item_ref_dto.dart';
 import 'package:tryzeon/feature/personal/chat/data/dtos/chat_items_dto.dart';
 import 'package:tryzeon/feature/personal/chat/data/dtos/chat_message_dto.dart';
-import 'package:tryzeon/feature/personal/chat/data/dtos/chat_recommended_item_dto.dart';
+import 'package:tryzeon/feature/personal/chat/data/dtos/chat_outfit_dto.dart';
+import 'package:tryzeon/feature/personal/chat/data/dtos/chat_pick_dto.dart';
 import 'package:tryzeon/feature/personal/chat/data/dtos/chat_stream_event_dto.dart';
 import 'package:tryzeon/feature/personal/chat/data/mappers/chat_mappr.auto_mappr.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_items.dart';
@@ -47,16 +49,17 @@ class ChatMapprHelper {
             toolUseId: toolUseId,
             content: content,
           ),
-        RecommendationBlock(:final items) => ChatContentBlockDto.recommendation(
-          items: [
-            for (final item in items)
-              switch (item) {
-                RecommendedProduct(:final id) => ChatRecommendedItemDto.product(
-                  id: id,
-                ),
-                RecommendedWardrobeItem(:final id) =>
-                  ChatRecommendedItemDto.wardrobe(id: id),
-              },
+        PicksBlock(:final picks) => ChatContentBlockDto.picks(
+          picks: [for (final pick in picks) _pickToDto(pick)],
+        ),
+        OutfitsBlock(:final outfits) => ChatContentBlockDto.outfits(
+          outfits: [
+            for (final outfit in outfits)
+              ChatOutfitDto(
+                title: outfit.title,
+                reason: outfit.reason,
+                pieces: [for (final piece in outfit.pieces) _refToDto(piece)],
+              ),
           ],
         ),
       },
@@ -70,21 +73,68 @@ class ChatMapprHelper {
           ContentBlock.toolUse(id: id, name: name, input: input),
         ChatToolResultBlockDto(:final toolUseId, :final content) =>
           ContentBlock.toolResult(toolUseId: toolUseId, content: content),
-        ChatRecommendationBlockDto(:final items) =>
-          ContentBlock.recommendation([
-            for (final item in items)
-              ?switch (item) {
-                ChatRecommendedProductDto(:final id) => RecommendedItem.product(
-                  id,
-                ),
-                ChatRecommendedWardrobeDto(:final id) =>
-                  RecommendedItem.wardrobe(id),
-                ChatRecommendedUnknownDto() => null,
-              },
-          ]),
+        ChatPicksBlockDto(:final picks) => ContentBlock.picks([
+          for (final pick in picks) ?_pickToEntity(pick),
+        ]),
+        ChatOutfitsBlockDto(:final outfits) => _outfitsToEntity(outfits),
         ChatUnknownBlockDto() => null,
       },
   ];
+
+  static ChatPickDto _pickToDto(final ChatPick pick) => switch (pick.ref) {
+    ProductItemRef(:final id) => ChatPickDto.product(
+      id: id,
+      highlight: pick.highlight,
+    ),
+    WardrobeItemRef(:final id) => ChatPickDto.wardrobe(
+      id: id,
+      highlight: pick.highlight,
+    ),
+  };
+
+  static ChatPick? _pickToEntity(final ChatPickDto pick) => switch (pick) {
+    ChatProductPickDto(:final id, :final highlight) => ChatPick(
+      ref: ItemRef.product(id),
+      highlight: _nonBlank(highlight),
+    ),
+    ChatWardrobePickDto(:final id, :final highlight) => ChatPick(
+      ref: ItemRef.wardrobe(id),
+      highlight: _nonBlank(highlight),
+    ),
+    ChatUnknownPickDto() => null,
+  };
+
+  static ChatItemRefDto _refToDto(final ItemRef ref) => switch (ref) {
+    ProductItemRef(:final id) => ChatItemRefDto.product(id: id),
+    WardrobeItemRef(:final id) => ChatItemRefDto.wardrobe(id: id),
+  };
+
+  static ItemRef? _refToEntity(final ChatItemRefDto ref) => switch (ref) {
+    ChatProductRefDto(:final id) => ItemRef.product(id),
+    ChatWardrobeRefDto(:final id) => ItemRef.wardrobe(id),
+    ChatUnknownRefDto() => null,
+  };
+
+  static String? _nonBlank(final String? value) {
+    final trimmed = value?.trim();
+    return trimmed == null || trimmed.isEmpty ? null : trimmed;
+  }
+
+  static ContentBlock? _outfitsToEntity(final List<ChatOutfitDto> outfits) {
+    final kept = [for (final outfit in outfits) ?_outfitToEntity(outfit)];
+    return kept.isEmpty ? null : ContentBlock.outfits(kept);
+  }
+
+  static ChatOutfit? _outfitToEntity(final ChatOutfitDto outfit) {
+    final pieces = [for (final piece in outfit.pieces) _refToEntity(piece)];
+    final title = _nonBlank(outfit.title);
+    if (title == null || pieces.isEmpty || pieces.contains(null)) return null;
+    return ChatOutfit(
+      title: title,
+      reason: _nonBlank(outfit.reason),
+      pieces: pieces.nonNulls.toList(),
+    );
+  }
 
   static Map<String, ShopProduct> productsToEntity(final ChatItemsDto source) =>
       source.products.map(

@@ -1,7 +1,8 @@
 // ignore_for_file: invalid_annotation_target
 
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:tryzeon/feature/personal/chat/data/dtos/chat_recommended_item_dto.dart';
+import 'package:tryzeon/feature/personal/chat/data/dtos/chat_outfit_dto.dart';
+import 'package:tryzeon/feature/personal/chat/data/dtos/chat_pick_dto.dart';
 
 part 'chat_content_block_dto.freezed.dart';
 part 'chat_content_block_dto.g.dart';
@@ -31,9 +32,14 @@ sealed class ChatContentBlockDto with _$ChatContentBlockDto {
   }) = ChatToolResultBlockDto;
 
   @JsonSerializable(checked: true, explicitToJson: true)
-  const factory ChatContentBlockDto.recommendation({
-    required final List<ChatRecommendedItemDto> items,
-  }) = ChatRecommendationBlockDto;
+  const factory ChatContentBlockDto.picks({
+    required final List<ChatPickDto> picks,
+  }) = ChatPicksBlockDto;
+
+  @JsonSerializable(checked: true, explicitToJson: true)
+  const factory ChatContentBlockDto.outfits({
+    required final List<ChatOutfitDto> outfits,
+  }) = ChatOutfitsBlockDto;
 
   const factory ChatContentBlockDto.unknown() = ChatUnknownBlockDto;
 

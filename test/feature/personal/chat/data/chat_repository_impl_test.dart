@@ -82,9 +82,9 @@ void main() {
       const ChatMessage(
         role: ChatRole.assistant,
         content: [
-          ContentBlock.recommendation([
-            RecommendedItem.wardrobe('w1'),
-            RecommendedItem.product('p1'),
+          ContentBlock.picks([
+            ChatPick(ref: ItemRef.wardrobe('w1')),
+            ChatPick(ref: ItemRef.product('p1'), highlight: '顯瘦'),
           ]),
         ],
       ),
@@ -123,10 +123,10 @@ void main() {
           'role': 'assistant',
           'content': [
             {
-              'type': 'recommendation',
-              'items': [
+              'type': 'picks',
+              'picks': [
                 {'type': 'wardrobe', 'id': 'w1'},
-                {'type': 'product', 'id': 'p1'},
+                {'type': 'product', 'id': 'p1', 'highlight': '顯瘦'},
               ],
             },
           ],
@@ -177,8 +177,8 @@ void main() {
             'content': [
               {'type': 'text', 'text': '這件很適合'},
               {
-                'type': 'recommendation',
-                'items': [
+                'type': 'picks',
+                'picks': [
                   {'type': 'wardrobe', 'id': 'w1'},
                   {'type': 'hat', 'id': 'h1'},
                 ],
@@ -226,7 +226,7 @@ void main() {
         role: ChatRole.assistant,
         content: [
           TextBlock('這件很適合'),
-          RecommendationBlock([RecommendedWardrobeItem('w1')]),
+          PicksBlock([ChatPick(ref: ItemRef.wardrobe('w1'))]),
         ],
       ),
     ]);
@@ -309,5 +309,202 @@ void main() {
 
       expect(events.single, const ChatStreamEvent.failed(ServerFailure()));
     });
+  });
+
+  test('sends an outfits block in its wire shape', () async {
+    final dataSource = _FakeChatRemoteDataSource(const []);
+
+    await ChatRepositoryImpl(remoteDataSource: dataSource).sendMessageStream([
+      const ChatMessage(
+        role: ChatRole.assistant,
+        content: [
+          ContentBlock.outfits([
+            ChatOutfit(
+              title: '週末休閒',
+              reason: '白襯衫配深藍直筒',
+              pieces: [
+                ItemRef.product('p1'),
+                ItemRef.wardrobe('w1'),
+              ],
+            ),
+            ChatOutfit(
+              title: '溫柔約會',
+              pieces: [
+                ItemRef.product('p2'),
+                ItemRef.product('p3'),
+              ],
+            ),
+          ]),
+        ],
+      ),
+    ]).drain<void>();
+
+    expect(dataSource.sentRequest!.toJson()['messages'], [
+      {
+        'role': 'assistant',
+        'content': [
+          {
+            'type': 'outfits',
+            'outfits': [
+              {
+                'title': '週末休閒',
+                'reason': '白襯衫配深藍直筒',
+                'pieces': [
+                  {'type': 'product', 'id': 'p1'},
+                  {'type': 'wardrobe', 'id': 'w1'},
+                ],
+              },
+              {
+                'title': '溫柔約會',
+                'pieces': [
+                  {'type': 'product', 'id': 'p2'},
+                  {'type': 'product', 'id': 'p3'},
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ]);
+  });
+
+  test('decodes outfits, dropping one that holds an unknown item', () async {
+    final events = await run([
+      {
+        'type': 'done',
+        'messages': [
+          {
+            'role': 'assistant',
+            'content': [
+              {
+                'type': 'outfits',
+                'outfits': [
+                  {
+                    'title': '週末休閒',
+                    'pieces': [
+                      {'type': 'product', 'id': 'p1'},
+                      {'type': 'wardrobe', 'id': 'w1'},
+                    ],
+                  },
+                  {
+                    'title': '帽子',
+                    'pieces': [
+                      {'type': 'product', 'id': 'p1'},
+                      {'type': 'hat', 'id': 'h1'},
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        'items': {
+          'products': <String, Object>{},
+          'wardrobe': <String, Object>{},
+        },
+        'usage': _usageJson,
+      },
+    ]);
+
+    final replied = events.single as ChatReplied;
+    expect(replied.messages.single.content, const [
+      ContentBlock.outfits([
+        ChatOutfit(
+          title: '週末休閒',
+          pieces: [
+            ItemRef.product('p1'),
+            ItemRef.wardrobe('w1'),
+          ],
+        ),
+      ]),
+    ]);
+  });
+
+  test('decodes the highlight of an item, and its absence', () async {
+    final events = await run([
+      {
+        'type': 'done',
+        'messages': [
+          {
+            'role': 'assistant',
+            'content': [
+              {
+                'type': 'picks',
+                'picks': [
+                  {'type': 'product', 'id': 'p1', 'highlight': '麻料透氣'},
+                  {'type': 'wardrobe', 'id': 'w1'},
+                ],
+              },
+            ],
+          },
+        ],
+        'items': {
+          'products': <String, Object>{},
+          'wardrobe': <String, Object>{},
+        },
+        'usage': _usageJson,
+      },
+    ]);
+
+    final replied = events.single as ChatReplied;
+    expect(replied.messages.single.content, const [
+      ContentBlock.picks([
+        ChatPick(ref: ItemRef.product('p1'), highlight: '麻料透氣'),
+        ChatPick(ref: ItemRef.wardrobe('w1')),
+      ]),
+    ]);
+  });
+
+  test('drops blank highlight, blank reason and blank-title outfits', () async {
+    final events = await run([
+      {
+        'type': 'done',
+        'messages': [
+          {
+            'role': 'assistant',
+            'content': [
+              {
+                'type': 'picks',
+                'picks': [
+                  {'type': 'product', 'id': 'p1', 'highlight': '  '},
+                ],
+              },
+              {
+                'type': 'outfits',
+                'outfits': [
+                  {
+                    'title': '週末休閒',
+                    'reason': '  ',
+                    'pieces': [
+                      {'type': 'product', 'id': 'p1'},
+                    ],
+                  },
+                  {
+                    'title': '  ',
+                    'reason': '空標題',
+                    'pieces': [
+                      {'type': 'product', 'id': 'p1'},
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        'items': {
+          'products': <String, Object>{},
+          'wardrobe': <String, Object>{},
+        },
+        'usage': _usageJson,
+      },
+    ]);
+
+    final replied = events.single as ChatReplied;
+    expect(replied.messages.single.content, const [
+      ContentBlock.picks([ChatPick(ref: ItemRef.product('p1'))]),
+      ContentBlock.outfits([
+        ChatOutfit(title: '週末休閒', pieces: [ItemRef.product('p1')]),
+      ]),
+    ]);
   });
 }
