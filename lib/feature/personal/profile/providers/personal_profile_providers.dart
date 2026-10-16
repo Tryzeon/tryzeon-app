@@ -1,8 +1,6 @@
 import 'dart:io';
 
-import 'package:flutter/services.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failure_from_error.dart';
@@ -85,10 +83,7 @@ UploadUserAvatar uploadUserAvatarUseCase(final Ref ref) {
 
 @riverpod
 PresetAvatarSource presetAvatarSource(final Ref ref) {
-  return PresetAvatarSourceImpl(
-    bundle: rootBundle,
-    temporaryDirectory: getTemporaryDirectory,
-  );
+  return PresetAvatarSourceImpl(ref.watch(imageFileCacheProvider));
 }
 
 @riverpod

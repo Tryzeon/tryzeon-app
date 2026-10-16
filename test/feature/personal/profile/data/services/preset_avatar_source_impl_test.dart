@@ -1,53 +1,60 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tryzeon/core/data/services/image_file_cache.dart';
+import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/utils/public_image_url.dart';
 import 'package:tryzeon/feature/personal/profile/data/services/preset_avatar_source_impl.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/preset_avatar.dart';
 import 'package:typed_result/typed_result.dart';
 
-class _MissingAssetBundle extends CachingAssetBundle {
+class _FakeImageFileCache implements ImageFileCache {
+  final List<(String, String?)> requests = [];
+  Object? error;
+
   @override
-  Future<ByteData> load(final String key) => throw FlutterError('missing $key');
+  Future<File?> getImage(
+    final String filePath, {
+    final String? downloadUrl,
+  }) async {
+    requests.add((filePath, downloadUrl));
+    if (error case final error?) throw error;
+    return File('cache/$filePath');
+  }
+
+  @override
+  dynamic noSuchMethod(final Invocation invocation) =>
+      throw UnimplementedError(invocation.memberName.toString());
 }
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
+  late _FakeImageFileCache imageFileCache;
+  late PresetAvatarSourceImpl source;
 
-  late Directory tempDir;
-
-  setUp(() async {
-    tempDir = await Directory.systemTemp.createTemp('preset_avatar_test');
-    addTearDown(() => tempDir.delete(recursive: true));
+  setUp(() {
+    imageFileCache = _FakeImageFileCache();
+    source = PresetAvatarSourceImpl(imageFileCache);
   });
 
   for (final preset in PresetAvatar.values) {
     test(
-      'writes the bundled ${preset.name} preset to an uploadable jpg',
+      'serves the ${preset.name} preset from the public images bucket',
       () async {
-        final source = PresetAvatarSourceImpl(
-          bundle: rootBundle,
-          temporaryDirectory: () async => tempDir,
-        );
+        final key = 'presets/${preset.name}.jpg';
 
         final file = (await source.fileFor(preset)).get()!;
 
-        final asset = await rootBundle.load(preset.assetPath);
-        expect(file.path, endsWith('.jpg'));
-        expect(await file.readAsBytes(), asset.buffer.asUint8List());
+        expect(file.path, 'cache/$key');
+        expect(imageFileCache.requests, [(key, PublicImageUrl.of(key))]);
       },
     );
   }
 
-  test('a missing asset is a failure, not a throw', () async {
-    final source = PresetAvatarSourceImpl(
-      bundle: _MissingAssetBundle(),
-      temporaryDirectory: () async => tempDir,
-    );
+  test('an unreachable preset image is a failure, not a throw', () async {
+    imageFileCache.error = const SocketException('offline');
 
     final result = await source.fileFor(PresetAvatar.female);
 
-    expect(result.isFailure, isTrue);
+    expect(result.getError(), const NetworkFailure());
   });
 }

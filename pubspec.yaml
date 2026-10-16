@@ -90,7 +90,6 @@ dependency_overrides:
 flutter:
   assets:
     - assets/images/onboarding/
-    - assets/images/tryon/
     - assets/images/logo/
     - assets/images/ads/
     - assets/images/size_guide/

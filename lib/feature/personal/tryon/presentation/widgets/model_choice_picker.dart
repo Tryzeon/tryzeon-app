@@ -1,9 +1,13 @@
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/preset_avatar.dart';
+import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
+
+const double _frameIconSize = 32;
 
 class ModelChoicePicker extends StatelessWidget {
   const ModelChoicePicker({
@@ -24,7 +28,7 @@ class ModelChoicePicker extends StatelessWidget {
     final tiles = [
       for (final preset in presets)
         ModelChoiceTile(
-          frame: _PresetFrame(image: AssetImage(preset.assetPath)),
+          frame: _PresetFrame(preset: preset),
           title: preset.label,
           caption: '立即開始試穿',
           onTap: () => onPresetSelected(preset),
@@ -108,16 +112,32 @@ class ModelChoiceTile extends StatelessWidget {
   }
 }
 
-class _PresetFrame extends StatelessWidget {
-  const _PresetFrame({required this.image});
+class _PresetFrame extends ConsumerWidget {
+  const _PresetFrame({required this.preset});
 
-  final ImageProvider image;
+  final PresetAvatar preset;
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final file = ref.watch(presetAvatarFileProvider(preset)).value;
+    final placeholder = Center(
+      child: Icon(
+        Icons.person_outline_rounded,
+        size: _frameIconSize,
+        color: colorScheme.onSurfaceVariant,
+      ),
+    );
+
     return Card(
       clipBehavior: Clip.antiAlias,
-      child: Image(image: image, fit: BoxFit.cover),
+      child: file == null
+          ? placeholder
+          : Image.file(
+              file,
+              fit: BoxFit.cover,
+              errorBuilder: (final _, final _, final _) => placeholder,
+            ),
     );
   }
 }
@@ -147,7 +167,7 @@ class _UploadFrame extends StatelessWidget {
           child: Center(
             child: Icon(
               Icons.add_a_photo_outlined,
-              size: 32,
+              size: _frameIconSize,
               color: colorScheme.onSurfaceVariant,
             ),
           ),
