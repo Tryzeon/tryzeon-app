@@ -253,12 +253,12 @@ class HomePage extends HookConsumerWidget {
 
             Positioned(
               left: AppSpacing.lg,
-              bottom: bottomOffset + AppSpacing.md + AppSpacing.smMd,
+              bottom: bottomOffset + AppSpacing.md,
               child: PageLinkedReveal(
                 controller: pageController,
                 interval: const Interval(0, 0.5),
                 showOnAvatarPage: true,
-                child: const PresetModelTag(),
+                child: PresetModelTag(onTap: replaceAvatar),
               ),
             ),
 
