@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
@@ -86,6 +87,7 @@ class StorePage extends HookConsumerWidget {
               },
               child: CustomScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
+                scrollCacheExtent: const ScrollCacheExtent.viewport(1),
                 slivers: [
                   SliverToBoxAdapter(
                     child: Column(

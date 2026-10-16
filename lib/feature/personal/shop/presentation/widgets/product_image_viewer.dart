@@ -30,6 +30,7 @@ class ProductImageViewer extends HookWidget {
           height: 400,
           child: PageView.builder(
             controller: pageController,
+            allowImplicitScrolling: true,
             onPageChanged: (final index) => currentPage.value = index,
             itemCount: imageUrls.length,
             itemBuilder: (final context, final index) {

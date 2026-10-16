@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
@@ -237,6 +238,7 @@ class ShopPage extends HookConsumerWidget {
             child: CustomScrollView(
               controller: scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
+              scrollCacheExtent: const ScrollCacheExtent.viewport(1),
               slivers: [
                 SliverToBoxAdapter(
                   child: Padding(
