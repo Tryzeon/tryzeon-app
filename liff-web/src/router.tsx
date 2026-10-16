@@ -19,7 +19,7 @@ const noop = () => {};
 
 function LiffGate() {
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
-  const [profile, setProfile] = useState<AvatarProfile>({ avatarPath: null, gender: null });
+  const [profile, setProfile] = useState<AvatarProfile>({ avatar: null, gender: null });
   const { pathname } = useLocation();
 
   useEffect(() => {
@@ -92,7 +92,7 @@ function LiffGate() {
   // both tabs must see the same one, and a trip through the shop and back must
   // leave the try-ons that were just made intact.
   return (
-    <AvatarProvider initialPath={profile.avatarPath} gender={profile.gender}>
+    <AvatarProvider initialAvatar={profile.avatar} gender={profile.gender}>
       <GalleryProvider>
         <Outlet />
       </GalleryProvider>

@@ -1,6 +1,15 @@
 import { currentUserId } from "../lib/auth";
-import { downscaleToBlob, JPEG_EXTENSION, JPEG_MIME } from "../lib/image";
+import { downscaleToBlob, JPEG_MIME } from "../lib/image";
+import type { PresetAvatarId } from "../lib/presetAvatars";
 import { supabase } from "../lib/supabase";
+import {
+  avatarColumns,
+  type AvatarStore,
+  avatarUploadPath,
+  commitAvatar,
+  parseStoredAvatar,
+  type StoredAvatar,
+} from "./avatar-wire";
 
 const AVATARS_BUCKET = "user-avatars";
 // Longer than the app's one hour: home stays mounted inside the tab shell, so
@@ -8,29 +17,25 @@ const AVATARS_BUCKET = "user-avatars";
 // until the next remount.
 const SIGNED_URL_TTL_SECONDS = 86400;
 
-/**
- * The first path segment is the userId — a requirement, not a convention: the
- * bucket policy demands `(storage.foldername(name))[1] = auth.uid()`, and
- * getting it wrong makes the upload fail. So the userId can only come from the
- * session.
- */
-export async function setAvatar(file: File): Promise<string> {
+export async function setPresetAvatar(id: PresetAvatarId): Promise<StoredAvatar> {
+  const next: StoredAvatar = { kind: "preset", id };
+  await commitAvatar(avatarStore(await currentUserId()), next);
+  return next;
+}
+
+export async function uploadAvatar(file: File): Promise<StoredAvatar> {
   const userId = await currentUserId();
   const blob = await downscaleToBlob(file);
-  const path = `${userId}/avatar/${Date.now()}.${JPEG_EXTENSION}`;
+  const path = avatarUploadPath(userId, Date.now());
 
-  const { error: uploadError } = await supabase.storage
+  const { error } = await supabase.storage
     .from(AVATARS_BUCKET)
     .upload(path, blob, { contentType: JPEG_MIME, upsert: true });
-  if (uploadError) throw uploadError;
+  if (error) throw error;
 
-  const { error: profileError } = await supabase
-    .from("user_profiles")
-    .update({ avatar_path: path })
-    .eq("user_id", userId);
-  if (profileError) throw profileError;
-
-  return path;
+  const next: StoredAvatar = { kind: "uploaded", path };
+  await commitAvatar(avatarStore(userId), next);
+  return next;
 }
 
 export async function avatarUrl(path: string): Promise<string> {
@@ -39,4 +44,41 @@ export async function avatarUrl(path: string): Promise<string> {
     .createSignedUrl(path, SIGNED_URL_TTL_SECONDS);
   if (error) throw error;
   return data.signedUrl;
+}
+
+function avatarStore(userId: string): AvatarStore {
+  return {
+    read: () => fetchStoredAvatar(userId),
+    write: (avatar) => writeAvatar(userId, avatar),
+    discard: discardUpload,
+  };
+}
+
+async function fetchStoredAvatar(userId: string): Promise<StoredAvatar | null> {
+  const { data, error } = await supabase
+    .from("user_profiles")
+    .select("avatar_path, avatar_preset")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) throw error;
+  return data === null ? null : parseStoredAvatar(data);
+}
+
+async function writeAvatar(userId: string, avatar: StoredAvatar): Promise<void> {
+  const { error } = await supabase
+    .from("user_profiles")
+    .update(avatarColumns(avatar))
+    .eq("user_id", userId);
+  if (error) throw error;
+}
+
+// A failed delete only orphans an object; the profile already points at the
+// right model, so the save must not be reported as failed.
+async function discardUpload(path: string): Promise<void> {
+  try {
+    const { error } = await supabase.storage.from(AVATARS_BUCKET).remove([path]);
+    if (error) throw error;
+  } catch (err) {
+    console.error(`[avatar] could not delete ${path}:`, err);
+  }
 }

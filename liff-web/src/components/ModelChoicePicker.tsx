@@ -1,4 +1,4 @@
-import type { PresetAvatar } from "../lib/presetAvatars";
+import { type PresetAvatar, presetAvatarUrl } from "../lib/presetAvatars";
 import { CameraPlusIcon } from "./icons";
 
 export const MODEL_CHOICE_HINT = "先用預設模特試穿，或上傳自己的全身照";
@@ -33,7 +33,7 @@ export function ModelChoicePicker({ presets, disabled, onPreset, onUpload }: Pro
           onClick={() => onPreset(preset)}
         >
           <span className="models__frame">
-            <img className="models__img" src={preset.url} alt={preset.label} />
+            <img className="models__img" src={presetAvatarUrl(preset.id)} alt={preset.label} />
           </span>
           <span className="models__title">{preset.label}</span>
           <span className="models__caption">立即開始試穿</span>

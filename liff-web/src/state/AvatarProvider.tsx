@@ -8,117 +8,113 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { avatarUrl, setAvatar } from "../api/avatar";
+import { avatarUrl, setPresetAvatar, uploadAvatar } from "../api/avatar";
+import type { StoredAvatar } from "../api/avatar-wire";
+import { type Gender, type PresetAvatar, presetsForGender } from "../lib/presetAvatars";
 import {
-  type Gender,
-  type PresetAvatar,
-  presetAvatarFile,
-  presetsForGender,
-} from "../lib/presetAvatars";
+  type AvatarPreview,
+  type AvatarStatus,
+  avatarStatus,
+  settleOnSave,
+  settleOnSigned,
+  shownUrl,
+  type SignedAvatar,
+} from "./avatar";
 
 interface AvatarValue {
-  /** While a replacement is in flight, the photo being uploaded — it shows
+  avatar: StoredAvatar | null;
+  /** While a replacement is in flight, the model being saved — it shows
    * before it is saved. */
   url: string | null;
   /** Not the same as [url] being ready — still true while the signature is
    * in flight. */
   hasAvatar: boolean;
-  status: "loading" | "ready" | "error";
+  status: AvatarStatus;
   busy: boolean;
   presets: readonly PresetAvatar[];
   replace(file: File): Promise<boolean>;
   applyPreset(preset: PresetAvatar): Promise<boolean>;
 }
 
-/** [forPath] is the path this photo was saved under, null until the upload
- * lands; only that path's signature may retire it, so a slower signature for
- * an earlier save cannot clear the preview of a later one. */
-interface Pending {
-  url: string;
-  forPath: string | null;
-}
-
 const AvatarContext = createContext<AvatarValue | null>(null);
 
 export function AvatarProvider(
-  { initialPath, gender, children }: {
-    initialPath: string | null;
+  { initialAvatar, gender, children }: {
+    initialAvatar: StoredAvatar | null;
     gender: Gender | null;
     children: ReactNode;
   },
 ) {
-  const [path, setPath] = useState(initialPath);
-  const [url, setUrl] = useState<string | null>(null);
-  const [pending, setPending] = useState<Pending | null>(null);
-  const pendingUrl = pending?.url ?? null;
-  const [status, setStatus] = useState<AvatarValue["status"]>(
-    initialPath === null ? "ready" : "loading",
-  );
+  const [avatar, setAvatar] = useState(initialAvatar);
+  const [signed, setSigned] = useState<SignedAvatar | null>(null);
+  const [preview, setPreview] = useState<AvatarPreview | null>(null);
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
 
+  const objectUrl = preview?.kind === "upload" ? preview.objectUrl : null;
   useEffect(() => {
-    if (pendingUrl === null) return;
-    return () => URL.revokeObjectURL(pendingUrl);
-  }, [pendingUrl]);
+    if (objectUrl === null) return;
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [objectUrl]);
 
+  const uploadedPath = avatar?.kind === "uploaded" ? avatar.path : null;
   useEffect(() => {
-    if (path === null) {
-      setUrl(null);
-      setStatus("ready");
-      return;
-    }
+    if (uploadedPath === null) return;
 
     let live = true;
-    const settle = (p: Pending | null) => (p?.forPath === path ? null : p);
-    // The previous photo's URL must not outlive its path: if this signature
-    // fails, showing it would pass the old photo off as the saved one.
-    setUrl(null);
-    setStatus("loading");
-    avatarUrl(path).then(
-      (signed) => {
-        if (!live) return;
-        setUrl(signed);
-        setPending(settle);
-        setStatus("ready");
-      },
-      () => {
-        if (!live) return;
-        setPending(settle);
-        setStatus("error");
-      },
-    );
+    const settle = (url: string | null) => {
+      if (!live) return;
+      setSigned({ path: uploadedPath, url });
+      setPreview((p) => settleOnSigned(p, uploadedPath));
+    };
+    avatarUrl(uploadedPath).then(settle, () => settle(null));
     return () => {
       live = false;
     };
-  }, [path]);
+  }, [uploadedPath]);
 
-  // Exclusive until the upload settles: a second pick mid-upload would race
-  // the first one for the profile's avatar_path.
-  const save = useCallback(async (prepare: () => Promise<File>): Promise<boolean> => {
-    if (busyRef.current) return false;
-    busyRef.current = true;
-    setBusy(true);
-    try {
-      const file = await prepare();
-      setPending({ url: URL.createObjectURL(file), forPath: null });
-      const saved = await setAvatar(file);
-      setPending((p) => p && { ...p, forPath: saved });
-      setPath(saved);
-      return true;
-    } catch (err) {
-      console.error("[avatar] replace failed:", err);
-      setPending(null);
-      return false;
-    } finally {
-      busyRef.current = false;
-      setBusy(false);
-    }
-  }, []);
+  // Exclusive until the write settles: a second pick mid-save would race the
+  // first one for the profile's avatar columns.
+  const save = useCallback(
+    async (
+      startPreview: () => AvatarPreview,
+      write: () => Promise<StoredAvatar>,
+    ): Promise<boolean> => {
+      if (busyRef.current) return false;
+      busyRef.current = true;
+      setBusy(true);
+      setPreview(startPreview());
+      try {
+        const saved = await write();
+        setAvatar(saved);
+        setPreview((p) => settleOnSave(p, saved));
+        return true;
+      } catch (err) {
+        console.error("[avatar] replace failed:", err);
+        setPreview(null);
+        return false;
+      } finally {
+        busyRef.current = false;
+        setBusy(false);
+      }
+    },
+    [],
+  );
 
-  const replace = useCallback((file: File) => save(async () => file), [save]);
+  const replace = useCallback(
+    (file: File) =>
+      save(
+        () => ({ kind: "upload", objectUrl: URL.createObjectURL(file), savedAs: null }),
+        () => uploadAvatar(file),
+      ),
+    [save],
+  );
   const applyPreset = useCallback(
-    (preset: PresetAvatar) => save(() => presetAvatarFile(preset)),
+    (preset: PresetAvatar) =>
+      save(
+        () => ({ kind: "preset", id: preset.id }),
+        () => setPresetAvatar(preset.id),
+      ),
     [save],
   );
 
@@ -126,15 +122,16 @@ export function AvatarProvider(
 
   const value = useMemo(
     () => ({
-      url: pendingUrl ?? url,
-      hasAvatar: path !== null,
-      status,
+      avatar,
+      url: shownUrl(preview, avatar, signed),
+      hasAvatar: avatar !== null,
+      status: avatarStatus(avatar, signed),
       busy,
       presets,
       replace,
       applyPreset,
     }),
-    [pendingUrl, url, path, status, busy, presets, replace, applyPreset],
+    [avatar, preview, signed, busy, presets, replace, applyPreset],
   );
 
   return <AvatarContext.Provider value={value}>{children}</AvatarContext.Provider>;
