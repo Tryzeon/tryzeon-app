@@ -171,7 +171,7 @@ void main() {
         remote,
       ).updateStoreProfile(original: originalProfile, target: originalProfile);
 
-      expect(result.isSuccess, isTrue);
+      expect(result.get(), originalProfile);
       expect(remote.updateCalls, 0);
     },
   );

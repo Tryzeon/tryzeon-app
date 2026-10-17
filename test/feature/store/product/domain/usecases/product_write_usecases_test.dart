@@ -177,7 +177,7 @@ void main() {
         ),
       );
 
-      expect(result.isSuccess, isTrue);
+      expect(result.get(), original);
       expect(imageStorage.uploadCalls, 0);
       expect(repository.appliedTarget, isNull);
     });
@@ -273,7 +273,7 @@ void main() {
         SetProductStatusParams(product: original, status: original.status),
       );
 
-      expect(result.isSuccess, isTrue);
+      expect(result.get(), original);
       expect(repository.appliedTarget, isNull);
     });
   });

@@ -41,9 +41,13 @@ class UpdateStoreProfile {
         .applyDraft(params.draft)
         .copyWith(latitude: located.latitude, longitude: located.longitude);
 
+    final logoFile = params.logoFile;
+    if (logoFile == null && target == original) {
+      return Ok((profile: original, addressUnresolved: false));
+    }
+
     String? uploadedLogoPath;
     String? replacedLogoPath;
-    final logoFile = params.logoFile;
     if (logoFile != null) {
       final current = await _repository.getStoreProfile(forceRefresh: true);
       if (current.isFailure) return Err(current.getError()!);

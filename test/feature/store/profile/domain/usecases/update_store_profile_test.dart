@@ -129,6 +129,22 @@ void main() {
     },
   );
 
+  test('an unchanged draft writes nothing and reports unchanged', () async {
+    final result = await updateStoreProfile(
+      UpdateStoreProfileParams(
+        original: original,
+        draft: const StoreProfileDraft(
+          name: '舊店名',
+          channels: {StoreChannel.physical},
+          address: '台北市信義區',
+        ),
+      ),
+    );
+
+    expect(result.get(), (profile: original, addressUnresolved: false));
+    expect(repository.savedTarget, isNull);
+  });
+
   test('deletes the old logo only after the new one is saved', () async {
     final result = await updateStoreProfile(
       UpdateStoreProfileParams(
