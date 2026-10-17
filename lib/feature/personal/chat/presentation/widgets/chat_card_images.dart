@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/core/presentation/widgets/glass_surface.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_card_style.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 
@@ -30,8 +30,8 @@ class ChatProductImage extends StatelessWidget {
   }
 }
 
-/// A wardrobe photo is a cutout, so it is set whole on its frame's surface
-/// rather than cropped to fill it the way a product photo is.
+/// A cutout keeps its original canvas, so `cover` frames it like the photo it
+/// was cut from, with the card's backdrop showing through the transparency.
 class ChatWardrobeImage extends ConsumerWidget {
   const ChatWardrobeImage({super.key, required this.imagePath});
 
@@ -43,10 +43,7 @@ class ChatWardrobeImage extends ConsumerWidget {
     return ref
         .watch(wardrobeItemImageProvider(imagePath))
         .when(
-          data: (final file) => Padding(
-            padding: const EdgeInsets.all(AppSpacing.smMd),
-            child: Image.file(file, fit: BoxFit.contain),
-          ),
+          data: (final file) => Image.file(file, fit: BoxFit.cover),
           loading: () => const SizedBox.shrink(),
           error: (final _, final _) => Icon(
             Icons.image_not_supported_outlined,
@@ -56,33 +53,44 @@ class ChatWardrobeImage extends ConsumerWidget {
   }
 }
 
-/// A label laid on a photo: the same frosted glass as the try-on pill, cut
-/// square so it reads as a tag rather than a control.
+/// A label laid on a photo. The stroke keeps the white pill visible on a white
+/// product shot or the cutout backdrop.
 class ChatImageTag extends StatelessWidget {
   const ChatImageTag(this.label, {super.key});
 
-  const ChatImageTag.wardrobe({super.key}) : label = '你的衣櫃';
+  const ChatImageTag.wardrobe({super.key}) : label = '衣櫃';
 
   final String label;
 
   @override
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
-    return GlassSurface(
-      borderRadius: AppRadius.tagAll,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xxs,
-      ),
-      child: Text(
-        label,
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: theme.colorScheme.onPrimary,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.4,
+    final colorScheme = theme.colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        border: Border.all(
+          color: colorScheme.onSurface.withValues(
+            alpha: ChatCardStyle.tagStrokeAlpha,
+          ),
+          width: AppStroke.thin,
         ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xxs,
+        ),
+        child: Text(
+          label,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: colorScheme.onSurface,
+            fontWeight: FontWeight.w600,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
     );
   }
@@ -107,25 +115,37 @@ class ChatImageTagSlot extends StatelessWidget {
   }
 }
 
-/// The line above a card's name saying where the piece comes from: a store, or
-/// the wardrobe. It leads in ink so the name below can step back to muted.
-class ChatSourceLine extends StatelessWidget {
-  const ChatSourceLine(this.text, {super.key});
+/// Words laid over a photo's foot on a gradient that deepens under them. The
+/// scrim never catches a tap, so a cell beneath it stays tappable.
+class ChatImageScrim extends StatelessWidget {
+  const ChatImageScrim({super.key, required this.child});
 
-  final String text;
+  final Widget child;
 
   @override
   Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-    return Text(
-      text,
-      style: theme.textTheme.bodySmall?.copyWith(
-        color: theme.colorScheme.onSurface,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 0.6,
-      ),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
+    final scrim = Theme.of(context).colorScheme.scrim;
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  stops: const [0, 0.5],
+                  colors: [
+                    scrim.withValues(alpha: 0),
+                    scrim.withValues(alpha: ChatCardStyle.scrimAlpha),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        child,
+      ],
     );
   }
 }

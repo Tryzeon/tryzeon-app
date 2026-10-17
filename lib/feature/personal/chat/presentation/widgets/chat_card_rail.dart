@@ -18,8 +18,8 @@ class ChatCardRail extends StatelessWidget {
   final bool animate;
   final Duration delay;
 
-  static const double itemWidth = 152;
-  static const double outfitWidth = 276;
+  static const double itemWidth = 172;
+  static const double outfitWidth = 290;
 
   @override
   Widget build(final BuildContext context) {
