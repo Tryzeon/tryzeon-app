@@ -104,18 +104,13 @@ function carouselMessage(items: LineCard[], liffUrl: string): object {
   };
 }
 
-function outfitsMessage(
-  outfits: LineOutfit[],
-  offset: number,
-  total: number,
-  liffUrl: string,
-): object {
+function outfitsMessage(outfits: LineOutfit[], liffUrl: string): object {
   return {
     type: "flex",
     altText: `為你搭了 ${outfits.length} 套穿搭`,
     contents: {
       type: "carousel",
-      contents: outfits.map((outfit, i) => outfitBubble(outfit, offset + i, total, liffUrl)),
+      contents: outfits.map((outfit) => outfitBubble(outfit, liffUrl)),
     },
   };
 }
@@ -133,9 +128,7 @@ function sectionMessages(section: Section, liffUrl: string): object[] {
     case "picks":
       return chunk(section.picks, MAX_BUBBLES).map((cards) => carouselMessage(cards, liffUrl));
     case "outfits":
-      return chunk(section.outfits, MAX_BUBBLES).map((looks, i) =>
-        outfitsMessage(looks, i * MAX_BUBBLES, section.outfits.length, liffUrl)
-      );
+      return chunk(section.outfits, MAX_BUBBLES).map((looks) => outfitsMessage(looks, liffUrl));
   }
 }
 

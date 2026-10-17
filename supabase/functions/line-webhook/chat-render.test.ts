@@ -400,7 +400,7 @@ Deno.test("an outfits row is one carousel, a bubble per look", () => {
   const carousel = out[1] as any;
   assertEquals(carousel.altText, "為你搭了 2 套穿搭");
   assertEquals(bubbles(carousel).length, 2);
-  assertEquals(bubbles(carousel)[1].hero.contents[1].contents[0].text, "LOOK 02 / 02");
+  assertEquals(bubbles(carousel)[1].body.contents[0].text, "溫柔約會");
 });
 
 Deno.test("a look missing a piece is left out, and a row of none draws no carousel", () => {
@@ -419,7 +419,7 @@ Deno.test("a look missing a piece is left out, and a row of none draws no carous
     LIFF,
   );
   assertEquals(bubbles(out[1]).length, 1);
-  assertEquals(bubbles(out[1])[0].hero.contents[1].contents[1].text, "完整");
+  assertEquals(bubbles(out[1])[0].body.contents[0].text, "完整");
 
   const none = renderAnswer(
     [
@@ -516,7 +516,7 @@ Deno.test("looks beyond one carousel's cap spill into the next, in order", () =>
   );
   assertEquals(out.length, 2);
   assertEquals([bubbles(out[0]).length, bubbles(out[1]).length], [12, 2]);
-  assertEquals(bubbles(out[1])[0].hero.contents[1].contents[0].text, "LOOK 13 / 14");
+  assertEquals(bubbles(out[1])[0].body.contents[0].text, "l12");
 });
 
 const NO_ITEMS_FIXTURE: AnswerItems = { products: {}, wardrobe: {} };
