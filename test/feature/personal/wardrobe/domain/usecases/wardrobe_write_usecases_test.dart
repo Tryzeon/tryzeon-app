@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/new_wardrobe_item.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/repositories/wardrobe_repository.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/services/wardrobe_image_storage.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/delete_wardrobe_item.dart';
@@ -14,19 +15,29 @@ import 'package:typed_result/typed_result.dart';
 import '../../../../../support/wardrobe_test_doubles.dart';
 
 class _FakeRepository implements WardrobeRepository {
-  Result<void, Failure> createResult = const Ok(null);
+  Result<WardrobeItem, Failure>? createResult;
   Result<void, Failure> deleteResult = const Ok(null);
   String? createdImagePath;
   String? createdId;
   final List<String> deletedIds = [];
 
   @override
-  Future<Result<void, Failure>> createWardrobeItem(
+  Future<Result<WardrobeItem, Failure>> createWardrobeItem(
     final NewWardrobeItem item,
   ) async {
     createdImagePath = item.imagePath;
     createdId = item.id;
-    return createResult;
+    return createResult ??
+        Ok(
+          WardrobeItem(
+            id: item.id,
+            imagePath: item.imagePath,
+            garmentType: item.garmentType,
+            createdAt: DateTime(2026),
+            updatedAt: DateTime(2026),
+            tags: item.tags,
+          ),
+        );
   }
 
   @override

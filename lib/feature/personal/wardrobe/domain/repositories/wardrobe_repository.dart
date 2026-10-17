@@ -11,7 +11,9 @@ abstract class WardrobeRepository {
     final bool forceRefresh = false,
   });
 
-  Future<Result<void, Failure>> createWardrobeItem(final NewWardrobeItem item);
+  Future<Result<WardrobeItem, Failure>> createWardrobeItem(
+    final NewWardrobeItem item,
+  );
 
   Future<Result<void, Failure>> deleteWardrobeItem(final String id);
 

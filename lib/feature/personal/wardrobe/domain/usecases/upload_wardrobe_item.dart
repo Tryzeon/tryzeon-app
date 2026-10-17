@@ -6,6 +6,7 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/new_wardrobe_item.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/repositories/wardrobe_repository.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/services/wardrobe_image_storage.dart';
 import 'package:typed_result/typed_result.dart';
@@ -34,7 +35,7 @@ class UploadWardrobeItem {
   final WardrobeImageStorage _imageStorage;
   static const _uuid = Uuid();
 
-  Future<Result<void, Failure>> call(
+  Future<Result<WardrobeItem, Failure>> call(
     final UploadWardrobeItemParams params,
   ) async {
     final id = _uuid.v4();
@@ -54,7 +55,7 @@ class UploadWardrobeItem {
         tags: params.tags,
       ),
     );
-    if (created.isSuccess) return const Ok(null);
+    if (created.isSuccess) return created;
 
     final deleted = await _imageStorage.delete(imagePath);
     if (deleted.isFailure) {
