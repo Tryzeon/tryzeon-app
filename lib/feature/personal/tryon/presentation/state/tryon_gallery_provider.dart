@@ -1,10 +1,13 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_subject.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
+import 'package:tryzeon/feature/personal/tryon/providers/tryon_providers.dart';
+import 'package:typed_result/typed_result.dart';
 
 part 'tryon_gallery_provider.freezed.dart';
 part 'tryon_gallery_provider.g.dart';
@@ -79,6 +82,12 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
         ..[index] = FinishedTryonEntry(result, entry.subject),
     );
     return true;
+  }
+
+  Future<Result<void, Failure>> report(final String id) async {
+    final result = await ref.read(reportTryonUseCaseProvider)(id);
+    if (result.isSuccess && ref.mounted) removeById(id);
+    return result;
   }
 
   bool removeById(final String id) {

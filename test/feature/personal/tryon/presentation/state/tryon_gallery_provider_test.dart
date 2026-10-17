@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
@@ -10,8 +11,12 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_subject.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_report_repository.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/usecases/report_tryon.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
+import 'package:tryzeon/feature/personal/tryon/providers/tryon_providers.dart';
+import 'package:typed_result/typed_result.dart';
 
 class _FakeUserProfileNotifier extends UserProfileNotifier {
   _FakeUserProfileNotifier(this._initial);
@@ -30,6 +35,18 @@ class _FakeUserProfileNotifier extends UserProfileNotifier {
 
   void replaceAvatar(final Avatar avatar) =>
       state = AsyncData(state.requireValue!.copyWith(avatar: avatar));
+}
+
+class _FakeReportRepository implements TryonReportRepository {
+  Failure? failure;
+  final reported = <String>[];
+
+  @override
+  Future<Result<void, Failure>> report(final String tryonId) async {
+    reported.add(tryonId);
+    if (failure case final failure?) return Err(failure);
+    return const Ok(null);
+  }
 }
 
 void main() {
@@ -149,4 +166,44 @@ void main() {
       expect(state.entries.single.id, 'a');
     });
   }
+
+  group('report', () {
+    late _FakeReportRepository reports;
+
+    TryonGalleryNotifier makeReportingNotifier() {
+      reports = _FakeReportRepository();
+      final container = ProviderContainer(
+        overrides: [
+          isAuthenticatedProvider.overrideWithValue(true),
+          reportTryonUseCaseProvider.overrideWithValue(
+            ReportTryon(reportRepository: reports),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      return container.read(tryonGalleryProvider.notifier)
+        ..addPending(id: 'a', subject: imageSubject)
+        ..complete(const TryonResult(id: 'a', mode: TryonMode.image));
+    }
+
+    test('removes the entry once the report is sent', () async {
+      final notifier = makeReportingNotifier();
+
+      final result = await notifier.report('a');
+
+      expect(result.isSuccess, isTrue);
+      expect(reports.reported, ['a']);
+      expect(notifier.state.entries, isEmpty);
+    });
+
+    test('keeps the entry when the report fails', () async {
+      final notifier = makeReportingNotifier();
+      reports.failure = const NetworkFailure();
+
+      final result = await notifier.report('a');
+
+      expect(result.getError(), isA<NetworkFailure>());
+      expect(notifier.state.entries.single.id, 'a');
+    });
+  });
 }

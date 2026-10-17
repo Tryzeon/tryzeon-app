@@ -101,13 +101,14 @@ class TryonGalleryActions extends ConsumerWidget {
       );
       if (choice != OkCancelResult.ok) return;
 
-      final outcome = await ref.read(reportTryonUseCaseProvider)(targetId);
+      final outcome = await ref
+          .read(tryonGalleryProvider.notifier)
+          .report(targetId);
       if (!context.mounted) return;
       if (outcome.isFailure) {
         TopNotification.show(context, message: '檢舉送出失敗，請稍後再試');
         return;
       }
-      ref.read(tryonGalleryProvider.notifier).removeById(targetId);
       AppSnackBar.show(context, message: '已收到此檢舉，謝謝您！');
     }
 
