@@ -5,8 +5,11 @@ import 'package:tryzeon/feature/personal/chat/presentation/state/chat_timeline.d
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_card_rail.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_entrance.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_markdown_text.dart';
+import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_outfit_card.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_pending_indicator.dart';
+import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_product_card.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_step_rail.dart';
+import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_wardrobe_card.dart';
 
 class ChatAssistantTurn extends HookWidget {
   const ChatAssistantTurn({
@@ -66,8 +69,34 @@ class ChatAssistantTurn extends HookWidget {
                     child: ChatMarkdownText(text: text),
                   ),
                 ),
-                ChatCardSegment(:final cards) => ChatCardRail(
-                  cards: cards,
+                ChatPicksSegment(:final picks) => ChatCardRail(
+                  cardWidth: ChatCardRail.itemWidth,
+                  cards: [
+                    for (final pick in picks)
+                      switch (pick.item) {
+                        ResolvedProduct(:final product) => ChatProductCard(
+                          product: product,
+                          highlight: pick.highlight,
+                        ),
+                        ResolvedWardrobeItem(item: final wardrobeItem) =>
+                          ChatWardrobeCard(
+                            item: wardrobeItem,
+                            highlight: pick.highlight,
+                          ),
+                      },
+                  ],
+                  padding: gutter,
+                  animate: index >= firstNewSegment,
+                  delay:
+                      AppDuration.quick *
+                      (index - firstNewSegment).clamp(0, index),
+                ),
+                ChatOutfitsSegment(:final outfits) => ChatCardRail(
+                  cardWidth: ChatCardRail.outfitWidth,
+                  cards: [
+                    for (final outfit in outfits)
+                      ChatOutfitCard(outfit: outfit),
+                  ],
                   padding: gutter,
                   animate: index >= firstNewSegment,
                   delay:

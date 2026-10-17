@@ -24,7 +24,9 @@ final _reply = ChatAssistantEntry(
   status: ChatTurnStatus.done,
   segments: [
     const ChatTextSegment('reply'),
-    ChatCardSegment([ChatRecommendation.product(_product)]),
+    ChatPicksSegment([
+      ResolvedPick(item: ResolvedItem.product(_product)),
+    ]),
   ],
 );
 

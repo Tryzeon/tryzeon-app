@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/feature/personal/chat/presentation/state/chat_timeline.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_entrance.dart';
-import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_product_card.dart';
-import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_wardrobe_card.dart';
 
 class ChatCardRail extends StatelessWidget {
   const ChatCardRail({
     super.key,
     required this.cards,
+    required this.cardWidth,
     required this.padding,
     required this.animate,
     this.delay = Duration.zero,
   });
 
-  final List<ChatRecommendation> cards;
+  final List<Widget> cards;
+  final double cardWidth;
   final EdgeInsets padding;
   final bool animate;
   final Duration delay;
 
-  static const double cardWidth = 150;
+  static const double itemWidth = 152;
+  static const double outfitWidth = 276;
 
   @override
   Widget build(final BuildContext context) {
@@ -36,16 +36,7 @@ class ChatCardRail extends StatelessWidget {
                 key: ValueKey(index),
                 animate: animate,
                 delay: delay + AppDuration.quick * index,
-                child: SizedBox(
-                  width: cardWidth,
-                  child: switch (card) {
-                    ChatProductRecommendation(:final product) =>
-                      ChatProductCard(product: product),
-                    ChatWardrobeRecommendation(:final item) => ChatWardrobeCard(
-                      item: item,
-                    ),
-                  },
-                ),
+                child: SizedBox(width: cardWidth, child: card),
               ),
             ],
           ],
