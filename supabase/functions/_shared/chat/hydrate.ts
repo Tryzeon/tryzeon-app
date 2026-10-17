@@ -47,6 +47,10 @@ export const idsOf = (blocks: ContentBlock[], type: ItemRef["type"]): string[] =
   ),
 ];
 
+/** An image-less product cannot be tried on, so no surface is handed one to offer. */
+export const hasProductImage = (row: { image_paths?: string[] | null }): boolean =>
+  typeof row.image_paths?.[0] === "string" && row.image_paths[0].length > 0;
+
 export const supabaseAnswerRows: AnswerHydrator = async (
   client: DbClient,
   userId: string,
@@ -56,6 +60,7 @@ export const supabaseAnswerRows: AnswerHydrator = async (
     fetchRowsByIds(
       client.from("products").select(PRODUCT_SELECT),
       idsOf(blocks, "product"),
+      (row) => (hasProductImage(row) ? row : null),
     ),
     fetchRowsByIds(
       client.from("wardrobe_items").select(WARDROBE_SELECT).eq("user_id", userId),

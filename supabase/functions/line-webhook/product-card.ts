@@ -1,4 +1,4 @@
-import { fetchRowsByIds } from "../_shared/chat/hydrate.ts";
+import { fetchRowsByIds, hasProductImage } from "../_shared/chat/hydrate.ts";
 import { publicImageUrl } from "../_shared/public-images.ts";
 import { CARD_COLOR, cornerTag, detailDot, overlayHero, pillButton } from "./card-kit.ts";
 import { productTryonPostbackData } from "./postback.ts";
@@ -29,8 +29,7 @@ export function toProductInfo(
   // deno-lint-ignore no-explicit-any
   row: Record<string, any>,
 ): ProductInfo | null {
-  const key = (row.image_paths as string[] | null)?.[0];
-  if (!key) return null;
+  if (!hasProductImage(row)) return null;
 
   const store = row.store_profiles as { name?: string } | null;
   return {
