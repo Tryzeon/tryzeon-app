@@ -5,6 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failure_from_error.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/presentation/state/apply_write.dart';
 import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
@@ -146,7 +147,7 @@ Future<Uint8List?> wardrobeImageWithoutBackground(
 /// (the outfit tray) must never carry one account's list into the next.
 @riverpod
 class WardrobeItemsNotifier extends _$WardrobeItemsNotifier
-    with PullToRefresh<List<WardrobeItem>> {
+    with PullToRefresh<List<WardrobeItem>>, ApplyWrite<List<WardrobeItem>> {
   @override
   Future<List<WardrobeItem>> build() async {
     if (ref.watch(currentUserIdProvider) == null) return const [];
@@ -162,6 +163,31 @@ class WardrobeItemsNotifier extends _$WardrobeItemsNotifier
   Future<Result<void, Failure>> refresh() => applyRefresh(
     () => ref.read(getWardrobeItemsUseCaseProvider)(forceRefresh: true),
   );
+
+  Future<Result<WardrobeItem, Failure>> uploadItem(
+    final UploadWardrobeItemParams params,
+  ) => applyWrite(
+    () => ref.read(uploadWardrobeItemUseCaseProvider)(params),
+    merge: (final items, final created) => [created, ...items],
+  );
+
+  Future<Result<WardrobeItem, Failure>> updateItem(
+    final UpdateWardrobeItemParams params,
+  ) => applyWrite(
+    () => ref.read(updateWardrobeItemUseCaseProvider)(params),
+    merge: (final items, final updated) => [
+      for (final item in items) item.id == updated.id ? updated : item,
+    ],
+  );
+
+  Future<Result<void, Failure>> deleteItem(final WardrobeItem target) =>
+      applyWrite(
+        () => ref.read(deleteWardrobeItemUseCaseProvider)(target),
+        merge: (final items, final _) => [
+          for (final item in items)
+            if (item.id != target.id) item,
+        ],
+      );
 }
 
 @riverpod
@@ -183,33 +209,32 @@ class WardrobeEditNotifier extends _$WardrobeEditNotifier {
   AsyncValue<void> build() => const AsyncData(null);
 
   Future<Result<void, Failure>> upload(final UploadWardrobeItemParams params) {
-    return _write(() => ref.read(uploadWardrobeItemUseCaseProvider)(params));
+    return _write(
+      () => ref.read(wardrobeItemsProvider.notifier).uploadItem(params),
+    );
   }
 
   Future<Result<void, Failure>> update(final UpdateWardrobeItemParams params) {
     return _write(
-      () async => ref
-          .read(updateWardrobeItemUseCaseProvider)(params)
-          .then((final result) => result.map((final _) {})),
+      () => ref.read(wardrobeItemsProvider.notifier).updateItem(params),
     );
   }
 
   Future<Result<void, Failure>> delete(final WardrobeItem item) {
-    return _write(() => ref.read(deleteWardrobeItemUseCaseProvider)(item));
+    return _write(
+      () => ref.read(wardrobeItemsProvider.notifier).deleteItem(item),
+    );
   }
 
   /// Kept alive for the duration, so a sheet popped mid-write doesn't dispose
   /// this notifier out from under the pending `state` write.
   Future<Result<void, Failure>> _write(
-    final Future<Result<void, Failure>> Function() write,
+    final Future<Result<Object?, Failure>> Function() write,
   ) async {
     final link = ref.keepAlive();
     state = const AsyncLoading();
     try {
-      final result = await write();
-      if (result.isSuccess) {
-        ref.invalidate(wardrobeItemsProvider);
-      }
+      final result = (await write()).map((final _) {});
       state = result.isFailure
           ? AsyncError(result.getError()!, StackTrace.current)
           : const AsyncData(null);
