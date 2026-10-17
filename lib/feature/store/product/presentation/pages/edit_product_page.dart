@@ -36,7 +36,7 @@ class EditProductPage extends ConsumerWidget {
             ? const Center(child: CircularProgressIndicator())
             : ErrorView(
                 message: productAsync.error.displayMessage(),
-                onRetry: () => ref.invalidate(productByIdProvider(productId)),
+                onRetry: () => ref.invalidate(productsProvider),
               ),
       );
     }

@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failure_from_error.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/presentation/state/apply_write.dart';
 import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
@@ -27,7 +28,6 @@ import 'package:tryzeon/feature/store/product/domain/services/size_voice_parser.
 import 'package:tryzeon/feature/store/product/domain/usecases/analyze_product_image.dart';
 import 'package:tryzeon/feature/store/product/domain/usecases/create_product.dart';
 import 'package:tryzeon/feature/store/product/domain/usecases/delete_product.dart';
-import 'package:tryzeon/feature/store/product/domain/usecases/get_product.dart';
 import 'package:tryzeon/feature/store/product/domain/usecases/list_products.dart';
 import 'package:tryzeon/feature/store/product/domain/usecases/parse_size_voice.dart';
 import 'package:tryzeon/feature/store/product/domain/usecases/set_product_status.dart';
@@ -104,11 +104,6 @@ DeleteProduct deleteProductUseCase(final Ref ref) {
   );
 }
 
-@riverpod
-GetProduct getProductUseCase(final Ref ref) {
-  return GetProduct(ref.watch(productRepositoryProvider));
-}
-
 @Riverpod(keepAlive: true)
 class ProductQuery extends _$ProductQuery {
   @override
@@ -129,7 +124,7 @@ class ProductQuery extends _$ProductQuery {
 
 @riverpod
 class ProductsNotifier extends _$ProductsNotifier
-    with PullToRefresh<List<Product>> {
+    with PullToRefresh<List<Product>>, ApplyWrite<List<Product>> {
   static const _missingProfile = UnknownFailure('Store profile not found');
 
   @override
@@ -170,6 +165,89 @@ class ProductsNotifier extends _$ProductsNotifier
       );
     });
   }
+
+  Future<Result<Product?, Failure>> createProduct({
+    required final ProductDraft draft,
+    required final List<File> images,
+    required final List<NewSizeItem> sizes,
+  }) => applyWrite(
+    () async {
+      final StoreProfile? storeProfile;
+      try {
+        storeProfile = await ref.read(storeProfileProvider.future);
+      } on Failure catch (e) {
+        return Err(e);
+      }
+      if (storeProfile == null) {
+        return const Err(AuthFailure('無法獲取店家資訊，請重新登入'));
+      }
+      return ref.read(createProductUseCaseProvider)(
+        CreateProductParams(
+          storeId: storeProfile.id,
+          draft: draft,
+          images: images,
+          sizes: sizes,
+        ),
+      );
+    },
+    merge: (final products, final created) =>
+        created == null ? null : [created, ...products],
+  );
+
+  /// The original the draft is diffed against is read here rather than taken
+  /// from the form, so a stale form can't clobber server-owned fields.
+  Future<Result<Product?, Failure>> updateProduct({
+    required final String productId,
+    required final ProductDraft draft,
+    required final List<ImageItem> images,
+    required final List<SizeItem> sizes,
+  }) => applyWrite(() async {
+    final List<Product> products;
+    try {
+      products = await future;
+    } on Failure catch (e) {
+      return Err(e);
+    }
+    final original = products.where((final p) => p.id == productId).firstOrNull;
+    if (original == null) return const Err(NotFoundFailure());
+    return ref.read(updateProductUseCaseProvider)(
+      UpdateProductParams(
+        original: original,
+        draft: draft,
+        images: images,
+        sizes: sizes,
+      ),
+    );
+  }, merge: _replace);
+
+  Future<Result<Product?, Failure>> setProductStatus({
+    required final Product product,
+    required final ProductStatus status,
+  }) => applyWrite(
+    () => ref.read(setProductStatusUseCaseProvider)(
+      SetProductStatusParams(product: product, status: status),
+    ),
+    merge: _replace,
+  );
+
+  Future<Result<void, Failure>> deleteProduct(final Product target) =>
+      applyWrite(
+        () => ref.read(deleteProductUseCaseProvider)(target),
+        merge: (final products, final _) => [
+          for (final product in products)
+            if (product.id != target.id) product,
+        ],
+      );
+
+  static List<Product>? _replace(
+    final List<Product> products,
+    final Product? updated,
+  ) => updated == null
+      ? null
+      : [
+          for (final product in products)
+            product.id == updated.id ? updated : product,
+        ];
 }
 
 @riverpod
@@ -198,14 +276,14 @@ Future<List<Product>> filteredProducts(final Ref ref) async {
 
 @riverpod
 Future<Product> productById(final Ref ref, final String productId) async {
-  final getProduct = ref.watch(getProductUseCaseProvider);
-  final result = await getProduct(productId);
-
-  if (result.isFailure) {
-    throw result.getError()!;
-  }
-
-  return result.get()!;
+  final product = await ref.watch(
+    productsProvider.selectAsync(
+      (final products) =>
+          products.where((final p) => p.id == productId).firstOrNull,
+    ),
+  );
+  if (product == null) throw const NotFoundFailure();
+  return product;
 }
 
 @riverpod
@@ -254,82 +332,49 @@ class ProductEditNotifier extends _$ProductEditNotifier {
     required final ProductDraft draft,
     required final List<File> images,
     required final List<NewSizeItem> sizes,
-  }) {
-    return _write(ProductMutation.create, () async {
-      final storeProfile = await ref.read(storeProfileProvider.future);
-      if (storeProfile == null) {
-        return const Err(AuthFailure('無法獲取店家資訊，請重新登入'));
-      }
-      return ref.read(createProductUseCaseProvider)(
-        CreateProductParams(
-          storeId: storeProfile.id,
-          draft: draft,
-          images: images,
-          sizes: sizes,
-        ),
-      );
-    });
-  }
+  }) => _write(
+    ProductMutation.create,
+    () => _products.createProduct(draft: draft, images: images, sizes: sizes),
+  );
 
-  /// The original the draft is diffed against is read here rather than taken
-  /// from the form, so a stale form can't clobber server-owned fields.
   Future<Result<void, Failure>> update({
     required final String productId,
     required final ProductDraft draft,
     required final List<ImageItem> images,
     required final List<SizeItem> sizes,
-  }) {
-    return _write(ProductMutation.update, () async {
-      final original = await ref.read(productByIdProvider(productId).future);
-      return ref.read(updateProductUseCaseProvider)(
-        UpdateProductParams(
-          original: original,
-          draft: draft,
-          images: images,
-          sizes: sizes,
-        ),
-      );
-    }, refreshedProductId: productId);
-  }
+  }) => _write(
+    ProductMutation.update,
+    () => _products.updateProduct(
+      productId: productId,
+      draft: draft,
+      images: images,
+      sizes: sizes,
+    ),
+  );
 
   Future<Result<void, Failure>> setStatus({
     required final Product product,
     required final ProductStatus status,
-  }) {
-    return _write(
-      ProductMutation.setStatus,
-      () => ref.read(setProductStatusUseCaseProvider)(
-        SetProductStatusParams(product: product, status: status),
-      ),
-      refreshedProductId: product.id,
-    );
-  }
+  }) => _write(
+    ProductMutation.setStatus,
+    () => _products.setProductStatus(product: product, status: status),
+  );
 
-  Future<Result<void, Failure>> delete(final Product product) {
-    return _write(
-      ProductMutation.delete,
-      () => ref.read(deleteProductUseCaseProvider)(product),
-    );
-  }
+  Future<Result<void, Failure>> delete(final Product product) =>
+      _write(ProductMutation.delete, () => _products.deleteProduct(product));
+
+  ProductsNotifier get _products => ref.read(productsProvider.notifier);
 
   /// Kept alive for the duration, so a form popped mid-write doesn't dispose
   /// this notifier out from under the pending `state` write.
   Future<Result<void, Failure>> _write(
     final ProductMutation mutation,
-    final Future<Result<void, Failure>> Function() write, {
-    final String? refreshedProductId,
-  }) async {
+    final Future<Result<Object?, Failure>> Function() write,
+  ) async {
     final link = ref.keepAlive();
     state = mutation;
     try {
-      final result = await write();
-      if (result.isSuccess) {
-        ref.invalidate(productsProvider);
-        if (refreshedProductId != null) {
-          ref.invalidate(productByIdProvider(refreshedProductId));
-        }
-      }
-      return result;
+      return (await write()).map((final _) {});
     } catch (e, stackTrace) {
       AppLogger.error('Product $mutation failed', e, stackTrace);
       return Err(failureFromError(e));
