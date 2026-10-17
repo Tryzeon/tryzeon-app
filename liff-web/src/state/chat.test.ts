@@ -24,6 +24,15 @@ const NO_ITEMS = { products: {}, wardrobe: {} };
 const answer = (content: WireMessage["content"]): WireMessage => ({ role: "assistant", content });
 
 describe("chat reducer", () => {
+  const WARDROBE_ROW = { id: "w1", image_path: "u1/top/w1.png", garment_type: "top", tags: ["白色", "", 3] };
+
+  function answered(
+    content: WireMessage["content"],
+    items: { products: Record<string, unknown>; wardrobe: Record<string, unknown> } = { products: { p1: PRODUCT }, wardrobe: { w1: WARDROBE_ROW } },
+  ) {
+    return reduce(sent(), { type: "event", event: { type: "done", messages: [answer(content)], items } });
+  }
+
   it("opens a turn with the user's message", () => {
     const s = sent();
     expect(s.turn).toEqual({ role: "user", content: [{ type: "text", text: "找襯衫" }] });
@@ -45,7 +54,7 @@ describe("chat reducer", () => {
       { role: "user", content: [{ type: "tool_result", tool_use_id: "t1", content: { items: [] } }] },
       {
         role: "assistant",
-        content: [{ type: "text", text: "推薦這件" }, { type: "recommendation", items: [{ type: "product", id: "p1" }] }],
+        content: [{ type: "text", text: "推薦這件" }, { type: "picks", picks: [{ type: "product", id: "p1" }] }],
       },
     ];
     let s = sent();
@@ -60,7 +69,7 @@ describe("chat reducer", () => {
     ]);
     expect(s.entries.slice(1)).toEqual([
       { kind: "text", text: "推薦這件" },
-      { kind: "row", cards: [{ kind: "product", item: buildCatalogItem(PRODUCT, "https://img") }] },
+      { kind: "picks", picks: [{ item: { kind: "product", item: buildCatalogItem(PRODUCT, "https://img") } }] },
     ]);
   });
 
@@ -88,7 +97,7 @@ describe("chat reducer", () => {
   });
 
   it("shows a recommended wardrobe item by its image and sends the row back by id", () => {
-    const row = { type: "recommendation", items: [{ type: "wardrobe", id: "w1" }] };
+    const row = { type: "picks", picks: [{ type: "wardrobe", id: "w1" }] };
     const s = reduce(sent(), {
       type: "event",
       event: {
@@ -97,7 +106,10 @@ describe("chat reducer", () => {
         items: { products: {}, wardrobe: { w1: { id: "w1", image_path: "u1/w1.jpg" } } },
       },
     });
-    expect(lastEntry(s)).toEqual({ kind: "row", cards: [{ kind: "wardrobe", imagePath: "u1/w1.jpg" }] });
+    expect(lastEntry(s)).toEqual({
+      kind: "picks",
+      picks: [{ item: { kind: "wardrobe", id: "w1", imagePath: "u1/w1.jpg", garmentType: null, tags: [] } }],
+    });
     expect(s.history[s.history.length - 1]).toEqual({ role: "assistant", content: [row] });
   });
 
@@ -107,13 +119,13 @@ describe("chat reducer", () => {
       event: {
         type: "done",
         messages: [answer([
-          { type: "recommendation", items: [{ type: "product", id: "p1" }] },
-          { type: "recommendation", items: [{ type: "product", id: "p2" }] },
+          { type: "picks", picks: [{ type: "product", id: "p1" }] },
+          { type: "picks", picks: [{ type: "product", id: "p2" }] },
         ])],
         items: { products: { p1: PRODUCT, p2: { ...PRODUCT, id: "p2" } }, wardrobe: {} },
       },
     });
-    expect(s.entries.slice(1).map((e) => e.kind)).toEqual(["row", "row"]);
+    expect(s.entries.slice(1).map((e) => e.kind)).toEqual(["picks", "picks"]);
   });
 
   it("drops items it has no data for, and draws no row left empty", () => {
@@ -123,17 +135,95 @@ describe("chat reducer", () => {
         type: "done",
         messages: [answer([
           { type: "text", text: "這些" },
-          { type: "recommendation", items: [{ type: "product", id: "gone" }, { type: "product", id: "p1" }] },
-          { type: "recommendation", items: [{ type: "wardrobe", id: "w-no-image" }, { type: "hat", id: "h1" }] },
-          { type: "recommendation", items: "p1" },
+          { type: "picks", picks: [{ type: "product", id: "gone" }, { type: "product", id: "p1" }] },
+          { type: "picks", picks: [{ type: "wardrobe", id: "w-no-image" }, { type: "hat", id: "h1" }] },
+          { type: "picks", picks: "p1" },
         ])],
         items: { products: { p1: PRODUCT }, wardrobe: { "w-no-image": { id: "w-no-image" } } },
       },
     });
     expect(s.entries.slice(1)).toEqual([
       { kind: "text", text: "這些" },
-      { kind: "row", cards: [{ kind: "product", item: buildCatalogItem(PRODUCT, "https://img") }] },
+      { kind: "picks", picks: [{ item: { kind: "product", item: buildCatalogItem(PRODUCT, "https://img") } }] },
     ]);
+  });
+
+  it("carries a highlight and a wardrobe item's type and tags onto the row's picks", () => {
+    const s = answered([
+      { type: "picks", picks: [{ type: "product", id: "p1", highlight: " 麻料透氣 " }, { type: "wardrobe", id: "w1" }] },
+    ]);
+    expect(lastEntry(s)).toEqual({
+      kind: "picks",
+      picks: [
+        { item: { kind: "product", item: buildCatalogItem(PRODUCT, "https://img") }, highlight: "麻料透氣" },
+        { item: { kind: "wardrobe", id: "w1", imagePath: "u1/top/w1.png", garmentType: "top", tags: ["白色"] } },
+      ],
+    });
+  });
+
+  it("turns an outfits block into one entry of whole looks", () => {
+    const s = answered([
+      {
+        type: "outfits",
+        outfits: [
+          { title: "週末休閒", reason: "白襯衫配深藍直筒", pieces: [{ type: "product", id: "p1" }, { type: "wardrobe", id: "w1" }] },
+          { title: "缺件", pieces: [{ type: "product", id: "p1" }, { type: "product", id: "gone" }] },
+          { title: "  ", pieces: [{ type: "product", id: "p1" }, { type: "wardrobe", id: "w1" }] },
+        ],
+      },
+    ]);
+    expect(lastEntry(s)).toEqual({
+      kind: "outfits",
+      outfits: [{
+        title: "週末休閒",
+        reason: "白襯衫配深藍直筒",
+        pieces: [
+          { kind: "product", item: buildCatalogItem(PRODUCT, "https://img") },
+          { kind: "wardrobe", id: "w1", imagePath: "u1/top/w1.png", garmentType: "top", tags: ["白色"] },
+        ],
+      }],
+    });
+  });
+
+  it("renders a duplicated pick once", () => {
+    const s = answered([
+      { type: "picks", picks: [{ type: "product", id: "p1", highlight: "先" }, { type: "product", id: "p1", highlight: "後" }] },
+    ]);
+    expect(lastEntry(s)).toEqual({
+      kind: "picks",
+      picks: [{ item: { kind: "product", item: buildCatalogItem(PRODUCT, "https://img") }, highlight: "先" }],
+    });
+  });
+
+  it("keeps only looks of two or three distinct pieces, counting a repeated piece once", () => {
+    const p1 = { type: "product", id: "p1" };
+    const w1 = { type: "wardrobe", id: "w1" };
+    const s = answered([
+      {
+        type: "outfits",
+        outfits: [
+          { title: "單件", pieces: [p1] },
+          { title: "重複一件", pieces: [p1, p1] },
+          { title: "四件", pieces: [p1, w1, { type: "product", id: "p2" }, { type: "product", id: "p3" }] },
+          { title: "重複三件", pieces: [p1, p1, w1] },
+        ],
+      },
+    ], {
+      products: { p1: PRODUCT, p2: { ...PRODUCT, id: "p2" }, p3: { ...PRODUCT, id: "p3" } },
+      wardrobe: { w1: WARDROBE_ROW },
+    });
+    const entry = lastEntry(s);
+    expect(entry.kind).toBe("outfits");
+    if (entry.kind !== "outfits") return;
+    expect(entry.outfits.map((o) => [o.title, o.pieces.length])).toEqual([["重複三件", 2]]);
+  });
+
+  it("draws no entry for an outfits block whose looks all lost a piece", () => {
+    const s = answered([
+      { type: "text", text: "這套" },
+      { type: "outfits", outfits: [{ title: "缺件", pieces: [{ type: "product", id: "gone" }, { type: "product", id: "p1" }] }] },
+    ]);
+    expect(s.entries.slice(1)).toEqual([{ kind: "text", text: "這套" }]);
   });
 });
 

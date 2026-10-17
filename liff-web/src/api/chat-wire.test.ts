@@ -18,7 +18,7 @@ describe("parseChatLine", () => {
           { type: "tool_result", tool_use_id: "t2", content: { items: [] } },
         ],
       },
-      { role: "assistant", content: [{ type: "text", text: "好" }, { type: "recommendation", items: [{ type: "product", id: "p1" }] }] },
+      { role: "assistant", content: [{ type: "text", text: "好" }, { type: "picks", picks: [{ type: "product", id: "p1" }] }] },
     ];
     const items = { products: { p1: { id: "p1", name: "襯衫" } }, wardrobe: {} };
     const line = JSON.stringify({ type: "done", messages, items, usage: null });

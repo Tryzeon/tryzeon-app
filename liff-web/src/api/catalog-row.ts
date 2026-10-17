@@ -3,9 +3,10 @@ import { publicImageUrl } from "../lib/publicImage";
 export interface CatalogItem {
   productId: string;
   name: string;
-  price: number | null;
+  price: number;
   storeName: string | null;
   imageUrls: string[];
+  garmentType: string | null;
   purchaseLink: string | null;
   description: string | null;
 }
@@ -29,14 +30,16 @@ export function buildCatalogItem(row: unknown, baseUrl: string): CatalogItem {
 
   const store = (r.store_profiles ?? null) as Record<string, unknown> | null;
   const link = r.purchase_link;
+  const garmentType = r.garment_type;
   const description = r.description;
 
   return {
     productId: String(r.id),
     name: typeof r.name === "string" ? r.name : "",
-    price: typeof r.price === "number" ? r.price : null,
+    price: Number(r.price),
     storeName: store && typeof store.name === "string" ? store.name : null,
     imageUrls: keys.map((k) => publicImageUrl(baseUrl, k)),
+    garmentType: typeof garmentType === "string" ? garmentType : null,
     purchaseLink: typeof link === "string" && link.length > 0 ? link : null,
     description:
       typeof description === "string" && description.trim().length > 0

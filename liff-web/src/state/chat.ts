@@ -8,14 +8,26 @@ import {
   type WireMessage,
 } from "../api/chat-wire";
 
-export type ChatCard =
+export type ResolvedItem =
   | { kind: "product"; item: CatalogItem }
-  | { kind: "wardrobe"; imagePath: string };
+  | { kind: "wardrobe"; id: string; imagePath: string; garmentType: string | null; tags: string[] };
+
+export interface ResolvedPick {
+  item: ResolvedItem;
+  highlight?: string;
+}
+
+export interface ResolvedOutfit {
+  title: string;
+  reason?: string;
+  pieces: ResolvedItem[];
+}
 
 export type ChatEntry =
   | { kind: "user"; text: string }
   | { kind: "text"; text: string }
-  | { kind: "row"; cards: ChatCard[] }
+  | { kind: "picks"; picks: ResolvedPick[] }
+  | { kind: "outfits"; outfits: ResolvedOutfit[] }
   | { kind: "notice"; text: string };
 
 /**
@@ -67,21 +79,78 @@ function fail(state: ChatState, code: string): ChatState {
 }
 
 export function createChatReducer(toItem: (row: unknown) => CatalogItem) {
-  function rowCards(block: WireBlock, items: WireItems): ChatCard[] {
-    const refs = Array.isArray(block.items) ? block.items.filter(isRecord) : [];
-    const cards: ChatCard[] = [];
-    for (const ref of refs) {
-      const id = String(ref.id);
-      if (ref.type === "product" && isRecord(items.products[id])) {
-        cards.push({ kind: "product", item: toItem(items.products[id]) });
-      } else if (ref.type === "wardrobe" && isRecord(items.wardrobe[id])) {
-        const imagePath = items.wardrobe[id].image_path;
-        if (typeof imagePath === "string" && imagePath.length > 0) {
-          cards.push({ kind: "wardrobe", imagePath });
-        }
-      }
+  const trimmed = (value: unknown): string | undefined =>
+    typeof value === "string" && value.trim().length > 0 ? value.trim() : undefined;
+
+  function resolveItem(ref: unknown, items: WireItems): ResolvedItem | null {
+    if (!isRecord(ref)) return null;
+    const id = String(ref.id);
+    if (ref.type === "product") {
+      const row = items.products[id];
+      if (!isRecord(row)) return null;
+      return { kind: "product", item: toItem(row) };
     }
-    return cards;
+    if (ref.type === "wardrobe") {
+      const row = items.wardrobe[id];
+      if (!isRecord(row)) return null;
+      const imagePath = row.image_path;
+      if (typeof imagePath !== "string" || imagePath.length === 0) return null;
+      return {
+        kind: "wardrobe",
+        id,
+        imagePath,
+        garmentType: typeof row.garment_type === "string" ? row.garment_type : null,
+        tags: Array.isArray(row.tags)
+          ? row.tags.filter((t): t is string => typeof t === "string" && t.length > 0)
+          : [],
+      };
+    }
+    return null;
+  }
+
+  const MIN_TRYON_GARMENTS = 2;
+  const MAX_TRYON_GARMENTS = 3;
+
+  function refKey(ref: unknown): string {
+    return isRecord(ref) ? `${String(ref.type)}:${String(ref.id)}` : "";
+  }
+
+  function firstPerRef<T>(refs: T[]): T[] {
+    const seen = new Set<string>();
+    return refs.filter((ref) => {
+      const key = refKey(ref);
+      if (key === "") return true;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  function resolvePicks(block: WireBlock, items: WireItems): ResolvedPick[] {
+    const picks: ResolvedPick[] = [];
+    for (const raw of firstPerRef(Array.isArray(block.picks) ? block.picks : [])) {
+      const item = resolveItem(raw, items);
+      if (item === null) continue;
+      const highlight = isRecord(raw) ? trimmed(raw.highlight) : undefined;
+      picks.push({ item, ...(highlight ? { highlight } : {}) });
+    }
+    return picks;
+  }
+
+  /** A look missing a piece is not the look that was put together, so it is left out whole. */
+  function resolveOutfits(block: WireBlock, items: WireItems): ResolvedOutfit[] {
+    const looks: ResolvedOutfit[] = [];
+    for (const raw of Array.isArray(block.outfits) ? block.outfits : []) {
+      if (!isRecord(raw)) continue;
+      const title = trimmed(raw.title);
+      const refs = firstPerRef(Array.isArray(raw.pieces) ? raw.pieces : []);
+      if (refs.length < MIN_TRYON_GARMENTS || refs.length > MAX_TRYON_GARMENTS) continue;
+      const pieces = refs.map((ref) => resolveItem(ref, items));
+      if (!title || pieces.some((piece) => piece === null)) continue;
+      const reason = trimmed(raw.reason);
+      looks.push({ title, ...(reason ? { reason } : {}), pieces: pieces as ResolvedItem[] });
+    }
+    return looks;
   }
 
   function answerEntries(answer: WireMessage | undefined, items: WireItems): ChatEntry[] {
@@ -89,9 +158,12 @@ export function createChatReducer(toItem: (row: unknown) => CatalogItem) {
     for (const block of answer?.content ?? []) {
       if (block.type === "text" && typeof block.text === "string" && block.text.trim().length > 0) {
         entries.push({ kind: "text", text: block.text });
-      } else if (block.type === "recommendation") {
-        const cards = rowCards(block, items);
-        if (cards.length > 0) entries.push({ kind: "row", cards });
+      } else if (block.type === "picks") {
+        const picks = resolvePicks(block, items);
+        if (picks.length > 0) entries.push({ kind: "picks", picks });
+      } else if (block.type === "outfits") {
+        const outfits = resolveOutfits(block, items);
+        if (outfits.length > 0) entries.push({ kind: "outfits", outfits });
       }
     }
     return entries.length > 0 ? entries : [{ kind: "notice", text: EMPTY_ANSWER_TEXT }];

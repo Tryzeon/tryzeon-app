@@ -8,6 +8,7 @@ const row = {
   name: "Linen Shirt",
   price: 1280,
   image_paths: ["stores/a/1.jpg", "stores/a/2.jpg"],
+  garment_type: "top",
   purchase_link: "https://shop.test/p/1",
   store_profiles: { id: "s1", name: "Island Select" },
 };
@@ -27,6 +28,11 @@ describe("buildCatalogItem", () => {
     expect(item.price).toBe(1280);
     expect(item.storeName).toBe("Island Select");
     expect(item.purchaseLink).toBe("https://shop.test/p/1");
+  });
+
+  it("carries the garment type, null when the row has none", () => {
+    expect(buildCatalogItem(row, BASE).garmentType).toBe("top");
+    expect(buildCatalogItem({ ...row, garment_type: undefined }, BASE).garmentType).toBeNull();
   });
 
   it("normalizes a blank purchase link to null", () => {
