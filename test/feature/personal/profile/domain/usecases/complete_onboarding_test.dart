@@ -1,22 +1,31 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
-import 'package:tryzeon/feature/personal/onboarding/domain/usecases/complete_onboarding.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile_update.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
+import 'package:tryzeon/feature/personal/profile/domain/usecases/complete_onboarding.dart';
 import 'package:typed_result/typed_result.dart';
+
+final _saved = UserProfile(
+  userId: 'u1',
+  name: 'n',
+  createdAt: DateTime(2026),
+  updatedAt: DateTime(2026),
+  isTutorialCompleted: true,
+);
 
 class _FakeRepository implements UserProfileRepository {
   UserProfileUpdate? saved;
 
   @override
-  Future<Result<void, Failure>> updateUserProfile(
+  Future<Result<UserProfile, Failure>> updateUserProfile(
     final UserProfileUpdate update,
   ) async {
     saved = update;
-    return const Ok(null);
+    return Ok(_saved);
   }
 
   @override

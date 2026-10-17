@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
 import 'package:tryzeon/feature/personal/profile/domain/services/avatar_storage.dart';
 import 'package:tryzeon/feature/personal/settings/domain/repositories/settings_repository.dart';
@@ -21,7 +22,7 @@ class UploadUserAvatar {
   final AvatarStorage _avatarStorage;
   final SettingsRepository _settingsRepository;
 
-  Future<Result<void, Failure>> call(final File avatarFile) async {
+  Future<Result<UserProfile, Failure>> call(final File avatarFile) async {
     final profile = await _repository.getUserProfile(forceRefresh: true);
     if (profile.isFailure) return Err(profile.getError()!);
     final previous = profile.get()!.avatar;
@@ -49,7 +50,7 @@ class UploadUserAvatar {
     ) when previousPath != path) {
       await _delete(previousPath);
     }
-    return const Ok(null);
+    return saved;
   }
 
   Future<void> _delete(final String path) async {

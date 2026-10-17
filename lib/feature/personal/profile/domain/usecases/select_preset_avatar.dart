@@ -2,6 +2,7 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/preset_avatar.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
 import 'package:tryzeon/feature/personal/profile/domain/services/avatar_storage.dart';
 import 'package:typed_result/typed_result.dart';
@@ -16,7 +17,7 @@ class SelectPresetAvatar {
   final UserProfileRepository _repository;
   final AvatarStorage _avatarStorage;
 
-  Future<Result<void, Failure>> call(final PresetAvatar preset) async {
+  Future<Result<UserProfile, Failure>> call(final PresetAvatar preset) async {
     final profile = await _repository.getUserProfile(forceRefresh: true);
     if (profile.isFailure) return Err(profile.getError()!);
     final previous = profile.get()!.avatar;
@@ -30,6 +31,6 @@ class SelectPresetAvatar {
         AppLogger.warning('Failed to delete avatar $path', deleted.getError());
       }
     }
-    return const Ok(null);
+    return saved;
   }
 }

@@ -13,9 +13,9 @@ abstract class UserProfileRepository {
 
   Future<Result<File, Failure>> getUserAvatar(final String path);
 
-  Future<Result<void, Failure>> updateUserProfile(
+  Future<Result<UserProfile, Failure>> updateUserProfile(
     final UserProfileUpdate update,
   );
 
-  Future<Result<void, Failure>> updateAvatar(final Avatar avatar);
+  Future<Result<UserProfile, Failure>> updateAvatar(final Avatar avatar);
 }

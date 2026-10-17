@@ -24,7 +24,7 @@ class _FakeRepository implements UserProfileRepository {
   Result<UserProfile, Failure> profileResult = Ok(
     _profile(const Avatar.uploaded('u1/avatar/old.jpg')),
   );
-  Result<void, Failure> updateResult = const Ok(null);
+  Result<UserProfile, Failure>? updateResult;
   final List<Avatar> saved = [];
 
   final List<bool> profileReads = [];
@@ -38,9 +38,9 @@ class _FakeRepository implements UserProfileRepository {
   }
 
   @override
-  Future<Result<void, Failure>> updateAvatar(final Avatar avatar) async {
+  Future<Result<UserProfile, Failure>> updateAvatar(final Avatar avatar) async {
     saved.add(avatar);
-    return updateResult;
+    return updateResult ?? Ok(_profile(avatar));
   }
 
   @override
