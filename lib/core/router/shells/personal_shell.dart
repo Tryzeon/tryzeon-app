@@ -11,7 +11,7 @@ import 'package:tryzeon/core/router/shells/native_tab_bar_anchors.dart';
 import 'package:tryzeon/core/router/shells/personal_tab.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
-import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
+import 'package:tryzeon/feature/common/settings/providers/settings_controller.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 import 'package:tryzeon/feature/personal/tutorial/presentation/widgets/tutorial_overlay.dart';
@@ -34,7 +34,9 @@ class PersonalShell extends HookConsumerWidget {
     final lastTabTapTime = useState<DateTime?>(null);
 
     Future<void> switchToStore() async {
-      await ref.read(setLastLoginTypeUseCaseProvider).call(UserType.store);
+      await ref
+          .read(settingsControllerProvider.notifier)
+          .switchTo(UserType.store);
       if (!context.mounted) return;
       context.go(AppRoutes.dashboardAccount);
     }

@@ -8,7 +8,7 @@ import 'package:tryzeon/core/presentation/widgets/bottom_nav_bar_inset.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
-import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
+import 'package:tryzeon/feature/common/settings/providers/settings_controller.dart';
 
 enum StoreTab {
   products(
@@ -47,7 +47,9 @@ class StoreShell extends HookConsumerWidget {
     final lastTabTapTime = useState<DateTime?>(null);
 
     Future<void> switchToPersonal() async {
-      await ref.read(setLastLoginTypeUseCaseProvider).call(UserType.personal);
+      await ref
+          .read(settingsControllerProvider.notifier)
+          .switchTo(UserType.personal);
       if (!context.mounted) return;
       context.go(AppRoutes.personalHome);
     }
