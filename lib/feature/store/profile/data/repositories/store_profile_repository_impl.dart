@@ -85,7 +85,7 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
   }
 
   @override
-  Future<Result<void, Failure>> updateStoreProfile({
+  Future<Result<StoreProfile, Failure>> updateStoreProfile({
     required final StoreProfile original,
     required final StoreProfile target,
   }) async {
@@ -95,7 +95,7 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
         _mappr.convert<StoreProfile, StoreProfileDto>(original).toJson(),
         _mappr.convert<StoreProfile, StoreProfileDto>(target).toJson(),
       );
-      if (changes.isEmpty) return const Ok(null);
+      if (changes.isEmpty) return Ok(original);
 
       updated = await _remoteDataSource.updateStoreProfile(changes);
     } catch (e, stackTrace) {
@@ -103,15 +103,14 @@ class StoreProfileRepositoryImpl implements StoreProfileRepository {
       return Err(mapExceptionToFailure(e));
     }
 
-    await _cacheUpdatedProfile(updated);
-    return const Ok(null);
+    final profile = _mappr.convert<StoreProfileDto, StoreProfile>(updated);
+    await _cacheUpdatedProfile(profile);
+    return Ok(profile);
   }
 
-  Future<void> _cacheUpdatedProfile(final StoreProfileDto updated) async {
+  Future<void> _cacheUpdatedProfile(final StoreProfile profile) async {
     try {
-      await _localDataSource.saveStoreProfile(
-        _mappr.convert<StoreProfileDto, StoreProfile>(updated),
-      );
+      await _localDataSource.saveStoreProfile(profile);
     } catch (e, stackTrace) {
       AppLogger.warning(
         'Failed to cache the updated store profile, invalidating cache',
