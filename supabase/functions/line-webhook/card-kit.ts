@@ -3,13 +3,13 @@ export const CARD_COLOR = {
   primary: "#1A1A1A",
   onPrimary: "#FFFFFF",
   muted: "#9E9E9E",
+  mutedText: "#6B6B6B",
   outline: "#E5E5E5",
   surface: "#FFFFFF",
   surfaceVariant: "#F7F7F7",
+  glass: "#1A1A1AB3",
+  glassStroke: "#FFFFFF59",
   onImage: "#FFFFFF",
-  onImageMuted: "#FFFFFFCC",
-  onImageFaint: "#FFFFFF99",
-  chip: "#FFFFFFF2",
   scrimStrong: "#000000D6",
   scrimMid: "#0000008C",
   scrimClear: "#00000000",
@@ -40,74 +40,88 @@ export function primaryButton(label: string, action: object): object {
   };
 }
 
-export function pillButton(label: string, action: object, size: "sm" | "md" = "sm"): object {
+/**
+ * The app's frosted try-on pill, as close as Flex gets without a blur: ink at 70%
+ * under a faint white stroke, so its white type holds 4.5:1 even over a white
+ * photo. The action sits on a transparent frame around it, so the tap area
+ * reaches 44px while the pill keeps its size. The label is `flex: 0`: in a
+ * horizontal box it would default to 1, and LINE for PC sizes an absolute box to
+ * its content, so a flexible label collapses to nothing.
+ */
+export function tryonChip(action: object): object {
   return {
     type: "box",
     layout: "vertical",
     action,
-    margin: "12px",
-    backgroundColor: CARD_COLOR.chip,
-    cornerRadius: "100px",
-    paddingAll: size === "md" ? "12px" : "10px",
+    position: "absolute",
+    offsetBottom: "0px",
+    offsetEnd: "0px",
+    paddingAll: "8px",
     contents: [{
-      type: "text",
-      text: label,
-      size,
-      weight: "bold",
-      color: CARD_COLOR.primary,
-      align: "center",
+      type: "box",
+      layout: "horizontal",
+      backgroundColor: CARD_COLOR.glass,
+      borderColor: CARD_COLOR.glassStroke,
+      borderWidth: "1px",
+      cornerRadius: "100px",
+      paddingTop: "6px",
+      paddingBottom: "6px",
+      paddingStart: "10px",
+      paddingEnd: "11px",
+      contents: [{ type: "text", text: "✦ 試穿", flex: 0, size: "xs", weight: "bold", color: CARD_COLOR.onPrimary }],
     }],
   };
 }
 
-export type TagTone = "light" | "dark";
-
-export function tag(label: string, tone: TagTone): object {
-  return {
-    type: "box",
-    layout: "vertical",
-    flex: 0,
-    backgroundColor: tone === "light" ? CARD_COLOR.chip : CARD_COLOR.primary,
-    cornerRadius: "100px",
-    paddingTop: "4px",
-    paddingBottom: "4px",
-    paddingStart: "9px",
-    paddingEnd: "9px",
-    contents: [{
-      type: "text",
-      text: label,
-      size: "xxs",
-      weight: "bold",
-      color: tone === "light" ? CARD_COLOR.primary : CARD_COLOR.onPrimary,
-    }],
-  };
+/** The line above a card's name saying where the piece comes from: a store, or the wardrobe. */
+export function sourceLine(text: string): object {
+  return { type: "text", text, size: "xxs", weight: "bold", color: CARD_COLOR.primary, maxLines: 1 };
 }
 
-export function cornerTag(label: string, tone: TagTone): object {
-  return { ...tag(label, tone), position: "absolute", offsetTop: "8px", offsetStart: "8px" };
+const MAX_TAG_CHARS = 8;
+
+/**
+ * A model-written label has only the prompt bounding its length. It is cut here
+ * rather than capped with `maxWidth`, which LINE for PC renders as a fixed-width
+ * box, stretching even a short tag across the photo.
+ */
+export function clampTagLabel(label: string): string {
+  const chars = Array.from(label);
+  return chars.length > MAX_TAG_CHARS ? `${chars.slice(0, MAX_TAG_CHARS - 1).join("")}…` : label;
 }
 
-/** A tappable photo looks like any other photo, so the ones that open a page say so. */
-export function detailDot(): object {
+/**
+ * A label laid on a photo's top-left corner: the try-on pill's glass, cut
+ * square so it reads as a tag rather than a control.
+ */
+export function cornerTag(label: string): object {
   return {
     type: "box",
     layout: "vertical",
     position: "absolute",
     offsetTop: "8px",
-    offsetEnd: "8px",
-    width: "22px",
-    height: "22px",
-    cornerRadius: "100px",
-    backgroundColor: CARD_COLOR.chip,
-    justifyContent: "center",
-    contents: [{ type: "text", text: "›", size: "sm", weight: "bold", color: CARD_COLOR.primary, align: "center" }],
+    offsetStart: "8px",
+    backgroundColor: CARD_COLOR.glass,
+    borderColor: CARD_COLOR.glassStroke,
+    borderWidth: "1px",
+    cornerRadius: "4px",
+    paddingTop: "2px",
+    paddingBottom: "2px",
+    paddingStart: "7px",
+    paddingEnd: "7px",
+    contents: [{
+      type: "text",
+      text: clampTagLabel(label),
+      size: "xxs",
+      weight: "bold",
+      color: CARD_COLOR.onPrimary,
+    }],
   };
 }
 
 export interface OverlayHeroOptions {
   media: object;
   overlay: object[];
-  badges?: object[];
   action?: object;
   paddingAll: string;
   paddingTop: string;
@@ -116,7 +130,7 @@ export interface OverlayHeroOptions {
 /**
  * Media with text laid over its bottom edge on a gradient, so light and busy
  * photos alike keep the type legible. The media leads because Flex refuses an
- * absolutely positioned first child; the badges follow for the same reason.
+ * absolutely positioned first child.
  */
 export function overlayHero(opts: OverlayHeroOptions): object {
   return {
@@ -145,7 +159,6 @@ export function overlayHero(opts: OverlayHeroOptions): object {
         },
         contents: opts.overlay,
       },
-      ...(opts.badges ?? []),
     ],
   };
 }

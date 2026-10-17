@@ -35,6 +35,7 @@ const someProduct: LineProduct = {
   name: "短版牛仔外套",
   price: 1280,
   imageUrl: "https://img.example/stores/s1/p1.jpg",
+  garmentType: "outerwear",
   storeName: "某店",
   purchaseUrl: null,
 };
@@ -73,6 +74,7 @@ Deno.test("a chat turn sees the try-on note the previous turn recorded", async (
       Promise.resolve({
         kind: "image",
         imageUrl: "https://img.example/result.jpg",
+        garmentType: "top",
         usage: null,
         // deno-lint-ignore no-explicit-any
       } as any),

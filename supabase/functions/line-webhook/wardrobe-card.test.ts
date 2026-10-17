@@ -9,9 +9,9 @@ import {
   toWardrobeItemInfo,
   type WardrobeCardRow,
   wardrobeInfoContents,
-  wardrobeOverlayContents,
+  wardrobeItemBubble,
 } from "./wardrobe-card.ts";
-import { CARD_COLOR } from "./card-kit.ts";
+import { CARD_COLOR, sourceLine } from "./card-kit.ts";
 import { GARMENT_TYPE_VALUES } from "../_shared/vocabularies.ts";
 import type { Enums } from "../_shared/database.types.ts";
 
@@ -28,6 +28,7 @@ const row = (over: Partial<WardrobeCardRow> = {}): WardrobeCardRow => ({
 const item = (over: Partial<LineWardrobeItem> = {}): LineWardrobeItem => ({
   id: "w1",
   imageUrl: URL,
+  garmentType: "top",
   garmentTypeLabel: "上衣",
   tags: ["寬鬆", "米色"],
   ...over,
@@ -37,6 +38,7 @@ Deno.test("toLineWardrobeItem maps the row onto the card's fields", () => {
   assertEquals(toLineWardrobeItem(row(), URL), {
     id: "w1",
     imageUrl: URL,
+    garmentType: "top",
     garmentTypeLabel: "上衣",
     tags: ["寬鬆", "米色"],
   });
@@ -83,8 +85,8 @@ Deno.test("toLineWardrobeItem tolerates a row with no tags", () => {
   assertEquals(toLineWardrobeItem(row({ tags: null }), URL)?.tags, []);
 });
 
-Deno.test("tagLine hashes each tag onto one line", () => {
-  assertEquals(tagLine(["寬鬆", "米色"]), "#寬鬆 #米色");
+Deno.test("tagLine joins the tags onto one dotted line", () => {
+  assertEquals(tagLine(["寬鬆", "米色"]), "寬鬆 · 米色");
   assertEquals(tagLine([]), "");
 });
 
@@ -107,43 +109,45 @@ Deno.test("garmentNoun turns the others bucket, and anything unmapped, into 單�
   assertEquals(garmentNoun("hats"), "單品");
 });
 
-Deno.test("the info block is garment type, tags and the wardrobe label", () => {
+Deno.test("the info block stands the wardrobe where a store would, then garment type and tags", () => {
   // deno-lint-ignore no-explicit-any
   const contents = wardrobeInfoContents(item()) as any[];
 
-  assertEquals(contents.length, 3);
-  assertEquals(contents[0].text, "上衣");
-  assertEquals(contents[0].color, CARD_COLOR.primary);
-  assertEquals(contents[1].text, "#寬鬆 #米色");
-  assertEquals(contents[1].color, CARD_COLOR.muted);
-  assertEquals(contents[2].text, "你的衣櫃");
-  assertEquals(contents[2].color, CARD_COLOR.muted);
+  assertEquals(contents.length, 2);
+  assertEquals(contents[0], sourceLine("你的衣櫃"));
+  assertEquals(contents[1].text, "上衣 · 寬鬆 · 米色");
+  assertEquals(contents[1].color, CARD_COLOR.mutedText);
 });
 
-Deno.test("an item with no tags shows two lines, not an empty middle one", () => {
+Deno.test("an item with no tags shows just its garment type under the wardrobe line", () => {
   // deno-lint-ignore no-explicit-any
   const contents = wardrobeInfoContents(item({ tags: [] })) as any[];
 
   assertEquals(contents.length, 2);
-  assertEquals(contents[0].text, "上衣");
-  assertEquals(contents[1].text, "你的衣櫃");
+  assertEquals(contents[1].text, "上衣");
 });
 
-Deno.test("the overlay is the tag line over the garment type, in light type", () => {
+Deno.test("an item bubble is a fit 3:4 cutout over its info block, with no tap target", () => {
   // deno-lint-ignore no-explicit-any
-  const contents = wardrobeOverlayContents(item()) as any[];
+  const bubble = wardrobeItemBubble(item(), undefined) as any;
 
-  assertEquals(contents.map((c) => c.text), [tagLine(item().tags), item().garmentTypeLabel]);
-  assertEquals(contents[0].color, CARD_COLOR.onImageMuted);
-  assertEquals(contents[1].color, CARD_COLOR.onImage);
-  assertEquals(contents[1].weight, "bold");
+  assertEquals(bubble.size, "kilo");
+  assertEquals("action" in bubble.hero, false);
+  assertEquals("action" in bubble.body, false);
+  assertEquals(bubble.hero.contents[0].aspectRatio, "3:4");
+  assertEquals(bubble.hero.contents[0].aspectMode, "fit");
+  assertEquals(bubble.hero.contents[0].backgroundColor, CARD_COLOR.surfaceVariant);
+  assertEquals(bubble.hero.contents.length, 2);
+  assertEquals(bubble.body.contents, wardrobeInfoContents(item()));
 });
 
-Deno.test("an overlay with no tags is the garment type alone", () => {
+Deno.test("an item bubble's try-on chip posts back the wardrobe item", () => {
   // deno-lint-ignore no-explicit-any
-  const contents = wardrobeOverlayContents(item({ tags: [] })) as any[];
+  const chip = (wardrobeItemBubble(item(), undefined) as any).hero.contents.at(-1);
 
-  assertEquals(contents.map((c) => c.text), [item().garmentTypeLabel]);
+  assertEquals(chip.position, "absolute");
+  assertEquals(chip.action.type, "postback");
+  assertEquals(chip.action.displayText, "試穿「你的上衣」");
 });
 
 function fakeAdmin(

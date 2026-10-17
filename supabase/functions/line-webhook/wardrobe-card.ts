@@ -1,7 +1,7 @@
 import { fetchRowsByIds } from "../_shared/chat/hydrate.ts";
 import { textArrayValues } from "../_shared/text.ts";
 import { ownsUserObjectPath, WARDROBE_IMAGES_BUCKET } from "../_shared/supabase-storage.ts";
-import { CARD_COLOR, cornerTag, overlayHero, pillButton } from "./card-kit.ts";
+import { CARD_COLOR, cornerTag, sourceLine, tryonChip } from "./card-kit.ts";
 import { wardrobeTryonPostbackData } from "./postback.ts";
 import type { Enums, Tables } from "../_shared/database.types.ts";
 import type { DbClient } from "../_shared/supabase.ts";
@@ -44,6 +44,7 @@ export interface WardrobeItemInfo {
 
 export interface LineWardrobeItem extends WardrobeItemInfo {
   imageUrl: string;
+  garmentType: Enums<"garment_type">;
 }
 
 export function toWardrobeItemInfo(row: WardrobeCardRow): WardrobeItemInfo {
@@ -59,11 +60,11 @@ export function toLineWardrobeItem(
   signedUrl: string | undefined,
 ): LineWardrobeItem | null {
   if (!signedUrl) return null;
-  return { ...toWardrobeItemInfo(row), imageUrl: signedUrl };
+  return { ...toWardrobeItemInfo(row), imageUrl: signedUrl, garmentType: row.garment_type };
 }
 
 export function tagLine(tags: string[]): string {
-  const line = tags.map((t) => `#${t}`).join(" ");
+  const line = tags.join(" · ");
   return line.length > MAX_TAG_LINE_CHARS
     ? `${line.slice(0, MAX_TAG_LINE_CHARS)}…`
     : line;
@@ -85,86 +86,47 @@ export function garmentNoun(garmentTypeLabel: string): string {
   return NOUN_LABELS.has(garmentTypeLabel) ? garmentTypeLabel : "單品";
 }
 
+/** Mirrors a product's: the wardrobe stands where the store would, then what it is. */
 export function wardrobeInfoContents(item: WardrobeItemInfo): object[] {
-  const contents: object[] = [
+  return [
+    sourceLine("你的衣櫃"),
     {
       type: "text",
-      text: item.garmentTypeLabel,
+      margin: "4px",
+      text: tagLine([item.garmentTypeLabel, ...item.tags]),
       size: "sm",
-      weight: "bold",
-      color: CARD_COLOR.primary,
+      color: CARD_COLOR.mutedText,
       wrap: true,
       maxLines: 2,
     },
   ];
-
-  if (item.tags.length > 0) {
-    contents.push({
-      type: "text",
-      margin: "8px",
-      text: tagLine(item.tags),
-      size: "xs",
-      color: CARD_COLOR.muted,
-      maxLines: 1,
-    });
-  }
-
-  contents.push({
-    type: "text",
-    margin: "4px",
-    text: "你的衣櫃",
-    size: "xxs",
-    color: CARD_COLOR.muted,
-    maxLines: 1,
-  });
-
-  return contents;
-}
-
-export function wardrobeOverlayContents(item: WardrobeItemInfo): object[] {
-  const contents: object[] = [];
-  if (item.tags.length > 0) {
-    contents.push({
-      type: "text",
-      text: tagLine(item.tags),
-      size: "xxs",
-      weight: "bold",
-      color: CARD_COLOR.onImageMuted,
-    });
-  }
-  contents.push({
-    type: "text",
-    margin: "2px",
-    text: item.garmentTypeLabel,
-    size: "sm",
-    weight: "bold",
-    color: CARD_COLOR.onImage,
-  });
-  return contents;
 }
 
 /**
- * `fit` rather than the product card's `cover` because these images are usually
- * background-removed and cropping cuts the sleeves off; the pinned background
- * keeps a transparent PNG from rendering as a black silhouette on LINE's dark
- * chat surface. No tap target: the LIFF has no page for a wardrobe item.
+ * `fit`, unlike a product's `cover`: a wardrobe photo is a cutout, and `cover`
+ * would crop its hems and sleeves. The pinned background keeps a transparent PNG
+ * from rendering as a black silhouette on LINE's dark chat surface. No tap
+ * target: the LIFF has no page for a wardrobe item.
  */
-export function wardrobeItemBubble(item: LineWardrobeItem): object {
+export function wardrobeItemBubble(item: LineWardrobeItem, highlight: string | undefined): object {
   return {
     type: "bubble",
     size: "kilo",
-    hero: overlayHero({
-      media: {
-        type: "image",
-        url: item.imageUrl,
-        size: "full",
-        aspectRatio: "4:5",
-        aspectMode: "fit",
-        backgroundColor: CARD_COLOR.surfaceVariant,
-      },
-      overlay: [
-        ...wardrobeOverlayContents(item),
-        pillButton("✦ 試穿", {
+    hero: {
+      type: "box",
+      layout: "vertical",
+      paddingAll: "0px",
+      contents: [
+        {
+          type: "image",
+          url: item.imageUrl,
+          size: "full",
+          aspectRatio: "3:4",
+          aspectMode: "fit",
+          backgroundColor: CARD_COLOR.surfaceVariant,
+        },
+        ...(highlight ? [cornerTag(highlight)] : []),
+        tryonChip({
           type: "postback",
           label: "試穿",
           data: wardrobeTryonPostbackData(item.id),
@@ -173,10 +135,14 @@ export function wardrobeItemBubble(item: LineWardrobeItem): object {
           displayText: `試穿「你的${garmentNoun(item.garmentTypeLabel)}」`,
         }),
       ],
-      badges: [cornerTag("你的衣櫃", "dark")],
-      paddingAll: "14px",
-      paddingTop: "72px",
-    }),
+    },
+    body: {
+      type: "box",
+      layout: "vertical",
+      paddingAll: "12px",
+      contents: wardrobeInfoContents(item),
+    },
+    styles: { body: { backgroundColor: CARD_COLOR.surface } },
   };
 }
 

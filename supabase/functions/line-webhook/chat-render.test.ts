@@ -3,7 +3,7 @@ import { renderAnswer } from "./chat-render.ts";
 import { chatErrorMessage } from "./messages.ts";
 import type { AnswerItems, ContentBlock } from "../_shared/chat/index.ts";
 import type { LineProduct } from "./product-card.ts";
-import { CARD_COLOR, cornerTag, detailDot } from "./card-kit.ts";
+import { CARD_COLOR, cornerTag } from "./card-kit.ts";
 import type { LineWardrobeItem } from "./wardrobe-card.ts";
 import { productTryonPostbackData, wardrobeTryonPostbackData } from "./postback.ts";
 
@@ -12,6 +12,7 @@ const product = (id: string, over: Partial<LineProduct> = {}): LineProduct => ({
   name: `商品 ${id}`,
   price: 1200,
   imageUrl: `https://img.example/${id}.jpg`,
+  garmentType: "top",
   storeName: "某店",
   purchaseUrl: null,
   ...over,
@@ -19,7 +20,7 @@ const product = (id: string, over: Partial<LineProduct> = {}): LineProduct => ({
 
 type Card =
   | { type: "product"; item: LineProduct; highlight?: string }
-  | { type: "wardrobe"; item: LineWardrobeItem };
+  | { type: "wardrobe"; item: LineWardrobeItem; highlight?: string };
 
 type Look = { title: string; reason?: string; cards: Card[] };
 
@@ -48,7 +49,7 @@ function render(parts: Part[]): object[] {
     return {
       type: c.type,
       id: c.item.id,
-      ...(c.type === "product" && c.highlight ? { highlight: c.highlight } : {}),
+      ...(c.highlight ? { highlight: c.highlight } : {}),
     };
   };
   const content: ContentBlock[] = parts.map((part) => {
@@ -67,10 +68,10 @@ function render(parts: Part[]): object[] {
 }
 
 // deno-lint-ignore no-explicit-any
-const ctaOf = (bubble: any) => bubble.hero.contents[1].contents.at(-1);
+const ctaOf = (bubble: any) => bubble.hero.contents.at(-1);
 
 // deno-lint-ignore no-explicit-any
-const badgesOf = (bubble: any) => bubble.hero.contents.slice(2);
+const badgesOf = (bubble: any) => bubble.hero.contents.slice(1, -1);
 
 // deno-lint-ignore no-explicit-any
 const tryonIdsOf = (message: any) => bubbles(message).map((b: any) => ctaOf(b).action.data);
@@ -84,12 +85,17 @@ const wardrobeItem = (
 ): LineWardrobeItem => ({
   id,
   imageUrl: `https://sig.example/${id}.png?token=abc`,
+  garmentType: "top",
   garmentTypeLabel: "上衣",
   tags: ["寬鬆"],
   ...over,
 });
 
-const wardrobeCard = (w: LineWardrobeItem): Card => ({ type: "wardrobe", item: w });
+const wardrobeCard = (w: LineWardrobeItem, highlight?: string): Card => ({
+  type: "wardrobe",
+  item: w,
+  ...(highlight === undefined ? {} : { highlight }),
+});
 
 Deno.test("a text-only answer is a single text message", () => {
   const out = render([text("你想找什麼樣的衣服？")]);
@@ -119,7 +125,7 @@ Deno.test("every product card offers a try-on, keyed by its own id", () => {
     data: productTryonPostbackData("p1"),
     displayText: "試穿「商品 p1」",
   });
-  assertEquals(ctaOf(first).contents[0].text, "✦ 試穿");
+  assertEquals(ctaOf(first).contents[0].contents[0].text, "✦ 試穿");
   assertEquals(ctaOf(second).action.data, productTryonPostbackData("p2"));
 });
 
@@ -132,27 +138,27 @@ Deno.test("an over-long product name is clamped in the postback displayText", ()
   assertEquals(displayText, `試穿「${"衣".repeat(40)}…」`);
 });
 
-Deno.test("a product card opens its LIFF product page from the photo, with no footer and no purchase", () => {
+Deno.test("a product card opens its LIFF product page from the photo and the details, with no footer and no purchase", () => {
   const [bubble] = bubbles(
     render([row(card(product("p1", { purchaseUrl: "https://shop.example/p1" })))])[0],
   );
 
   assertEquals(bubble.hero.action, { type: "uri", label: "商品詳情", uri: `${LIFF}/product/p1` });
+  assertEquals(bubble.body.action, bubble.hero.action);
   assertEquals(bubble.footer, undefined);
   assertEquals(JSON.stringify(bubble).includes("shop.example"), false);
 });
 
-Deno.test("a product card lays its details and try-on over a 4:5 photo", () => {
+Deno.test("a product card sets its details below a 3:4 photo carrying the try-on", () => {
   const [bubble] = bubbles(render([row(card(product("p1")))])[0]);
 
-  assertEquals(bubble.body, undefined);
   assertEquals(bubble.hero.contents[0].url, "https://img.example/p1.jpg");
-  assertEquals(bubble.hero.contents[0].aspectRatio, "4:5");
+  assertEquals(bubble.hero.contents[0].aspectRatio, "3:4");
   assertEquals(bubble.hero.contents[0].aspectMode, "cover");
   assertEquals(
     // deno-lint-ignore no-explicit-any
-    bubble.hero.contents[1].contents.slice(0, 3).map((c: any) => c.text ?? c.contents.map((s: any) => s.text).join("")),
-    ["某店", "商品 p1", "NT$ 1,200"],
+    bubble.body.contents.map((c: any) => c.text),
+    ["某店", "商品 p1", "NT$1,200"],
   );
 });
 
@@ -161,8 +167,17 @@ Deno.test("a highlight rides the photo's top-left corner, and only when there is
     render([row(card(product("p1"), "顯瘦直筒"), card(product("p2")))])[0],
   );
 
-  assertEquals(badgesOf(withHighlight), [cornerTag("顯瘦直筒", "light"), detailDot()]);
-  assertEquals(badgesOf(without), [detailDot()]);
+  assertEquals(badgesOf(withHighlight), [cornerTag("顯瘦直筒")]);
+  assertEquals(badgesOf(without), []);
+});
+
+Deno.test("a wardrobe pick carries its highlight on the photo like a product does", () => {
+  const [withHighlight, without] = bubbles(
+    render([row(wardrobeCard(wardrobeItem("w1"), "寬鬆好搭"), wardrobeCard(wardrobeItem("w2")))])[0],
+  );
+
+  assertEquals(badgesOf(withHighlight), [cornerTag("寬鬆好搭")]);
+  assertEquals(badgesOf(without), []);
 });
 
 const chipActions = (message: object): object[] =>
@@ -207,7 +222,7 @@ Deno.test("the chips survive the fold that drops messages", () => {
   assertEquals(chipActions(out.at(-1)!), NARROW_CHIPS);
 });
 
-Deno.test("a wardrobe card shows its photo whole, on a pinned light surface, with nothing to open", () => {
+Deno.test("a wardrobe card keeps its cutout whole on a pinned light surface, with nothing to open", () => {
   const out = render([text("你衣櫃裡這件可以"), row(wardrobeCard(wardrobeItem("w1")))]);
 
   assertEquals(out.length, 2);
@@ -216,12 +231,14 @@ Deno.test("a wardrobe card shows its photo whole, on a pinned light surface, wit
   assertEquals(photo.url, "https://sig.example/w1.png?token=abc");
   // LINE accepts only `cover` and `fit` here and 400s the whole send otherwise.
   assertEquals(photo.aspectMode, "fit");
-  assertEquals(photo.aspectRatio, "4:5");
+  assertEquals(photo.aspectRatio, "3:4");
   assertEquals(photo.backgroundColor, CARD_COLOR.surfaceVariant);
   assertEquals(bubble.hero.action, undefined);
+  assertEquals(bubble.body.action, undefined);
   assertEquals(bubble.footer, undefined);
-  assertEquals(badgesOf(bubble), [cornerTag("你的衣櫃", "dark")]);
-  assertEquals(ctaOf(bubble).contents[0].text, "✦ 試穿");
+  assertEquals(badgesOf(bubble), []);
+  assertEquals(bubble.body.contents[0].text, "你的衣櫃");
+  assertEquals(ctaOf(bubble).contents[0].contents[0].text, "✦ 試穿");
 });
 
 Deno.test("the carousel altText names what is actually in it", () => {
@@ -481,7 +498,7 @@ Deno.test("a blank text beside one picks row sends just the carousel", () => {
   assertEquals(bubbles(out[0]).length, 1);
 });
 
-Deno.test("looks beyond one carousel's cap spill into the next, numbered globally", () => {
+Deno.test("looks beyond one carousel's cap spill into the next, in order", () => {
   const ids = Array.from({ length: 14 }, (_, i) => `l${i}`);
   const out = renderAnswer(
     [{

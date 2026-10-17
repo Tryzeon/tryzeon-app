@@ -17,6 +17,7 @@ const someProduct = (over: Partial<LineProduct> = {}): LineProduct => ({
   name: "短版牛仔外套",
   price: 1280,
   imageUrl: "https://img.example/stores/s1/p1.jpg",
+  garmentType: "outerwear",
   storeName: "某店",
   purchaseUrl: null,
   ...over,
@@ -158,7 +159,7 @@ Deno.test("a finished wardrobe try-on is written back with what it was", () => {
   assertEquals(note.role, "user");
   assertEquals(
     note.content[0].text,
-    "（使用者剛試穿了自己衣櫃裡的單品 id:44444444-4444-4444-4444-444444444444「上衣 #寬鬆 #米色」）",
+    "（使用者剛試穿了自己衣櫃裡的單品 id:44444444-4444-4444-4444-444444444444「上衣 寬鬆 · 米色」）",
   );
 });
 

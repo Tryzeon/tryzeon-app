@@ -19,7 +19,7 @@ const MAX_TEXT_CHARS = 5000;
 /** A union rather than two section kinds: the two sit side by side in one carousel. */
 type LineCard =
   | { kind: "product"; item: LineProduct; highlight?: string }
-  | { kind: "wardrobe"; item: LineWardrobeItem };
+  | { kind: "wardrobe"; item: LineWardrobeItem; highlight?: string };
 
 type Section =
   | { kind: "text"; lines: string[] }
@@ -29,12 +29,13 @@ type Section =
 function pickCards(block: ContentBlock, items: AnswerItems): LineCard[] {
   const cards: LineCard[] = [];
   for (const { type, id, highlight } of picksOf(block)) {
+    const tag = highlight ? { highlight } : {};
     if (type === "product") {
       const item = items.products[id];
-      if (item) cards.push({ kind: "product", item: item as LineProduct, ...(highlight ? { highlight } : {}) });
+      if (item) cards.push({ kind: "product", item: item as LineProduct, ...tag });
     } else {
       const item = items.wardrobe[id];
-      if (item) cards.push({ kind: "wardrobe", item: item as LineWardrobeItem });
+      if (item) cards.push({ kind: "wardrobe", item: item as LineWardrobeItem, ...tag });
     }
   }
   return cards;
@@ -79,7 +80,7 @@ function textMessage(lines: string[]): object {
 const bubble = (card: LineCard, liffUrl: string): object =>
   card.kind === "product"
     ? productItemBubble(card.item, card.highlight, liffUrl)
-    : wardrobeItemBubble(card.item);
+    : wardrobeItemBubble(card.item, card.highlight);
 
 /**
  * What a carousel is called when it cannot be shown — a notification, or a

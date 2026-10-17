@@ -1,11 +1,12 @@
 import { fetchRowsByIds, hasProductImage } from "../_shared/chat/hydrate.ts";
+import type { Enums } from "../_shared/database.types.ts";
 import { publicImageUrl } from "../_shared/public-images.ts";
-import { CARD_COLOR, cornerTag, detailDot, overlayHero, pillButton } from "./card-kit.ts";
+import { CARD_COLOR, cornerTag, sourceLine, tryonChip } from "./card-kit.ts";
 import { productTryonPostbackData } from "./postback.ts";
 import { asJsonObject, type DbClient } from "../_shared/supabase.ts";
 
 export const PRODUCT_CARD_SELECT =
-  "id, name, price, image_paths, purchase_link, store_profiles!products_store_id_fkey(name)";
+  "id, name, price, image_paths, garment_type, purchase_link, store_profiles!products_store_id_fkey(name)";
 
 export interface ProductInfo {
   id: string;
@@ -17,6 +18,7 @@ export interface ProductInfo {
 
 export interface LineProduct extends ProductInfo {
   imageUrl: string;
+  garmentType: Enums<"garment_type">;
 }
 
 /**
@@ -50,7 +52,7 @@ export function toLineProduct(
   if (!info) return null;
 
   const key = (row.image_paths as string[])[0];
-  return { ...info, imageUrl: publicImageUrl(imagesBaseUrl, key) };
+  return { ...info, imageUrl: publicImageUrl(imagesBaseUrl, key), garmentType: row.garment_type };
 }
 
 export function fetchProductRows(
@@ -117,56 +119,35 @@ export function purchaseAction(product: ProductInfo): object | null {
     : null;
 }
 
-export function amountText(price: number): string {
-  return Math.round(price).toLocaleString("en-US");
+export function priceText(price: number): string {
+  return `NT$${Math.round(price).toLocaleString("en-US")}`;
 }
 
 /**
- * The price is one text carrying two spans rather than one string: Flex offers
- * no font choice and no letter-spacing, so size, weight and colour are the only
- * hierarchy it can express.
+ * Who made it, what it is, what it costs: the source line leads in ink, the name
+ * steps back to muted regular so only the source and the price carry weight.
  */
 export function productInfoContents(product: ProductInfo): object[] {
-  const contents: object[] = [
+  return [
+    ...(product.storeName ? [sourceLine(product.storeName.toUpperCase())] : []),
     {
       type: "text",
+      ...(product.storeName ? { margin: "4px" } : {}),
       text: product.name,
       size: "sm",
-      weight: "bold",
-      color: CARD_COLOR.primary,
+      color: CARD_COLOR.mutedText,
       wrap: true,
       maxLines: 2,
     },
     {
       type: "text",
-      margin: "8px",
-      contents: [
-        { type: "span", text: "NT$ ", size: "xs", color: CARD_COLOR.muted },
-        {
-          type: "span",
-          text: amountText(product.price),
-          size: "lg",
-          weight: "bold",
-          color: CARD_COLOR.primary,
-        },
-      ],
+      margin: "6px",
+      text: priceText(product.price),
+      size: "sm",
+      weight: "bold",
+      color: CARD_COLOR.primary,
     },
   ];
-
-  if (product.storeName) {
-    contents.push({
-      type: "text",
-      margin: "4px",
-      // Uppercase does nothing to a Chinese store name and turns a Latin one
-      // into the editorial label the design system asks for.
-      text: product.storeName.toUpperCase(),
-      size: "xxs",
-      color: CARD_COLOR.muted,
-      maxLines: 1,
-    });
-  }
-
-  return contents;
 }
 
 const LIFF_PRODUCT_PATH = "/product";
@@ -175,63 +156,25 @@ export function productDetailUrl(liffUrl: string, productId: string): string {
   return `${liffUrl}${LIFF_PRODUCT_PATH}/${productId}`;
 }
 
-export function productOverlayContents(product: ProductInfo): object[] {
-  const contents: object[] = [];
-  if (product.storeName) {
-    contents.push({
-      type: "text",
-      text: product.storeName.toUpperCase(),
-      size: "xxs",
-      weight: "bold",
-      color: CARD_COLOR.onImageMuted,
-    });
-  }
-  contents.push(
-    {
-      type: "text",
-      margin: "2px",
-      text: product.name,
-      size: "sm",
-      weight: "bold",
-      color: CARD_COLOR.onImage,
-    },
-    {
-      type: "text",
-      margin: "2px",
-      contents: [
-        { type: "span", text: "NT$ ", size: "xs", color: CARD_COLOR.onImageMuted },
-        {
-          type: "span",
-          text: amountText(product.price),
-          size: "lg",
-          weight: "bold",
-          color: CARD_COLOR.onImage,
-        },
-      ],
-    },
-  );
-  return contents;
-}
-
+/** The photo fills the hero and the words sit in the body, so a busy shop photo never fights the type. */
 export function productItemBubble(
   product: LineProduct,
   highlight: string | undefined,
   liffUrl: string,
 ): object {
+  const detail = { type: "uri", label: "商品詳情", uri: productDetailUrl(liffUrl, product.id) };
   return {
     type: "bubble",
     size: "kilo",
-    hero: overlayHero({
-      media: {
-        type: "image",
-        url: product.imageUrl,
-        size: "full",
-        aspectRatio: "4:5",
-        aspectMode: "cover",
-      },
-      overlay: [
-        ...productOverlayContents(product),
-        pillButton("✦ 試穿", {
+    hero: {
+      type: "box",
+      layout: "vertical",
+      paddingAll: "0px",
+      action: detail,
+      contents: [
+        { type: "image", url: product.imageUrl, size: "full", aspectRatio: "3:4", aspectMode: "cover" },
+        ...(highlight ? [cornerTag(highlight)] : []),
+        tryonChip({
           type: "postback",
           label: "試穿",
           data: productTryonPostbackData(product.id),
@@ -240,11 +183,15 @@ export function productItemBubble(
           displayText: `試穿「${clampProductName(product.name)}」`,
         }),
       ],
-      badges: [...(highlight ? [cornerTag(highlight, "light")] : []), detailDot()],
-      action: { type: "uri", label: "商品詳情", uri: productDetailUrl(liffUrl, product.id) },
-      paddingAll: "14px",
-      paddingTop: "72px",
-    }),
+    },
+    body: {
+      type: "box",
+      layout: "vertical",
+      paddingAll: "12px",
+      action: detail,
+      contents: productInfoContents(product),
+    },
+    styles: { body: { backgroundColor: CARD_COLOR.surface } },
   };
 }
 

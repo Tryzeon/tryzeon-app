@@ -60,6 +60,7 @@ function baseDeps(): TryonHandlerDeps {
       Promise.resolve({
         kind: "image",
         imageUrl: "https://img.example/result.jpg",
+        garmentType: "top",
         usage: null,
         // deno-lint-ignore no-explicit-any
       } as any),
@@ -128,6 +129,7 @@ Deno.test("a sender on a preset model is tried on, not asked to choose one", asy
         return Promise.resolve({
           kind: "image",
           imageUrl: "https://img.example/result.jpg",
+          garmentType: "top",
           usage: null,
           // deno-lint-ignore no-explicit-any
         } as any);
@@ -260,6 +262,7 @@ Deno.test("the photo is described from the same bytes the try-on wears", async (
         return Promise.resolve({
           kind: "image",
           imageUrl: "https://img.example/result.jpg",
+          garmentType: "top",
           usage: null,
           // deno-lint-ignore no-explicit-any
         } as any);
@@ -282,6 +285,7 @@ const someProduct = (over: Partial<LineProduct> = {}): LineProduct => ({
   name: "短版牛仔外套",
   price: 1280,
   imageUrl: "https://img.example/stores/s1/p1.jpg",
+  garmentType: "outerwear",
   storeName: "某店",
   purchaseUrl: null,
   ...over,
@@ -341,6 +345,7 @@ Deno.test("the product is named while waiting, and tried on by reference", async
         return Promise.resolve({
           kind: "image",
           imageUrl: "https://img.example/result.jpg",
+          garmentType: "top",
           usage: null,
           // deno-lint-ignore no-explicit-any
         } as any);
@@ -373,8 +378,8 @@ Deno.test("the result card carries the product back with the image", async () =>
   assertEquals(message.altText, "為你試穿了 短版牛仔外套");
   assertEquals(message.contents.hero.url, "https://img.example/result.jpg");
   assertEquals(message.contents.hero.aspectRatio, "9:16");
-  assertEquals(message.contents.body.contents[0].text, "短版牛仔外套");
-  assertEquals(message.contents.body.contents[1].contents[1].text, "1,280");
+  // deno-lint-ignore no-explicit-any
+  assertEquals(message.contents.body.contents.map((c: any) => c.text), ["某店", "短版牛仔外套", "NT$1,280"]);
   assertEquals(message.contents.footer.contents[0].action.uri, "https://shop.example/p1");
 });
 
@@ -606,6 +611,7 @@ Deno.test("a product try-on hands the job a try-on recorder", async () => {
         return Promise.resolve({
           kind: "image",
           imageUrl: "https://img.example/result.jpg",
+          garmentType: "top",
           usage: null,
           // deno-lint-ignore no-explicit-any
         } as any);
@@ -629,6 +635,7 @@ Deno.test("a product try-on puts no avatar on the job params", async () => {
         return Promise.resolve({
           kind: "image",
           imageUrl: "https://img.example/result.jpg",
+          garmentType: "top",
           usage: null,
           // deno-lint-ignore no-explicit-any
         } as any);
@@ -725,6 +732,7 @@ Deno.test("a wardrobe try-on sends the core an id, never a path", async () => {
         return Promise.resolve({
           kind: "image",
           imageUrl: "https://img.example/result.jpg",
+          garmentType: "top",
           usage: null,
           // deno-lint-ignore no-explicit-any
         } as any);
@@ -775,6 +783,7 @@ const outfitProduct: LineProduct = {
   name: "白色寬鬆棉質襯衫",
   price: 1280,
   imageUrl: "https://img.example/p.jpg",
+  garmentType: "top",
   storeName: "某店",
   purchaseUrl: null,
 };
@@ -782,6 +791,7 @@ const outfitProduct: LineProduct = {
 const outfitWardrobe: LineWardrobeItem = {
   id: OUTFIT_W,
   imageUrl: "https://sig.example/w.png",
+  garmentType: "pants",
   garmentTypeLabel: "褲子",
   tags: ["深藍"],
 };
@@ -900,6 +910,7 @@ Deno.test("an outfit is named while waiting, worn whole in its order, and its ca
         return Promise.resolve({
           kind: "image",
           imageUrl: "https://img.example/result.jpg",
+          garmentType: "top",
           usage: null,
           // deno-lint-ignore no-explicit-any
         } as any);

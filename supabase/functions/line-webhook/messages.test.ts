@@ -24,6 +24,7 @@ const product: LineProduct = {
   name: "短版牛仔外套",
   price: 1280,
   imageUrl: "https://img.example/stores/s1/p1.jpg",
+  garmentType: "outerwear",
   storeName: "某店",
   purchaseUrl: null,
 };

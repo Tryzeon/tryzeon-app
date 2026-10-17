@@ -1,18 +1,17 @@
 import { assertEquals, assertRejects } from "@std/assert";
 import {
-  amountText,
   clampProductName,
   fetchProductInfo,
   fetchProductRows,
+  priceText,
   type LineProduct,
   productDetailUrl,
   productInfoContents,
   productItemBubble,
-  productOverlayContents,
   purchaseAction,
   toLineProduct,
 } from "./product-card.ts";
-import { CARD_COLOR, cornerTag, detailDot } from "./card-kit.ts";
+import { CARD_COLOR, cornerTag, sourceLine } from "./card-kit.ts";
 
 const BASE = "https://img.example";
 
@@ -21,6 +20,7 @@ const row = (over: Record<string, unknown> = {}) => ({
   name: "白襯衫",
   price: 1200,
   image_paths: ["stores/s1/p1.jpg"],
+  garment_type: "top",
   purchase_link: null,
   store_profiles: { name: "某店" },
   ...over,
@@ -31,6 +31,7 @@ const product = (over: Partial<LineProduct> = {}): LineProduct => ({
   name: "白襯衫",
   price: 1200,
   imageUrl: "https://img.example/stores/s1/p1.jpg",
+  garmentType: "top",
   storeName: "某店",
   purchaseUrl: null,
   ...over,
@@ -93,6 +94,7 @@ Deno.test("toLineProduct joins the image key onto the public base", () => {
     name: "白襯衫",
     price: 1200,
     imageUrl: "https://img.example/stores/s1/p1.jpg",
+    garmentType: "top",
     storeName: "某店",
     purchaseUrl: null,
   });
@@ -208,21 +210,22 @@ Deno.test("purchaseAction rejects strings a bare startsWith(\"http\") check let 
   assertEquals(purchaseAction(product({ purchaseUrl: "https:/one-slash" })), null);
 });
 
-Deno.test("amountText groups thousands and drops cents", () => {
-  assertEquals(amountText(1200), "1,200");
-  assertEquals(amountText(1199.6), "1,200");
-  assertEquals(amountText(0), "0");
+Deno.test("priceText prefixes NT$, groups thousands and drops cents", () => {
+  assertEquals(priceText(1200), "NT$1,200");
+  assertEquals(priceText(1199.6), "NT$1,200");
+  assertEquals(priceText(0), "NT$0");
 });
 
-Deno.test("the info block is name, price and store", () => {
+Deno.test("the info block is store in ink, then the name muted, then the price", () => {
   // deno-lint-ignore no-explicit-any
   const contents = productInfoContents(product({ storeName: "Studio Muji" })) as any[];
 
   assertEquals(contents.length, 3);
-  assertEquals(contents[0].text, "白襯衫");
-  assertEquals(contents[0].color, CARD_COLOR.primary);
-  assertEquals(contents[2].text, "STUDIO MUJI");
-  assertEquals(contents[2].color, CARD_COLOR.muted);
+  assertEquals(contents[0], sourceLine("STUDIO MUJI"));
+  assertEquals(contents[1].text, "白襯衫");
+  assertEquals(contents[1].color, CARD_COLOR.mutedText);
+  assertEquals(contents[1].weight, undefined);
+  assertEquals(contents[2].text, "NT$1,200");
 });
 
 Deno.test("a product with no store shows two lines, not an empty third", () => {
@@ -231,23 +234,19 @@ Deno.test("a product with no store shows two lines, not an empty third", () => {
   assertEquals(contents.length, 2);
 });
 
-Deno.test("the price splits currency from amount so they read at two levels", () => {
+Deno.test("the price is one bold line in the shared NT$ format", () => {
   // deno-lint-ignore no-explicit-any
-  const [, price] = productInfoContents(product()) as any[];
+  const price = (productInfoContents(product()) as any[]).at(-1);
 
-  assertEquals(price.contents, [
-    { type: "span", text: "NT$ ", size: "xs", color: CARD_COLOR.muted },
-    { type: "span", text: "1,200", size: "lg", weight: "bold", color: CARD_COLOR.primary },
-  ]);
-  // No `text` on the parent: with spans set LINE ignores it, and carrying both
-  // invites the two to drift apart.
-  assertEquals(price.text, undefined);
+  assertEquals(price.text, "NT$1,200");
+  assertEquals(price.weight, "bold");
+  assertEquals(price.color, CARD_COLOR.primary);
 });
 
 Deno.test("a Chinese store name is unchanged by uppercasing", () => {
   // deno-lint-ignore no-explicit-any
   const contents = productInfoContents(product({ storeName: "某店" })) as any[];
-  assertEquals(contents[2].text, "某店");
+  assertEquals(contents[0].text, "某店");
 });
 
 Deno.test("clampProductName leaves a short name untouched", () => {
@@ -260,62 +259,42 @@ Deno.test("clampProductName truncates a long name with an ellipsis", () => {
   assertEquals(clampProductName(long), `${"a".repeat(40)}…`);
 });
 
-Deno.test("the overlay is store, name and price, all in light type", () => {
-  // deno-lint-ignore no-explicit-any
-  const [store, name, price] = productOverlayContents(product({ storeName: "Studio Muji" })) as any[];
-
-  assertEquals(store.text, "STUDIO MUJI");
-  assertEquals(store.size, "xxs");
-  assertEquals(store.weight, "bold");
-  assertEquals(store.color, CARD_COLOR.onImageMuted);
-  assertEquals(name.text, product().name);
-  assertEquals(name.weight, "bold");
-  assertEquals(name.color, CARD_COLOR.onImage);
-  assertEquals(price.contents.map((s: { text: string }) => s.text), ["NT$ ", "1,200"]);
-  assertEquals(price.contents[1].color, CARD_COLOR.onImage);
-});
-
-Deno.test("the overlay name stays on one line", () => {
-  // deno-lint-ignore no-explicit-any
-  const [, name] = productOverlayContents(product({ storeName: "某店", name: "衣".repeat(60) })) as any[];
-
-  assertEquals(name.wrap, undefined);
-});
-
-Deno.test("an overlay with no store is name and price only", () => {
-  // deno-lint-ignore no-explicit-any
-  const contents = productOverlayContents(product({ storeName: null })) as any[];
-
-  assertEquals(contents.length, 2);
-  assertEquals(contents[0].text, product().name);
-});
-
 Deno.test("productDetailUrl points at the LIFF product page", () => {
   assertEquals(productDetailUrl("https://liff.line.me/123-abc", "p1"), "https://liff.line.me/123-abc/product/p1");
 });
 
-Deno.test("an item bubble is a 4:5 photo opening its LIFF page, with try-on laid over it", () => {
+Deno.test("an item bubble is a 3:4 photo over its details, both opening its LIFF page", () => {
   // deno-lint-ignore no-explicit-any
   const bubble = productItemBubble(product(), undefined, "https://liff.example") as any;
   const detail = { type: "uri", label: "商品詳情", uri: "https://liff.example/product/p1" };
 
   assertEquals(bubble.size, "kilo");
   assertEquals(bubble.footer, undefined);
-  assertEquals(bubble.body, undefined);
   assertEquals(bubble.hero.action, detail);
-  assertEquals(bubble.hero.contents[0].aspectRatio, "4:5");
+  assertEquals(bubble.body.action, detail);
+  assertEquals(bubble.hero.contents[0].aspectRatio, "3:4");
   assertEquals(bubble.hero.contents[0].aspectMode, "cover");
-  const cta = bubble.hero.contents[1].contents.at(-1);
-  assertEquals(cta.contents[0].text, "✦ 試穿");
-  assertEquals(cta.action.label, "試穿");
+  assertEquals(bubble.body.contents, productInfoContents(product()));
+  assertEquals(bubble.styles.body.backgroundColor, CARD_COLOR.surface);
 });
 
-Deno.test("an item bubble pins its highlight top-left and the detail dot top-right", () => {
+Deno.test("an item bubble's try-on chip sits on the photo and posts back the product", () => {
+  // deno-lint-ignore no-explicit-any
+  const bubble = productItemBubble(product(), undefined, "https://liff.example") as any;
+  const chip = bubble.hero.contents.at(-1);
+
+  assertEquals(chip.position, "absolute");
+  assertEquals(chip.action.type, "postback");
+  assertEquals(chip.action.label, "試穿");
+  assertEquals(chip.action.displayText, `試穿「${product().name}」`);
+});
+
+Deno.test("an item bubble pins its highlight top-left", () => {
   // deno-lint-ignore no-explicit-any
   const withHighlight = productItemBubble(product(), "顯瘦直筒", "https://liff.example") as any;
   // deno-lint-ignore no-explicit-any
   const without = productItemBubble(product(), undefined, "https://liff.example") as any;
 
-  assertEquals(withHighlight.hero.contents.slice(2), [cornerTag("顯瘦直筒", "light"), detailDot()]);
-  assertEquals(without.hero.contents.slice(2), [detailDot()]);
+  assertEquals(withHighlight.hero.contents[1], cornerTag("顯瘦直筒"));
+  assertEquals(without.hero.contents.length, 2);
 });

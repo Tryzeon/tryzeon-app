@@ -1,28 +1,28 @@
 import { assertEquals } from "@std/assert";
 import {
   CARD_COLOR,
+  clampTagLabel,
   cornerTag,
-  detailDot,
   overlayHero,
-  pillButton,
   primaryButton,
-  tag,
+  sourceLine,
+  tryonChip,
 } from "./card-kit.ts";
 
 const action = { type: "postback", label: "試穿", data: "a=tryon_product&pid=p1" };
 
-Deno.test("the palette is the design system's, plus translucent steps for type on a photo", () => {
+Deno.test("the palette is the design system's, plus translucent steps for controls and type on a photo", () => {
   assertEquals(CARD_COLOR, {
     primary: "#1A1A1A",
     onPrimary: "#FFFFFF",
     muted: "#9E9E9E",
+    mutedText: "#6B6B6B",
     outline: "#E5E5E5",
     surface: "#FFFFFF",
     surfaceVariant: "#F7F7F7",
+    glass: "#1A1A1AB3",
+    glassStroke: "#FFFFFF59",
     onImage: "#FFFFFF",
-    onImageMuted: "#FFFFFFCC",
-    onImageFaint: "#FFFFFF99",
-    chip: "#FFFFFFF2",
     scrimStrong: "#000000D6",
     scrimMid: "#0000008C",
     scrimClear: "#00000000",
@@ -30,7 +30,7 @@ Deno.test("the palette is the design system's, plus translucent steps for type o
 });
 
 Deno.test("a button's action is on the box, so the whole button is tappable", () => {
-  for (const button of [primaryButton("前往購買", action), pillButton("✦ 試穿", action)]) {
+  for (const button of [primaryButton("前往購買", action), tryonChip(action)]) {
     // deno-lint-ignore no-explicit-any
     const b = button as any;
     assertEquals(b.type, "box");
@@ -47,71 +47,67 @@ Deno.test("the primary button is filled charcoal with white type", () => {
   assertEquals(b.contents[0].color, CARD_COLOR.onPrimary);
 });
 
-Deno.test("the pill is a near-white capsule with charcoal type, roomier at md", () => {
+Deno.test("the try-on chip is a frosted ink capsule pinned to the bottom-right corner inside a larger tap frame", () => {
   // deno-lint-ignore no-explicit-any
-  const sm = pillButton("✦ 試穿", action) as any;
-  // deno-lint-ignore no-explicit-any
-  const md = pillButton("✦ 試穿整套", action, "md") as any;
+  const frame = tryonChip(action) as any;
+  const chip = frame.contents[0];
 
-  assertEquals(sm.backgroundColor, CARD_COLOR.chip);
-  assertEquals(sm.cornerRadius, "100px");
-  assertEquals(sm.margin, "12px");
-  assertEquals(sm.paddingAll, "10px");
-  assertEquals(md.paddingAll, "12px");
-  assertEquals(sm.contents[0], {
+  assertEquals(frame.position, "absolute");
+  assertEquals(frame.offsetBottom, "0px");
+  assertEquals(frame.offsetEnd, "0px");
+  assertEquals(frame.paddingAll, "8px");
+  assertEquals(frame.backgroundColor, undefined);
+  assertEquals(chip.backgroundColor, CARD_COLOR.glass);
+  assertEquals(chip.borderColor, CARD_COLOR.glassStroke);
+  assertEquals(chip.cornerRadius, "100px");
+  assertEquals(chip.contents[0], {
     type: "text",
     text: "✦ 試穿",
-    size: "sm",
+    flex: 0,
+    size: "xs",
     weight: "bold",
-    color: CARD_COLOR.primary,
-    align: "center",
+    color: CARD_COLOR.onPrimary,
   });
-  assertEquals(md.contents[0].size, "md");
 });
 
-Deno.test("a light tag is a white capsule, a dark one a charcoal capsule", () => {
+Deno.test("a corner tag is the try-on pill's glass, cut square, pinned to the top-left corner", () => {
   // deno-lint-ignore no-explicit-any
-  const light = tag("顯瘦", "light") as any;
-  // deno-lint-ignore no-explicit-any
-  const dark = tag("你的衣櫃", "dark") as any;
-
-  assertEquals(light.backgroundColor, CARD_COLOR.chip);
-  assertEquals(light.contents[0].color, CARD_COLOR.primary);
-  assertEquals(dark.backgroundColor, CARD_COLOR.primary);
-  assertEquals(dark.contents[0].color, CARD_COLOR.onPrimary);
-  assertEquals(light.cornerRadius, "100px");
-  assertEquals(light.flex, 0);
-});
-
-Deno.test("a corner tag is the same tag pinned to the top-left corner", () => {
-  // deno-lint-ignore no-explicit-any
-  const corner = cornerTag("顯瘦", "light") as any;
+  const corner = cornerTag("顯瘦") as any;
 
   assertEquals(corner.position, "absolute");
   assertEquals(corner.offsetTop, "8px");
   assertEquals(corner.offsetStart, "8px");
-  assertEquals(corner.contents, (tag("顯瘦", "light") as { contents: unknown }).contents);
+  assertEquals(corner.backgroundColor, CARD_COLOR.glass);
+  assertEquals(corner.borderColor, CARD_COLOR.glassStroke);
+  assertEquals(corner.cornerRadius, "4px");
+  assertEquals(corner.maxWidth, undefined);
+  assertEquals(corner.contents[0].text, "顯瘦");
+  assertEquals(corner.contents[0].color, CARD_COLOR.onPrimary);
 });
 
-Deno.test("the detail dot is a small capsule pinned to the top-right corner", () => {
-  // deno-lint-ignore no-explicit-any
-  const dot = detailDot() as any;
+Deno.test("a tag label longer than eight characters is cut to seven and an ellipsis", () => {
+  assertEquals(clampTagLabel("你的衣櫃"), "你的衣櫃");
+  assertEquals(clampTagLabel("寬鬆好搭又顯瘦的"), "寬鬆好搭又顯瘦的");
+  assertEquals(clampTagLabel("寬鬆好搭又顯瘦的高腰直筒"), "寬鬆好搭又顯瘦…");
+});
 
-  assertEquals(dot.position, "absolute");
-  assertEquals(dot.offsetTop, "8px");
-  assertEquals(dot.offsetEnd, "8px");
-  assertEquals(dot.width, "22px");
-  assertEquals(dot.height, "22px");
-  assertEquals(dot.contents[0].text, "›");
+Deno.test("a source line is small bold ink, one line", () => {
+  assertEquals(sourceLine("UNIQLO"), {
+    type: "text",
+    text: "UNIQLO",
+    size: "xxs",
+    weight: "bold",
+    color: CARD_COLOR.primary,
+    maxLines: 1,
+  });
 });
 
 const media = { type: "image", url: "https://img.example/p.jpg", size: "full", aspectRatio: "4:5", aspectMode: "cover" };
 const overlay = [{ type: "text", text: "白襯衫" }];
 
-Deno.test("an overlay hero keeps the media first, then the overlay, then the badges", () => {
-  const badge = detailDot();
+Deno.test("an overlay hero keeps the media first, then the overlay", () => {
   // deno-lint-ignore no-explicit-any
-  const hero = overlayHero({ media, overlay, badges: [badge], paddingAll: "14px", paddingTop: "72px" }) as any;
+  const hero = overlayHero({ media, overlay, paddingAll: "14px", paddingTop: "72px" }) as any;
 
   // Flex refuses an absolutely positioned first child, so the media must lead.
   assertEquals(hero.contents[0], media);
@@ -123,7 +119,6 @@ Deno.test("an overlay hero keeps the media first, then the overlay, then the bad
   assertEquals(hero.contents[1].paddingAll, "14px");
   assertEquals(hero.contents[1].paddingTop, "72px");
   assertEquals(hero.contents[1].contents, overlay);
-  assertEquals(hero.contents[2], badge);
 });
 
 Deno.test("the scrim darkens from the bottom up through a midpoint", () => {
