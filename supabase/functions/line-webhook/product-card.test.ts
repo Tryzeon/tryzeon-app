@@ -11,7 +11,8 @@ import {
   purchaseAction,
   toLineProduct,
 } from "./product-card.ts";
-import { CARD_COLOR, cornerTag, sourceLine } from "./card-kit.ts";
+import { CARD_COLOR, pickBubble, sourceLine } from "./card-kit.ts";
+import { productTryonPostbackData } from "./postback.ts";
 
 const BASE = "https://img.example";
 
@@ -263,38 +264,47 @@ Deno.test("productDetailUrl points at the LIFF product page", () => {
   assertEquals(productDetailUrl("https://liff.line.me/123-abc", "p1"), "https://liff.line.me/123-abc/product/p1");
 });
 
-Deno.test("an item bubble is a 3:4 photo over its details, both opening its LIFF page", () => {
-  // deno-lint-ignore no-explicit-any
-  const bubble = productItemBubble(product(), undefined, "https://liff.example") as any;
-  const detail = { type: "uri", label: "商品詳情", uri: "https://liff.example/product/p1" };
+const detail = { type: "uri", label: "商品詳情", uri: "https://liff.example/product/p1" };
 
-  assertEquals(bubble.size, "kilo");
-  assertEquals(bubble.footer, undefined);
-  assertEquals(bubble.hero.action, detail);
-  assertEquals(bubble.body.action, detail);
-  assertEquals(bubble.hero.contents[0].aspectRatio, "3:4");
-  assertEquals(bubble.hero.contents[0].aspectMode, "cover");
-  assertEquals(bubble.body.contents, productInfoContents(product()));
-  assertEquals(bubble.styles.body.backgroundColor, CARD_COLOR.surface);
+Deno.test("an item bubble is the shared pick bubble, opening its LIFF page", () => {
+  assertEquals(
+    productItemBubble(product(), "顯瘦直筒", "https://liff.example"),
+    pickBubble({
+      imageUrl: "https://img.example/stores/s1/p1.jpg",
+      highlight: "顯瘦直筒",
+      source: "某店",
+      name: "白襯衫",
+      value: { text: "NT$1,200", muted: false },
+      tryonAction: {
+        type: "postback",
+        label: "試穿",
+        data: productTryonPostbackData("p1"),
+        displayText: "試穿「白襯衫」",
+      },
+      detailAction: detail,
+    }),
+  );
 });
 
-Deno.test("an item bubble's try-on chip sits on the photo and posts back the product", () => {
+Deno.test("an item bubble uppercases a Latin store name", () => {
   // deno-lint-ignore no-explicit-any
-  const bubble = productItemBubble(product(), undefined, "https://liff.example") as any;
-  const chip = bubble.hero.contents.at(-1);
-
-  assertEquals(chip.position, "absolute");
-  assertEquals(chip.action.type, "postback");
-  assertEquals(chip.action.label, "試穿");
-  assertEquals(chip.action.displayText, `試穿「${product().name}」`);
+  const overlay = (productItemBubble(product({ storeName: "uniqlo" }), undefined, "https://liff.example") as any)
+    .hero.contents[1];
+  assertEquals(overlay.contents[0].text, "UNIQLO");
 });
 
-Deno.test("an item bubble pins its highlight top-left", () => {
+Deno.test("an item bubble for a product with no store has no source line", () => {
   // deno-lint-ignore no-explicit-any
-  const withHighlight = productItemBubble(product(), "顯瘦直筒", "https://liff.example") as any;
-  // deno-lint-ignore no-explicit-any
-  const without = productItemBubble(product(), undefined, "https://liff.example") as any;
+  const overlay = (productItemBubble(product({ storeName: null }), undefined, "https://liff.example") as any)
+    .hero.contents[1];
+  assertEquals(overlay.contents.length, 2);
+  assertEquals(overlay.contents[0].text, "白襯衫");
+});
 
-  assertEquals(withHighlight.hero.contents[1], cornerTag("顯瘦直筒"));
-  assertEquals(without.hero.contents.length, 2);
+Deno.test("an item bubble clamps a long name in the try-on displayText", () => {
+  const name = "很長的商品名稱".repeat(60);
+  // deno-lint-ignore no-explicit-any
+  const overlay = (productItemBubble(product({ name }), undefined, "https://liff.example") as any).hero.contents[1];
+  const pill = overlay.contents.at(-1).contents[1];
+  assertEquals(pill.action.displayText, `試穿「${clampProductName(name)}」`);
 });

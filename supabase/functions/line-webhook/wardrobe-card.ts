@@ -1,7 +1,7 @@
 import { fetchRowsByIds } from "../_shared/chat/hydrate.ts";
 import { textArrayValues } from "../_shared/text.ts";
 import { ownsUserObjectPath, WARDROBE_IMAGES_BUCKET } from "../_shared/supabase-storage.ts";
-import { CARD_COLOR, cornerTag, sourceLine, tryonChip } from "./card-kit.ts";
+import { CARD_COLOR, pickBubble, sourceLine } from "./card-kit.ts";
 import { wardrobeTryonPostbackData } from "./postback.ts";
 import type { Enums, Tables } from "../_shared/database.types.ts";
 import type { DbClient } from "../_shared/supabase.ts";
@@ -102,48 +102,25 @@ export function wardrobeInfoContents(item: WardrobeItemInfo): object[] {
   ];
 }
 
-/**
- * `fit`, unlike a product's `cover`: a wardrobe photo is a cutout, and `cover`
- * would crop its hems and sleeves. The pinned background keeps a transparent PNG
- * from rendering as a black silhouette on LINE's dark chat surface. No tap
- * target: the LIFF has no page for a wardrobe item.
- */
+const MAX_CARD_TAGS = 2;
+
+/** No tap target: the LIFF has no page for a wardrobe item. */
 export function wardrobeItemBubble(item: LineWardrobeItem, highlight: string | undefined): object {
-  return {
-    type: "bubble",
-    size: "kilo",
-    hero: {
-      type: "box",
-      layout: "vertical",
-      paddingAll: "0px",
-      contents: [
-        {
-          type: "image",
-          url: item.imageUrl,
-          size: "full",
-          aspectRatio: "3:4",
-          aspectMode: "fit",
-          backgroundColor: CARD_COLOR.surfaceVariant,
-        },
-        ...(highlight ? [cornerTag(highlight)] : []),
-        tryonChip({
-          type: "postback",
-          label: "試穿",
-          data: wardrobeTryonPostbackData(item.id),
-          // Not clamped, unlike a product's: `garmentNoun` bounds the word to
-          // a fixed set of short labels, far from displayText's 300-character cap.
-          displayText: `試穿「你的${garmentNoun(item.garmentTypeLabel)}」`,
-        }),
-      ],
+  return pickBubble({
+    imageUrl: item.imageUrl,
+    highlight,
+    source: "衣櫃",
+    name: tagLine([item.garmentTypeLabel, ...item.tags.slice(0, MAX_CARD_TAGS)]),
+    value: { text: "已擁有", muted: true },
+    tryonAction: {
+      type: "postback",
+      label: "試穿",
+      data: wardrobeTryonPostbackData(item.id),
+      // Not clamped, unlike a product's: `garmentNoun` bounds the word to
+      // a fixed set of short labels, far from displayText's 300-character cap.
+      displayText: `試穿「你的${garmentNoun(item.garmentTypeLabel)}」`,
     },
-    body: {
-      type: "box",
-      layout: "vertical",
-      paddingAll: "12px",
-      contents: wardrobeInfoContents(item),
-    },
-    styles: { body: { backgroundColor: CARD_COLOR.surface } },
-  };
+  });
 }
 
 /**

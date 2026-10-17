@@ -9,7 +9,7 @@ import {
   type OutfitPiece,
   resolveOutfitPieces,
 } from "./outfit-card.ts";
-import { CARD_COLOR, cornerTag } from "./card-kit.ts";
+import { CARD_COLOR, cornerTag, whitePill } from "./card-kit.ts";
 import { outfitTryonPostbackData } from "./postback.ts";
 import type { LineProduct } from "./product-card.ts";
 import type { LineWardrobeItem } from "./wardrobe-card.ts";
@@ -50,8 +50,18 @@ const look = (pieces: OutfitPiece[], reason: string | null = "白襯衫配深藍
 });
 
 // deno-lint-ignore no-explicit-any
+const collageOf = (bubble: any) => bubble.hero.contents[0];
+
+// deno-lint-ignore no-explicit-any
+const overlayOf = (bubble: any) => bubble.hero.contents[1];
+
+// deno-lint-ignore no-explicit-any
 const bodyTexts = (bubble: any): string[] =>
-  JSON.stringify([bubble.body, bubble.footer]).match(/"text":"[^"]*"/g)!.map((t) => JSON.parse(`{${t}}`).text);
+  JSON.stringify(overlayOf(bubble)).match(/"text":"[^"]*"/g)!.map((t) => JSON.parse(`{${t}}`).text);
+
+// deno-lint-ignore no-explicit-any
+const imagesOf = (node: any): any[] =>
+  node.type === "image" ? [node] : (node.contents ?? []).flatMap(imagesOf);
 
 Deno.test("resolveOutfitPieces keeps the outfit's order and is null when any piece is missing", () => {
   const find = {
@@ -72,21 +82,23 @@ Deno.test("the purchase counts and prices only the pieces left to buy", () => {
   assertEquals(outfitPurchase([w("w1"), w("w2")]), null);
 });
 
-Deno.test("a three-piece outfit is a 2:1 lead cell beside two stacked ones, all 3:4", () => {
+Deno.test("a three-piece outfit is a 3:2 lead cell beside two stacked ones, 400px tall", () => {
   // deno-lint-ignore no-explicit-any
   const bubble = outfitBubble(look([p("p1"), p("p2"), p("p3")]), LIFF) as any;
-  const collage = bubble.hero;
+  const collage = collageOf(bubble);
 
   assertEquals(bubble.size, "mega");
+  assertEquals(bubble.body, undefined);
+  assertEquals(bubble.footer, undefined);
   assertEquals(collage.layout, "horizontal");
   assertEquals(collage.spacing, "xs");
-  assertEquals(collage.contents[0].flex, 2);
+  assertEquals(collage.contents[0].flex, 3);
   assertEquals(collage.contents[0].contents[0].url, "https://img.example/p1.jpg");
-  assertEquals(collage.contents[0].contents[0].aspectRatio, "149:198");
+  assertEquals(collage.contents[0].contents[0].aspectRatio, "179:400");
   assertEquals(collage.contents[1].layout, "vertical");
-  assertEquals(collage.contents[1].flex, 1);
+  assertEquals(collage.contents[1].flex, 2);
   // deno-lint-ignore no-explicit-any
-  assertEquals(collage.contents[1].contents.map((c: any) => c.contents[0].aspectRatio), ["298:393", "298:393"]);
+  assertEquals(collage.contents[1].contents.map((c: any) => c.contents[0].aspectRatio), ["119:199", "119:199"]);
   // deno-lint-ignore no-explicit-any
   assertEquals(collage.contents[1].contents.map((c: any) => c.contents[0].url), [
     "https://img.example/p2.jpg",
@@ -95,18 +107,27 @@ Deno.test("a three-piece outfit is a 2:1 lead cell beside two stacked ones, all 
 });
 
 Deno.test("a two-piece outfit is two equal halves", () => {
-  // deno-lint-ignore no-explicit-any
-  const collage = (outfitBubble(look([p("p1"), p("p2")]), LIFF) as any).hero;
+  const collage = collageOf(outfitBubble(look([p("p1"), p("p2")]), LIFF));
 
   assertEquals(collage.contents.length, 2);
   // deno-lint-ignore no-explicit-any
-  assertEquals(collage.contents.map((c: any) => c.contents[0].aspectRatio), ["149:264", "149:264"]);
+  assertEquals(collage.contents.map((c: any) => c.contents[0].aspectRatio), ["149:400", "149:400"]);
+});
+
+Deno.test("every collage ratio is one LINE accepts: two positive integers, at most three times as tall as wide", () => {
+  for (const pieces of [[p("p1"), p("p2")], [p("p1"), w("w2"), p("p3")]]) {
+    for (const image of imagesOf(collageOf(outfitBubble(look(pieces), LIFF)))) {
+      const match = /^(\d+):(\d+)$/.exec(image.aspectRatio);
+      assertEquals(match !== null, true, image.aspectRatio);
+      const [width, height] = [Number(match![1]), Number(match![2])];
+      assertEquals(width > 0 && height > 0 && height <= 3 * width, true, image.aspectRatio);
+    }
+  }
 });
 
 Deno.test("outerwear leads the collage and the rest keep their order; the try-on keeps the outfit's", () => {
   const outfit = look([p("top"), w("pants", "pants"), p("coat", 2480, "outerwear")]);
-  // deno-lint-ignore no-explicit-any
-  const collage = (outfitBubble(outfit, LIFF) as any).hero;
+  const collage = collageOf(outfitBubble(outfit, LIFF));
 
   assertEquals(collage.contents[0].contents[0].url, "https://img.example/coat.jpg");
   // deno-lint-ignore no-explicit-any
@@ -124,45 +145,50 @@ Deno.test("collageOrder leaves a look with no outerwear, or already led by it, a
   assertEquals(collageOrder(led), led);
 });
 
-Deno.test("a product cell opens its LIFF page, unpriced; a wardrobe cell keeps its cutout whole, tagged, and opens nothing", () => {
-  // deno-lint-ignore no-explicit-any
-  const collage = (outfitBubble(look([w("w1"), p("p2")]), LIFF) as any).hero;
+Deno.test("a product cell opens its LIFF page, unpriced; a wardrobe cell fills over the warm backdrop, tagged 衣櫃, and opens nothing", () => {
+  const collage = collageOf(outfitBubble(look([w("w1"), p("p2")]), LIFF));
   const [wardrobeCell, productCell] = collage.contents;
 
   assertEquals(productCell.action, { type: "uri", label: "商品詳情", uri: `${LIFF}/product/p2` });
   assertEquals(productCell.contents.length, 1);
   assertEquals(productCell.contents[0].aspectMode, "cover");
   assertEquals(wardrobeCell.action, undefined);
-  assertEquals(wardrobeCell.contents[0].aspectMode, "fit");
-  assertEquals(wardrobeCell.contents[0].backgroundColor, CARD_COLOR.surfaceVariant);
-  assertEquals(wardrobeCell.contents[1], cornerTag("你的衣櫃"));
+  assertEquals(wardrobeCell.contents[0].aspectMode, "cover");
+  assertEquals(wardrobeCell.contents[0].backgroundColor, CARD_COLOR.cutoutBackdrop);
+  assertEquals(wardrobeCell.contents[1], cornerTag("衣櫃"));
 });
 
 Deno.test("a look made only of owned pieces carries no cell tags", () => {
-  // deno-lint-ignore no-explicit-any
-  const collage = (outfitBubble(look([w("w1"), w("w2")]), LIFF) as any).hero;
+  const collage = collageOf(outfitBubble(look([w("w1"), w("w2")]), LIFF));
 
   // deno-lint-ignore no-explicit-any
   assertEquals(collage.contents.map((c: any) => c.contents.length), [1, 1]);
 });
 
-Deno.test("the body reads title, reason, then what to buy and its total beside the try-on button", () => {
+Deno.test("the overlay reads title, reason, then what to buy and its total beside the try-on pill", () => {
   const outfit = look([p("p1", 1280), p("p2", 599)]);
   // deno-lint-ignore no-explicit-any
   const bubble = outfitBubble(outfit, LIFF) as any;
-  const [title, reason] = bubble.body.contents;
-  const [rule, row] = bubble.footer.contents;
-  const cta = row.contents.at(-1);
+  const overlay = overlayOf(bubble);
+  const [title, reason, row] = overlay.contents;
+  const [summary, cta] = row.contents;
 
   assertEquals(bodyTexts(bubble), ["週末休閒", "白襯衫配深藍直筒", "共 2 件", "NT$1,879", "✦ 試穿整套"]);
-  assertEquals(rule, { type: "separator", color: CARD_COLOR.outline });
-  assertEquals(row.layout, "horizontal");
+  assertEquals(overlay.position, "absolute");
+  assertEquals(overlay.paddingAll, "14px");
+  assertEquals(overlay.paddingTop, "72px");
   assertEquals(title.size, "lg");
+  assertEquals(title.weight, "bold");
+  assertEquals(title.color, CARD_COLOR.onImage);
   assertEquals(title.maxLines, 1);
-  assertEquals(reason.color, CARD_COLOR.mutedText);
+  assertEquals(reason.color, CARD_COLOR.onImageMuted);
+  assertEquals(reason.wrap, true);
   assertEquals(reason.maxLines, 2);
-  assertEquals(cta.backgroundColor, CARD_COLOR.primary);
-  assertEquals(cta.flex, 0);
+  assertEquals(row.layout, "horizontal");
+  assertEquals(summary.flex, 1);
+  assertEquals(summary.contents[0].color, CARD_COLOR.onImageMuted);
+  assertEquals(summary.contents[1].color, CARD_COLOR.onImage);
+  assertEquals(cta, whitePill("✦ 試穿整套", outfitTryonAction(outfit), "regular"));
   assertEquals(cta.action, {
     type: "postback",
     label: "試穿整套",
@@ -172,8 +198,22 @@ Deno.test("the body reads title, reason, then what to buy and its total beside t
     }),
     displayText: "試穿「週末休閒」",
   });
-  assertEquals(bubble.styles.body.backgroundColor, CARD_COLOR.surface);
-  assertEquals(bubble.styles.footer.backgroundColor, CARD_COLOR.surface);
+});
+
+Deno.test("a large total keeps the try-on pill whole beside a flexible summary", () => {
+  // deno-lint-ignore no-explicit-any
+  const row = overlayOf(outfitBubble(look([p("p1", 100000), p("p2", 23456)]), LIFF) as any).contents.at(-1);
+  const [summary, cta] = row.contents;
+
+  assertEquals(summary.contents[1].text, "NT$123,456");
+  assertEquals(summary.flex, 1);
+  assertEquals(cta.flex, 0);
+});
+
+Deno.test("a wardrobe-only look says so in white", () => {
+  // deno-lint-ignore no-explicit-any
+  const summary = overlayOf(outfitBubble(look([w("w1"), w("w2")]), LIFF) as any).contents.at(-1).contents[0];
+  assertEquals(summary.contents, [{ type: "text", text: "全部來自你的衣櫃", size: "sm", color: CARD_COLOR.onImage }]);
 });
 
 Deno.test("an outfit with no reason skips that line, a mixed one counts what is left to buy, and a wardrobe-only one has no total", () => {

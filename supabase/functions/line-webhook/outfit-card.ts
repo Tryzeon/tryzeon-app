@@ -1,5 +1,5 @@
 import type { ItemRef } from "../_shared/chat/index.ts";
-import { CARD_COLOR, cornerTag, overlayHero, primaryButton, sourceLine } from "./card-kit.ts";
+import { CARD_COLOR, cornerTag, overlayHero, sourceLine, whitePill } from "./card-kit.ts";
 import { type LineProduct, priceText, productDetailUrl } from "./product-card.ts";
 import { type LineWardrobeItem, tagLine } from "./wardrobe-card.ts";
 import { cameraRollChip, messageChip, withQuickReply } from "./quick-reply.ts";
@@ -69,29 +69,28 @@ export function purchaseCountText(purchase: OutfitPurchase, pieceCount: number):
 
 function purchaseLines(pieces: OutfitPiece[]): object[] {
   const purchase = outfitPurchase(pieces);
-  if (purchase === null) return [{ type: "text", text: "全部來自你的衣櫃", size: "sm", color: CARD_COLOR.mutedText }];
+  if (purchase === null) return [{ type: "text", text: "全部來自你的衣櫃", size: "sm", color: CARD_COLOR.onImage }];
   return [
-    { type: "text", text: purchaseCountText(purchase, pieces.length), size: "xs", color: CARD_COLOR.mutedText },
+    { type: "text", text: purchaseCountText(purchase, pieces.length), size: "xs", color: CARD_COLOR.onImageMuted },
     {
       type: "text",
       margin: "2px",
       text: priceText(purchase.total),
       size: "md",
       weight: "bold",
-      color: CARD_COLOR.primary,
+      color: CARD_COLOR.onImage,
     },
   ];
 }
 
 /**
  * Each image's ratio is its cell's shape in a mega bubble (300px wide, 2px
- * gutters) whose collage is 264px tall for every look, so a carousel's heroes
- * line up whatever their piece count. A trio sets a 2:1 lead beside a column of
- * two, every cell 3:4 like the shop photos it holds; a pair halves the width.
- * A ratio that matches the cell is what makes `cover` fill it without
- * letterboxing.
+ * gutters) whose collage is 400px tall for every look, so a carousel's looks
+ * line up whatever their piece count. A trio sets a 3fr lead beside a 2fr
+ * column of two; a pair halves the width. A ratio that matches the cell is
+ * what makes `cover` fill it without letterboxing.
  */
-const CELL_RATIO = { half: "149:264", lead: "149:198", stacked: "298:393" } as const;
+const CELL_RATIO = { half: "149:400", lead: "179:400", stacked: "119:199" } as const;
 
 /**
  * The photos carry no prices: the footer totals what is left to buy, and only an
@@ -113,11 +112,11 @@ function cell(piece: OutfitPiece, aspectRatio: string, labelled: boolean, liffUr
     type: "box",
     layout: "vertical",
     flex: 1,
-    // `fit` keeps a cutout's hems whole; the background keeps a transparent one
-    // from showing LINE's dark chat surface through it.
+    // The backdrop keeps a transparent cutout from showing LINE's dark chat
+    // surface through it.
     contents: [
-      { ...image, aspectMode: "fit", backgroundColor: CARD_COLOR.surfaceVariant },
-      ...(labelled ? [cornerTag("你的衣櫃")] : []),
+      { ...image, aspectMode: "cover", backgroundColor: CARD_COLOR.cutoutBackdrop },
+      ...(labelled ? [cornerTag("衣櫃")] : []),
     ],
   };
 }
@@ -139,11 +138,11 @@ function collage(pieces: OutfitPiece[], liffUrl: string): object {
   return {
     ...frame,
     contents: [
-      { ...cell(lead, CELL_RATIO.lead, labelled, liffUrl), flex: 2 },
+      { ...cell(lead, CELL_RATIO.lead, labelled, liffUrl), flex: 3 },
       {
         type: "box",
         layout: "vertical",
-        flex: 1,
+        flex: 2,
         spacing: "xs",
         contents: stacked.map((piece) => cell(piece, CELL_RATIO.stacked, labelled, liffUrl)),
       },
@@ -151,44 +150,33 @@ function collage(pieces: OutfitPiece[], liffUrl: string): object {
   };
 }
 
+/**
+ * The words lie over the collage's foot. A cell's part under the overlay is
+ * not tappable: Flex stops a tap at the absolutely positioned overlay.
+ */
 export function outfitBubble(outfit: LineOutfit, liffUrl: string): object {
   return {
     type: "bubble",
     size: "mega",
-    hero: collage(outfit.pieces, liffUrl),
-    body: {
-      type: "box",
-      layout: "vertical",
-      paddingAll: "16px",
-      contents: [
-        { type: "text", text: outfit.title, size: "lg", weight: "bold", color: CARD_COLOR.primary, maxLines: 1 },
+    hero: overlayHero({
+      media: collage(outfit.pieces, liffUrl),
+      overlay: [
+        { type: "text", text: outfit.title, size: "lg", weight: "bold", color: CARD_COLOR.onImage, maxLines: 1 },
         ...(outfit.reason
           ? [{
             type: "text",
             margin: "4px",
             text: outfit.reason,
             size: "sm",
-            color: CARD_COLOR.mutedText,
+            color: CARD_COLOR.onImageMuted,
             wrap: true,
             maxLines: 2,
           }]
           : []),
-      ],
-    },
-    // The footer, not the body's end: a carousel stretches its bubbles to one
-    // height, and only the footer stays pinned to the bottom edge. The rule
-    // parts the look's story from what it costs.
-    footer: {
-      type: "box",
-      layout: "vertical",
-      paddingAll: "16px",
-      paddingTop: "0px",
-      contents: [
-        { type: "separator", color: CARD_COLOR.outline },
         {
           type: "box",
           layout: "horizontal",
-          margin: "lg",
+          margin: "md",
           spacing: "md",
           contents: [
             {
@@ -198,12 +186,13 @@ export function outfitBubble(outfit: LineOutfit, liffUrl: string): object {
               justifyContent: "center",
               contents: purchaseLines(outfit.pieces),
             },
-            { ...primaryButton("✦ 試穿整套", outfitTryonAction(outfit)), flex: 0 },
+            whitePill("✦ 試穿整套", outfitTryonAction(outfit), "regular"),
           ],
         },
       ],
-    },
-    styles: { body: { backgroundColor: CARD_COLOR.surface }, footer: { backgroundColor: CARD_COLOR.surface } },
+      paddingAll: "14px",
+      paddingTop: "72px",
+    }),
   };
 }
 

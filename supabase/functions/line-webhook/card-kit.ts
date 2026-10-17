@@ -7,9 +7,10 @@ export const CARD_COLOR = {
   outline: "#E5E5E5",
   surface: "#FFFFFF",
   surfaceVariant: "#F7F7F7",
-  glass: "#1A1A1AB3",
-  glassStroke: "#FFFFFF59",
   onImage: "#FFFFFF",
+  onImageMuted: "#FFFFFFCC",
+  cutoutBackdrop: "#EBE7E0",
+  tagStroke: "#0000001F",
   scrimStrong: "#000000D6",
   scrimMid: "#0000008C",
   scrimClear: "#00000000",
@@ -40,35 +41,35 @@ export function primaryButton(label: string, action: object): object {
   };
 }
 
+const PILL_PADDING = {
+  compact: { vertical: "6px", start: "10px", end: "11px", text: "xs" },
+  regular: { vertical: "10px", start: "16px", end: "16px", text: "sm" },
+} as const;
+
 /**
- * The app's frosted try-on pill, as close as Flex gets without a blur: ink at 70%
- * under a faint white stroke, so its white type holds 4.5:1 even over a white
- * photo. The action sits on a transparent frame around it, so the tap area
+ * The action sits on a transparent frame around the pill, so the tap area
  * reaches 44px while the pill keeps its size. The label is `flex: 0`: in a
- * horizontal box it would default to 1, and LINE for PC sizes an absolute box to
- * its content, so a flexible label collapses to nothing.
+ * horizontal box it would default to 1, and LINE for PC sizes a box to its
+ * content, so a flexible label collapses to nothing.
  */
-export function tryonChip(action: object): object {
+export function whitePill(label: string, action: object, size: "compact" | "regular"): object {
+  const pad = PILL_PADDING[size];
   return {
     type: "box",
     layout: "vertical",
     action,
-    position: "absolute",
-    offsetBottom: "0px",
-    offsetEnd: "0px",
-    paddingAll: "8px",
+    flex: 0,
+    paddingAll: "4px",
     contents: [{
       type: "box",
       layout: "horizontal",
-      backgroundColor: CARD_COLOR.glass,
-      borderColor: CARD_COLOR.glassStroke,
-      borderWidth: "1px",
+      backgroundColor: CARD_COLOR.surface,
       cornerRadius: "100px",
-      paddingTop: "6px",
-      paddingBottom: "6px",
-      paddingStart: "10px",
-      paddingEnd: "11px",
-      contents: [{ type: "text", text: "✦ 試穿", flex: 0, size: "xs", weight: "bold", color: CARD_COLOR.onPrimary }],
+      paddingTop: pad.vertical,
+      paddingBottom: pad.vertical,
+      paddingStart: pad.start,
+      paddingEnd: pad.end,
+      contents: [{ type: "text", text: label, flex: 0, size: pad.text, weight: "bold", color: CARD_COLOR.primary }],
     }],
   };
 }
@@ -91,8 +92,8 @@ export function clampTagLabel(label: string): string {
 }
 
 /**
- * A label laid on a photo's top-left corner: the try-on pill's glass, cut
- * square so it reads as a tag rather than a control.
+ * A label laid on a photo's top-left corner. The stroke keeps the white pill
+ * visible on a white product shot or the cutout backdrop.
  */
 export function cornerTag(label: string): object {
   return {
@@ -101,20 +102,20 @@ export function cornerTag(label: string): object {
     position: "absolute",
     offsetTop: "8px",
     offsetStart: "8px",
-    backgroundColor: CARD_COLOR.glass,
-    borderColor: CARD_COLOR.glassStroke,
+    backgroundColor: CARD_COLOR.surface,
+    borderColor: CARD_COLOR.tagStroke,
     borderWidth: "1px",
-    cornerRadius: "4px",
+    cornerRadius: "100px",
     paddingTop: "2px",
     paddingBottom: "2px",
-    paddingStart: "7px",
-    paddingEnd: "7px",
+    paddingStart: "8px",
+    paddingEnd: "8px",
     contents: [{
       type: "text",
       text: clampTagLabel(label),
       size: "xxs",
       weight: "bold",
-      color: CARD_COLOR.onPrimary,
+      color: CARD_COLOR.primary,
     }],
   };
 }
@@ -122,6 +123,7 @@ export function cornerTag(label: string): object {
 export interface OverlayHeroOptions {
   media: object;
   overlay: object[];
+  corner?: object[];
   action?: object;
   paddingAll: string;
   paddingTop: string;
@@ -159,6 +161,73 @@ export function overlayHero(opts: OverlayHeroOptions): object {
         },
         contents: opts.overlay,
       },
+      ...(opts.corner ?? []),
     ],
+  };
+}
+
+export interface PickView {
+  imageUrl: string;
+  highlight?: string;
+  source?: string;
+  name: string;
+  value: { text: string; muted: boolean };
+  tryonAction: object;
+  detailAction?: object;
+}
+
+/**
+ * One card for a store product and a wardrobe item alike: the photo is the
+ * card and the words sit on its scrim. The backdrop shows through a
+ * transparent cutout instead of LINE's dark chat surface.
+ */
+export function pickBubble(view: PickView): object {
+  const value = view.value.muted
+    ? { type: "text", text: view.value.text, size: "xs", color: CARD_COLOR.onImageMuted, gravity: "center", flex: 1 }
+    : {
+      type: "text",
+      text: view.value.text,
+      size: "sm",
+      weight: "bold",
+      color: CARD_COLOR.onImage,
+      gravity: "center",
+      flex: 1,
+    };
+  return {
+    type: "bubble",
+    size: "kilo",
+    hero: overlayHero({
+      media: {
+        type: "image",
+        url: view.imageUrl,
+        size: "full",
+        aspectRatio: "15:22",
+        aspectMode: "cover",
+        backgroundColor: CARD_COLOR.cutoutBackdrop,
+      },
+      overlay: [
+        ...(view.source
+          ? [{ type: "text", text: view.source, size: "xxs", color: CARD_COLOR.onImageMuted, maxLines: 1 }]
+          : []),
+        {
+          type: "text",
+          ...(view.source ? { margin: "2px" } : {}),
+          text: view.name,
+          size: "sm",
+          color: CARD_COLOR.onImage,
+          maxLines: 1,
+        },
+        {
+          type: "box",
+          layout: "horizontal",
+          margin: "4px",
+          contents: [value, whitePill("✦ 試穿", view.tryonAction, "compact")],
+        },
+      ],
+      corner: view.highlight ? [cornerTag(view.highlight)] : undefined,
+      action: view.detailAction,
+      paddingAll: "12px",
+      paddingTop: "44px",
+    }),
   };
 }

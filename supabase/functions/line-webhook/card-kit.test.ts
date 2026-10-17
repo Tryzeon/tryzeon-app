@@ -4,9 +4,11 @@ import {
   clampTagLabel,
   cornerTag,
   overlayHero,
+  pickBubble,
+  type PickView,
   primaryButton,
   sourceLine,
-  tryonChip,
+  whitePill,
 } from "./card-kit.ts";
 
 const action = { type: "postback", label: "試穿", data: "a=tryon_product&pid=p1" };
@@ -20,9 +22,10 @@ Deno.test("the palette is the design system's, plus translucent steps for contro
     outline: "#E5E5E5",
     surface: "#FFFFFF",
     surfaceVariant: "#F7F7F7",
-    glass: "#1A1A1AB3",
-    glassStroke: "#FFFFFF59",
     onImage: "#FFFFFF",
+    onImageMuted: "#FFFFFFCC",
+    cutoutBackdrop: "#EBE7E0",
+    tagStroke: "#0000001F",
     scrimStrong: "#000000D6",
     scrimMid: "#0000008C",
     scrimClear: "#00000000",
@@ -30,7 +33,7 @@ Deno.test("the palette is the design system's, plus translucent steps for contro
 });
 
 Deno.test("a button's action is on the box, so the whole button is tappable", () => {
-  for (const button of [primaryButton("前往購買", action), tryonChip(action)]) {
+  for (const button of [primaryButton("前往購買", action), whitePill("✦ 試穿", action, "compact")]) {
     // deno-lint-ignore no-explicit-any
     const b = button as any;
     assertEquals(b.type, "box");
@@ -47,42 +50,52 @@ Deno.test("the primary button is filled charcoal with white type", () => {
   assertEquals(b.contents[0].color, CARD_COLOR.onPrimary);
 });
 
-Deno.test("the try-on chip is a frosted ink capsule pinned to the bottom-right corner inside a larger tap frame", () => {
-  // deno-lint-ignore no-explicit-any
-  const frame = tryonChip(action) as any;
-  const chip = frame.contents[0];
+Deno.test("a white pill is a filled white capsule with ink type, carrying its action on the box", () => {
+  for (const size of ["compact", "regular"] as const) {
+    // deno-lint-ignore no-explicit-any
+    const frame = whitePill("✦ 試穿", action, size) as any;
+    const pill = frame.contents[0];
 
-  assertEquals(frame.position, "absolute");
-  assertEquals(frame.offsetBottom, "0px");
-  assertEquals(frame.offsetEnd, "0px");
-  assertEquals(frame.paddingAll, "8px");
-  assertEquals(frame.backgroundColor, undefined);
-  assertEquals(chip.backgroundColor, CARD_COLOR.glass);
-  assertEquals(chip.borderColor, CARD_COLOR.glassStroke);
-  assertEquals(chip.cornerRadius, "100px");
-  assertEquals(chip.contents[0], {
-    type: "text",
-    text: "✦ 試穿",
-    flex: 0,
-    size: "xs",
-    weight: "bold",
-    color: CARD_COLOR.onPrimary,
-  });
+    assertEquals(frame.action, action);
+    assertEquals(frame.flex, 0);
+    assertEquals(frame.position, undefined);
+    assertEquals(frame.backgroundColor, undefined);
+    assertEquals(pill.backgroundColor, "#FFFFFF");
+    assertEquals(pill.cornerRadius, "100px");
+    assertEquals(pill.action, undefined);
+    assertEquals(pill.contents[0].text, "✦ 試穿");
+    assertEquals(pill.contents[0].flex, 0);
+    assertEquals(pill.contents[0].weight, "bold");
+    assertEquals(pill.contents[0].color, CARD_COLOR.primary);
+  }
 });
 
-Deno.test("a corner tag is the try-on pill's glass, cut square, pinned to the top-left corner", () => {
+Deno.test("a regular pill is taller and larger-type than a compact one", () => {
+  // deno-lint-ignore no-explicit-any
+  const compact = (whitePill("✦ 試穿", action, "compact") as any).contents[0];
+  // deno-lint-ignore no-explicit-any
+  const regular = (whitePill("✦ 試穿整套", action, "regular") as any).contents[0];
+
+  assertEquals(compact.contents[0].size, "xs");
+  assertEquals(regular.contents[0].size, "sm");
+  assertEquals(compact.paddingTop, "6px");
+  assertEquals(regular.paddingTop, "10px");
+});
+
+Deno.test("a corner tag is a white pill with a hairline stroke, pinned to the top-left corner", () => {
   // deno-lint-ignore no-explicit-any
   const corner = cornerTag("顯瘦") as any;
 
   assertEquals(corner.position, "absolute");
   assertEquals(corner.offsetTop, "8px");
   assertEquals(corner.offsetStart, "8px");
-  assertEquals(corner.backgroundColor, CARD_COLOR.glass);
-  assertEquals(corner.borderColor, CARD_COLOR.glassStroke);
-  assertEquals(corner.cornerRadius, "4px");
+  assertEquals(corner.backgroundColor, "#FFFFFF");
+  assertEquals(corner.borderColor, CARD_COLOR.tagStroke);
+  assertEquals(corner.borderWidth, "1px");
+  assertEquals(corner.cornerRadius, "100px");
   assertEquals(corner.maxWidth, undefined);
   assertEquals(corner.contents[0].text, "顯瘦");
-  assertEquals(corner.contents[0].color, CARD_COLOR.onPrimary);
+  assertEquals(corner.contents[0].color, CARD_COLOR.primary);
 });
 
 Deno.test("a tag label longer than eight characters is cut to seven and an ellipsis", () => {
@@ -143,4 +156,95 @@ Deno.test("an overlay hero is tappable only when given an action", () => {
   // deno-lint-ignore no-explicit-any
   assertEquals((overlayHero({ ...base, action: tap }) as any).action, tap);
   assertEquals("action" in overlayHero(base), false);
+});
+
+Deno.test("an overlay hero appends corner children after the overlay", () => {
+  const tag = cornerTag("顯瘦");
+  // deno-lint-ignore no-explicit-any
+  const hero = overlayHero({ media, overlay, corner: [tag], paddingAll: "12px", paddingTop: "44px" }) as any;
+
+  assertEquals(hero.contents.length, 3);
+  assertEquals(hero.contents[0], media);
+  assertEquals(hero.contents[2], tag);
+});
+
+const tryon = { type: "postback", label: "試穿", data: "a=tryon_product&pid=p1", displayText: "試穿「白襯衫」" };
+const detail = { type: "uri", label: "商品詳情", uri: "https://liff.example/product/p1" };
+const view = (over: Partial<PickView> = {}): PickView => ({
+  imageUrl: "https://img.example/p.jpg",
+  source: "UNIQLO",
+  name: "白襯衫",
+  value: { text: "NT$1,200", muted: false },
+  tryonAction: tryon,
+  ...over,
+});
+
+Deno.test("a pick bubble is a hero-only 15:22 cover photo on the warm backdrop", () => {
+  // deno-lint-ignore no-explicit-any
+  const bubble = pickBubble(view()) as any;
+
+  assertEquals(bubble.type, "bubble");
+  assertEquals(bubble.size, "kilo");
+  assertEquals(bubble.body, undefined);
+  assertEquals(bubble.footer, undefined);
+  assertEquals(bubble.hero.contents[0], {
+    type: "image",
+    url: "https://img.example/p.jpg",
+    size: "full",
+    aspectRatio: "15:22",
+    aspectMode: "cover",
+    backgroundColor: CARD_COLOR.cutoutBackdrop,
+  });
+});
+
+Deno.test("a pick bubble's overlay reads source, a one-line name, then the value beside the try-on pill", () => {
+  // deno-lint-ignore no-explicit-any
+  const overlay = (pickBubble(view()) as any).hero.contents[1];
+  const [source, name, row] = overlay.contents;
+
+  assertEquals(overlay.paddingAll, "12px");
+  assertEquals(overlay.paddingTop, "44px");
+  assertEquals(source.text, "UNIQLO");
+  assertEquals(source.color, CARD_COLOR.onImageMuted);
+  assertEquals(source.maxLines, 1);
+  assertEquals(name.text, "白襯衫");
+  assertEquals(name.color, CARD_COLOR.onImage);
+  assertEquals(name.maxLines, 1);
+  assertEquals(row.layout, "horizontal");
+  assertEquals(row.contents[0].text, "NT$1,200");
+  assertEquals(row.contents[0].size, "sm");
+  assertEquals(row.contents[0].weight, "bold");
+  assertEquals(row.contents[0].color, CARD_COLOR.onImage);
+  assertEquals(row.contents[1], whitePill("✦ 試穿", tryon, "compact"));
+});
+
+Deno.test("a muted value is small and dimmed, not bold", () => {
+  // deno-lint-ignore no-explicit-any
+  const overlay = (pickBubble(view({ value: { text: "已擁有", muted: true } })) as any).hero.contents[1];
+  const value = overlay.contents[2].contents[0];
+
+  assertEquals(value.text, "已擁有");
+  assertEquals(value.size, "xs");
+  assertEquals(value.weight, undefined);
+  assertEquals(value.color, CARD_COLOR.onImageMuted);
+});
+
+Deno.test("a pick bubble is tappable only with a detail action, and tagged only with a highlight", () => {
+  // deno-lint-ignore no-explicit-any
+  const plain = pickBubble(view()) as any;
+  // deno-lint-ignore no-explicit-any
+  const full = pickBubble(view({ detailAction: detail, highlight: "顯瘦" })) as any;
+
+  assertEquals("action" in plain.hero, false);
+  assertEquals(plain.hero.contents.length, 2);
+  assertEquals(full.hero.action, detail);
+  assertEquals(full.hero.contents[2], cornerTag("顯瘦"));
+});
+
+Deno.test("a pick bubble with no source skips that line", () => {
+  // deno-lint-ignore no-explicit-any
+  const overlay = (pickBubble(view({ source: undefined })) as any).hero.contents[1];
+  assertEquals(overlay.contents.length, 2);
+  assertEquals(overlay.contents[0].text, "白襯衫");
+  assertEquals("margin" in overlay.contents[0], false);
 });

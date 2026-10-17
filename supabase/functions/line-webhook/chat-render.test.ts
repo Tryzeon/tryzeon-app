@@ -68,10 +68,13 @@ function render(parts: Part[]): object[] {
 }
 
 // deno-lint-ignore no-explicit-any
-const ctaOf = (bubble: any) => bubble.hero.contents.at(-1);
+const overlayOf = (bubble: any) => bubble.hero.contents[1];
 
 // deno-lint-ignore no-explicit-any
-const badgesOf = (bubble: any) => bubble.hero.contents.slice(1, -1);
+const ctaOf = (bubble: any) => overlayOf(bubble).contents.at(-1).contents.at(-1);
+
+// deno-lint-ignore no-explicit-any
+const badgesOf = (bubble: any) => bubble.hero.contents.slice(2);
 
 // deno-lint-ignore no-explicit-any
 const tryonIdsOf = (message: any) => bubbles(message).map((b: any) => ctaOf(b).action.data);
@@ -138,28 +141,25 @@ Deno.test("an over-long product name is clamped in the postback displayText", ()
   assertEquals(displayText, `試穿「${"衣".repeat(40)}…」`);
 });
 
-Deno.test("a product card opens its LIFF product page from the photo and the details, with no footer and no purchase", () => {
+Deno.test("a product card opens its LIFF product page from the photo, with no body, footer or purchase", () => {
   const [bubble] = bubbles(
     render([row(card(product("p1", { purchaseUrl: "https://shop.example/p1" })))])[0],
   );
 
   assertEquals(bubble.hero.action, { type: "uri", label: "商品詳情", uri: `${LIFF}/product/p1` });
-  assertEquals(bubble.body.action, bubble.hero.action);
+  assertEquals(bubble.body, undefined);
   assertEquals(bubble.footer, undefined);
   assertEquals(JSON.stringify(bubble).includes("shop.example"), false);
 });
 
-Deno.test("a product card sets its details below a 3:4 photo carrying the try-on", () => {
+Deno.test("a product card lays its details over a 15:22 photo, the price beside the try-on", () => {
   const [bubble] = bubbles(render([row(card(product("p1")))])[0]);
+  const [source, name, valueRow] = overlayOf(bubble).contents;
 
   assertEquals(bubble.hero.contents[0].url, "https://img.example/p1.jpg");
-  assertEquals(bubble.hero.contents[0].aspectRatio, "3:4");
+  assertEquals(bubble.hero.contents[0].aspectRatio, "15:22");
   assertEquals(bubble.hero.contents[0].aspectMode, "cover");
-  assertEquals(
-    // deno-lint-ignore no-explicit-any
-    bubble.body.contents.map((c: any) => c.text),
-    ["某店", "商品 p1", "NT$1,200"],
-  );
+  assertEquals([source.text, name.text, valueRow.contents[0].text], ["某店", "商品 p1", "NT$1,200"]);
 });
 
 Deno.test("a highlight rides the photo's top-left corner, and only when there is one", () => {
@@ -222,7 +222,7 @@ Deno.test("the chips survive the fold that drops messages", () => {
   assertEquals(chipActions(out.at(-1)!), NARROW_CHIPS);
 });
 
-Deno.test("a wardrobe card keeps its cutout whole on a pinned light surface, with nothing to open", () => {
+Deno.test("a wardrobe card fills the photo over the warm backdrop, with nothing to open", () => {
   const out = render([text("你衣櫃裡這件可以"), row(wardrobeCard(wardrobeItem("w1")))]);
 
   assertEquals(out.length, 2);
@@ -230,14 +230,14 @@ Deno.test("a wardrobe card keeps its cutout whole on a pinned light surface, wit
   const photo = bubble.hero.contents[0];
   assertEquals(photo.url, "https://sig.example/w1.png?token=abc");
   // LINE accepts only `cover` and `fit` here and 400s the whole send otherwise.
-  assertEquals(photo.aspectMode, "fit");
-  assertEquals(photo.aspectRatio, "3:4");
-  assertEquals(photo.backgroundColor, CARD_COLOR.surfaceVariant);
+  assertEquals(photo.aspectMode, "cover");
+  assertEquals(photo.aspectRatio, "15:22");
+  assertEquals(photo.backgroundColor, CARD_COLOR.cutoutBackdrop);
   assertEquals(bubble.hero.action, undefined);
-  assertEquals(bubble.body.action, undefined);
+  assertEquals(bubble.body, undefined);
   assertEquals(bubble.footer, undefined);
   assertEquals(badgesOf(bubble), []);
-  assertEquals(bubble.body.contents[0].text, "你的衣櫃");
+  assertEquals(overlayOf(bubble).contents[0].text, "衣櫃");
   assertEquals(ctaOf(bubble).contents[0].contents[0].text, "✦ 試穿");
 });
 
@@ -400,7 +400,7 @@ Deno.test("an outfits row is one carousel, a bubble per look", () => {
   const carousel = out[1] as any;
   assertEquals(carousel.altText, "為你搭了 2 套穿搭");
   assertEquals(bubbles(carousel).length, 2);
-  assertEquals(bubbles(carousel)[1].body.contents[0].text, "溫柔約會");
+  assertEquals(bubbles(carousel)[1].hero.contents[1].contents[0].text, "溫柔約會");
 });
 
 Deno.test("a look missing a piece is left out, and a row of none draws no carousel", () => {
@@ -419,7 +419,7 @@ Deno.test("a look missing a piece is left out, and a row of none draws no carous
     LIFF,
   );
   assertEquals(bubbles(out[1]).length, 1);
-  assertEquals(bubbles(out[1])[0].body.contents[0].text, "完整");
+  assertEquals(bubbles(out[1])[0].hero.contents[1].contents[0].text, "完整");
 
   const none = renderAnswer(
     [
@@ -516,7 +516,7 @@ Deno.test("looks beyond one carousel's cap spill into the next, in order", () =>
   );
   assertEquals(out.length, 2);
   assertEquals([bubbles(out[0]).length, bubbles(out[1]).length], [12, 2]);
-  assertEquals(bubbles(out[1])[0].body.contents[0].text, "l12");
+  assertEquals(bubbles(out[1])[0].hero.contents[1].contents[0].text, "l12");
 });
 
 const NO_ITEMS_FIXTURE: AnswerItems = { products: {}, wardrobe: {} };

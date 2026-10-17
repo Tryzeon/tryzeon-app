@@ -11,7 +11,8 @@ import {
   wardrobeInfoContents,
   wardrobeItemBubble,
 } from "./wardrobe-card.ts";
-import { CARD_COLOR, sourceLine } from "./card-kit.ts";
+import { CARD_COLOR, pickBubble, sourceLine } from "./card-kit.ts";
+import { wardrobeTryonPostbackData } from "./postback.ts";
 import { GARMENT_TYPE_VALUES } from "../_shared/vocabularies.ts";
 import type { Enums } from "../_shared/database.types.ts";
 
@@ -127,27 +128,29 @@ Deno.test("an item with no tags shows just its garment type under the wardrobe l
   assertEquals(contents[1].text, "上衣");
 });
 
-Deno.test("an item bubble is a fit 3:4 cutout over its info block, with no tap target", () => {
-  // deno-lint-ignore no-explicit-any
-  const bubble = wardrobeItemBubble(item(), undefined) as any;
-
-  assertEquals(bubble.size, "kilo");
-  assertEquals("action" in bubble.hero, false);
-  assertEquals("action" in bubble.body, false);
-  assertEquals(bubble.hero.contents[0].aspectRatio, "3:4");
-  assertEquals(bubble.hero.contents[0].aspectMode, "fit");
-  assertEquals(bubble.hero.contents[0].backgroundColor, CARD_COLOR.surfaceVariant);
-  assertEquals(bubble.hero.contents.length, 2);
-  assertEquals(bubble.body.contents, wardrobeInfoContents(item()));
+Deno.test("a wardrobe bubble is the same pick bubble: 衣櫃, garment and two tags, 已擁有, no tap target", () => {
+  assertEquals(
+    wardrobeItemBubble(item({ tags: ["白色", "棉質", "休閒"] }), "基本款"),
+    pickBubble({
+      imageUrl: URL,
+      highlight: "基本款",
+      source: "衣櫃",
+      name: "上衣 · 白色 · 棉質",
+      value: { text: "已擁有", muted: true },
+      tryonAction: {
+        type: "postback",
+        label: "試穿",
+        data: wardrobeTryonPostbackData("w1"),
+        displayText: "試穿「你的上衣」",
+      },
+    }),
+  );
 });
 
-Deno.test("an item bubble's try-on chip posts back the wardrobe item", () => {
+Deno.test("a wardrobe bubble with no tags is named by its garment type alone", () => {
   // deno-lint-ignore no-explicit-any
-  const chip = (wardrobeItemBubble(item(), undefined) as any).hero.contents.at(-1);
-
-  assertEquals(chip.position, "absolute");
-  assertEquals(chip.action.type, "postback");
-  assertEquals(chip.action.displayText, "試穿「你的上衣」");
+  const overlay = (wardrobeItemBubble(item({ tags: [] }), undefined) as any).hero.contents[1];
+  assertEquals(overlay.contents[1].text, "上衣");
 });
 
 function fakeAdmin(

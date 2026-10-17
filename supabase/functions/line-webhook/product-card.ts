@@ -1,7 +1,7 @@
 import { fetchRowsByIds, hasProductImage } from "../_shared/chat/hydrate.ts";
 import type { Enums } from "../_shared/database.types.ts";
 import { publicImageUrl } from "../_shared/public-images.ts";
-import { CARD_COLOR, cornerTag, sourceLine, tryonChip } from "./card-kit.ts";
+import { CARD_COLOR, pickBubble, sourceLine } from "./card-kit.ts";
 import { productTryonPostbackData } from "./postback.ts";
 import { asJsonObject, type DbClient } from "../_shared/supabase.ts";
 
@@ -156,43 +156,27 @@ export function productDetailUrl(liffUrl: string, productId: string): string {
   return `${liffUrl}${LIFF_PRODUCT_PATH}/${productId}`;
 }
 
-/** The photo fills the hero and the words sit in the body, so a busy shop photo never fights the type. */
 export function productItemBubble(
   product: LineProduct,
   highlight: string | undefined,
   liffUrl: string,
 ): object {
-  const detail = { type: "uri", label: "商品詳情", uri: productDetailUrl(liffUrl, product.id) };
-  return {
-    type: "bubble",
-    size: "kilo",
-    hero: {
-      type: "box",
-      layout: "vertical",
-      paddingAll: "0px",
-      action: detail,
-      contents: [
-        { type: "image", url: product.imageUrl, size: "full", aspectRatio: "3:4", aspectMode: "cover" },
-        ...(highlight ? [cornerTag(highlight)] : []),
-        tryonChip({
-          type: "postback",
-          label: "試穿",
-          data: productTryonPostbackData(product.id),
-          // Clamped: `displayText` fails the whole send past 300 characters, and a
-          // product name has no length constraint.
-          displayText: `試穿「${clampProductName(product.name)}」`,
-        }),
-      ],
+  return pickBubble({
+    imageUrl: product.imageUrl,
+    highlight,
+    source: product.storeName?.toUpperCase(),
+    name: product.name,
+    value: { text: priceText(product.price), muted: false },
+    tryonAction: {
+      type: "postback",
+      label: "試穿",
+      data: productTryonPostbackData(product.id),
+      // Clamped: `displayText` fails the whole send past 300 characters, and a
+      // product name has no length constraint.
+      displayText: `試穿「${clampProductName(product.name)}」`,
     },
-    body: {
-      type: "box",
-      layout: "vertical",
-      paddingAll: "12px",
-      action: detail,
-      contents: productInfoContents(product),
-    },
-    styles: { body: { backgroundColor: CARD_COLOR.surface } },
-  };
+    detailAction: { type: "uri", label: "商品詳情", uri: productDetailUrl(liffUrl, product.id) },
+  });
 }
 
 /**
