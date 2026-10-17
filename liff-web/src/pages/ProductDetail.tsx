@@ -7,6 +7,7 @@ import { ModelChoiceSheet } from "../components/ModelChoiceSheet";
 import { ProductGallery } from "../components/ProductGallery";
 import { useTryonCoordinator } from "../hooks/useTryonCoordinator";
 import { isExternalUrl, openExternal } from "../lib/liff";
+import { priceText } from "../lib/price";
 import { selectedPresetId } from "../state/avatar";
 import { useAvatar } from "../state/AvatarProvider";
 
@@ -136,7 +137,7 @@ function Detail({ item, back }: { item: CatalogItem; back: ReactNode }) {
 
         {item.storeName && <p className="pdp__store">{item.storeName}</p>}
         <h1 className="pdp__name">{item.name}</h1>
-        {item.price != null && <p className="pdp__price">NT${item.price}</p>}
+        <p className="pdp__price">{priceText(item.price)}</p>
         {item.description && <p className="pdp__description">{item.description}</p>}
 
         {choiceFailed && (
