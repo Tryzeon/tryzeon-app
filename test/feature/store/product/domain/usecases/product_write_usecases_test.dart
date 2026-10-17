@@ -16,8 +16,8 @@ import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.da
 import 'package:typed_result/typed_result.dart';
 
 class _FakeRepository implements ProductRepository {
-  Result<void, Failure> createResult = const Ok(null);
-  Result<void, Failure> updateResult = const Ok(null);
+  Result<Product?, Failure> createResult = const Ok(null);
+  Result<Product?, Failure>? updateResult;
   Result<void, Failure> deleteResult = const Ok(null);
   NewProduct? created;
   Product? appliedTarget;
@@ -25,20 +25,22 @@ class _FakeRepository implements ProductRepository {
   final List<String> deletedProductIds = [];
 
   @override
-  Future<Result<void, Failure>> createProduct(final NewProduct product) async {
+  Future<Result<Product?, Failure>> createProduct(
+    final NewProduct product,
+  ) async {
     created = product;
     return createResult;
   }
 
   @override
-  Future<Result<void, Failure>> updateProduct({
+  Future<Result<Product?, Failure>> updateProduct({
     required final Product original,
     required final Product target,
     final ProductSizeDiff sizeDiff = const ProductSizeDiff.empty(),
   }) async {
     appliedTarget = target;
     appliedSizeDiff = sizeDiff;
-    return updateResult;
+    return updateResult ?? Ok(target);
   }
 
   @override

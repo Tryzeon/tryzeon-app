@@ -19,12 +19,12 @@ class SetProductStatus {
   SetProductStatus(this._repository);
   final ProductRepository _repository;
 
-  Future<Result<void, Failure>> call(
+  Future<Result<Product?, Failure>> call(
     final SetProductStatusParams params,
   ) async {
     final original = params.product;
     final target = original.copyWith(status: params.status);
-    if (target == original) return const Ok(null);
+    if (target == original) return Ok(original);
 
     return _repository.updateProduct(original: original, target: target);
   }

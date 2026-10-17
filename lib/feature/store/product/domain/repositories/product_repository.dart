@@ -9,11 +9,13 @@ abstract class ProductRepository {
     final bool forceRefresh = false,
   });
 
-  Future<Result<void, Failure>> createProduct(final NewProduct product);
+  /// The written product is null when the write landed but reading it back
+  /// failed.
+  Future<Result<Product?, Failure>> createProduct(final NewProduct product);
 
-  Future<Result<Product, Failure>> getProductById(final String productId);
-
-  Future<Result<void, Failure>> updateProduct({
+  /// The written product is null when the write landed but reading it back
+  /// failed.
+  Future<Result<Product?, Failure>> updateProduct({
     required final Product original,
     required final Product target,
     final ProductSizeDiff sizeDiff = const ProductSizeDiff.empty(),

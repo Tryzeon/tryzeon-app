@@ -33,7 +33,9 @@ class CreateProduct {
   final ProductImageStorage _imageStorage;
   static const _uuid = Uuid();
 
-  Future<Result<void, Failure>> call(final CreateProductParams params) async {
+  Future<Result<Product?, Failure>> call(
+    final CreateProductParams params,
+  ) async {
     final productId = _uuid.v4();
 
     final uploaded = await _imageStorage.upload(
@@ -53,7 +55,7 @@ class CreateProduct {
         sizes: params.sizes,
       ),
     );
-    if (created.isSuccess) return const Ok(null);
+    if (created.isSuccess) return created;
 
     final failure = created.getError()!;
     final rolledBack = await _repository.deleteProduct(

@@ -33,7 +33,9 @@ class UpdateProduct {
   final ProductRepository _repository;
   final ProductImageStorage _imageStorage;
 
-  Future<Result<void, Failure>> call(final UpdateProductParams params) async {
+  Future<Result<Product?, Failure>> call(
+    final UpdateProductParams params,
+  ) async {
     final original = params.original;
     final newFiles = <File>[
       for (final item in params.images)
@@ -58,7 +60,7 @@ class UpdateProduct {
       uploadedPaths: uploadedPaths,
       sizes: params.sizes,
     );
-    if (plan.isEmpty) return const Ok(null);
+    if (plan.isEmpty) return Ok(original);
 
     final saved = await _repository.updateProduct(
       original: original,
@@ -76,7 +78,7 @@ class UpdateProduct {
     if (plan.removedImagePaths.isNotEmpty) {
       await _deleteImages(original.storeId, plan.removedImagePaths);
     }
-    return const Ok(null);
+    return saved;
   }
 
   Future<void> _deleteImages(
