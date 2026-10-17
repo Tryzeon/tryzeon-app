@@ -76,7 +76,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
   }
 
   @override
-  Future<Result<void, Failure>> updateUserProfile(
+  Future<Result<UserProfile, Failure>> updateUserProfile(
     final UserProfileUpdate update,
   ) async {
     final UserProfileDto updated;
@@ -89,12 +89,13 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       return Err(mapExceptionToFailure(e));
     }
 
-    await _cacheUpdatedProfile(updated);
-    return const Ok(null);
+    final profile = _mappr.convert<UserProfileDto, UserProfile>(updated);
+    await _cacheUpdatedProfile(profile);
+    return Ok(profile);
   }
 
   @override
-  Future<Result<void, Failure>> updateAvatar(final Avatar avatar) async {
+  Future<Result<UserProfile, Failure>> updateAvatar(final Avatar avatar) async {
     final UserProfileDto updated;
     try {
       updated = await _remoteDataSource.updateAvatar(
@@ -105,15 +106,14 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       return Err(mapExceptionToFailure(e));
     }
 
-    await _cacheUpdatedProfile(updated);
-    return const Ok(null);
+    final profile = _mappr.convert<UserProfileDto, UserProfile>(updated);
+    await _cacheUpdatedProfile(profile);
+    return Ok(profile);
   }
 
-  Future<void> _cacheUpdatedProfile(final UserProfileDto updated) async {
+  Future<void> _cacheUpdatedProfile(final UserProfile profile) async {
     try {
-      await _localDataSource.saveUserProfile(
-        _mappr.convert<UserProfileDto, UserProfile>(updated),
-      );
+      await _localDataSource.saveUserProfile(profile);
     } catch (e, stackTrace) {
       AppLogger.warning(
         'Failed to cache the updated user profile, invalidating cache',
