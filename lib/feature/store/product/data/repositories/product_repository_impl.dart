@@ -84,45 +84,9 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<Result<Product, Failure>> getProductById(
-    final String productId,
+  Future<Result<Product?, Failure>> createProduct(
+    final NewProduct product,
   ) async {
-    try {
-      // 1. Try Local Cache
-      try {
-        final cachedProduct = await _localDataSource.getProductById(productId);
-        switch (cachedProduct) {
-          case CacheHit<Product>(:final data):
-            return Ok(data);
-          case CacheEmpty<Product>():
-          case CacheMiss<Product>():
-            break;
-        }
-      } catch (e, stackTrace) {
-        AppLogger.warning('Local cache read failed', e, stackTrace);
-      }
-
-      // 2. Try Remote
-      final product = _mappr.convert<ProductDto, Product>(
-        await _remoteDataSource.getProduct(productId),
-      );
-
-      // 3. Update Cache
-      try {
-        await _localDataSource.saveProduct(product);
-      } catch (e, stackTrace) {
-        AppLogger.warning('Failed to save product to cache', e, stackTrace);
-      }
-
-      return Ok(product);
-    } catch (e, stackTrace) {
-      AppLogger.error('Failed to get product by ID', e, stackTrace);
-      return Err(mapExceptionToFailure(e));
-    }
-  }
-
-  @override
-  Future<Result<void, Failure>> createProduct(final NewProduct product) async {
     try {
       await _remoteDataSource.insertProduct(
         _mappr.convert<NewProduct, CreateProductRequest>(product),
@@ -138,12 +102,13 @@ class ProductRepositoryImpl implements ProductRepository {
       return Err(mapExceptionToFailure(e));
     }
 
-    await _refreshProduct(storeId: product.storeId, productId: product.id);
-    return const Ok(null);
+    return Ok(
+      await _refreshProduct(storeId: product.storeId, productId: product.id),
+    );
   }
 
   @override
-  Future<Result<void, Failure>> updateProduct({
+  Future<Result<Product?, Failure>> updateProduct({
     required final Product original,
     required final Product target,
     final ProductSizeDiff sizeDiff = const ProductSizeDiff.empty(),
@@ -186,8 +151,9 @@ class ProductRepositoryImpl implements ProductRepository {
       return Err(mapExceptionToFailure(e));
     }
 
-    await _refreshProduct(storeId: original.storeId, productId: original.id);
-    return const Ok(null);
+    return Ok(
+      await _refreshProduct(storeId: original.storeId, productId: original.id),
+    );
   }
 
   @override
@@ -217,30 +183,51 @@ class ProductRepositoryImpl implements ProductRepository {
     return const Ok(null);
   }
 
-  Future<void> _refreshProduct({
+  /// Null when the row was written but reading it back failed; the cache is
+  /// invalidated so the next read refetches.
+  Future<Product?> _refreshProduct({
+    required final String storeId,
+    required final String productId,
+  }) async {
+    final Product product;
+    try {
+      product = _mappr.convert<ProductDto, Product>(
+        await _remoteDataSource.getProduct(productId),
+      );
+    } catch (e, stackTrace) {
+      AppLogger.warning(
+        'Product read-back failed, invalidating cache',
+        e,
+        stackTrace,
+      );
+      await _invalidate(storeId: storeId, productId: productId);
+      return null;
+    }
+
+    try {
+      await _localDataSource.saveProduct(product);
+    } catch (e, stackTrace) {
+      AppLogger.warning(
+        'Failed to cache the product, invalidating cache',
+        e,
+        stackTrace,
+      );
+      await _invalidate(storeId: storeId, productId: productId);
+    }
+    return product;
+  }
+
+  Future<void> _invalidate({
     required final String storeId,
     required final String productId,
   }) async {
     try {
-      await _localDataSource.saveProduct(
-        _mappr.convert<ProductDto, Product>(
-          await _remoteDataSource.getProduct(productId),
-        ),
+      await _localDataSource.invalidateProduct(
+        storeId: storeId,
+        productId: productId,
       );
     } catch (e, stackTrace) {
-      AppLogger.warning(
-        'Product refresh failed, invalidating cache',
-        e,
-        stackTrace,
-      );
-      try {
-        await _localDataSource.invalidateProduct(
-          storeId: storeId,
-          productId: productId,
-        );
-      } catch (e, stackTrace) {
-        AppLogger.error('Failed to invalidate product cache', e, stackTrace);
-      }
+      AppLogger.error('Failed to invalidate product cache', e, stackTrace);
     }
   }
 }

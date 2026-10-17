@@ -14,21 +14,6 @@ class ProductLocalDataSource {
   static const _mappr = StoreProductMappr();
   static String cacheKeyForStore(final String storeId) =>
       'store_products:$storeId';
-  static String cacheKeyForProduct(final String productId) =>
-      'store_product:$productId';
-
-  Future<CacheLookup<Product>> getProductById(final String productId) async {
-    final isar = await _isarService.db;
-    final cacheStatus = await _cacheEntryLocalDataSource.getEntryStatus(
-      cacheKeyForProduct(productId),
-    );
-    if (cacheStatus == null) return const CacheMiss();
-
-    final collection = await isar.productCaches.getByProductId(productId);
-    if (collection == null) return const CacheMiss();
-
-    return CacheHit(_mappr.convert<ProductCache, Product>(collection));
-  }
 
   Future<void> saveProduct(final Product product) async {
     final isar = await _isarService.db;
@@ -43,9 +28,6 @@ class ProductLocalDataSource {
         isEmpty: false,
       );
     }
-    await _cacheEntryLocalDataSource.markHasData(
-      cacheKeyForProduct(product.id),
-    );
   }
 
   Future<CacheLookup<List<Product>>> listProducts({
@@ -127,7 +109,6 @@ class ProductLocalDataSource {
       await isar.productCaches.deleteByProductId(productId);
     });
     await _cacheEntryLocalDataSource.remove(cacheKeyForStore(storeId));
-    await _cacheEntryLocalDataSource.remove(cacheKeyForProduct(productId));
   }
 
   Future<bool> _isStoreListCached(final String storeId) async =>

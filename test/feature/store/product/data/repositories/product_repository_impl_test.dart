@@ -120,12 +120,6 @@ void main() {
         ..status = CacheEntryStatus.hasData.name
         ..fetchedAt = DateTime.now(),
     );
-    await harness.isar.cacheEntrys.putByCacheKey(
-      CacheEntry()
-        ..cacheKey = ProductLocalDataSource.cacheKeyForProduct('p1')
-        ..status = CacheEntryStatus.hasData.name
-        ..fetchedAt = DateTime.now(),
-    );
   });
 
   final remoteProduct = ProductDto(
@@ -189,36 +183,33 @@ void main() {
     },
   );
 
-  test(
-    'getProductById re-fetches when a cached fit no longer decodes',
-    () async {
-      await seedCache(fit: 'skinny');
+  test('listProducts re-fetches when a cached fit no longer decodes', () async {
+    await seedCache(fit: 'skinny');
 
-      final remote = _FakeRemote(remoteProduct);
-      final product = (await buildRepository(
-        remote,
-      ).getProductById('p1')).get()!;
+    final remote = _FakeRemote(remoteProduct);
+    final products = (await buildRepository(
+      remote,
+    ).listProducts(storeId: 's1')).get()!;
 
-      expect(remote.getCalls, 1);
-      expect(product.fit, ProductFit.regular);
+    expect(remote.listCalls, 1);
+    expect(products.single.fit, ProductFit.regular);
 
-      final cached = await harness.isar.productCaches.getByProductId('p1');
-      expect(cached!.fit, 'regular');
-    },
-  );
+    final cached = await harness.isar.productCaches.getByProductId('p1');
+    expect(cached!.fit, 'regular');
+  });
 
   test(
-    'getProductById re-fetches when a cached status no longer decodes',
+    'listProducts re-fetches when a cached status no longer decodes',
     () async {
       await seedCache(status: 'draft');
 
       final remote = _FakeRemote(remoteProduct);
-      final product = (await buildRepository(
+      final products = (await buildRepository(
         remote,
-      ).getProductById('p1')).get()!;
+      ).listProducts(storeId: 's1')).get()!;
 
-      expect(remote.getCalls, 1);
-      expect(product.status, ProductStatus.active);
+      expect(remote.listCalls, 1);
+      expect(products.single.status, ProductStatus.active);
     },
   );
 
@@ -405,15 +396,10 @@ void main() {
 
       final entries = CacheEntryLocalDataSource(harness.service);
       expect(result.isSuccess, isTrue);
+      expect(result.get(), isNull);
       expect(
         await entries.getEntryStatus(
           ProductLocalDataSource.cacheKeyForStore('s1'),
-        ),
-        isNull,
-      );
-      expect(
-        await entries.getEntryStatus(
-          ProductLocalDataSource.cacheKeyForProduct('p1'),
         ),
         isNull,
       );

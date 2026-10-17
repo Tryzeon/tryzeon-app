@@ -68,14 +68,15 @@ void main() {
     updatedAt: DateTime(2026, 6),
   );
 
-  test('getProductById reads back exactly the product it saved', () async {
+  test('saveProduct reads back exactly the product it saved', () async {
     final local = build();
+    await local.saveProducts('s1', const []);
 
     await local.saveProduct(product);
 
     expect(
-      (await local.getProductById('p1') as CacheHit<Product>).data,
-      product,
+      (await local.listProducts(storeId: 's1') as CacheHit<List<Product>>).data,
+      [product],
     );
   });
 
@@ -108,12 +109,6 @@ void main() {
       await build().saveProduct(product);
 
       expect(await entries().getEntryStatus(storeKey), isNull);
-      expect(
-        await entries().getEntryStatus(
-          ProductLocalDataSource.cacheKeyForProduct('p1'),
-        ),
-        CacheEntryStatus.hasData,
-      );
     });
 
     test('saveProduct keeps a cached list complete', () async {
