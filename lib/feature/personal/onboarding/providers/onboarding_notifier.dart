@@ -2,10 +2,9 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
-import 'package:tryzeon/feature/personal/onboarding/domain/usecases/complete_onboarding.dart';
-import 'package:tryzeon/feature/personal/onboarding/providers/personal_onboarding_providers.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/age_range.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/gender.dart';
+import 'package:tryzeon/feature/personal/profile/domain/usecases/complete_onboarding.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -61,23 +60,19 @@ class OnboardingNotifier extends _$OnboardingNotifier {
   Future<Result<void, Failure>> completeOnboarding() async {
     state = state.copyWith(isSubmitting: true);
 
-    final useCase = ref.read(completeOnboardingUseCaseProvider);
-    final result = await useCase(
-      CompleteOnboardingParams(
-        gender: state.gender,
-        ageRange: state.ageRange,
-        stylePreferences: state.stylePreferences.isEmpty
-            ? null
-            : state.stylePreferences,
-      ),
-    );
+    final result = await ref
+        .read(userProfileProvider.notifier)
+        .completeOnboarding(
+          CompleteOnboardingParams(
+            gender: state.gender,
+            ageRange: state.ageRange,
+            stylePreferences: state.stylePreferences.isEmpty
+                ? null
+                : state.stylePreferences,
+          ),
+        );
 
-    state = state.copyWith(isSubmitting: false);
-
-    if (result.isSuccess) {
-      ref.invalidate(userProfileProvider);
-    }
-
-    return result;
+    if (ref.mounted) state = state.copyWith(isSubmitting: false);
+    return result.map((final _) {});
   }
 }

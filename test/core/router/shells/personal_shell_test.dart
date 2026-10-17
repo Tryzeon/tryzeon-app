@@ -16,14 +16,13 @@ import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile_update.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
+import 'package:tryzeon/feature/personal/profile/domain/usecases/complete_tutorial.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
-import 'package:tryzeon/feature/personal/tutorial/domain/usecases/complete_tutorial.dart';
 import 'package:tryzeon/feature/personal/tutorial/presentation/controllers/tutorial_controller.dart';
 import 'package:tryzeon/feature/personal/tutorial/presentation/state/tutorial_state.dart';
 import 'package:tryzeon/feature/personal/tutorial/presentation/widgets/tutorial_overlay.dart';
-import 'package:tryzeon/feature/personal/tutorial/providers/tutorial_providers.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -78,9 +77,9 @@ class _FakeProfile extends UserProfileNotifier {
 
 class _FakeRepository implements UserProfileRepository {
   @override
-  Future<Result<void, Failure>> updateUserProfile(
+  Future<Result<UserProfile, Failure>> updateUserProfile(
     final UserProfileUpdate update,
-  ) async => const Ok(null);
+  ) async => Ok(_profile());
 
   @override
   dynamic noSuchMethod(final Invocation invocation) =>

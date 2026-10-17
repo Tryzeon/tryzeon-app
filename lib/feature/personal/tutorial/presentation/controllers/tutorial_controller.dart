@@ -7,7 +7,6 @@ import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.da
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 import 'package:tryzeon/feature/personal/tutorial/presentation/state/tutorial_state.dart';
-import 'package:tryzeon/feature/personal/tutorial/providers/tutorial_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 part 'tutorial_controller.g.dart';
@@ -57,7 +56,9 @@ class TutorialController extends _$TutorialController {
     if (_persisted) return;
     _persisted = true;
 
-    final result = await ref.read(completeTutorialUseCaseProvider)();
+    final result = await ref
+        .read(userProfileProvider.notifier)
+        .completeTutorial();
     if (result.isFailure) {
       AppLogger.error(
         'Failed to mark the tutorial completed',

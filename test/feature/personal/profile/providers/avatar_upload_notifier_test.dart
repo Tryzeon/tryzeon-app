@@ -13,28 +13,30 @@ import 'package:tryzeon/feature/personal/profile/domain/usecases/upload_user_ava
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
+final _saved = UserProfile(
+  userId: 'u1',
+  isTutorialCompleted: true,
+  name: 'n',
+  createdAt: DateTime(2026),
+  updatedAt: DateTime(2026),
+  avatar: const Avatar.uploaded('u1/avatar/old.jpg'),
+);
+
 class _FakeUserProfileNotifier extends UserProfileNotifier {
   @override
-  Future<UserProfile?> build() async => UserProfile(
-    userId: 'u1',
-    isTutorialCompleted: true,
-    name: 'n',
-    createdAt: DateTime(2026),
-    updatedAt: DateTime(2026),
-    avatar: const Avatar.uploaded('u1/avatar/old.jpg'),
-  );
+  Future<UserProfile?> build() async => _saved;
 }
 
 class _FakeUploadUserAvatar implements UploadUserAvatar {
-  Completer<Result<void, Failure>>? pending;
+  Completer<Result<UserProfile, Failure>>? pending;
   Object? thrown;
   final List<File> calls = [];
 
   @override
-  Future<Result<void, Failure>> call(final File avatarFile) async {
+  Future<Result<UserProfile, Failure>> call(final File avatarFile) async {
     calls.add(avatarFile);
     if (thrown case final error?) throw error;
-    return pending?.future ?? Future.value(const Ok(null));
+    return pending?.future ?? Future.value(Ok(_saved));
   }
 
   @override
@@ -43,12 +45,12 @@ class _FakeUploadUserAvatar implements UploadUserAvatar {
 }
 
 class _FakeSelectPresetAvatar implements SelectPresetAvatar {
-  Completer<Result<void, Failure>>? pending;
-  Result<void, Failure> result = const Ok(null);
+  Completer<Result<UserProfile, Failure>>? pending;
+  Result<UserProfile, Failure> result = Ok(_saved);
   final List<PresetAvatar> calls = [];
 
   @override
-  Future<Result<void, Failure>> call(final PresetAvatar preset) {
+  Future<Result<UserProfile, Failure>> call(final PresetAvatar preset) {
     calls.add(preset);
     return pending?.future ?? Future.value(result);
   }
@@ -156,7 +158,7 @@ void main() {
       const PendingAvatar.preset(PresetAvatar.male),
     );
 
-    selectPresetAvatar.pending!.complete(const Ok(null));
+    selectPresetAvatar.pending!.complete(Ok(_saved));
     await applying;
     expect(container.read(avatarUploadProvider), isNull);
   });
@@ -172,7 +174,7 @@ void main() {
 
     expect(container.read(avatarUploadProvider), PendingAvatar.photo(photo));
 
-    uploadUserAvatar.pending!.complete(const Ok(null));
+    uploadUserAvatar.pending!.complete(Ok(_saved));
     await uploading;
     expect(container.read(avatarUploadProvider), isNull);
   });
@@ -198,7 +200,7 @@ void main() {
     expect(second.getError(), isA<ValidationFailure>());
     expect(selectPresetAvatar.calls, isEmpty);
 
-    uploadUserAvatar.pending!.complete(const Ok(null));
+    uploadUserAvatar.pending!.complete(Ok(_saved));
     expect((await first).isSuccess, isTrue);
     expect(container.read(avatarUploadProvider), isNull);
   });
@@ -218,7 +220,7 @@ void main() {
 
       expect(preview(container)?.path, 'me.jpg');
 
-      uploadUserAvatar.pending!.complete(const Ok(null));
+      uploadUserAvatar.pending!.complete(Ok(_saved));
       await uploading;
       expect(preview(container), isNull);
     });
@@ -241,7 +243,7 @@ void main() {
       await Future<void>.delayed(Duration.zero);
       expect(preview(container)?.path, 'preset_male.jpg');
 
-      selectPresetAvatar.pending!.complete(const Ok(null));
+      selectPresetAvatar.pending!.complete(Ok(_saved));
       expect((await applying).isSuccess, isTrue);
       expect(preview(container), isNull);
     });
@@ -261,7 +263,7 @@ void main() {
       expect(preview(container), isNull);
       expect(container.read(avatarUploadProvider), isNotNull);
 
-      selectPresetAvatar.pending!.complete(const Ok(null));
+      selectPresetAvatar.pending!.complete(Ok(_saved));
       expect((await applying).isSuccess, isTrue);
       expect(selectPresetAvatar.calls, [PresetAvatar.male]);
     });

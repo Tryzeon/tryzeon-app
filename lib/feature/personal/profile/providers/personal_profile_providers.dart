@@ -5,6 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failure_from_error.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/presentation/state/apply_write.dart';
 import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
@@ -140,7 +141,7 @@ CompleteTutorial completeTutorialUseCase(final Ref ref) {
 
 @riverpod
 class UserProfileNotifier extends _$UserProfileNotifier
-    with PullToRefresh<UserProfile?> {
+    with PullToRefresh<UserProfile?>, ApplyWrite<UserProfile?> {
   @override
   Future<UserProfile?> build() async {
     final isLoggedIn = ref.watch(isAuthenticatedProvider);
@@ -157,6 +158,44 @@ class UserProfileNotifier extends _$UserProfileNotifier
   Future<Result<void, Failure>> refresh() => applyRefresh(
     () => ref.read(getUserProfileUseCaseProvider)(forceRefresh: true),
   );
+
+  Future<Result<UserProfile, Failure>> updateProfile(
+    final UpdateUserProfileParams params,
+  ) => _apply(() => ref.read(updateUserProfileUseCaseProvider)(params));
+
+  Future<Result<UserProfile, Failure>> updateBodyMeasurements(
+    final BodyMeasurements measurements,
+  ) => _apply(
+    () => ref.read(updateUserBodyMeasurementsUseCaseProvider)(
+      measurements: measurements,
+    ),
+  );
+
+  Future<Result<UserProfile, Failure>> updateStylePreferences(
+    final List<ClothingStyle> stylePreferences,
+  ) => _apply(
+    () => ref.read(updateStylePreferencesUseCaseProvider)(
+      stylePreferences: stylePreferences,
+    ),
+  );
+
+  Future<Result<UserProfile, Failure>> completeOnboarding(
+    final CompleteOnboardingParams params,
+  ) => _apply(() => ref.read(completeOnboardingUseCaseProvider)(params));
+
+  Future<Result<UserProfile, Failure>> completeTutorial() =>
+      _apply(() => ref.read(completeTutorialUseCaseProvider)());
+
+  Future<Result<UserProfile, Failure>> uploadAvatar(final File image) =>
+      _apply(() => ref.read(uploadUserAvatarUseCaseProvider)(image));
+
+  Future<Result<UserProfile, Failure>> selectPresetAvatar(
+    final PresetAvatar preset,
+  ) => _apply(() => ref.read(selectPresetAvatarUseCaseProvider)(preset));
+
+  Future<Result<UserProfile, Failure>> _apply(
+    final Future<Result<UserProfile, Failure>> Function() write,
+  ) => applyWrite(write, merge: (final _, final written) => written);
 }
 
 @riverpod
@@ -199,16 +238,18 @@ class ProfileEditNotifier extends _$ProfileEditNotifier {
   Future<Result<void, Failure>> updateProfile(
     final UpdateUserProfileParams params,
   ) {
-    return _write(() => ref.read(updateUserProfileUseCaseProvider)(params));
+    return _write(
+      () => ref.read(userProfileProvider.notifier).updateProfile(params),
+    );
   }
 
   Future<Result<void, Failure>> updateBodyMeasurements(
     final BodyMeasurements measurements,
   ) {
     return _write(
-      () => ref.read(updateUserBodyMeasurementsUseCaseProvider)(
-        measurements: measurements,
-      ),
+      () => ref
+          .read(userProfileProvider.notifier)
+          .updateBodyMeasurements(measurements),
     );
   }
 
@@ -216,24 +257,21 @@ class ProfileEditNotifier extends _$ProfileEditNotifier {
     final List<ClothingStyle> stylePreferences,
   ) {
     return _write(
-      () => ref.read(updateStylePreferencesUseCaseProvider)(
-        stylePreferences: stylePreferences,
-      ),
+      () => ref
+          .read(userProfileProvider.notifier)
+          .updateStylePreferences(stylePreferences),
     );
   }
 
   /// Kept alive for the duration, so a form popped mid-write doesn't dispose
   /// this notifier out from under the pending `state` write.
   Future<Result<void, Failure>> _write(
-    final Future<Result<void, Failure>> Function() write,
+    final Future<Result<UserProfile, Failure>> Function() write,
   ) async {
     final link = ref.keepAlive();
     state = const AsyncLoading();
     try {
-      final result = await write();
-      if (result.isSuccess) {
-        ref.invalidate(userProfileProvider);
-      }
+      final result = (await write()).map((final _) {});
       state = result.isFailure
           ? AsyncError(result.getError()!, StackTrace.current)
           : const AsyncData(null);
@@ -278,29 +316,27 @@ class AvatarUploadNotifier extends _$AvatarUploadNotifier {
   Future<Result<void, Failure>> applyPreset(final PresetAvatar preset) =>
       _replace(
         PendingAvatar.preset(preset),
-        () => ref.read(selectPresetAvatarUseCaseProvider)(preset),
+        () => ref.read(userProfileProvider.notifier).selectPresetAvatar(preset),
       );
 
   Future<Result<void, Failure>> upload(final File image) => _replace(
     PendingAvatar.photo(image),
-    () => ref.read(uploadUserAvatarUseCaseProvider)(image),
+    () => ref.read(userProfileProvider.notifier).uploadAvatar(image),
   );
 
   /// Exclusive through the reload: interleaved replacements would each read
   /// the same previous avatar, orphaning one upload in storage.
   Future<Result<void, Failure>> _replace(
     final PendingAvatar pending,
-    final Future<Result<void, Failure>> Function() write,
+    final Future<Result<UserProfile, Failure>> Function() write,
   ) async {
     if (state != null) return const Err(ValidationFailure());
     state = pending;
     final link = ref.keepAlive();
     try {
-      final result = await write();
+      final result = (await write()).map((final _) {});
 
       if (result.isSuccess) {
-        ref.invalidate(userProfileProvider);
-        ref.invalidate(avatarFileProvider);
         try {
           await ref.read(avatarFileProvider.future);
         } catch (e, stackTrace) {

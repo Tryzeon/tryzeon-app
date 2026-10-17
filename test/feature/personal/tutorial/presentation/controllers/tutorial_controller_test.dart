@@ -11,15 +11,14 @@ import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile_update.dart';
 import 'package:tryzeon/feature/personal/profile/domain/repositories/user_profile_repository.dart';
+import 'package:tryzeon/feature/personal/profile/domain/usecases/complete_tutorial.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_feedback.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_subject.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
-import 'package:tryzeon/feature/personal/tutorial/domain/usecases/complete_tutorial.dart';
 import 'package:tryzeon/feature/personal/tutorial/presentation/controllers/tutorial_controller.dart';
 import 'package:tryzeon/feature/personal/tutorial/presentation/state/tutorial_state.dart';
-import 'package:tryzeon/feature/personal/tutorial/providers/tutorial_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 UserProfile _profile({
@@ -89,11 +88,15 @@ class _FakeRepository implements UserProfileRepository {
   final updates = <UserProfileUpdate>[];
 
   @override
-  Future<Result<void, Failure>> updateUserProfile(
+  Future<Result<UserProfile, Failure>> updateUserProfile(
     final UserProfileUpdate update,
   ) async {
     updates.add(update);
-    return fails ? const Err(ValidationFailure()) : const Ok(null);
+    return fails
+        ? const Err(ValidationFailure())
+        : Ok(
+            _profile(isTutorialCompleted: update.isTutorialCompleted ?? false),
+          );
   }
 
   @override
@@ -263,6 +266,23 @@ void main() {
       const UserProfileUpdate(isTutorialCompleted: true),
     ]);
   });
+
+  test(
+    'reaching the review step marks the profile completed in memory',
+    () async {
+      await start(_profile(avatar: const Avatar.uploaded('u1/avatar/a.jpg')));
+      addPending('r1');
+
+      succeed('r1');
+      await pumpEventQueue();
+
+      expect(
+        container.read(userProfileProvider).value!.isTutorialCompleted,
+        isTrue,
+      );
+      expect(state(), const TutorialState.reviewResult('r1'));
+    },
+  );
 
   test('done after the review step hides without writing again', () async {
     await start(_profile(avatar: const Avatar.uploaded('u1/avatar/a.jpg')));
