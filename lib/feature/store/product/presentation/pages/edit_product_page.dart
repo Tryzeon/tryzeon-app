@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
@@ -52,8 +53,9 @@ class _EditProductContent extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final formData = useProductForm(initialProduct: product);
-    final sizeManager = useProductSizeManager(initialSizes: product.sizes);
+    final baseline = useMemoized(() => product);
+    final formData = useProductForm(initialProduct: baseline);
+    final sizeManager = useProductSizeManager(initialSizes: baseline.sizes);
     final voiceInput = useSizeVoiceInput(ref: ref, sizeManager: sizeManager);
     final mutation = ref.watch(productEditProvider);
     final isSaving = mutation == ProductMutation.update;
@@ -98,7 +100,7 @@ class _EditProductContent extends HookConsumerWidget {
       final result = await ref
           .read(productEditProvider.notifier)
           .update(
-            productId: product.id,
+            original: baseline,
             draft: formData.toDraft(),
             images: formData.images.value,
             sizes: sizeManager.toSizeItems(

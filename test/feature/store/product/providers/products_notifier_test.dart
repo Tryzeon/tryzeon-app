@@ -26,7 +26,6 @@ const _draft = ProductDraft(
 
 class _FakeListProducts implements ListProducts {
   var loads = 0;
-  Failure? failure;
 
   @override
   Future<Result<List<Product>, Failure>> call({
@@ -34,7 +33,6 @@ class _FakeListProducts implements ListProducts {
     final bool forceRefresh = false,
   }) async {
     loads++;
-    if (failure case final failure?) return Err(failure);
     return Ok([product('a'), product('b')]);
   }
 
@@ -57,10 +55,15 @@ class _FakeCreateProduct implements CreateProduct {
 }
 
 class _FakeUpdateProduct implements UpdateProduct {
+  UpdateProductParams? received;
+
   @override
   Future<Result<Product?, Failure>> call(
     final UpdateProductParams params,
-  ) async => Ok(params.original.copyWith(name: params.draft.name));
+  ) async {
+    received = params;
+    return Ok(params.original.copyWith(name: params.draft.name));
+  }
 
   @override
   dynamic noSuchMethod(final Invocation invocation) =>
@@ -100,11 +103,13 @@ void main() {
   late _FakeListProducts list;
   late _FakeCreateProduct create;
   late _FakeSetProductStatus setStatus;
+  late _FakeUpdateProduct update;
 
   setUp(() async {
     list = _FakeListProducts();
     create = _FakeCreateProduct();
     setStatus = _FakeSetProductStatus();
+    update = _FakeUpdateProduct();
     container = ProviderContainer(
       retry: (final _, final _) => null,
       overrides: [
@@ -113,7 +118,7 @@ void main() {
         ),
         listProductsUseCaseProvider.overrideWithValue(list),
         createProductUseCaseProvider.overrideWithValue(create),
-        updateProductUseCaseProvider.overrideWithValue(_FakeUpdateProduct()),
+        updateProductUseCaseProvider.overrideWithValue(update),
         setProductStatusUseCaseProvider.overrideWithValue(setStatus),
         deleteProductUseCaseProvider.overrideWithValue(_FakeDeleteProduct()),
       ],
@@ -142,7 +147,7 @@ void main() {
 
   test('updateProduct replaces the product in place', () async {
     await owner().updateProduct(
-      productId: 'b',
+      original: product('b'),
       draft: _draft,
       images: const [],
       sizes: const [],
@@ -194,7 +199,7 @@ void main() {
     await container.read(productByIdProvider('b').future);
 
     await owner().updateProduct(
-      productId: 'b',
+      original: product('b'),
       draft: _draft,
       images: const [],
       sizes: const [],
@@ -208,22 +213,18 @@ void main() {
   });
 
   test(
-    'updateProduct while the list failed to load returns that failure',
+    'updateProduct diffs against the form baseline, not the latest list',
     () async {
-      list.failure = const NetworkFailure();
-      container.invalidate(productsProvider);
-      await container
-          .read(productsProvider.future)
-          .catchError((final _) => <Product>[]);
+      final baseline = product('b').copyWith(name: 'seen in the form');
 
-      final result = await owner().updateProduct(
-        productId: 'a',
+      await owner().updateProduct(
+        original: baseline,
         draft: _draft,
         images: const [],
         sizes: const [],
       );
 
-      expect(result.getError(), isA<NetworkFailure>());
+      expect(update.received!.original, baseline);
     },
   );
 }

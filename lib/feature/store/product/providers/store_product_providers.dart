@@ -194,31 +194,24 @@ class ProductsNotifier extends _$ProductsNotifier
         created == null ? null : [created, ...products],
   );
 
-  /// The original the draft is diffed against is read here rather than taken
-  /// from the form, so a stale form can't clobber server-owned fields.
+  /// [original] is the product the form was filled from, so only what the
+  /// user changed is written and sizes or images added elsewhere are kept.
   Future<Result<Product?, Failure>> updateProduct({
-    required final String productId,
+    required final Product original,
     required final ProductDraft draft,
     required final List<ImageItem> images,
     required final List<SizeItem> sizes,
-  }) => applyWrite(() async {
-    final List<Product> products;
-    try {
-      products = await future;
-    } on Failure catch (e) {
-      return Err(e);
-    }
-    final original = products.where((final p) => p.id == productId).firstOrNull;
-    if (original == null) return const Err(NotFoundFailure());
-    return ref.read(updateProductUseCaseProvider)(
+  }) => applyWrite(
+    () => ref.read(updateProductUseCaseProvider)(
       UpdateProductParams(
         original: original,
         draft: draft,
         images: images,
         sizes: sizes,
       ),
-    );
-  }, merge: _replace);
+    ),
+    merge: _replace,
+  );
 
   Future<Result<Product?, Failure>> setProductStatus({
     required final Product product,
@@ -338,14 +331,14 @@ class ProductEditNotifier extends _$ProductEditNotifier {
   );
 
   Future<Result<void, Failure>> update({
-    required final String productId,
+    required final Product original,
     required final ProductDraft draft,
     required final List<ImageItem> images,
     required final List<SizeItem> sizes,
   }) => _write(
     ProductMutation.update,
     () => _products.updateProduct(
-      productId: productId,
+      original: original,
       draft: draft,
       images: images,
       sizes: sizes,

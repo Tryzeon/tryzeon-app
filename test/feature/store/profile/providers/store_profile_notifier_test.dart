@@ -12,10 +12,9 @@ import 'package:typed_result/typed_result.dart';
 import '../../../../support/store_test_doubles.dart';
 
 class _FakeGetStoreProfile implements GetStoreProfile {
-  _FakeGetStoreProfile(this.profile, {this.failure});
+  _FakeGetStoreProfile(this.profile);
 
   final StoreProfile? profile;
-  final Failure? failure;
   var loads = 0;
 
   @override
@@ -23,7 +22,6 @@ class _FakeGetStoreProfile implements GetStoreProfile {
     final bool forceRefresh = false,
   }) async {
     loads++;
-    if (failure case final failure?) return Err(failure);
     return Ok(profile);
   }
 
@@ -54,11 +52,8 @@ void main() {
   late _FakeGetStoreProfile getProfile;
   late _FakeUpdateStoreProfile update;
 
-  ProviderContainer makeContainer(
-    final StoreProfile? profile, {
-    final Failure? failure,
-  }) {
-    getProfile = _FakeGetStoreProfile(profile, failure: failure);
+  ProviderContainer makeContainer(final StoreProfile? profile) {
+    getProfile = _FakeGetStoreProfile(profile);
     update = _FakeUpdateStoreProfile();
     final container = ProviderContainer(
       retry: (final _, final _) => null,
@@ -74,9 +69,13 @@ void main() {
   }
 
   Future<Result<({StoreProfile profile, bool addressUnresolved}), Failure>>
-  save(final ProviderContainer container) => container
+  save(
+    final ProviderContainer container, {
+    required final StoreProfile original,
+  }) => container
       .read(storeProfileProvider.notifier)
       .save(
+        original: original,
         name: 'renamed',
         address: null,
         channels: {StoreChannel.online},
@@ -87,33 +86,23 @@ void main() {
     final container = makeContainer(storeProfile());
     await container.read(storeProfileProvider.future);
 
-    final result = await save(container);
+    final result = await save(container, original: storeProfile());
 
     expect(result.get()!.addressUnresolved, isTrue);
     expect(container.read(storeProfileProvider).value!.name, 'renamed');
-    expect(update.received!.original, storeProfile());
     expect(getProfile.loads, 1);
   });
 
-  test('save without a profile fails with AuthFailure', () async {
-    final container = makeContainer(null);
-    await container.read(storeProfileProvider.future);
+  test(
+    'save diffs against the form baseline, not the latest profile',
+    () async {
+      final container = makeContainer(storeProfile(name: 'renamed elsewhere'));
+      await container.read(storeProfileProvider.future);
+      final baseline = storeProfile(name: 'seen in the form');
 
-    final result = await save(container);
+      await save(container, original: baseline);
 
-    expect(result.getError(), isA<AuthFailure>());
-    expect(update.received, isNull);
-  });
-
-  test('save while the profile failed to load returns that failure', () async {
-    final container = makeContainer(null, failure: const NetworkFailure());
-    await container
-        .read(storeProfileProvider.future)
-        .catchError((final _) => null);
-
-    final result = await save(container);
-
-    expect(result.getError(), isA<NetworkFailure>());
-    expect(update.received, isNull);
-  });
+      expect(update.received!.original, baseline);
+    },
+  );
 }

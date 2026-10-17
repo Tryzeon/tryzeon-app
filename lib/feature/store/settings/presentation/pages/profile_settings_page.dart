@@ -57,27 +57,28 @@ class _StoreProfileForm extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
+    final baseline = useMemoized(() => profile);
     final formKey = useMemoized(GlobalKey<FormState>.new);
     final newLogoImage = useState<File?>(null);
     final isLoading = ref.watch(storeProfileEditProvider).isLoading;
 
-    final storeNameController = useTextEditingController(text: profile.name);
+    final storeNameController = useTextEditingController(text: baseline.name);
     final storeAddressController = useTextEditingController(
-      text: profile.address,
+      text: baseline.address,
     );
 
     final storeName = useValueListenable(storeNameController).text;
     final storeAddress = useValueListenable(storeAddressController).text;
     final newLogo = newLogoImage.value;
-    final selectedChannels = useState<Set<StoreChannel>>(profile.channels);
+    final selectedChannels = useState<Set<StoreChannel>>(baseline.channels);
 
     final channelsChanged = !setEquals(
       selectedChannels.value,
-      profile.channels,
+      baseline.channels,
     );
 
     String initialContact(final OrderContactType type) {
-      for (final c in profile.orderContacts) {
+      for (final c in baseline.orderContacts) {
         if (c.type == type) return c.value;
       }
       return '';
@@ -112,12 +113,12 @@ class _StoreProfileForm extends HookConsumerWidget {
 
     final contactsChanged = !listEquals(
       buildOrderContacts(),
-      profile.orderContacts,
+      baseline.orderContacts,
     );
 
     final hasChanges =
-        storeName.trim() != profile.name ||
-        storeAddress.trim() != (profile.address ?? '') ||
+        storeName.trim() != baseline.name ||
+        storeAddress.trim() != (baseline.address ?? '') ||
         newLogo != null ||
         channelsChanged ||
         contactsChanged;
@@ -133,6 +134,7 @@ class _StoreProfileForm extends HookConsumerWidget {
       final result = await ref
           .read(storeProfileEditProvider.notifier)
           .save(
+            original: baseline,
             name: storeNameController.text.trim(),
             address: trimmedAddress.isEmpty ? null : trimmedAddress,
             channels: selectedChannels.value,
@@ -180,7 +182,7 @@ class _StoreProfileForm extends HookConsumerWidget {
         );
       }
 
-      final logoUrl = profile.logoUrl;
+      final logoUrl = baseline.logoUrl;
       if (logoUrl == null || logoUrl.isEmpty) {
         return Container(
           width: size,

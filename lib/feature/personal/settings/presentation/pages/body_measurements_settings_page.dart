@@ -51,13 +51,14 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
+    final baseline = useMemoized(() => profile);
     final formKey = useMemoized(GlobalKey<FormState>.new);
 
     final measurementControllers =
         <BodyMeasurementType, TextEditingController>{};
     for (final type in BodyMeasurementType.values) {
       measurementControllers[type] = useTextEditingController(
-        text: profile.measurements[type]?.toString() ?? '',
+        text: baseline.measurements[type]?.toString() ?? '',
       );
     }
 
@@ -69,7 +70,7 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
       final currentValue = useValueListenable(
         measurementControllers[type]!,
       ).text;
-      final originalValue = profile.measurements[type]?.toString() ?? '';
+      final originalValue = baseline.measurements[type]?.toString() ?? '';
       final currentDouble = double.tryParse(currentValue);
       final originalDouble = double.tryParse(originalValue);
 
@@ -95,7 +96,10 @@ class _BodyMeasurementsForm extends HookConsumerWidget {
 
       final result = await ref
           .read(profileEditProvider.notifier)
-          .updateBodyMeasurements(measurements);
+          .updateBodyMeasurements(
+            original: baseline,
+            measurements: measurements,
+          );
 
       if (!context.mounted) return;
 

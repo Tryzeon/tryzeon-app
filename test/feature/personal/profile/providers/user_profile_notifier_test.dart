@@ -91,7 +91,7 @@ void main() {
 
   test('updateProfile shows the saved profile without refetching', () async {
     final result = await owner().updateProfile(
-      const UpdateUserProfileParams(name: 'renamed'),
+      UpdateUserProfileParams(original: _profile(), name: 'renamed'),
     );
 
     expect(result.get()!.name, 'renamed');
@@ -103,7 +103,7 @@ void main() {
     repository.updateResult = const Err(NetworkFailure());
 
     final result = await owner().updateProfile(
-      const UpdateUserProfileParams(name: 'renamed'),
+      UpdateUserProfileParams(original: _profile(), name: 'renamed'),
     );
 
     expect(result.getError(), isA<NetworkFailure>());

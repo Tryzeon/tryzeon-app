@@ -163,18 +163,22 @@ class UserProfileNotifier extends _$UserProfileNotifier
     final UpdateUserProfileParams params,
   ) => _apply(() => ref.read(updateUserProfileUseCaseProvider)(params));
 
-  Future<Result<UserProfile, Failure>> updateBodyMeasurements(
-    final BodyMeasurements measurements,
-  ) => _apply(
+  Future<Result<UserProfile, Failure>> updateBodyMeasurements({
+    required final UserProfile original,
+    required final BodyMeasurements measurements,
+  }) => _apply(
     () => ref.read(updateUserBodyMeasurementsUseCaseProvider)(
+      original: original,
       measurements: measurements,
     ),
   );
 
-  Future<Result<UserProfile, Failure>> updateStylePreferences(
-    final List<ClothingStyle> stylePreferences,
-  ) => _apply(
+  Future<Result<UserProfile, Failure>> updateStylePreferences({
+    required final UserProfile original,
+    required final List<ClothingStyle> stylePreferences,
+  }) => _apply(
     () => ref.read(updateStylePreferencesUseCaseProvider)(
+      original: original,
       stylePreferences: stylePreferences,
     ),
   );
@@ -243,23 +247,31 @@ class ProfileEditNotifier extends _$ProfileEditNotifier {
     );
   }
 
-  Future<Result<void, Failure>> updateBodyMeasurements(
-    final BodyMeasurements measurements,
-  ) {
+  Future<Result<void, Failure>> updateBodyMeasurements({
+    required final UserProfile original,
+    required final BodyMeasurements measurements,
+  }) {
     return _write(
       () => ref
           .read(userProfileProvider.notifier)
-          .updateBodyMeasurements(measurements),
+          .updateBodyMeasurements(
+            original: original,
+            measurements: measurements,
+          ),
     );
   }
 
-  Future<Result<void, Failure>> updateStylePreferences(
-    final List<ClothingStyle> stylePreferences,
-  ) {
+  Future<Result<void, Failure>> updateStylePreferences({
+    required final UserProfile original,
+    required final List<ClothingStyle> stylePreferences,
+  }) {
     return _write(
       () => ref
           .read(userProfileProvider.notifier)
-          .updateStylePreferences(stylePreferences),
+          .updateStylePreferences(
+            original: original,
+            stylePreferences: stylePreferences,
+          ),
     );
   }
 

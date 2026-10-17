@@ -85,26 +85,18 @@ class StoreProfileNotifier extends _$StoreProfileNotifier
     () => ref.read(getStoreProfileUseCaseProvider)(forceRefresh: true),
   );
 
-  /// The profile the edits merge onto is read here rather than taken from the
-  /// form, so a stale form can't clobber server-owned fields.
+  /// [original] is the profile the form was filled from, so only the fields
+  /// the user changed are written.
   Future<Result<({StoreProfile profile, bool addressUnresolved}), Failure>>
   save({
+    required final StoreProfile original,
     required final String name,
     required final String? address,
     required final Set<StoreChannel> channels,
     required final List<StoreOrderContact> orderContacts,
     final File? logoFile,
-  }) => applyWrite(() async {
-    final StoreProfile? original;
-    try {
-      original = await future;
-    } on Failure catch (e) {
-      return Err(e);
-    }
-    if (original == null) {
-      return const Err(AuthFailure('無法獲取店家資訊，請重新登入'));
-    }
-    return ref.read(updateStoreProfileUseCaseProvider)(
+  }) => applyWrite(
+    () => ref.read(updateStoreProfileUseCaseProvider)(
       UpdateStoreProfileParams(
         original: original,
         draft: StoreProfileDraft(
@@ -115,8 +107,9 @@ class StoreProfileNotifier extends _$StoreProfileNotifier
         ),
         logoFile: logoFile,
       ),
-    );
-  }, merge: (final _, final saved) => saved.profile);
+    ),
+    merge: (final _, final saved) => saved.profile,
+  );
 }
 
 @riverpod
@@ -125,6 +118,7 @@ class StoreProfileEditNotifier extends _$StoreProfileEditNotifier {
   AsyncValue<void> build() => const AsyncData(null);
 
   Future<Result<({bool addressUnresolved}), Failure>> save({
+    required final StoreProfile original,
     required final String name,
     required final String? address,
     required final Set<StoreChannel> channels,
@@ -140,6 +134,7 @@ class StoreProfileEditNotifier extends _$StoreProfileEditNotifier {
           (await ref
                   .read(storeProfileProvider.notifier)
                   .save(
+                    original: original,
                     name: name,
                     address: address,
                     channels: channels,

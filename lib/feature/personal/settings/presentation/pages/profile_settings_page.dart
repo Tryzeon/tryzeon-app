@@ -51,17 +51,18 @@ class _PersonalProfileForm extends HookConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
+    final baseline = useMemoized(() => profile);
     final formKey = useMemoized(GlobalKey<FormState>.new);
-    final nameController = useTextEditingController(text: profile.name);
-    final ageRange = useState<AgeRange?>(profile.ageRange);
-    final gender = useState<Gender?>(profile.gender);
+    final nameController = useTextEditingController(text: baseline.name);
+    final ageRange = useState<AgeRange?>(baseline.ageRange);
+    final gender = useState<Gender?>(baseline.gender);
     final isLoading = ref.watch(profileEditProvider).isLoading;
 
     final userName = useValueListenable(nameController).text;
 
-    final nameChanged = userName.trim() != profile.name;
-    final ageChanged = ageRange.value != profile.ageRange;
-    final genderChanged = gender.value != profile.gender;
+    final nameChanged = userName.trim() != baseline.name;
+    final ageChanged = ageRange.value != baseline.ageRange;
+    final genderChanged = gender.value != baseline.gender;
     final hasChanges = nameChanged || ageChanged || genderChanged;
 
     final theme = Theme.of(context);
@@ -75,6 +76,7 @@ class _PersonalProfileForm extends HookConsumerWidget {
           .read(profileEditProvider.notifier)
           .updateProfile(
             UpdateUserProfileParams(
+              original: baseline,
               name: nameController.text.trim(),
               gender: gender.value,
               ageRange: ageRange.value,

@@ -11,8 +11,10 @@ class UpdateUserBodyMeasurements {
   final UserProfileRepository _repository;
 
   Future<Result<UserProfile, Failure>> call({
+    required final UserProfile original,
     required final BodyMeasurements measurements,
-  }) {
+  }) async {
+    if (measurements == original.measurements) return Ok(original);
     return _repository.updateUserProfile(
       UserProfileUpdate(measurements: measurements),
     );
