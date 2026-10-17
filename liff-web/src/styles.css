@@ -11,6 +11,7 @@
   --muted-text: #6b6b6b;
   --err-surface: #ffdad6;
   --err-ink: #410002;
+  --cutout: #ebe7e0;
 
   --serif: "Playfair Display", Georgia, serif;
   --sans: "Outfit", "Noto Sans TC", system-ui, -apple-system, sans-serif;
@@ -962,100 +963,103 @@ button, label { touch-action: manipulation; }
   scrollbar-width: none;
 }
 .chat__row::-webkit-scrollbar { display: none; }
-.chat__rowcard { flex: none; width: 152px; scroll-snap-align: start; }
-.chat__lookcard { flex: none; display: flex; width: 276px; scroll-snap-align: start; }
+.chat__rowcard { flex: none; width: 156px; scroll-snap-align: start; }
+.chat__lookcard { flex: none; display: flex; width: 290px; scroll-snap-align: start; }
 
-/* Chat cards: the photo fills its frame and the words sit below it, so a busy
-   shop photo never fights the type. Only the source line and the price carry
-   weight; the name steps back to muted. */
-.ccard { position: relative; display: flex; flex-direction: column; color: var(--ink); text-align: left; }
+/* Chat cards: the photo is the card and the words sit on a scrim over its
+   foot. Products and wardrobe items share the frame; the backdrop shows
+   through a transparent cutout. */
+/* In-flow info rather than an absolute box, so the stretched link below
+   measures against the card; the isolated stacking context lets the photo sit
+   beneath it. */
+.ccard {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  aspect-ratio: 15 / 22;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--cutout);
+  color: #fff;
+  text-align: left;
+}
 .ccard--link { transition: transform 0.12s ease; }
 .ccard--link:active:not(:has(.ccard__try:active)) { transform: scale(0.97); }
-.ccard__media {
-  position: relative;
-  aspect-ratio: 3 / 4;
-  margin-bottom: 10px;
-  border-radius: var(--r-card);
-  overflow: hidden;
-  background: var(--surface);
+.ccard__img { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; object-fit: cover; }
+.ccard__info {
+  display: flex;
+  flex-direction: column;
+  padding: 24px 12px 12px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.5) 50%);
 }
-.ccard__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-/* A wardrobe photo is a cutout: set it whole on the frame, never cropped. */
-.ccard__img--cutout { inset: 12px; width: calc(100% - 24px); height: calc(100% - 24px); object-fit: contain; }
-.ccard__source {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+.ccard__source,
+.ccard__name {
+  display: block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.ccard__name {
-  margin-top: 2px;
-  font-size: 13px;
-  line-height: 1.4;
-  color: var(--muted-text);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+.ccard__source {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.8);
 }
+.ccard__name { margin-top: 2px; font-size: 13px; font-weight: 500; }
 .ccard__open {
+  min-width: 0;
   padding: 0;
   border: 0;
   background: none;
+  color: inherit;
   font: inherit;
   text-align: inherit;
   cursor: pointer;
 }
 /* The name's link covers the whole card; the try-on sits above it. */
-.ccard__open::after { content: ""; position: absolute; inset: 0; border-radius: var(--r-card); }
+.ccard__open::after { content: ""; position: absolute; inset: 0; }
 .ccard__open:focus-visible { outline: none; }
-.ccard__open:focus-visible::after { outline: 2px solid var(--ink); outline-offset: 2px; }
-.ccard__price { margin-top: 4px; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.ccard__open:focus-visible::after { outline: 2px solid #fff; outline-offset: -3px; border-radius: 16px; }
+.ccard__row { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: 4px; }
+.ccard__price { min-width: 0; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.ccard__price--owned { font-size: 12px; font-weight: 500; color: rgba(255, 255, 255, 0.8); }
 .ccard__try {
-  position: absolute;
+  position: relative;
   z-index: 1;
-  right: 8px;
-  bottom: 8px;
   display: flex;
+  flex: none;
   align-items: center;
   gap: 4px;
-  height: 30px;
-  padding: 0 11px 0 9px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
   border-radius: var(--r-pill);
-  background: rgba(26, 26, 26, 0.7);
-  backdrop-filter: blur(12px);
-  color: #fff;
+  background: #fff;
+  color: var(--ink);
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.04em;
   cursor: pointer;
 }
-/* The pill stays small on the photo; the tap area around it reaches 46px. */
 .ccard__try::after { content: ""; position: absolute; inset: -8px; }
 .ccard__try svg { width: 12px; height: 12px; }
 .ccard__try:disabled { opacity: 0.55; cursor: default; }
-.ccard__try:focus-visible { outline-color: #fff; }
 
-/* A label on a photo: the try-on pill's glass, cut square so it reads as a
-   tag rather than a control. */
+/* A label on a photo. The stroke keeps the white pill visible on a white
+   product shot or the cutout backdrop. */
 .ctag {
   position: absolute;
   top: 8px;
   left: 8px;
-  padding: 3px 7px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 4px;
-  background: rgba(26, 26, 26, 0.7);
-  backdrop-filter: blur(12px);
-  color: #fff;
-  font-size: 11px;
+  padding: 2px 8px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: var(--r-pill);
+  background: #fff;
+  color: var(--ink);
+  font-size: 10px;
   font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: 0.04em;
+  line-height: 1.4;
   /* The label is model-written and only the prompt bounds its length. */
   max-width: calc(100% - 16px);
   white-space: nowrap;
@@ -1063,73 +1067,85 @@ button, label { touch-action: manipulation; }
   text-overflow: ellipsis;
 }
 
-.look { display: flex; flex-direction: column; width: 100%; color: var(--ink); }
-/* One frame for every look, so a row of them lines up whatever the piece
-   count. 9:8 is the frame in which a trio's 2:1 lead and its stacked pair all
-   stand 3:4, like the shop photos they hold; a pair halves it. */
+/* The words lie over the collage's foot and let taps through to the cells
+   beneath; only the try-on button catches them. */
+.look {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 290 / 388;
+  border-radius: 16px;
+  overflow: hidden;
+  color: #fff;
+}
 .look__collage {
+  position: absolute;
+  inset: 0;
   display: grid;
   gap: 2px;
-  aspect-ratio: 9 / 8;
-  margin-bottom: 12px;
-  border-radius: var(--r-card);
-  overflow: hidden;
   background: var(--bg);
 }
 .look__collage--2 { grid-template-columns: 1fr 1fr; }
-.look__collage--3 { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; }
+.look__collage--3 { grid-template-columns: 3fr 2fr; grid-template-rows: 1fr 1fr; }
 .look__collage--3 > :first-child { grid-row: 1 / 3; }
-.look__cell { position: relative; padding: 0; border: 0; overflow: hidden; background: var(--surface); }
+.look__cell { position: relative; padding: 0; border: 0; overflow: hidden; background: var(--cutout); }
 button.look__cell { cursor: pointer; }
+.look__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 /* Inset: the collage clips anything drawn outside a cell. */
 .look__cell:focus-visible { outline-offset: -2px; }
-.look__text { display: flex; flex-direction: column; padding-bottom: 16px; }
+.look__over {
+  position: absolute;
+  inset: auto 0 0;
+  display: flex;
+  flex-direction: column;
+  padding: 48px 14px 14px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.5) 50%);
+  pointer-events: none;
+}
 .look__title {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 600;
-  letter-spacing: -0.01em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .look__reason {
-  margin-top: 4px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--muted-text);
+  margin-top: 3px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.82);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.look__foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: auto;
-  padding-top: 12px;
-  border-top: 1px solid var(--line);
+.look__foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; }
+.look__sum {
+  min-width: 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.look__sum { display: flex; flex-direction: column; min-width: 0; font-size: 12px; color: var(--muted-text); }
-.look__sum b { margin-top: 2px; font-size: 16px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.look__sum b { margin-left: 4px; font-size: 15px; font-weight: 600; color: #fff; font-variant-numeric: tabular-nums; }
+.look__sum--own { color: #fff; }
 .look__try {
   display: flex;
+  flex: none;
   align-items: center;
   gap: 6px;
-  flex: none;
-  height: 44px;
+  height: 38px;
   padding: 0 16px;
   border: 0;
-  border-radius: var(--r-btn);
-  background: var(--ink);
-  color: #fff;
+  border-radius: var(--r-pill);
+  background: #fff;
+  color: var(--ink);
   font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.08em;
   cursor: pointer;
+  pointer-events: auto;
 }
-.look__try svg { width: 13px; height: 13px; }
+.look__try svg { width: 12px; height: 12px; }
 .look__try:disabled { opacity: 0.55; cursor: default; }
 
 .chat__step {

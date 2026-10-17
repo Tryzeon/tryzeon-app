@@ -1,7 +1,8 @@
+import type { ReactNode } from "react";
 import type { CatalogItem } from "../api/catalog";
 import type { Garment } from "../api/tryon";
 import { useWardrobeImage } from "../hooks/useWardrobeImage";
-import { garmentTypeLabel, tryonGarment } from "../lib/garment";
+import { tryonGarment, wardrobeCardName } from "../lib/garment";
 import { priceText } from "../lib/price";
 import type { ResolvedItem } from "../state/chat";
 import { FadeImage } from "./FadeImage";
@@ -29,21 +30,47 @@ function TryonChip({ name, onClick, disabled }: { name: string; onClick(): void;
   );
 }
 
+interface CardFrameProps {
+  image: ReactNode;
+  highlight?: string;
+  source?: string;
+  name: ReactNode;
+  value: ReactNode;
+  tryon: ReactNode;
+  link?: boolean;
+}
+
+function CardFrame({ image, highlight, source, name, value, tryon, link }: CardFrameProps) {
+  return (
+    <div className={link ? "ccard ccard--link" : "ccard"}>
+      {image}
+      {highlight && <span className="ctag">{highlight}</span>}
+      <div className="ccard__info">
+        {source && <span className="ccard__source">{source}</span>}
+        {name}
+        <div className="ccard__row">
+          {value}
+          {tryon}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function WardrobeItemCard(
   { item, highlight, onTryon, tryonDisabled }: { item: ResolvedWardrobe; highlight?: string } & ChatTryonProps,
 ) {
   const src = useWardrobeImage(item.imagePath);
-  const name = garmentTypeLabel(item.garmentType);
+  const name = wardrobeCardName(item.garmentType, item.tags);
   return (
-    <div className="ccard">
-      <div className="ccard__media">
-        {src && <FadeImage className="ccard__img ccard__img--cutout" src={src} alt="" loading="lazy" />}
-        {highlight && <span className="ctag">{highlight}</span>}
-        <TryonChip name={name} disabled={tryonDisabled} onClick={() => onTryon([tryonGarment(item)], name)} />
-      </div>
-      <span className="ccard__source">你的衣櫃</span>
-      <span className="ccard__name">{[name, ...item.tags.slice(0, 3)].join(" · ")}</span>
-    </div>
+    <CardFrame
+      image={src && <FadeImage className="ccard__img" src={src} alt="" loading="lazy" />}
+      highlight={highlight}
+      source="衣櫃"
+      name={<span className="ccard__name">{name}</span>}
+      value={<span className="ccard__price ccard__price--owned">已擁有</span>}
+      tryon={<TryonChip name={name} disabled={tryonDisabled} onClick={() => onTryon([tryonGarment(item)], name)} />}
+    />
   );
 }
 
@@ -60,21 +87,24 @@ export function ChatItemCard(
   }
   const product = item.item;
   return (
-    <div className="ccard ccard--link">
-      <div className="ccard__media">
-        <FadeImage className="ccard__img" src={product.imageUrls[0]} alt="" loading="lazy" />
-        {highlight && <span className="ctag">{highlight}</span>}
+    <CardFrame
+      link
+      image={<FadeImage className="ccard__img" src={product.imageUrls[0]} alt="" loading="lazy" />}
+      highlight={highlight}
+      source={product.storeName ?? undefined}
+      name={
+        <button type="button" className="ccard__open" onClick={() => onOpen(product)}>
+          <span className="ccard__name">{product.name}</span>
+        </button>
+      }
+      value={<span className="ccard__price">{priceText(product.price)}</span>}
+      tryon={
         <TryonChip
           name={product.name}
           disabled={tryonDisabled}
           onClick={() => onTryon([tryonGarment(item)], product.name)}
         />
-      </div>
-      {product.storeName && <span className="ccard__source">{product.storeName}</span>}
-      <button type="button" className="ccard__open" onClick={() => onOpen(product)}>
-        <span className="ccard__name">{product.name}</span>
-      </button>
-      <span className="ccard__price">{priceText(product.price)}</span>
-    </div>
+      }
+    />
   );
 }

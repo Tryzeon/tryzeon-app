@@ -12,8 +12,8 @@ function WardrobeCell({ imagePath, labelled }: { imagePath: string; labelled: bo
   const src = useWardrobeImage(imagePath);
   return (
     <div className="look__cell">
-      {src && <FadeImage className="ccard__img ccard__img--cutout" src={src} alt="" loading="lazy" />}
-      {labelled && <span className="ctag">你的衣櫃</span>}
+      {src && <FadeImage className="look__img" src={src} alt="" loading="lazy" />}
+      {labelled && <span className="ctag">衣櫃</span>}
     </div>
   );
 }
@@ -28,14 +28,14 @@ function Cell({ piece, labelled, onOpen }: { piece: ResolvedItem; labelled: bool
   const { item } = piece;
   return (
     <button type="button" className="look__cell" aria-label={item.name} onClick={() => onOpen(item)}>
-      <FadeImage className="ccard__img" src={item.imageUrls[0]} alt="" loading="lazy" />
+      <FadeImage className="look__img" src={item.imageUrls[0]} alt="" loading="lazy" />
     </button>
   );
 }
 
 function PurchaseLine({ pieces }: { pieces: ResolvedItem[] }) {
   const purchase = outfitPurchase(pieces);
-  if (purchase === null) return <span className="look__sum">全部來自你的衣櫃</span>;
+  if (purchase === null) return <span className="look__sum look__sum--own">全部來自你的衣櫃</span>;
   return (
     <span className="look__sum">
       {purchaseCountText(purchase, pieces.length)}
@@ -56,22 +56,22 @@ export function ChatOutfitCard(
           <Cell key={i} piece={piece} labelled={labelled} onOpen={onOpen} />
         ))}
       </div>
-      <div className="look__text">
+      <div className="look__over">
         <span className="look__title">{outfit.title}</span>
         {outfit.reason && <span className="look__reason">{outfit.reason}</span>}
-      </div>
-      <div className="look__foot">
-        <PurchaseLine pieces={outfit.pieces} />
-        <button
-          type="button"
-          className="look__try"
-          aria-label={`試穿整套「${outfit.title}」`}
-          disabled={tryonDisabled}
-          onClick={() => onTryon(outfit.pieces.map(tryonGarment), outfit.title)}
-        >
-          <SparkleIcon />
-          試穿整套
-        </button>
+        <div className="look__foot">
+          <PurchaseLine pieces={outfit.pieces} />
+          <button
+            type="button"
+            className="look__try"
+            aria-label={`試穿整套「${outfit.title}」`}
+            disabled={tryonDisabled}
+            onClick={() => onTryon(outfit.pieces.map(tryonGarment), outfit.title)}
+          >
+            <SparkleIcon />
+            試穿整套
+          </button>
+        </div>
       </div>
     </div>
   );

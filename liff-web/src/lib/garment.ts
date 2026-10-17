@@ -17,3 +17,9 @@ export function garmentTypeLabel(code: string | null): string {
 export function tryonGarment(piece: ResolvedItem): Garment {
   return piece.kind === "product" ? { productId: piece.item.productId } : { wardrobeItemId: piece.id };
 }
+
+const CARD_TAG_COUNT = 2;
+
+export function wardrobeCardName(garmentType: string | null, tags: string[]): string {
+  return [garmentTypeLabel(garmentType), ...tags.slice(0, CARD_TAG_COUNT)].join(" · ");
+}
