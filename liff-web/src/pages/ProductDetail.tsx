@@ -3,13 +3,11 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { fetchProduct, type CatalogItem } from "../api/catalog";
 import { Header } from "../components/Header";
 import { ChevronLeftIcon } from "../components/icons";
-import { ModelChoiceSheet } from "../components/ModelChoiceSheet";
 import { ProductGallery } from "../components/ProductGallery";
+import { useModelGatedTryon } from "../hooks/useModelGatedTryon";
 import { useTryonCoordinator } from "../hooks/useTryonCoordinator";
 import { isExternalUrl, openExternal } from "../lib/liff";
 import { priceText } from "../lib/price";
-import { selectedPresetId } from "../state/avatar";
-import { useAvatar } from "../state/AvatarProvider";
 
 type Load =
   | { status: "loading" }
@@ -108,24 +106,13 @@ export function ProductDetail() {
 }
 
 function Detail({ item, back }: { item: CatalogItem; back: ReactNode }) {
-  const avatar = useAvatar();
   const tryon = useTryonCoordinator();
-  const [choosingModel, setChoosingModel] = useState(false);
-  const [choiceFailed, setChoiceFailed] = useState(false);
+  const gate = useModelGatedTryon();
 
   const buyUrl = item.purchaseLink && isExternalUrl(item.purchaseLink)
     ? item.purchaseLink
     : null;
   const hasPhotos = item.imageUrls.length > 0;
-
-  async function chooseModelAndTryon(choose: () => Promise<boolean>) {
-    setChoiceFailed(false);
-    if (!await choose()) {
-      setChoiceFailed(true);
-      return;
-    }
-    await tryon.fromProduct(item);
-  }
 
   return (
     <>
@@ -140,7 +127,7 @@ function Detail({ item, back }: { item: CatalogItem; back: ReactNode }) {
         <p className="pdp__price">{priceText(item.price)}</p>
         {item.description && <p className="pdp__description">{item.description}</p>}
 
-        {choiceFailed && (
+        {gate.choiceFailed && (
           <div className="errorcard">模特設定失敗，請稍後再試或換一張清楚的全身照。</div>
         )}
       </main>
@@ -151,12 +138,11 @@ function Detail({ item, back }: { item: CatalogItem; back: ReactNode }) {
           : (
             <button
               type="button"
-              className={`cta${avatar.busy ? " is-loading" : ""}`}
-              disabled={avatar.busy}
-              onClick={() =>
-                avatar.hasAvatar ? tryon.fromProduct(item) : setChoosingModel(true)}
+              className={`cta${gate.busy ? " is-loading" : ""}`}
+              disabled={gate.busy}
+              onClick={() => gate.start(() => tryon.fromProduct(item))}
             >
-              {avatar.busy
+              {gate.busy
                 ? (
                   <span className="cta__spin">
                     <span className="spinner" aria-hidden="true" />
@@ -178,15 +164,7 @@ function Detail({ item, back }: { item: CatalogItem; back: ReactNode }) {
         )}
       </div>
 
-      {choosingModel && (
-        <ModelChoiceSheet
-          presets={avatar.presets}
-          selected={selectedPresetId(avatar.avatar)}
-          onPreset={(preset) => chooseModelAndTryon(() => avatar.applyPreset(preset))}
-          onUpload={(file) => chooseModelAndTryon(() => avatar.replace(file))}
-          onClose={() => setChoosingModel(false)}
-        />
-      )}
+      {gate.sheet}
     </>
   );
 }
