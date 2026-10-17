@@ -78,7 +78,7 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
   }
 
   @override
-  Future<Result<void, Failure>> createWardrobeItem(
+  Future<Result<WardrobeItem, Failure>> createWardrobeItem(
     final NewWardrobeItem item,
   ) async {
     final WardrobeItem createdItem;
@@ -94,7 +94,7 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
     }
 
     await _cacheWrittenItem(createdItem);
-    return const Ok(null);
+    return Ok(createdItem);
   }
 
   @override
