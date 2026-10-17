@@ -17,11 +17,6 @@ import type { TextStreamPart, ToolSet } from "ai";
 
 const CATEGORIES = new Map([["tops", "cat-1"], ["dresses", "cat-2"]]);
 
-const PRODUCT_ID = "f8f49d33-e34a-4121-a6b9-f654e0614971";
-const WARDROBE_ID = "0b2c3d4e-5f60-4718-8293-a4b5c6d7e8f9";
-const PRODUCT_ID_2 = "a1b2c3d4-e5f6-4789-8abc-def012345678";
-const PRODUCT_ID_3 = "b2c3d4e5-f6a7-4890-9bcd-ef0123456789";
-
 Deno.test("resolveCategoryFilter maps a known code to its id", () => {
   const r = resolveCategoryFilter("tops", CATEGORIES);
   assertEquals(r, { ok: true, categoryIds: ["cat-1"] });

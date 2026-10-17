@@ -322,17 +322,11 @@ void main() {
             ChatOutfit(
               title: '週末休閒',
               reason: '白襯衫配深藍直筒',
-              pieces: [
-                ItemRef.product('p1'),
-                ItemRef.wardrobe('w1'),
-              ],
+              pieces: [ItemRef.product('p1'), ItemRef.wardrobe('w1')],
             ),
             ChatOutfit(
               title: '溫柔約會',
-              pieces: [
-                ItemRef.product('p2'),
-                ItemRef.product('p3'),
-              ],
+              pieces: [ItemRef.product('p2'), ItemRef.product('p3')],
             ),
           ]),
         ],
@@ -411,10 +405,7 @@ void main() {
       ContentBlock.outfits([
         ChatOutfit(
           title: '週末休閒',
-          pieces: [
-            ItemRef.product('p1'),
-            ItemRef.wardrobe('w1'),
-          ],
+          pieces: [ItemRef.product('p1'), ItemRef.wardrobe('w1')],
         ),
       ]),
     ]);
