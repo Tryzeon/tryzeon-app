@@ -7,7 +7,7 @@ abstract class StoreProfileRepository {
     final bool forceRefresh = false,
   });
 
-  Future<Result<void, Failure>> updateStoreProfile({
+  Future<Result<StoreProfile, Failure>> updateStoreProfile({
     required final StoreProfile original,
     required final StoreProfile target,
   });

@@ -33,9 +33,8 @@ class UpdateStoreProfile {
   final StoreLogoStorage _logoStorage;
   final GeocodingService _geocoding;
 
-  Future<Result<({bool addressUnresolved}), Failure>> call(
-    final UpdateStoreProfileParams params,
-  ) async {
+  Future<Result<({StoreProfile profile, bool addressUnresolved}), Failure>>
+  call(final UpdateStoreProfileParams params) async {
     final original = params.original;
     final located = await _locate(original, params.draft.address);
     var target = original
@@ -77,7 +76,7 @@ class UpdateStoreProfile {
         replacedLogoPath != uploadedLogoPath) {
       await _deleteLogo(original.id, replacedLogoPath);
     }
-    return Ok((addressUnresolved: located.unresolved));
+    return Ok((profile: saved.get()!, addressUnresolved: located.unresolved));
   }
 
   Future<({double? latitude, double? longitude, bool unresolved})> _locate(

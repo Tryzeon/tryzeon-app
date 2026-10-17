@@ -14,7 +14,7 @@ import 'package:typed_result/typed_result.dart';
 class _FakeRepository implements StoreProfileRepository {
   Result<StoreProfile?, Failure> profileResult = const Ok(null);
   final List<bool> profileReads = [];
-  Result<void, Failure> updateResult = const Ok(null);
+  Result<StoreProfile, Failure>? updateResult;
   StoreProfile? savedTarget;
 
   @override
@@ -26,12 +26,12 @@ class _FakeRepository implements StoreProfileRepository {
   }
 
   @override
-  Future<Result<void, Failure>> updateStoreProfile({
+  Future<Result<StoreProfile, Failure>> updateStoreProfile({
     required final StoreProfile original,
     required final StoreProfile target,
   }) async {
     savedTarget = target;
-    return updateResult;
+    return updateResult ?? Ok(target);
   }
 
   @override
@@ -214,9 +214,8 @@ void main() {
   });
 
   group('coordinates', () {
-    Future<Result<({bool addressUnresolved}), Failure>> saveAddress(
-      final String? address,
-    ) => updateStoreProfile(
+    Future<Result<({StoreProfile profile, bool addressUnresolved}), Failure>>
+    saveAddress(final String? address) => updateStoreProfile(
       UpdateStoreProfileParams(
         original: original,
         draft: draft.copyWith(address: address),
@@ -228,7 +227,7 @@ void main() {
       () async {
         final result = await saveAddress('台北市信義區');
 
-        expect(result.get(), (addressUnresolved: false));
+        expect(result.get()!.addressUnresolved, false);
         expect(geocoding.queried, isEmpty);
         expect(repository.savedTarget!.latitude, 25.0);
         expect(repository.savedTarget!.longitude, 121.5);
@@ -238,7 +237,7 @@ void main() {
     test('a new address is geocoded', () async {
       final result = await saveAddress('台北市大安區');
 
-      expect(result.get(), (addressUnresolved: false));
+      expect(result.get()!.addressUnresolved, false);
       expect(geocoding.queried, ['台北市大安區']);
       expect(repository.savedTarget!.latitude, 25.03);
       expect(repository.savedTarget!.longitude, 121.56);
@@ -249,7 +248,7 @@ void main() {
 
       final result = await saveAddress('不存在的地址');
 
-      expect(result.get(), (addressUnresolved: true));
+      expect(result.get()!.addressUnresolved, true);
       expect(repository.savedTarget!.latitude, isNull);
     });
 
@@ -258,14 +257,14 @@ void main() {
 
       final result = await saveAddress('台北市大安區');
 
-      expect(result.get(), (addressUnresolved: true));
+      expect(result.get()!.addressUnresolved, true);
       expect(repository.savedTarget!.longitude, isNull);
     });
 
     test('a cleared address drops the coordinates', () async {
       final result = await saveAddress(null);
 
-      expect(result.get(), (addressUnresolved: false));
+      expect(result.get()!.addressUnresolved, false);
       expect(geocoding.queried, isEmpty);
       expect(repository.savedTarget!.latitude, isNull);
     });
