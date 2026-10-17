@@ -68,7 +68,9 @@ class ProductAnalyticsSummariesNotifier
   @override
   Future<List<ProductAnalyticsSummary>> build() async {
     final result = await _fetch(
-      profile: await ref.watch(storeProfileProvider.future),
+      storeId: await ref.watch(
+        storeProfileProvider.selectAsync((final profile) => profile?.id),
+      ),
       filter: ref.watch(storeAnalyticsFilterProvider),
       useCase: ref.watch(getProductAnalyticsSummariesProvider),
     );
@@ -86,21 +88,21 @@ class ProductAnalyticsSummariesNotifier
       return Err(e);
     }
     return _fetch(
-      profile: profile,
+      storeId: profile?.id,
       filter: ref.read(storeAnalyticsFilterProvider),
       useCase: ref.read(getProductAnalyticsSummariesProvider),
     );
   });
 
   Future<Result<List<ProductAnalyticsSummary>, Failure>> _fetch({
-    required final StoreProfile? profile,
+    required final String? storeId,
     required final AnalyticsMonth filter,
     required final GetProductAnalyticsSummaries useCase,
   }) async {
-    if (profile == null) return const Ok([]);
+    if (storeId == null) return const Ok([]);
     return useCase(
       GetProductAnalyticsSummariesParams(
-        storeId: profile.id,
+        storeId: storeId,
         year: filter.year,
         month: filter.month,
       ),

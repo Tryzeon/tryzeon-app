@@ -134,13 +134,15 @@ class ProductsNotifier extends _$ProductsNotifier
 
   @override
   Future<List<Product>> build() async {
-    final profile = await ref.watch(storeProfileProvider.future);
-    if (profile == null || profile.id.isEmpty) {
+    final storeId = await ref.watch(
+      storeProfileProvider.selectAsync((final profile) => profile?.id),
+    );
+    if (storeId == null || storeId.isEmpty) {
       throw _missingProfile;
     }
 
     final listProductsUseCase = ref.watch(listProductsUseCaseProvider);
-    final result = await listProductsUseCase(storeId: profile.id);
+    final result = await listProductsUseCase(storeId: storeId);
 
     if (result.isFailure) {
       throw result.getError()!;
