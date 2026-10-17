@@ -23,6 +23,10 @@ class _Owner extends AsyncNotifier<int> with ApplyWrite<int> {
     write,
     merge: merge ?? (final current, final written) => current + written,
   );
+
+  Future<Result<void, Failure>> delete(
+    final Future<Result<void, Failure>> Function() delete,
+  ) => applyWrite(delete, merge: (final current, final _) => current - 1);
 }
 
 final _ownerProvider = AsyncNotifierProvider<_Owner, int>(_Owner.new);
@@ -59,6 +63,23 @@ void main() {
     expect(result.get(), 5);
     expect(container.read(_ownerProvider), const AsyncData(6));
     expect(_Owner.builds, 1);
+  });
+
+  test('a delete updates the state without rebuilding', () async {
+    await mount();
+
+    await owner().delete(() async => const Ok(null));
+
+    expect(container.read(_ownerProvider), const AsyncData(0));
+    expect(_Owner.builds, 1);
+  });
+
+  test('a failed delete leaves the state untouched', () async {
+    await mount();
+
+    await owner().delete(() async => const Err(NetworkFailure()));
+
+    expect(container.read(_ownerProvider), const AsyncData(1));
   });
 
   test('failure leaves the state untouched', () async {
