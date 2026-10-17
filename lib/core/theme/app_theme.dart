@@ -26,6 +26,7 @@ class AppColors {
     0xFFE5E5E5,
   ); // outline / containerHighest
   static const Color neutral60 = Color(0xFF9E9E9E); // onSurfaceVariant
+  static const Color neutral40 = Color(0xFF6B6B6B); // secondary text, 5.3:1
   static const Color neutral10 = Color(0xFF1A1A1A); // onSurface
 
   static const Color error = Color(0xFFB00020);
@@ -132,6 +133,7 @@ class AppRadius {
   static const double sheet = 20;
   static const double icon = 10;
   static const double pill = 100;
+  static const double tag = 4; // labels on a photo; pills are for controls
 
   static const BorderRadius cardAll = BorderRadius.all(Radius.circular(card));
   static const BorderRadius buttonAll = BorderRadius.all(
@@ -146,6 +148,7 @@ class AppRadius {
     topRight: Radius.circular(sheet),
   );
   static const BorderRadius pillAll = BorderRadius.all(Radius.circular(pill));
+  static const BorderRadius tagAll = BorderRadius.all(Radius.circular(tag));
 }
 
 class AppTheme {

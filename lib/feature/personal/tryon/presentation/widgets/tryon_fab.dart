@@ -12,13 +12,16 @@ class TryonFab extends StatelessWidget {
     this.label,
     this.icon,
     this.coachMarkTarget,
+    this.compact = false,
   });
-
-  static const double _iconSize = 24;
 
   final VoidCallback onTap;
   final String? label;
   final IconData? icon;
+
+  /// For a pill laid over a small photo, where the regular one would cover
+  /// half of it. Only the pill shrinks; the tap area stays at the minimum.
+  final bool compact;
 
   /// Anchors a coach mark on the visible pill, not the larger tap area.
   final CoachMarkTarget? coachMarkTarget;
@@ -52,24 +55,24 @@ class TryonFab extends StatelessWidget {
   }
 
   Widget _buildPill(final ColorScheme colorScheme, final TextTheme textTheme) {
+    final iconSize = compact ? 16.0 : 24.0;
+    final vertical = compact ? AppSpacing.xs : AppSpacing.sm;
+    final horizontal = compact ? AppSpacing.sm : AppSpacing.smMd;
     return GlassPill(
       padding: label == null
-          ? const EdgeInsets.all(AppSpacing.sm)
-          : const EdgeInsets.symmetric(
-              horizontal: AppSpacing.smMd,
-              vertical: AppSpacing.sm,
-            ),
+          ? EdgeInsets.all(vertical)
+          : EdgeInsets.symmetric(horizontal: horizontal, vertical: vertical),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           icon == null
               ? Image.asset(
                   AppConstants.logoMark,
-                  width: _iconSize,
-                  height: _iconSize,
+                  width: iconSize,
+                  height: iconSize,
                   fit: BoxFit.contain,
                 )
-              : Icon(icon, size: _iconSize, color: colorScheme.onPrimary),
+              : Icon(icon, size: iconSize, color: colorScheme.onPrimary),
           if (label != null) ...[
             const SizedBox(width: AppSpacing.xs),
             Text(

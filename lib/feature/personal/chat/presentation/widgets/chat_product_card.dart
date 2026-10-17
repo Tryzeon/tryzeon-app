@@ -1,76 +1,58 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/price_format_extension.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_card_frame.dart';
+import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_card_images.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/actions/product_outfit_actions.dart';
 
 class ChatProductCard extends ConsumerWidget {
-  const ChatProductCard({super.key, required this.product});
+  const ChatProductCard({super.key, required this.product, this.highlight});
 
   final ShopProduct product;
+  final String? highlight;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
+    final label = highlight;
 
     return ChatCardFrame(
-      image: _ProductImage(product: product),
+      image: ChatProductImage(product: product),
+      tag: label == null ? null : ChatImageTag(label),
       onTap: () => context.push(
         AppRoutes.personalShopProductPath(product.id),
         extra: product,
       ),
       onTryon: () => triggerProductTryon(context, ref, product),
       details: [
-        Text(
-          product.storeInfo.name,
-          style: textTheme.bodySmall?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
+        ChatSourceLine(product.storeInfo.name.toUpperCase()),
+        const SizedBox(height: AppSpacing.xxs),
         Text(
           product.name,
-          style: textTheme.bodyMedium,
-          maxLines: 1,
+          style: textTheme.bodyMedium?.copyWith(
+            color: AppColors.neutral40,
+            height: 1.4,
+          ),
+          maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
+        const SizedBox(height: AppSpacing.xs),
         Text(
           product.price.asTwd,
-          style: textTheme.titleSmall?.copyWith(color: colorScheme.primary),
+          style: textTheme.bodyMedium?.copyWith(
+            color: colorScheme.onSurface,
+            fontWeight: FontWeight.w600,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
           maxLines: 1,
-          overflow: TextOverflow.ellipsis,
         ),
       ],
-    );
-  }
-}
-
-class _ProductImage extends StatelessWidget {
-  const _ProductImage({required this.product});
-
-  final ShopProduct product;
-
-  @override
-  Widget build(final BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    if (product.imageUrls.isEmpty) {
-      return Icon(Icons.image_outlined, color: colorScheme.onSurfaceVariant);
-    }
-    return CachedNetworkImage(
-      imageUrl: product.imageUrls.first,
-      fit: BoxFit.cover,
-      placeholder: (final _, final _) => const SizedBox.shrink(),
-      errorWidget: (final _, final _, final _) => Icon(
-        Icons.broken_image_outlined,
-        color: colorScheme.onSurfaceVariant,
-      ),
     );
   }
 }

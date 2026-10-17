@@ -2,69 +2,49 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/garment_type/presentation/mappers/garment_type_display.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_card_frame.dart';
+import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_card_images.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/actions/wardrobe_outfit_actions.dart';
-import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 
 class ChatWardrobeCard extends ConsumerWidget {
-  const ChatWardrobeCard({super.key, required this.item});
+  const ChatWardrobeCard({super.key, required this.item, this.highlight});
 
   final WardrobeItem item;
+  final String? highlight;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
-    final tagLine = item.tags.take(2).join(' · ');
+    final textTheme = Theme.of(context).textTheme;
+    final description = [
+      item.garmentType.displayName,
+      ...item.tags.take(3),
+    ].join(' · ');
+
+    final label = highlight;
 
     return ChatCardFrame(
-      tag: '衣櫃',
-      image: _WardrobeImage(imagePath: item.imagePath),
+      image: ChatWardrobeImage(imagePath: item.imagePath),
+      tag: label == null ? null : ChatImageTag(label),
       onTap: () => context.push(AppRoutes.personalWardrobeItemPath(item.id)),
       onTryon: () =>
           triggerOutfitTryon(context, ref, [outfitPieceFromWardrobeItem(item)]),
       details: [
+        const ChatSourceLine('你的衣櫃'),
+        const SizedBox(height: AppSpacing.xxs),
         Text(
-          item.garmentType.displayName,
-          style: textTheme.bodyMedium,
-          maxLines: 1,
+          description,
+          style: textTheme.bodyMedium?.copyWith(
+            color: AppColors.neutral40,
+            height: 1.4,
+          ),
+          maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
-        if (tagLine.isNotEmpty)
-          Text(
-            tagLine,
-            style: textTheme.bodySmall?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
       ],
     );
-  }
-}
-
-class _WardrobeImage extends ConsumerWidget {
-  const _WardrobeImage({required this.imagePath});
-
-  final String imagePath;
-
-  @override
-  Widget build(final BuildContext context, final WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return ref
-        .watch(wardrobeItemImageProvider(imagePath))
-        .when(
-          data: (final file) => Image.file(file, fit: BoxFit.cover),
-          loading: () => const SizedBox.shrink(),
-          error: (final _, final _) => Icon(
-            Icons.image_not_supported_outlined,
-            color: colorScheme.onSurfaceVariant,
-          ),
-        );
   }
 }

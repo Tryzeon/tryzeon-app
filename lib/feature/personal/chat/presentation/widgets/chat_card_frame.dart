@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_card_images.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 
 class ChatCardFrame extends HookWidget {
@@ -17,15 +18,15 @@ class ChatCardFrame extends HookWidget {
   final VoidCallback onTap;
   final VoidCallback onTryon;
   final List<Widget> details;
-  final String? tag;
+  final ChatImageTag? tag;
 
   static const double _pressedScale = 0.97;
 
   @override
   Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
     final pressed = useState(false);
+    final imageTag = tag;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -50,57 +51,24 @@ class ChatCardFrame extends HookWidget {
                     fit: StackFit.expand,
                     children: [
                       image,
-                      if (tag != null)
-                        Positioned(
-                          top: AppSpacing.sm,
-                          left: AppSpacing.sm,
-                          child: _Tag(label: tag!),
-                        ),
+                      if (imageTag != null) ChatImageTagSlot(tag: imageTag),
                       Positioned(
-                        bottom: AppSpacing.sm,
+                        bottom: 0,
                         right: AppSpacing.sm,
-                        child: TryonFab(onTap: onTryon),
+                        child: TryonFab(
+                          label: '試穿',
+                          compact: true,
+                          onTap: onTryon,
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: AppSpacing.smMd),
             ...details,
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _Tag extends StatelessWidget {
-  const _Tag({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colorScheme.primaryContainer,
-        borderRadius: AppRadius.pillAll,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.xxs,
-        ),
-        child: Text(
-          label,
-          style: theme.textTheme.labelMedium?.copyWith(
-            color: colorScheme.onPrimaryContainer,
-            letterSpacing: 0,
-          ),
         ),
       ),
     );
