@@ -1,14 +1,10 @@
 /** Page 0 is always the avatar photo; every try-on (pending or finished) takes
  * one page after it. */
 
-export interface TryonProduct {
-  productId: string;
-  name: string;
-}
-
 interface EntryBase {
   id: string;
-  product: TryonProduct | null;
+  /** What was tried on, named under the result; null for a garment the user photographed. */
+  caption: string | null;
 }
 
 export type GalleryEntry =
@@ -41,7 +37,7 @@ export const initialGalleryState: GalleryState = {
 
 export type GalleryAction =
   | { type: "setPage"; page: number }
-  | { type: "addPending"; id: string; product: TryonProduct | null }
+  | { type: "addPending"; id: string; caption: string | null }
   | { type: "complete"; id: string; imageUrl: string }
   | { type: "remove"; id: string }
   | { type: "fail"; id: string; message: string }
@@ -108,7 +104,7 @@ export function galleryReducer(
         ...state,
         entries: [
           ...state.entries,
-          { kind: "pending", id: action.id, product: action.product },
+          { kind: "pending", id: action.id, caption: action.caption },
         ],
         currentId: action.id,
       };
@@ -123,7 +119,7 @@ export function galleryReducer(
         kind: "finished",
         id: action.id,
         imageUrl: action.imageUrl,
-        product: entries[index].product,
+        caption: entries[index].caption,
       };
       return { ...state, entries };
     }

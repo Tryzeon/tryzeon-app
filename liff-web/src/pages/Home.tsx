@@ -58,7 +58,7 @@ export function Home() {
   const entry = currentEntry(state);
   const imageUrl = currentImageUrl(state);
 
-  const product = entry?.product ?? null;
+  const tryonCaption = entry?.caption ?? null;
 
   // Scrims and white chrome are for photos; the model picker sits on the plain
   // surface instead.
@@ -204,8 +204,8 @@ export function Home() {
           )
           : (
             <>
-              {product !== null && (
-                <p className="home__caption"><b>{product.name}</b></p>
+              {tryonCaption !== null && (
+                <p className="home__caption"><b>{tryonCaption}</b></p>
               )}
               <PageIndicator count={state.entries.length} index={page - 1} />
               {entry?.kind === "pending"

@@ -1,7 +1,10 @@
 import { supabase } from "../lib/supabase";
 import { toApiError } from "./errors";
 
-export type Garment = { productId: string } | { images: { base64: string }[] };
+export type Garment =
+  | { productId: string }
+  | { wardrobeItemId: string }
+  | { images: { base64: string }[] };
 
 export interface TryonOptions {
   scenePrompt?: string;
@@ -25,12 +28,12 @@ interface TryonBody extends TryonOptions {
  * prompt.
  */
 export async function runTryon(
-  garment: Garment,
+  garments: Garment[],
   { scenePrompt, stylingPrompt }: TryonOptions = {},
 ): Promise<string> {
   const body: TryonBody = {
     mode: "image",
-    garments: [garment],
+    garments,
     ...(scenePrompt ? { scenePrompt } : {}),
     ...(stylingPrompt ? { stylingPrompt } : {}),
   };

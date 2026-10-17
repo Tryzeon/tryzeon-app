@@ -6,7 +6,6 @@ import { runTryon, type Garment } from "../api/tryon";
 import { downscaleToBase64 } from "../lib/image";
 import { newId } from "../lib/id";
 import { loadPromptConfig } from "../lib/promptConfig";
-import type { TryonProduct } from "../state/gallery";
 import { useGallery } from "../state/GalleryProvider";
 
 /** The single entry point for every try-on: those started from the product page
@@ -20,9 +19,9 @@ export function useTryonCoordinator() {
   // would freeze the screen until it finished — the animation goes up first and
   // the work runs underneath it.
   const begin = useCallback(
-    (product: TryonProduct | null) => {
+    (caption: string | null) => {
       const id = newId();
-      dispatch({ type: "addPending", id, product });
+      dispatch({ type: "addPending", id, caption });
       navigate("/home");
       return id;
     },
@@ -30,9 +29,9 @@ export function useTryonCoordinator() {
   );
 
   const submit = useCallback(
-    async (id: string, garment: Garment) => {
+    async (id: string, garments: Garment[]) => {
       try {
-        const imageUrl = await runTryon(garment, loadPromptConfig());
+        const imageUrl = await runTryon(garments, loadPromptConfig());
         dispatch({ type: "complete", id, imageUrl });
       } catch (err) {
         // `fail` rather than remove + notify: the user may already have cancelled
@@ -54,18 +53,20 @@ export function useTryonCoordinator() {
         dispatch({ type: "fail", id, message: "讀取照片失敗，換一張再試。" });
         return;
       }
-      await submit(id, { images: [{ base64 }] });
+      await submit(id, [{ images: [{ base64 }] }]);
     },
     [begin, submit, dispatch],
   );
 
   const fromProduct = useCallback(
-    (item: CatalogItem) =>
-      submit(begin({ productId: item.productId, name: item.name }), {
-        productId: item.productId,
-      }),
+    (item: CatalogItem) => submit(begin(item.name), [{ productId: item.productId }]),
     [begin, submit],
   );
 
-  return { fromGarmentPhoto, fromProduct };
+  const fromGarments = useCallback(
+    (garments: Garment[], caption: string) => submit(begin(caption), garments),
+    [begin, submit],
+  );
+
+  return { fromGarmentPhoto, fromProduct, fromGarments };
 }

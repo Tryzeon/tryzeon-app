@@ -11,7 +11,7 @@ import {
 
 function withEntries(...ids: string[]): GalleryState {
   return ids.reduce(
-    (state, id) => galleryReducer(state, { type: "addPending", id, product: null }),
+    (state, id) => galleryReducer(state, { type: "addPending", id, caption: null }),
     initialGalleryState,
   );
 }
@@ -81,8 +81,8 @@ describe("removing", () => {
   });
 });
 
-describe("product source", () => {
-  const shirt = { productId: "p1", name: "White Shirt" };
+describe("caption", () => {
+  const shirt = "White Shirt";
 
   // The "試穿 ⋯" line on the result image lives off this field, so completing
   // must not overwrite it.
@@ -90,18 +90,18 @@ describe("product source", () => {
     const pending = galleryReducer(initialGalleryState, {
       type: "addPending",
       id: "a",
-      product: shirt,
+      caption: shirt,
     });
     const done = galleryReducer(pending, {
       type: "complete",
       id: "a",
       imageUrl: "https://r2/a.jpg",
     });
-    expect(currentEntry(done)?.product).toEqual(shirt);
+    expect(currentEntry(done)?.caption).toBe(shirt);
   });
 
   it("is null for a garment the user photographed themselves", () => {
-    expect(currentEntry(withEntries("a"))?.product).toBeNull();
+    expect(currentEntry(withEntries("a"))?.caption).toBeNull();
   });
 });
 
