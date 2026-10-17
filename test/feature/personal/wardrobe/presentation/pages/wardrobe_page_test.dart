@@ -3,8 +3,10 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
@@ -84,7 +86,64 @@ Future<void> pumpDockTransition(final WidgetTester tester) async {
   }
 }
 
+Future<void> pumpPageWithRouter(
+  final WidgetTester tester,
+  final List<WardrobeItem> items,
+) async {
+  tester.view.physicalSize = const Size(800, 1400);
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+
+  final container = _makeContainer(items, limit: 100);
+  addTearDown(container.dispose);
+  final router = GoRouter(
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (final _, final _) => const Scaffold(
+          body: Stack(
+            children: [
+              WardrobePage(),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: OutfitDock(isVisible: true),
+              ),
+            ],
+          ),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.personalWardrobeItem,
+        builder: (final _, final state) =>
+            Text('opened ${(state.extra as WardrobeItem?)?.id}'),
+      ),
+    ],
+  );
+  await tester.pumpWidget(
+    UncontrolledProviderScope(
+      container: container,
+      child: MaterialApp.router(
+        theme: AppTheme.lightTheme,
+        routerConfig: router,
+      ),
+    ),
+  );
+  await tester.pump(AppDuration.slow);
+}
+
 void main() {
+  testWidgets('opening an item hands it to the detail route', (
+    final tester,
+  ) async {
+    await pumpPageWithRouter(tester, [wardrobeItem('a')]);
+
+    await tester.tap(find.byType(WardrobeItemCard));
+    await tester.pumpAndSettle();
+
+    expect(find.text('opened a'), findsOneWidget);
+  });
+
   testWidgets('an empty wardrobe explains what the wardrobe is for', (
     final tester,
   ) async {

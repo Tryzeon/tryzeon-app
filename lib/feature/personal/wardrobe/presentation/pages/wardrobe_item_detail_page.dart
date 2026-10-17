@@ -17,42 +17,53 @@ import 'package:tryzeon/feature/personal/wardrobe/presentation/sheets/wardrobe_t
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
-class WardrobeItemDetailPage extends HookConsumerWidget {
-  const WardrobeItemDetailPage({super.key, required this.itemId});
+/// [initialItem] is the item the opener already had, so the page can render
+/// before the list loads and keeps rendering after the item leaves the list
+/// (e.g. while popping after a delete). The listed item wins when present.
+class WardrobeItemDetailPage extends ConsumerWidget {
+  const WardrobeItemDetailPage({
+    super.key,
+    required this.itemId,
+    this.initialItem,
+  });
   final String itemId;
+  final WardrobeItem? initialItem;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    final wardrobeItemsAsync = ref.watch(wardrobeItemsProvider);
-
-    return wardrobeItemsAsync.when(
-      skipLoadingOnReload: true,
-      loading: () =>
-          const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (final error, final stack) => Scaffold(
+    final listed = ref.watch(
+      wardrobeItemsProvider.select(
+        (final items) => items.whenData(
+          (final list) => list.where((final i) => i.id == itemId).firstOrNull,
+        ),
+      ),
+    );
+    final item = listed.value ?? initialItem;
+    if (item != null) {
+      return _WardrobeItemDetailContent(
+        item: item,
+        colorScheme: colorScheme,
+        textTheme: textTheme,
+      );
+    }
+    if (listed.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    if (listed case AsyncError(:final error)) {
+      return Scaffold(
         appBar: AppBar(),
         body: ErrorView(
           message: error.displayMessage(),
           onRetry: () => ref.invalidate(wardrobeItemsProvider),
         ),
-      ),
-      data: (final items) {
-        final item = items.where((final i) => i.id == itemId).firstOrNull;
-        if (item == null) {
-          return Scaffold(
-            appBar: AppBar(),
-            body: Center(child: Text('找不到衣物', style: textTheme.titleMedium)),
-          );
-        }
-        return _WardrobeItemDetailContent(
-          item: item,
-          colorScheme: colorScheme,
-          textTheme: textTheme,
-        );
-      },
+      );
+    }
+    return Scaffold(
+      appBar: AppBar(),
+      body: Center(child: Text('找不到衣物', style: textTheme.titleMedium)),
     );
   }
 }

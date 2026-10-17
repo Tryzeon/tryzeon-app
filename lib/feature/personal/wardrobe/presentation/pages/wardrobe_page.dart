@@ -275,6 +275,7 @@ class WardrobePage extends HookConsumerWidget {
                                   )
                                 : context.push(
                                     AppRoutes.personalWardrobeItemPath(item.id),
+                                    extra: item,
                                   ),
                             onLongPress: () => toggleOutfitPiece(
                               ref,

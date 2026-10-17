@@ -17,6 +17,7 @@ import 'package:tryzeon/feature/personal/shop/presentation/pages/store_page.dart
 import 'package:tryzeon/feature/personal/subscription/presentation/pages/subscription_page.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/pages/home_page.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/pages/outfit_photo_detail_page.dart';
+import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/pages/wardrobe_item_detail_page.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/pages/wardrobe_page.dart';
 
@@ -92,7 +93,10 @@ StatefulShellRoute personalShellRoute(
               path: AppRoutes.personalWardrobeItemSegment,
               builder: (final context, final state) {
                 final itemId = state.pathParameters[AppRoutes.paramId]!;
-                return WardrobeItemDetailPage(itemId: itemId);
+                return WardrobeItemDetailPage(
+                  itemId: itemId,
+                  initialItem: state.extra as WardrobeItem?,
+                );
               },
             ),
           ],
