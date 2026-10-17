@@ -57,3 +57,11 @@ export function CameraPlusIcon() {
     </svg>
   );
 }
+
+export function SparkleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+      <path d="M12 2.5c.5 4.6 2.9 7 9.5 9.5-6.6 2.5-9 4.9-9.5 9.5-.5-4.6-2.9-7-9.5-9.5 6.6-2.5 9-4.9 9.5-9.5Z" />
+    </svg>
+  );
+}

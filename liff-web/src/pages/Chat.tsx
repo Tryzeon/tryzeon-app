@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import type { CatalogItem } from "../api/catalog";
+import type { Garment } from "../api/tryon";
 import { Header } from "../components/Header";
-import { ProductCard } from "../components/ProductCard";
-import { WardrobeCard } from "../components/WardrobeCard";
+import { ChatItemCard } from "../components/ChatItemCard";
+import { ChatOutfitCard } from "../components/ChatOutfitCard";
 import { useChat } from "../hooks/useChat";
+import { useModelGatedTryon } from "../hooks/useModelGatedTryon";
+import { useTryonCoordinator } from "../hooks/useTryonCoordinator";
 
 const GREETING = "嗨！我是你的穿搭顧問 👗 告訴我你的需求吧 — 例如場合、風格，或想搭配的某件單品，我會幫你推薦合適的穿搭。";
 const STARTERS = ["上班約會穿搭", "週末休閒風", "幫我搭一件白襯衫", "參加婚禮要穿什麼"];
@@ -13,6 +16,8 @@ const MAX_TEXT_LENGTH = 2000;
 export function Chat() {
   const chat = useChat();
   const navigate = useNavigate();
+  const tryon = useTryonCoordinator();
+  const gate = useModelGatedTryon();
   const [draft, setDraft] = useState("");
   const end = useRef<HTMLDivElement>(null);
 
@@ -27,6 +32,10 @@ export function Chat() {
 
   function openProduct(item: CatalogItem) {
     navigate(`/product/${item.productId}`, { state: { item } });
+  }
+
+  function startTryon(garments: Garment[], caption: string) {
+    gate.start(() => tryon.fromGarments(garments, caption));
   }
 
   return (
@@ -53,14 +62,33 @@ export function Chat() {
               return <p key={i} className="chat__bubble chat__bubble--bot">{entry.text}</p>;
             case "notice":
               return <p key={i} className="chat__notice">{entry.text}</p>;
-            case "row":
+            case "picks":
               return (
                 <div key={i} className="chat__row">
-                  {entry.cards.map((card, j) => (
+                  {entry.picks.map(({ item, highlight }, j) => (
                     <div key={j} className="chat__rowcard">
-                      {card.kind === "product"
-                        ? <ProductCard item={card.item} onOpen={() => openProduct(card.item)} />
-                        : <WardrobeCard imagePath={card.imagePath} />}
+                      <ChatItemCard
+                        item={item}
+                        highlight={highlight}
+                        onOpen={openProduct}
+                        onTryon={startTryon}
+                        tryonDisabled={gate.busy}
+                      />
+                    </div>
+                  ))}
+                </div>
+              );
+            case "outfits":
+              return (
+                <div key={i} className="chat__row">
+                  {entry.outfits.map((outfit, j) => (
+                    <div key={j} className="chat__lookcard">
+                      <ChatOutfitCard
+                        outfit={outfit}
+                        onOpen={openProduct}
+                        onTryon={startTryon}
+                        tryonDisabled={gate.busy}
+                      />
                     </div>
                   ))}
                 </div>
@@ -73,6 +101,9 @@ export function Chat() {
             <span className="spinner spinner--ink" aria-hidden="true" />
             正在思考…
           </p>
+        )}
+        {gate.choiceFailed && (
+          <div className="errorcard">模特設定失敗，請稍後再試或換一張清楚的全身照。</div>
         )}
         <div ref={end} />
       </main>
@@ -90,6 +121,8 @@ export function Chat() {
           送出
         </button>
       </form>
+
+      {gate.sheet}
     </div>
   );
 }
