@@ -106,12 +106,12 @@ void main() {
           _user([_toolResult]),
           _assistant([
             const ContentBlock.text('a'),
-            const ContentBlock.recommendation([
-              RecommendedItem.product('p1'),
-              RecommendedItem.product('p2'),
+            const ContentBlock.picks([
+              ChatPick(ref: ItemRef.product('p1')),
+              ChatPick(ref: ItemRef.product('p2')),
             ]),
             const ContentBlock.text('b'),
-            const ContentBlock.recommendation([RecommendedItem.wardrobe('w1')]),
+            const ContentBlock.picks([ChatPick(ref: ItemRef.wardrobe('w1'))]),
           ]),
         ],
         items: ChatItems(
@@ -133,15 +133,17 @@ void main() {
     expect(turn.segments[0], const ChatTextSegment('a'));
     expect(
       turn.segments[1],
-      ChatCardSegment([
-        ChatRecommendation.product(_product('p1')),
-        ChatRecommendation.product(_product('p2')),
+      ChatPicksSegment([
+        ResolvedPick(item: ResolvedItem.product(_product('p1'))),
+        ResolvedPick(item: ResolvedItem.product(_product('p2'))),
       ]),
     );
     expect(turn.segments[2], const ChatTextSegment('b'));
     expect(
       turn.segments[3],
-      ChatCardSegment([ChatRecommendation.wardrobe(_wardrobe('w1'))]),
+      ChatPicksSegment([
+        ResolvedPick(item: ResolvedItem.wardrobe(_wardrobe('w1'))),
+      ]),
     );
   });
 
@@ -152,9 +154,9 @@ void main() {
           _greeting,
           _user([const ContentBlock.text('找白襯衫')]),
           _assistant([
-            const ContentBlock.recommendation([
-              RecommendedItem.product('gone'),
-              RecommendedItem.product('p1'),
+            const ContentBlock.picks([
+              ChatPick(ref: ItemRef.product('gone')),
+              ChatPick(ref: ItemRef.product('p1')),
             ]),
           ]),
         ],
@@ -164,7 +166,9 @@ void main() {
 
     final turn = entries[2] as ChatAssistantEntry;
     expect(turn.segments, [
-      ChatCardSegment([ChatRecommendation.product(_product('p1'))]),
+      ChatPicksSegment([
+        ResolvedPick(item: ResolvedItem.product(_product('p1'))),
+      ]),
     ]);
   });
 
@@ -175,8 +179,8 @@ void main() {
           _greeting,
           _user([const ContentBlock.text('配一套')]),
           _assistant([
-            const ContentBlock.recommendation([RecommendedItem.product('p1')]),
-            const ContentBlock.recommendation([RecommendedItem.product('p2')]),
+            const ContentBlock.picks([ChatPick(ref: ItemRef.product('p1'))]),
+            const ContentBlock.picks([ChatPick(ref: ItemRef.product('p2'))]),
           ]),
         ],
         items: ChatItems(
@@ -187,8 +191,12 @@ void main() {
 
     final turn = entries[2] as ChatAssistantEntry;
     expect(turn.segments, [
-      ChatCardSegment([ChatRecommendation.product(_product('p1'))]),
-      ChatCardSegment([ChatRecommendation.product(_product('p2'))]),
+      ChatPicksSegment([
+        ResolvedPick(item: ResolvedItem.product(_product('p1'))),
+      ]),
+      ChatPicksSegment([
+        ResolvedPick(item: ResolvedItem.product(_product('p2'))),
+      ]),
     ]);
   });
 
@@ -200,9 +208,7 @@ void main() {
           _user([const ContentBlock.text('找白襯衫')]),
           _assistant([
             const ContentBlock.text('a'),
-            const ContentBlock.recommendation([
-              RecommendedItem.product('gone'),
-            ]),
+            const ContentBlock.picks([ChatPick(ref: ItemRef.product('gone'))]),
           ]),
         ],
       ),
@@ -276,5 +282,220 @@ void main() {
     );
 
     expect(entries.last, const ChatFailureEntry(ServiceBusyFailure()));
+  });
+
+  test('a highlight travels with its card', () {
+    final entries = buildChatTimeline(
+      ChatState(
+        messages: [
+          _greeting,
+          _user([const ContentBlock.text('找寬褲')]),
+          _assistant([
+            const ContentBlock.picks([
+              ChatPick(ref: ItemRef.product('p1'), highlight: '麻料透氣'),
+            ]),
+          ]),
+        ],
+        items: ChatItems(products: {'p1': _product('p1')}),
+      ),
+    );
+
+    final turn = entries[2] as ChatAssistantEntry;
+    expect(turn.segments, [
+      ChatPicksSegment([
+        ResolvedPick(
+          item: ResolvedItem.product(_product('p1')),
+          highlight: '麻料透氣',
+        ),
+      ]),
+    ]);
+  });
+
+  test('an outfits block is one segment, a look missing a piece left out', () {
+    final entries = buildChatTimeline(
+      ChatState(
+        messages: [
+          _greeting,
+          _user([const ContentBlock.text('配一套')]),
+          _assistant([
+            const ContentBlock.outfits([
+              ChatOutfit(
+                title: '缺件',
+                pieces: [ItemRef.product('p1'), ItemRef.product('gone')],
+              ),
+              ChatOutfit(
+                title: '週末休閒',
+                reason: '好搭',
+                pieces: [ItemRef.product('p1'), ItemRef.wardrobe('w1')],
+              ),
+            ]),
+          ]),
+        ],
+        items: ChatItems(
+          products: {'p1': _product('p1')},
+          wardrobe: {'w1': _wardrobe('w1')},
+        ),
+      ),
+    );
+
+    final turn = entries[2] as ChatAssistantEntry;
+    expect(turn.segments, [
+      ChatOutfitsSegment([
+        ResolvedOutfit(
+          title: '週末休閒',
+          reason: '好搭',
+          pieces: [
+            ResolvedItem.product(_product('p1')),
+            ResolvedItem.wardrobe(_wardrobe('w1')),
+          ],
+        ),
+      ]),
+    ]);
+  });
+
+  test('an outfits block whose looks all lost a piece draws nothing', () {
+    final entries = buildChatTimeline(
+      ChatState(
+        messages: [
+          _greeting,
+          _user([const ContentBlock.text('配一套')]),
+          _assistant([
+            const ContentBlock.text('a'),
+            const ContentBlock.outfits([
+              ChatOutfit(
+                title: '缺件',
+                pieces: [ItemRef.product('gone'), ItemRef.product('p1')],
+              ),
+            ]),
+          ]),
+        ],
+        items: ChatItems(products: {'p1': _product('p1')}),
+      ),
+    );
+
+    final turn = entries[2] as ChatAssistantEntry;
+    expect(turn.segments, [const ChatTextSegment('a')]);
+  });
+
+  ChatAssistantEntry turnOf(final List<ContentBlock> blocks) {
+    final entries = buildChatTimeline(
+      ChatState(
+        messages: [
+          _greeting,
+          _user([const ContentBlock.text('q')]),
+          _assistant(blocks),
+        ],
+        items: ChatItems(
+          products: {
+            for (final id in ['p1', 'p2', 'p3', 'p4']) id: _product(id),
+          },
+          wardrobe: {'w1': _wardrobe('w1')},
+        ),
+      ),
+    );
+    return entries[2] as ChatAssistantEntry;
+  }
+
+  test('a duplicated pick renders once', () {
+    final turn = turnOf([
+      const ContentBlock.picks([
+        ChatPick(ref: ItemRef.product('p1'), highlight: 'first'),
+        ChatPick(ref: ItemRef.product('p1'), highlight: 'second'),
+        ChatPick(ref: ItemRef.product('p2')),
+      ]),
+    ]);
+
+    expect(turn.segments, [
+      ChatPicksSegment([
+        ResolvedPick(
+          item: ResolvedItem.product(_product('p1')),
+          highlight: 'first',
+        ),
+        ResolvedPick(item: ResolvedItem.product(_product('p2'))),
+      ]),
+    ]);
+  });
+
+  test('a look of one or four pieces is skipped', () {
+    final turn = turnOf([
+      const ContentBlock.text('a'),
+      const ContentBlock.outfits([
+        ChatOutfit(title: '單件', pieces: [ItemRef.product('p1')]),
+        ChatOutfit(
+          title: '四件',
+          pieces: [
+            ItemRef.product('p1'),
+            ItemRef.product('p2'),
+            ItemRef.product('p3'),
+            ItemRef.product('p4'),
+          ],
+        ),
+      ]),
+    ]);
+
+    expect(turn.segments, [const ChatTextSegment('a')]);
+  });
+
+  test('a look with a duplicated piece counts it once', () {
+    final turn = turnOf([
+      const ContentBlock.outfits([
+        ChatOutfit(
+          title: '重複',
+          pieces: [ItemRef.product('p1'), ItemRef.product('p1')],
+        ),
+        ChatOutfit(
+          title: '三件',
+          pieces: [
+            ItemRef.product('p1'),
+            ItemRef.product('p1'),
+            ItemRef.wardrobe('w1'),
+          ],
+        ),
+      ]),
+    ]);
+
+    expect(turn.segments, [
+      ChatOutfitsSegment([
+        ResolvedOutfit(
+          title: '三件',
+          pieces: [
+            ResolvedItem.product(_product('p1')),
+            ResolvedItem.wardrobe(_wardrobe('w1')),
+          ],
+        ),
+      ]),
+    ]);
+  });
+
+  const emptyAnswer = ChatTextSegment('抱歉，我沒有理解，可以再說一次你的需求嗎？');
+
+  test('an answer whose only pick is missing shows the fallback', () {
+    final turn = turnOf([
+      const ContentBlock.picks([ChatPick(ref: ItemRef.product('gone'))]),
+    ]);
+
+    expect(turn.segments, [emptyAnswer]);
+  });
+
+  test('a blank text block alone shows the fallback', () {
+    final turn = turnOf([const ContentBlock.text('  ')]);
+
+    expect(turn.segments, [emptyAnswer]);
+  });
+
+  test('a tool-call-only message adds no fallback', () {
+    final entries = buildChatTimeline(
+      ChatState(
+        messages: [
+          _greeting,
+          _user([const ContentBlock.text('q')]),
+          _assistant([_toolUse]),
+        ],
+        isLoading: true,
+      ),
+    );
+
+    final turn = entries[2] as ChatAssistantEntry;
+    expect(turn.segments, isEmpty);
   });
 }

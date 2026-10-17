@@ -30,16 +30,35 @@ sealed class ChatToolStep with _$ChatToolStep {
 @freezed
 sealed class ChatSegment with _$ChatSegment {
   const factory ChatSegment.text(final String text) = ChatTextSegment;
-  const factory ChatSegment.cards(final List<ChatRecommendation> cards) =
-      ChatCardSegment;
+  const factory ChatSegment.picks(final List<ResolvedPick> picks) =
+      ChatPicksSegment;
+  const factory ChatSegment.outfits(final List<ResolvedOutfit> outfits) =
+      ChatOutfitsSegment;
 }
 
 @freezed
-sealed class ChatRecommendation with _$ChatRecommendation {
-  const factory ChatRecommendation.product(final ShopProduct product) =
-      ChatProductRecommendation;
-  const factory ChatRecommendation.wardrobe(final WardrobeItem item) =
-      ChatWardrobeRecommendation;
+sealed class ResolvedOutfit with _$ResolvedOutfit {
+  const factory ResolvedOutfit({
+    required final String title,
+    final String? reason,
+    required final List<ResolvedItem> pieces,
+  }) = _ResolvedOutfit;
+}
+
+@freezed
+sealed class ResolvedPick with _$ResolvedPick {
+  const factory ResolvedPick({
+    required final ResolvedItem item,
+    final String? highlight,
+  }) = _ResolvedPick;
+}
+
+@freezed
+sealed class ResolvedItem with _$ResolvedItem {
+  const factory ResolvedItem.product(final ShopProduct product) =
+      ResolvedProduct;
+  const factory ResolvedItem.wardrobe(final WardrobeItem item) =
+      ResolvedWardrobeItem;
 }
 
 @freezed
@@ -72,19 +91,41 @@ class _OpenTurn {
   }
 }
 
-ChatRecommendation? _resolve(
-  final RecommendedItem item,
-  final ChatItems items,
-) => switch (item) {
-  RecommendedProduct(:final id) => switch (items.products[id]) {
-    final product? => ChatRecommendation.product(product),
-    null => null,
-  },
-  RecommendedWardrobeItem(:final id) => switch (items.wardrobe[id]) {
-    final wardrobeItem? => ChatRecommendation.wardrobe(wardrobeItem),
-    null => null,
-  },
-};
+ResolvedItem? _resolve(final ItemRef ref, final ChatItems items) =>
+    switch (ref) {
+      ProductItemRef(:final id) => switch (items.products[id]) {
+        final product? => ResolvedItem.product(product),
+        null => null,
+      },
+      WardrobeItemRef(:final id) => switch (items.wardrobe[id]) {
+        final wardrobeItem? => ResolvedItem.wardrobe(wardrobeItem),
+        null => null,
+      },
+    };
+
+const _emptyAnswerText = '抱歉，我沒有理解，可以再說一次你的需求嗎？';
+
+const _minTryonGarments = 2;
+const _maxTryonGarments = 3;
+
+ResolvedOutfit? _resolveOutfit(final ChatOutfit outfit, final ChatItems items) {
+  final refs = outfit.pieces.toSet();
+  if (refs.length < _minTryonGarments || refs.length > _maxTryonGarments) {
+    return null;
+  }
+  final pieces = [for (final ref in refs) _resolve(ref, items)];
+  if (pieces.contains(null)) return null;
+  return ResolvedOutfit(
+    title: outfit.title,
+    reason: outfit.reason,
+    pieces: pieces.nonNulls.toList(),
+  );
+}
+
+Iterable<ChatPick> _firstPerRef(final List<ChatPick> picks) {
+  final seen = <ItemRef>{};
+  return picks.where((final pick) => seen.add(pick.ref));
+}
 
 List<ChatTimelineEntry> buildChatTimeline(final ChatState state) {
   final entries = <ChatTimelineEntry>[
@@ -101,6 +142,7 @@ List<ChatTimelineEntry> buildChatTimeline(final ChatState state) {
 
   for (final message in state.messages.skip(1)) {
     var hasNonToolBlock = false;
+    var addedSegment = false;
     for (final block in message.content) {
       switch (block) {
         case TextBlock(:final text) when message.role == ChatRole.user:
@@ -112,18 +154,43 @@ List<ChatTimelineEntry> buildChatTimeline(final ChatState state) {
           turn?.attachResult(block);
         case TextBlock(:final text):
           hasNonToolBlock = true;
+          if (text.trim().isEmpty) break;
+          addedSegment = true;
           (turn ??= _OpenTurn()).segments.add(ChatTextSegment(text));
-        case RecommendationBlock(:final items):
+        case PicksBlock(:final picks):
           hasNonToolBlock = true;
-          final cards = [
-            for (final item in items) ?_resolve(item, state.items),
+          final resolved = [
+            for (final pick in _firstPerRef(picks))
+              if (_resolve(pick.ref, state.items) case final item?)
+                ResolvedPick(item: item, highlight: pick.highlight),
           ];
-          if (cards.isNotEmpty) {
-            (turn ??= _OpenTurn()).segments.add(ChatCardSegment(cards));
+          if (resolved.isNotEmpty) {
+            addedSegment = true;
+            (turn ??= _OpenTurn()).segments.add(ChatPicksSegment(resolved));
+          }
+        case OutfitsBlock(:final outfits):
+          hasNonToolBlock = true;
+          final looks = [
+            for (final outfit in outfits) ?_resolveOutfit(outfit, state.items),
+          ];
+          if (looks.isNotEmpty) {
+            addedSegment = true;
+            (turn ??= _OpenTurn()).segments.add(ChatOutfitsSegment(looks));
           }
       }
     }
-    if (message.role == ChatRole.assistant && hasNonToolBlock) closeTurn();
+    final isFinalAnswer =
+        message.role == ChatRole.assistant &&
+        !message.content.any((final block) => block is ToolUseBlock);
+    if (isFinalAnswer && !addedSegment) {
+      (turn ??= _OpenTurn()).segments.add(
+        const ChatTextSegment(_emptyAnswerText),
+      );
+    }
+    if (message.role == ChatRole.assistant &&
+        (hasNonToolBlock || isFinalAnswer)) {
+      closeTurn();
+    }
   }
 
   final open = turn;
