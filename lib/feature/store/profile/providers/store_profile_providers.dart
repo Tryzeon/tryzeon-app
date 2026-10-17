@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failure_from_error.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/presentation/state/apply_write.dart';
 import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
@@ -66,7 +67,7 @@ UpdateStoreProfile updateStoreProfileUseCase(final Ref ref) {
 
 @riverpod
 class StoreProfileNotifier extends _$StoreProfileNotifier
-    with PullToRefresh<StoreProfile?> {
+    with PullToRefresh<StoreProfile?>, ApplyWrite<StoreProfile?> {
   @override
   Future<StoreProfile?> build() async {
     final isLoggedIn = ref.watch(isAuthenticatedProvider);
@@ -83,6 +84,39 @@ class StoreProfileNotifier extends _$StoreProfileNotifier
   Future<Result<void, Failure>> refresh() => applyRefresh(
     () => ref.read(getStoreProfileUseCaseProvider)(forceRefresh: true),
   );
+
+  /// The profile the edits merge onto is read here rather than taken from the
+  /// form, so a stale form can't clobber server-owned fields.
+  Future<Result<({StoreProfile profile, bool addressUnresolved}), Failure>>
+  save({
+    required final String name,
+    required final String? address,
+    required final Set<StoreChannel> channels,
+    required final List<StoreOrderContact> orderContacts,
+    final File? logoFile,
+  }) => applyWrite(() async {
+    final StoreProfile? original;
+    try {
+      original = await future;
+    } on Failure catch (e) {
+      return Err(e);
+    }
+    if (original == null) {
+      return const Err(AuthFailure('無法獲取店家資訊，請重新登入'));
+    }
+    return ref.read(updateStoreProfileUseCaseProvider)(
+      UpdateStoreProfileParams(
+        original: original,
+        draft: StoreProfileDraft(
+          name: name,
+          address: address,
+          channels: channels,
+          orderContacts: orderContacts,
+        ),
+        logoFile: logoFile,
+      ),
+    );
+  }, merge: (final _, final saved) => saved.profile);
 }
 
 @riverpod
@@ -90,8 +124,6 @@ class StoreProfileEditNotifier extends _$StoreProfileEditNotifier {
   @override
   AsyncValue<void> build() => const AsyncData(null);
 
-  /// The profile the edits merge onto is read here rather than taken from the
-  /// form, so a stale form can't clobber server-owned fields.
   Future<Result<({bool addressUnresolved}), Failure>> save({
     required final String name,
     required final String? address,
@@ -104,32 +136,22 @@ class StoreProfileEditNotifier extends _$StoreProfileEditNotifier {
     final link = ref.keepAlive();
     state = const AsyncLoading();
     try {
-      final original = await ref.read(storeProfileProvider.future);
-      if (original == null) {
-        state = const AsyncData(null);
-        return const Err(AuthFailure('無法獲取店家資訊，請重新登入'));
-      }
-
-      final result = await ref.read(updateStoreProfileUseCaseProvider)(
-        UpdateStoreProfileParams(
-          original: original,
-          draft: StoreProfileDraft(
-            name: name,
-            address: address,
-            channels: channels,
-            orderContacts: orderContacts,
-          ),
-          logoFile: logoFile,
-        ),
-      );
-
-      if (result.isFailure) {
-        state = AsyncError(result.getError()!, StackTrace.current);
-        return result;
-      }
-
-      ref.invalidate(storeProfileProvider);
-      state = const AsyncData(null);
+      final result =
+          (await ref
+                  .read(storeProfileProvider.notifier)
+                  .save(
+                    name: name,
+                    address: address,
+                    channels: channels,
+                    orderContacts: orderContacts,
+                    logoFile: logoFile,
+                  ))
+              .map(
+                (final saved) => (addressUnresolved: saved.addressUnresolved),
+              );
+      state = result.isFailure
+          ? AsyncError(result.getError()!, StackTrace.current)
+          : const AsyncData(null);
       return result;
     } catch (e, stackTrace) {
       AppLogger.error('Failed to save store profile', e, stackTrace);
