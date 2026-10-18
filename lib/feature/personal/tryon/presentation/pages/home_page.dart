@@ -107,6 +107,7 @@ class HomePage extends HookConsumerWidget {
       if (ref.read(avatarUploadProvider) != null) return;
       final File? imageFile = await pickAvatarPhoto();
       if (imageFile == null) return;
+      galleryNotifier.showAvatar();
       onAvatarReplaced(
         await ref.read(avatarUploadProvider.notifier).upload(imageFile),
       );
@@ -116,6 +117,7 @@ class HomePage extends HookConsumerWidget {
       if (ref.read(avatarUploadProvider) != null) return;
       final File? imageFile = await pickAvatarPhoto();
       if (imageFile == null) return;
+      galleryNotifier.showAvatar();
       onAvatarReplaced(
         await ref
             .read(tryonCoordinatorProvider)
@@ -123,10 +125,12 @@ class HomePage extends HookConsumerWidget {
       );
     }
 
-    Future<void> applyPreset(final PresetAvatar preset) async =>
-        onAvatarReplaced(
-          await ref.read(avatarUploadProvider.notifier).applyPreset(preset),
-        );
+    Future<void> applyPreset(final PresetAvatar preset) async {
+      galleryNotifier.showAvatar();
+      onAvatarReplaced(
+        await ref.read(avatarUploadProvider.notifier).applyPreset(preset),
+      );
+    }
 
     void replaceAvatar() {
       if (ref.read(avatarUploadProvider) != null) return;
