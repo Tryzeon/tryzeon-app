@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
-import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/order_contact_type.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/services/order_message_builder.dart';
@@ -54,34 +54,35 @@ Future<void> launchProductPurchase(
         uri: Uri.parse(product.purchaseLink!),
         failureMessage: '無法開啟購買連結',
       );
-    case ContactChoice(:final contact):
+    case ContactChoice(:final type, :final value):
       final message = OrderMessageBuilder.build(
         product: product,
         fitResult: fitResult,
       );
       return (
-        uri: _buildOrderContactUri(contact, message),
-        failureMessage: '無法開啟 ${contact.type.label} 聊天室',
+        uri: _buildOrderContactUri(type, value, message),
+        failureMessage: '無法開啟 ${type.label} 聊天室',
       );
   }
 }
 
 Uri _buildOrderContactUri(
-  final StoreOrderContact contact,
+  final OrderContactType type,
+  final String value,
   final String message,
 ) {
-  switch (contact.type) {
+  switch (type) {
     case OrderContactType.line:
       // The '@' prefix marks an Official Account, whose deep link can prefill;
       // a bare ID resolves to a personal add-friend link that cannot.
-      return contact.value.startsWith('@')
+      return value.startsWith('@')
           ? Uri.parse(
-              'https://line.me/R/oaMessage/${contact.value}/?${Uri.encodeComponent(message)}',
+              'https://line.me/R/oaMessage/$value/?${Uri.encodeComponent(message)}',
             )
-          : Uri.parse('https://line.me/ti/p/~${contact.value}');
+          : Uri.parse('https://line.me/ti/p/~$value');
     case OrderContactType.facebook:
-      return Uri.parse('https://m.me/${contact.value}');
+      return Uri.parse('https://m.me/$value');
     case OrderContactType.instagram:
-      return Uri.parse('https://ig.me/m/${contact.value}');
+      return Uri.parse('https://ig.me/m/$value');
   }
 }

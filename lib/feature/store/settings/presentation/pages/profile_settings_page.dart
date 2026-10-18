@@ -15,8 +15,8 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/crop_options.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/core/utils/validators.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/order_contact_type.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
-import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
 import 'package:typed_result/typed_result.dart';
@@ -77,41 +77,30 @@ class _StoreProfileForm extends HookConsumerWidget {
       baseline.channels,
     );
 
-    String initialContact(final OrderContactType type) {
-      for (final c in baseline.orderContacts) {
-        if (c.type == type) return c.value;
-      }
-      return '';
-    }
-
     final lineController = useTextEditingController(
-      text: initialContact(OrderContactType.line),
+      text: baseline.orderContacts[OrderContactType.line],
     );
     final facebookController = useTextEditingController(
-      text: initialContact(OrderContactType.facebook),
+      text: baseline.orderContacts[OrderContactType.facebook],
     );
     final instagramController = useTextEditingController(
-      text: initialContact(OrderContactType.instagram),
+      text: baseline.orderContacts[OrderContactType.instagram],
     );
 
     final lineValue = useValueListenable(lineController).text;
     final facebookValue = useValueListenable(facebookController).text;
     final instagramValue = useValueListenable(instagramController).text;
 
-    List<StoreOrderContact> buildOrderContacts() {
-      final list = <StoreOrderContact>[];
-      void add(final OrderContactType type, final String raw) {
-        final v = raw.trim();
-        if (v.isNotEmpty) list.add(StoreOrderContact(type: type, value: v));
-      }
+    Map<OrderContactType, String> buildOrderContacts() => {
+      for (final (type, raw) in [
+        (OrderContactType.line, lineValue),
+        (OrderContactType.facebook, facebookValue),
+        (OrderContactType.instagram, instagramValue),
+      ])
+        if (raw.trim() case final value when value.isNotEmpty) type: value,
+    };
 
-      add(OrderContactType.line, lineValue);
-      add(OrderContactType.facebook, facebookValue);
-      add(OrderContactType.instagram, instagramValue);
-      return list;
-    }
-
-    final contactsChanged = !listEquals(
+    final contactsChanged = !mapEquals(
       buildOrderContacts(),
       baseline.orderContacts,
     );

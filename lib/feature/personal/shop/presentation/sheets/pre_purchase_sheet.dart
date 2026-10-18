@@ -7,7 +7,7 @@ import 'package:tryzeon/core/extensions/price_format_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/app_sheet.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/order_contact_type.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/services/order_message_builder.dart';
@@ -23,8 +23,9 @@ class OnlineStoreChoice extends PurchaseChoice {
 }
 
 class ContactChoice extends PurchaseChoice {
-  const ContactChoice(this.contact);
-  final StoreOrderContact contact;
+  const ContactChoice({required this.type, required this.value});
+  final OrderContactType type;
+  final String value;
 }
 
 class PrePurchaseSheet extends StatelessWidget {
@@ -234,7 +235,7 @@ class _FitInfoRow extends StatelessWidget {
 class _ContactChannels extends StatelessWidget {
   const _ContactChannels({required this.contacts, required this.message});
 
-  final List<StoreOrderContact> contacts;
+  final Map<OrderContactType, String> contacts;
   final String message;
 
   static const double _stepIndent = _StepBadge.size + AppSpacing.smMd;
@@ -280,7 +281,8 @@ class _ContactChannels extends StatelessWidget {
           child: Wrap(
             spacing: AppSpacing.smMd,
             children: [
-              for (final contact in contacts) _ChannelButton(contact: contact),
+              for (final MapEntry(key: type, :value) in contacts.entries)
+                _ChannelButton(type: type, value: value),
             ],
           ),
         ),
@@ -391,9 +393,10 @@ class _SquareCopyButtonState extends State<_SquareCopyButton> {
 }
 
 class _ChannelButton extends StatelessWidget {
-  const _ChannelButton({required this.contact});
+  const _ChannelButton({required this.type, required this.value});
 
-  final StoreOrderContact contact;
+  final OrderContactType type;
+  final String value;
 
   @override
   Widget build(final BuildContext context) {
@@ -401,9 +404,10 @@ class _ChannelButton extends StatelessWidget {
 
     return Semantics(
       button: true,
-      label: '用 ${contact.type.label} 私訊下單',
+      label: '用 ${type.label} 私訊下單',
       child: InkWell(
-        onTap: () => Navigator.of(context).pop(ContactChoice(contact)),
+        onTap: () =>
+            Navigator.of(context).pop(ContactChoice(type: type, value: value)),
         customBorder: const CircleBorder(),
         child: Container(
           width: 48,
@@ -413,11 +417,7 @@ class _ChannelButton extends StatelessWidget {
             shape: BoxShape.circle,
             border: Border.all(color: colorScheme.outline),
           ),
-          child: Icon(
-            _channelIcon(contact.type),
-            size: 24,
-            color: _channelColor(contact.type),
-          ),
+          child: Icon(_channelIcon(type), size: 24, color: _channelColor(type)),
         ),
       ),
     );
