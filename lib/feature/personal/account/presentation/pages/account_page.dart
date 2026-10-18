@@ -13,6 +13,7 @@ import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/common/body_measurements/domain/entities/body_measurements.dart';
+import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/settings/providers/settings_controller.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/widgets/subscription_usage_card.dart';
@@ -330,7 +331,9 @@ class _StylePreferencesRow extends HookConsumerWidget {
     if (profileAsync.isLoading && !profileAsync.hasValue) {
       trailing = null;
     } else {
-      final styles = profileAsync.value?.stylePreferences ?? const [];
+      final styles = ClothingStyle.listFromSet(
+        profileAsync.value?.stylePreferences ?? const {},
+      );
       trailing = switch (styles) {
         [] => '未設定',
         [final only] => only.label,

@@ -61,7 +61,7 @@ void main() {
       const CompleteOnboardingParams(
         gender: Gender.female,
         ageRange: AgeRange.age25to34,
-        stylePreferences: [ClothingStyle.korean],
+        stylePreferences: {ClothingStyle.korean},
       ),
     );
     expect(container.read(onboardingProvider).isSubmitting, isFalse);

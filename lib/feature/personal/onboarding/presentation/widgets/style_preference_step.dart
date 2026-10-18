@@ -38,7 +38,7 @@ class StylePreferenceStep extends HookConsumerWidget {
           const SizedBox(height: AppSpacing.lg),
           Expanded(
             child: StylePreferenceGrid(
-              selected: onboardingState.stylePreferences.toSet(),
+              selected: onboardingState.stylePreferences,
               onToggle: notifier.toggleStylePreference,
             ),
           ),

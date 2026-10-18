@@ -17,7 +17,7 @@ sealed class OnboardingState with _$OnboardingState {
     @Default(0) final int currentStep,
     final Gender? gender,
     final AgeRange? ageRange,
-    @Default([]) final List<ClothingStyle> stylePreferences,
+    @Default(<ClothingStyle>{}) final Set<ClothingStyle> stylePreferences,
     @Default(false) final bool isSubmitting,
   }) = _OnboardingState;
 }
@@ -36,13 +36,11 @@ class OnboardingNotifier extends _$OnboardingNotifier {
   }
 
   void toggleStylePreference(final ClothingStyle style) {
-    final current = List<ClothingStyle>.from(state.stylePreferences);
-    if (current.contains(style)) {
-      current.remove(style);
-    } else {
-      current.add(style);
+    final next = {...state.stylePreferences};
+    if (!next.add(style)) {
+      next.remove(style);
     }
-    state = state.copyWith(stylePreferences: current);
+    state = state.copyWith(stylePreferences: next);
   }
 
   void nextStep() {

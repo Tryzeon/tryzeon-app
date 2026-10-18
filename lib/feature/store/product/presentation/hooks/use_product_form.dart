@@ -125,10 +125,10 @@ class ProductFormData {
       selectedElasticity.value = r.elasticity;
     }
     if ((selectedStyles.value?.isEmpty ?? true) && r.styles.isNotEmpty) {
-      selectedStyles.value = r.styles.toSet();
+      selectedStyles.value = r.styles;
     }
     if ((selectedSeasons.value?.isEmpty ?? true) && r.seasons.isNotEmpty) {
-      selectedSeasons.value = r.seasons.toSet();
+      selectedSeasons.value = r.seasons;
     }
     if ((selectedMaterial.value?.isEmpty ?? true) &&
         (r.material?.isNotEmpty ?? false)) {

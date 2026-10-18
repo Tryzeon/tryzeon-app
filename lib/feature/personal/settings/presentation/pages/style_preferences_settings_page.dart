@@ -51,9 +51,7 @@ class _StylePreferencesForm extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final baseline = useMemoized(() => profile);
-    final original = useMemoized(
-      () => (baseline.stylePreferences ?? const <ClothingStyle>[]).toSet(),
-    );
+    final original = baseline.stylePreferences;
     final selected = useState<Set<ClothingStyle>>({...original});
     final isLoading = ref.watch(profileEditProvider).isLoading;
 
@@ -76,7 +74,7 @@ class _StylePreferencesForm extends HookConsumerWidget {
           .read(profileEditProvider.notifier)
           .updateStylePreferences(
             original: baseline,
-            stylePreferences: selected.value.toList(),
+            stylePreferences: selected.value,
           );
 
       if (!context.mounted) return;
