@@ -162,7 +162,7 @@ void main() {
     final profile = (await buildRepository(remote).getUserProfile()).get()!;
 
     expect(remote.calls, 1);
-    expect(profile.stylePreferences, [ClothingStyle.korean]);
+    expect(profile.stylePreferences, {ClothingStyle.korean});
 
     final cached = await harness.isar.userProfileCaches.getByUserId('u1');
     expect(cached!.stylePreferences, ['korean']);
@@ -200,7 +200,7 @@ void main() {
     expect(remote.calls, 0);
     expect(profile.gender, Gender.female);
     expect(profile.ageRange, AgeRange.age25to34);
-    expect(profile.stylePreferences, [ClothingStyle.korean]);
+    expect(profile.stylePreferences, {ClothingStyle.korean});
   });
 
   test(
@@ -214,7 +214,7 @@ void main() {
       expect(remote.calls, 0);
       expect(profile.gender, isNull);
       expect(profile.ageRange, isNull);
-      expect(profile.stylePreferences, isNull);
+      expect(profile.stylePreferences, isEmpty);
     },
   );
 

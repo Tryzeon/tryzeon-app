@@ -21,7 +21,14 @@ import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile_up
     MapType<UserProfileDto, UserProfile>(
       fields: [Field('avatar', custom: UserProfileMapprHelper.avatarFromDto)],
     ),
-    MapType<UserProfileUpdate, UpdateUserProfileRequest>(),
+    MapType<UserProfileUpdate, UpdateUserProfileRequest>(
+      fields: [
+        Field(
+          'stylePreferences',
+          custom: UserProfileMapprHelper.stylePreferencesToRequest,
+        ),
+      ],
+    ),
     MapType<Avatar, UpdateAvatarRequest>(
       fields: [
         Field('avatarPath', custom: UserProfileMapprHelper.avatarPathToRequest),
@@ -40,8 +47,8 @@ import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile_up
         TypeConverter<AgeRange?, String?>(
           ProfileCacheConverters.ageRangeToCache,
         ),
-        TypeConverter<List<ClothingStyle>?, List<String>?>(
-          ClothingStyleCacheConverters.listToCache,
+        TypeConverter<Set<ClothingStyle>, List<String>?>(
+          ClothingStyleCacheConverters.setToCache,
         ),
       ],
     ),
@@ -54,8 +61,11 @@ import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile_up
         TypeConverter<String?, AgeRange?>(
           ProfileCacheConverters.ageRangeFromCache,
         ),
-        TypeConverter<List<String>?, List<ClothingStyle>?>(
-          ClothingStyleCacheConverters.listFromCache,
+      ],
+      fields: [
+        Field(
+          'stylePreferences',
+          custom: UserProfileMapprHelper.stylePreferencesFromCache,
         ),
       ],
     ),
@@ -73,6 +83,19 @@ class UserProfileMapprHelper {
       return Avatar.uploaded(path);
     }
     return null;
+  }
+
+  static Set<ClothingStyle> stylePreferencesFromCache(
+    final UserProfileCache source,
+  ) =>
+      ClothingStyleCacheConverters.setFromCache(source.stylePreferences) ??
+      const {};
+
+  static List<ClothingStyle>? stylePreferencesToRequest(
+    final UserProfileUpdate source,
+  ) {
+    final styles = source.stylePreferences;
+    return styles == null ? null : ClothingStyle.listFromSet(styles);
   }
 
   static String? avatarPathToRequest(final Avatar source) => switch (source) {

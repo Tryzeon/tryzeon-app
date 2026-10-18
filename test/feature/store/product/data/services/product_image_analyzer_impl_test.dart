@@ -39,7 +39,7 @@ void main() {
     expect(analysis.name, '碎花洋裝');
     expect(analysis.categoryId, 'c1');
     expect(analysis.gender, ProductGender.female);
-    expect(analysis.styles, [ClothingStyle.korean]);
+    expect(analysis.styles, {ClothingStyle.korean});
     expect(analysis.fit, isNull);
   });
 

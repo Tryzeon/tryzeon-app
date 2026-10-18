@@ -175,7 +175,7 @@ class UserProfileNotifier extends _$UserProfileNotifier
 
   Future<Result<UserProfile, Failure>> updateStylePreferences({
     required final UserProfile original,
-    required final List<ClothingStyle> stylePreferences,
+    required final Set<ClothingStyle> stylePreferences,
   }) => _apply(
     () => ref.read(updateStylePreferencesUseCaseProvider)(
       original: original,
@@ -263,7 +263,7 @@ class ProfileEditNotifier extends _$ProfileEditNotifier {
 
   Future<Result<void, Failure>> updateStylePreferences({
     required final UserProfile original,
-    required final List<ClothingStyle> stylePreferences,
+    required final Set<ClothingStyle> stylePreferences,
   }) {
     return _write(
       () => ref

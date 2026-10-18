@@ -1,12 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
+import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/personal/profile/data/collections/avatar_embedded.dart';
 import 'package:tryzeon/feature/personal/profile/data/collections/user_profile_cache.dart';
+import 'package:tryzeon/feature/personal/profile/data/dtos/update_user_profile_request.dart';
 import 'package:tryzeon/feature/personal/profile/data/dtos/user_profile_dto.dart';
 import 'package:tryzeon/feature/personal/profile/data/mappers/user_profile_mappr.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/preset_avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
+import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile_update.dart';
 
 void main() {
   const mappr = UserProfileMappr();
@@ -105,5 +108,19 @@ void main() {
       () => mappr.convert<UserProfileCache, UserProfile>(cache),
       throwsA(isA<CacheDecodeException>()),
     );
+  });
+
+  test('style preferences are sent in catalogue order, whatever the pick '
+      'order', () {
+    final request = mappr.convert<UserProfileUpdate, UpdateUserProfileRequest>(
+      const UserProfileUpdate(
+        stylePreferences: {ClothingStyle.streetwear, ClothingStyle.japanese},
+      ),
+    );
+
+    expect(request.stylePreferences, [
+      ClothingStyle.japanese,
+      ClothingStyle.streetwear,
+    ]);
   });
 }
