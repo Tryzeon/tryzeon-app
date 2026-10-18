@@ -6,7 +6,6 @@ import 'package:tryzeon/feature/common/product_size/data/mappers/product_size_ma
 import 'package:tryzeon/feature/common/product_size/domain/entities/product_size.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/standard_size_label.dart';
 import 'package:tryzeon/feature/common/store/data/mappers/common_store_mappr.dart';
-import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/shop/data/dtos/shop_product_dto.dart';
 import 'package:tryzeon/feature/personal/shop/data/dtos/shop_store_info_dto.dart';
 import 'package:tryzeon/feature/personal/shop/data/mappers/shop_mappr.auto_mappr.dart';
@@ -22,10 +21,7 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.da
       ],
     ),
     MapType<ShopStoreInfoDto, ShopStoreInfo>(
-      fields: [
-        Field('channels', custom: ShopMapprHelper.channelsToEntity),
-        Field('logoUrl', custom: ShopMapprHelper.logoUrlToEntity),
-      ],
+      fields: [Field('logoUrl', custom: ShopMapprHelper.logoUrlToEntity)],
     ),
   ],
   includes: [ProductSizeMappr(), CommonStoreMappr()],
@@ -50,9 +46,6 @@ class ShopMapprHelper {
     );
     return sizes;
   }
-
-  static Set<StoreChannel> channelsToEntity(final ShopStoreInfoDto source) =>
-      source.channels.toSet();
 
   static String? logoUrlToEntity(final ShopStoreInfoDto source) =>
       PublicImageUrl.ofOrNull(source.logoPath);

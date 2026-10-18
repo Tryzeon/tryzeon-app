@@ -12,7 +12,6 @@ import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart
   [
     MapType<StoreProfileDto, StoreProfile>(
       fields: [
-        Field('channels', custom: StoreProfileMapprHelper.channelsToEntity),
         Field('logoUrl', custom: StoreProfileMapprHelper.logoUrlFromDto),
       ],
     ),
@@ -53,9 +52,6 @@ class StoreProfileMapprHelper {
 
   static String? logoUrlFromCache(final StoreProfileCache source) =>
       PublicImageUrl.ofOrNull(source.logoPath);
-
-  static Set<StoreChannel> channelsToEntity(final StoreProfileDto source) =>
-      source.channels.toSet();
 
   static List<StoreChannel> channelsToDto(final StoreProfile source) =>
       StoreChannel.listFromSet(source.channels);
