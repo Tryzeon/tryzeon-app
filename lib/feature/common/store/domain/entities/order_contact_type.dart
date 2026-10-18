@@ -1,6 +1,4 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
-part 'store_order_contact.freezed.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 @JsonEnum(valueField: 'code')
 enum OrderContactType {
@@ -19,12 +17,4 @@ enum OrderContactType {
     }
     return null;
   }
-}
-
-@freezed
-sealed class StoreOrderContact with _$StoreOrderContact {
-  const factory StoreOrderContact({
-    required final OrderContactType type,
-    required final String value,
-  }) = _StoreOrderContact;
 }

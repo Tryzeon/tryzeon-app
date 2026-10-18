@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/order_contact_type.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
-import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
 
 part 'store_profile.freezed.dart';
 
@@ -10,7 +10,8 @@ sealed class StoreProfileDraft with _$StoreProfileDraft {
     required final String name,
     required final Set<StoreChannel> channels,
     final String? address,
-    @Default(<StoreOrderContact>[]) final List<StoreOrderContact> orderContacts,
+    @Default(<OrderContactType, String>{})
+    final Map<OrderContactType, String> orderContacts,
   }) = _StoreProfileDraft;
 }
 
@@ -29,7 +30,8 @@ sealed class StoreProfile with _$StoreProfile {
     final double? longitude,
     final String? logoPath,
     final String? logoUrl,
-    @Default(<StoreOrderContact>[]) final List<StoreOrderContact> orderContacts,
+    @Default(<OrderContactType, String>{})
+    final Map<OrderContactType, String> orderContacts,
   }) = _StoreProfile;
 }
 
