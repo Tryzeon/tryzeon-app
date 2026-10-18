@@ -10,6 +10,7 @@ import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/router/shells/personal_shell.dart';
 import 'package:tryzeon/core/router/shells/personal_tab.dart';
 import 'package:tryzeon/core/router/shells/personal_tab_navigator.dart';
+import 'package:tryzeon/core/router/shells/tab_reselect.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
@@ -205,6 +206,77 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(_dock), findsNothing);
+  });
+
+  group('re-tapping the selected tab', () {
+    Future<void> tapTab(
+      final WidgetTester tester,
+      final PersonalTab tab,
+    ) async {
+      await tester.tap(find.text(tab.label));
+      await tester.pumpAndSettle();
+    }
+
+    TabReselect? reselect() => container.read(tabReselectSignalProvider);
+
+    testWidgets('on the root page announces the tab', (final tester) async {
+      await pumpShell(tester);
+
+      await tapTab(tester, PersonalTab.home);
+
+      expect(reselect()?.tab, PersonalTab.home);
+    });
+
+    testWidgets('on a pushed page pops back to the root without announcing', (
+      final tester,
+    ) async {
+      await pumpShell(tester);
+      await tapTab(tester, PersonalTab.wardrobe);
+      router.push(AppRoutes.personalWardrobeItemPath('a'));
+      await tester.pumpAndSettle();
+
+      await tapTab(tester, PersonalTab.wardrobe);
+
+      expect(find.text(AppRoutes.personalWardrobe), findsOneWidget);
+      expect(reselect(), isNull);
+
+      await tapTab(tester, PersonalTab.wardrobe);
+
+      expect(reselect()?.tab, PersonalTab.wardrobe);
+    });
+
+    testWidgets(
+      'on a garment page pushed from another branch pops back to the root',
+      (final tester) async {
+        await pumpShell(tester);
+        router.push(AppRoutes.personalShopProductPath('p1'));
+        await tester.pumpAndSettle();
+        expect(
+          tester
+              .widget<StatefulNavigationShell>(
+                find.byType(StatefulNavigationShell),
+              )
+              .currentIndex,
+          PersonalTab.home.index,
+        );
+
+        await tapTab(tester, PersonalTab.home);
+
+        expect(find.text(AppRoutes.personalHome), findsOneWidget);
+        expect(reselect(), isNull);
+      },
+    );
+
+    testWidgets('switching to another tab does not announce', (
+      final tester,
+    ) async {
+      await pumpShell(tester);
+
+      await tapTab(tester, PersonalTab.chat);
+
+      expect(find.text(AppRoutes.personalChat), findsOneWidget);
+      expect(reselect(), isNull);
+    });
   });
 
   group('first try-on tutorial', () {

@@ -9,6 +9,7 @@ import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/router/shells/personal_tab.dart';
+import 'package:tryzeon/core/router/shells/tab_reselect.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/product_category/domain/entities/product_category.dart';
@@ -41,7 +42,7 @@ class ShopPage extends HookConsumerWidget {
 
     // Re-tapping the shop tab scrolls back to the top
     final scrollController = useScrollController();
-    ref.listen(personalTabReselectSignalProvider, (final _, final next) {
+    ref.listen(tabReselectSignalProvider, (final _, final next) {
       if (next?.tab != PersonalTab.shop) return;
       if (!scrollController.hasClients || scrollController.offset <= 0) return;
       scrollController.animateTo(

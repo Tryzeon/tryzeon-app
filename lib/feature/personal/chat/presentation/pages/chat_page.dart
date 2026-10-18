@@ -9,6 +9,7 @@ import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/app_keyboard_dismisser.dart';
 import 'package:tryzeon/core/presentation/widgets/app_page_header.dart';
 import 'package:tryzeon/core/router/shells/personal_tab.dart';
+import 'package:tryzeon/core/router/shells/tab_reselect.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/state/chat_timeline.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_input_bar.dart';
@@ -83,7 +84,7 @@ class ChatPage extends HookConsumerWidget {
       }
     });
 
-    ref.listen(personalTabReselectSignalProvider, (final _, final next) {
+    ref.listen(tabReselectSignalProvider, (final _, final next) {
       if (next?.tab != PersonalTab.chat) return;
       if (!scrollController.hasClients || scrollController.offset <= 0) return;
       scrollToLatest(curve: AppCurves.emphasized);

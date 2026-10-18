@@ -9,6 +9,7 @@ import 'package:tryzeon/core/presentation/widgets/bottom_nav_bar_inset.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/router/shells/native_tab_bar_anchors.dart';
 import 'package:tryzeon/core/router/shells/personal_tab.dart';
+import 'package:tryzeon/core/router/shells/tab_reselect.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/common/settings/providers/settings_controller.dart';
@@ -56,13 +57,10 @@ class PersonalShell extends HookConsumerWidget {
         lastTabTapTime.value = now;
       }
 
-      final isReselect = index == navigationShell.currentIndex;
-      navigationShell.goBranch(index, initialLocation: isReselect);
-      if (isReselect) {
-        ref
-            .read(personalTabReselectSignalProvider.notifier)
-            .emit(PersonalTab.values[index]);
-      }
+      navigationShell.selectTab(
+        PersonalTab.values[index],
+        ref.read(tabReselectSignalProvider.notifier),
+      );
     }
 
     final usesNativeTabBar = PlatformInfo.isIOS26OrHigher();
