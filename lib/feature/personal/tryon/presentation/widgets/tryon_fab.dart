@@ -56,11 +56,11 @@ class TryonFab extends StatelessWidget {
 
   Widget _buildPill(final ColorScheme colorScheme, final TextTheme textTheme) {
     final iconSize = compact ? 16.0 : 24.0;
-    final vertical = compact ? AppSpacing.xs : AppSpacing.sm;
+    const vertical = AppSpacing.sm;
     final horizontal = compact ? AppSpacing.sm : AppSpacing.smMd;
     return GlassPill(
       padding: label == null
-          ? EdgeInsets.all(vertical)
+          ? const EdgeInsets.all(vertical)
           : EdgeInsets.symmetric(horizontal: horizontal, vertical: vertical),
       child: Row(
         mainAxisSize: MainAxisSize.min,

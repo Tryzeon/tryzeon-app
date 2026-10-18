@@ -94,35 +94,32 @@ class _Story extends StatelessWidget {
     final onImage = theme.colorScheme.onPrimary;
     final reason = outfit.reason;
 
-    return Padding(
-      padding: const EdgeInsets.only(right: AppSpacing.smMd),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          outfit.title,
+          style: textTheme.titleLarge?.copyWith(
+            color: onImage,
+            fontWeight: FontWeight.w600,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        if (reason != null) ...[
+          const SizedBox(height: AppSpacing.xs),
           Text(
-            outfit.title,
-            style: textTheme.titleLarge?.copyWith(
-              color: onImage,
-              fontWeight: FontWeight.w600,
+            reason,
+            style: textTheme.bodyMedium?.copyWith(
+              color: onImage.withValues(alpha: ChatCardStyle.mutedTextAlpha),
+              height: 1.5,
             ),
-            maxLines: 1,
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          if (reason != null) ...[
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              reason,
-              style: textTheme.bodyMedium?.copyWith(
-                color: onImage.withValues(alpha: ChatCardStyle.mutedTextAlpha),
-                height: 1.5,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
         ],
-      ),
+      ],
     );
   }
 }
