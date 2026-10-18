@@ -7,7 +7,9 @@ import 'package:tryzeon/feature/common/product_size/data/dtos/product_size_dto.d
 import 'package:tryzeon/feature/common/product_size/data/mappers/product_size_mappr.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/product_size.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/standard_size_label.dart';
-import 'package:tryzeon/feature/common/store/data/mappers/common_store_mappr.dart';
+import 'package:tryzeon/feature/common/store/data/dtos/store_order_contact_dto.dart';
+import 'package:tryzeon/feature/common/store/data/mappers/order_contacts_converters.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/order_contact_type.dart';
 import 'package:tryzeon/feature/personal/shop/data/dtos/shop_product_dto.dart';
 import 'package:tryzeon/feature/personal/shop/data/dtos/shop_store_info_dto.dart';
 import 'package:tryzeon/feature/personal/shop/data/mappers/shop_mappr.auto_mappr.dart';
@@ -26,9 +28,15 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.da
     ),
     MapType<ShopStoreInfoDto, ShopStoreInfo>(
       fields: [Field('logoUrl', custom: ShopMapprHelper.logoUrlToEntity)],
+      converters: [
+        TypeConverter<
+          List<StoreOrderContactDto>,
+          Map<OrderContactType, String>
+        >(OrderContactsConverters.fromDtos),
+      ],
     ),
   ],
-  includes: [ProductSizeMappr(), CommonStoreMappr()],
+  includes: [ProductSizeMappr()],
 )
 class ShopMappr extends $ShopMappr {
   const ShopMappr();

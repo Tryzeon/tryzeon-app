@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/order_contact_type.dart';
 import 'package:tryzeon/feature/personal/shop/data/dtos/shop_store_info_dto.dart';
 
 void main() {

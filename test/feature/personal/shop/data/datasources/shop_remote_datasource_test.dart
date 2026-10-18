@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
-import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/order_contact_type.dart';
 import 'package:tryzeon/feature/personal/shop/data/datasources/shop_remote_datasource.dart';
 
 void main() {
