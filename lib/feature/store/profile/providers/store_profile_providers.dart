@@ -8,8 +8,8 @@ import 'package:tryzeon/core/presentation/state/apply_write.dart';
 import 'package:tryzeon/core/presentation/state/pull_to_refresh.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/order_contact_type.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
-import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_local_datasource.dart';
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_remote_datasource.dart';
 import 'package:tryzeon/feature/store/profile/data/repositories/store_profile_repository_impl.dart';
@@ -93,7 +93,7 @@ class StoreProfileNotifier extends _$StoreProfileNotifier
     required final String name,
     required final String? address,
     required final Set<StoreChannel> channels,
-    required final List<StoreOrderContact> orderContacts,
+    required final Map<OrderContactType, String> orderContacts,
     final File? logoFile,
   }) => applyWrite(
     () => ref.read(updateStoreProfileUseCaseProvider)(
@@ -122,7 +122,7 @@ class StoreProfileEditNotifier extends _$StoreProfileEditNotifier {
     required final String name,
     required final String? address,
     required final Set<StoreChannel> channels,
-    required final List<StoreOrderContact> orderContacts,
+    required final Map<OrderContactType, String> orderContacts,
     final File? logoFile,
   }) async {
     // Kept alive for the duration, so a form popped mid-save doesn't dispose

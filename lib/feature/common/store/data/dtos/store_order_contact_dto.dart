@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/order_contact_type.dart';
 
 part 'store_order_contact_dto.g.dart';
 

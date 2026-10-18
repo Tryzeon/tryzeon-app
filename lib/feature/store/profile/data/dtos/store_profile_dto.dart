@@ -1,7 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:tryzeon/feature/common/store/data/dtos/store_order_contact_dto.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/order_contact_type.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
-import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
 
 part 'store_profile_dto.g.dart';
 

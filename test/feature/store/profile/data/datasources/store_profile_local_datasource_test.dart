@@ -3,8 +3,8 @@ import 'package:isar_community/isar.dart';
 import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/utils/public_image_url.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/order_contact_type.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
-import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
 import 'package:tryzeon/feature/store/profile/data/collections/store_profile_cache.dart';
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_local_datasource.dart';
 import 'package:tryzeon/feature/store/profile/domain/entities/store_profile.dart';
@@ -40,10 +40,10 @@ void main() {
     longitude: 121.56,
     logoPath: 's1/logo.png',
     logoUrl: PublicImageUrl.of('s1/logo.png'),
-    orderContacts: const [
-      StoreOrderContact(type: OrderContactType.instagram, value: '@shop'),
-      StoreOrderContact(type: OrderContactType.line, value: '@shopline'),
-    ],
+    orderContacts: const {
+      OrderContactType.instagram: '@shop',
+      OrderContactType.line: '@shopline',
+    },
   );
 
   test('reads back exactly the profile it saved', () async {

@@ -5,8 +5,8 @@ import 'package:tryzeon/core/data/datasources/cache_entry_local_datasource.dart'
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/store/data/collections/store_order_contact_embedded.dart';
 import 'package:tryzeon/feature/common/store/data/dtos/store_order_contact_dto.dart';
+import 'package:tryzeon/feature/common/store/domain/entities/order_contact_type.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
-import 'package:tryzeon/feature/common/store/domain/entities/store_order_contact.dart';
 import 'package:tryzeon/feature/store/profile/data/collections/store_profile_cache.dart';
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_local_datasource.dart';
 import 'package:tryzeon/feature/store/profile/data/datasources/store_profile_remote_datasource.dart';
@@ -122,7 +122,7 @@ void main() {
       final profile = (await buildRepository(remote).getStoreProfile()).get()!;
 
       expect(remote.calls, 1);
-      expect(profile.orderContacts.single.type, OrderContactType.line);
+      expect(profile.orderContacts, {OrderContactType.line: '@shop'});
 
       final cached = await harness.isar.storeProfileCaches.getByStoreId('s1');
       expect(cached!.orderContacts.single.type, 'line');
@@ -150,7 +150,7 @@ void main() {
 
     expect(remote.calls, 0);
     expect(profile.channels, {StoreChannel.physical});
-    expect(profile.orderContacts.single.type, OrderContactType.line);
+    expect(profile.orderContacts, {OrderContactType.line: '@shop'});
   });
 
   final originalProfile = StoreProfile(

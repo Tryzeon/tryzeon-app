@@ -79,7 +79,7 @@ void main() {
         name: 'renamed',
         address: null,
         channels: {StoreChannel.online},
-        orderContacts: const [],
+        orderContacts: const {},
       );
 
   test('save shows the saved profile without refetching', () async {
