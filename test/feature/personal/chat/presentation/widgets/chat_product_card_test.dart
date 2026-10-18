@@ -52,36 +52,39 @@ void main() {
       expect(card.contains(tester.getCenter(find.text(text))), isTrue);
     }
     final store = tester.getTopLeft(find.text('STUDIO MUJI')).dy;
-    final name = tester.getTopLeft(find.text('米色寬鬆麻質長褲')).dy;
+    final nameBottom = tester.getBottomLeft(find.text('米色寬鬆麻質長褲')).dy;
     final price = tester.getTopLeft(find.text(599.asTwd)).dy;
-    expect(name, greaterThan(store));
-    expect(price, greaterThan(name));
+    expect(store, closeTo(nameBottom, 1));
+    expect(price, greaterThan(store));
     expect(find.byType(ChatImageTag), findsNothing);
   });
 
-  testWidgets('the try-on is the stock compact TryonFab beside the price', (
-    final tester,
-  ) async {
-    await _pump(tester, ChatProductCard(product: _product));
+  testWidgets(
+    'the try-on is the stock compact TryonFab beside store and price',
+    (final tester) async {
+      await _pump(tester, ChatProductCard(product: _product));
 
-    final fab = tester.widget<TryonFab>(find.byType(TryonFab));
-    expect(fab.label, '試穿');
-    expect(fab.compact, isTrue);
-    expect(fab.icon, isNull);
-    final pill = tester.getRect(
-      find.descendant(
-        of: find.byType(TryonFab),
-        matching: find.byType(GlassPill),
-      ),
-    );
-    final price = tester.getRect(find.text(599.asTwd));
-    expect(pill.left, greaterThanOrEqualTo(price.right));
-    expect((pill.center.dy - price.center.dy).abs(), lessThan(2));
-    expect(
-      tester.getSize(find.byType(TryonFab)).height,
-      greaterThanOrEqualTo(kMinInteractiveDimension),
-    );
-  });
+      final fab = tester.widget<TryonFab>(find.byType(TryonFab));
+      expect(fab.label, '試穿');
+      expect(fab.compact, isTrue);
+      expect(fab.icon, isNull);
+      final pill = tester.getRect(
+        find.descendant(
+          of: find.byType(TryonFab),
+          matching: find.byType(GlassPill),
+        ),
+      );
+      final store = tester.getRect(find.text('STUDIO MUJI'));
+      final price = tester.getRect(find.text(599.asTwd));
+      expect(pill.left, greaterThanOrEqualTo(store.right));
+      expect(pill.left, greaterThanOrEqualTo(price.right));
+      expect(
+        (pill.center.dy - (store.top + price.bottom) / 2).abs(),
+        lessThan(2),
+      );
+      expect(tester.getSize(find.byType(TryonFab)), pill.size);
+    },
+  );
 
   testWidgets('a long name stays on one line', (final tester) async {
     await _pump(
@@ -108,7 +111,7 @@ void main() {
     expect(tag.top - photo.top, AppSpacing.sm);
   });
 
-  testWidgets('the try-on pill keeps the card\'s inset from its right edge', (
+  testWidgets('the text and the pill keep one inset from the sides and foot', (
     final tester,
   ) async {
     await _pump(tester, ChatProductCard(product: _product));
@@ -121,7 +124,9 @@ void main() {
       ),
     );
     final source = tester.getRect(find.text('STUDIO MUJI'));
-    expect(card.right - pill.right, closeTo(source.left - card.left, 1));
+    final inset = source.left - card.left;
+    expect(card.right - pill.right, closeTo(inset, 1));
+    expect(card.bottom - pill.bottom, closeTo(inset, 1));
   });
 
   testWidgets(

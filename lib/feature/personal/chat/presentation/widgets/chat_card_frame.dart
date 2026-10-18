@@ -107,24 +107,15 @@ class _Details extends StatelessWidget {
     return ChatImageScrim(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
-          AppSpacing.smMd,
-          AppSpacing.lg,
-          AppSpacing.smMd,
-          AppSpacing.xs,
+          AppSpacing.sm,
+          AppSpacing.xl,
+          AppSpacing.sm,
+          AppSpacing.sm,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              source,
-              style: textTheme.bodySmall?.copyWith(
-                color: onImageMuted,
-                letterSpacing: 0.6,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
             Padding(
               padding: const EdgeInsets.only(right: AppSpacing.sm),
               child: Text(
@@ -140,17 +131,34 @@ class _Details extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: Text(
-                    value,
-                    style: valueMuted
-                        ? textTheme.bodySmall?.copyWith(color: onImageMuted)
-                        : textTheme.bodyMedium?.copyWith(
-                            color: onImage,
-                            fontWeight: FontWeight.w600,
-                            fontFeatures: const [FontFeature.tabularFigures()],
-                          ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        source,
+                        style: textTheme.bodySmall?.copyWith(
+                          color: onImageMuted,
+                          letterSpacing: 0.6,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        value,
+                        style: valueMuted
+                            ? textTheme.bodySmall?.copyWith(color: onImageMuted)
+                            : textTheme.bodyMedium?.copyWith(
+                                color: onImage,
+                                fontWeight: FontWeight.w600,
+                                fontFeatures: const [
+                                  FontFeature.tabularFigures(),
+                                ],
+                              ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
                 ),
                 TryonFab(label: '試穿', compact: true, onTap: onTryon),

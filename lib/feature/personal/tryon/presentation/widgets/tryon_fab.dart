@@ -20,7 +20,8 @@ class TryonFab extends StatelessWidget {
   final IconData? icon;
 
   /// For a pill laid over a small photo, where the regular one would cover
-  /// half of it. Only the pill shrinks; the tap area stays at the minimum.
+  /// half of it. The tap area shrinks to the pill so it does not push the
+  /// text beside it apart; a miss lands on the photo's own tap target.
   final bool compact;
 
   /// Anchors a coach mark on the visible pill, not the larger tap area.
@@ -35,10 +36,12 @@ class TryonFab extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          minWidth: kMinInteractiveDimension,
-          minHeight: kMinInteractiveDimension,
-        ),
+        constraints: compact
+            ? const BoxConstraints()
+            : const BoxConstraints(
+                minWidth: kMinInteractiveDimension,
+                minHeight: kMinInteractiveDimension,
+              ),
         child: Center(
           widthFactor: 1,
           heightFactor: 1,

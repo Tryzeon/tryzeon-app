@@ -122,6 +122,9 @@ class ChatImageScrim extends StatelessWidget {
 
   final Widget child;
 
+  static const double _fadeEnd = 0.8;
+  static const int _fadeSteps = 12;
+
   @override
   Widget build(final BuildContext context) {
     final scrim = Theme.of(context).colorScheme.scrim;
@@ -134,10 +137,17 @@ class ChatImageScrim extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  stops: const [0, 0.5],
+                  stops: [
+                    for (var i = 0; i <= _fadeSteps; i++)
+                      _fadeEnd * i / _fadeSteps,
+                  ],
                   colors: [
-                    scrim.withValues(alpha: 0),
-                    scrim.withValues(alpha: ChatCardStyle.scrimAlpha),
+                    for (var i = 0; i <= _fadeSteps; i++)
+                      scrim.withValues(
+                        alpha:
+                            ChatCardStyle.scrimAlpha *
+                            Curves.easeInOut.transform(i / _fadeSteps),
+                      ),
                   ],
                 ),
               ),
