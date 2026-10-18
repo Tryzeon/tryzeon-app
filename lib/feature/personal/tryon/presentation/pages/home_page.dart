@@ -12,6 +12,8 @@ import 'package:tryzeon/core/presentation/coach_mark/coach_mark_anchor.dart';
 import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/core/router/shells/personal_tab.dart';
+import 'package:tryzeon/core/router/shells/tab_reselect.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/crop_options.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
@@ -77,6 +79,11 @@ class HomePage extends HookConsumerWidget {
       }
       return null;
     }, [currentPage]);
+
+    ref.listen(tabReselectSignalProvider, (final _, final next) {
+      if (next?.tab != PersonalTab.home) return;
+      galleryNotifier.showAvatar();
+    });
 
     void onAvatarReplaced(final Result<void, Failure> result) {
       if (!context.mounted || result.isSuccess) return;

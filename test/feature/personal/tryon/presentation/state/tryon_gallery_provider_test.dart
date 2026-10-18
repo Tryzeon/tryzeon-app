@@ -167,6 +167,15 @@ void main() {
     });
   }
 
+  test('showing the avatar leaves the entries in place', () {
+    final notifier = makeNotifier()
+      ..addPending(id: 'a', subject: imageSubject)
+      ..showAvatar();
+
+    expect(notifier.state.isAvatarPage, isTrue);
+    expect(notifier.state.entries.single.id, 'a');
+  });
+
   group('report', () {
     late _FakeReportRepository reports;
 

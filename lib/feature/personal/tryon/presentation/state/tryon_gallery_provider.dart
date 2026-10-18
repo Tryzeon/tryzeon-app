@@ -58,6 +58,11 @@ class TryonGalleryNotifier extends _$TryonGalleryNotifier {
     state = state.copyWith(currentId: id);
   }
 
+  void showAvatar() {
+    if (state.isAvatarPage) return;
+    state = state.copyWith(currentId: null);
+  }
+
   void addPending({
     required final String id,
     required final TryonSubject subject,

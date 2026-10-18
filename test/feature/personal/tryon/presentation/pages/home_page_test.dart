@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/router/shells/personal_tab.dart';
+import 'package:tryzeon/core/router/shells/tab_reselect.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
@@ -311,6 +313,32 @@ void main() {
 
       expect(inviteDismissal.dismissCount, 1);
       expect(find.text(inviteTitle), findsNothing);
+    });
+  });
+
+  group('re-tapping the home tab', () {
+    ProviderContainer containerOf(final WidgetTester tester) =>
+        ProviderScope.containerOf(tester.element(find.byType(HomePage)));
+
+    testWidgets('pages back to the model', (final tester) async {
+      await pumpHome(tester, avatar: preset, gallery: _showing(_imageResult));
+      final container = containerOf(tester);
+
+      container.read(tabReselectSignalProvider.notifier).emit(PersonalTab.home);
+      await settle(tester);
+
+      expect(container.read(tryonGalleryProvider).isAvatarPage, isTrue);
+      expect(find.byType(TryonAvatarPage).hitTestable(), findsOneWidget);
+    });
+
+    testWidgets('ignores a re-tap on another tab', (final tester) async {
+      await pumpHome(tester, avatar: preset, gallery: _showing(_imageResult));
+      final container = containerOf(tester);
+
+      container.read(tabReselectSignalProvider.notifier).emit(PersonalTab.shop);
+      await settle(tester);
+
+      expect(container.read(tryonGalleryProvider).currentId, _imageResult.id);
     });
   });
 }
