@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/router/shells/store_tab.dart';
+import 'package:tryzeon/core/router/shells/tab_reselect.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
@@ -167,5 +169,34 @@ void main() {
         expect(tabsTop(tester), 0);
       },
     );
+
+    testWidgets('re-tapping the products tab scrolls back to the top', (
+      final tester,
+    ) async {
+      await pumpPage(tester);
+      await scrollDown(tester);
+      await scrollDown(tester);
+
+      container
+          .read(tabReselectSignalProvider.notifier)
+          .emit(StoreTab.products);
+      await tester.pumpAndSettle();
+
+      expect(searchBar, findsOneWidget);
+      expect(find.text('active 0'), findsOneWidget);
+    });
+
+    testWidgets('re-tapping the account tab leaves the list where it is', (
+      final tester,
+    ) async {
+      await pumpPage(tester);
+      await scrollDown(tester);
+      await scrollDown(tester);
+
+      container.read(tabReselectSignalProvider.notifier).emit(StoreTab.account);
+      await tester.pumpAndSettle();
+
+      expect(searchBar, findsNothing);
+    });
   });
 }

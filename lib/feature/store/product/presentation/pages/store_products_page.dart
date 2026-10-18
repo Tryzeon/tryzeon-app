@@ -3,6 +3,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/refresh_feedback_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/app_page_header.dart';
+import 'package:tryzeon/core/router/shells/store_tab.dart';
+import 'package:tryzeon/core/router/shells/tab_reselect.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
 import 'package:tryzeon/feature/store/product/presentation/mappers/product_sort_field_ui_mapper.dart';
@@ -29,6 +31,16 @@ class StoreProductsPage extends HookConsumerWidget {
       if (scrollController.offset > headerExtent) {
         scrollController.jumpTo(headerExtent);
       }
+    });
+
+    ref.listen(tabReselectSignalProvider, (final _, final next) {
+      if (next?.tab != StoreTab.products) return;
+      if (!scrollController.hasClients || scrollController.offset <= 0) return;
+      scrollController.animateTo(
+        0,
+        duration: AppDuration.slow,
+        curve: AppCurves.emphasized,
+      );
     });
 
     final surface = Theme.of(context).colorScheme.surface;
