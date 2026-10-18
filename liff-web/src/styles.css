@@ -22,6 +22,24 @@
 
   --tabbar: 56px;
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  /* The app's ChatImageScrim: ease-in-out sampled into stops, since a plain
+     two-stop ramp shows a hard edge where it starts and where it levels off. */
+  --scrim-fade: linear-gradient(
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.007) 6.67%,
+    rgba(0, 0, 0, 0.028) 13.33%,
+    rgba(0, 0, 0, 0.065) 20%,
+    rgba(0, 0, 0, 0.116) 26.67%,
+    rgba(0, 0, 0, 0.179) 33.33%,
+    rgba(0, 0, 0, 0.25) 40%,
+    rgba(0, 0, 0, 0.321) 46.67%,
+    rgba(0, 0, 0, 0.384) 53.33%,
+    rgba(0, 0, 0, 0.435) 60%,
+    rgba(0, 0, 0, 0.472) 66.67%,
+    rgba(0, 0, 0, 0.493) 73.33%,
+    rgba(0, 0, 0, 0.5) 80%
+  );
 }
 
 * { box-sizing: border-box; }
@@ -992,7 +1010,7 @@ button, label { touch-action: manipulation; }
   display: flex;
   flex-direction: column;
   padding: 24px 12px 12px;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.5) 50%);
+  background: var(--scrim-fade);
 }
 .ccard__source,
 .ccard__name {
@@ -1098,7 +1116,7 @@ button.look__cell { cursor: pointer; }
   display: flex;
   flex-direction: column;
   padding: 48px 14px 14px;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.5) 50%);
+  background: var(--scrim-fade);
   pointer-events: none;
 }
 .look__title {

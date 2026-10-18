@@ -11,9 +11,7 @@ export const CARD_COLOR = {
   onImageMuted: "#FFFFFFCC",
   cutoutBackdrop: "#EBE7E0",
   tagStroke: "#0000001F",
-  scrimStrong: "#000000D6",
-  scrimMid: "#0000008C",
-  scrimClear: "#00000000",
+  scrim: "#00000080",
 } as const;
 
 /**
@@ -126,11 +124,12 @@ export interface OverlayHeroOptions {
   corner?: object[];
   action?: object;
   paddingAll: string;
-  paddingTop: string;
+  /** In px, from the media's foot. The words sit low enough to stay on it. */
+  scrimHeight: number;
 }
 
 /**
- * Media with text laid over its bottom edge on a gradient, so light and busy
+ * Media with text laid over its bottom edge on a scrim, so light and busy
  * photos alike keep the type legible. The media leads because Flex refuses an
  * absolutely positioned first child.
  */
@@ -142,6 +141,7 @@ export function overlayHero(opts: OverlayHeroOptions): object {
     ...(opts.action ? { action: opts.action } : {}),
     contents: [
       opts.media,
+      scrim(opts.scrimHeight),
       {
         type: "box",
         layout: "vertical",
@@ -150,20 +150,73 @@ export function overlayHero(opts: OverlayHeroOptions): object {
         offsetStart: "0px",
         offsetEnd: "0px",
         paddingAll: opts.paddingAll,
-        paddingTop: opts.paddingTop,
-        background: {
-          type: "linearGradient",
-          angle: "0deg",
-          startColor: CARD_COLOR.scrimStrong,
-          centerColor: CARD_COLOR.scrimMid,
-          centerPosition: "55%",
-          endColor: CARD_COLOR.scrimClear,
-        },
         contents: opts.overlay,
       },
       ...(opts.corner ?? []),
     ],
   };
+}
+
+const SCRIM_ALPHA = parseInt(CARD_COLOR.scrim.slice(7), 16);
+const SCRIM_FADE_END = 0.8;
+const SCRIM_LAYERS = 6;
+
+/**
+ * A Flex gradient holds at most three stops, and boxes stacked edge to edge
+ * leave a hairline at each seam once LINE scales the bubble to the screen. So
+ * the scrim overlaps layers anchored to the foot, each ramping in from clear:
+ * every edge they have is a clear one, and together they trace an S-curve that
+ * is flat where it starts and where it meets the full scrim.
+ */
+function scrim(height: number): object {
+  let clear = 1;
+  const layers = Array.from({ length: SCRIM_LAYERS }, (_, k) => {
+    const top = SCRIM_FADE_END * k / SCRIM_LAYERS;
+    const rampEnd = SCRIM_FADE_END * (k + 1) / SCRIM_LAYERS;
+    const s = (k + 1) / SCRIM_LAYERS;
+    const target = (SCRIM_ALPHA / 255) * s * s * (3 - 2 * s);
+    const alpha = Math.round(255 * (1 - (1 - target) / clear));
+    clear *= 1 - alpha / 255;
+    const color = scrimColor(alpha);
+    return {
+      type: "box",
+      layout: "vertical",
+      contents: [],
+      ...(k === 0 ? { flex: 1 } : {
+        position: "absolute",
+        offsetBottom: "0px",
+        offsetStart: "0px",
+        offsetEnd: "0px",
+        height: percent(1 - top),
+      }),
+      background: {
+        type: "linearGradient",
+        angle: "0deg",
+        startColor: color,
+        centerColor: color,
+        centerPosition: percent((1 - rampEnd) / (1 - top)),
+        endColor: scrimColor(0),
+      },
+    };
+  });
+  return {
+    type: "box",
+    layout: "vertical",
+    position: "absolute",
+    offsetBottom: "0px",
+    offsetStart: "0px",
+    offsetEnd: "0px",
+    height: `${height}px`,
+    contents: layers,
+  };
+}
+
+function scrimColor(alpha: number): string {
+  return `${CARD_COLOR.scrim.slice(0, 7)}${alpha.toString(16).padStart(2, "0").toUpperCase()}`;
+}
+
+function percent(fraction: number): string {
+  return `${Number((fraction * 100).toFixed(2))}%`;
 }
 
 export interface PickView {
@@ -227,7 +280,7 @@ export function pickBubble(view: PickView): object {
       corner: view.highlight ? [cornerTag(view.highlight)] : undefined,
       action: view.detailAction,
       paddingAll: "12px",
-      paddingTop: "44px",
+      scrimHeight: 120,
     }),
   };
 }

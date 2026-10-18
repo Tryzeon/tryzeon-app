@@ -149,7 +149,7 @@ Deno.test("a wardrobe bubble is the same pick bubble: 衣櫃, garment and two ta
 
 Deno.test("a wardrobe bubble with no tags is named by its garment type alone", () => {
   // deno-lint-ignore no-explicit-any
-  const overlay = (wardrobeItemBubble(item({ tags: [] }), undefined) as any).hero.contents[1];
+  const overlay = (wardrobeItemBubble(item({ tags: [] }), undefined) as any).hero.contents[2];
   assertEquals(overlay.contents[1].text, "上衣");
 });
 

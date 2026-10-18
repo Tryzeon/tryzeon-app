@@ -191,7 +191,7 @@ export function outfitBubble(outfit: LineOutfit, liffUrl: string): object {
         },
       ],
       paddingAll: "14px",
-      paddingTop: "72px",
+      scrimHeight: 192,
     }),
   };
 }
@@ -271,7 +271,7 @@ export function outfitResultMessage(imageUrl: string, outfit: LineOutfit, liffUr
         ],
         action: { type: "uri", label: "看大圖", uri: imageUrl },
         paddingAll: "16px",
-        paddingTop: "60px",
+        scrimHeight: 104,
       }),
       body: { type: "box", layout: "vertical", paddingAll: "16px", paddingTop: "8px", contents: rows },
       styles: { body: { backgroundColor: CARD_COLOR.surface } },

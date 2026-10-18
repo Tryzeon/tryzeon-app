@@ -289,14 +289,14 @@ Deno.test("an item bubble is the shared pick bubble, opening its LIFF page", () 
 Deno.test("an item bubble uppercases a Latin store name", () => {
   // deno-lint-ignore no-explicit-any
   const overlay = (productItemBubble(product({ storeName: "uniqlo" }), undefined, "https://liff.example") as any)
-    .hero.contents[1];
+    .hero.contents[2];
   assertEquals(overlay.contents[0].text, "UNIQLO");
 });
 
 Deno.test("an item bubble for a product with no store has no source line", () => {
   // deno-lint-ignore no-explicit-any
   const overlay = (productItemBubble(product({ storeName: null }), undefined, "https://liff.example") as any)
-    .hero.contents[1];
+    .hero.contents[2];
   assertEquals(overlay.contents.length, 2);
   assertEquals(overlay.contents[0].text, "白襯衫");
 });
@@ -304,7 +304,7 @@ Deno.test("an item bubble for a product with no store has no source line", () =>
 Deno.test("an item bubble clamps a long name in the try-on displayText", () => {
   const name = "很長的商品名稱".repeat(60);
   // deno-lint-ignore no-explicit-any
-  const overlay = (productItemBubble(product({ name }), undefined, "https://liff.example") as any).hero.contents[1];
+  const overlay = (productItemBubble(product({ name }), undefined, "https://liff.example") as any).hero.contents[2];
   const pill = overlay.contents.at(-1).contents[1];
   assertEquals(pill.action.displayText, `試穿「${clampProductName(name)}」`);
 });

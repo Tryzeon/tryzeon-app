@@ -53,7 +53,7 @@ const look = (pieces: OutfitPiece[], reason: string | null = "白襯衫配深藍
 const collageOf = (bubble: any) => bubble.hero.contents[0];
 
 // deno-lint-ignore no-explicit-any
-const overlayOf = (bubble: any) => bubble.hero.contents[1];
+const overlayOf = (bubble: any) => bubble.hero.contents[2];
 
 // deno-lint-ignore no-explicit-any
 const bodyTexts = (bubble: any): string[] =>
@@ -176,7 +176,7 @@ Deno.test("the overlay reads title, reason, then what to buy and its total besid
   assertEquals(bodyTexts(bubble), ["週末休閒", "白襯衫配深藍直筒", "共 2 件", "NT$1,879", "✦ 試穿整套"]);
   assertEquals(overlay.position, "absolute");
   assertEquals(overlay.paddingAll, "14px");
-  assertEquals(overlay.paddingTop, "72px");
+  assertEquals(bubble.hero.contents[1].height, "192px");
   assertEquals(title.size, "lg");
   assertEquals(title.weight, "bold");
   assertEquals(title.color, CARD_COLOR.onImage);
@@ -240,7 +240,7 @@ Deno.test("the result card leads with the try-on, then lists every piece", () =>
   assertEquals(bubble.hero.contents[0].aspectRatio, "9:16");
   assertEquals(bubble.hero.action, { type: "uri", label: "看大圖", uri: "https://img.example/result.jpg" });
   // deno-lint-ignore no-explicit-any
-  assertEquals(bubble.hero.contents[1].contents.map((c: any) => c.text), ["週末休閒"]);
+  assertEquals(bubble.hero.contents[2].contents.map((c: any) => c.text), ["週末休閒"]);
 
   // deno-lint-ignore no-explicit-any
   const rows = bubble.body.contents.filter((c: any) => c.type === "box");

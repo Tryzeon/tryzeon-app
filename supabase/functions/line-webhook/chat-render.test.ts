@@ -67,13 +67,13 @@ function render(parts: Part[]): object[] {
 }
 
 // deno-lint-ignore no-explicit-any
-const overlayOf = (bubble: any) => bubble.hero.contents[1];
+const overlayOf = (bubble: any) => bubble.hero.contents[2];
 
 // deno-lint-ignore no-explicit-any
 const ctaOf = (bubble: any) => overlayOf(bubble).contents.at(-1).contents.at(-1);
 
 // deno-lint-ignore no-explicit-any
-const badgesOf = (bubble: any) => bubble.hero.contents.slice(2);
+const badgesOf = (bubble: any) => bubble.hero.contents.slice(3);
 
 // deno-lint-ignore no-explicit-any
 const tryonIdsOf = (message: any) => bubbles(message).map((b: any) => ctaOf(b).action.data);
@@ -399,7 +399,7 @@ Deno.test("an outfits row is one carousel, a bubble per look", () => {
   const carousel = out[1] as any;
   assertEquals(carousel.altText, "為你搭了 2 套穿搭");
   assertEquals(bubbles(carousel).length, 2);
-  assertEquals(bubbles(carousel)[1].hero.contents[1].contents[0].text, "溫柔約會");
+  assertEquals(bubbles(carousel)[1].hero.contents[2].contents[0].text, "溫柔約會");
 });
 
 Deno.test("a look missing a piece is left out, and a row of none draws no carousel", () => {
@@ -418,7 +418,7 @@ Deno.test("a look missing a piece is left out, and a row of none draws no carous
     LIFF,
   );
   assertEquals(bubbles(out[1]).length, 1);
-  assertEquals(bubbles(out[1])[0].hero.contents[1].contents[0].text, "完整");
+  assertEquals(bubbles(out[1])[0].hero.contents[2].contents[0].text, "完整");
 
   const none = renderAnswer(
     [
@@ -471,6 +471,6 @@ Deno.test("looks beyond one carousel's cap spill into the next, in order", () =>
   );
   assertEquals(out.length, 2);
   assertEquals([bubbles(out[0]).length, bubbles(out[1]).length], [12, 2]);
-  assertEquals(bubbles(out[1])[0].hero.contents[1].contents[0].text, "l12");
+  assertEquals(bubbles(out[1])[0].hero.contents[2].contents[0].text, "l12");
 });
 
