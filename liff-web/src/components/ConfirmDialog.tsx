@@ -25,7 +25,7 @@ export function ConfirmDialog(
             <button type="button" className="cta confirm__ok" onClick={onConfirm}>
               {confirmLabel}
             </button>
-            <button type="button" className="btn-outline menu__cancel" onClick={onCancel}>
+            <button type="button" className="btn-outline confirm__cancel" onClick={onCancel}>
               {cancelLabel}
             </button>
           </div>

@@ -321,10 +321,10 @@ button, label { touch-action: manipulation; }
 .menu__title { display: block; font-size: 15px; color: var(--ink); }
 .menu__subtitle { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
 .menu__item.is-destructive .menu__title { color: #b3261e; }
-.menu__cancel { margin: 12px 20px 0; width: auto; }
 
 .confirm__message { margin: 8px 0 20px; font-size: 15px; line-height: 1.6; }
 .confirm__ok { background: #b3261e; }
+.confirm__cancel { margin-top: 12px; }
 
 .field { margin: 20px 0; }
 .field__label { margin: 0 0 10px; font-size: 13px; font-weight: 600; }
