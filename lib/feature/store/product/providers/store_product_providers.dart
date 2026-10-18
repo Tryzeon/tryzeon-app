@@ -120,6 +120,10 @@ class ProductQuery extends _$ProductQuery {
   void updateStatus(final ProductStatus status) {
     state = state.copyWith(status: status);
   }
+
+  void showAllSortedBy(final SortCondition sort) {
+    state = ProductQueryState(sort: sort);
+  }
 }
 
 @riverpod

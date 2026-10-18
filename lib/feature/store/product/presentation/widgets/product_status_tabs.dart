@@ -19,10 +19,17 @@ class ProductStatusTabs extends HookConsumerWidget {
     final selected = ref.watch(
       productQueryProvider.select((final query) => query.status),
     );
+    final selectedIndex = _statuses.indexOf(selected);
     final controller = useTabController(
       initialLength: _statuses.length,
-      initialIndex: _statuses.indexOf(selected),
+      initialIndex: selectedIndex,
     );
+    useEffect(() {
+      if (controller.index != selectedIndex) {
+        controller.animateTo(selectedIndex);
+      }
+      return null;
+    }, [selectedIndex]);
 
     final counts = _countByStatus(ref.watch(productsProvider).value);
 

@@ -133,7 +133,7 @@ class TopProductsRanking extends ConsumerWidget {
   void _showAllByTryons(final BuildContext context, final WidgetRef ref) {
     ref
         .read(productQueryProvider.notifier)
-        .updateSort(
+        .showAllSortedBy(
           SortCondition.byDefault(
             const SortKey.analytics(AnalyticsMetric.tryonCount),
           ),

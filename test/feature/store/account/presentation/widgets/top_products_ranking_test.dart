@@ -8,12 +8,14 @@ import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/store/account/presentation/state/top_tried_on_products.dart';
 import 'package:tryzeon/feature/store/account/presentation/widgets/top_products_ranking.dart';
 import 'package:tryzeon/feature/store/account/providers/store_account_providers.dart';
 import 'package:tryzeon/feature/store/analytics/domain/entities/analytics_month.dart';
 import 'package:tryzeon/feature/store/analytics/domain/entities/product_analytics_summary.dart';
 import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
+import 'package:tryzeon/feature/store/product/presentation/state/product_query_state.dart';
 import 'package:tryzeon/feature/store/product/presentation/state/product_sort_condition.dart';
 import 'package:tryzeon/feature/store/product/providers/store_product_providers.dart';
 
@@ -143,16 +145,23 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    // The owner left the products tab filtered down; "see all" must undo that
+    // or the ranking would open onto an empty or partial list.
+    container.read(productQueryProvider.notifier)
+      ..updateStatus(ProductStatus.archived)
+      ..updateSearch('亞麻');
 
     await tester.tap(find.text('查看全部'));
     await tester.pumpAndSettle();
 
     expect(find.text('products tab'), findsOneWidget);
     expect(
-      container.read(productQueryProvider).sort,
-      const SortCondition(
-        key: SortKey.analytics(AnalyticsMetric.tryonCount),
-        ascending: false,
+      container.read(productQueryProvider),
+      const ProductQueryState(
+        sort: SortCondition(
+          key: SortKey.analytics(AnalyticsMetric.tryonCount),
+          ascending: false,
+        ),
       ),
     );
   });
