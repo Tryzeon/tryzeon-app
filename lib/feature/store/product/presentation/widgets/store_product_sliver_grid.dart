@@ -8,25 +8,18 @@ import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/presentation/widgets/product_card.dart';
 import 'package:tryzeon/feature/store/product/providers/store_product_providers.dart';
 
-class ProductListSection extends HookConsumerWidget {
-  const ProductListSection({super.key});
+class StoreProductSliverGrid extends HookConsumerWidget {
+  const StoreProductSliverGrid({super.key});
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final filteredProductsAsync = ref.watch(filteredProductsProvider);
     final query = ref.watch(productQueryProvider);
 
-    // Centers a non-grid state (empty / loading / error) within the available
-    // height while staying scrollable so pull-to-refresh keeps working.
     Widget centeredFill(final Widget child) {
-      return LayoutBuilder(
-        builder: (final context, final constraints) => SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-            child: Center(child: child),
-          ),
-        ),
+      return SliverFillRemaining(
+        hasScrollBody: false,
+        child: Center(child: child),
       );
     }
 
@@ -45,24 +38,24 @@ class ProductListSection extends HookConsumerWidget {
           AppSpacing.fabClearance +
           AppSpacing.bottomNavBarOverlap;
 
-      return GridView.builder(
-        key: PageStorageKey(query.status),
-        physics: const AlwaysScrollableScrollPhysics(),
+      return SliverPadding(
         padding: EdgeInsets.fromLTRB(
           AppSpacing.sm,
           0,
           AppSpacing.sm,
           bottomInset,
         ),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: AppSpacing.sm,
-          mainAxisSpacing: AppSpacing.md,
-          childAspectRatio: 0.6,
+        sliver: SliverGrid.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: AppSpacing.sm,
+            mainAxisSpacing: AppSpacing.md,
+            childAspectRatio: 0.6,
+          ),
+          itemCount: products.length,
+          itemBuilder: (final context, final index) =>
+              StoreProductCard(product: products[index]),
         ),
-        itemCount: products.length,
-        itemBuilder: (final context, final index) =>
-            StoreProductCard(product: products[index]),
       );
     }
 
