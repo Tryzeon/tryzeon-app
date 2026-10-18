@@ -385,87 +385,10 @@ void main() {
           _user([const ContentBlock.text('q')]),
           _assistant(blocks),
         ],
-        items: ChatItems(
-          products: {
-            for (final id in ['p1', 'p2', 'p3', 'p4']) id: _product(id),
-          },
-          wardrobe: {'w1': _wardrobe('w1')},
-        ),
       ),
     );
     return entries[2] as ChatAssistantEntry;
   }
-
-  test('a duplicated pick renders once', () {
-    final turn = turnOf([
-      const ContentBlock.picks([
-        ChatPick(ref: ItemRef.product('p1'), highlight: 'first'),
-        ChatPick(ref: ItemRef.product('p1'), highlight: 'second'),
-        ChatPick(ref: ItemRef.product('p2')),
-      ]),
-    ]);
-
-    expect(turn.segments, [
-      ChatPicksSegment([
-        ResolvedPick(
-          item: ResolvedItem.product(_product('p1')),
-          highlight: 'first',
-        ),
-        ResolvedPick(item: ResolvedItem.product(_product('p2'))),
-      ]),
-    ]);
-  });
-
-  test('a look of one or four pieces is skipped', () {
-    final turn = turnOf([
-      const ContentBlock.text('a'),
-      const ContentBlock.outfits([
-        ChatOutfit(title: '單件', pieces: [ItemRef.product('p1')]),
-        ChatOutfit(
-          title: '四件',
-          pieces: [
-            ItemRef.product('p1'),
-            ItemRef.product('p2'),
-            ItemRef.product('p3'),
-            ItemRef.product('p4'),
-          ],
-        ),
-      ]),
-    ]);
-
-    expect(turn.segments, [const ChatTextSegment('a')]);
-  });
-
-  test('a look with a duplicated piece counts it once', () {
-    final turn = turnOf([
-      const ContentBlock.outfits([
-        ChatOutfit(
-          title: '重複',
-          pieces: [ItemRef.product('p1'), ItemRef.product('p1')],
-        ),
-        ChatOutfit(
-          title: '三件',
-          pieces: [
-            ItemRef.product('p1'),
-            ItemRef.product('p1'),
-            ItemRef.wardrobe('w1'),
-          ],
-        ),
-      ]),
-    ]);
-
-    expect(turn.segments, [
-      ChatOutfitsSegment([
-        ResolvedOutfit(
-          title: '三件',
-          pieces: [
-            ResolvedItem.product(_product('p1')),
-            ResolvedItem.wardrobe(_wardrobe('w1')),
-          ],
-        ),
-      ]),
-    ]);
-  });
 
   const emptyAnswer = ChatTextSegment('抱歉，我沒有理解，可以再說一次你的需求嗎？');
 
@@ -473,12 +396,6 @@ void main() {
     final turn = turnOf([
       const ContentBlock.picks([ChatPick(ref: ItemRef.product('gone'))]),
     ]);
-
-    expect(turn.segments, [emptyAnswer]);
-  });
-
-  test('a blank text block alone shows the fallback', () {
-    final turn = turnOf([const ContentBlock.text('  ')]);
 
     expect(turn.segments, [emptyAnswer]);
   });

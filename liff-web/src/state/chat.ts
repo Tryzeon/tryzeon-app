@@ -108,27 +108,9 @@ export function createChatReducer(toItem: (row: unknown) => CatalogItem) {
     return null;
   }
 
-  const MIN_TRYON_GARMENTS = 2;
-  const MAX_TRYON_GARMENTS = 3;
-
-  function refKey(ref: unknown): string {
-    return isRecord(ref) ? `${String(ref.type)}:${String(ref.id)}` : "";
-  }
-
-  function firstPerRef<T>(refs: T[]): T[] {
-    const seen = new Set<string>();
-    return refs.filter((ref) => {
-      const key = refKey(ref);
-      if (key === "") return true;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-  }
-
   function resolvePicks(block: WireBlock, items: WireItems): ResolvedPick[] {
     const picks: ResolvedPick[] = [];
-    for (const raw of firstPerRef(Array.isArray(block.picks) ? block.picks : [])) {
+    for (const raw of Array.isArray(block.picks) ? block.picks : []) {
       const item = resolveItem(raw, items);
       if (item === null) continue;
       const highlight = isRecord(raw) ? trimmed(raw.highlight) : undefined;
@@ -143,8 +125,7 @@ export function createChatReducer(toItem: (row: unknown) => CatalogItem) {
     for (const raw of Array.isArray(block.outfits) ? block.outfits : []) {
       if (!isRecord(raw)) continue;
       const title = trimmed(raw.title);
-      const refs = firstPerRef(Array.isArray(raw.pieces) ? raw.pieces : []);
-      if (refs.length < MIN_TRYON_GARMENTS || refs.length > MAX_TRYON_GARMENTS) continue;
+      const refs = Array.isArray(raw.pieces) ? raw.pieces : [];
       const pieces = refs.map((ref) => resolveItem(ref, items));
       if (!title || pieces.some((piece) => piece === null)) continue;
       const reason = trimmed(raw.reason);

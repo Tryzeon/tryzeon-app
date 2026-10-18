@@ -185,39 +185,6 @@ describe("chat reducer", () => {
     });
   });
 
-  it("renders a duplicated pick once", () => {
-    const s = answered([
-      { type: "picks", picks: [{ type: "product", id: "p1", highlight: "先" }, { type: "product", id: "p1", highlight: "後" }] },
-    ]);
-    expect(lastEntry(s)).toEqual({
-      kind: "picks",
-      picks: [{ item: { kind: "product", item: buildCatalogItem(PRODUCT, "https://img") }, highlight: "先" }],
-    });
-  });
-
-  it("keeps only looks of two or three distinct pieces, counting a repeated piece once", () => {
-    const p1 = { type: "product", id: "p1" };
-    const w1 = { type: "wardrobe", id: "w1" };
-    const s = answered([
-      {
-        type: "outfits",
-        outfits: [
-          { title: "單件", pieces: [p1] },
-          { title: "重複一件", pieces: [p1, p1] },
-          { title: "四件", pieces: [p1, w1, { type: "product", id: "p2" }, { type: "product", id: "p3" }] },
-          { title: "重複三件", pieces: [p1, p1, w1] },
-        ],
-      },
-    ], {
-      products: { p1: PRODUCT, p2: { ...PRODUCT, id: "p2" }, p3: { ...PRODUCT, id: "p3" } },
-      wardrobe: { w1: WARDROBE_ROW },
-    });
-    const entry = lastEntry(s);
-    expect(entry.kind).toBe("outfits");
-    if (entry.kind !== "outfits") return;
-    expect(entry.outfits.map((o) => [o.title, o.pieces.length])).toEqual([["重複三件", 2]]);
-  });
-
   it("draws no entry for an outfits block whose looks all lost a piece", () => {
     const s = answered([
       { type: "text", text: "這套" },

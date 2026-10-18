@@ -105,26 +105,14 @@ ResolvedItem? _resolve(final ItemRef ref, final ChatItems items) =>
 
 const _emptyAnswerText = '抱歉，我沒有理解，可以再說一次你的需求嗎？';
 
-const _minTryonGarments = 2;
-const _maxTryonGarments = 3;
-
 ResolvedOutfit? _resolveOutfit(final ChatOutfit outfit, final ChatItems items) {
-  final refs = outfit.pieces.toSet();
-  if (refs.length < _minTryonGarments || refs.length > _maxTryonGarments) {
-    return null;
-  }
-  final pieces = [for (final ref in refs) _resolve(ref, items)];
+  final pieces = [for (final ref in outfit.pieces) _resolve(ref, items)];
   if (pieces.contains(null)) return null;
   return ResolvedOutfit(
     title: outfit.title,
     reason: outfit.reason,
     pieces: pieces.nonNulls.toList(),
   );
-}
-
-Iterable<ChatPick> _firstPerRef(final List<ChatPick> picks) {
-  final seen = <ItemRef>{};
-  return picks.where((final pick) => seen.add(pick.ref));
 }
 
 List<ChatTimelineEntry> buildChatTimeline(final ChatState state) {
@@ -154,13 +142,12 @@ List<ChatTimelineEntry> buildChatTimeline(final ChatState state) {
           turn?.attachResult(block);
         case TextBlock(:final text):
           hasNonToolBlock = true;
-          if (text.trim().isEmpty) break;
           addedSegment = true;
           (turn ??= _OpenTurn()).segments.add(ChatTextSegment(text));
         case PicksBlock(:final picks):
           hasNonToolBlock = true;
           final resolved = [
-            for (final pick in _firstPerRef(picks))
+            for (final pick in picks)
               if (_resolve(pick.ref, state.items) case final item?)
                 ResolvedPick(item: item, highlight: pick.highlight),
           ];
