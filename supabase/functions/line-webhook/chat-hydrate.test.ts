@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert";
 import { makeLineAnswerRows } from "./chat-hydrate.ts";
-import type { ContentBlock } from "../_shared/chat/index.ts";
+import type { AnswerBlock } from "../_shared/chat/index.ts";
 import type { LineProduct } from "./product-card.ts";
 
 const BASE = "https://img.example";
@@ -74,7 +74,7 @@ function fakeAdmin(
 Deno.test("hydrates only the referenced product ids", async () => {
   const { admin, queried } = fakeAdmin([row(), row({ id: P2, name: "黑褲" })]);
   const hydrate = makeLineAnswerRows(BASE);
-  const refs: ContentBlock[] = [
+  const refs: AnswerBlock[] = [
     { type: "text", text: "為你找到" },
     { type: "picks", picks: [{ type: "product", id: P1 }, { type: "product", id: P2 }] },
   ];
@@ -153,12 +153,11 @@ Deno.test("an outfit's pieces are read along with the row picks, each id once", 
   assertEquals(queried, [[P1, P2]]);
 });
 
-Deno.test("an id that is not a uuid, and the pieces of a look that cannot render, are never queried", async () => {
+Deno.test("an id that is not a uuid is never queried", async () => {
   const { admin, queried } = fakeAdmin([row()]);
 
   await makeLineAnswerRows(BASE)(admin, "u1", [
     { type: "picks", picks: [{ type: "product", id: "not-a-uuid" }, { type: "product", id: P1 }] },
-    { type: "outfits", outfits: [{ title: "單件", pieces: [{ type: "product", id: P2 }] }] },
   ]);
 
   assertEquals(queried, [[P1]]);

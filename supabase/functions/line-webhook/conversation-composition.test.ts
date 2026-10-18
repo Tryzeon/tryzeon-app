@@ -6,9 +6,9 @@ import { assertEquals } from "@std/assert";
 import { handleProductTryon, type ProductTryonDeps } from "./tryon-handler.ts";
 import { handleTextMessage, type ChatHandlerDeps } from "./chat-handler.ts";
 import {
+  type AnswerBlock,
   type ChatMessage,
   type ChatParams,
-  type ContentBlock,
   type RunChatAgentDeps,
   runChatAgent,
 } from "../_shared/chat/index.ts";
@@ -40,12 +40,13 @@ const someProduct: LineProduct = {
   purchaseUrl: null,
 };
 
-function fakeChat(blocks: ContentBlock[]) {
+function fakeChat(blocks: AnswerBlock[]) {
   const seen: { params: ChatParams; deps: RunChatAgentDeps }[] = [];
   const runChat: typeof runChatAgent = (_client, params, deps) => {
     seen.push({ params, deps });
     return Promise.resolve({
       messages: [{ role: "assistant", content: blocks }],
+      answer: blocks,
       items: { products: {}, wardrobe: {} },
       usage: null,
     });

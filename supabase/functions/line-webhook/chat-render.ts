@@ -4,7 +4,7 @@
  * becomes its own carousel and each run of text one message, preserving the ordering the model
  * meant for as long as it fits in a single send.
  */
-import { type AnswerItems, type ContentBlock, outfitsOf, picksOf } from "../_shared/chat/index.ts";
+import type { AnswerBlock, AnswerItems, OutfitRef, PickRef } from "../_shared/chat/index.ts";
 import { type LineProduct, productItemBubble } from "./product-card.ts";
 import { type LineWardrobeItem, wardrobeItemBubble } from "./wardrobe-card.ts";
 import { type LineOutfit, outfitBubble, resolveOutfitPieces } from "./outfit-card.ts";
@@ -26,9 +26,9 @@ type Section =
   | { kind: "picks"; picks: LineCard[] }
   | { kind: "outfits"; outfits: LineOutfit[] };
 
-function pickCards(block: ContentBlock, items: AnswerItems): LineCard[] {
+function pickCards(picks: PickRef[], items: AnswerItems): LineCard[] {
   const cards: LineCard[] = [];
-  for (const { type, id, highlight } of picksOf(block)) {
+  for (const { type, id, highlight } of picks) {
     const tag = highlight ? { highlight } : {};
     if (type === "product") {
       const item = items.products[id];
@@ -41,9 +41,9 @@ function pickCards(block: ContentBlock, items: AnswerItems): LineCard[] {
   return cards;
 }
 
-function rowOutfits(block: ContentBlock, items: AnswerItems): LineOutfit[] {
+function rowOutfits(outfits: OutfitRef[], items: AnswerItems): LineOutfit[] {
   const looks: LineOutfit[] = [];
-  for (const look of outfitsOf(block)) {
+  for (const look of outfits) {
     const pieces = resolveOutfitPieces(look.pieces, {
       product: (id) => items.products[id] as LineProduct | undefined,
       wardrobe: (id) => items.wardrobe[id] as LineWardrobeItem | undefined,
@@ -53,20 +53,18 @@ function rowOutfits(block: ContentBlock, items: AnswerItems): LineOutfit[] {
   return looks;
 }
 
-function toSections(blocks: ContentBlock[], items: AnswerItems): Section[] {
+function toSections(blocks: AnswerBlock[], items: AnswerItems): Section[] {
   const sections: Section[] = [];
   for (const block of blocks) {
     if (block.type === "text") {
-      const text = typeof block.text === "string" ? block.text : "";
-      if (text.trim().length === 0) continue;
       const last = sections.at(-1);
-      if (last?.kind === "text") last.lines.push(text);
-      else sections.push({ kind: "text", lines: [text] });
+      if (last?.kind === "text") last.lines.push(block.text);
+      else sections.push({ kind: "text", lines: [block.text] });
     } else if (block.type === "picks") {
-      const picks = pickCards(block, items);
+      const picks = pickCards(block.picks, items);
       if (picks.length > 0) sections.push({ kind: "picks", picks });
-    } else if (block.type === "outfits") {
-      const outfits = rowOutfits(block, items);
+    } else {
+      const outfits = rowOutfits(block.outfits, items);
       if (outfits.length > 0) sections.push({ kind: "outfits", outfits });
     }
   }
@@ -173,11 +171,11 @@ function answerChips(sections: Section[]): object[] {
  * The chips are attached last, after any fold and its slice: a message the slice
  * drops must not take its chip's would-be home down with it.
  */
-export function renderAnswer(blocks: ContentBlock[], items: AnswerItems, liffUrl: string): object[] {
+export function renderAnswer(blocks: AnswerBlock[], items: AnswerItems, liffUrl: string): object[] {
   const sections = toSections(blocks, items);
 
-  // The stored answer is the model's raw blocks, so nothing renderable can
-  // remain (blank text, unhydrated items); LINE rejects an empty send outright.
+  // An answer of only unhydrated items leaves nothing renderable, and LINE
+  // rejects an empty send outright.
   if (sections.length === 0) return [chatErrorMessage("unknown")];
 
   const detailed = sections.flatMap((s) => sectionMessages(s, liffUrl));

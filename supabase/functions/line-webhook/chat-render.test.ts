@@ -1,7 +1,6 @@
 import { assertEquals } from "@std/assert";
 import { renderAnswer } from "./chat-render.ts";
-import { chatErrorMessage } from "./messages.ts";
-import type { AnswerItems, ContentBlock } from "../_shared/chat/index.ts";
+import type { AnswerBlock, AnswerItems } from "../_shared/chat/index.ts";
 import type { LineProduct } from "./product-card.ts";
 import { CARD_COLOR, cornerTag } from "./card-kit.ts";
 import type { LineWardrobeItem } from "./wardrobe-card.ts";
@@ -52,7 +51,7 @@ function render(parts: Part[]): object[] {
       ...(c.highlight ? { highlight: c.highlight } : {}),
     };
   };
-  const content: ContentBlock[] = parts.map((part) => {
+  const content: AnswerBlock[] = parts.map((part) => {
     if (part.type === "text") return part;
     if (part.type === "row") return { type: "picks", picks: part.cards.map(ref) };
     return {
@@ -454,50 +453,6 @@ Deno.test("an outfits row survives the fold as a single message", () => {
   assertEquals((out[3] as any).altText, "為你搭了 1 套穿搭");
 });
 
-Deno.test("a duplicated pick renders once", () => {
-  const out = renderAnswer(
-    [{ type: "picks", picks: [{ type: "product", id: "p1" }, { type: "product", id: "p1" }, { type: "product", id: "p2" }] }],
-    { products: { p1: product("p1"), p2: product("p2") }, wardrobe: {} },
-    LIFF,
-  );
-  assertEquals(tryonIdsOf(out[0]), [productTryonPostbackData("p1"), productTryonPostbackData("p2")]);
-});
-
-Deno.test("an outfit of one or four pieces renders no bubble", () => {
-  const piece = (id: string) => ({ type: "product", id });
-  const out = renderAnswer(
-    [
-      { type: "text", text: "這幾套" },
-      {
-        type: "outfits",
-        outfits: [
-          { title: "單件", pieces: [piece("p1")] },
-          { title: "重複", pieces: [piece("p1"), piece("p1")] },
-          { title: "四件", pieces: ["p1", "p2", "p3", "p4"].map(piece) },
-        ],
-      },
-    ],
-    { products: Object.fromEntries(["p1", "p2", "p3", "p4"].map((id) => [id, product(id)])), wardrobe: {} },
-    LIFF,
-  );
-  assertEquals(out.length, 1);
-});
-
-Deno.test("an answer of only blank text sends the error message, not an empty text", () => {
-  const out = renderAnswer([{ type: "text", text: "  " }, { type: "text" }], NO_ITEMS_FIXTURE, LIFF);
-  assertEquals(out, [chatErrorMessage("unknown")]);
-});
-
-Deno.test("a blank text beside one picks row sends just the carousel", () => {
-  const out = renderAnswer(
-    [{ type: "text", text: "  " }, { type: "picks", picks: [{ type: "product", id: "p1" }] }],
-    { products: { p1: product("p1") }, wardrobe: {} },
-    LIFF,
-  );
-  assertEquals(out.length, 1);
-  assertEquals(bubbles(out[0]).length, 1);
-});
-
 Deno.test("looks beyond one carousel's cap spill into the next, in order", () => {
   const ids = Array.from({ length: 14 }, (_, i) => `l${i}`);
   const out = renderAnswer(
@@ -519,4 +474,3 @@ Deno.test("looks beyond one carousel's cap spill into the next, in order", () =>
   assertEquals(bubbles(out[1])[0].hero.contents[1].contents[0].text, "l12");
 });
 
-const NO_ITEMS_FIXTURE: AnswerItems = { products: {}, wardrobe: {} };

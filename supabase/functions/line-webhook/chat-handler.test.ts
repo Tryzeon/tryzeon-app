@@ -3,7 +3,7 @@ import { type ChatHandlerDeps, handleTextMessage } from "./chat-handler.ts";
 import {
   type AnswerItems,
   type ChatParams,
-  type ContentBlock,
+  type AnswerBlock,
   LIMITS,
   type RunChatAgentDeps,
   runChatAgent,
@@ -49,7 +49,7 @@ function fakeLine(opts: { loadingFails?: boolean; replyFails?: boolean } = {}) {
  */
 function fakeChat(
   outcome:
-    | { blocks: ContentBlock[]; rounds?: ChatMessage[]; items?: AnswerItems }
+    | { blocks: AnswerBlock[]; rounds?: ChatMessage[]; items?: AnswerItems }
     | { throws: unknown },
 ) {
   const seen: { params: ChatParams; deps: RunChatAgentDeps }[] = [];
@@ -58,6 +58,7 @@ function fakeChat(
     if ("throws" in outcome) return Promise.reject(outcome.throws);
     return Promise.resolve({
       messages: [...outcome.rounds ?? [], { role: "assistant", content: outcome.blocks }],
+      answer: outcome.blocks,
       items: outcome.items ?? { products: {}, wardrobe: {} },
       usage: null,
     });
