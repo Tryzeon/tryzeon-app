@@ -150,7 +150,7 @@ describe("chat reducer", () => {
 
   it("carries a highlight and a wardrobe item's type and tags onto the row's picks", () => {
     const s = answered([
-      { type: "picks", picks: [{ type: "product", id: "p1", highlight: " 麻料透氣 " }, { type: "wardrobe", id: "w1" }] },
+      { type: "picks", picks: [{ type: "product", id: "p1", highlight: "麻料透氣" }, { type: "wardrobe", id: "w1" }] },
     ]);
     expect(lastEntry(s)).toEqual({
       kind: "picks",
@@ -168,7 +168,7 @@ describe("chat reducer", () => {
         outfits: [
           { title: "週末休閒", reason: "白襯衫配深藍直筒", pieces: [{ type: "product", id: "p1" }, { type: "wardrobe", id: "w1" }] },
           { title: "缺件", pieces: [{ type: "product", id: "p1" }, { type: "product", id: "gone" }] },
-          { title: "  ", pieces: [{ type: "product", id: "p1" }, { type: "wardrobe", id: "w1" }] },
+          { pieces: [{ type: "product", id: "p1" }, { type: "wardrobe", id: "w1" }] },
         ],
       },
     ]);

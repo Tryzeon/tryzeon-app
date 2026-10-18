@@ -79,8 +79,7 @@ function fail(state: ChatState, code: string): ChatState {
 }
 
 export function createChatReducer(toItem: (row: unknown) => CatalogItem) {
-  const trimmed = (value: unknown): string | undefined =>
-    typeof value === "string" && value.trim().length > 0 ? value.trim() : undefined;
+  const str = (value: unknown): string | undefined => (typeof value === "string" ? value : undefined);
 
   function resolveItem(ref: unknown, items: WireItems): ResolvedItem | null {
     if (!isRecord(ref)) return null;
@@ -113,8 +112,8 @@ export function createChatReducer(toItem: (row: unknown) => CatalogItem) {
     for (const raw of Array.isArray(block.picks) ? block.picks : []) {
       const item = resolveItem(raw, items);
       if (item === null) continue;
-      const highlight = isRecord(raw) ? trimmed(raw.highlight) : undefined;
-      picks.push({ item, ...(highlight ? { highlight } : {}) });
+      const highlight = isRecord(raw) ? str(raw.highlight) : undefined;
+      picks.push({ item, ...(highlight === undefined ? {} : { highlight }) });
     }
     return picks;
   }
@@ -124,12 +123,12 @@ export function createChatReducer(toItem: (row: unknown) => CatalogItem) {
     const looks: ResolvedOutfit[] = [];
     for (const raw of Array.isArray(block.outfits) ? block.outfits : []) {
       if (!isRecord(raw)) continue;
-      const title = trimmed(raw.title);
+      const title = str(raw.title);
       const refs = Array.isArray(raw.pieces) ? raw.pieces : [];
       const pieces = refs.map((ref) => resolveItem(ref, items));
-      if (!title || pieces.some((piece) => piece === null)) continue;
-      const reason = trimmed(raw.reason);
-      looks.push({ title, ...(reason ? { reason } : {}), pieces: pieces as ResolvedItem[] });
+      if (title === undefined || pieces.some((piece) => piece === null)) continue;
+      const reason = str(raw.reason);
+      looks.push({ title, ...(reason === undefined ? {} : { reason }), pieces: pieces as ResolvedItem[] });
     }
     return looks;
   }
@@ -137,7 +136,7 @@ export function createChatReducer(toItem: (row: unknown) => CatalogItem) {
   function answerEntries(answer: WireMessage | undefined, items: WireItems): ChatEntry[] {
     const entries: ChatEntry[] = [];
     for (const block of answer?.content ?? []) {
-      if (block.type === "text" && typeof block.text === "string" && block.text.trim().length > 0) {
+      if (block.type === "text" && typeof block.text === "string") {
         entries.push({ kind: "text", text: block.text });
       } else if (block.type === "picks") {
         const picks = resolvePicks(block, items);
