@@ -18,7 +18,7 @@ final _original = UserProfile(
   gender: Gender.female,
   ageRange: AgeRange.age25to34,
   measurements: const BodyMeasurements(height: 160, weight: 50),
-  stylePreferences: const [ClothingStyle.korean, ClothingStyle.casual],
+  stylePreferences: const {ClothingStyle.korean, ClothingStyle.casual},
   createdAt: DateTime(2026),
   updatedAt: DateTime(2026),
   isTutorialCompleted: true,
@@ -98,27 +98,24 @@ void main() {
     },
   );
 
-  test(
-    'UpdateStylePreferences ignores a reordered but equal selection',
-    () async {
-      final result = await UpdateStylePreferences(repository)(
-        original: _original,
-        stylePreferences: const [ClothingStyle.casual, ClothingStyle.korean],
-      );
+  test('UpdateStylePreferences skips an unchanged selection', () async {
+    final result = await UpdateStylePreferences(repository)(
+      original: _original,
+      stylePreferences: const {ClothingStyle.casual, ClothingStyle.korean},
+    );
 
-      expect(result.get(), _original);
-      expect(repository.updates, isEmpty);
-    },
-  );
+    expect(result.get(), _original);
+    expect(repository.updates, isEmpty);
+  });
 
   test('UpdateStylePreferences sends a changed selection', () async {
     await UpdateStylePreferences(repository)(
       original: _original,
-      stylePreferences: const [ClothingStyle.casual],
+      stylePreferences: const {ClothingStyle.casual},
     );
 
     expect(repository.updates, [
-      const UserProfileUpdate(stylePreferences: [ClothingStyle.casual]),
+      const UserProfileUpdate(stylePreferences: {ClothingStyle.casual}),
     ]);
   });
 }

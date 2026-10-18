@@ -19,7 +19,7 @@ sealed class UserProfile with _$UserProfile {
     final String? email,
     final Gender? gender,
     final AgeRange? ageRange,
-    final List<ClothingStyle>? stylePreferences,
+    @Default(<ClothingStyle>{}) final Set<ClothingStyle> stylePreferences,
     @Default(false) final bool isOnboarded,
     required final bool isTutorialCompleted,
   }) = _UserProfile;

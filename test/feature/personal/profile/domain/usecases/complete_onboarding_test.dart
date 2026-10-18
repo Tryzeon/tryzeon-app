@@ -41,7 +41,7 @@ void main() {
       const CompleteOnboardingParams(
         gender: Gender.male,
         ageRange: AgeRange.age18to24,
-        stylePreferences: [ClothingStyle.casual],
+        stylePreferences: {ClothingStyle.casual},
       ),
     );
 
@@ -50,7 +50,7 @@ void main() {
       const UserProfileUpdate(
         gender: Gender.male,
         ageRange: AgeRange.age18to24,
-        stylePreferences: [ClothingStyle.casual],
+        stylePreferences: {ClothingStyle.casual},
         isOnboarded: true,
       ),
     );

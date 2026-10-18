@@ -14,7 +14,7 @@ sealed class UserProfileUpdate with _$UserProfileUpdate {
     final Gender? gender,
     final AgeRange? ageRange,
     final BodyMeasurements? measurements,
-    final List<ClothingStyle>? stylePreferences,
+    final Set<ClothingStyle>? stylePreferences,
     final bool? isOnboarded,
     final bool? isTutorialCompleted,
   }) = _UserProfileUpdate;

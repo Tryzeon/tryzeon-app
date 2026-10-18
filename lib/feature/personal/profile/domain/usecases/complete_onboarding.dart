@@ -16,7 +16,7 @@ sealed class CompleteOnboardingParams with _$CompleteOnboardingParams {
   const factory CompleteOnboardingParams({
     final Gender? gender,
     final AgeRange? ageRange,
-    final List<ClothingStyle>? stylePreferences,
+    final Set<ClothingStyle>? stylePreferences,
   }) = _CompleteOnboardingParams;
 }
 

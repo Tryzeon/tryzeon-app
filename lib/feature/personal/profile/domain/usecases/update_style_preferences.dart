@@ -11,16 +11,16 @@ class UpdateStylePreferences {
 
   final UserProfileRepository _repository;
 
-  /// The selection is a set, so a reordering alone writes nothing.
   Future<Result<UserProfile, Failure>> call({
     required final UserProfile original,
-    required final List<ClothingStyle> stylePreferences,
+    required final Set<ClothingStyle> stylePreferences,
   }) async {
-    final unchanged = const SetEquality<ClothingStyle>().equals(
-      stylePreferences.toSet(),
-      (original.stylePreferences ?? const <ClothingStyle>[]).toSet(),
-    );
-    if (unchanged) return Ok(original);
+    if (const SetEquality<ClothingStyle>().equals(
+      stylePreferences,
+      original.stylePreferences,
+    )) {
+      return Ok(original);
+    }
     return _repository.updateUserProfile(
       UserProfileUpdate(stylePreferences: stylePreferences),
     );
