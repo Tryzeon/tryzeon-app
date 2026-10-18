@@ -1,5 +1,6 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
@@ -51,7 +52,7 @@ Raw<GoRouter> appRouter(final Ref ref) {
       //    themselves are excluded)
       final storeRedirect = _handleStoreOnboardingRedirect(
         path,
-        ref.read(storeProfileProvider),
+        _storeOnboardingGate(ref.read(storeProfileProvider)),
       );
       if (storeRedirect != null) return storeRedirect;
 
@@ -59,7 +60,7 @@ Raw<GoRouter> appRouter(final Ref ref) {
       //    inside, so they take priority)
       final personalRedirect = _handlePersonalOnboardingRedirect(
         path,
-        ref.read(userProfileProvider),
+        _personalOnboardingGate(ref.read(userProfileProvider)),
       );
       if (personalRedirect != null) return personalRedirect;
 
@@ -75,13 +76,22 @@ Raw<GoRouter> appRouter(final Ref ref) {
     ],
   );
 
-  // Listen for store profile changes to re-run redirect, rather than rebuilding
-  // the whole GoRouter (which would clobber deep-link navigation).
-  ref.listen(storeProfileProvider, (final _, final _) {
+  // Re-run redirect instead of rebuilding the whole GoRouter (which would
+  // clobber deep-link navigation), and only when a gate's input changes: a
+  // refresh re-parses the route stack into new pushed matches, so a pop made in
+  // the same frame (a settings page closing after its save) is lost and the
+  // page reappears.
+  ref.listen(storeProfileProvider.select(_storeOnboardingGate), (
+    final _,
+    final _,
+  ) {
     refreshListenable.refresh();
   });
 
-  ref.listen(userProfileProvider, (final _, final _) {
+  ref.listen(userProfileProvider.select(_personalOnboardingGate), (
+    final _,
+    final _,
+  ) {
     refreshListenable.refresh();
   });
 
@@ -95,24 +105,39 @@ Future<String> _resolveHomePath(final Ref ref) async {
   return AppRoutes.homeForUserType(userType ?? UserType.personal);
 }
 
+typedef _OnboardingGate = ({bool settled, bool passed});
+
+_OnboardingGate _storeOnboardingGate(
+  final AsyncValue<StoreProfile?> storeProfileAsync,
+) => (
+  settled: !storeProfileAsync.isLoading && !storeProfileAsync.hasError,
+  passed: storeProfileAsync.asData?.value != null,
+);
+
+_OnboardingGate _personalOnboardingGate(
+  final AsyncValue<UserProfile?> userProfileAsync,
+) => (
+  settled: !userProfileAsync.isLoading && !userProfileAsync.hasError,
+  passed: userProfileAsync.asData?.value?.isOnboarded ?? false,
+);
+
 String? _handleStoreOnboardingRedirect(
   final String path,
-  final AsyncValue<StoreProfile?> storeProfileAsync,
+  final _OnboardingGate gate,
 ) {
   if (!path.startsWith(AppRoutes.dashboardRoot)) return null;
-  if (storeProfileAsync.isLoading || storeProfileAsync.hasError) return null;
+  if (!gate.settled) return null;
 
-  final hasProfile = storeProfileAsync.asData?.value != null;
   if (path == AppRoutes.dashboardOnboarding) {
-    return hasProfile ? AppRoutes.dashboardAccount : null;
+    return gate.passed ? AppRoutes.dashboardAccount : null;
   }
 
-  return hasProfile ? null : AppRoutes.dashboardOnboarding;
+  return gate.passed ? null : AppRoutes.dashboardOnboarding;
 }
 
 String? _handlePersonalOnboardingRedirect(
   final String path,
-  final AsyncValue<UserProfile?> userProfileAsync,
+  final _OnboardingGate gate,
 ) {
   if (!path.startsWith(AppRoutes.personalRoot)) return null;
 
@@ -121,13 +146,11 @@ String? _handlePersonalOnboardingRedirect(
     return null;
   }
 
-  if (userProfileAsync.isLoading || userProfileAsync.hasError) return null;
+  if (!gate.settled) return null;
 
-  final profile = userProfileAsync.asData?.value;
-  final isOnboarded = profile?.isOnboarded ?? false;
   if (path == AppRoutes.personalOnboarding) {
-    return isOnboarded ? AppRoutes.personalHome : null;
+    return gate.passed ? AppRoutes.personalHome : null;
   }
 
-  return isOnboarded ? null : AppRoutes.personalOnboarding;
+  return gate.passed ? null : AppRoutes.personalOnboarding;
 }
