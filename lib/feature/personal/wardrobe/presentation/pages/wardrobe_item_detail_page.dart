@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/extensions/date_format_extension.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
@@ -167,9 +168,7 @@ class _WardrobeItemDetailContent extends ConsumerWidget {
       );
     }
 
-    final createdAt = item.createdAt;
-    final dateStr =
-        '${createdAt.year}/${createdAt.month.toString().padLeft(2, '0')}/${createdAt.day.toString().padLeft(2, '0')} 加入';
+    final dateStr = '${item.createdAt.asDate} 加入';
 
     return Scaffold(
       body: CustomScrollView(

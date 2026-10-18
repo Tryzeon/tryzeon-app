@@ -6,9 +6,8 @@ List<AnalyticsMonth> analyticsMonthsSince(
 }) {
   final months = <AnalyticsMonth>[];
   var cursor = DateTime(now.year, now.month);
-  final first = openedAt == null
-      ? cursor
-      : DateTime(openedAt.year, openedAt.month);
+  final opened = openedAt?.toLocal();
+  final first = opened == null ? cursor : DateTime(opened.year, opened.month);
   do {
     months.add((year: cursor.year, month: cursor.month));
     cursor = DateTime(cursor.year, cursor.month - 1);

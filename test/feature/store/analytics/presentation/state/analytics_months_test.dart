@@ -23,6 +23,15 @@ void main() {
     ]);
   });
 
+  test('the opening month is the local calendar month', () {
+    final openedJustAfterLocalMidnight = DateTime(2026, 1, 1, 0, 30).toUtc();
+
+    expect(analyticsMonthsSince(openedJustAfterLocalMidnight, now: now), [
+      (year: 2026, month: 2),
+      (year: 2026, month: 1),
+    ]);
+  });
+
   test('labels read as year and month', () {
     expect((year: 2026, month: 10).label, '2026 年 10 月');
   });

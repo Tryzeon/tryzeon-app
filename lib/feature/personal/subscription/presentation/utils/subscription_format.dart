@@ -1,3 +1,4 @@
+import 'package:tryzeon/core/extensions/date_format_extension.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 
 String planName(final AppSubscriptionTier tier) => switch (tier) {
@@ -39,8 +40,5 @@ String formatRenewalLine(final AppSubscriptionEntitlement entitlement) {
     return '訂閱中';
   }
 
-  final y = parsed.year.toString().padLeft(4, '0');
-  final m = parsed.month.toString().padLeft(2, '0');
-  final d = parsed.day.toString().padLeft(2, '0');
-  return '$y/$m/$d 續訂';
+  return '${parsed.asDate} 續訂';
 }

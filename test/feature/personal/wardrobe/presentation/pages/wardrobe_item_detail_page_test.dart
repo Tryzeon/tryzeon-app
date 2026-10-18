@@ -70,6 +70,15 @@ void main() {
     expect(find.text('#linen'), findsOneWidget);
   });
 
+  testWidgets('shows the local date the item was added', (final tester) async {
+    final item = wardrobeItem(
+      'a',
+    ).copyWith(createdAt: DateTime(2026, 10, 18, 0, 30).toUtc());
+    await pumpDetail(tester, items: [item]);
+
+    expect(find.text('2026/10/18 加入'), findsOneWidget);
+  });
+
   testWidgets('shows the listed item when no initial item is given', (
     final tester,
   ) async {
