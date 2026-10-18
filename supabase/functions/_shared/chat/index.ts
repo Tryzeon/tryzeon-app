@@ -1,5 +1,5 @@
 export { runChatAgent, type RunChatAgentDeps } from "./run.ts";
-export { ANSWER_LIMITS, outfitsOf, picksOf, windowHistory } from "./logic.ts";
+export { ANSWER_LIMITS, windowHistory } from "./logic.ts";
 export { supabaseChatQuota } from "./quota.ts";
 export type {
   AgentAnswer,
@@ -15,6 +15,7 @@ export type {
 
 export { LIMITS } from "./types.ts";
 export type {
+  AnswerBlock,
   ChatContext,
   ChatEvent,
   ChatMessage,

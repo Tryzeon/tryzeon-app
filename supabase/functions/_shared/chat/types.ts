@@ -22,6 +22,12 @@ export type PickRef = ItemRef & { highlight?: string };
 /** Rendered, and tried on, only whole: a look missing a piece is not the look the model put together. */
 export type OutfitRef = { title: string; reason?: string; pieces: ItemRef[] };
 
+/** An answer row as stored and sent: read whole by `answerBlocksOf`, so no surface re-checks it. */
+export type AnswerBlock =
+  | { type: "text"; text: string }
+  | { type: "picks"; picks: PickRef[] }
+  | { type: "outfits"; outfits: OutfitRef[] };
+
 export type ChatEvent =
   | { type: "tool_use"; id: string; name: string; input: unknown }
   | { type: "tool_result"; tool_use_id: string; content: unknown };
@@ -35,10 +41,11 @@ export interface ChatParams {
 export interface ChatResult {
   /**
    * Every message this run added to the conversation, in order, stored exactly
-   * as given: per agent step its calls then their results, and last the answer,
-   * which is the model's output blocks verbatim.
+   * as given: per agent step its calls then their results, and last the answer.
    */
   messages: ChatMessage[];
+  /** The last message's blocks, typed for a renderer. */
+  answer: AnswerBlock[];
   /** The hydrated rows of every id the answer names; never stored, never sent back. */
   items: AnswerItems;
   usage: DailyUsage | null;
@@ -102,5 +109,5 @@ export interface AnswerItems {
 export type AnswerHydrator = (
   client: DbClient,
   userId: string,
-  blocks: ContentBlock[],
+  blocks: AnswerBlock[],
 ) => Promise<AnswerRows>;

@@ -1,5 +1,6 @@
 import { assertEquals, assertStringIncludes } from "@std/assert";
 import {
+  answerBlocksOf,
   mapSearchProductsArgs,
   outfitsOf,
   recordRounds,
@@ -141,6 +142,33 @@ Deno.test("outfitsOf skips a blank title and omits a blank reason", () => {
     )),
     [outfit("週末", [p("p1"), p("p2")]), outfit("通勤", [p("p1"), p("p2")], "理由")],
   );
+});
+
+Deno.test("answerBlocksOf keeps each row as picksOf/outfitsOf read it and drops what reads as nothing", () => {
+  assertEquals(
+    answerBlocksOf([
+      { type: "text", text: "找到這幾件" },
+      { type: "text", text: "   " },
+      { type: "text" },
+      picks(p("p1"), p("p1"), w("w1")),
+      { type: "picks", picks: [{ type: "hat", id: "h" }] },
+      outfits(outfit("單件", [p("p1")])),
+      outfits(outfit("週末", [p("p1"), p("p1"), w("w1")])),
+      { type: "tool_use", id: "t0", name: "search_products" },
+      null,
+      "x",
+    ]),
+    [
+      { type: "text", text: "找到這幾件" },
+      picks(p("p1"), w("w1")),
+      outfits(outfit("週末", [p("p1"), w("w1")])),
+    ],
+  );
+});
+
+Deno.test("answerBlocksOf reads nothing from a non-array", () => {
+  assertEquals(answerBlocksOf(undefined), []);
+  assertEquals(answerBlocksOf({ blocks: [] }), []);
 });
 
 Deno.test("toModelMessages maps a paired tool_use/tool_result conversation to ModelMessages", () => {

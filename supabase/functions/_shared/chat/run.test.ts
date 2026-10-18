@@ -5,6 +5,7 @@ import { type DailyUsage, QuotaExceededError } from "../quota.ts";
 import type {
   AgentRequest,
   AgentRunner,
+  AnswerBlock,
   AnswerHydrator,
   ChatEvent,
   ChatMessage,
@@ -113,6 +114,7 @@ Deno.test("answers with item refs in the model's order and their rows alongside"
     products: { [PRODUCT_ID]: { id: PRODUCT_ID, name: "襯衫" } },
     wardrobe: { [WARDROBE_ID]: { id: WARDROBE_ID } },
   });
+  assertEquals(result.answer, result.messages.at(-1)!.content);
   assertEquals(result.usage, USAGE);
   assertEquals(quota.calls, ["charge"]);
 });
@@ -156,7 +158,7 @@ Deno.test("an unusable model output falls back to text and keeps quota spent", a
   assertEquals(quota.calls, ["charge"]);
 });
 
-Deno.test("stores the model's blocks verbatim, even ids with no row or no uuid", async () => {
+Deno.test("stores the answer as answerBlocksOf reads it, keeping ids with no row or no uuid", async () => {
   const blocks = [
     { type: "text", text: "  " },
     {
@@ -175,8 +177,39 @@ Deno.test("stores the model's blocks verbatim, even ids with no row or no uuid",
     hydrate: hydrator({}),
   });
 
-  assertEquals(result.messages, [{ role: "assistant", content: blocks }]);
+  const answer: AnswerBlock[] = [{
+    type: "picks",
+    picks: [
+      { type: "product", id: PRODUCT_ID, highlight: "超過八個字的亮點說明文字" },
+      { type: "wardrobe", id: "not-a-uuid" },
+    ],
+  }];
+  assertEquals(result.messages, [{ role: "assistant", content: answer }]);
+  assertEquals(result.answer, answer);
   assertEquals(result.items, { products: {}, wardrobe: {} });
+});
+
+Deno.test("an answer whose every row reads as nothing falls back to text without hydrating", async () => {
+  let hydrated = false;
+  const result = await runChatAgent(client, params, {
+    quota: fakeQuota().factory,
+    loadContext: context,
+    runAgent: fakeAgent({
+      output: {
+        blocks: [
+          { type: "text", text: "  " },
+          { type: "outfits", outfits: [{ title: "單件", pieces: [{ type: "product", id: PRODUCT_ID }] }] },
+        ],
+      },
+    }).runner,
+    hydrate: () => {
+      hydrated = true;
+      return Promise.resolve({ products: new Map(), wardrobe: new Map() });
+    },
+  });
+
+  assertEquals(result.messages[0].content.map((b) => b.type), ["text"]);
+  assertEquals(hydrated, false);
 });
 
 Deno.test("items holds every hydrated row", async () => {

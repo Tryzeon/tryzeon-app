@@ -1,6 +1,6 @@
 import { isUuid } from "../text.ts";
-import { outfitsOf, picksOf, PRODUCT_SELECT, WARDROBE_SELECT } from "./logic.ts";
-import type { AnswerHydrator, ContentBlock, ItemRef } from "./types.ts";
+import { PRODUCT_SELECT, WARDROBE_SELECT } from "./logic.ts";
+import type { AnswerBlock, AnswerHydrator, ItemRef } from "./types.ts";
 import type { DbClient } from "../supabase.ts";
 
 /**
@@ -31,14 +31,20 @@ export async function fetchRowsByIds<Row extends { id: string }, Block = Row>(
   return map;
 }
 
-const blockItems = (block: ContentBlock): ItemRef[] => [
-  ...picksOf(block),
-  ...outfitsOf(block).flatMap((look) => look.pieces),
-];
+function blockItems(block: AnswerBlock): ItemRef[] {
+  switch (block.type) {
+    case "text":
+      return [];
+    case "picks":
+      return block.picks;
+    case "outfits":
+      return block.outfits.flatMap((look) => look.pieces);
+  }
+}
 
 // The model can misquote an id, and Postgres fails the whole `.in("id", …)`
 // batch (22P02) on a malformed uuid, so only uuid ids are queried.
-export const idsOf = (blocks: ContentBlock[], type: ItemRef["type"]): string[] => [
+export const idsOf = (blocks: AnswerBlock[], type: ItemRef["type"]): string[] => [
   ...new Set(
     blocks
       .flatMap(blockItems)
@@ -54,7 +60,7 @@ export const hasProductImage = (row: { image_paths?: string[] | null }): boolean
 export const supabaseAnswerRows: AnswerHydrator = async (
   client: DbClient,
   userId: string,
-  blocks: ContentBlock[],
+  blocks: AnswerBlock[],
 ) => {
   const [products, wardrobe] = await Promise.all([
     fetchRowsByIds(

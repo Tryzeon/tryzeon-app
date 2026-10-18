@@ -22,6 +22,7 @@ import type {
 } from "ai";
 import type { Database } from "../database.types.ts";
 import type {
+  AnswerBlock,
   ChatEvent,
   ChatMessage,
   ContentBlock,
@@ -338,11 +339,36 @@ export function outfitsOf(block: ContentBlock): OutfitRef[] {
   return looks;
 }
 
+/**
+ * The model's raw blocks as the answer every surface renders: a blank text, an
+ * unreadable entry and a row left empty by `picksOf`/`outfitsOf` are dropped.
+ */
+export function answerBlocksOf(raw: unknown): AnswerBlock[] {
+  if (!Array.isArray(raw)) return [];
+  const blocks: AnswerBlock[] = [];
+  for (const entry of raw) {
+    const block = asRecord(entry);
+    if (block === null) continue;
+    if (block.type === "text") {
+      if (typeof block.text === "string" && block.text.trim().length > 0) {
+        blocks.push({ type: "text", text: block.text });
+      }
+    } else if (block.type === "picks") {
+      const picks = picksOf(block);
+      if (picks.length > 0) blocks.push({ type: "picks", picks });
+    } else if (block.type === "outfits") {
+      const outfits = outfitsOf(block);
+      if (outfits.length > 0) blocks.push({ type: "outfits", outfits });
+    }
+  }
+  return blocks;
+}
+
 // The whole history is replayed verbatim and uncompressed: assistant tool_use →
 // a `tool-call` part, the paired user tool_result → a `tool` message with a
 // `tool-result` part (its tool name resolved from the tool_use id), text passes
 // through. A final answer (an assistant message with no tool_use) is replayed as
-// the structured output the model produced, so it sees its own answer exactly.
+// structured output, so the model sees the answer exactly as the user did.
 export function toModelMessages(messages: ChatMessage[]): ModelMessage[] {
   const nameOf = new Map<string, string>();
   for (const m of messages ?? []) {

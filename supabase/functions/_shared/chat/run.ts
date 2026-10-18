@@ -1,11 +1,12 @@
 import { QuotaExceededError } from "../quota.ts";
 import { buildChatContext } from "./context.ts";
 import { supabaseAnswerRows } from "./hydrate.ts";
-import { asRecord } from "../validation.ts";
+import { answerBlocksOf } from "./logic.ts";
 import { validateChatParams } from "./validate.ts";
 import { runVertexAgent } from "./vertex.ts";
 import type {
   AgentRunner,
+  AnswerBlock,
   AnswerHydrator,
   AnswerItems,
   AnswerRows,
@@ -13,7 +14,6 @@ import type {
   ChatParams,
   ChatQuotaFactory,
   ChatResult,
-  ContentBlock,
   ContextLoader,
 } from "./types.ts";
 import type { DbClient } from "../supabase.ts";
@@ -33,9 +33,9 @@ export interface RunChatAgentDeps {
  * Single chat entry point: validate -> quota -> ground -> agent loop ->
  * hydrate.
  *
- * The stored answer is the model's output blocks verbatim; hydration only
- * builds the render rows for the ids they name, and what is renderable is each
- * client's call.
+ * The stored answer is the model's output read by `answerBlocksOf`, so every
+ * surface renders the same rows; hydration only builds the render rows for the
+ * ids they name, and a row that came back missing is each surface's to skip.
  *
  * One client, and it is the caller's own: grounding, the tool searches and
  * hydration all go through it, so an adapter with a session (the app) has RLS
@@ -79,10 +79,8 @@ export async function runChatAgent(
       onEvent: turn.onEvent,
     });
 
-    const blocks: ContentBlock[] = Array.isArray(output?.blocks)
-      ? output.blocks.filter((entry: unknown) => asRecord(entry) !== null)
-      : [];
-    const content: ContentBlock[] = blocks.length > 0
+    const blocks = answerBlocksOf(output?.blocks);
+    const content: AnswerBlock[] = blocks.length > 0
       ? blocks
       : [{ type: "text", text: FALLBACK_TEXT }];
     const rows = blocks.length > 0 ? await hydrate(client, turn.userId, content) : NO_ROWS;
@@ -92,7 +90,7 @@ export async function runChatAgent(
       wardrobe: Object.fromEntries(rows.wardrobe),
     };
 
-    return { messages: [...rounds, answer], items, usage };
+    return { messages: [...rounds, answer], answer: content, items, usage };
   } catch (err) {
     // Refund is best-effort: a failure here must not replace the error that
     // actually caused the turn to fail, or callers would report the wrong thing.
