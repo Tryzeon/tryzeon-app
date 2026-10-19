@@ -18,25 +18,20 @@ import 'package:tryzeon/feature/common/settings/providers/settings_controller.da
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/widgets/subscription_usage_card.dart';
 import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
-import 'package:tryzeon/feature/personal/usage/providers/daily_usage_providers.dart';
+import 'package:tryzeon/feature/personal/usage/providers/usage_quota_providers.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 class AccountPage extends HookConsumerWidget {
   const AccountPage({super.key});
 
-  /// The entitlement re-emits on its own whenever RevenueCat reports a change
-  /// (capabilities follow from it), but the usage cache is `keepAlive` and a
-  /// day rollover reaches us only on a re-read, which is what this is.
   List<Future<Result<void, Failure>>> _refresh(final WidgetRef ref) {
-    ref
-      ..invalidate(dailyUsageTodayProvider)
-      ..invalidate(appSubscriptionEntitlementProvider);
+    ref.invalidate(appSubscriptionEntitlementProvider);
 
     return [
       ref.read(userProfileProvider.notifier).refresh(),
       ref.read(wardrobeItemsProvider.notifier).refresh(),
-      _settle(ref.read(dailyUsageTodayProvider.future)),
+      ref.read(usageQuotaProvider.notifier).refresh(),
       _settle(ref.read(appSubscriptionEntitlementProvider.future)),
       _settle(ref.read(subscriptionCapabilitiesProvider.future)),
     ];
@@ -231,8 +226,7 @@ class _SubscriptionSection extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final entitlementAsync = ref.watch(appSubscriptionEntitlementProvider);
-    final capabilitiesAsync = ref.watch(subscriptionCapabilitiesProvider);
-    final usageAsync = ref.watch(dailyUsageTodayProvider);
+    final quotaAsync = ref.watch(usageQuotaProvider);
     final wardrobeCapacityAsync = ref.watch(wardrobeCapacityProvider);
 
     void openSubscription() => context.push(AppRoutes.personalSubscription);
@@ -248,8 +242,7 @@ class _SubscriptionSection extends HookConsumerWidget {
 
     return SubscriptionUsageCard(
       entitlement: entitlement,
-      capabilities: capabilitiesAsync.value,
-      usage: usageAsync.value,
+      quota: quotaAsync.value,
       wardrobeCapacity: wardrobeCapacityAsync.value,
       onTap: openSubscription,
       onUpgrade: () => RevenueCatUiUtils.presentPaywall(context),

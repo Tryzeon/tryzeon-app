@@ -7,10 +7,12 @@ import 'package:tryzeon/core/modules/revenue_cat/providers/revenue_cat_providers
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/section_label.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/common/usage_quota/domain/entities/usage_quota.dart';
+import 'package:tryzeon/feature/common/usage_quota/presentation/usage_quota_format.dart';
 import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription_capabilities.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/utils/subscription_format.dart';
 import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
-import 'package:tryzeon/feature/personal/usage/providers/daily_usage_providers.dart';
+import 'package:tryzeon/feature/personal/usage/providers/usage_quota_providers.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 
 class SubscriptionPage extends HookConsumerWidget {
@@ -76,10 +78,7 @@ class _SubscriptionContent extends ConsumerWidget {
     final wardrobeUsed = ref.watch(
       wardrobeItemsProvider.select((final v) => v.value?.length ?? 0),
     );
-    final usage = ref.watch(dailyUsageTodayProvider).value;
-    final tryonUsed = usage?.tryonCount;
-    final chatUsed = usage?.chatCount;
-    final videoUsed = usage?.videoCount;
+    final quota = ref.watch(usageQuotaProvider).value;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
@@ -130,27 +129,20 @@ class _SubscriptionContent extends ConsumerWidget {
               ),
             ),
           ),
-          const SectionLabel('目前用量'),
+          SectionLabel(_usageTitle(quota)),
           _BenefitRow(
-            title: '今日試穿',
+            title: '試穿',
             trailingValue: formatUsage(
-              used: tryonUsed,
-              limit: capabilities?.dailyTryonLimit,
+              used: quota?.tryonImage.used,
+              limit: quota?.tryonImage.quota,
             ),
             isFirst: true,
           ),
           _BenefitRow(
-            title: '今日聊天',
+            title: '影片',
             trailingValue: formatUsage(
-              used: chatUsed,
-              limit: capabilities?.dailyChatLimit,
-            ),
-          ),
-          _BenefitRow(
-            title: '今日影片',
-            trailingValue: formatUsage(
-              used: videoUsed,
-              limit: capabilities?.dailyVideoLimit,
+              used: quota?.tryonVideo.used,
+              limit: quota?.tryonVideo.quota,
             ),
           ),
           _BenefitRow(
@@ -163,8 +155,18 @@ class _SubscriptionContent extends ConsumerWidget {
           const SectionLabel('方案權益'),
           _BenefitRow(
             title: '影片試穿',
-            trailingValue: formatBenefit(value: capabilities?.hasVideoAccess),
+            trailingValue: formatBenefit(value: quota?.hasVideoAccess),
             isFirst: true,
+          ),
+          const _BenefitRow(title: '聊天', trailingValue: '不限次數＊'),
+          Padding(
+            padding: const EdgeInsets.only(top: AppSpacing.sm),
+            child: Text(
+              '＊適用合理使用政策',
+              style: textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
           ),
           const SizedBox(height: AppSpacing.xl),
           _PrimaryCta(tier: tier),
@@ -177,6 +179,13 @@ class _SubscriptionContent extends ConsumerWidget {
       ),
     );
   }
+}
+
+String _usageTitle(final UsageQuota? quota) {
+  if (quota == null) return '目前用量';
+  final label = '${periodLabel(quota.period)}用量';
+  final reset = resetLabel(quota);
+  return reset == null ? label : '$label（$reset 重置）';
 }
 
 class _PrimaryCta extends ConsumerWidget {

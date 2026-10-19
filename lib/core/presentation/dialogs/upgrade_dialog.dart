@@ -12,7 +12,7 @@ class UpgradeDialog {
     final result = await showAppOkCancelDialog(
       context: context,
       title: title ?? '已達使用上限',
-      message: content ?? '您的使用次數已達上限\n升級至更高方案以獲得更多額度！',
+      message: content ?? '您的使用次數已達上限\n升級方案可以拿到更多次數！',
       okLabel: '前往訂閱',
       cancelLabel: '取消',
     );

@@ -2,16 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
-import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription_capabilities.dart';
+import 'package:tryzeon/feature/common/usage_quota/domain/entities/usage_quota.dart';
+import 'package:tryzeon/feature/common/usage_quota/presentation/usage_quota_format.dart';
 import 'package:tryzeon/feature/personal/subscription/presentation/utils/subscription_format.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_capacity.dart';
 
 class SubscriptionUsageCard extends StatelessWidget {
   const SubscriptionUsageCard({
     required this.entitlement,
-    required this.capabilities,
-    required this.usage,
+    required this.quota,
     required this.wardrobeCapacity,
     required this.onTap,
     required this.onUpgrade,
@@ -19,8 +18,7 @@ class SubscriptionUsageCard extends StatelessWidget {
   });
 
   final AppSubscriptionEntitlement entitlement;
-  final SubscriptionCapabilities? capabilities;
-  final DailyUsage? usage;
+  final UsageQuota? quota;
   final WardrobeCapacity? wardrobeCapacity;
   final VoidCallback onTap;
   final VoidCallback onUpgrade;
@@ -30,6 +28,8 @@ class SubscriptionUsageCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
+    final quota = this.quota;
+    final period = quota == null ? '' : periodLabel(quota.period);
 
     return Card(
       color: colorScheme.surface,
@@ -74,24 +74,17 @@ class SubscriptionUsageCard extends StatelessWidget {
               Row(
                 children: [
                   _QuotaStat(
-                    label: '試穿剩餘',
+                    label: '$period試穿剩餘',
                     value: formatRemaining(
-                      used: usage?.tryonCount,
-                      limit: capabilities?.dailyTryonLimit,
+                      used: quota?.tryonImage.used,
+                      limit: quota?.tryonImage.quota,
                     ),
                   ),
                   _QuotaStat(
-                    label: '聊天剩餘',
+                    label: '$period影片剩餘',
                     value: formatRemaining(
-                      used: usage?.chatCount,
-                      limit: capabilities?.dailyChatLimit,
-                    ),
-                  ),
-                  _QuotaStat(
-                    label: '影片剩餘',
-                    value: formatRemaining(
-                      used: usage?.videoCount,
-                      limit: capabilities?.dailyVideoLimit,
+                      used: quota?.tryonVideo.used,
+                      limit: quota?.tryonVideo.quota,
                     ),
                   ),
                   _QuotaStat(
@@ -152,7 +145,6 @@ class SubscriptionUsageCardSkeleton extends StatelessWidget {
               const Row(
                 children: [
                   _QuotaStat(label: '試穿剩餘', value: '00'),
-                  _QuotaStat(label: '聊天剩餘', value: '00'),
                   _QuotaStat(label: '影片剩餘', value: '00'),
                   _QuotaStat(label: '衣櫃空位', value: '00'),
                 ],

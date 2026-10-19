@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:tryzeon/core/extensions/price_format_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/glass_pill.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/common/usage_quota/domain/entities/usage_quota.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/state/chat_timeline.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_card_images.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_card_rail.dart';
@@ -16,6 +18,7 @@ import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_outfit_c
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
+import 'package:tryzeon/feature/personal/usage/providers/usage_quota_providers.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 
 ResolvedItem _product(
@@ -46,6 +49,11 @@ ResolvedItem _wardrobe(final String id) => ResolvedItem.wardrobe(
     updatedAt: DateTime(2026),
   ),
 );
+
+class _PendingUsageQuota extends UsageQuotaNotifier {
+  @override
+  Future<UsageQuota> build() => Completer<UsageQuota>().future;
+}
 
 Widget _card(final ResolvedOutfit outfit) => Scaffold(
   body: Center(
@@ -80,7 +88,10 @@ Future<List<String>> _pumpRouted(
     ],
   );
   await tester.pumpWidget(
-    ProviderScope(child: MaterialApp.router(routerConfig: router)),
+    ProviderScope(
+      overrides: [usageQuotaProvider.overrideWith(_PendingUsageQuota.new)],
+      child: MaterialApp.router(routerConfig: router),
+    ),
   );
   return pushed;
 }
