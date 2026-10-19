@@ -3,11 +3,11 @@ import { ServiceBusyError } from "../errors.ts";
 import { GenerationFailedError } from "./errors.ts";
 import { generateTryonImage, generateTryonVideo } from "./vertex.ts";
 
-const IMAGE_MODEL = "gemini-nano-banana-2.1";
-const FALLBACK_MODEL = "gemini-3-pro-image";
-const EXPERIMENTAL_IMAGE_MODEL = "gemini-3.1-flash-image";
-const STANDARD_MODEL = "gemini-omni-1.1-flash-preview";
-const EXPERIMENTAL_MODEL = "veo-3.1-fast-generate-001";
+const IMAGE_MODEL = "test-image-model";
+const FALLBACK_MODEL = "test-fallback-image-model";
+const EXPERIMENTAL_IMAGE_MODEL = "test-experimental-image-model";
+const STANDARD_MODEL = "test-video-model";
+const EXPERIMENTAL_MODEL = "test-experimental-video-model";
 const VIDEO_BASE64 = btoa("mp4-bytes");
 const IMAGE_BASE64 = btoa("png-bytes");
 

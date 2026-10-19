@@ -96,16 +96,16 @@ Deno.test("succeed stores the result key and the models that produced it, and co
   const admin = fakeAdmin();
   await supabaseGenerationLog(admin.client).succeed("g1", {
     resultKey: "u1/tryon-1.mp4",
-    imageModel: "gemini-3-pro-image",
-    videoModel: "veo-3.1-fast-generate-001",
+    imageModel: "test-image-model",
+    videoModel: "test-video-model",
   });
   const call = only(admin.calls);
   assertEquals(call.op, "update");
   assertEquals(call.eq, ["id", "g1"]);
   assertEquals(call.payload?.status, "succeeded");
   assertEquals(call.payload?.result_key, "u1/tryon-1.mp4");
-  assertEquals(call.payload?.image_model, "gemini-3-pro-image");
-  assertEquals(call.payload?.video_model, "veo-3.1-fast-generate-001");
+  assertEquals(call.payload?.image_model, "test-image-model");
+  assertEquals(call.payload?.video_model, "test-video-model");
   assertEquals(typeof call.payload?.completed_at, "string");
 });
 
@@ -113,10 +113,10 @@ Deno.test("succeed stores null for a model the job never ran", async () => {
   const admin = fakeAdmin();
   await supabaseGenerationLog(admin.client).succeed("g1", {
     resultKey: "u1/tryon-1.png",
-    imageModel: "gemini-nano-banana-2.1",
+    imageModel: "test-image-model",
   });
   const call = only(admin.calls);
-  assertEquals(call.payload?.image_model, "gemini-nano-banana-2.1");
+  assertEquals(call.payload?.image_model, "test-image-model");
   assertEquals(call.payload?.video_model, null);
 });
 

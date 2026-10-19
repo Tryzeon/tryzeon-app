@@ -4,7 +4,7 @@ import { ServiceBusyError } from "../errors.ts";
 import { rethrowAsBusy } from "./errors.ts";
 
 const MODEL_URL =
-  "https://aiplatform.googleapis.com/v1beta1/projects/p/locations/global/publishers/google/models/gemini-3.1-flash-image:generateContent";
+  "https://aiplatform.googleapis.com/v1beta1/projects/p/locations/global/publishers/google/models/test-model:generateContent";
 
 function apiError(statusCode: number, message: string): APICallError {
   return new APICallError({
