@@ -28,7 +28,8 @@ export async function verifyLineIdToken(
   });
 
   if (!resp.ok) {
-    throw new LineAuthError(`LINE token verification failed (${resp.status})`);
+    const reason = await resp.text().catch(() => "");
+    throw new LineAuthError(`LINE token verification failed (${resp.status}): ${reason}`);
   }
 
   const payload = (await resp.json()) as Record<string, unknown>;

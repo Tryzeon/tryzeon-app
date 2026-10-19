@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { matchPath, Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
-import { initAndLogin } from "./lib/liff";
-import { ensureSession } from "./lib/auth";
-import { type AvatarProfile, fetchAvatarProfile } from "./api/profile";
+import { bootstrap } from "./lib/bootstrap";
+import { BootstrapError, describeError } from "./lib/bootstrap-error";
+import type { AvatarProfile } from "./api/profile";
 import { CatalogSkeleton } from "./components/CatalogSkeleton";
 import { Header } from "./components/Header";
 import { SearchSortBar } from "./components/SearchSortBar";
@@ -20,12 +20,11 @@ const noop = () => {};
 function LiffGate() {
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const [profile, setProfile] = useState<AvatarProfile>({ avatar: null, gender: null });
+  const [failure, setFailure] = useState("");
   const { pathname } = useLocation();
 
   useEffect(() => {
-    initAndLogin()
-      .then(ensureSession)
-      .then(fetchAvatarProfile)
+    bootstrap()
       .then(
         (fetched) => {
           setProfile(fetched);
@@ -33,6 +32,7 @@ function LiffGate() {
         },
         (err) => {
           console.error("[liff-gate] bootstrap failed:", err);
+          setFailure(err instanceof BootstrapError ? err.message : describeError(err));
           setState("error");
         },
       );
@@ -80,7 +80,10 @@ function LiffGate() {
       <div className="app">
         <Header />
         <main className="main">
-          <div className="errorcard">載入失敗,請稍後再試。</div>
+          <div className="errorcard">
+            載入失敗，請稍後再試。
+            <p className="errorcard__detail">{failure}</p>
+          </div>
           <button className="loadmore" onClick={() => window.location.reload()}>
             重新載入
           </button>

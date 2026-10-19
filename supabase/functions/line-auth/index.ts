@@ -36,6 +36,7 @@ Deno.serve(async (req) => {
     return cors.wrap(json({ refreshToken }));
   } catch (err) {
     if (err instanceof LineAuthError) {
+      console.warn("line-auth rejected id token:", err.message);
       return cors.wrap(jsonError(err.message, "UNAUTHORIZED", 401));
     }
     const info = classifyCoreError(err);

@@ -478,6 +478,13 @@ button, label { touch-action: manipulation; }
   margin-bottom: 14px;
 }
 
+.errorcard__detail {
+  margin: 6px 0 0;
+  font-size: 11px;
+  opacity: 0.7;
+  overflow-wrap: anywhere;
+}
+
 /* ── Missing photo ─────────────────────────────────────────────────────── */
 /* A product with no image still belongs in the catalog — the slot keeps the
    grid's rhythm and says what is missing, rather than a bare grey box. */
