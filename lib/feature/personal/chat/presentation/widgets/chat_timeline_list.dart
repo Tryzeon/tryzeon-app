@@ -15,14 +15,12 @@ class ChatTimelineList extends HookWidget {
     required this.controller,
     required this.onStarterTap,
     required this.onRetry,
-    required this.onUpgrade,
   });
 
   final List<ChatTimelineEntry> entries;
   final ScrollController controller;
   final ValueChanged<String> onStarterTap;
   final VoidCallback onRetry;
-  final VoidCallback onUpgrade;
 
   static const double jumpThreshold = 240;
   static const EdgeInsets _padding = EdgeInsets.only(
@@ -77,11 +75,7 @@ class ChatTimelineList extends HookWidget {
               ),
               ChatFailureEntry(:final failure) => Padding(
                 padding: _gutter,
-                child: ChatFailureCard(
-                  failure: failure,
-                  onRetry: onRetry,
-                  onUpgrade: onUpgrade,
-                ),
+                child: ChatFailureCard(failure: failure, onRetry: onRetry),
               ),
             },
           );

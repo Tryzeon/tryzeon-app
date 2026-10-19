@@ -4,13 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/core/presentation/dialogs/upgrade_dialog.dart';
+import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/app_keyboard_dismisser.dart';
 import 'package:tryzeon/core/presentation/widgets/app_page_header.dart';
+import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/router/shells/personal_tab.dart';
 import 'package:tryzeon/core/router/shells/tab_reselect.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/personal/chat/domain/failures/chat_rate_limited_failure.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/state/chat_timeline.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_input_bar.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_jump_to_latest_button.dart';
@@ -58,11 +60,10 @@ class ChatPage extends HookConsumerWidget {
       );
     }
 
-    void showUpgrade() {
-      UpgradeDialog.show(
+    void showRateLimited() {
+      TopNotification.show(
         context,
-        title: '對話次數已達上限',
-        content: '今天的對話次數已達上限\n升級方案就能繼續聊呦！',
+        message: const ChatRateLimitedFailure().displayMessage(),
       );
     }
 
@@ -95,7 +96,7 @@ class ChatPage extends HookConsumerWidget {
         if (!context.mounted) return;
         switch (event) {
           case ChatRateLimited():
-            showUpgrade();
+            showRateLimited();
         }
       });
       return subscription.cancel;
@@ -162,7 +163,6 @@ class ChatPage extends HookConsumerWidget {
                         controller: scrollController,
                         onStarterTap: sendMessage,
                         onRetry: notifier.retry,
-                        onUpgrade: showUpgrade,
                       ),
                     ),
                     Positioned(

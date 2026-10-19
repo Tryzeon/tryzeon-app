@@ -8,12 +8,10 @@ class ChatFailureCard extends StatelessWidget {
     super.key,
     required this.failure,
     required this.onRetry,
-    required this.onUpgrade,
   });
 
   final Failure failure;
   final VoidCallback onRetry;
-  final VoidCallback onUpgrade;
 
   @override
   Widget build(final BuildContext context) {
@@ -21,11 +19,7 @@ class ChatFailureCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     final action = switch (failure) {
-      RateLimitFailure() => TextButton(
-        onPressed: onUpgrade,
-        child: const Text('升級方案'),
-      ),
-      ValidationFailure() => null,
+      RateLimitFailure() || ValidationFailure() => null,
       _ => TextButton.icon(
         onPressed: onRetry,
         icon: const Icon(Icons.refresh_rounded, size: AppSpacing.md),

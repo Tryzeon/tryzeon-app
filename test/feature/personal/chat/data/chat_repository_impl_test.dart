@@ -1,16 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/core/data/utils/decode_function_response.dart';
 import 'package:tryzeon/core/error/failures.dart';
-import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
-import 'package:tryzeon/feature/common/daily_usage/domain/failures/usage_limit_failure.dart';
 import 'package:tryzeon/feature/personal/chat/data/datasources/chat_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/chat/data/dtos/chat_request.dart';
 import 'package:tryzeon/feature/personal/chat/data/dtos/chat_stream_event_dto.dart';
 import 'package:tryzeon/feature/personal/chat/data/repositories/chat_repository_impl.dart';
-import 'package:tryzeon/feature/personal/chat/domain/entities/chat_items.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_stream_event.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
+import 'package:tryzeon/feature/personal/chat/domain/failures/chat_rate_limited_failure.dart';
 
 class _FakeChatRemoteDataSource implements ChatRemoteDataSource {
   _FakeChatRemoteDataSource(this.events);
@@ -28,22 +26,6 @@ class _FakeChatRemoteDataSource implements ChatRemoteDataSource {
     }
   }
 }
-
-final _usageJson = {
-  'user_id': 'u1',
-  'usage_date': '2026-10-11',
-  'tryon_count': 0,
-  'chat_count': 10,
-  'video_count': 0,
-};
-
-final _usage = DailyUsage(
-  userId: 'u1',
-  usageDate: DateTime(2026, 10, 11),
-  tryonCount: 0,
-  chatCount: 10,
-  videoCount: 0,
-);
 
 final _wardrobeRow = {
   'id': 'w1',
@@ -191,7 +173,6 @@ void main() {
           'products': <String, Object>{},
           'wardrobe': {'w1': _wardrobeRow},
         },
-        'usage': _usageJson,
       },
     ]);
 
@@ -233,26 +214,6 @@ void main() {
     expect(replied.items.products, isEmpty);
     expect(replied.items.wardrobe.keys, ['w1']);
     expect(replied.items.wardrobe['w1']!.imagePath, 'u1/w1.jpg');
-    expect(replied.usage, _usage);
-  });
-
-  test('a malformed usage snapshot only drops the usage', () async {
-    final events = await run([
-      {
-        'type': 'done',
-        'messages': <Object>[],
-        'items': {
-          'products': <String, Object>{},
-          'wardrobe': <String, Object>{},
-        },
-        'usage': {'user_id': 'u1'},
-      },
-    ]);
-
-    expect(
-      events.single,
-      const ChatStreamEvent.replied(messages: [], items: ChatItems()),
-    );
   });
 
   test('skips unknown event types', () async {
@@ -291,14 +252,14 @@ void main() {
       );
     });
 
-    test('RATE_LIMIT_EXCEEDED carries the usage snapshot', () async {
+    test('RATE_LIMIT_EXCEEDED maps to ChatRateLimitedFailure', () async {
       final events = await run([
-        {'type': 'error', 'code': 'RATE_LIMIT_EXCEEDED', 'usage': _usageJson},
+        {'type': 'error', 'code': 'RATE_LIMIT_EXCEEDED'},
       ]);
 
       expect(
         events.single,
-        ChatStreamEvent.failed(UsageLimitFailure(usage: _usage)),
+        const ChatStreamEvent.failed(ChatRateLimitedFailure()),
       );
     });
 
@@ -396,7 +357,6 @@ void main() {
           'products': <String, Object>{},
           'wardrobe': <String, Object>{},
         },
-        'usage': _usageJson,
       },
     ]);
 
@@ -433,7 +393,6 @@ void main() {
           'products': <String, Object>{},
           'wardrobe': <String, Object>{},
         },
-        'usage': _usageJson,
       },
     ]);
 
@@ -486,7 +445,6 @@ void main() {
           'products': <String, Object>{},
           'wardrobe': <String, Object>{},
         },
-        'usage': _usageJson,
       },
     ]);
 

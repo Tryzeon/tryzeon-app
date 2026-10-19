@@ -1,6 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/core/error/failures.dart';
-import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_items.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
@@ -19,7 +18,6 @@ sealed class ChatStreamEvent with _$ChatStreamEvent {
   const factory ChatStreamEvent.replied({
     required final List<ChatMessage> messages,
     required final ChatItems items,
-    final DailyUsage? usage,
   }) = ChatReplied;
   const factory ChatStreamEvent.failed(final Failure failure) = ChatFailed;
 }

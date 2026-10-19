@@ -7,8 +7,6 @@ import 'package:tryzeon/feature/personal/chat/data/dtos/chat_message_dto.dart';
 part 'chat_stream_event_dto.freezed.dart';
 part 'chat_stream_event_dto.g.dart';
 
-/// `usage` stays a raw snapshot: a malformed one only skips the usage-cache
-/// refresh, it never fails the run.
 @Freezed(
   unionKey: 'type',
   unionValueCase: FreezedUnionCase.snake,
@@ -33,14 +31,12 @@ sealed class ChatStreamEventDto with _$ChatStreamEventDto {
   const factory ChatStreamEventDto.done({
     required final List<ChatMessageDto> messages,
     required final ChatItemsDto items,
-    final Map<String, dynamic>? usage,
   }) = ChatDoneEventDto;
 
   @JsonSerializable(createToJson: false, checked: true)
   const factory ChatStreamEventDto.error({
     required final String code,
     final String? message,
-    final Map<String, dynamic>? usage,
   }) = ChatErrorEventDto;
 
   const factory ChatStreamEventDto.unknown() = ChatUnknownEventDto;

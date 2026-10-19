@@ -6,19 +6,20 @@ import 'package:tryzeon/feature/personal/chat/domain/entities/chat_items.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_stream_event.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
+import 'package:tryzeon/feature/personal/chat/domain/usecases/send_chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/providers/chat_event.dart';
 import 'package:tryzeon/feature/personal/chat/providers/chat_notifier.dart';
 import 'package:tryzeon/feature/personal/chat/providers/chat_providers.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 
-class _FakeChatAction extends ChatAction {
-  _FakeChatAction(this.turns, this.histories);
+class _FakeSendChatMessage implements SendChatMessage {
+  _FakeSendChatMessage(this.turns, this.histories);
 
   final List<List<ChatStreamEvent>> turns;
   final List<List<ChatMessage>> histories;
 
   @override
-  Stream<ChatStreamEvent> execute(final List<ChatMessage> history) {
+  Stream<ChatStreamEvent> call(final List<ChatMessage> history) {
     histories.add(history);
     return Stream.fromIterable(turns.removeAt(0));
   }
@@ -50,7 +51,9 @@ const _answer = ChatMessage(
   final container = ProviderContainer(
     retry: (final _, final _) => null,
     overrides: [
-      chatActionProvider.overrideWith(() => _FakeChatAction(turns, histories)),
+      sendChatMessageUseCaseProvider.overrideWithValue(
+        _FakeSendChatMessage(turns, histories),
+      ),
     ],
   );
   addTearDown(container.dispose);

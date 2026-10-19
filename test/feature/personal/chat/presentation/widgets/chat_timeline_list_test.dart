@@ -18,7 +18,6 @@ void main() {
           controller: controller,
           onStarterTap: (final _) {},
           onRetry: () {},
-          onUpgrade: () {},
         ),
       ),
     ),

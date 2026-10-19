@@ -89,7 +89,7 @@ class ChatNotifier extends _$ChatNotifier {
     final history = state.messages.skip(1).toList();
     state = state.copyWith(isLoading: true);
 
-    final stream = ref.read(chatActionProvider.notifier).execute(history);
+    final stream = ref.read(sendChatMessageUseCaseProvider)(history);
     var terminated = false;
     await for (final event in stream) {
       if (_isStale(localGen)) {
