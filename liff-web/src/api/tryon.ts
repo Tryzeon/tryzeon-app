@@ -1,5 +1,6 @@
 import { supabase } from "../lib/supabase";
-import { toApiError } from "./errors";
+import { FunctionsHttpError } from "@supabase/supabase-js";
+import { parseQuotaSnapshot, QuotaExhaustedError, toApiError } from "./errors";
 
 export type Garment =
   | { productId: string }
@@ -21,6 +22,15 @@ interface TryonBody extends TryonOptions {
   garments: Garment[];
 }
 
+async function toTryonError(error: unknown): Promise<Error> {
+  if (error instanceof FunctionsHttpError && (error.context as Response).status === 429) {
+    const body: unknown = await (error.context as Response).json().catch(() => null);
+    const quota = (body as { quota?: unknown } | null)?.quota;
+    return new QuotaExhaustedError(parseQuotaSnapshot(quota));
+  }
+  return toApiError(error);
+}
+
 /**
  * Calls the same tryon function the app uses, with the JWT attached by
  * supabase-js, so the whole job runs under RLS. An omitted field means
@@ -39,7 +49,7 @@ export async function runTryon(
   };
 
   const { data, error } = await supabase.functions.invoke("tryon", { body });
-  if (error) throw toApiError(error);
+  if (error) throw await toTryonError(error);
 
   const imageUrl = (data as { imageUrl?: unknown } | null)?.imageUrl;
   if (typeof imageUrl !== "string" || imageUrl.length === 0) {

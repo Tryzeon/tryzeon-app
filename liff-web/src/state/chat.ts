@@ -68,7 +68,7 @@ export function trimHistory(history: WireMessage[], limit: number): WireMessage[
   return [];
 }
 
-const RATE_LIMIT_TEXT = "今天的對話次數已用完，明天再來聊。";
+const RATE_LIMIT_TEXT = "今天聊得比較多了，休息一下再來找我。";
 const FAILURE_TEXT = "出了點狀況，請稍後再試。";
 const EMPTY_ANSWER_TEXT = "抱歉，我沒有理解，可以再說一次你的需求嗎？";
 

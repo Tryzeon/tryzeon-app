@@ -21,7 +21,7 @@ describe("parseChatLine", () => {
       { role: "assistant", content: [{ type: "text", text: "好" }, { type: "picks", picks: [{ type: "product", id: "p1" }] }] },
     ];
     const items = { products: { p1: { id: "p1", name: "襯衫" } }, wardrobe: {} };
-    const line = JSON.stringify({ type: "done", messages, items, usage: null });
+    const line = JSON.stringify({ type: "done", messages, items });
     expect(parseChatLine(line)).toEqual({ type: "done", messages, items });
   });
 

@@ -78,7 +78,7 @@ describe("chat reducer", () => {
     s = reduce(s, { type: "event", event: { type: "error", code: "RATE_LIMIT_EXCEEDED" } });
     expect(s.turn).toBeNull();
     expect(s.history).toEqual([]);
-    expect(lastEntry(s)).toEqual({ kind: "notice", text: "今天的對話次數已用完，明天再來聊。" });
+    expect(lastEntry(s)).toEqual({ kind: "notice", text: "今天聊得比較多了，休息一下再來找我。" });
   });
 
   it("treats a stream that ends without an answer as a failure", () => {
