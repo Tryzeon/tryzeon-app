@@ -3,7 +3,6 @@
 ## Working notes
 
 - Design/spec docs under `docs/superpowers/` are gitignored and intentionally NOT committed. Write them there for reference, but never `git add -f` or commit them.
-- The user manages commits themselves.
 - Always propose the best-practice, long-term solution. Do not compromise the design to minimize change scope or migration effort, and don't accept "do it this way for now, refactor later" — optimize for correctness and quality, not for avoiding churn.
 - Dart/Flutter conventions (theme, state management, errors, logging) live in `lib/CLAUDE.md`.
 - **No code comments by default:** write self-explanatory code instead. Only annotate a non-obvious trade-off or constraint a reader cannot infer from the code — never restate what a symbol already says.
