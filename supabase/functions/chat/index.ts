@@ -2,12 +2,11 @@
 // rejected with a status code, while anything raised after the 200 is committed
 // arrives as an in-stream error frame. Both render from `classifyCoreError`.
 import "@supabase/functions-js/edge-runtime.d.ts";
-import { getAdminClient, getAuthenticatedUserClient } from "../_shared/supabase.ts";
+import { getAuthenticatedUserClient } from "../_shared/supabase.ts";
 import { coreErrorResponse, jsonError } from "../_shared/http.ts";
 import {
   classifyCoreError,
   runChatAgent,
-  supabaseChatQuota,
 } from "../_shared/chat/index.ts";
 import { parseChatParams } from "./request.ts";
 import { encodeEvent, errorEvent } from "./stream.ts";
@@ -25,9 +24,7 @@ Deno.serve(async (req) => {
 
     const params = parseChatParams(await req.text(), user!.id);
     // The turn runs on the requester's own client, so RLS bounds what its
-    // grounding, searches and hydration can read. The service-role key goes no
-    // further than the quota counter bound here.
-    const quota = supabaseChatQuota(getAdminClient());
+    // grounding, searches and hydration can read.
 
     const stream = new ReadableStream({
       async start(controller) {
@@ -35,12 +32,11 @@ Deno.serve(async (req) => {
         try {
           // The client stores `messages` as sent rather than rebuilding the
           // turn from the tool events, which only drive its progress display.
-          const { messages, items, usage } = await runChatAgent(
+          const { messages, items } = await runChatAgent(
             userClient!,
             { ...params, onEvent: send },
-            { quota },
           );
-          send({ type: "done", messages, items, usage });
+          send({ type: "done", messages, items });
         } catch (err) {
           send(errorEvent(err));
         } finally {

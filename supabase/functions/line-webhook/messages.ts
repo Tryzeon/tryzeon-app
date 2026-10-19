@@ -319,7 +319,7 @@ export function productTryonErrorMessage(
 }
 
 const CHAT_ERROR_TEXT = {
-  quota: "今日對話次數已用完，明天再回來找我。",
+  rate_limit: "今天聊得比較多了，休息一下再來找我。",
   too_long: `訊息太長了，請縮短到 ${LIMITS.MAX_TEXT_LENGTH} 字以內再傳一次。`,
   unknown: "出了點狀況，請稍後再試。",
 } as const;
@@ -329,7 +329,7 @@ export type ChatErrorKind = keyof typeof CHAT_ERROR_TEXT;
 export function chatErrorMessage(kind: ChatErrorKind): object {
   const message = { type: "text", text: CHAT_ERROR_TEXT[kind] };
   switch (kind) {
-    case "quota":
+    case "rate_limit":
       return withQuickReply(message, [cameraRollChip("直接傳衣服試穿")]);
     case "too_long":
       return withQuickReply(message, [messageChip("有什麼推薦", "有什麼推薦的商品")]);

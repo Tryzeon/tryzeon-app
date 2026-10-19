@@ -37,6 +37,8 @@ export function coreErrorResponse(info: CoreErrorInfo): Response {
   switch (info.kind) {
     case "validation":
       return jsonError(info.message, CORE_ERROR_CODE.validation, 400);
+    case "rateLimit":
+      return jsonRateLimited();
     case "quota":
       return jsonQuotaExceeded(info.quota);
     case "busy":

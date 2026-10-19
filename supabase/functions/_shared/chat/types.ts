@@ -1,7 +1,4 @@
-import type { DailyUsage, UsageCounter } from "../quota.ts";
 import type { DbClient } from "../supabase.ts";
-
-export type { UsageCounter };
 
 /**
  * The conversation schema, shared by client storage, the wire (both
@@ -48,7 +45,6 @@ export interface ChatResult {
   answer: AnswerBlock[];
   /** The hydrated rows of every id the answer names; never stored, never sent back. */
   items: AnswerItems;
-  usage: DailyUsage | null;
 }
 
 export const LIMITS = {
@@ -62,8 +58,6 @@ export const LIMITS = {
   MAX_MESSAGES: 400,
   MAX_TEXT_LENGTH: 2000,
 } as const;
-
-export type ChatQuotaFactory = (userId: string) => UsageCounter;
 
 export interface ChatContext {
   systemInstruction: string;

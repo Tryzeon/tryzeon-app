@@ -1,6 +1,6 @@
 export { runChatAgent, type RunChatAgentDeps } from "./run.ts";
 export { ANSWER_LIMITS, windowHistory } from "./logic.ts";
-export { supabaseChatQuota } from "./quota.ts";
+export { CHAT_RATE_LIMIT, checkChatRateLimit } from "./rate-limit.ts";
 export type {
   AgentAnswer,
   AgentRequest,
@@ -8,9 +8,7 @@ export type {
   AnswerHydrator,
   AnswerItems,
   AnswerRows,
-  ChatQuotaFactory,
   ContextLoader,
-  UsageCounter,
 } from "./types.ts";
 
 export { LIMITS } from "./types.ts";

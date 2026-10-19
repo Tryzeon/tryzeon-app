@@ -21,12 +21,17 @@ function getLimiter(
   return limiter;
 }
 
+export interface WindowedLimit {
+  perMinute: number;
+  perDay: number;
+}
+
 /**
  * Fails OPEN: if Upstash is unreachable we allow the request rather than block
  * core functionality on a third-party outage. Rate limiting is abuse
  * prevention, not a billing quota, so occasional misses are acceptable.
  */
-export async function checkRateLimit(
+async function checkRateLimit(
   userId: string,
   bucket: string,
   limit: number,
@@ -40,4 +45,13 @@ export async function checkRateLimit(
     console.error("checkRateLimit error (failing open)", error);
     return true;
   }
+}
+
+export async function checkWindowedRateLimit(
+  userId: string,
+  bucket: string,
+  limit: WindowedLimit,
+): Promise<boolean> {
+  return await checkRateLimit(userId, `${bucket}:minute`, limit.perMinute, 60) &&
+    await checkRateLimit(userId, `${bucket}:day`, limit.perDay, 86400);
 }

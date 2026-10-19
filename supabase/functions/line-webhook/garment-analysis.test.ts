@@ -5,6 +5,7 @@ import {
   describeGarment,
   type DescribeGarmentDeps,
 } from "./garment-analysis.ts";
+import { IMAGE_ANALYSIS_RATE_LIMIT } from "../_shared/image-analysis.ts";
 
 const USER = "user-1";
 const B64 = "aGVsbG8=";
@@ -121,17 +122,16 @@ Deno.test("a rate-limited caller is not analysed at all", async () => {
   assertEquals(warnings.length, 1);
 });
 
-Deno.test("the limit is this channel's own budget, per minute and per day", async () => {
-  const buckets: string[] = [];
+Deno.test("the limit is this channel's own budget at the image-analysis rate", async () => {
+  const checks: unknown[][] = [];
   await describeGarment(USER, B64, seams({
-    checkLimit: (userId, bucket) => {
-      assertEquals(userId, USER);
-      buckets.push(bucket);
+    checkLimit: (...args) => {
+      checks.push(args);
       return Promise.resolve(true);
     },
   }));
 
-  assertEquals(buckets, ["line_garment_analysis:minute", "line_garment_analysis:day"]);
+  assertEquals(checks, [[USER, "line_garment_analysis", IMAGE_ANALYSIS_RATE_LIMIT]]);
 });
 
 // A cap the prompt states but the code does not enforce is a transcript-bloat

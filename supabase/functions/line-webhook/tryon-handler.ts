@@ -364,6 +364,7 @@ function tryonFailureKind(err: unknown): TryonJobErrorKind {
     case "busy":
       return "busy";
     case "validation":
+    case "rateLimit":
       return "unknown";
     case "missingAvatar":
       return "unknown";

@@ -17,6 +17,7 @@ export function tryonErrorResponse(err: unknown): Response | null {
     case "missingAvatar":
       return jsonError("No model photo on file", "NO_AVATAR", 400);
     case "validation":
+    case "rateLimit":
     case "quota":
     case "busy":
       return coreErrorResponse(info);

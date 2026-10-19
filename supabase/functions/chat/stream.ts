@@ -14,8 +14,10 @@ export function errorEvent(err: unknown): Record<string, unknown> {
     return { type: "error", code: "INTERNAL_ERROR" };
   }
   switch (info.kind) {
+    case "rateLimit":
+      return { type: "error", code: CORE_ERROR_CODE.rateLimit };
     case "quota":
-      return { type: "error", code: CORE_ERROR_CODE.quota, usage: info.usage };
+      return { type: "error", code: CORE_ERROR_CODE.quota };
     case "busy":
       return { type: "error", code: CORE_ERROR_CODE.busy };
     case "validation":

@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert";
-import { classifyCoreError, ServiceBusyError } from "./errors.ts";
-import { jsonRateLimited } from "./http.ts";
+import { classifyCoreError, RateLimitedError, ServiceBusyError } from "./errors.ts";
+import { coreErrorResponse } from "./http.ts";
 import { ValidationError } from "./validation.ts";
 import { QuotaExceededError } from "./quota.ts";
 import { SAMPLE_QUOTA } from "./quota.testing.ts";
@@ -39,5 +39,28 @@ Deno.test("coreErrorResponse maps quota to a 429 QUOTA_EXCEEDED carrying the sna
     error: "Quota exceeded",
     code: "QUOTA_EXCEEDED",
     quota: SAMPLE_QUOTA,
+  });
+});
+
+Deno.test("coreErrorResponse keeps an unreadable quota snapshot as null", async () => {
+  const response = coreErrorResponse({ kind: "quota", quota: null });
+  assertEquals(response.status, 429);
+  assertEquals(await response.json(), {
+    error: "Quota exceeded",
+    code: "QUOTA_EXCEEDED",
+    quota: null,
+  });
+});
+
+Deno.test("classifyCoreError classifies RateLimitedError as rateLimit", () => {
+  assertEquals(classifyCoreError(new RateLimitedError()), { kind: "rateLimit" });
+});
+
+Deno.test("coreErrorResponse maps rateLimit to a 429 without a quota payload", async () => {
+  const response = coreErrorResponse({ kind: "rateLimit" });
+  assertEquals(response.status, 429);
+  assertEquals(await response.json(), {
+    error: "Rate limit exceeded",
+    code: "RATE_LIMIT_EXCEEDED",
   });
 });

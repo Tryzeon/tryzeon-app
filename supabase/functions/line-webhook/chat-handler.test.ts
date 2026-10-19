@@ -8,7 +8,7 @@ import {
   type RunChatAgentDeps,
   runChatAgent,
 } from "../_shared/chat/index.ts";
-import { QuotaExceededError } from "../_shared/quota.ts";
+import { RateLimitedError } from "../_shared/errors.ts";
 import { ValidationError } from "../_shared/validation.ts";
 import type { LineApi } from "./line-api.ts";
 import type { ChatMessage } from "../_shared/chat/index.ts";
@@ -54,13 +54,12 @@ function fakeChat(
 ) {
   const seen: { params: ChatParams; deps: RunChatAgentDeps }[] = [];
   const runChat: typeof runChatAgent = (_client, params, deps) => {
-    seen.push({ params, deps });
+    seen.push({ params, deps: deps ?? {} });
     if ("throws" in outcome) return Promise.reject(outcome.throws);
     return Promise.resolve({
       messages: [...outcome.rounds ?? [], { role: "assistant", content: outcome.blocks }],
       answer: outcome.blocks,
       items: outcome.items ?? { products: {}, wardrobe: {} },
-      usage: null,
     });
   };
   return { runChat, seen };
@@ -116,7 +115,7 @@ Deno.test("runs one turn for the incoming message and replies with the answer", 
   assertEquals(replied, [[{ type: "text", text: "為你找到" }]]);
 });
 
-Deno.test("supplies the quota port, substitutes this channel's hydrator, and nothing else", async () => {
+Deno.test("substitutes this channel's hydrator, and nothing else", async () => {
   const chat = fakeChat({ blocks: [{ type: "text", text: "好" }] });
 
   await handleTextMessage(deps({ runChat: chat.runChat }), {
@@ -125,10 +124,7 @@ Deno.test("supplies the quota port, substitutes this channel's hydrator, and not
     text: "找白襯衫",
   });
 
-  // `quota` is required, because the core holds no credential able to charge;
-  // `hydrate` is the one thing this channel renders differently. Anything else
-  // here would be a default the adapter had started second-guessing.
-  assertEquals(Object.keys(chat.seen[0].deps), ["quota", "hydrate"]);
+  assertEquals(Object.keys(chat.seen[0].deps), ["hydrate"]);
 });
 
 Deno.test("rejects an over-long message before charging anything", async () => {
@@ -145,9 +141,9 @@ Deno.test("rejects an over-long message before charging anything", async () => {
   assertStringIncludes(textOf(replied[0][0]), "太長");
 });
 
-Deno.test("reports a spent quota in this channel's words", async () => {
+Deno.test("reports a rate limit in this channel's words", async () => {
   const { line, replied } = fakeLine();
-  const chat = fakeChat({ throws: new QuotaExceededError(null) });
+  const chat = fakeChat({ throws: new RateLimitedError() });
 
   await handleTextMessage(deps({ line, runChat: chat.runChat }), {
     replyToken: "rt",
@@ -155,7 +151,7 @@ Deno.test("reports a spent quota in this channel's words", async () => {
     text: "找白襯衫",
   });
 
-  assertStringIncludes(textOf(replied[0][0]), "今日對話次數");
+  assertEquals(textOf(replied[0][0]), "今天聊得比較多了，休息一下再來找我。");
 });
 
 Deno.test("reports an unexpected failure as a generic apology", async () => {
@@ -272,7 +268,7 @@ Deno.test("the whole turn is written back as the core recorded it", async () => 
 
 Deno.test("a failed turn leaves the conversation untouched", async () => {
   const conversations = fakeConversations();
-  const chat = fakeChat({ throws: new QuotaExceededError(null) });
+  const chat = fakeChat({ throws: new RateLimitedError() });
 
   await handleTextMessage(
     deps({ runChat: chat.runChat, conversations: conversations.store }),

@@ -11,8 +11,8 @@
  * sent the wrong picture. A flag would buy a branch and two more test paths for
  * a case that is better served by telling the truth.
  */
-import { analyzeImage } from "../_shared/image-analysis.ts";
-import { checkRateLimit } from "../_shared/rate-limit.ts";
+import { analyzeImage, IMAGE_ANALYSIS_RATE_LIMIT } from "../_shared/image-analysis.ts";
+import { checkWindowedRateLimit } from "../_shared/rate-limit.ts";
 
 /**
  * The note is replayed to the model on every subsequent turn, so an unbounded
@@ -24,12 +24,10 @@ const MAX_DESCRIPTION_CHARS = 20;
 
 /**
  * Kept apart from the app's `wardrobe_image_analysis` bucket so a LINE spike
- * cannot starve the app's wardrobe uploads; the numbers match the app's. This is
- * the one model call in the webhook that no daily quota bounds.
+ * cannot starve the app's wardrobe uploads. This is the one model call in the
+ * webhook that no daily quota bounds.
  */
 const RATE_BUCKET = "line_garment_analysis";
-const PER_MINUTE = 15;
-const PER_DAY = 200;
 
 export const ANALYSIS_PROMPT =
   `你是時尚衣物標註助手。用一個繁體中文名詞短語描述這張照片裡的衣物，涵蓋顏色、版型、材質、品項，例如「淺藍色寬鬆棉質抽繩長褲」。最多 ${MAX_DESCRIPTION_CHARS} 字。
@@ -52,12 +50,7 @@ export interface DescribeGarmentDeps {
   analyze?: (
     args: { base64: string; prompt: string; schema: Record<string, unknown> },
   ) => Promise<Record<string, unknown>>;
-  checkLimit?: (
-    userId: string,
-    bucket: string,
-    limit: number,
-    windowSeconds: number,
-  ) => Promise<boolean>;
+  checkLimit?: typeof checkWindowedRateLimit;
 }
 
 /**
@@ -70,15 +63,11 @@ export async function describeGarment(
   base64: string,
   deps: DescribeGarmentDeps = {},
 ): Promise<string | null> {
-  const checkLimit = deps.checkLimit ?? checkRateLimit;
+  const checkLimit = deps.checkLimit ?? checkWindowedRateLimit;
   const analyze = deps.analyze ?? analyzeImage;
 
-  if (!await checkLimit(userId, `${RATE_BUCKET}:minute`, PER_MINUTE, 60)) {
-    console.warn("line-webhook garment analysis rate limited (minute):", userId);
-    return null;
-  }
-  if (!await checkLimit(userId, `${RATE_BUCKET}:day`, PER_DAY, 86400)) {
-    console.warn("line-webhook garment analysis rate limited (day):", userId);
+  if (!await checkLimit(userId, RATE_BUCKET, IMAGE_ANALYSIS_RATE_LIMIT)) {
+    console.warn("line-webhook garment analysis rate limited:", userId);
     return null;
   }
 

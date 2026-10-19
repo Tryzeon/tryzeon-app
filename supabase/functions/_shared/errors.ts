@@ -8,13 +8,17 @@ import { ValidationError } from "./validation.ts";
 
 export class ServiceBusyError extends Error {}
 
+export class RateLimitedError extends Error {}
+
 export type CoreErrorInfo =
   | { kind: "validation"; message: string }
+  | { kind: "rateLimit" }
   | { kind: "quota"; quota: QuotaSnapshot | null }
   | { kind: "busy" };
 
 export const CORE_ERROR_CODE: Record<CoreErrorInfo["kind"], string> = {
   validation: "VALIDATION_ERROR",
+  rateLimit: "RATE_LIMIT_EXCEEDED",
   quota: "QUOTA_EXCEEDED",
   busy: "SERVICE_BUSY",
 };
@@ -22,6 +26,9 @@ export const CORE_ERROR_CODE: Record<CoreErrorInfo["kind"], string> = {
 export function classifyCoreError(err: unknown): CoreErrorInfo | null {
   if (err instanceof ValidationError) {
     return { kind: "validation", message: err.message };
+  }
+  if (err instanceof RateLimitedError) {
+    return { kind: "rateLimit" };
   }
   if (err instanceof QuotaExceededError) {
     return { kind: "quota", quota: err.quota };

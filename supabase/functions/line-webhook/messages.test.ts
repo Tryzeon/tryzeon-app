@@ -61,8 +61,8 @@ Deno.test("the welcome leads with what costs the sender nothing", () => {
   ]);
 });
 
-Deno.test("a spent chat quota offers the try-on the sender still has", () => {
-  assertEquals(chipActions(chatErrorMessage("quota")), [
+Deno.test("a chat rate limit offers the try-on the sender still has", () => {
+  assertEquals(chipActions(chatErrorMessage("rate_limit")), [
     { type: "cameraRoll", label: "直接傳衣服試穿" },
   ]);
 });

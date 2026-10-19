@@ -4,7 +4,6 @@ import {
   classifyCoreError,
   LIMITS,
   runChatAgent,
-  supabaseChatQuota,
 } from "../_shared/chat/index.ts";
 import { makeLineAnswerRows } from "./chat-hydrate.ts";
 import { renderAnswer } from "./chat-render.ts";
@@ -99,7 +98,6 @@ export async function handleTextMessage(
       deps.admin,
       { userId, messages: transcript },
       {
-        quota: supabaseChatQuota(deps.admin),
         hydrate: makeLineAnswerRows(deps.imagesBaseUrl),
       },
     );
@@ -128,8 +126,9 @@ function chatFailureKind(err: unknown): ChatErrorKind {
   const info = classifyCoreError(err);
   if (info === null) return "unknown";
   switch (info.kind) {
+    case "rateLimit":
     case "quota":
-      return "quota";
+      return "rate_limit";
     case "busy":
       return "unknown";
     case "validation":

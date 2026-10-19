@@ -1,7 +1,7 @@
 import { assertEquals, assertRejects } from "@std/assert";
 import { runChatAgent } from "./run.ts";
 import { ValidationError } from "../validation.ts";
-import { type DailyUsage, QuotaExceededError } from "../quota.ts";
+import { RateLimitedError } from "../errors.ts";
 import type {
   AgentRequest,
   AgentRunner,
@@ -10,19 +10,10 @@ import type {
   ChatEvent,
   ChatMessage,
   ChatParams,
-  ChatQuotaFactory,
   ContentBlock,
   ContextLoader,
 } from "./types.ts";
 import type { DbClient } from "../supabase.ts";
-
-const USAGE: DailyUsage = {
-  user_id: "u1",
-  usage_date: "2026-07-26",
-  tryon_count: 0,
-  chat_count: 1,
-  video_count: 0,
-};
 
 const client = {} as unknown as DbClient;
 
@@ -34,20 +25,7 @@ const params: ChatParams = {
   messages: [{ role: "user", content: [{ type: "text", text: "找白襯衫" }] }],
 };
 
-function fakeQuota(allowed = true) {
-  const calls: string[] = [];
-  const factory: ChatQuotaFactory = () => ({
-    charge() {
-      calls.push("charge");
-      return Promise.resolve({ allowed, usage: USAGE });
-    },
-    refund() {
-      calls.push("refund");
-      return Promise.resolve();
-    },
-  });
-  return { factory, calls };
-}
+const allow = () => Promise.resolve(true);
 
 const context: ContextLoader = () =>
   Promise.resolve({
@@ -79,9 +57,8 @@ const hydrator = (
   });
 
 Deno.test("answers with item refs in the model's order and their rows alongside", async () => {
-  const quota = fakeQuota();
   const result = await runChatAgent(client, params, {
-    quota: quota.factory,
+    checkLimit: allow,
     loadContext: context,
     runAgent: fakeAgent({
       output: {
@@ -115,8 +92,6 @@ Deno.test("answers with item refs in the model's order and their rows alongside"
     wardrobe: { [WARDROBE_ID]: { id: WARDROBE_ID } },
   });
   assertEquals(result.answer, result.messages.at(-1)!.content);
-  assertEquals(result.usage, USAGE);
-  assertEquals(quota.calls, ["charge"]);
 });
 
 Deno.test("returns the tool rounds followed by the answer, ready to append", async () => {
@@ -131,7 +106,7 @@ Deno.test("returns the tool rounds followed by the answer, ready to append", asy
     },
   ];
   const result = await runChatAgent(client, params, {
-    quota: fakeQuota().factory,
+    checkLimit: allow,
     loadContext: context,
     runAgent: fakeAgent({ output: { blocks: [{ type: "text", text: "好" }] }, rounds })
       .runner,
@@ -144,10 +119,9 @@ Deno.test("returns the tool rounds followed by the answer, ready to append", asy
   ]);
 });
 
-Deno.test("an unusable model output falls back to text and keeps quota spent", async () => {
-  const quota = fakeQuota();
+Deno.test("an unusable model output falls back to text", async () => {
   const result = await runChatAgent(client, params, {
-    quota: quota.factory,
+    checkLimit: allow,
     loadContext: context,
     runAgent: fakeAgent({ output: null }).runner,
     hydrate: hydrator({}),
@@ -155,7 +129,6 @@ Deno.test("an unusable model output falls back to text and keeps quota spent", a
 
   assertEquals(result.messages.length, 1);
   assertEquals(result.messages[0].content.map((b) => b.type), ["text"]);
-  assertEquals(quota.calls, ["charge"]);
 });
 
 Deno.test("stores the answer as answerBlocksOf reads it, keeping ids with no row or no uuid", async () => {
@@ -171,7 +144,7 @@ Deno.test("stores the answer as answerBlocksOf reads it, keeping ids with no row
     },
   ];
   const result = await runChatAgent(client, params, {
-    quota: fakeQuota().factory,
+    checkLimit: allow,
     loadContext: context,
     runAgent: fakeAgent({ output: { blocks } }).runner,
     hydrate: hydrator({}),
@@ -192,7 +165,7 @@ Deno.test("stores the answer as answerBlocksOf reads it, keeping ids with no row
 Deno.test("an answer whose every row reads as nothing falls back to text without hydrating", async () => {
   let hydrated = false;
   const result = await runChatAgent(client, params, {
-    quota: fakeQuota().factory,
+    checkLimit: allow,
     loadContext: context,
     runAgent: fakeAgent({
       output: {
@@ -215,7 +188,7 @@ Deno.test("an answer whose every row reads as nothing falls back to text without
 Deno.test("items holds every hydrated row", async () => {
   const other = "a1b2c3d4-e5f6-4789-8abc-def012345678";
   const result = await runChatAgent(client, params, {
-    quota: fakeQuota().factory,
+    checkLimit: allow,
     loadContext: context,
     runAgent: fakeAgent({
       output: { blocks: [{ type: "picks", picks: [{ type: "product", id: PRODUCT_ID }] }] },
@@ -229,7 +202,7 @@ Deno.test("items holds every hydrated row", async () => {
 Deno.test("empty blocks fall back to text without hydrating", async () => {
   let hydrated = false;
   const result = await runChatAgent(client, params, {
-    quota: fakeQuota().factory,
+    checkLimit: allow,
     loadContext: context,
     runAgent: fakeAgent({ output: { blocks: [] } }).runner,
     hydrate: () => {
@@ -244,7 +217,7 @@ Deno.test("empty blocks fall back to text without hydrating", async () => {
 
 Deno.test("a non-object entry in blocks is dropped", async () => {
   const result = await runChatAgent(client, params, {
-    quota: fakeQuota().factory,
+    checkLimit: allow,
     loadContext: context,
     runAgent: fakeAgent({
       output: { blocks: [null, "x", 3, [1], { type: "text", text: "好" }] },
@@ -257,7 +230,7 @@ Deno.test("a non-object entry in blocks is dropped", async () => {
 
 Deno.test("blocks that are all non-objects fall back to text", async () => {
   const result = await runChatAgent(client, params, {
-    quota: fakeQuota().factory,
+    checkLimit: allow,
     loadContext: context,
     runAgent: fakeAgent({ output: { blocks: [null, "x"] } }).runner,
     hydrate: hydrator({}),
@@ -277,7 +250,7 @@ const OUTFIT_BLOCK = {
 
 Deno.test("answers with an outfits block as stored, and every piece's row alongside", async () => {
   const result = await runChatAgent(client, params, {
-    quota: fakeQuota().factory,
+    checkLimit: allow,
     loadContext: context,
     runAgent: fakeAgent({ output: { blocks: [OUTFIT_BLOCK] } }).runner,
     hydrate: hydrator(
@@ -295,7 +268,7 @@ Deno.test("answers with an outfits block as stored, and every piece's row alongs
 
 Deno.test("an outfit with a missing row is stored whole", async () => {
   const result = await runChatAgent(client, params, {
-    quota: fakeQuota().factory,
+    checkLimit: allow,
     loadContext: context,
     runAgent: fakeAgent({ output: { blocks: [OUTFIT_BLOCK] } }).runner,
     hydrate: hydrator({ [PRODUCT_ID]: { id: PRODUCT_ID, name: "襯衫" } }),
@@ -308,7 +281,7 @@ Deno.test("passes the loaded grounding through to the agent", async () => {
   const agent = fakeAgent({ output: { blocks: [{ type: "text", text: "好" }] } });
   const events: ChatEvent[] = [];
   await runChatAgent(client, { ...params, onEvent: (ev) => events.push(ev) }, {
-    quota: fakeQuota().factory,
+    checkLimit: allow,
     loadContext: context,
     runAgent: agent.runner,
     hydrate: hydrator({}),
@@ -322,47 +295,61 @@ Deno.test("passes the loaded grounding through to the agent", async () => {
   assertEquals(typeof agent.seen[0].onEvent, "function");
 });
 
-Deno.test("rejects over quota without running the agent", async () => {
-  const quota = fakeQuota(false);
+Deno.test("rejects with RateLimitedError when checkLimit denies and never loads context", async () => {
+  let loaded = false;
   let agentCalled = false;
   await assertRejects(
     () =>
       runChatAgent(client, params, {
-        quota: quota.factory,
-        loadContext: context,
+        checkLimit: () => Promise.resolve(false),
+        loadContext: () => {
+          loaded = true;
+          return context(client, "u1");
+        },
         runAgent: () => {
           agentCalled = true;
           return Promise.resolve({ output: null, rounds: [] });
         },
         hydrate: hydrator({}),
       }),
-    QuotaExceededError,
+    RateLimitedError,
   );
+  assertEquals(loaded, false);
   assertEquals(agentCalled, false);
-  assertEquals(quota.calls, ["charge"]);
 });
 
-Deno.test("refunds when the agent loop throws, and rethrows the original error", async () => {
-  const quota = fakeQuota();
+Deno.test("passes the turn's userId to checkLimit", async () => {
+  const seen: string[] = [];
+  await runChatAgent(client, params, {
+    checkLimit: (userId) => {
+      seen.push(userId);
+      return Promise.resolve(true);
+    },
+    loadContext: context,
+    runAgent: fakeAgent({ output: null }).runner,
+    hydrate: hydrator({}),
+  });
+  assertEquals(seen, ["u1"]);
+});
+
+Deno.test("rethrows the original error when the agent loop throws", async () => {
   const boom = new Error("vertex exploded");
   const err = await assertRejects(() =>
     runChatAgent(client, params, {
-      quota: quota.factory,
+      checkLimit: allow,
       loadContext: context,
       runAgent: () => Promise.reject(boom),
       hydrate: hydrator({}),
     })
   );
   assertEquals(err, boom);
-  assertEquals(quota.calls, ["charge", "refund"]);
 });
 
-Deno.test("refunds when hydration fails — a lost row is not a graceful answer", async () => {
-  const quota = fakeQuota();
+Deno.test("fails a turn whose hydration fails — a lost row is not a graceful answer", async () => {
   await assertRejects(
     () =>
       runChatAgent(client, params, {
-        quota: quota.factory,
+        checkLimit: allow,
         loadContext: context,
         runAgent: fakeAgent({
           output: { blocks: [{ type: "picks", picks: [{ type: "product", id: PRODUCT_ID }] }] },
@@ -372,49 +359,22 @@ Deno.test("refunds when hydration fails — a lost row is not a graceful answer"
     Error,
     "db down",
   );
-  assertEquals(quota.calls, ["charge", "refund"]);
 });
 
-Deno.test("refunds when grounding fails", async () => {
-  const quota = fakeQuota();
-  await assertRejects(() =>
-    runChatAgent(client, params, {
-      quota: quota.factory,
-      loadContext: () => Promise.reject(new Error("no categories")),
-      runAgent: fakeAgent({ output: null }).runner,
-      hydrate: hydrator({}),
-    })
-  );
-  assertEquals(quota.calls, ["charge", "refund"]);
-});
-
-Deno.test("a refund that itself fails does not mask the original error", async () => {
-  const boom = new Error("vertex exploded");
-  const err = await assertRejects(() =>
-    runChatAgent(client, params, {
-      quota: () => ({
-        charge: () => Promise.resolve({ allowed: true, usage: USAGE }),
-        refund: () => Promise.reject(new Error("refund exploded")),
-      }),
-      loadContext: context,
-      runAgent: () => Promise.reject(boom),
-      hydrate: hydrator({}),
-    })
-  );
-  assertEquals(err, boom);
-});
-
-Deno.test("validates before charging anything", async () => {
-  const quota = fakeQuota();
+Deno.test("validates before checking the limit", async () => {
+  let checked = false;
   await assertRejects(
     () =>
       runChatAgent(client, { userId: "u1", messages: [] }, {
-        quota: quota.factory,
+        checkLimit: () => {
+          checked = true;
+          return Promise.resolve(true);
+        },
         loadContext: context,
         runAgent: fakeAgent({ output: null }).runner,
         hydrate: hydrator({}),
       }),
     ValidationError,
   );
-  assertEquals(quota.calls, []);
+  assertEquals(checked, false);
 });

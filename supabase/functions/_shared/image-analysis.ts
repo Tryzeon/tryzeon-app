@@ -3,7 +3,7 @@ import { vertexModel } from "./vertex/provider.ts";
 import { analysisModel } from "./vertex/config.ts";
 import { detectMimeType } from "./image-utils.ts";
 import { jsonError, jsonRateLimited } from "./http.ts";
-import { checkRateLimit } from "./rate-limit.ts";
+import { checkWindowedRateLimit, type WindowedLimit } from "./rate-limit.ts";
 
 export const MAX_BASE64_LENGTH = 8 * 1024 * 1024;
 
@@ -21,15 +21,18 @@ export function validateBase64(base64: unknown): ValidationResult {
   return { ok: true, value: base64 };
 }
 
+export const IMAGE_ANALYSIS_RATE_LIMIT: WindowedLimit = { perMinute: 15, perDay: 200 };
+
 export async function checkImageAnalysisRateLimit(
   userId: string,
   bucketPrefix: string,
 ): Promise<Response | null> {
-  const okMinute = await checkRateLimit(userId, `${bucketPrefix}:minute`, 15, 60);
-  if (!okMinute) return jsonRateLimited();
-  const okDay = await checkRateLimit(userId, `${bucketPrefix}:day`, 200, 86400);
-  if (!okDay) return jsonRateLimited();
-  return null;
+  const allowed = await checkWindowedRateLimit(
+    userId,
+    bucketPrefix,
+    IMAGE_ANALYSIS_RATE_LIMIT,
+  );
+  return allowed ? null : jsonRateLimited();
 }
 
 /**

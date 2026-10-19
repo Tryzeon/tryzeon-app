@@ -43,12 +43,11 @@ const someProduct: LineProduct = {
 function fakeChat(blocks: AnswerBlock[]) {
   const seen: { params: ChatParams; deps: RunChatAgentDeps }[] = [];
   const runChat: typeof runChatAgent = (_client, params, deps) => {
-    seen.push({ params, deps });
+    seen.push({ params, deps: deps ?? {} });
     return Promise.resolve({
       messages: [{ role: "assistant", content: blocks }],
       answer: blocks,
       items: { products: {}, wardrobe: {} },
-      usage: null,
     });
   };
   return { runChat, seen };
@@ -76,7 +75,6 @@ Deno.test("a chat turn sees the try-on note the previous turn recorded", async (
         kind: "image",
         imageUrl: "https://img.example/result.jpg",
         garmentType: "top",
-        usage: null,
         // deno-lint-ignore no-explicit-any
       } as any),
   };
