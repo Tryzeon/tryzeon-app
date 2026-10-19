@@ -9,13 +9,12 @@ export class ApiError extends Error {
 
 /**
  * supabase-js wraps every non-2xx in a FunctionsHttpError whose message is
- * always "Edge Function returned a non-2xx status code" — a used-up quota and a
- * failed generation look identical. Telling them apart means reading the status,
- * which sits on the `context` Response and can be read synchronously.
+ * always "Edge Function returned a non-2xx status code"; the status that tells
+ * failures apart sits on the `context` Response and can be read synchronously.
  *
- * Takes the status only, not the `code` in the body: reading the body is async,
- * and every failure that currently needs its own wording (429 quota, 422
- * generation failure) is already distinguishable by status alone.
+ * Takes the status only, not the body: a spent try-on quota shares 429 with
+ * every other rate limit and only its body's code tells them apart, so try-on
+ * reads that async through `toTryonError` first.
  */
 export function toApiError(error: unknown): Error {
   if (!(error instanceof FunctionsHttpError)) {
@@ -83,6 +82,19 @@ export function parseQuotaSnapshot(value: unknown): QuotaSnapshot | null {
     return null;
   }
   return q as unknown as QuotaSnapshot;
+}
+
+const QUOTA_EXCEEDED_CODE = "QUOTA_EXCEEDED";
+
+export async function toTryonError(error: unknown): Promise<Error> {
+  if (error instanceof FunctionsHttpError && (error.context as Response).status === 429) {
+    const body: unknown = await (error.context as Response).json().catch(() => null);
+    const { code, quota } = (body ?? {}) as { code?: unknown; quota?: unknown };
+    if (code === QUOTA_EXCEEDED_CODE) {
+      return new QuotaExceededError(parseQuotaSnapshot(quota));
+    }
+  }
+  return toApiError(error);
 }
 
 export function tryonFailureMessage(err: unknown): string {

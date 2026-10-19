@@ -1,5 +1,12 @@
+import { FunctionsHttpError } from "@supabase/supabase-js";
 import { describe, expect, it } from "vitest";
-import { ApiError, QuotaExhaustedError, type QuotaSnapshot, tryonFailureMessage } from "./errors";
+import {
+  ApiError,
+  QuotaExceededError,
+  type QuotaSnapshot,
+  toTryonError,
+  tryonFailureMessage,
+} from "./errors";
 
 const snapshot = (tier: QuotaSnapshot["tier"], period: QuotaSnapshot["period"]): QuotaSnapshot => ({
   tier,
@@ -36,5 +43,49 @@ describe("tryonFailureMessage", () => {
     expect(tryonFailureMessage(new ApiError("x", 422))).toBe("這張照片沒能生成，請稍後再試。");
     expect(tryonFailureMessage(new ApiError("x", 429))).toBe("操作太頻繁，請稍後再試。");
     expect(tryonFailureMessage(new Error("boom"))).toBe("出了點狀況，請稍後再試。");
+  });
+});
+
+describe("toTryonError", () => {
+  const httpError = (status: number, body: string) =>
+    new FunctionsHttpError(new Response(body, { status }));
+
+  it("turns QUOTA_EXCEEDED into QuotaExceededError carrying the snapshot", async () => {
+    const quota = snapshot("pro", "month");
+    const err = await toTryonError(
+      httpError(429, JSON.stringify({ code: "QUOTA_EXCEEDED", quota })),
+    );
+    expect(err).toBeInstanceOf(QuotaExceededError);
+    expect((err as QuotaExceededError).quota).toEqual(quota);
+  });
+
+  it("drops a malformed snapshot", async () => {
+    const err = await toTryonError(
+      httpError(
+        429,
+        JSON.stringify({ code: "QUOTA_EXCEEDED", quota: { tier: "gold", period: "month" } }),
+      ),
+    );
+    expect(err).toBeInstanceOf(QuotaExceededError);
+    expect((err as QuotaExceededError).quota).toBeNull();
+  });
+
+  it.each([
+    ["a fair-use rate limit", JSON.stringify({ code: "RATE_LIMIT_EXCEEDED" })],
+    ["a 429 without our code", JSON.stringify({ quota: snapshot("pro", "month") })],
+    ["an unreadable body", "<html>"],
+    ["an empty body", ""],
+  ])("keeps %s a neutral rate limit, not a spent quota", async (_, body) => {
+    const err = await toTryonError(httpError(429, body));
+    expect(err).not.toBeInstanceOf(QuotaExceededError);
+    expect(err).toBeInstanceOf(ApiError);
+    expect((err as ApiError).status).toBe(429);
+    expect(tryonFailureMessage(err)).toBe("操作太頻繁，請稍後再試。");
+  });
+
+  it("maps other statuses to ApiError", async () => {
+    const err = await toTryonError(httpError(422, "{}"));
+    expect(err).toBeInstanceOf(ApiError);
+    expect((err as ApiError).status).toBe(422);
   });
 });

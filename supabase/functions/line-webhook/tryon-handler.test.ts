@@ -61,7 +61,6 @@ function baseDeps(): TryonHandlerDeps {
         kind: "image",
         imageUrl: "https://img.example/result.jpg",
         garmentType: "top",
-        usage: null,
         // deno-lint-ignore no-explicit-any
       } as any),
   };
@@ -130,7 +129,6 @@ Deno.test("a sender on a preset model is tried on, not asked to choose one", asy
           kind: "image",
           imageUrl: "https://img.example/result.jpg",
           garmentType: "top",
-          usage: null,
           // deno-lint-ignore no-explicit-any
         } as any);
       },
@@ -272,7 +270,6 @@ Deno.test("the photo is described from the same bytes the try-on wears", async (
           kind: "image",
           imageUrl: "https://img.example/result.jpg",
           garmentType: "top",
-          usage: null,
           // deno-lint-ignore no-explicit-any
         } as any);
       },
@@ -355,7 +352,6 @@ Deno.test("the product is named while waiting, and tried on by reference", async
           kind: "image",
           imageUrl: "https://img.example/result.jpg",
           garmentType: "top",
-          usage: null,
           // deno-lint-ignore no-explicit-any
         } as any);
       },
@@ -621,7 +617,6 @@ Deno.test("a product try-on hands the job a try-on recorder", async () => {
           kind: "image",
           imageUrl: "https://img.example/result.jpg",
           garmentType: "top",
-          usage: null,
           // deno-lint-ignore no-explicit-any
         } as any);
         // deno-lint-ignore no-explicit-any
@@ -645,7 +640,6 @@ Deno.test("a product try-on puts no avatar on the job params", async () => {
           kind: "image",
           imageUrl: "https://img.example/result.jpg",
           garmentType: "top",
-          usage: null,
           // deno-lint-ignore no-explicit-any
         } as any);
         // deno-lint-ignore no-explicit-any
@@ -742,7 +736,6 @@ Deno.test("a wardrobe try-on sends the core an id, never a path", async () => {
           kind: "image",
           imageUrl: "https://img.example/result.jpg",
           garmentType: "top",
-          usage: null,
           // deno-lint-ignore no-explicit-any
         } as any);
       },
@@ -920,7 +913,6 @@ Deno.test("an outfit is named while waiting, worn whole in its order, and its ca
           kind: "image",
           imageUrl: "https://img.example/result.jpg",
           garmentType: "top",
-          usage: null,
           // deno-lint-ignore no-explicit-any
         } as any);
       },

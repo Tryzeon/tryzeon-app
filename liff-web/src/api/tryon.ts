@@ -1,6 +1,5 @@
 import { supabase } from "../lib/supabase";
-import { FunctionsHttpError } from "@supabase/supabase-js";
-import { parseQuotaSnapshot, QuotaExhaustedError, toApiError } from "./errors";
+import { toTryonError } from "./errors";
 
 export type Garment =
   | { productId: string }
@@ -20,15 +19,6 @@ export interface TryonOptions {
 interface TryonBody extends TryonOptions {
   mode: "image";
   garments: Garment[];
-}
-
-async function toTryonError(error: unknown): Promise<Error> {
-  if (error instanceof FunctionsHttpError && (error.context as Response).status === 429) {
-    const body: unknown = await (error.context as Response).json().catch(() => null);
-    const quota = (body as { quota?: unknown } | null)?.quota;
-    return new QuotaExhaustedError(parseQuotaSnapshot(quota));
-  }
-  return toApiError(error);
 }
 
 /**
