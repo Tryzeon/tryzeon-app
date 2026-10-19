@@ -113,6 +113,33 @@ export type Database = {
           },
         ]
       }
+      feature_usage: {
+        Row: {
+          feature: Database["public"]["Enums"]["usage_feature"]
+          period: Database["public"]["Enums"]["quota_period"]
+          used: number
+          user_id: string
+          window_end: string
+          window_start: string
+        }
+        Insert: {
+          feature: Database["public"]["Enums"]["usage_feature"]
+          period: Database["public"]["Enums"]["quota_period"]
+          used?: number
+          user_id: string
+          window_end: string
+          window_start: string
+        }
+        Update: {
+          feature?: Database["public"]["Enums"]["usage_feature"]
+          period?: Database["public"]["Enums"]["quota_period"]
+          used?: number
+          user_id?: string
+          window_end?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       line_user_links: {
         Row: {
           created_at: string
@@ -406,7 +433,9 @@ export type Database = {
           chat_limit: number
           created_at: string
           id: string
+          tryon_image_quota: number
           tryon_limit: number
+          tryon_video_quota: number
           video_limit: number
           wardrobe_limit: number
         }
@@ -414,7 +443,9 @@ export type Database = {
           chat_limit: number
           created_at?: string
           id: string
+          tryon_image_quota: number
           tryon_limit: number
+          tryon_video_quota: number
           video_limit?: number
           wardrobe_limit: number
         }
@@ -422,7 +453,9 @@ export type Database = {
           chat_limit?: number
           created_at?: string
           id?: string
+          tryon_image_quota?: number
           tryon_limit?: number
+          tryon_video_quota?: number
           video_limit?: number
           wardrobe_limit?: number
         }
@@ -431,18 +464,24 @@ export type Database = {
       subscriptions: {
         Row: {
           created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
           tier: string
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
           tier?: string
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
           tier?: string
           updated_at?: string
           user_id?: string
@@ -694,10 +733,18 @@ export type Database = {
     }
     Functions: {
       cleanup_old_daily_usage: { Args: never; Returns: undefined }
+      consume_quota: {
+        Args: {
+          p_feature: Database["public"]["Enums"]["usage_feature"]
+          p_user_id: string
+        }
+        Returns: Json
+      }
       decrement_feature_usage: {
         Args: { p_feature_name: string; p_user_id: string }
         Returns: boolean
       }
+      get_quota_snapshot: { Args: never; Returns: Json }
       get_shop_product: { Args: { p_id: string }; Returns: Json }
       increment_feature_usage: {
         Args: { p_feature_name: string; p_user_id: string }
@@ -733,6 +780,28 @@ export type Database = {
         Args: { p_product_ids: string[]; p_user_id: string }
         Returns: undefined
       }
+      quota_months_elapsed: {
+        Args: { p_from: string; p_to: string }
+        Returns: number
+      }
+      quota_snapshot: { Args: { p_user_id: string }; Returns: Json }
+      quota_window: {
+        Args: {
+          p_now: string
+          p_period_end: string
+          p_period_start: string
+        }
+        Returns: Record<string, unknown>
+      }
+      release_quota: {
+        Args: {
+          p_feature: Database["public"]["Enums"]["usage_feature"]
+          p_period: Database["public"]["Enums"]["quota_period"]
+          p_user_id: string
+          p_window_start: string
+        }
+        Returns: undefined
+      }
       visible_email: { Args: { p_email: string }; Returns: string }
     }
     Enums: {
@@ -750,10 +819,12 @@ export type Database = {
       product_gender: "male" | "female" | "unisex"
       product_season: "spring" | "summer" | "autumn" | "winter"
       product_thickness: "low" | "medium" | "high"
+      quota_period: "day" | "month"
       store_channel: "physical" | "online"
       tryon_generation_mode: "image" | "video"
       tryon_generation_status: "pending" | "succeeded" | "failed"
       tryon_rating: "like" | "dislike"
+      usage_feature: "tryon_image" | "tryon_video"
       user_gender: "female" | "male"
     }
     CompositeTypes: {
@@ -900,10 +971,12 @@ export const Constants = {
       product_gender: ["male", "female", "unisex"],
       product_season: ["spring", "summer", "autumn", "winter"],
       product_thickness: ["low", "medium", "high"],
+      quota_period: ["day", "month"],
       store_channel: ["physical", "online"],
       tryon_generation_mode: ["image", "video"],
       tryon_generation_status: ["pending", "succeeded", "failed"],
       tryon_rating: ["like", "dislike"],
+      usage_feature: ["tryon_image", "tryon_video"],
       user_gender: ["female", "male"],
     },
   },

@@ -1,7 +1,7 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 import { type DbClient, getAdminClient } from "../_shared/supabase.ts";
 import { json } from "../_shared/http.ts";
-import { resolveTier } from "./entitlements.ts";
+import { resolveSubscription } from "./entitlements.ts";
 import { fetchSubscriber } from "./revenuecat-api.ts";
 import { isAuthorized } from "./authorization.ts";
 
@@ -54,11 +54,16 @@ async function syncSubscription(admin: DbClient, appUserId: string): Promise<voi
   }
 
   const subscriber = await fetchSubscriber(API_KEY, appUserId);
-  const tier = resolveTier(subscriber, new Date());
+  const { tier, periodStart, periodEnd } = resolveSubscription(subscriber, new Date());
 
   const { error } = await admin
     .from(SUBSCRIPTIONS_TABLE)
-    .upsert({ user_id: appUserId, tier }, { onConflict: "user_id" });
+    .upsert({
+      user_id: appUserId,
+      tier,
+      current_period_start: periodStart,
+      current_period_end: periodEnd,
+    }, { onConflict: "user_id" });
 
   if (!error) return;
 

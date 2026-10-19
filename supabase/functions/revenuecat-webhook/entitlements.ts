@@ -3,7 +3,8 @@ export interface SubscriberEntitlement {
   expires_date?: string | null;
   grace_period_expires_date?: string | null;
   product_identifier?: string;
-  purchase_date?: string;
+  /** The latest purchase or renewal, i.e. the start of the current period. */
+  purchase_date: string;
 }
 
 export interface Subscriber {
@@ -44,19 +45,37 @@ function isActive(entitlement: SubscriberEntitlement, now: Date): boolean {
   return Number.isFinite(deadline) && deadline > now.getTime();
 }
 
+export interface ResolvedSubscription {
+  tier: SubscriptionTier;
+  periodStart: string | null;
+  periodEnd: string | null;
+}
+
+const FREE_SUBSCRIPTION: ResolvedSubscription = {
+  tier: SUBSCRIPTION_TIER.free,
+  periodStart: null,
+  periodEnd: null,
+};
+
 /**
  * The customer's whole entitlement set decides the tier, never a single event.
  * RevenueCat does not guarantee webhook ordering, and one entitlement expiring
  * says nothing about the others — a sandbox subscription lapsing while a
  * dashboard grant is active must not drop the customer to free.
  */
-export function resolveTier(subscriber: Subscriber, now: Date): SubscriptionTier {
+export function resolveSubscription(subscriber: Subscriber, now: Date): ResolvedSubscription {
   const entitlements = subscriber.entitlements ?? {};
 
   for (const tier of TIER_PRECEDENCE) {
     const entitlement = entitlements[tier];
-    if (entitlement && isActive(entitlement, now)) return tier;
+    if (entitlement && isActive(entitlement, now)) {
+      return {
+        tier,
+        periodStart: entitlement.purchase_date,
+        periodEnd: entitlement.expires_date ?? null,
+      };
+    }
   }
 
-  return SUBSCRIPTION_TIER.free;
+  return FREE_SUBSCRIPTION;
 }
