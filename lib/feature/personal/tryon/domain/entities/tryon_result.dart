@@ -1,5 +1,4 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 
 part 'tryon_result.freezed.dart';
@@ -11,7 +10,6 @@ sealed class TryonResult with _$TryonResult {
     required final TryonMode mode,
     final String? imageUrl,
     final String? videoUrl,
-    final DailyUsage? usage,
   }) = _TryonResult;
 
   const TryonResult._();

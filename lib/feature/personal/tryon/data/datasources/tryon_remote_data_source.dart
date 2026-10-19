@@ -2,11 +2,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/data/errors/api_error_code.dart';
 import 'package:tryzeon/core/data/utils/decode_function_response.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
-import 'package:tryzeon/feature/common/daily_usage/data/exceptions/usage_limit_exception.dart';
-import 'package:tryzeon/feature/common/daily_usage/data/mappers/daily_usage_payload.dart';
+import 'package:tryzeon/feature/common/usage_quota/data/mappers/usage_quota_payload.dart';
 import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_function_request.dart';
 import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_response_dto.dart';
 import 'package:tryzeon/feature/personal/tryon/data/exceptions/avatar_missing_exception.dart';
+import 'package:tryzeon/feature/personal/tryon/data/exceptions/quota_exceeded_exception.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 
 class TryonRemoteDataSource {
@@ -41,8 +41,8 @@ class TryonRemoteDataSource {
       final body = e.details;
       if (body is! Map) rethrow;
       final AppException? translated = switch (body['code']) {
-        ApiErrorCode.rateLimitExceeded => UsageLimitException(
-          usage: tryParseDailyUsagePayload(body['usage']),
+        ApiErrorCode.quotaExceeded => QuotaExceededException(
+          quota: tryParseUsageQuotaPayload(body['quota']),
         ),
         _noAvatarCode => const AvatarMissingException(),
         _aiGenerationFailedCode => const ServerException('AI 無法辨識圖片，請換一張試試'),

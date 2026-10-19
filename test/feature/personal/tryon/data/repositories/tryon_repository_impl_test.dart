@@ -1,6 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tryzeon/feature/common/daily_usage/data/dtos/daily_usage_dto.dart';
-import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
 import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_function_request.dart';
 import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_response_dto.dart';
@@ -37,38 +35,16 @@ void main() {
 
   test('combines the response with the id and mode of the request', () async {
     final result = await run(
-      TryonResponseDto(
-        videoUrl: 'https://cdn/v.mp4',
-        usage: DailyUsageDto(
-          userId: 'u1',
-          usageDate: DateTime(2026, 10, 12),
-          tryonCount: 0,
-          chatCount: 0,
-          videoCount: 1,
-        ),
-      ),
+      const TryonResponseDto(videoUrl: 'https://cdn/v.mp4'),
     );
 
     expect(
       result,
-      TryonResult(
+      const TryonResult(
         id: 'r1',
         mode: TryonMode.video,
         videoUrl: 'https://cdn/v.mp4',
-        usage: DailyUsage(
-          userId: 'u1',
-          usageDate: DateTime(2026, 10, 12),
-          tryonCount: 0,
-          chatCount: 0,
-          videoCount: 1,
-        ),
       ),
     );
-  });
-
-  test('a response without usage leaves it empty', () async {
-    final result = await run(const TryonResponseDto(videoUrl: 'v'));
-
-    expect(result?.usage, isNull);
   });
 }

@@ -1,11 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
-import 'package:tryzeon/feature/common/daily_usage/data/exceptions/usage_limit_exception.dart';
-import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
+import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
+import 'package:tryzeon/feature/common/usage_quota/domain/entities/usage_quota.dart';
 import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_function_request.dart';
 import 'package:tryzeon/feature/personal/tryon/data/exceptions/avatar_missing_exception.dart';
+import 'package:tryzeon/feature/personal/tryon/data/exceptions/quota_exceeded_exception.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_engine.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 
@@ -18,6 +19,14 @@ const _request = TryonFunctionRequest(
   garments: [],
 );
 
+const _quota = {
+  'tier': 'pro',
+  'period': 'month',
+  'resetsAt': '2026-11-04T16:00:00+00:00',
+  'tryonImage': {'used': 250, 'quota': 250},
+  'tryonVideo': {'used': 1, 'quota': 3},
+};
+
 void main() {
   TryonRemoteDataSource dataSource(final FunctionException error) =>
       TryonRemoteDataSource(
@@ -28,21 +37,13 @@ void main() {
     FakeSupabaseClient(FakeFunctionsClient(data: data)),
   );
 
-  test('decodes the generated image and usage', () async {
+  test('decodes the generated image', () async {
     final response = await answering({
       'imageUrl': 'https://cdn/r.png',
-      'usage': {
-        'user_id': 'u1',
-        'usage_date': '2026-10-11',
-        'tryon_count': 1,
-        'chat_count': 0,
-        'video_count': 0,
-      },
     }).tryon(_request);
 
     expect(response.imageUrl, 'https://cdn/r.png');
     expect(response.videoUrl, isNull);
-    expect(response.usage?.tryonCount, 1);
   });
 
   test('a malformed response surfaces as a ServerException', () async {
@@ -59,57 +60,69 @@ void main() {
     );
   });
 
-  test('a rate limit carries the usage snapshot it was sent with', () async {
+  test('a spent quota carries the snapshot it was sent with', () async {
     final call = dataSource(
       const FunctionException(
         status: 429,
-        details: {
-          'code': 'RATE_LIMIT_EXCEEDED',
-          'usage': {
-            'user_id': 'u1',
-            'usage_date': '2026-10-11',
-            'tryon_count': 3,
-            'chat_count': 0,
-            'video_count': 0,
-          },
-        },
+        details: {'code': 'QUOTA_EXCEEDED', 'quota': _quota},
       ),
     ).tryon(_request);
 
     await expectLater(
       call,
       throwsA(
-        isA<UsageLimitException>().having(
-          (final e) => e.usage,
-          'usage',
-          DailyUsage(
-            userId: 'u1',
-            usageDate: DateTime(2026, 10, 11),
-            tryonCount: 3,
-            chatCount: 0,
-            videoCount: 0,
+        isA<QuotaExceededException>().having(
+          (final e) => e.quota,
+          'quota',
+          UsageQuota(
+            tier: AppSubscriptionTier.pro,
+            period: QuotaPeriod.month,
+            resetsAt: DateTime.utc(2026, 11, 4, 16),
+            tryonImage: const FeatureQuota(used: 250, quota: 250),
+            tryonVideo: const FeatureQuota(used: 1, quota: 3),
           ),
         ),
       ),
     );
   });
 
-  test('a malformed usage snapshot still surfaces the rate limit', () async {
+  test('a malformed quota snapshot still surfaces the spent quota', () async {
     await expectLater(
       dataSource(
         const FunctionException(
           status: 429,
-          details: {'code': 'RATE_LIMIT_EXCEEDED', 'usage': 'not a map'},
+          details: {'code': 'QUOTA_EXCEEDED', 'quota': 'not a map'},
         ),
       ).tryon(_request),
       throwsA(
-        isA<UsageLimitException>().having(
-          (final e) => e.usage,
-          'usage',
+        isA<QuotaExceededException>().having(
+          (final e) => e.quota,
+          'quota',
           isNull,
         ),
       ),
     );
+  });
+
+  test(
+    'a fair-use rate limit is rethrown, not read as a spent quota',
+    () async {
+      const error = FunctionException(
+        status: 429,
+        details: {'code': 'RATE_LIMIT_EXCEEDED'},
+      );
+
+      await expectLater(
+        dataSource(error).tryon(_request),
+        throwsA(same(error)),
+      );
+    },
+  );
+
+  test('a bare 429 is rethrown, not read as a spent quota', () async {
+    const error = FunctionException(status: 429);
+
+    await expectLater(dataSource(error).tryon(_request), throwsA(same(error)));
   });
 
   test('a missing avatar surfaces as an AvatarMissingException', () async {

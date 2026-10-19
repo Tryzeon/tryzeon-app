@@ -116,8 +116,6 @@ void main() {
     });
 
     test('a bare 429 with no code of ours is still a rate limit', () {
-      // `jsonRateLimited` sends the code and the usage together, so a 429
-      // without one has neither: it never reached our handler.
       final failure = mapExceptionToFailure(
         const FunctionException(status: 429),
       );
