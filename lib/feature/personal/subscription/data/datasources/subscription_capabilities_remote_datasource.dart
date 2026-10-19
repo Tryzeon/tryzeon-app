@@ -13,7 +13,7 @@ class SubscriptionCapabilitiesRemoteDataSource {
   ) async {
     final response = await _supabaseClient
         .from(_subscriptionTiersTable)
-        .select()
+        .select('id, wardrobe_limit')
         .eq('id', tier.value)
         .single();
 

@@ -10,7 +10,4 @@ class SubscriptionTierCache {
   late String tier;
 
   late int wardrobeLimit;
-  late int dailyTryonLimit;
-  late int dailyVideoLimit;
-  late int dailyChatLimit;
 }

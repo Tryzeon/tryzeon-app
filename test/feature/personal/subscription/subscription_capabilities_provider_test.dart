@@ -42,13 +42,9 @@ class _FakeCapabilitiesRepository
     final AppSubscriptionTier tier,
   ) async {
     tiersAskedFor.add(tier);
-    final videoLimit = tier == AppSubscriptionTier.max ? 3 : 0;
     return Ok(
       SubscriptionCapabilities(
-        wardrobeLimit: 10,
-        dailyTryonLimit: 5,
-        dailyChatLimit: 5,
-        dailyVideoLimit: videoLimit,
+        wardrobeLimit: tier == AppSubscriptionTier.max ? 500 : 10,
       ),
     );
   }
@@ -98,15 +94,15 @@ void main() {
   test('capabilities follow a tier that arrives after the first one', () async {
     // The customer identity is linked asynchronously at startup, so the first
     // entitlement the app sees can be the anonymous customer's free tier.
-    final locked = firstWhere((final c) => !c.hasVideoAccess);
+    final free = firstWhere((final c) => c.wardrobeLimit == 10);
     revenueCat.push(AppSubscriptionTier.free);
-    await locked;
+    await free;
 
     // RevenueCat then reports the real customer. Nothing invalidates anything by
-    // hand — video access has to unlock on its own.
-    final unlocked = firstWhere((final c) => c.hasVideoAccess);
+    // hand — the paid wardrobe limit has to arrive on its own.
+    final paid = firstWhere((final c) => c.wardrobeLimit == 500);
     revenueCat.push(AppSubscriptionTier.max);
-    await unlocked;
+    await paid;
 
     expect(capabilities.tiersAskedFor, [
       AppSubscriptionTier.free,
@@ -118,7 +114,7 @@ void main() {
     'a RevenueCat failure surfaces as an error, not as the free tier',
     () async {
       // The old pull-based use case folded any RevenueCat failure into the free
-      // tier, which locked video for paying customers whenever the SDK hiccuped.
+      // tier, which shrank paying customers' limits whenever the SDK hiccuped.
       final subscription = container.listen(
         subscriptionCapabilitiesProvider,
         (final _, final _) {},

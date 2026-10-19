@@ -1,4 +1,5 @@
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/feature/common/usage_quota/domain/entities/usage_quota.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
 
 /// Decouples the controller's logic from the UI reaction (haptics,
@@ -25,11 +26,17 @@ class TryonAvatarMissing extends TryonOutcome {
   const TryonAvatarMissing(super.requestId);
 }
 
-/// [isVideo] selects the upgrade copy.
-class TryonRateLimited extends TryonOutcome {
-  const TryonRateLimited(super.requestId, {required this.isVideo});
+/// [isVideo] and [quota] select the limit copy; [quota] is null when the
+/// server sent no snapshot.
+class TryonQuotaExceeded extends TryonOutcome {
+  const TryonQuotaExceeded(
+    super.requestId, {
+    required this.isVideo,
+    this.quota,
+  });
 
   final bool isVideo;
+  final UsageQuota? quota;
 }
 
 class TryonFailed extends TryonOutcome {

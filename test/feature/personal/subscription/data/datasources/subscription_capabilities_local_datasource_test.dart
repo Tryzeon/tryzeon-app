@@ -24,18 +24,8 @@ void main() {
         CacheEntryLocalDataSource(harness.service),
       );
 
-  const pro = SubscriptionCapabilities(
-    wardrobeLimit: 100,
-    dailyTryonLimit: 20,
-    dailyChatLimit: 50,
-    dailyVideoLimit: 3,
-  );
-  const free = SubscriptionCapabilities(
-    wardrobeLimit: 10,
-    dailyTryonLimit: 2,
-    dailyChatLimit: 5,
-    dailyVideoLimit: 0,
-  );
+  const pro = SubscriptionCapabilities(wardrobeLimit: 100);
+  const free = SubscriptionCapabilities(wardrobeLimit: 10);
 
   test('each tier reads back only its own capabilities', () async {
     final local = build();
@@ -59,10 +49,5 @@ void main() {
       await local.getTierCapabilities(AppSubscriptionTier.max),
       isA<CacheMiss<SubscriptionCapabilities>>(),
     );
-  });
-
-  test('video access follows the daily video limit', () {
-    expect(pro.hasVideoAccess, isTrue);
-    expect(free.hasVideoAccess, isFalse);
   });
 }

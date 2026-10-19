@@ -1,13 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:toastification/toastification.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
-import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription_capabilities.dart';
-import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
+import 'package:tryzeon/feature/common/usage_quota/domain/entities/usage_quota.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
@@ -16,6 +18,7 @@ import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_report_
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_gallery_actions.dart';
 import 'package:tryzeon/feature/personal/tryon/providers/tryon_providers.dart';
+import 'package:tryzeon/feature/personal/usage/providers/usage_quota_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 import '../../../../../support/sheet_test_host.dart';
@@ -34,6 +37,15 @@ class _FakeReportRepository implements TryonReportRepository {
   }
 }
 
+class _FakeUsageQuota extends UsageQuotaNotifier {
+  _FakeUsageQuota(this._load);
+
+  final Future<UsageQuota> Function() _load;
+
+  @override
+  Future<UsageQuota> build() => _load();
+}
+
 void main() {
   const piece = OutfitPiece.wardrobe(
     wardrobeItemId: 'w1',
@@ -50,20 +62,24 @@ void main() {
   TryonGalleryNotifier gallery() =>
       container.read(tryonGalleryProvider.notifier);
 
-  void setUpContainer({final Failure? failure}) {
+  Future<UsageQuota> freeQuota() async => UsageQuota(
+    tier: AppSubscriptionTier.free,
+    period: QuotaPeriod.day,
+    resetsAt: DateTime.utc(2026, 10, 19, 16),
+    tryonImage: const FeatureQuota(used: 0, quota: 10),
+    tryonVideo: const FeatureQuota(used: 0, quota: 0),
+  );
+
+  void setUpContainer({
+    final Failure? failure,
+    final Future<UsageQuota> Function()? quota,
+  }) {
     repository = _FakeReportRepository(failure: failure);
     container = ProviderContainer(
       overrides: [
         isAuthenticatedProvider.overrideWithValue(true),
-        subscriptionCapabilitiesProvider.overrideWith(
-          (final ref) => Future.value(
-            const SubscriptionCapabilities(
-              wardrobeLimit: 10,
-              dailyTryonLimit: 10,
-              dailyChatLimit: 10,
-              dailyVideoLimit: 0,
-            ),
-          ),
+        usageQuotaProvider.overrideWith(
+          () => _FakeUsageQuota(quota ?? freeQuota),
         ),
         tryonReportRepositoryProvider.overrideWithValue(repository),
       ],
@@ -130,6 +146,29 @@ void main() {
     await openMenu(tester);
 
     expect(find.text('檢舉此內容'), findsOneWidget);
+  });
+
+  testWidgets(
+    'a finished video try-on cannot regenerate without video access',
+    (final tester) async {
+      setUpContainer();
+      addFinished('a', mode: TryonMode.video);
+      await pumpActions(tester);
+      await openMenu(tester);
+
+      expect(find.text('重新生成'), findsNothing);
+    },
+  );
+
+  testWidgets('a finished video try-on can regenerate while quota loads', (
+    final tester,
+  ) async {
+    setUpContainer(quota: () => Completer<UsageQuota>().future);
+    addFinished('a', mode: TryonMode.video);
+    await pumpActions(tester);
+    await openMenu(tester);
+
+    expect(find.text('重新生成'), findsOneWidget);
   });
 
   testWidgets('a try-on still generating cannot be reported', (

@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/core/router/shells/personal_tab.dart';
 import 'package:tryzeon/core/router/shells/personal_tab_navigator.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
-import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription_capabilities.dart';
-import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
+import 'package:tryzeon/feature/common/usage_quota/domain/entities/usage_quota.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/controllers/tryon_controller.dart';
@@ -19,6 +19,7 @@ import 'package:tryzeon/feature/personal/tryon/presentation/sheets/tryon_mode_sh
 import 'package:tryzeon/feature/personal/tryon/presentation/state/outfit_tray_controller.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_outcome.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/outfit_dock.dart';
+import 'package:tryzeon/feature/personal/usage/providers/usage_quota_providers.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 
 import '../../../../../support/tab_navigator_test_doubles.dart';
@@ -35,6 +36,17 @@ class _RecordingTryonController extends TryonController {
     final List<OutfitPiece> pieces, {
     final TryonMode mode = TryonMode.image,
   }) async => calls.add((pieces, mode));
+}
+
+class _FakeUsageQuota extends UsageQuotaNotifier {
+  @override
+  Future<UsageQuota> build() async => UsageQuota(
+    tier: AppSubscriptionTier.max,
+    period: QuotaPeriod.month,
+    resetsAt: DateTime.utc(2026, 11, 4, 16),
+    tryonImage: const FeatureQuota(used: 0, quota: 600),
+    tryonVideo: const FeatureQuota(used: 0, quota: 10),
+  );
 }
 
 void main() {
@@ -55,14 +67,7 @@ void main() {
         wardrobeItemImageProvider.overrideWith(
           (final ref, final imagePath) => Completer<File>().future,
         ),
-        subscriptionCapabilitiesProvider.overrideWith(
-          (final ref) async => const SubscriptionCapabilities(
-            wardrobeLimit: 100,
-            dailyTryonLimit: 100,
-            dailyChatLimit: 100,
-            dailyVideoLimit: 100,
-          ),
-        ),
+        usageQuotaProvider.overrideWith(_FakeUsageQuota.new),
         tryonControllerProvider.overrideWith(_RecordingTryonController.new),
       ],
     );

@@ -5,13 +5,7 @@ import 'package:tryzeon/feature/personal/subscription/data/mappers/subscription_
 import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription_capabilities.dart';
 
 @AutoMappr([
-  MapType<SubscriptionTierDto, SubscriptionCapabilities>(
-    fields: [
-      Field('dailyTryonLimit', from: 'tryonLimit'),
-      Field('dailyChatLimit', from: 'chatLimit'),
-      Field('dailyVideoLimit', from: 'videoLimit'),
-    ],
-  ),
+  MapType<SubscriptionTierDto, SubscriptionCapabilities>(),
   MapType<SubscriptionCapabilities, SubscriptionTierCache>(),
   MapType<SubscriptionTierCache, SubscriptionCapabilities>(),
 ])

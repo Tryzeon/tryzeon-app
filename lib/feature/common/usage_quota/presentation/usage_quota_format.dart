@@ -8,7 +8,26 @@ String periodLabel(final QuotaPeriod period) => switch (period) {
   QuotaPeriod.month => '本期',
 };
 
-String resetDateLabel(final DateTime resetsAt) {
-  final taipei = resetsAt.toUtc().add(_taipeiUtcOffset);
+String _taipeiMonthDay(final DateTime instant) {
+  final taipei = instant.toUtc().add(_taipeiUtcOffset);
   return '${taipei.month}/${taipei.day}';
+}
+
+/// `M/D` in Taipei time for a monthly period; null for a daily one, whose
+/// reset is always tomorrow and goes unsaid.
+String? resetLabel(final UsageQuota quota) => switch (quota.period) {
+  QuotaPeriod.day => null,
+  QuotaPeriod.month => _taipeiMonthDay(quota.resetsAt),
+};
+
+String exhaustedLabel(final UsageQuota quota, {final String feature = ''}) {
+  final label = '${periodLabel(quota.period)}$feature次數已用完';
+  final reset = resetLabel(quota);
+  return reset == null ? label : '$label，$reset 重置';
+}
+
+String remainingLabel(final UsageQuota quota, final int remaining) {
+  final label = '${periodLabel(quota.period)}剩 $remaining 次';
+  final reset = resetLabel(quota);
+  return reset == null ? label : '$label · $reset 重置';
 }

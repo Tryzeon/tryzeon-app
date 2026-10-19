@@ -26,13 +26,7 @@ class _FakeRemote implements SubscriptionCapabilitiesRemoteDataSource {
   ) async {
     calls++;
     if (error case final error?) throw error;
-    return SubscriptionTierDto(
-      id: tier,
-      wardrobeLimit: 100,
-      tryonLimit: 20,
-      videoLimit: 3,
-      chatLimit: 50,
-    );
+    return SubscriptionTierDto(id: tier, wardrobeLimit: 100);
   }
 
   @override
@@ -55,10 +49,7 @@ void main() {
     await harness.isar.subscriptionTierCaches.putByTier(
       SubscriptionTierCache()
         ..tier = tier
-        ..wardrobeLimit = 10
-        ..dailyTryonLimit = 2
-        ..dailyVideoLimit = 0
-        ..dailyChatLimit = 5,
+        ..wardrobeLimit = 10,
     );
     await harness.isar.cacheEntrys.putByCacheKey(
       CacheEntry()
@@ -105,7 +96,6 @@ void main() {
 
     expect(remote.calls, 0);
     expect(capabilities.wardrobeLimit, 10);
-    expect(capabilities.hasVideoAccess, isFalse);
   });
 
   test('an offline fetch is reported as a network failure', () async {

@@ -393,7 +393,7 @@ void main() {
     await start(_profile(avatar: const Avatar.uploaded('u1/avatar/a.jpg')));
     addPending('r1');
 
-    tryon().outcome = const TryonRateLimited('r1', isVideo: false);
+    tryon().outcome = const TryonQuotaExceeded('r1', isVideo: false);
     await pumpEventQueue();
 
     expect(state(), const TutorialState.inactive());

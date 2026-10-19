@@ -4,14 +4,6 @@ part 'subscription_capabilities.freezed.dart';
 
 @freezed
 sealed class SubscriptionCapabilities with _$SubscriptionCapabilities {
-  const factory SubscriptionCapabilities({
-    required final int wardrobeLimit,
-    required final int dailyTryonLimit,
-    required final int dailyChatLimit,
-    required final int dailyVideoLimit,
-  }) = _SubscriptionCapabilities;
-
-  const SubscriptionCapabilities._();
-
-  bool get hasVideoAccess => dailyVideoLimit > 0;
+  const factory SubscriptionCapabilities({required final int wardrobeLimit}) =
+      _SubscriptionCapabilities;
 }

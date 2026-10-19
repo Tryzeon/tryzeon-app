@@ -51,7 +51,7 @@ class RateLimitFailure extends Failure {
   const RateLimitFailure([super.message]);
 
   @override
-  String get defaultMessage => '使用次數已達上限，請升級您的方案';
+  String get defaultMessage => '操作太頻繁，請稍後再試';
 }
 
 class ServiceBusyFailure extends Failure {

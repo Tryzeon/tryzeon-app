@@ -5,16 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/core/router/shells/personal_tab.dart';
 import 'package:tryzeon/core/router/shells/tab_reselect.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
+import 'package:tryzeon/feature/common/usage_quota/domain/entities/usage_quota.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/preset_avatar.dart';
 import 'package:tryzeon/feature/personal/profile/domain/entities/user_profile.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
-import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription_capabilities.dart';
-import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
@@ -28,6 +28,7 @@ import 'package:tryzeon/feature/personal/tryon/presentation/widgets/model_choice
 import 'package:tryzeon/feature/personal/tryon/presentation/widgets/tryon_avatar_page.dart';
 import 'package:tryzeon/feature/personal/tutorial/presentation/controllers/tutorial_controller.dart';
 import 'package:tryzeon/feature/personal/tutorial/presentation/state/tutorial_state.dart';
+import 'package:tryzeon/feature/personal/usage/providers/usage_quota_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 import '../../../../../support/sheet_test_host.dart';
@@ -95,6 +96,17 @@ final _imageResult = FinishedTryonEntry(
 TryonGalleryState _showing(final TryonGalleryEntry entry) =>
     TryonGalleryState(entries: [entry], currentId: entry.id);
 
+class _FakeUsageQuota extends UsageQuotaNotifier {
+  @override
+  Future<UsageQuota> build() async => UsageQuota(
+    tier: AppSubscriptionTier.free,
+    period: QuotaPeriod.day,
+    resetsAt: DateTime.utc(2026, 10, 19, 16),
+    tryonImage: const FeatureQuota(used: 0, quota: 10),
+    tryonVideo: const FeatureQuota(used: 0, quota: 0),
+  );
+}
+
 void main() {
   const photoSourceTitle = '選擇模特來源';
   const presetTag = '預設模特';
@@ -152,14 +164,7 @@ void main() {
           presetAvatarFileProvider.overrideWith(
             (final ref, final preset) => Completer<File>().future,
           ),
-          subscriptionCapabilitiesProvider.overrideWith(
-            (final ref) async => const SubscriptionCapabilities(
-              wardrobeLimit: 10,
-              dailyTryonLimit: 10,
-              dailyChatLimit: 10,
-              dailyVideoLimit: 0,
-            ),
-          ),
+          usageQuotaProvider.overrideWith(_FakeUsageQuota.new),
         ],
         child: MaterialApp(theme: AppTheme.lightTheme, home: const HomePage()),
       ),

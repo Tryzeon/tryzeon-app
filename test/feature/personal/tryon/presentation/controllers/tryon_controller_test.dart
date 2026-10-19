@@ -19,6 +19,7 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_request.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_result.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_subject.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/failures/quota_exceeded_failure.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_media_repository.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/repositories/tryon_repository.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/usecases/tryon.dart';
@@ -214,15 +215,75 @@ void main() {
     });
 
     test('a failure carries the id of the request that failed', () async {
+      repository.respond = (final _) async => const Err(ServerFailure());
+
+      await container.read(tryonControllerProvider.notifier).tryonFromOutfit([
+        w1,
+      ]);
+
+      final outcome = outcomes.single! as TryonFailed;
+      expect(outcome.requestId, repository.requests.single.requestId);
+      expect(container.read(tryonGalleryProvider).entries, isEmpty);
+    });
+
+    test('a usage limit carries its snapshot and re-reads the quota', () async {
+      await container.read(usageQuotaProvider.future);
+      final exhausted = UsageQuota(
+        tier: AppSubscriptionTier.pro,
+        period: QuotaPeriod.month,
+        resetsAt: DateTime.utc(2026, 11, 4, 16),
+        tryonImage: const FeatureQuota(used: 250, quota: 250),
+        tryonVideo: const FeatureQuota(used: 0, quota: 3),
+      );
+      repository.respond = (final _) async =>
+          Err(QuotaExceededFailure(quota: exhausted));
+
+      await container.read(tryonControllerProvider.notifier).tryonFromOutfit([
+        w1,
+      ], mode: TryonMode.video);
+
+      final outcome = outcomes.single! as TryonQuotaExceeded;
+      expect(outcome.quota, exhausted);
+      expect(outcome.isVideo, isTrue);
+      expect(_FakeUsageQuotaNotifier.refreshes, 1);
+    });
+
+    test('any other failure re-reads the quota too', () async {
+      await container.read(usageQuotaProvider.future);
+      repository.respond = (final _) async => const Err(ServerFailure());
+
+      await container.read(tryonControllerProvider.notifier).tryonFromOutfit([
+        w1,
+      ]);
+
+      expect(_FakeUsageQuotaNotifier.refreshes, 1);
+    });
+
+    test('a spent quota without a snapshot carries no quota', () async {
+      repository.respond = (final _) async => const Err(QuotaExceededFailure());
+
+      await container.read(tryonControllerProvider.notifier).tryonFromOutfit([
+        w1,
+      ]);
+
+      expect((outcomes.single! as TryonQuotaExceeded).quota, isNull);
+    });
+
+    test('a platform rate limit is a failure, not a spent quota', () async {
       repository.respond = (final _) async => const Err(RateLimitFailure());
 
       await container.read(tryonControllerProvider.notifier).tryonFromOutfit([
         w1,
       ]);
 
-      final outcome = outcomes.single! as TryonRateLimited;
-      expect(outcome.requestId, repository.requests.single.requestId);
-      expect(container.read(tryonGalleryProvider).entries, isEmpty);
+      expect(
+        outcomes.single,
+        isA<TryonFailed>().having(
+          (final o) => o.failure,
+          'failure',
+          const RateLimitFailure(),
+        ),
+      );
     });
 
     for (final (label, response)

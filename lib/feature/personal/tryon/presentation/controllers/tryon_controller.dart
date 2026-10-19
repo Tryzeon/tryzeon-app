@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/error/failure_from_error.dart';
-import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/personal/profile/providers/personal_profile_providers.dart';
@@ -12,6 +11,7 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_subject.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/failures/avatar_missing_failure.dart';
+import 'package:tryzeon/feature/personal/tryon/domain/failures/quota_exceeded_failure.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/usecases/tryon.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_entry.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
@@ -89,10 +89,12 @@ class TryonController extends _$TryonController {
           state = TryonCancelled(id);
           return;
         }
+        final isVideo = subject.mode == TryonMode.video;
         state = switch (failure) {
-          RateLimitFailure() => TryonRateLimited(
+          QuotaExceededFailure(:final quota) => TryonQuotaExceeded(
             id,
-            isVideo: subject.mode == TryonMode.video,
+            isVideo: isVideo,
+            quota: quota,
           ),
           AvatarMissingFailure() => TryonAvatarMissing(id),
           _ => TryonFailed(id, failure),

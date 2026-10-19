@@ -8,8 +8,8 @@ import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_preferences.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
-import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_engine.dart';
+import 'package:tryzeon/feature/personal/usage/providers/usage_quota_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 /// The settings view of the try-on sheet, navigated into rather than stacked
@@ -35,11 +35,7 @@ class TryonSettingsView extends HookConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    final hasVideoAccess = ref.watch(
-      subscriptionCapabilitiesProvider.select(
-        (final async) => async.value?.hasVideoAccess ?? false,
-      ),
-    );
+    final hasVideoAccess = ref.watch(hasVideoAccessProvider);
     final stylingController = useTextEditingController(
       text: initial.stylingPrompt,
     );

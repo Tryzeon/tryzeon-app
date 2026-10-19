@@ -113,7 +113,7 @@ class TutorialController extends _$TutorialController {
       case TryonSucceeded():
         state = TutorialState.reviewResult(outcome.requestId);
         unawaited(_persist());
-      case TryonRateLimited():
+      case TryonQuotaExceeded():
         unawaited(complete());
       case TryonFailed() || TryonCancelled() when remaining.isNotEmpty:
         state = TutorialState.generating(remaining);

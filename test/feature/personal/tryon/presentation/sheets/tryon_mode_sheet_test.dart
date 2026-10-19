@@ -6,15 +6,13 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/modules/revenue_cat/domain/entities/app_subscription_entitlement.dart';
 import 'package:tryzeon/core/modules/revenue_cat/providers/revenue_cat_providers.dart';
-import 'package:tryzeon/feature/common/daily_usage/domain/entities/daily_usage.dart';
+import 'package:tryzeon/feature/common/usage_quota/domain/entities/usage_quota.dart';
 import 'package:tryzeon/feature/personal/settings/domain/entities/tryon_preferences.dart';
 import 'package:tryzeon/feature/personal/settings/providers/settings_providers.dart';
-import 'package:tryzeon/feature/personal/subscription/domain/entities/subscription_capabilities.dart';
-import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_engine.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/sheets/tryon_mode_sheet.dart';
-import 'package:tryzeon/feature/personal/usage/providers/daily_usage_providers.dart';
+import 'package:tryzeon/feature/personal/usage/providers/usage_quota_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
 import '../../../../../support/sheet_test_host.dart';
@@ -41,20 +39,13 @@ class _LoadingPreferences extends TryonPreferencesNotifier {
   Future<TryonPreferences> build() => Completer<TryonPreferences>().future;
 }
 
-class _FakeUsage extends DailyUsageToday {
-  _FakeUsage({required this.tryonCount, required this.videoCount});
+class _FakeUsageQuota extends UsageQuotaNotifier {
+  _FakeUsageQuota(this._load);
 
-  final int tryonCount;
-  final int videoCount;
+  final Future<UsageQuota> Function() _load;
 
   @override
-  Future<DailyUsage> build() async => DailyUsage(
-    userId: 'u1',
-    usageDate: DateTime(2026),
-    tryonCount: tryonCount,
-    chatCount: 0,
-    videoCount: videoCount,
-  );
+  Future<UsageQuota> build() => _load();
 }
 
 void main() {
@@ -62,15 +53,40 @@ void main() {
     scenePrompt: '都會街頭',
     engine: TryonEngine.experimental,
   );
+  final taipeiNov5 = DateTime.utc(2026, 11, 4, 16);
+
+  UsageQuota freeQuota({final int tryonImageUsed = 0}) => UsageQuota(
+    tier: AppSubscriptionTier.free,
+    period: QuotaPeriod.day,
+    resetsAt: DateTime.utc(2026, 10, 19, 16),
+    tryonImage: FeatureQuota(used: tryonImageUsed, quota: 10),
+    tryonVideo: const FeatureQuota(used: 0, quota: 0),
+  );
+
+  UsageQuota proQuota({
+    final int tryonImageUsed = 0,
+    final int tryonVideoUsed = 0,
+  }) => UsageQuota(
+    tier: AppSubscriptionTier.pro,
+    period: QuotaPeriod.month,
+    resetsAt: taipeiNov5,
+    tryonImage: FeatureQuota(used: tryonImageUsed, quota: 250),
+    tryonVideo: FeatureQuota(used: tryonVideoUsed, quota: 3),
+  );
+
+  UsageQuota maxQuota({final int tryonImageUsed = 0}) => UsageQuota(
+    tier: AppSubscriptionTier.max,
+    period: QuotaPeriod.month,
+    resetsAt: taipeiNov5,
+    tryonImage: FeatureQuota(used: tryonImageUsed, quota: 600),
+    tryonVideo: const FeatureQuota(used: 0, quota: 10),
+  );
 
   late _FakePreferences preferences;
 
   Future<List<TryonMode>> open(
     final WidgetTester tester, {
-    final bool hasVideoAccess = true,
-    final Future<SubscriptionCapabilities> Function()? capabilities,
-    final int tryonCount = 0,
-    final int videoCount = 0,
+    final Future<UsageQuota> Function()? quota,
     final AppSubscriptionTier? tier = AppSubscriptionTier.max,
     final TryonPreferences initial = const TryonPreferences(),
     final bool preferencesLoaded = true,
@@ -85,8 +101,8 @@ void main() {
         tryonPreferencesProvider.overrideWith(
           () => preferencesLoaded ? preferences : _LoadingPreferences(),
         ),
-        dailyUsageTodayProvider.overrideWith(
-          () => _FakeUsage(tryonCount: tryonCount, videoCount: videoCount),
+        usageQuotaProvider.overrideWith(
+          () => _FakeUsageQuota(quota ?? () async => maxQuota()),
         ),
         appSubscriptionEntitlementProvider.overrideWith(
           (final ref) => tier == null
@@ -94,18 +110,6 @@ void main() {
               : Stream.value(
                   AppSubscriptionEntitlement(tier: tier, expirationDate: null),
                 ),
-        ),
-        subscriptionCapabilitiesProvider.overrideWith(
-          (final ref) =>
-              capabilities?.call() ??
-              Future.value(
-                SubscriptionCapabilities(
-                  wardrobeLimit: 10,
-                  dailyTryonLimit: 10,
-                  dailyChatLimit: 10,
-                  dailyVideoLimit: hasVideoAccess ? 2 : 0,
-                ),
-              ),
         ),
       ],
     );
@@ -133,11 +137,27 @@ void main() {
     expect(picked, [TryonMode.image]);
   });
 
-  testWidgets('shows the remaining quota per mode', (final tester) async {
-    await open(tester, tryonCount: 3, videoCount: 1);
+  testWidgets('shows the daily remaining quota for free', (final tester) async {
+    await open(
+      tester,
+      quota: () async => freeQuota(tryonImageUsed: 3),
+      tier: AppSubscriptionTier.free,
+    );
 
     expect(find.text('今日剩 7 次'), findsOneWidget);
-    expect(find.text('今日剩 1 次'), findsOneWidget);
+  });
+
+  testWidgets('shows the cycle remaining quota and reset date for pro', (
+    final tester,
+  ) async {
+    await open(
+      tester,
+      quota: () async => proQuota(tryonImageUsed: 12, tryonVideoUsed: 1),
+      tier: AppSubscriptionTier.pro,
+    );
+
+    expect(find.text('本期剩 238 次 · 11/5 重置'), findsOneWidget);
+    expect(find.text('本期剩 2 次 · 11/5 重置'), findsOneWidget);
   });
 
   testWidgets('offers an upgrade instead of a locked video mode', (
@@ -145,18 +165,43 @@ void main() {
   ) async {
     final picked = await open(
       tester,
-      hasVideoAccess: false,
+      quota: () async => freeQuota(),
       tier: AppSubscriptionTier.free,
     );
 
-    expect(find.text('升級至 Max 方案解鎖'), findsOneWidget);
+    expect(find.byIcon(Icons.lock_rounded), findsOneWidget);
+    expect(find.text('升級方案解鎖'), findsOneWidget);
     expect(picked, isEmpty);
   });
 
-  testWidgets('keeps video open while capabilities load', (final tester) async {
+  testWidgets('mode sheet stays open while quota is loading', (
+    final tester,
+  ) async {
     final picked = await open(
       tester,
-      capabilities: () => Completer<SubscriptionCapabilities>().future,
+      quota: () => Completer<UsageQuota>().future,
+      tier: AppSubscriptionTier.free,
+    );
+
+    expect(find.byIcon(Icons.lock_rounded), findsNothing);
+
+    await tester.tap(find.text('圖片試穿'));
+    await settle(tester);
+    await tester.tap(find.text('open'));
+    await settle(tester);
+    await tester.tap(find.text('影片試穿'));
+    await settle(tester);
+
+    expect(picked, [TryonMode.image, TryonMode.video]);
+  });
+
+  testWidgets('keeps video open when quota fails to load', (
+    final tester,
+  ) async {
+    final picked = await open(
+      tester,
+      quota: () => Future.error(Exception('quota unavailable')),
+      tier: AppSubscriptionTier.free,
     );
 
     await tester.tap(find.text('影片試穿'));
@@ -165,48 +210,59 @@ void main() {
     expect(picked, [TryonMode.video]);
   });
 
-  testWidgets('keeps video open when capabilities fail to load', (
+  testWidgets('blocks an exhausted cycle on pro and offers more quota', (
     final tester,
   ) async {
     final picked = await open(
       tester,
-      capabilities: () => Future.error(Exception('capabilities unavailable')),
+      quota: () async => proQuota(tryonImageUsed: 250),
+      tier: AppSubscriptionTier.pro,
     );
 
-    await tester.tap(find.text('影片試穿'));
-    await settle(tester);
-
-    expect(picked, [TryonMode.video]);
+    expect(find.text('本期次數已用完，11/5 重置'), findsOneWidget);
+    expect(find.text('升級方案取得更多次數'), findsOneWidget);
+    expect(picked, isEmpty);
   });
 
-  testWidgets('blocks an exhausted mode and offers more quota', (
+  testWidgets('blocks an exhausted cycle on the top tier without an upsell', (
     final tester,
   ) async {
-    await open(tester, tryonCount: 10, tier: AppSubscriptionTier.pro);
+    final picked = await open(
+      tester,
+      quota: () async => maxQuota(tryonImageUsed: 600),
+    );
+
+    await tester.tap(find.text('圖片試穿'));
+    await settle(tester);
+
+    expect(find.text('本期次數已用完，11/5 重置'), findsOneWidget);
+    expect(find.text('升級方案取得更多次數'), findsNothing);
+    expect(picked, isEmpty);
+  });
+
+  testWidgets('blocks an exhausted day on free and offers more quota', (
+    final tester,
+  ) async {
+    await open(
+      tester,
+      quota: () async => freeQuota(tryonImageUsed: 10),
+      tier: AppSubscriptionTier.free,
+    );
 
     expect(find.text('今日次數已用完'), findsOneWidget);
     expect(find.text('升級方案取得更多次數'), findsOneWidget);
   });
 
-  testWidgets('blocks an exhausted mode on the top tier without an upsell', (
-    final tester,
-  ) async {
-    final picked = await open(tester, tryonCount: 10);
-
-    await tester.tap(find.text('圖片試穿'));
-    await settle(tester);
-
-    expect(find.text('今日次數已用完，明天再來試試'), findsOneWidget);
-    expect(find.text('升級方案取得更多次數'), findsNothing);
-    expect(picked, isEmpty);
-  });
-
   testWidgets(
     'offers no upsell for an exhausted mode before the tier is known',
     (final tester) async {
-      await open(tester, tryonCount: 10, tier: null);
+      await open(
+        tester,
+        quota: () async => freeQuota(tryonImageUsed: 10),
+        tier: null,
+      );
 
-      expect(find.text('今日次數已用完，明天再來試試'), findsOneWidget);
+      expect(find.text('今日次數已用完'), findsOneWidget);
       expect(find.text('升級方案取得更多次數'), findsNothing);
     },
   );
@@ -276,6 +332,24 @@ void main() {
     await open(tester);
 
     expect(find.textContaining('場景：'), findsNothing);
+  });
+
+  testWidgets('offers the transition setting with video access', (
+    final tester,
+  ) async {
+    await open(tester);
+    await openSettings(tester);
+
+    expect(find.text('轉場'), findsOneWidget);
+  });
+
+  testWidgets('shows the transition setting while quota loads', (
+    final tester,
+  ) async {
+    await open(tester, quota: () => Completer<UsageQuota>().future);
+    await openSettings(tester);
+
+    expect(find.text('轉場'), findsOneWidget);
   });
 
   testWidgets('saves nothing until there is a change', (final tester) async {

@@ -4,11 +4,11 @@ import 'package:tryzeon/core/presentation/widgets/app_action_sheet.dart';
 import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/app_snack_bar.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
-import 'package:tryzeon/feature/personal/subscription/providers/subscription_capabilities_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/controllers/tryon_controller.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/providers/tryon_providers.dart';
+import 'package:tryzeon/feature/personal/usage/providers/usage_quota_providers.dart';
 
 /// Owns its own handlers so the home page stays a layout — the only action it
 /// cannot own is [onReplaceAvatar], which tapping the model photo opens too.
@@ -34,14 +34,7 @@ class TryonGalleryActions extends ConsumerWidget {
       }
     }
 
-    // `!= false` so a still-loading capability keeps the action visible: a slow
-    // cache must not hide a feature the user has paid for. The backend rejects
-    // the request anyway if the entitlement turns out to be missing.
-    final hasVideoAccess = ref.watch(
-      subscriptionCapabilitiesProvider.select(
-        (final async) => async.value?.hasVideoAccess != false,
-      ),
-    );
+    final hasVideoAccess = ref.watch(hasVideoAccessProvider);
 
     Future<void> regenerate() async {
       if (entry == null) return;

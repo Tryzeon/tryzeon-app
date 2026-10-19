@@ -5,20 +5,11 @@ part 'subscription_tier_dto.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.snake, createToJson: false)
 class SubscriptionTierDto {
-  const SubscriptionTierDto({
-    required this.id,
-    required this.wardrobeLimit,
-    required this.tryonLimit,
-    required this.videoLimit,
-    required this.chatLimit,
-  });
+  const SubscriptionTierDto({required this.id, required this.wardrobeLimit});
 
   factory SubscriptionTierDto.fromJson(final Map<String, dynamic> json) =>
       _$SubscriptionTierDtoFromJson(json);
 
   final AppSubscriptionTier id;
   final int wardrobeLimit;
-  final int tryonLimit;
-  final int videoLimit;
-  final int chatLimit;
 }
