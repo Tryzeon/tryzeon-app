@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -20,6 +21,8 @@ import 'package:tryzeon/core/presentation/widgets/app_upgrade_alert.dart';
 import 'package:tryzeon/core/router/app_router.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
+import 'package:tryzeon/feature/personal/usage/providers/usage_quota_providers.dart';
 import 'package:tryzeon/firebase_options.dart';
 import 'package:upgrader/upgrader.dart';
 
@@ -97,6 +100,10 @@ class Tryzeon extends HookConsumerWidget {
       if (current == AppLifecycleState.paused ||
           current == AppLifecycleState.detached) {
         ref.read(analyticsEventQueueProvider).forceFlush();
+      }
+      if (current == AppLifecycleState.resumed &&
+          ref.read(isAuthenticatedProvider)) {
+        unawaited(ref.read(usageQuotaProvider.notifier).refresh());
       }
     });
 

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/error/failure_from_error.dart';
 import 'package:tryzeon/core/error/failures.dart';
@@ -15,7 +17,7 @@ import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_gallery_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/presentation/state/tryon_outcome.dart';
 import 'package:tryzeon/feature/personal/tryon/providers/tryon_providers.dart';
-import 'package:tryzeon/feature/personal/usage/providers/daily_usage_providers.dart';
+import 'package:tryzeon/feature/personal/usage/providers/usage_quota_providers.dart';
 import 'package:typed_result/typed_result.dart';
 import 'package:uuid/uuid.dart';
 
@@ -76,17 +78,13 @@ class TryonController extends _$TryonController {
         TryonParams(requestId: id, subject: subject, preferences: preferences),
       );
 
-      // Usage syncs even for a cancelled run — the generation was still spent.
-      final usageCache = ref.read(dailyUsageTodayProvider.notifier);
       if (result.isSuccess) {
         final tryonResult = result.get()!;
-        usageCache.syncFromSnapshot(tryonResult.usage);
         state = galleryNotifier.complete(tryonResult)
             ? TryonSucceeded(tryonResult)
             : TryonCancelled(id);
       } else {
         final failure = result.getError()!;
-        usageCache.syncFromFailure(failure);
         if (!galleryNotifier.removeById(id)) {
           state = TryonCancelled(id);
           return;
@@ -109,6 +107,8 @@ class TryonController extends _$TryonController {
       state = galleryNotifier.removeById(id)
           ? TryonFailed(id, failureFromError(e))
           : TryonCancelled(id);
+    } finally {
+      unawaited(ref.read(usageQuotaProvider.notifier).refresh());
     }
   }
 }
