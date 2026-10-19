@@ -1,4 +1,4 @@
-import type { DailyUsage, UsageCounter } from "../quota.ts";
+import type { UsageCounter } from "../quota.ts";
 import { GARMENT_TYPE_VALUES } from "../vocabularies.ts";
 import type { Enums } from "../database.types.ts";
 import type { SupabaseImageBucket } from "../supabase-storage.ts";
@@ -115,22 +115,14 @@ export interface TryonParams {
   generationId?: string;
 }
 
-/*
- * `usage` is the caller's whole counter row for the day — every feature's
- * count, `chat_count` included — because that is what the client syncs its
- * usage cache from after any request that charges quota.
- */
-
 export interface TryonImageResult {
   kind: "image";
   imageUrl: string;
-  usage: DailyUsage | null;
 }
 
 export interface TryonVideoResult {
   kind: "video";
   videoUrl: string;
-  usage: DailyUsage | null;
 }
 
 export type TryonResult = TryonImageResult | TryonVideoResult;

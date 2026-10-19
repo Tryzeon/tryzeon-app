@@ -5,15 +5,8 @@ import {
   MissingAvatarError,
   ValidationError,
 } from "./errors.ts";
-import { type DailyUsage, QuotaExceededError } from "../quota.ts";
-
-const USAGE: DailyUsage = {
-  user_id: "u1",
-  usage_date: "2026-07-26",
-  tryon_count: 5,
-  chat_count: 0,
-  video_count: 0,
-};
+import { QuotaExceededError } from "../quota.ts";
+import { SAMPLE_QUOTA } from "../quota.testing.ts";
 
 Deno.test("classifyTryonError carries the message for validation errors", () => {
   assertEquals(classifyTryonError(new ValidationError("avatar is required")), {
@@ -22,10 +15,10 @@ Deno.test("classifyTryonError carries the message for validation errors", () => 
   });
 });
 
-Deno.test("classifyTryonError carries usage for quota errors", () => {
-  assertEquals(classifyTryonError(new QuotaExceededError(USAGE)), {
+Deno.test("classifyTryonError carries quota for quota errors", () => {
+  assertEquals(classifyTryonError(new QuotaExceededError(SAMPLE_QUOTA)), {
     kind: "quota",
-    usage: USAGE,
+    quota: SAMPLE_QUOTA,
   });
 });
 

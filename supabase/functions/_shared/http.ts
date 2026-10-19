@@ -1,4 +1,5 @@
 import { CORE_ERROR_CODE, type CoreErrorInfo } from "./errors.ts";
+import type { QuotaSnapshot } from "./quota.ts";
 
 const JSON_HEADERS = { "Content-Type": "application/json" } as const;
 
@@ -21,12 +22,13 @@ export function noStore(response: Response): Response {
   return new Response(response.body, { status: response.status, headers });
 }
 
-export function jsonRateLimited(usage?: unknown): Response {
-  const code = CORE_ERROR_CODE.quota;
+export function jsonRateLimited(): Response {
+  return jsonError("Rate limit exceeded", CORE_ERROR_CODE.rateLimit, 429);
+}
+
+export function jsonQuotaExceeded(quota: QuotaSnapshot | null): Response {
   return json(
-    usage === undefined
-      ? { error: "Rate limit exceeded", code }
-      : { error: "Rate limit exceeded", code, usage },
+    { error: "Quota exceeded", code: CORE_ERROR_CODE.quota, quota },
     429,
   );
 }
@@ -36,7 +38,7 @@ export function coreErrorResponse(info: CoreErrorInfo): Response {
     case "validation":
       return jsonError(info.message, CORE_ERROR_CODE.validation, 400);
     case "quota":
-      return jsonRateLimited(info.usage);
+      return jsonQuotaExceeded(info.quota);
     case "busy":
       return jsonError(
         "Service is busy, please try again shortly",

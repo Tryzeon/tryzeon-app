@@ -559,8 +559,8 @@ Deno.test("a photo that would not generate offers another photo, not a retry", a
 });
 
 Deno.test("a spent try-on quota offers the chat the sender still has", async () => {
-  // `FeatureName` is "chat" | "tryon" | "tryon_video" — three separate counters,
-  // so a spent try-on budget is not a spent conversation.
+  // Chat is rate-limited rather than charged against a `UsageFeature` quota, so a
+  // spent try-on budget is not a spent conversation.
   const { line, sent } = fakeLine();
   await handleImageTryon(
     makeDeps({ line, runJob: () => Promise.reject(new QuotaExceededError(null)) }),

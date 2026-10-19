@@ -1,12 +1,12 @@
-import type { DailyUsage } from "./quota.ts";
+import type { QuotaSnapshot } from "./quota.ts";
 import type { DbClient } from "./supabase.ts";
 
-export const SAMPLE_USAGE: DailyUsage = {
-  user_id: "u1",
-  usage_date: "2026-07-26",
-  tryon_count: 0,
-  chat_count: 0,
-  video_count: 0,
+export const SAMPLE_QUOTA: QuotaSnapshot = {
+  tier: "pro",
+  period: "month",
+  resetsAt: "2026-11-05",
+  tryonImage: { used: 12, quota: 250 },
+  tryonVideo: { used: 1, quota: 3 },
 };
 
 export interface RpcCall {
@@ -22,13 +22,18 @@ export function fakeQuotaAdmin(allowed = true): {
   const client = {
     rpc(fn: string, args: Record<string, unknown>) {
       calls.push({ fn, args });
-      if (fn === "increment_feature_usage") {
+      if (fn === "consume_quota") {
         return Promise.resolve({
-          data: { allowed, usage: SAMPLE_USAGE },
+          data: {
+            allowed,
+            windowStart: "2026-10-19",
+            period: "month",
+            quota: SAMPLE_QUOTA,
+          },
           error: null,
         });
       }
-      return Promise.resolve({ data: true, error: null });
+      return Promise.resolve({ data: null, error: null });
     },
   } as unknown as DbClient;
   return { client, calls };

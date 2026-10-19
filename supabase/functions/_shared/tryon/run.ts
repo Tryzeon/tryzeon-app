@@ -80,10 +80,10 @@ export async function runTryonJob<M extends TryonMode>(
   // billed.
   const avatar = await resolveAvatar(client, job.userId);
 
-  const quota = deps.quota(job.userId, job.mode);
-  const { allowed, usage } = await quota.charge();
-  if (!allowed) {
-    throw new QuotaExceededError(usage);
+  const counter = deps.quota(job.userId, job.mode);
+  const charge = await counter.charge();
+  if (!charge.allowed) {
+    throw new QuotaExceededError(charge.quota);
   }
 
   let generationId: string | undefined;
@@ -143,7 +143,7 @@ export async function runTryonJob<M extends TryonMode>(
       videoModel = video.model;
       resultKey = assetKey(job.userId, now(), "mp4");
       const videoUrl = await uploadVideo(video.bytes, resultKey);
-      result = { kind: "video", videoUrl, usage } as TryonResultFor<M>;
+      result = { kind: "video", videoUrl } as TryonResultFor<M>;
     } else {
       const mimeType = detectMimeType(image.base64);
       resultKey = assetKey(job.userId, now(), mimeTypeToExtension(mimeType));
@@ -152,7 +152,7 @@ export async function runTryonJob<M extends TryonMode>(
         resultKey,
         mimeType,
       );
-      result = { kind: "image", imageUrl, usage } as TryonResultFor<M>;
+      result = { kind: "image", imageUrl } as TryonResultFor<M>;
     }
 
     await deps.generations.succeed(generationId, {
@@ -171,7 +171,7 @@ export async function runTryonJob<M extends TryonMode>(
     // Refund is best-effort: a failure here must not replace the error that
     // actually caused the job to fail, or callers would report the wrong thing.
     try {
-      await quota.refund();
+      await counter.refund();
     } catch (refundErr) {
       console.error("try-on quota refund failed:", refundErr);
     }

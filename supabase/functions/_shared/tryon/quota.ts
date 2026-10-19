@@ -1,4 +1,4 @@
-import { type FeatureName, supabaseUsageCounter } from "../quota.ts";
+import { type UsageFeature, supabaseUsageCounter } from "../quota.ts";
 import type { QuotaFactory, TryonMode } from "./types.ts";
 import type { DbClient } from "../supabase.ts";
 
@@ -6,8 +6,8 @@ import type { DbClient } from "../supabase.ts";
  * A total map rather than a ternary: a mode added later has to be priced here
  * or the module stops compiling, instead of being billed as a still image.
  */
-const FEATURE_BY_MODE: Record<TryonMode, FeatureName> = {
-  image: "tryon",
+const FEATURE_BY_MODE: Record<TryonMode, UsageFeature> = {
+  image: "tryon_image",
   video: "tryon_video",
 };
 

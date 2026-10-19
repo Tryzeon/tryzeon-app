@@ -37,8 +37,8 @@ Deno.serve(async (req) => {
 
     return cors.wrap(
       result.kind === "video"
-        ? json({ videoUrl: result.videoUrl, usage: result.usage })
-        : json({ imageUrl: result.imageUrl, usage: result.usage }),
+        ? json({ videoUrl: result.videoUrl })
+        : json({ imageUrl: result.imageUrl }),
     );
   } catch (err) {
     const response = tryonErrorResponse(err);

@@ -1,7 +1,8 @@
 import { assertEquals, assertRejects } from "@std/assert";
 import { runTryonJob, type RunTryonJobDeps } from "./run.ts";
 import { GenerationFailedError, MissingAvatarError } from "./errors.ts";
-import { type DailyUsage, QuotaExceededError } from "../quota.ts";
+import { type ChargeResult, QuotaExceededError } from "../quota.ts";
+import { SAMPLE_QUOTA } from "../quota.testing.ts";
 import type { GarmentBrief } from "./prompt.ts";
 import type {
   AvatarResolver,
@@ -14,14 +15,6 @@ import type {
   TryonRecorder,
 } from "./types.ts";
 import type { DbClient } from "../supabase.ts";
-
-const USAGE: DailyUsage = {
-  user_id: "u1",
-  usage_date: "2026-07-26",
-  tryon_count: 1,
-  chat_count: 0,
-  video_count: 0,
-};
 
 // The job never reaches Supabase in these tests — quota and every resolver go
 // through a port — so an empty object is an honest stand-in.
@@ -94,7 +87,9 @@ function fakeQuota(allowed = true) {
     return {
       charge() {
         calls.push("charge");
-        return Promise.resolve({ allowed, usage: USAGE });
+        return Promise.resolve<ChargeResult>(
+          allowed ? { allowed: true } : { allowed: false, quota: SAMPLE_QUOTA },
+        );
       },
       refund() {
         calls.push("refund");
@@ -133,7 +128,6 @@ Deno.test("image mode uploads the generated image and does not call video", asyn
   assertEquals(result, {
     kind: "image",
     imageUrl: "https://img/result.png",
-    usage: USAGE,
   });
   assertEquals(uploadedKey, "u1/tryon-123.jpg");
   assertEquals(videoCalled, false);
@@ -169,7 +163,6 @@ Deno.test("video mode uploads the generated video bytes, not an image", async ()
   assertEquals(result, {
     kind: "video",
     videoUrl: "https://vid/x.mp4",
-    usage: USAGE,
   });
   assertEquals(uploadedKey, "u1/tryon-456.mp4");
   assertEquals(uploadedBytes, [1, 2, 3]);
@@ -254,7 +247,7 @@ Deno.test("invalid params are rejected before quota is charged", async () => {
   assertEquals(quota.calls, []);
 });
 
-Deno.test("quota rejection throws QuotaExceededError with usage", async () => {
+Deno.test("quota rejection throws QuotaExceededError with quota", async () => {
   const quota = fakeQuota(false);
   const err = await assertRejects(
     () =>
@@ -265,7 +258,7 @@ Deno.test("quota rejection throws QuotaExceededError with usage", async () => {
       }),
     QuotaExceededError,
   );
-  assertEquals(err.usage, USAGE);
+  assertEquals(err.quota, SAMPLE_QUOTA);
 });
 
 Deno.test("null generation throws GenerationFailedError and refunds quota", async () => {
@@ -285,7 +278,7 @@ Deno.test("null generation throws GenerationFailedError and refunds quota", asyn
 
 Deno.test("a failed refund does not mask the original error", async () => {
   const quota: QuotaFactory = () => ({
-    charge: () => Promise.resolve({ allowed: true, usage: USAGE }),
+    charge: () => Promise.resolve<ChargeResult>({ allowed: true }),
     refund: () => Promise.reject(new Error("refund exploded")),
   });
 
