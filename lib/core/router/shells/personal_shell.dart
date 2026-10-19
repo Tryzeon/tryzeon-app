@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -16,6 +18,7 @@ import 'package:tryzeon/feature/common/settings/providers/settings_controller.da
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 import 'package:tryzeon/feature/personal/tutorial/presentation/widgets/tutorial_overlay.dart';
+import 'package:tryzeon/feature/personal/usage/providers/usage_quota_providers.dart';
 
 class PersonalShell extends HookConsumerWidget {
   const PersonalShell({super.key, required this.navigationShell});
@@ -31,6 +34,14 @@ class PersonalShell extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     listenToTryonOutcomes(context, ref);
     ref.listen(shopCategoryImagesPrefetchProvider, (final _, final _) {});
+
+    useOnAppLifecycleStateChange((final _, final current) {
+      if (current == AppLifecycleState.resumed &&
+          ref.exists(usageQuotaProvider) &&
+          !ref.read(usageQuotaProvider).isLoading) {
+        unawaited(ref.read(usageQuotaProvider.notifier).refresh());
+      }
+    });
 
     final lastTabTapTime = useState<DateTime?>(null);
 
