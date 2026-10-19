@@ -7,6 +7,7 @@ import {
   supabaseQuota,
   supabaseTryonRecorder,
 } from "../_shared/tryon/index.ts";
+import type { QuotaSnapshot } from "../_shared/quota.ts";
 import type { GarmentInput } from "../_shared/tryon/types.ts";
 import { getAvatar as defaultGetAvatar } from "../_shared/user-profile.ts";
 import type { ItemRef } from "../_shared/chat/index.ts";
@@ -77,7 +78,7 @@ async function resolveActor(
 
 type TryonOutcome =
   | { ok: true; imageUrl: string }
-  | { ok: false; kind: TryonJobErrorKind };
+  | { ok: false; kind: TryonJobErrorKind; quota: QuotaSnapshot | null };
 
 async function runTryon(
   deps: TryonHandlerDeps,
@@ -101,13 +102,13 @@ async function runTryon(
     );
     return { ok: true, imageUrl: result.imageUrl };
   } catch (err) {
-    const kind = tryonFailureKind(err);
+    const { kind, quota } = tryonFailure(err);
     // "unknown" means a server-side fault (bad params, RLS, storage) rather
     // than a user error — log it so it leaves a trace beyond the pushed message.
     if (kind === "unknown") {
       console.error("line-webhook try-on failed:", err);
     }
-    return { ok: false, kind };
+    return { ok: false, kind, quota };
   }
 }
 
@@ -140,7 +141,7 @@ export async function handleImageTryon(
     bytes = await deps.line.getContent(event.messageId);
   } catch (err) {
     console.warn("line-webhook failed to download garment image:", err);
-    await deps.line.push(event.sourceUserId, [tryonErrorMessage("download")]);
+    await deps.line.push(event.sourceUserId, [tryonErrorMessage("download", null)]);
     return;
   }
 
@@ -157,7 +158,7 @@ export async function handleImageTryon(
   });
 
   await deps.line.push(event.sourceUserId, [
-    outcome.ok ? resultMessage(outcome.imageUrl) : tryonErrorMessage(outcome.kind),
+    outcome.ok ? resultMessage(outcome.imageUrl) : tryonErrorMessage(outcome.kind, outcome.quota),
   ]);
 
   const description = await described;
@@ -211,7 +212,7 @@ export async function handleProductTryon(
   await deps.line.push(event.sourceUserId, [
     outcome.ok
       ? productResultMessage(outcome.imageUrl, product)
-      : productTryonErrorMessage(outcome.kind, product, deps.liffUrl),
+      : productTryonErrorMessage(outcome.kind, outcome.quota, product, deps.liffUrl),
   ]);
 
   if (outcome.ok) {
@@ -271,7 +272,7 @@ export async function handleWardrobeTryon(
   await deps.line.push(event.sourceUserId, [
     outcome.ok
       ? wardrobeResultMessage(outcome.imageUrl, item)
-      : wardrobeTryonErrorMessage(outcome.kind, item),
+      : wardrobeTryonErrorMessage(outcome.kind, outcome.quota, item),
   ]);
 
   if (outcome.ok) {
@@ -339,7 +340,7 @@ export async function handleOutfitTryon(
   await deps.line.push(event.sourceUserId, [
     outcome.ok
       ? outfitResultMessage(outcome.imageUrl, outfit, deps.liffUrl)
-      : outfitTryonErrorMessage(outcome.kind, outfit),
+      : outfitTryonErrorMessage(outcome.kind, outcome.quota, outfit),
   ]);
 
   if (outcome.ok) {
@@ -353,20 +354,19 @@ export async function handleOutfitTryon(
  * params, and each kind of ref is checked for existence before any job starts —
  * so it is reported as an unknown fault.
  */
-function tryonFailureKind(err: unknown): TryonJobErrorKind {
+function tryonFailure(err: unknown): { kind: TryonJobErrorKind; quota: QuotaSnapshot | null } {
   const info = classifyTryonError(err);
-  if (info === null) return "unknown";
+  if (info === null) return { kind: "unknown", quota: null };
   switch (info.kind) {
     case "quota":
-      return "quota";
+      return { kind: "quota", quota: info.quota };
     case "generation":
-      return "generation";
+      return { kind: "generation", quota: null };
     case "busy":
-      return "busy";
+      return { kind: "busy", quota: null };
     case "validation":
     case "rateLimit":
-      return "unknown";
     case "missingAvatar":
-      return "unknown";
+      return { kind: "unknown", quota: null };
   }
 }

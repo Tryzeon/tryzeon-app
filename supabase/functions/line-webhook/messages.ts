@@ -1,4 +1,6 @@
 import { LIMITS } from "../_shared/chat/index.ts";
+import type { QuotaSnapshot } from "../_shared/quota.ts";
+import { tryonQuotaText } from "./quota-text.ts";
 import {
   clampProductName,
   type ProductInfo,
@@ -197,9 +199,10 @@ export function wardrobeResultMessage(
  */
 export function wardrobeTryonErrorMessage(
   kind: TryonJobErrorKind,
+  quota: QuotaSnapshot | null,
   item: WardrobeItemInfo,
 ): object {
-  const message = { type: "text", text: TRYON_ERROR_TEXT[kind] };
+  const message = { type: "text", text: tryonErrorText(kind, quota) };
   const retry = postbackChip(
     "再試一次",
     wardrobeTryonPostbackData(item.id),
@@ -231,8 +234,14 @@ export function outfitUnavailableMessage(): object {
   ]);
 }
 
-export function outfitTryonErrorMessage(kind: TryonJobErrorKind, outfit: LineOutfit): object {
-  const text = kind === "generation" ? "這套沒能生成，請換一套或再試一次看看！" : TRYON_ERROR_TEXT[kind];
+export function outfitTryonErrorMessage(
+  kind: TryonJobErrorKind,
+  quota: QuotaSnapshot | null,
+  outfit: LineOutfit,
+): object {
+  const text = kind === "generation"
+    ? "這套沒能生成，請換一套或再試一次看看！"
+    : tryonErrorText(kind, quota);
   const message = { type: "text", text };
   const retry = postbackChip(
     "再試一次",
@@ -260,18 +269,24 @@ export function outfitTryonErrorMessage(kind: TryonJobErrorKind, outfit: LineOut
  */
 
 const TRYON_ERROR_TEXT = {
-  quota: "今日試穿次數已用完，明天再回來試。",
   generation: "這件沒能生成，請換一件或再試一次看看！",
   download: "這張圖讀取失敗，麻煩再傳一次。",
   busy: "現在使用的人比較多，請稍等幾分鐘再試。",
   unknown: "出了點狀況，請稍後再試。",
 } as const;
 
-export type TryonErrorKind = keyof typeof TRYON_ERROR_TEXT;
+function tryonErrorText(kind: TryonErrorKind, quota: QuotaSnapshot | null): string {
+  return kind === "quota" ? tryonQuotaText(quota) : TRYON_ERROR_TEXT[kind];
+}
+
+export type TryonErrorKind = keyof typeof TRYON_ERROR_TEXT | "quota";
 export type TryonJobErrorKind = Exclude<TryonErrorKind, "download">;
 
-export function tryonErrorMessage(kind: TryonErrorKind): object {
-  const message = { type: "text", text: TRYON_ERROR_TEXT[kind] };
+export function tryonErrorMessage(
+  kind: TryonErrorKind,
+  quota: QuotaSnapshot | null,
+): object {
+  const message = { type: "text", text: tryonErrorText(kind, quota) };
   switch (kind) {
     case "quota":
       return withQuickReply(message, [messageChip("找衣服看看", "有什麼推薦的商品")]);
@@ -296,10 +311,11 @@ export function tryonErrorMessage(kind: TryonErrorKind): object {
  */
 export function productTryonErrorMessage(
   kind: TryonJobErrorKind,
+  quota: QuotaSnapshot | null,
   product: ProductInfo,
   liffUrl: string,
 ): object {
-  const message = { type: "text", text: TRYON_ERROR_TEXT[kind] };
+  const message = { type: "text", text: tryonErrorText(kind, quota) };
   const retry = postbackChip(
     "再試一次",
     productTryonPostbackData(product.id),

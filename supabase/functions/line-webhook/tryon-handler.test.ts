@@ -10,7 +10,7 @@ import {
   type TryonHandlerDeps,
   type WardrobeTryonDeps,
 } from "./tryon-handler.ts";
-import { QuotaExceededError } from "../_shared/quota.ts";
+import { QuotaExceededError, type QuotaSnapshot } from "../_shared/quota.ts";
 import { ServiceBusyError } from "../_shared/errors.ts";
 import { GenerationFailedError } from "../_shared/tryon/errors.ts";
 import type { LineApi } from "./line-api.ts";
@@ -178,16 +178,25 @@ Deno.test("an image LINE will not hand over is reported as a download failure", 
   assertEquals(textOf(sent.pushes[0][0]), "這張圖讀取失敗，麻煩再傳一次。");
 });
 
+const PRO_QUOTA_TEXT = "本期試穿次數已用完，11/5 重置。到 App 升級方案可以拿更多次數。";
+
+const proSnapshot: QuotaSnapshot = {
+  tier: "pro",
+  period: "month",
+  resetsAt: "2026-11-04T16:00:00+00:00",
+  tryonImage: { used: 250, quota: 250 },
+  tryonVideo: { used: 0, quota: 3 },
+};
+
 Deno.test("an exhausted quota is reported in try-on's own words", async () => {
   const { line, sent } = fakeLine();
   await handleImageTryon(
-    // `QuotaExceededError` carries the usage row it hit; null is fine here.
-    makeDeps({ line, runJob: () => Promise.reject(new QuotaExceededError(null)) }),
+    makeDeps({ line, runJob: () => Promise.reject(new QuotaExceededError(proSnapshot)) }),
     event,
   );
 
   assertEquals(sent.pushes.length, 1);
-  assertEquals(textOf(sent.pushes[0][0]), "今日試穿次數已用完，明天再回來試。");
+  assertEquals(textOf(sent.pushes[0][0]), PRO_QUOTA_TEXT);
 });
 
 Deno.test("a forwarded photo becomes part of the conversation", async () => {
@@ -411,7 +420,7 @@ Deno.test("an exhausted quota during a product try-on pushes the quota text, not
   await handleProductTryon(
     makeProductDeps({
       line,
-      runJob: () => Promise.reject(new QuotaExceededError(null)),
+      runJob: () => Promise.reject(new QuotaExceededError(proSnapshot)),
     }),
     productEvent,
   );
@@ -422,7 +431,7 @@ Deno.test("an exhausted quota during a product try-on pushes the quota text, not
   assertEquals(sent.pushes.length, 1);
   assertEquals(bare(sent.pushes[0][0]), {
     type: "text",
-    text: "今日試穿次數已用完，明天再回來試。",
+    text: PRO_QUOTA_TEXT,
   });
   assertEquals(chipLabels(sent.pushes[0][0]), ["找衣服看看"]);
 });

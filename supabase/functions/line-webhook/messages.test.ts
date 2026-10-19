@@ -83,26 +83,26 @@ Deno.test("an unknown chat failure offers to re-ask, honestly labelled", () => {
 });
 
 Deno.test("a spent try-on quota offers the chat the sender still has", () => {
-  assertEquals(chipActions(tryonErrorMessage("quota")), [
+  assertEquals(chipActions(tryonErrorMessage("quota", null)), [
     { type: "message", label: "找衣服看看", text: "有什麼推薦的商品" },
   ]);
 });
 
 Deno.test("a photo that would not generate offers another photo, not a retry", () => {
-  assertEquals(chipActions(tryonErrorMessage("generation")), [
+  assertEquals(chipActions(tryonErrorMessage("generation", null)), [
     { type: "cameraRoll", label: "換一張再試" },
     { type: "message", label: "找類似的商品", text: "幫我找類似剛剛那件的商品" },
   ]);
 });
 
 Deno.test("an unreadable photo offers to resend it", () => {
-  assertEquals(chipActions(tryonErrorMessage("download")), [
+  assertEquals(chipActions(tryonErrorMessage("download", null)), [
     { type: "cameraRoll", label: "重新傳一張" },
   ]);
 });
 
 Deno.test("an unknown try-on failure offers a plain retry", () => {
-  assertEquals(chipActions(tryonErrorMessage("unknown")), [
+  assertEquals(chipActions(tryonErrorMessage("unknown", null)), [
     { type: "cameraRoll", label: "再試一次" },
   ]);
 });
@@ -113,22 +113,22 @@ Deno.test("both try-on paths report a failed generation in the same words", () =
   // saying only one of them would need two strings again.
   const text = "這件沒能生成，請換一件或再試一次看看！";
 
-  assertEquals((tryonErrorMessage("generation") as { text: string }).text, text);
+  assertEquals((tryonErrorMessage("generation", null) as { text: string }).text, text);
   assertEquals(
-    (productTryonErrorMessage("generation", product, LIFF) as { text: string }).text,
+    (productTryonErrorMessage("generation", null, product, LIFF) as { text: string }).text,
     text,
   );
 });
 
 Deno.test("a spent try-on quota on the product path offers the chat the sender still has", () => {
-  assertEquals(chipActions(productTryonErrorMessage("quota", product, LIFF)), [
+  assertEquals(chipActions(productTryonErrorMessage("quota", null, product, LIFF)), [
     { type: "message", label: "找衣服看看", text: "有什麼推薦的商品" },
   ]);
 });
 
 Deno.test("a product that would not generate offers both remedies its text names", () => {
   // Without the catalog link, "請換一件" names a remedy with no button behind it.
-  assertEquals(chipActions(productTryonErrorMessage("generation", product, LIFF)), [
+  assertEquals(chipActions(productTryonErrorMessage("generation", null, product, LIFF)), [
     {
       type: "postback",
       label: "再試一次",
@@ -142,7 +142,7 @@ Deno.test("a product that would not generate offers both remedies its text names
 Deno.test("an unknown failure offers only the retry, not a different product", () => {
   // "出了點狀況，請稍後再試" is a fault on our side rather than this product's,
   // so a different product would likely fail the same way.
-  assertEquals(chipActions(productTryonErrorMessage("unknown", product, LIFF)), [
+  assertEquals(chipActions(productTryonErrorMessage("unknown", null, product, LIFF)), [
     {
       type: "postback",
       label: "再試一次",
@@ -161,8 +161,8 @@ Deno.test("a product that is gone offers three ways to find another", () => {
 });
 
 Deno.test("a busy try-on offers no chip on either path", () => {
-  assertEquals(chipActions(tryonErrorMessage("busy")), []);
-  assertEquals(chipActions(productTryonErrorMessage("busy", product, LIFF)), []);
+  assertEquals(chipActions(tryonErrorMessage("busy", null)), []);
+  assertEquals(chipActions(productTryonErrorMessage("busy", null, product, LIFF)), []);
 });
 
 const wardrobeItem: WardrobeItemInfo = {
@@ -209,7 +209,7 @@ Deno.test("the wardrobe result card leads with the way to shop", () => {
 
 Deno.test("a wardrobe try-on can be retried by its own id", () => {
   // deno-lint-ignore no-explicit-any
-  const message = wardrobeTryonErrorMessage("generation", wardrobeItem) as any;
+  const message = wardrobeTryonErrorMessage("generation", null, wardrobeItem) as any;
   const [retry] = message.quickReply.items;
 
   assertEquals(retry.action.type, "postback");
@@ -219,7 +219,7 @@ Deno.test("a wardrobe try-on can be retried by its own id", () => {
 
 Deno.test("a busy service offers no button to press", () => {
   // deno-lint-ignore no-explicit-any
-  const message = wardrobeTryonErrorMessage("busy", wardrobeItem) as any;
+  const message = wardrobeTryonErrorMessage("busy", null, wardrobeItem) as any;
   assertEquals(message.quickReply, undefined);
 });
 
@@ -230,7 +230,7 @@ Deno.test("an outfit retry chip clamps an over-long title in its displayText and
     pieces: [{ kind: "product" as const, item: product }, { kind: "product" as const, item: { ...product, id: "a1b2c3d4-e5f6-4789-8abc-def012345678" } }],
   };
   // deno-lint-ignore no-explicit-any
-  const message = outfitTryonErrorMessage("generation", outfit) as any;
+  const message = outfitTryonErrorMessage("generation", null, outfit) as any;
   const [retry] = message.quickReply.items;
 
   assertEquals(retry.action.displayText, `試穿「${clamped}」`);
