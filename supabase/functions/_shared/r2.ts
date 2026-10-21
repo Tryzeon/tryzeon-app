@@ -31,6 +31,7 @@ export const getR2Client = () => {
     _r2Client = new S3Client({
       region: "auto",
       endpoint: Deno.env.get("R2_ENDPOINT")!,
+      forcePathStyle: true,
       requestHandler: new FetchHttpHandler(),
       credentials: {
         accessKeyId: Deno.env.get("R2_ACCESS_KEY_ID")!,
