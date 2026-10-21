@@ -54,8 +54,8 @@ Future<void> main() async {
   };
 
   await Supabase.initialize(
-    url: Env.supabaseUrl,
-    anonKey: Env.supabaseAnonKey,
+    url: Env().supabaseUrl,
+    anonKey: Env().supabaseAnonKey,
     authOptions: const FlutterAuthClientOptions(
       authFlowType: AuthFlowType.pkce,
     ),
@@ -75,7 +75,7 @@ Future<void> main() async {
       await Purchases.setLogLevel(LogLevel.debug);
     }
 
-    final purchasesConfig = PurchasesConfiguration(Env.revenueCatApiKey);
+    final purchasesConfig = PurchasesConfiguration(Env().revenueCatApiKey);
     await Purchases.configure(purchasesConfig);
   } catch (e, stack) {
     AppLogger.error('[RevenueCat] Initialization failed', e, stack);

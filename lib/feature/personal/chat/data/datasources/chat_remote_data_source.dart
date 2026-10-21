@@ -22,7 +22,7 @@ class ChatRemoteDataSource {
   Stream<ChatStreamEventDto> sendMessageStream(
     final ChatRequest request,
   ) async* {
-    final url = '${Env.supabaseUrl}/functions/v1/$_chatFunction';
+    final url = '${Env().supabaseUrl}/functions/v1/$_chatFunction';
     final accessToken = _supabase.auth.currentSession?.accessToken ?? '';
 
     final response = await _dio.post<ResponseBody>(
@@ -32,7 +32,7 @@ class ChatRemoteDataSource {
         responseType: ResponseType.stream,
         headers: {
           'Authorization': 'Bearer $accessToken',
-          'apikey': Env.supabaseAnonKey,
+          'apikey': Env().supabaseAnonKey,
           'Content-Type': 'application/json',
         },
         validateStatus: (final _) => true,
