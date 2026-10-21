@@ -67,14 +67,10 @@ _ModeQuota _quotaOf(final UsageQuota? snapshot, final FeatureQuota? quota) {
   if (quota.quota == 0) {
     return (availability: _ModeAvailability.locked, status: null);
   }
-  if (quota.isExhausted) {
-    return (
-      availability: _ModeAvailability.exhausted,
-      status: exhaustedLabel(snapshot),
-    );
-  }
   return (
-    availability: _ModeAvailability.open,
+    availability: quota.isExhausted
+        ? _ModeAvailability.exhausted
+        : _ModeAvailability.open,
     status: remainingLabel(snapshot, quota.remaining),
   );
 }

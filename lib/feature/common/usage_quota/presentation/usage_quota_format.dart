@@ -26,8 +26,5 @@ String exhaustedLabel(final UsageQuota quota, {final String feature = ''}) {
   return reset == null ? label : '$label，$reset 重置';
 }
 
-String remainingLabel(final UsageQuota quota, final int remaining) {
-  final label = '${periodLabel(quota.period)}剩 $remaining 次';
-  final reset = resetLabel(quota);
-  return reset == null ? label : '$label · $reset 重置';
-}
+String remainingLabel(final UsageQuota quota, final int remaining) =>
+    '${periodLabel(quota.period)}剩 $remaining 次';

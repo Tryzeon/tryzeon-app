@@ -147,17 +147,15 @@ void main() {
     expect(find.text('今日剩 7 次'), findsOneWidget);
   });
 
-  testWidgets('shows the cycle remaining quota and reset date for pro', (
-    final tester,
-  ) async {
+  testWidgets('shows the cycle remaining quota for pro', (final tester) async {
     await open(
       tester,
       quota: () async => proQuota(tryonImageUsed: 12, tryonVideoUsed: 1),
       tier: AppSubscriptionTier.pro,
     );
 
-    expect(find.text('本期剩 238 次 · 11/5 重置'), findsOneWidget);
-    expect(find.text('本期剩 2 次 · 11/5 重置'), findsOneWidget);
+    expect(find.text('本期剩 238 次'), findsOneWidget);
+    expect(find.text('本期剩 2 次'), findsOneWidget);
   });
 
   testWidgets('offers an upgrade instead of a locked video mode', (
@@ -219,7 +217,7 @@ void main() {
       tier: AppSubscriptionTier.pro,
     );
 
-    expect(find.text('本期次數已用完，11/5 重置'), findsOneWidget);
+    expect(find.text('本期剩 0 次'), findsOneWidget);
     expect(find.text('升級方案取得更多次數'), findsOneWidget);
     expect(picked, isEmpty);
   });
@@ -235,7 +233,7 @@ void main() {
     await tester.tap(find.text('圖片試穿'));
     await settle(tester);
 
-    expect(find.text('本期次數已用完，11/5 重置'), findsOneWidget);
+    expect(find.text('本期剩 0 次'), findsOneWidget);
     expect(find.text('升級方案取得更多次數'), findsNothing);
     expect(picked, isEmpty);
   });
@@ -249,7 +247,7 @@ void main() {
       tier: AppSubscriptionTier.free,
     );
 
-    expect(find.text('今日次數已用完'), findsOneWidget);
+    expect(find.text('今日剩 0 次'), findsOneWidget);
     expect(find.text('升級方案取得更多次數'), findsOneWidget);
   });
 
@@ -262,7 +260,7 @@ void main() {
         tier: null,
       );
 
-      expect(find.text('今日次數已用完'), findsOneWidget);
+      expect(find.text('今日剩 0 次'), findsOneWidget);
       expect(find.text('升級方案取得更多次數'), findsNothing);
     },
   );

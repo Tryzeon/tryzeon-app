@@ -51,11 +51,8 @@ void main() {
     expect(exhaustedLabel(quota, feature: '試穿'), '本期試穿次數已用完，11/5 重置');
   });
 
-  test('the remaining count names the reset date only for a cycle', () {
+  test('the remaining count never names the reset date', () {
     expect(remainingLabel(quotaOf(QuotaPeriod.day), 7), '今日剩 7 次');
-    expect(
-      remainingLabel(quotaOf(QuotaPeriod.month), 238),
-      '本期剩 238 次 · 11/5 重置',
-    );
+    expect(remainingLabel(quotaOf(QuotaPeriod.month), 238), '本期剩 238 次');
   });
 }
