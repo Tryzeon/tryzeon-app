@@ -1,3 +1,5 @@
+project_id = "tryzeon-app"
+
 [functions.revenuecat-webhook]
 verify_jwt = false
 
@@ -19,3 +21,9 @@ verify_jwt = false
 
 [functions.line-auth]
 verify_jwt = false
+
+# Local dev only; prod's templates are set in the dashboard. The app signs in
+# with the 6-digit code, which the CLI's default templates leave out.
+[auth.email.template.magic_link]
+subject = "Tryzeon 驗證碼"
+content_path = "./supabase/templates/otp.html"

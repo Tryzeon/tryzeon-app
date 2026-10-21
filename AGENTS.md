@@ -18,7 +18,14 @@
 
 ```bash
 dart run build_runner build --delete-conflicting-outputs   # codegen: riverpod, freezed, json, isar, auto_mappr, envied
+scripts/local-backend.sh up|down|status                     # shared local dev backend (Supabase, SeaweedFS for R2, Redis for Upstash), one for all worktrees; up also serves the edge functions of the worktree it runs in
+scripts/local-backend.sh snapshot|restore <name>            # save / roll back the dev data and files around a branch's migrations
+supabase migration up --local                               # apply this branch's migrations to the shared dev database
+supabase functions serve                                    # switch the running backend to this worktree's edge functions (Ctrl-C leaves none until the next up/serve)
+flutter run --dart-define=APP_ENV=local                     # point a debug build at the local backend (default is prod)
 ```
+
+The local backend is fully separate from prod: secrets come from `supabase/functions/.env` (template `supabase/functions/.env.example`), and the Mac must resolve `host.docker.internal` to `127.0.0.1` (`/etc/hosts`) so presigned URLs signed inside Docker work in the simulator.
 
 Code generation is required after editing any annotated file (`@riverpod`, `@freezed`, `@JsonSerializable`, Isar `@collection`, `@AutoMappr`, `@Envied`).
 

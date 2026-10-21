@@ -1,0 +1,15 @@
+{
+  "identities": [
+    {
+      "name": "tryzeon-dev",
+      "credentials": [
+        { "accessKey": "tryzeon-dev", "secretKey": "tryzeon-dev-secret" }
+      ],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    },
+    {
+      "name": "anonymous",
+      "actions": ["Read:tryzeon-public-images"]
+    }
+  ]
+}

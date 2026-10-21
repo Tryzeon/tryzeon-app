@@ -72,6 +72,7 @@ app.*.map.json
 
 # supabase temp files
 */.temp
+*/.branches
 .worktrees/
 
 # Worktrees
