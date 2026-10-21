@@ -50,19 +50,19 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDrSODDuxAY2IepF5ify3oCdJqdzgKGGko',
-    appId: '1:924030382971:android:7898865fd25c64ebff83de',
-    messagingSenderId: '924030382971',
-    projectId: 'tryzeon-app',
-    storageBucket: 'tryzeon-app.firebasestorage.app',
+    apiKey: 'AIzaSyC8m3IZUTF0IxJ4ASxBxtDOBWMSXMdMQ1o',
+    appId: '1:947162907000:android:c7af51f34a675c8b0dc88d',
+    messagingSenderId: '947162907000',
+    projectId: 'tryzeon-prod',
+    storageBucket: 'tryzeon-prod.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyAlFcjcHC_jLScwAjUAJ0lVFRkjEaccIhY',
-    appId: '1:924030382971:ios:a8f6b39ae8125659ff83de',
-    messagingSenderId: '924030382971',
-    projectId: 'tryzeon-app',
-    storageBucket: 'tryzeon-app.firebasestorage.app',
+    apiKey: 'AIzaSyBYD3Y7YlzwQQCei9Lho1z6yCcPDJJfXyc',
+    appId: '1:947162907000:ios:bfa24c4c4abbedc00dc88d',
+    messagingSenderId: '947162907000',
+    projectId: 'tryzeon-prod',
+    storageBucket: 'tryzeon-prod.firebasestorage.app',
     iosBundleId: 'com.tryzeon.app',
   );
 }

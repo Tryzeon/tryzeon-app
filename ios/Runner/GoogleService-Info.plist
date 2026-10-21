@@ -3,23 +3,21 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>924030382971-leijmlmni8hjrtlbeum428f9bl7ebtu0.apps.googleusercontent.com</string>
+	<string>947162907000-rkuogjc52cqlj38qh6vl0cl6k9574tbk.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.924030382971-leijmlmni8hjrtlbeum428f9bl7ebtu0</string>
-	<key>ANDROID_CLIENT_ID</key>
-	<string>924030382971-flj81snin9f918jf0ik5i9alq4u3l7h9.apps.googleusercontent.com</string>
+	<string>com.googleusercontent.apps.947162907000-rkuogjc52cqlj38qh6vl0cl6k9574tbk</string>
 	<key>API_KEY</key>
-	<string>AIzaSyAlFcjcHC_jLScwAjUAJ0lVFRkjEaccIhY</string>
+	<string>AIzaSyBYD3Y7YlzwQQCei9Lho1z6yCcPDJJfXyc</string>
 	<key>GCM_SENDER_ID</key>
-	<string>924030382971</string>
+	<string>947162907000</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.tryzeon.app</string>
 	<key>PROJECT_ID</key>
-	<string>tryzeon-app</string>
+	<string>tryzeon-prod</string>
 	<key>STORAGE_BUCKET</key>
-	<string>tryzeon-app.firebasestorage.app</string>
+	<string>tryzeon-prod.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -31,6 +29,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:924030382971:ios:00146c9d17963e5cff83de</string>
+	<string>1:947162907000:ios:bfa24c4c4abbedc00dc88d</string>
 </dict>
 </plist>
