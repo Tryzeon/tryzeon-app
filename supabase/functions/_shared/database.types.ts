@@ -437,34 +437,25 @@ export type Database = {
       };
       subscription_tiers: {
         Row: {
-          chat_limit: number;
           created_at: string;
           id: string;
           tryon_image_quota: number;
-          tryon_limit: number;
           tryon_video_quota: number;
-          video_limit: number;
           wardrobe_limit: number;
         };
         ComputedFields: never;
         Insert: {
-          chat_limit: number;
           created_at?: string;
           id: string;
           tryon_image_quota: number;
-          tryon_limit: number;
           tryon_video_quota: number;
-          video_limit?: number;
           wardrobe_limit: number;
         };
         Update: {
-          chat_limit?: number;
           created_at?: string;
           id?: string;
           tryon_image_quota?: number;
-          tryon_limit?: number;
           tryon_video_quota?: number;
-          video_limit?: number;
           wardrobe_limit?: number;
         };
         Relationships: [];
@@ -580,31 +571,6 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
-      };
-      user_daily_usage: {
-        Row: {
-          chat_count: number;
-          tryon_count: number;
-          usage_date: string;
-          user_id: string;
-          video_count: number;
-        };
-        ComputedFields: never;
-        Insert: {
-          chat_count?: number;
-          tryon_count?: number;
-          usage_date?: string;
-          user_id: string;
-          video_count?: number;
-        };
-        Update: {
-          chat_count?: number;
-          tryon_count?: number;
-          usage_date?: string;
-          user_id?: string;
-          video_count?: number;
-        };
-        Relationships: [];
       };
       user_profiles: {
         Row: {
@@ -749,10 +715,6 @@ export type Database = {
       };
     };
     Functions: {
-      cleanup_old_daily_usage: {
-        Args: Record<PropertyKey, never>;
-        Returns: undefined;
-      };
       consume_quota: {
         Args: {
           p_feature: Database["public"]["Enums"]["usage_feature"];
@@ -760,16 +722,8 @@ export type Database = {
         };
         Returns: Json;
       };
-      decrement_feature_usage: {
-        Args: { p_feature_name: string; p_user_id: string };
-        Returns: boolean;
-      };
       get_quota_snapshot: { Args: Record<PropertyKey, never>; Returns: Json };
       get_shop_product: { Args: { p_id: string }; Returns: Json };
-      increment_feature_usage: {
-        Args: { p_feature_name: string; p_user_id: string };
-        Returns: Json;
-      };
       is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       list_shop_products: {
         Args: {
