@@ -37,7 +37,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.924030382971-leijmlmni8hjrtlbeum428f9bl7ebtu0</string>
+				<string>com.googleusercontent.apps.947162907000-rkuogjc52cqlj38qh6vl0cl6k9574tbk</string>
 			</array>
 		</dict>
 		<dict>
@@ -54,9 +54,9 @@
 	<key>FlutterDeepLinkingEnabled</key>
 	<true/>
 	<key>GIDClientID</key>
-	<string>924030382971-leijmlmni8hjrtlbeum428f9bl7ebtu0.apps.googleusercontent.com</string>
+	<string>947162907000-rkuogjc52cqlj38qh6vl0cl6k9574tbk.apps.googleusercontent.com</string>
 	<key>GIDServerClientID</key>
-	<string>924030382971-ppc2nttqs2dn977e4b6j79i83g03bk11.apps.googleusercontent.com</string>
+	<string>947162907000-46pmc6k02mdftuddmvpapahqt4nnnui1.apps.googleusercontent.com</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>

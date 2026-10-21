@@ -6,7 +6,7 @@ class AppConstants {
   static const String googleMapsQueryUrl =
       'https://www.google.com/maps/search/?api=1&query=';
   static const String googleServerClientId =
-      '924030382971-ppc2nttqs2dn977e4b6j79i83g03bk11.apps.googleusercontent.com';
+      '947162907000-46pmc6k02mdftuddmvpapahqt4nnnui1.apps.googleusercontent.com';
   static const String lineChannelId = '2010556446';
 
   static String productWebUrl(final String productId) =>
