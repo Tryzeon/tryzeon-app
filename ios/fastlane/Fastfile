@@ -58,7 +58,7 @@ platform :ios do
       key_content: ENV['APP_STORE_CONNECT_API_KEY_KEY_CONTENT'],
     )
 
-    setup_ci
+    setup_ci(set_default_keychain: false)
 
     sync_code_signing(type: "appstore")
 
