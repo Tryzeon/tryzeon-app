@@ -4,20 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/core/extensions/failure_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/app_confirm_dialog.dart';
 import 'package:tryzeon/core/presentation/widgets/app_keyboard_dismisser.dart';
 import 'package:tryzeon/core/presentation/widgets/app_page_header.dart';
-import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/router/shells/personal_tab.dart';
 import 'package:tryzeon/core/router/shells/tab_reselect.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/feature/personal/chat/domain/failures/chat_rate_limited_failure.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/state/chat_timeline.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_input_bar.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_jump_to_latest_button.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_timeline_list.dart';
-import 'package:tryzeon/feature/personal/chat/providers/chat_event.dart';
 import 'package:tryzeon/feature/personal/chat/providers/chat_notifier.dart';
 
 class ChatPage extends HookConsumerWidget {
@@ -60,13 +56,6 @@ class ChatPage extends HookConsumerWidget {
       );
     }
 
-    void showRateLimited() {
-      TopNotification.show(
-        context,
-        message: const ChatRateLimitedFailure().displayMessage(),
-      );
-    }
-
     ref.listen(chatTimelineProvider.select((final e) => e.length), (
       final previous,
       final next,
@@ -90,17 +79,6 @@ class ChatPage extends HookConsumerWidget {
       if (!scrollController.hasClients || scrollController.offset <= 0) return;
       scrollToLatest(curve: AppCurves.emphasized);
     });
-
-    useEffect(() {
-      final subscription = notifier.events.listen((final event) {
-        if (!context.mounted) return;
-        switch (event) {
-          case ChatRateLimited():
-            showRateLimited();
-        }
-      });
-      return subscription.cancel;
-    }, [notifier]);
 
     void sendMessage(final String text) {
       final trimmed = text.trim();

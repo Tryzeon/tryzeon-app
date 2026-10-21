@@ -7,7 +7,6 @@ import 'package:tryzeon/feature/personal/chat/domain/entities/chat_items.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_stream_event.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
-import 'package:tryzeon/feature/personal/chat/providers/chat_event.dart';
 import 'package:tryzeon/feature/personal/chat/providers/chat_providers.dart';
 
 part 'chat_notifier.freezed.dart';
@@ -41,16 +40,8 @@ sealed class ChatState with _$ChatState {
 
 @riverpod
 class ChatNotifier extends _$ChatNotifier {
-  final StreamController<ChatEvent> _events =
-      StreamController<ChatEvent>.broadcast();
-
-  Stream<ChatEvent> get events => _events.stream;
-
   @override
-  ChatState build() {
-    ref.onDispose(_events.close);
-    return const ChatState(messages: [_greetingMessage]);
-  }
+  ChatState build() => const ChatState(messages: [_greetingMessage]);
 
   void reset() {
     state = ChatState(
@@ -129,6 +120,5 @@ class ChatNotifier extends _$ChatNotifier {
       failure: failure,
       isLoading: false,
     );
-    if (failure is RateLimitFailure) _events.add(const ChatEvent.rateLimited());
   }
 }

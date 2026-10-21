@@ -6,8 +6,8 @@ import 'package:tryzeon/feature/personal/chat/domain/entities/chat_items.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_stream_event.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
+import 'package:tryzeon/feature/personal/chat/domain/failures/chat_rate_limited_failure.dart';
 import 'package:tryzeon/feature/personal/chat/domain/usecases/send_chat_message.dart';
-import 'package:tryzeon/feature/personal/chat/providers/chat_event.dart';
 import 'package:tryzeon/feature/personal/chat/providers/chat_notifier.dart';
 import 'package:tryzeon/feature/personal/chat/providers/chat_providers.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
@@ -180,16 +180,16 @@ void main() {
     expect(container.read(chatProvider).failure, isA<ServerFailure>());
   });
 
-  test('a rate-limit failure emits rateLimited', () async {
+  test('a rate-limit failure is kept for the timeline to show', () async {
     final (:container, histories: _) = _setUp([
-      [const ChatStreamEvent.failed(RateLimitFailure())],
+      [const ChatStreamEvent.failed(ChatRateLimitedFailure())],
     ]);
-    final notifier = container.read(chatProvider.notifier);
 
-    final emitted = expectLater(notifier.events, emits(isA<ChatRateLimited>()));
-    await notifier.sendMessage('找白襯衫');
-    await emitted;
+    await container.read(chatProvider.notifier).sendMessage('找白襯衫');
 
-    expect(container.read(chatProvider).failure, isA<RateLimitFailure>());
+    expect(
+      container.read(chatProvider).failure,
+      const ChatRateLimitedFailure(),
+    );
   });
 }
