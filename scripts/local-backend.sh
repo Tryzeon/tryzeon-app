@@ -7,6 +7,8 @@ readonly STACK_DB_CONTAINER="supabase_db_tryzeon-app"
 readonly COMPOSE_FILE="scripts/local-backend/compose.yaml"
 readonly FUNCTIONS_ENV="supabase/functions/.env"
 readonly S3_BUCKETS=(tryzeon-public-images tryzeon-tryon-images tryzeon-tryon-videos)
+readonly PUBLIC_IMAGES_BUCKET="tryzeon-public-images"
+readonly PUBLIC_IMAGES_SEED="supabase/seed/public-images"
 readonly VOLUMES=(
   supabase_db_tryzeon-app
   supabase_storage_tryzeon-app
@@ -51,6 +53,23 @@ ensure_buckets() {
   done
 }
 
+seed_public_images() {
+  local file key content_type
+  while IFS= read -r file; do
+    key="${file#"$PUBLIC_IMAGES_SEED"/}"
+    case "$file" in
+      *.jpg | *.jpeg) content_type="image/jpeg" ;;
+      *.png) content_type="image/png" ;;
+      *.webp) content_type="image/webp" ;;
+      *) die "unsupported seed image type: $file" ;;
+    esac
+    curl -sf -o /dev/null --aws-sigv4 "aws:amz:auto:s3" --user "tryzeon-dev:tryzeon-dev-secret" \
+      -H "Content-Type: $content_type" -H "x-amz-content-sha256: UNSIGNED-PAYLOAD" \
+      -T "$file" "http://127.0.0.1:8333/$PUBLIC_IMAGES_BUCKET/$key" ||
+      die "failed to upload seed image $key"
+  done < <(find "$PUBLIC_IMAGES_SEED" -type f ! -name '.*')
+}
+
 preflight() {
   [[ -r "$FUNCTIONS_ENV" ]] ||
     die "$PWD/$FUNCTIONS_ENV is missing or unreadable; create it in the main checkout from supabase/functions/.env.example"
@@ -66,6 +85,7 @@ cmd_up() {
   supabase start
   compose up -d --wait
   ensure_buckets
+  seed_public_images
 
   cat <<'EOF'
 
