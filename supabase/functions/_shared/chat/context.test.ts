@@ -42,3 +42,11 @@ Deno.test("buildChatContext points the styling rationale at an outfit's reason",
   assertStringIncludes(STYLING_GUIDE, "寫進該套的 reason");
   assertStringIncludes(systemInstruction, "reason");
 });
+
+Deno.test("buildChatContext asks for suggestions in the user's voice, only for what chat can do", async () => {
+  const { systemInstruction } = await buildChatContext(client, "u1");
+  assertStringIncludes(systemInstruction, "suggestions");
+  assertStringIncludes(systemInstruction, "使用者的口吻");
+  assertStringIncludes(systemInstruction, "≤ 20 字");
+  assertStringIncludes(systemInstruction, "不可建議試穿");
+});
