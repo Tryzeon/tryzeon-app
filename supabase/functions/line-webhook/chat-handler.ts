@@ -94,7 +94,7 @@ export async function handleTextMessage(
     // A LINE event carries no Supabase session, so there is no user-scoped
     // client to bound these reads; every query the core runs here is
     // server-composed and scoped by `userId`.
-    const { messages, answer, items } = await runChat(
+    const { messages, answer, items, suggestions } = await runChat(
       deps.admin,
       { userId, messages: transcript },
       {
@@ -102,7 +102,7 @@ export async function handleTextMessage(
       },
     );
 
-    await deliver(deps, event, renderAnswer(answer, items, deps.liffUrl));
+    await deliver(deps, event, renderAnswer(answer, items, deps.liffUrl, suggestions));
 
     await deps.conversations.save(
       event.sourceUserId,

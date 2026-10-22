@@ -143,26 +143,6 @@ function foldSections(sections: Section[]): Section[] {
   return lines.length > 0 ? [{ kind: "text", lines }, ...rows] : rows;
 }
 
-/** Only when the answer recommended something: the chips steer the next set of picks. */
-function answerChips(sections: Section[]): object[] {
-  if (sections.some((s) => s.kind === "outfits")) {
-    return [
-      messageChip("換個風格", "換個風格看看"),
-      messageChip("便宜一點的", "有便宜一點的嗎"),
-      messageChip("用我衣櫃的搭", "用我衣櫃裡的衣服幫我搭"),
-    ];
-  }
-  const recommended = sections.some((s) =>
-    s.kind === "picks" && s.picks.some((card) => card.kind === "product")
-  );
-  if (!recommended) return [];
-  return [
-    messageChip("便宜一點的", "有便宜一點的嗎"),
-    messageChip("換個風格", "換個風格看看"),
-    messageChip("幫我配整套", "幫我配一整套穿搭"),
-  ];
-}
-
 /**
  * When the interleaving fits it is kept; when it does not, the prose folds into
  * one message ahead of the rows. Only the fold can drop anything, and only once
@@ -171,7 +151,12 @@ function answerChips(sections: Section[]): object[] {
  * The chips are attached last, after any fold and its slice: a message the slice
  * drops must not take its chip's would-be home down with it.
  */
-export function renderAnswer(blocks: AnswerBlock[], items: AnswerItems, liffUrl: string): object[] {
+export function renderAnswer(
+  blocks: AnswerBlock[],
+  items: AnswerItems,
+  liffUrl: string,
+  suggestions: string[],
+): object[] {
   const sections = toSections(blocks, items);
 
   // An answer of only unhydrated items leaves nothing renderable, and LINE
@@ -183,5 +168,5 @@ export function renderAnswer(blocks: AnswerBlock[], items: AnswerItems, liffUrl:
     ? detailed
     : foldSections(sections).flatMap((s) => sectionMessages(s, liffUrl)).slice(0, MAX_LINE_MESSAGES);
 
-  return dressLast(messages, answerChips(sections));
+  return dressLast(messages, suggestions.map((s) => messageChip(s, s)));
 }

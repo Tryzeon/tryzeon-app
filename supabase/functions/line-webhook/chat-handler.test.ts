@@ -49,7 +49,12 @@ function fakeLine(opts: { loadingFails?: boolean; replyFails?: boolean } = {}) {
  */
 function fakeChat(
   outcome:
-    | { blocks: AnswerBlock[]; rounds?: ChatMessage[]; items?: AnswerItems }
+    | {
+      blocks: AnswerBlock[];
+      rounds?: ChatMessage[];
+      items?: AnswerItems;
+      suggestions?: string[];
+    }
     | { throws: unknown },
 ) {
   const seen: { params: ChatParams; deps: RunChatAgentDeps }[] = [];
@@ -60,6 +65,7 @@ function fakeChat(
       messages: [...outcome.rounds ?? [], { role: "assistant", content: outcome.blocks }],
       answer: outcome.blocks,
       items: outcome.items ?? { products: {}, wardrobe: {} },
+      suggestions: outcome.suggestions ?? [],
     });
   };
   return { runChat, seen };
@@ -113,6 +119,27 @@ Deno.test("runs one turn for the incoming message and replies with the answer", 
     { role: "user", content: [{ type: "text", text: "找白襯衫" }] },
   ]);
   assertEquals(replied, [[{ type: "text", text: "為你找到" }]]);
+});
+
+Deno.test("a chat answer is delivered with the model's suggestions as chips, and stored without them", async () => {
+  const { line, replied } = fakeLine();
+  const conversations = fakeConversations();
+  const blocks: AnswerBlock[] = [{ type: "text", text: "要單品還是整套？" }];
+  const chat = fakeChat({ blocks, suggestions: ["單品"] });
+
+  await handleTextMessage(
+    deps({ line, runChat: chat.runChat, conversations: conversations.store }),
+    { replyToken: "rt", sourceUserId: USER, text: "找衣服" },
+  );
+
+  assertEquals(replied, [[{
+    type: "text",
+    text: "要單品還是整套？",
+    quickReply: {
+      items: [{ type: "action", action: { type: "message", label: "單品", text: "單品" } }],
+    },
+  }]]);
+  assertEquals(conversations.writes[0].at(-1), { role: "assistant", content: blocks });
 });
 
 Deno.test("substitutes this channel's hydrator, and nothing else", async () => {
