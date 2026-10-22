@@ -132,6 +132,7 @@ void main() {
       },
       {
         'type': 'done',
+        'suggestions': ['單品', '整套'],
         'messages': [
           {
             'role': 'assistant',
@@ -214,6 +215,37 @@ void main() {
     expect(replied.items.products, isEmpty);
     expect(replied.items.wardrobe.keys, ['w1']);
     expect(replied.items.wardrobe['w1']!.imagePath, 'u1/w1.jpg');
+  });
+
+  test("carries the answer's suggestions", () async {
+    final events = await run([
+      {
+        'type': 'done',
+        'messages': <Object>[],
+        'items': {
+          'products': <String, Object>{},
+          'wardrobe': <String, Object>{},
+        },
+        'suggestions': ['單品', '整套'],
+      },
+    ]);
+
+    expect((events.single as ChatReplied).suggestions, ['單品', '整套']);
+  });
+
+  test('a done frame without suggestions fails with ServerFailure', () async {
+    final events = await run([
+      {
+        'type': 'done',
+        'messages': <Object>[],
+        'items': {
+          'products': <String, Object>{},
+          'wardrobe': <String, Object>{},
+        },
+      },
+    ]);
+
+    expect(events.single, const ChatStreamEvent.failed(ServerFailure()));
   });
 
   test('skips unknown event types', () async {
@@ -327,6 +359,7 @@ void main() {
     final events = await run([
       {
         'type': 'done',
+        'suggestions': <String>[],
         'messages': [
           {
             'role': 'assistant',
@@ -375,6 +408,7 @@ void main() {
     final events = await run([
       {
         'type': 'done',
+        'suggestions': <String>[],
         'messages': [
           {
             'role': 'assistant',
@@ -409,6 +443,7 @@ void main() {
     final events = await run([
       {
         'type': 'done',
+        'suggestions': <String>[],
         'messages': [
           {
             'role': 'assistant',

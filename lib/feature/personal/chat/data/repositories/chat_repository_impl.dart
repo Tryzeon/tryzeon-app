@@ -50,13 +50,15 @@ class ChatRepositoryImpl implements ChatRepository {
     ChatToolResultEventDto() => ChatStreamEvent.toolFinished(
       _mappr.convert<ChatToolResultEventDto, ToolResultBlock>(dto),
     ),
-    ChatDoneEventDto(:final messages, :final items) => ChatStreamEvent.replied(
-      messages: [
-        for (final message in messages)
-          _mappr.convert<ChatMessageDto, ChatMessage>(message),
-      ],
-      items: _mappr.convert<ChatItemsDto, ChatItems>(items),
-    ),
+    ChatDoneEventDto(:final messages, :final items, :final suggestions) =>
+      ChatStreamEvent.replied(
+        messages: [
+          for (final message in messages)
+            _mappr.convert<ChatMessageDto, ChatMessage>(message),
+        ],
+        items: _mappr.convert<ChatItemsDto, ChatItems>(items),
+        suggestions: suggestions,
+      ),
     ChatErrorEventDto(:final code, :final message) => ChatStreamEvent.failed(
       switch (code) {
         ApiErrorCode.rateLimitExceeded => const ChatRateLimitedFailure(),

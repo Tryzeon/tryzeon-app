@@ -32,11 +32,11 @@ Deno.serve(async (req) => {
         try {
           // The client stores `messages` as sent rather than rebuilding the
           // turn from the tool events, which only drive its progress display.
-          const { messages, items } = await runChatAgent(
+          const { messages, items, suggestions } = await runChatAgent(
             userClient!,
             { ...params, onEvent: send },
           );
-          send({ type: "done", messages, items });
+          send({ type: "done", messages, items, suggestions });
         } catch (err) {
           send(errorEvent(err));
         } finally {

@@ -8,7 +8,8 @@ part 'chat_stream_event.freezed.dart';
 
 /// Search steps stream live ([ChatToolStarted]/[ChatToolFinished]) as progress
 /// only; the run ends with exactly one terminal event — [ChatReplied], which
-/// carries the turn's messages as the server recorded them, or [ChatFailed].
+/// carries the turn's messages as the server recorded them and the replies it
+/// offers next, or [ChatFailed].
 @freezed
 sealed class ChatStreamEvent with _$ChatStreamEvent {
   const factory ChatStreamEvent.toolStarted(final ToolUseBlock block) =
@@ -18,6 +19,7 @@ sealed class ChatStreamEvent with _$ChatStreamEvent {
   const factory ChatStreamEvent.replied({
     required final List<ChatMessage> messages,
     required final ChatItems items,
+    required final List<String> suggestions,
   }) = ChatReplied;
   const factory ChatStreamEvent.failed(final Failure failure) = ChatFailed;
 }

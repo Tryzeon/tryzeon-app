@@ -31,6 +31,7 @@ sealed class ChatStreamEventDto with _$ChatStreamEventDto {
   const factory ChatStreamEventDto.done({
     required final List<ChatMessageDto> messages,
     required final ChatItemsDto items,
+    required final List<String> suggestions,
   }) = ChatDoneEventDto;
 
   @JsonSerializable(createToJson: false, checked: true)
