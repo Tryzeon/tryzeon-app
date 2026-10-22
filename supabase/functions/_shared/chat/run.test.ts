@@ -378,3 +378,41 @@ Deno.test("validates before checking the limit", async () => {
   );
   assertEquals(checked, false);
 });
+
+Deno.test("returns the model's suggestions beside the answer, not inside it", async () => {
+  const blocks: AnswerBlock[] = [{ type: "text", text: "要單品還是整套？" }];
+  const result = await runChatAgent(client, params, {
+    checkLimit: allow,
+    loadContext: context,
+    runAgent: fakeAgent({ output: { blocks, suggestions: ["單品", "整套"] } }).runner,
+    hydrate: hydrator({}),
+  });
+
+  assertEquals(result.suggestions, ["單品", "整套"]);
+  assertEquals(result.messages.at(-1)!.content, blocks);
+});
+
+Deno.test("a fallback answer carries no suggestions", async () => {
+  for (const output of [null, { blocks: [], suggestions: ["單品"] }]) {
+    const result = await runChatAgent(client, params, {
+      checkLimit: allow,
+      loadContext: context,
+      runAgent: fakeAgent({ output }).runner,
+      hydrate: hydrator({}),
+    });
+    assertEquals(result.suggestions, []);
+  }
+});
+
+Deno.test("an answer whose suggestions are missing still answers", async () => {
+  const blocks: AnswerBlock[] = [{ type: "text", text: "嗨" }];
+  const result = await runChatAgent(client, params, {
+    checkLimit: allow,
+    loadContext: context,
+    runAgent: fakeAgent({ output: { blocks } }).runner,
+    hydrate: hydrator({}),
+  });
+
+  assertEquals(result.answer, blocks);
+  assertEquals(result.suggestions, []);
+});

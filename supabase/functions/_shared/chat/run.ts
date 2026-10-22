@@ -2,7 +2,7 @@ import { RateLimitedError } from "../errors.ts";
 import { checkChatRateLimit } from "./rate-limit.ts";
 import { buildChatContext } from "./context.ts";
 import { supabaseAnswerRows } from "./hydrate.ts";
-import { answerBlocksOf } from "./logic.ts";
+import { answerBlocksOf, suggestionsOf } from "./logic.ts";
 import { validateChatParams } from "./validate.ts";
 import { runVertexAgent } from "./vertex.ts";
 import type {
@@ -87,5 +87,7 @@ export async function runChatAgent(
     wardrobe: Object.fromEntries(rows.wardrobe),
   };
 
-  return { messages: [...rounds, answer], answer: content, items };
+  const suggestions = blocks.length > 0 ? suggestionsOf(output?.suggestions) : [];
+
+  return { messages: [...rounds, answer], answer: content, items, suggestions };
 }

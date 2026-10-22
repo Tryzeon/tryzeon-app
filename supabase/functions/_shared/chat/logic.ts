@@ -37,6 +37,9 @@ export const ANSWER_LIMITS = {
   MIN_OUTFIT_PIECES: 2,
   // An outfit is tried on whole, so it holds no more than one try-on can wear.
   MAX_OUTFIT_PIECES: TRYON_LIMITS.MAX_GARMENTS,
+  MAX_SUGGESTIONS: 4,
+  // LINE's quick-reply label cap; UTF-16 length over-counts an emoji, which keeps it safe.
+  MAX_SUGGESTION_CHARS: 20,
 } as const;
 
 export const WARDROBE_SELECT = "id, image_path, garment_type, tags, created_at, updated_at";
@@ -362,6 +365,25 @@ export function answerBlocksOf(raw: unknown): AnswerBlock[] {
     }
   }
   return blocks;
+}
+
+/**
+ * A suggestion is sent exactly as shown, so one too long to show is dropped
+ * whole rather than cut into words the model never wrote. One with a line
+ * break is dropped too: LINE does not document a break in a chip label, and a
+ * rejected label fails the whole send.
+ */
+export function suggestionsOf(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  const kept = new Set<string>();
+  for (const entry of raw) {
+    if (typeof entry !== "string") continue;
+    const text = entry.trim();
+    if (text.length === 0 || text.length > ANSWER_LIMITS.MAX_SUGGESTION_CHARS) continue;
+    if (/[\r\n\t]/.test(text)) continue;
+    kept.add(text);
+  }
+  return [...kept].slice(0, ANSWER_LIMITS.MAX_SUGGESTIONS);
 }
 
 // The whole history is replayed verbatim and uncompressed: assistant tool_use →

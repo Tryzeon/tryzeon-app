@@ -146,6 +146,12 @@ export const answerSchema = z.object({
       }),
     ]),
   ),
+  // `.catch`, not `.optional()`: the JSON schema Vertex decodes against is the
+  // input side, which keeps the field required, while a missing or malformed
+  // value parses to none instead of failing the whole answer.
+  suggestions: z.array(z.string()).catch([]).describe(
+    "使用者下一句可能會說的話，用使用者的口吻，每句 ≤ 20 字，0–4 句；沒有合適的就給空陣列",
+  ),
 });
 
 export function buildTools(deps: {

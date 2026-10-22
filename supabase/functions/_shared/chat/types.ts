@@ -45,6 +45,8 @@ export interface ChatResult {
   answer: AnswerBlock[];
   /** The hydrated rows of every id the answer names; never stored, never sent back. */
   items: AnswerItems;
+  /** Replies offered for this turn only: never stored, so never replayed. */
+  suggestions: string[];
 }
 
 export const LIMITS = {

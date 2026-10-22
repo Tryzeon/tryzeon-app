@@ -48,6 +48,7 @@ function fakeChat(blocks: AnswerBlock[]) {
       messages: [{ role: "assistant", content: blocks }],
       answer: blocks,
       items: { products: {}, wardrobe: {} },
+      suggestions: [],
     });
   };
   return { runChat, seen };

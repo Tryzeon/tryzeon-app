@@ -7,6 +7,7 @@ import {
   resolveCategoryFilter,
   picksOf,
   SEARCH_LIMIT,
+  suggestionsOf,
   TOOL_FAILURE_TEXT,
   toModelMessages,
   toSearchResultItem,
@@ -607,4 +608,37 @@ Deno.test("recordRounds reports each call and result as it streams", async () =>
     { type: "tool_use", id: "tu_0", name: "search_products", input: { query: "tu_0" } },
     { type: "tool_result", tool_use_id: "tu_0", content: { items: [{ id: "tu_0-item" }] } },
   ]);
+});
+
+Deno.test("suggestionsOf keeps trimmed strings in order", () => {
+  assertEquals(suggestionsOf([" 單品 ", "整套"]), ["單品", "整套"]);
+});
+
+Deno.test("suggestionsOf reads a non-array as none", () => {
+  assertEquals(suggestionsOf(undefined), []);
+  assertEquals(suggestionsOf("單品"), []);
+});
+
+Deno.test("suggestionsOf drops non-strings and blanks", () => {
+  assertEquals(suggestionsOf(["單品", 1, null, "  ", "整套"]), ["單品", "整套"]);
+});
+
+Deno.test("suggestionsOf drops an over-long suggestion whole rather than cutting it", () => {
+  assertEquals(suggestionsOf(["一".repeat(21), "一".repeat(20)]), ["一".repeat(20)]);
+});
+
+Deno.test("suggestionsOf counts UTF-16 units, so an emoji costs two", () => {
+  assertEquals(suggestionsOf(["一".repeat(19) + "👗"]), []);
+});
+
+Deno.test("suggestionsOf dedupes after trimming, keeping the first", () => {
+  assertEquals(suggestionsOf(["單品", " 單品", "整套"]), ["單品", "整套"]);
+});
+
+Deno.test("suggestionsOf keeps at most four", () => {
+  assertEquals(suggestionsOf(["a", "b", "c", "d", "e"]), ["a", "b", "c", "d"]);
+});
+
+Deno.test("suggestionsOf drops a suggestion that would break across lines", () => {
+  assertEquals(suggestionsOf(["單品\n整套", "換個\t風格", "整套"]), ["整套"]);
 });

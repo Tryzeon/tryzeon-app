@@ -1,5 +1,6 @@
 import { assert, assertEquals, assertStringIncludes } from "@std/assert";
 import { z } from "zod";
+import { zodSchema } from "ai";
 import { answerSchema, runSearchProducts, runSearchWardrobe } from "./tools.ts";
 import type { DbClient } from "../supabase.ts";
 
@@ -103,4 +104,19 @@ Deno.test("answerSchema accepts each block type with its field", () => {
     ],
   });
   assertEquals(parsed.success, true);
+});
+
+Deno.test("answerSchema asks Vertex for suggestions as a required string array", async () => {
+  // deno-lint-ignore no-explicit-any
+  const json = (await zodSchema(answerSchema).jsonSchema) as any;
+  assertEquals(json.required.includes("suggestions"), true);
+  assertEquals(json.properties.suggestions.type, "array");
+  assertEquals(json.properties.suggestions.items.type, "string");
+});
+
+Deno.test("answerSchema never rejects an answer over its suggestions", () => {
+  const blocks = [{ type: "text", text: "嗨" }];
+  assertEquals(answerSchema.safeParse({ blocks }).success, true);
+  assertEquals(answerSchema.safeParse({ blocks, suggestions: [1] }).success, true);
+  assertEquals(answerSchema.safeParse({ blocks, suggestions: "單品" }).success, true);
 });
