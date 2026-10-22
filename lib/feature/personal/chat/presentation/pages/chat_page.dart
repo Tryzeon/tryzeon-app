@@ -10,9 +10,11 @@ import 'package:tryzeon/core/presentation/widgets/app_page_header.dart';
 import 'package:tryzeon/core/router/shells/personal_tab.dart';
 import 'package:tryzeon/core/router/shells/tab_reselect.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/personal/chat/presentation/state/chat_suggestions.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/state/chat_timeline.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_input_bar.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_jump_to_latest_button.dart';
+import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_suggestion_bar.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_timeline_list.dart';
 import 'package:tryzeon/feature/personal/chat/providers/chat_notifier.dart';
 
@@ -22,6 +24,7 @@ class ChatPage extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final entries = ref.watch(chatTimelineProvider);
+    final suggestions = ref.watch(chatSuggestionsProvider);
     final isLoading = ref.watch(chatProvider.select((final s) => s.isLoading));
     final isPristine = ref.watch(
       chatProvider.select((final s) => s.isPristine),
@@ -157,6 +160,7 @@ class ChatPage extends HookConsumerWidget {
                   ],
                 ),
               ),
+              ChatSuggestionBar(suggestions: suggestions, onTap: sendMessage),
               ChatInputBar(
                 controller: controller,
                 isSending: isLoading,
