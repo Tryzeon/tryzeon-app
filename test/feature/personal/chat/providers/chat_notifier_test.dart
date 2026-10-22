@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/error/failures.dart';
@@ -61,6 +63,23 @@ const _answer = ChatMessage(
   return (container: container, histories: histories);
 }
 
+const _suggested = ChatStreamEvent.replied(
+  messages: [_answer],
+  items: ChatItems(),
+  suggestions: ['單品', '整套'],
+);
+
+class _PendingSecondTurn implements SendChatMessage {
+  _PendingSecondTurn(this.pending);
+
+  final Stream<ChatStreamEvent> pending;
+  var _calls = 0;
+
+  @override
+  Stream<ChatStreamEvent> call(final List<ChatMessage> history) =>
+      _calls++ == 0 ? Stream.value(_suggested) : pending;
+}
+
 void main() {
   test('a failed turn rolls back its steps and records the failure', () async {
     final (:container, histories: _) = _setUp([
@@ -88,7 +107,11 @@ void main() {
         const ChatStreamEvent.failed(ServerFailure()),
       ],
       [
-        const ChatStreamEvent.replied(messages: [_answer], items: ChatItems()),
+        const ChatStreamEvent.replied(
+          messages: [_answer],
+          items: ChatItems(),
+          suggestions: [],
+        ),
       ],
     ]);
     final notifier = container.read(chatProvider.notifier);
@@ -131,7 +154,11 @@ void main() {
           ),
           _toolFinished,
           const ChatStreamEvent.toolFinished(ToolResultBlock(toolUseId: 't2')),
-          const ChatStreamEvent.replied(messages: recorded, items: ChatItems()),
+          const ChatStreamEvent.replied(
+            messages: recorded,
+            items: ChatItems(),
+            suggestions: [],
+          ),
         ],
       ]);
 
@@ -154,12 +181,14 @@ void main() {
           ChatStreamEvent.replied(
             messages: const [_answer],
             items: ChatItems(wardrobe: {'w1': w1}),
+            suggestions: const [],
           ),
         ],
         [
           ChatStreamEvent.replied(
             messages: const [_answer],
             items: ChatItems(wardrobe: {'w2': w2}),
+            suggestions: const [],
           ),
         ],
       ]);
@@ -191,5 +220,87 @@ void main() {
       container.read(chatProvider).failure,
       const ChatRateLimitedFailure(),
     );
+  });
+
+  test('a reply keeps its suggestions', () async {
+    final (:container, histories: _) = _setUp([
+      [_suggested],
+    ]);
+
+    await container.read(chatProvider.notifier).sendMessage('找衣服');
+
+    expect(container.read(chatProvider).suggestions, ['單品', '整套']);
+  });
+
+  test('sending clears suggestions before the reply arrives', () async {
+    final pending = StreamController<ChatStreamEvent>();
+    final container = ProviderContainer(
+      retry: (final _, final _) => null,
+      overrides: [
+        sendChatMessageUseCaseProvider.overrideWithValue(
+          _PendingSecondTurn(pending.stream),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    container.listen(chatProvider, (final _, final _) {});
+    final notifier = container.read(chatProvider.notifier);
+
+    await notifier.sendMessage('找衣服');
+    final second = notifier.sendMessage('單品');
+    await Future<void>.delayed(Duration.zero);
+
+    final state = container.read(chatProvider);
+    expect(state.isLoading, isTrue);
+    expect(state.suggestions, isEmpty);
+
+    await pending.close();
+    await second;
+  });
+
+  test('a failed turn leaves no suggestions', () async {
+    final (:container, histories: _) = _setUp([
+      [_suggested],
+      [const ChatStreamEvent.failed(ServerFailure())],
+    ]);
+    final notifier = container.read(chatProvider.notifier);
+
+    await notifier.sendMessage('找衣服');
+    await notifier.sendMessage('單品');
+
+    expect(container.read(chatProvider).suggestions, isEmpty);
+  });
+
+  test('a retry starts without the failed turn\'s suggestions', () async {
+    final (:container, histories: _) = _setUp([
+      [_suggested],
+      [const ChatStreamEvent.failed(ServerFailure())],
+      [
+        const ChatStreamEvent.replied(
+          messages: [_answer],
+          items: ChatItems(),
+          suggestions: [],
+        ),
+      ],
+    ]);
+    final notifier = container.read(chatProvider.notifier);
+
+    await notifier.sendMessage('找衣服');
+    await notifier.sendMessage('單品');
+    await notifier.retry();
+
+    expect(container.read(chatProvider).suggestions, isEmpty);
+  });
+
+  test('a reset leaves no suggestions', () async {
+    final (:container, histories: _) = _setUp([
+      [_suggested],
+    ]);
+    final notifier = container.read(chatProvider.notifier);
+
+    await notifier.sendMessage('找衣服');
+    notifier.reset();
+
+    expect(container.read(chatProvider).suggestions, isEmpty);
   });
 }

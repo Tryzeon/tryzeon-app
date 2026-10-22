@@ -28,6 +28,7 @@ sealed class ChatState with _$ChatState {
   const factory ChatState({
     @Default([]) final List<ChatMessage> messages,
     @Default(ChatItems()) final ChatItems items,
+    @Default([]) final List<String> suggestions,
     @Default(false) final bool isLoading,
     @Default(0) final int generation,
     final Failure? failure,
@@ -61,14 +62,14 @@ class ChatNotifier extends _$ChatNotifier {
     if (trimmed.isEmpty || state.isLoading) return;
 
     _append(_userText(trimmed));
-    state = state.copyWith(failure: null);
+    state = state.copyWith(failure: null, suggestions: const []);
     await _runTurn();
   }
 
   Future<void> retry() async {
     if (state.failure == null || state.isLoading) return;
 
-    state = state.copyWith(failure: null);
+    state = state.copyWith(failure: null, suggestions: const []);
     await _runTurn();
   }
 
@@ -91,13 +92,14 @@ class ChatNotifier extends _$ChatNotifier {
           _append(ChatMessage(role: ChatRole.assistant, content: [block]));
         case ChatToolFinished(:final block):
           _append(ChatMessage(role: ChatRole.user, content: [block]));
-        case ChatReplied(:final messages, :final items):
+        case ChatReplied(:final messages, :final items, :final suggestions):
           terminated = true;
           // The streamed steps were progress; the server's messages are the
           // record the next request replays.
           state = state.copyWith(
             messages: [...state.messages.sublist(0, turnStart), ...messages],
             items: state.items.merge(items),
+            suggestions: suggestions,
           );
         case ChatFailed(:final failure):
           terminated = true;
@@ -118,6 +120,7 @@ class ChatNotifier extends _$ChatNotifier {
     state = state.copyWith(
       messages: state.messages.sublist(0, turnStart),
       failure: failure,
+      suggestions: const [],
       isLoading: false,
     );
   }
