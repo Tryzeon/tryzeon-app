@@ -35,6 +35,11 @@
  * one, its fallback the runner-up. Re-rank when the arena moves. The
  * experimental engine is whatever model is under evaluation.
  *
+ * Image analysis asks `ANALYSIS_MODEL` for `minimal` thinking
+ * (`image-analysis.ts`), which not every model accepts: gemini-3.8-flash
+ * answers 400. A new value needs checking against that setting, not just a new
+ * secret.
+ *
  * Video engines name an API as well as a model: the standard engine goes
  * through the Interactions API, the experimental engine through Veo's
  * `predictLongRunning`. Swapping a value across that line needs a code change

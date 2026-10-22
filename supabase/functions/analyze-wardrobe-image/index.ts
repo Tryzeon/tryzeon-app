@@ -5,7 +5,8 @@ import {
   checkImageAnalysisRateLimit,
   validateBase64,
 } from "../_shared/image-analysis.ts";
-import { json, jsonError } from "../_shared/http.ts";
+import { classifyCoreError } from "../_shared/errors.ts";
+import { coreErrorResponse, json, jsonError } from "../_shared/http.ts";
 import { ANALYSIS_PROMPT, ANALYSIS_SCHEMA, toResponse } from "./analysis.ts";
 
 Deno.serve(async (req) => {
@@ -30,6 +31,8 @@ Deno.serve(async (req) => {
 
     return json(toResponse(parsed));
   } catch (err) {
+    const core = classifyCoreError(err);
+    if (core) return coreErrorResponse(core);
     console.error("analyze-wardrobe-image error", err);
     return jsonError("Internal error", "INTERNAL", 500);
   }
