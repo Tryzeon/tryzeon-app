@@ -11,6 +11,8 @@ import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_product_
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_step_rail.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_wardrobe_card.dart';
 
+const _emptyAnswerText = '抱歉，我沒有理解，可以再說一次你的需求嗎？';
+
 class ChatAssistantTurn extends HookWidget {
   const ChatAssistantTurn({
     super.key,
@@ -38,6 +40,15 @@ class ChatAssistantTurn extends HookWidget {
     final renderedSegments = usePrevious(entry.segments.length);
     final firstNewSegment = renderedSegments ?? entry.segments.length;
 
+    Widget textSegment(final int index, final String text) => ChatEntrance(
+      animate: index >= firstNewSegment,
+      delay: AppDuration.quick * (index - firstNewSegment).clamp(0, index),
+      child: Padding(
+        padding: gutter,
+        child: ChatMarkdownText(text: text),
+      ),
+    );
+
     return AnimatedSize(
       duration: AppDuration.standard,
       curve: AppCurves.enter,
@@ -59,15 +70,10 @@ class ChatAssistantTurn extends HookWidget {
               key: ValueKey(('segment', index)),
               isFirst: index == 0 && entry.steps.isEmpty,
               child: switch (segment) {
-                ChatTextSegment(:final text) => ChatEntrance(
-                  animate: index >= firstNewSegment,
-                  delay:
-                      AppDuration.quick *
-                      (index - firstNewSegment).clamp(0, index),
-                  child: Padding(
-                    padding: gutter,
-                    child: ChatMarkdownText(text: text),
-                  ),
+                ChatTextSegment(:final text) => textSegment(index, text),
+                ChatEmptyAnswerSegment() => textSegment(
+                  index,
+                  _emptyAnswerText,
                 ),
                 ChatPicksSegment(:final picks) => ChatCardRail(
                   cardWidth: ChatCardRail.itemWidth,

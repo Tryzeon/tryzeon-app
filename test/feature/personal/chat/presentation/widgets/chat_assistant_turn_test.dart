@@ -78,4 +78,19 @@ void main() {
     expect(opacityAbove(tester, find.text('reply')), 1);
     expect(opacityAbove(tester, find.text('Tee')), 1);
   });
+
+  testWidgets('an empty answer says it did not understand', (
+    final tester,
+  ) async {
+    await pumpTurn(
+      tester,
+      const ChatAssistantEntry(
+        status: ChatTurnStatus.done,
+        segments: [ChatEmptyAnswerSegment()],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('抱歉，我沒有理解，可以再說一次你的需求嗎？'), findsOneWidget);
+  });
 }

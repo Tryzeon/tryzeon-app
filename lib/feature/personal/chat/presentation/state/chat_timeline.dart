@@ -30,6 +30,7 @@ sealed class ChatToolStep with _$ChatToolStep {
 @freezed
 sealed class ChatSegment with _$ChatSegment {
   const factory ChatSegment.text(final String text) = ChatTextSegment;
+  const factory ChatSegment.emptyAnswer() = ChatEmptyAnswerSegment;
   const factory ChatSegment.picks(final List<ResolvedPick> picks) =
       ChatPicksSegment;
   const factory ChatSegment.outfits(final List<ResolvedOutfit> outfits) =
@@ -103,8 +104,6 @@ ResolvedItem? _resolve(final ItemRef ref, final ChatItems items) =>
       },
     };
 
-const _emptyAnswerText = '抱歉，我沒有理解，可以再說一次你的需求嗎？';
-
 ResolvedOutfit? _resolveOutfit(final ChatOutfit outfit, final ChatItems items) {
   final pieces = [for (final ref in outfit.pieces) _resolve(ref, items)];
   if (pieces.contains(null)) return null;
@@ -170,9 +169,7 @@ List<ChatTimelineEntry> buildChatTimeline(final ChatState state) {
         message.role == ChatRole.assistant &&
         !message.content.any((final block) => block is ToolUseBlock);
     if (isFinalAnswer && !addedSegment) {
-      (turn ??= _OpenTurn()).segments.add(
-        const ChatTextSegment(_emptyAnswerText),
-      );
+      (turn ??= _OpenTurn()).segments.add(const ChatEmptyAnswerSegment());
     }
     if (message.role == ChatRole.assistant &&
         (hasNonToolBlock || isFinalAnswer)) {

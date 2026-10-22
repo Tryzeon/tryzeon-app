@@ -390,14 +390,12 @@ void main() {
     return entries[2] as ChatAssistantEntry;
   }
 
-  const emptyAnswer = ChatTextSegment('抱歉，我沒有理解，可以再說一次你的需求嗎？');
-
   test('an answer whose only pick is missing shows the fallback', () {
     final turn = turnOf([
       const ContentBlock.picks([ChatPick(ref: ItemRef.product('gone'))]),
     ]);
 
-    expect(turn.segments, [emptyAnswer]);
+    expect(turn.segments, [const ChatEmptyAnswerSegment()]);
   });
 
   test('a tool-call-only message adds no fallback', () {
