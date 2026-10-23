@@ -2,66 +2,37 @@ import 'package:json_annotation/json_annotation.dart';
 
 @JsonEnum(valueField: 'value')
 enum ClothingStyle {
-  // 🌍 Regional / national styles
-  japanese('japanese'),
-  korean('korean'),
-  western('western'),
-  british('british'),
-  chinese('chinese'),
-
-  // 👕 Everyday / casual styles
-  minimalist('minimalist'),
+  basic('basic'),
   casual('casual'),
-  sporty('sporty'),
-  lazy('lazy'),
-  streetwear('streetwear'),
-
-  // 💼 Professional / occasion styles
   business('business'),
-  preppy('preppy'),
-  functional('functional'),
-
-  // 🕰️ Refined / classic styles
-  vintage('vintage'),
-  artsy('artsy'),
-  literary('literary'),
   elegant('elegant'),
-
-  // ✨ Personality / mood styles
-  mature('mature'),
-  neutral('neutral'),
-  spicy('spicy'),
-  sweet('sweet');
+  sweet('sweet'),
+  streetwear('streetwear'),
+  sporty('sporty'),
+  vintage('vintage'),
+  preppy('preppy'),
+  edgy('edgy'),
+  natural('natural'),
+  party('party'),
+  homewear('homewear');
 
   const ClothingStyle(this.value);
   final String value;
 
   String get label => switch (this) {
-    ClothingStyle.japanese => '日系風',
-    ClothingStyle.korean => '韓系風',
-    ClothingStyle.western => '歐美風',
-    ClothingStyle.british => '英式風',
-    ClothingStyle.chinese => '中式感',
-
-    ClothingStyle.minimalist => '簡約風',
-    ClothingStyle.casual => '休閒風',
-    ClothingStyle.sporty => '運動風',
-    ClothingStyle.lazy => '慵懶風',
-    ClothingStyle.streetwear => '街頭風',
-
-    ClothingStyle.business => '商務風',
-    ClothingStyle.preppy => '學院風',
-    ClothingStyle.functional => '機能風',
-
-    ClothingStyle.vintage => '復古風',
-    ClothingStyle.artsy => '文青風',
-    ClothingStyle.literary => '文藝風',
-    ClothingStyle.elegant => '優雅風',
-
-    ClothingStyle.mature => '輕熟風',
-    ClothingStyle.neutral => '中性風',
-    ClothingStyle.spicy => '辣妹風',
-    ClothingStyle.sweet => '甜美風',
+    ClothingStyle.basic => '簡約基本',
+    ClothingStyle.casual => '休閒日常',
+    ClothingStyle.business => '通勤正式',
+    ClothingStyle.elegant => '優雅氣質',
+    ClothingStyle.sweet => '甜美可愛',
+    ClothingStyle.streetwear => '街頭潮流',
+    ClothingStyle.sporty => '運動機能',
+    ClothingStyle.vintage => '復古',
+    ClothingStyle.preppy => '學院',
+    ClothingStyle.edgy => '個性酷帥',
+    ClothingStyle.natural => '文青自然',
+    ClothingStyle.party => '性感派對',
+    ClothingStyle.homewear => '居家舒適',
   };
 
   static ClothingStyle? tryFromString(final String? value) =>
