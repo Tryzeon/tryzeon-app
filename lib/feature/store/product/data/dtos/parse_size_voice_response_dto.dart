@@ -1,6 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:tryzeon/feature/common/measurement/domain/entities/measurement_unit.dart';
 import 'package:tryzeon/feature/common/product_size/data/dtos/body_measurement_ranges_dto.dart';
+import 'package:tryzeon/feature/store/product/domain/entities/spoken_unit.dart';
 
 part 'parse_size_voice_response_dto.g.dart';
 
@@ -44,5 +44,5 @@ class ParsedMeasurementDto {
       _$ParsedMeasurementDtoFromJson(json);
 
   final double value;
-  final MeasurementUnit unit;
+  final SpokenUnit unit;
 }

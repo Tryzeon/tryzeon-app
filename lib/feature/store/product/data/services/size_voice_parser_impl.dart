@@ -6,7 +6,6 @@ import 'package:tryzeon/core/data/errors/map_exception_to_failure.dart';
 import 'package:tryzeon/core/data/utils/decode_function_response.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
-import 'package:tryzeon/feature/common/measurement/domain/entities/measurement_unit.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/parse_size_voice_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/parse_size_voice_response_dto.dart';
 import 'package:tryzeon/feature/store/product/data/mappers/store_product_mappr.dart';
@@ -26,7 +25,6 @@ class SizeVoiceParserImpl implements SizeVoiceParser {
   Future<Result<List<ParsedSize>, Failure>> parse({
     required final Uint8List audioBytes,
     required final String mimeType,
-    required final MeasurementUnit currentUnit,
   }) async {
     try {
       final response = await _supabase.functions
@@ -35,7 +33,6 @@ class SizeVoiceParserImpl implements SizeVoiceParser {
             body: ParseSizeVoiceRequest(
               audioBase64: base64Encode(audioBytes),
               mimeType: mimeType,
-              currentUnit: currentUnit,
             ).toJson(),
           )
           .timeout(_timeout);

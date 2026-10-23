@@ -2,22 +2,20 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/core/error/failures.dart';
-import 'package:tryzeon/feature/common/measurement/domain/entities/measurement_unit.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/body_measurement_ranges.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/garment_measurement_type.dart';
 import 'package:tryzeon/feature/store/product/data/services/size_voice_parser_impl.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/parsed_size.dart';
+import 'package:tryzeon/feature/store/product/domain/entities/spoken_unit.dart';
 import 'package:typed_result/typed_result.dart';
 
 import '../../../../../support/fake_functions_client.dart';
 
 Future<Result<List<ParsedSize>, Failure>> _parse(
   final FakeFunctionsClient functions,
-) => SizeVoiceParserImpl(FakeSupabaseClient(functions)).parse(
-  audioBytes: Uint8List.fromList([1, 2, 3]),
-  mimeType: 'audio/m4a',
-  currentUnit: MeasurementUnit.cun,
-);
+) => SizeVoiceParserImpl(
+  FakeSupabaseClient(functions),
+).parse(audioBytes: Uint8List.fromList([1, 2, 3]), mimeType: 'audio/m4a');
 
 Map<String, dynamic> _size({
   final Map<String, dynamic> garmentMeasurements = const {},
@@ -29,7 +27,7 @@ Map<String, dynamic> _size({
 };
 
 void main() {
-  test('sends the audio and the unit the form is in', () async {
+  test('sends only the audio and its mime type', () async {
     final functions = FakeFunctionsClient(data: {'sizes': <Object>[]});
 
     await _parse(functions);
@@ -37,8 +35,34 @@ void main() {
     expect(functions.sentBody, {
       'audioBase64': 'AQID',
       'mimeType': 'audio/m4a',
-      'currentUnit': 'cun',
     });
+  });
+
+  test('reads a unit the model could not settle as spoken', () async {
+    final result = await _parse(
+      FakeFunctionsClient(
+        data: {
+          'sizes': [
+            _size(
+              garmentMeasurements: {
+                'chest_circumference': {'value': 50, 'unit': 'unspecified'},
+                'waist_circumference': {'value': 28, 'unit': 'cun_ambiguous'},
+              },
+            ),
+          ],
+        },
+      ),
+    );
+
+    final measurements = result.get()!.single.garmentMeasurements;
+    expect(
+      measurements[GarmentMeasurementType.chestCircumference]!.unit,
+      SpokenUnit.unspecified,
+    );
+    expect(
+      measurements[GarmentMeasurementType.waistCircumference]!.unit,
+      SpokenUnit.cunAmbiguous,
+    );
   });
 
   test(
@@ -66,7 +90,7 @@ void main() {
       final chest =
           size.garmentMeasurements[GarmentMeasurementType.chestCircumference]!;
       expect(chest.value, 100);
-      expect(chest.unit, MeasurementUnit.inch);
+      expect(chest.unit, SpokenUnit.inch);
       expect(size.bodyMeasurementRanges, {
         BodyMeasurementType.height: const MeasurementRange(min: 160, max: 170),
         BodyMeasurementType.weight: const MeasurementRange(min: 50, max: 60.5),
