@@ -1,19 +1,32 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 import { json } from "../_shared/http.ts";
-import { USER_AVATARS_BUCKET, WARDROBE_IMAGES_BUCKET } from "../_shared/supabase-storage.ts";
-import { type DbClient, getAdminClient, getAuthenticatedUserClient } from "../_shared/supabase.ts";
+import {
+  USER_AVATARS_BUCKET,
+  WARDROBE_IMAGES_BUCKET,
+} from "../_shared/supabase-storage.ts";
+import {
+  type DbClient,
+  getAdminClient,
+  getAuthenticatedUserClient,
+} from "../_shared/supabase.ts";
 
 class AppError extends Error {
-  constructor(public override message: string, public statusCode: number = 500) {
+  constructor(
+    public override message: string,
+    public statusCode: number = 500,
+  ) {
     super(message);
     this.name = "AppError";
   }
 }
 
 class StorageCleanupService {
-  constructor(private supabase: DbClient) { }
+  constructor(private supabase: DbClient) {}
 
-  private async listFilesRecursively(bucket: string, path: string): Promise<string[]> {
+  private async listFilesRecursively(
+    bucket: string,
+    path: string,
+  ): Promise<string[]> {
     const allFiles: string[] = [];
     const stack: string[] = [path];
 
@@ -31,7 +44,9 @@ class StorageCleanupService {
       if (!contents || contents.length === 0) continue;
 
       for (const item of contents) {
-        const itemPath = currentPath ? `${currentPath}/${item.name}` : item.name;
+        const itemPath = currentPath
+          ? `${currentPath}/${item.name}`
+          : item.name;
 
         if (item.id === null) {
           // If 'id' is null, it's a folder in Supabase Storage.
@@ -79,13 +94,15 @@ class StorageCleanupService {
         try {
           const files = await this.listFilesRecursively(bucket, userId);
           if (files.length > 0) {
-            console.log(`Deleting ${files.length} files from ${bucket}/${userId}`);
+            console.log(
+              `Deleting ${files.length} files from ${bucket}/${userId}`,
+            );
             await this.deleteFiles(bucket, files);
           }
         } catch (error) {
           console.warn(`Cleanup error in ${bucket}:`, error);
         }
-      })
+      }),
     );
   }
 }
@@ -93,7 +110,8 @@ class StorageCleanupService {
 Deno.serve(async (req) => {
   try {
     // 1. Authentication
-    const { userClient, user, errorResponse } = await getAuthenticatedUserClient(req);
+    const { userClient, user, errorResponse } =
+      await getAuthenticatedUserClient(req);
     if (errorResponse) return errorResponse;
 
     // 2. Clean up user storage files, on the caller's own client.
@@ -103,7 +121,8 @@ Deno.serve(async (req) => {
     // 3. Delete auth user (triggers cascade delete for all DB records). The one
     //    step that genuinely needs the service role — and it comes last, so the
     //    key is held only after every RLS-bounded operation is done.
-    const { error: deleteAuthError } = await getAdminClient().auth.admin.deleteUser(user!.id);
+    const { error: deleteAuthError } = await getAdminClient().auth.admin
+      .deleteUser(user!.id);
     if (deleteAuthError) {
       console.error("Failed to delete auth user:", deleteAuthError);
       throw new AppError("Failed to delete authentication account", 500);
@@ -115,7 +134,9 @@ Deno.serve(async (req) => {
     console.error(err);
 
     const status = err instanceof AppError ? err.statusCode : 500;
-    const message = err instanceof AppError ? err.message : "Internal Server Error";
+    const message = err instanceof AppError
+      ? err.message
+      : "Internal Server Error";
 
     return json({ message }, status);
   }

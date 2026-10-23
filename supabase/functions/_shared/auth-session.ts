@@ -18,7 +18,11 @@ export interface MintedSession {
  */
 function defaultAnonClient(): DbClient {
   return createClient<Database>(supabaseUrl(), supabaseAnonKey(), {
-    auth: { persistSession: false, autoRefreshToken: false, flowType: "implicit" },
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      flowType: "implicit",
+    },
   });
 }
 
@@ -33,11 +37,14 @@ export async function mintSessionForUser(
   userId: string,
   anon: DbClient = defaultAnonClient(),
 ): Promise<MintedSession> {
-  const { data: userData, error: userError } = await admin.auth.admin.getUserById(userId);
+  const { data: userData, error: userError } = await admin.auth.admin
+    .getUserById(userId);
   const email = userData?.user?.email;
   if (userError || !email) {
     throw new Error(
-      `user lookup failed for ${userId}: ${userError?.message ?? "no email on user"}`,
+      `user lookup failed for ${userId}: ${
+        userError?.message ?? "no email on user"
+      }`,
     );
   }
 
@@ -47,7 +54,9 @@ export async function mintSessionForUser(
   });
   const hashedToken = link?.properties?.hashed_token;
   if (linkError || !hashedToken) {
-    throw new Error(`generateLink failed: ${linkError?.message ?? "no hashed_token"}`);
+    throw new Error(
+      `generateLink failed: ${linkError?.message ?? "no hashed_token"}`,
+    );
   }
 
   const { data: verified, error: verifyError } = await anon.auth.verifyOtp({
@@ -56,7 +65,9 @@ export async function mintSessionForUser(
   });
   const refreshToken = verified?.session?.refresh_token;
   if (verifyError || !refreshToken) {
-    throw new Error(`verifyOtp failed: ${verifyError?.message ?? "no session returned"}`);
+    throw new Error(
+      `verifyOtp failed: ${verifyError?.message ?? "no session returned"}`,
+    );
   }
 
   return { refreshToken };

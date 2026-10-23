@@ -25,15 +25,18 @@ Deno.test("a camera roll chip carries no image of its own", () => {
 });
 
 Deno.test("a postback chip says out loud what was tapped", () => {
-  assertEquals(postbackChip("再試一次", "a=tryon&pid=p1", "試穿「短版牛仔外套」"), {
-    type: "action",
-    action: {
-      type: "postback",
-      label: "再試一次",
-      data: "a=tryon&pid=p1",
-      displayText: "試穿「短版牛仔外套」",
+  assertEquals(
+    postbackChip("再試一次", "a=tryon&pid=p1", "試穿「短版牛仔外套」"),
+    {
+      type: "action",
+      action: {
+        type: "postback",
+        label: "再試一次",
+        data: "a=tryon&pid=p1",
+        displayText: "試穿「短版牛仔外套」",
+      },
     },
-  });
+  );
 });
 
 Deno.test("a uri chip carries the link it opens", () => {
@@ -62,7 +65,10 @@ Deno.test("no chips means no quickReply property at all", () => {
 });
 
 Deno.test("more chips than LINE accepts are cut to the limit", () => {
-  const many = Array.from({ length: 20 }, (_, i) => messageChip(`c${i}`, `t${i}`));
+  const many = Array.from(
+    { length: 20 },
+    (_, i) => messageChip(`c${i}`, `t${i}`),
+  );
   const dressed = withQuickReply({ type: "text", text: "好" }, many) as {
     quickReply: { items: object[] };
   };
@@ -89,7 +95,10 @@ Deno.test("only the last message of a send is dressed", () => {
 Deno.test("an empty send is left alone rather than dressed into a typeless message", () => {
   // An object carrying a `quickReply` and no `type` is rejected by LINE — and it
   // rejects the whole send, not just that message.
-  assertEquals(dressLast([], [messageChip("便宜一點的", "有便宜一點的嗎")]), []);
+  assertEquals(
+    dressLast([], [messageChip("便宜一點的", "有便宜一點的嗎")]),
+    [],
+  );
 });
 
 Deno.test("no chips leaves every message untouched", () => {

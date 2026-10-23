@@ -64,10 +64,10 @@ export interface WardrobeAnalysisResponse {
 export function toResponse(
   parsed: Record<string, unknown>,
 ): WardrobeAnalysisResponse {
-  const garment_type =
-    typeof parsed.garment_type === "string" && VALID_GARMENT_TYPES.includes(parsed.garment_type)
-      ? parsed.garment_type
-      : null;
+  const garment_type = typeof parsed.garment_type === "string" &&
+      VALID_GARMENT_TYPES.includes(parsed.garment_type)
+    ? parsed.garment_type
+    : null;
 
   const tags = Array.isArray(parsed.tags)
     ? parsed.tags

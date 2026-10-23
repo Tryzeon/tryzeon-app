@@ -34,7 +34,11 @@ Deno.test("rethrowAsBusy maps an exhausted quota to ServiceBusyError", () => {
   ]);
 
   const err = assertThrows(() => rethrowAsBusy(exhausted), ServiceBusyError);
-  assertEquals(err.cause, exhausted, "the original failure stays reachable for logs");
+  assertEquals(
+    err.cause,
+    exhausted,
+    "the original failure stays reachable for logs",
+  );
 });
 
 Deno.test("rethrowAsBusy maps an overloaded model to ServiceBusyError", () => {
@@ -54,7 +58,10 @@ Deno.test("rethrowAsBusy leaves a rejected request alone", () => {
 Deno.test("rethrowAsBusy leaves a retry that ended on a non-busy failure alone", () => {
   // The last attempt is the verdict: a 429 earlier in the run that resolved
   // into a 500 is a 500.
-  const mixed = retryError([apiError(429, "exhausted"), apiError(500, "internal")]);
+  const mixed = retryError([
+    apiError(429, "exhausted"),
+    apiError(500, "internal"),
+  ]);
   assertEquals(assertThrows(() => rethrowAsBusy(mixed)), mixed);
 });
 

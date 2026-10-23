@@ -16,8 +16,15 @@ import { GenerationFailedError } from "../_shared/tryon/errors.ts";
 import type { LineApi } from "./line-api.ts";
 import type { LineProduct } from "./product-card.ts";
 import { fakeConversations } from "./conversation.testing.ts";
-import { outfitTryonNote, photoNote, wardrobeTryonNote } from "./conversation.ts";
-import { outfitTryonPostbackData, productTryonPostbackData } from "./postback.ts";
+import {
+  outfitTryonNote,
+  photoNote,
+  wardrobeTryonNote,
+} from "./conversation.ts";
+import {
+  outfitTryonPostbackData,
+  productTryonPostbackData,
+} from "./postback.ts";
 import type { LineWardrobeItem } from "./wardrobe-card.ts";
 
 const USER = "Uline123";
@@ -27,7 +34,9 @@ interface Sent {
   pushes: object[][];
 }
 
-function fakeLine(overrides: Partial<LineApi> = {}): { line: LineApi; sent: Sent } {
+function fakeLine(
+  overrides: Partial<LineApi> = {},
+): { line: LineApi; sent: Sent } {
   const sent: Sent = { replies: [], pushes: [] };
   const line: LineApi = {
     reply: (_token, messages) => {
@@ -176,7 +185,8 @@ Deno.test("an image LINE will not hand over is reported as a download failure", 
   assertEquals(textOf(sent.pushes[0][0]), "這張圖讀取失敗，麻煩再傳一次。");
 });
 
-const PRO_QUOTA_TEXT = "本期試穿次數已用完，11/5 重置。到 App 升級方案可以拿更多次數。";
+const PRO_QUOTA_TEXT =
+  "本期試穿次數已用完，11/5 重置。到 App 升級方案可以拿更多次數。";
 
 const proSnapshot: QuotaSnapshot = {
   tier: "pro",
@@ -189,7 +199,10 @@ const proSnapshot: QuotaSnapshot = {
 Deno.test("an exhausted quota is reported in try-on's own words", async () => {
   const { line, sent } = fakeLine();
   await handleImageTryon(
-    makeDeps({ line, runJob: () => Promise.reject(new QuotaExceededError(proSnapshot)) }),
+    makeDeps({
+      line,
+      runJob: () => Promise.reject(new QuotaExceededError(proSnapshot)),
+    }),
     event,
   );
 
@@ -204,7 +217,10 @@ Deno.test("a forwarded photo becomes part of the conversation", async () => {
   }];
   const conversations = fakeConversations({ prior });
 
-  await handleImageTryon(makeDeps({ conversations: conversations.store }), event);
+  await handleImageTryon(
+    makeDeps({ conversations: conversations.store }),
+    event,
+  );
 
   assertEquals(conversations.writes.length, 1);
   assertEquals(conversations.writes[0], [
@@ -297,7 +313,9 @@ const someProduct = (over: Partial<LineProduct> = {}): LineProduct => ({
   ...over,
 });
 
-function makeProductDeps(over: Partial<ProductTryonDeps> = {}): ProductTryonDeps {
+function makeProductDeps(
+  over: Partial<ProductTryonDeps> = {},
+): ProductTryonDeps {
   return {
     ...baseDeps(),
     fetchProduct: () => Promise.resolve(someProduct()),
@@ -323,7 +341,10 @@ Deno.test("a product that is gone is said so, and no quota is spent", async () =
 
   assertEquals(ran, false);
   assertEquals(sent.pushes, []);
-  assertEquals(textOf(sent.replies[0][0]), "這件商品已經下架了，換一件再試試。");
+  assertEquals(
+    textOf(sent.replies[0][0]),
+    "這件商品已經下架了，換一件再試試。",
+  );
 });
 
 Deno.test("tapping try-on with no model asks to choose one first", async () => {
@@ -372,7 +393,9 @@ Deno.test("the result card carries the product back with the image", async () =>
     makeProductDeps({
       line,
       fetchProduct: () =>
-        Promise.resolve(someProduct({ purchaseUrl: "https://shop.example/p1" })),
+        Promise.resolve(
+          someProduct({ purchaseUrl: "https://shop.example/p1" }),
+        ),
     }),
     productEvent,
   );
@@ -384,8 +407,15 @@ Deno.test("the result card carries the product back with the image", async () =>
   assertEquals(message.contents.hero.url, "https://img.example/result.jpg");
   assertEquals(message.contents.hero.aspectRatio, "9:16");
   // deno-lint-ignore no-explicit-any
-  assertEquals(message.contents.body.contents.map((c: any) => c.text), ["某店", "短版牛仔外套", "NT$1,280"]);
-  assertEquals(message.contents.footer.contents[0].action.uri, "https://shop.example/p1");
+  assertEquals(message.contents.body.contents.map((c: any) => c.text), [
+    "某店",
+    "短版牛仔外套",
+    "NT$1,280",
+  ]);
+  assertEquals(
+    message.contents.footer.contents[0].action.uri,
+    "https://shop.example/p1",
+  );
 });
 
 Deno.test("a result card for a product with no buyable link has no footer", async () => {
@@ -400,7 +430,10 @@ Deno.test("an over-long product name is clamped in the result card's altText", a
   const { line, sent } = fakeLine();
   const longName = "衣".repeat(60);
   await handleProductTryon(
-    makeProductDeps({ line, fetchProduct: () => Promise.resolve(someProduct({ name: longName })) }),
+    makeProductDeps({
+      line,
+      fetchProduct: () => Promise.resolve(someProduct({ name: longName })),
+    }),
     productEvent,
   );
 
@@ -503,7 +536,10 @@ Deno.test("the result image is pushed before the conversation is written", async
   });
   const conversations = fakeConversations({ onSave: () => trace.push("save") });
 
-  await handleImageTryon(makeDeps({ line, conversations: conversations.store }), event);
+  await handleImageTryon(
+    makeDeps({ line, conversations: conversations.store }),
+    event,
+  );
 
   assertEquals(trace, ["push", "save"]);
 });
@@ -528,7 +564,11 @@ Deno.test("a stalled description does not hold back the result", async () => {
   const conversations = fakeConversations({ onSave: () => trace.push("save") });
 
   await handleImageTryon(
-    makeDeps({ line, conversations: conversations.store, describeGarment: () => described }),
+    makeDeps({
+      line,
+      conversations: conversations.store,
+      describeGarment: () => described,
+    }),
     event,
   );
 
@@ -542,7 +582,11 @@ Deno.test("a finished photo try-on offers the next one, and the shop", async () 
 
   assertEquals(chipActions(sent.pushes[0][0]), [
     { type: "cameraRoll", label: "再試一件" },
-    { type: "message", label: "找類似的商品", text: "幫我找類似剛剛那件的商品" },
+    {
+      type: "message",
+      label: "找類似的商品",
+      text: "幫我找類似剛剛那件的商品",
+    },
     { type: "message", label: "幫我配這件", text: "幫我搭配剛剛那件" },
   ]);
 });
@@ -559,7 +603,11 @@ Deno.test("a photo that would not generate offers another photo, not a retry", a
 
   assertEquals(chipActions(sent.pushes[0][0]), [
     { type: "cameraRoll", label: "換一張再試" },
-    { type: "message", label: "找類似的商品", text: "幫我找類似剛剛那件的商品" },
+    {
+      type: "message",
+      label: "找類似的商品",
+      text: "幫我找類似剛剛那件的商品",
+    },
   ]);
 });
 
@@ -568,7 +616,10 @@ Deno.test("a spent try-on quota offers the chat the sender still has", async () 
   // spent try-on budget is not a spent conversation.
   const { line, sent } = fakeLine();
   await handleImageTryon(
-    makeDeps({ line, runJob: () => Promise.reject(new QuotaExceededError(null)) }),
+    makeDeps({
+      line,
+      runJob: () => Promise.reject(new QuotaExceededError(null)),
+    }),
     event,
   );
 
@@ -656,13 +707,17 @@ Deno.test("generation refused for capacity is not reported as the sender's spent
   await handleImageTryon(
     makeDeps({
       line,
-      runJob: () => Promise.reject(new ServiceBusyError("image generation is at capacity")),
+      runJob: () =>
+        Promise.reject(new ServiceBusyError("image generation is at capacity")),
     }),
     event,
   );
 
   assertEquals(sent.pushes.length, 1);
-  assertEquals(textOf(sent.pushes[0][0]), "現在使用的人比較多，請稍等幾分鐘再試。");
+  assertEquals(
+    textOf(sent.pushes[0][0]),
+    "現在使用的人比較多，請稍等幾分鐘再試。",
+  );
 });
 
 const ITEM = {
@@ -757,8 +812,11 @@ Deno.test("a finished wardrobe try-on is remembered so the next turn can pair it
   assertEquals(conversations.writes, [[wardrobeTryonNote(ITEM)]]);
   // Regression: swapping in the wrong result builder, or pushing the error
   // card on a success, would go unnoticed without inspecting what was sent.
-  // deno-lint-ignore no-explicit-any
-  assertEquals((sent.pushes[0][0] as any).contents.hero.url, "https://img.example/result.jpg");
+  assertEquals(
+    // deno-lint-ignore no-explicit-any
+    (sent.pushes[0][0] as any).contents.hero.url,
+    "https://img.example/result.jpg",
+  );
 });
 
 Deno.test("a wardrobe try-on that failed is not remembered as one that happened", async () => {
@@ -774,7 +832,10 @@ Deno.test("a wardrobe try-on that failed is not remembered as one that happened"
   );
 
   assertEquals(conversations.writes.length, 0);
-  assertEquals(textOf(sent.pushes[0][0]), "這件沒能生成，請換一件或再試一次看看！");
+  assertEquals(
+    textOf(sent.pushes[0][0]),
+    "這件沒能生成，請換一件或再試一次看看！",
+  );
 });
 
 const OUTFIT_P = "11111111-1111-4111-8111-111111111111";
@@ -801,7 +862,10 @@ const outfitWardrobe: LineWardrobeItem = {
 const outfitEvent = {
   replyToken: "rt",
   sourceUserId: USER,
-  pieces: [{ type: "product" as const, id: OUTFIT_P }, { type: "wardrobe" as const, id: OUTFIT_W }],
+  pieces: [{ type: "product" as const, id: OUTFIT_P }, {
+    type: "wardrobe" as const,
+    id: OUTFIT_W,
+  }],
   title: "週末休閒",
 };
 
@@ -854,7 +918,10 @@ Deno.test("an outfit with a piece that is gone costs the sender no quota", async
 
   assertEquals(ran, false);
   assertEquals(sent.pushes, []);
-  assertEquals(textOf(sent.replies[0][0]), "這套有單品已經下架或不在衣櫃裡了，換一套試試。");
+  assertEquals(
+    textOf(sent.replies[0][0]),
+    "這套有單品已經下架或不在衣櫃裡了，換一套試試。",
+  );
 });
 
 Deno.test("an outfit holding a delisted product costs the sender no quota", async () => {
@@ -875,7 +942,10 @@ Deno.test("an outfit holding a delisted product costs the sender no quota", asyn
 
   assertEquals(ran, false);
   assertEquals(sent.pushes, []);
-  assertEquals(textOf(sent.replies[0][0]), "這套有單品已經下架或不在衣櫃裡了，換一套試試。");
+  assertEquals(
+    textOf(sent.replies[0][0]),
+    "這套有單品已經下架或不在衣櫃裡了，換一套試試。",
+  );
 });
 
 Deno.test("an outfit reads its products on the image base and its wardrobe bound to the sender", async () => {
@@ -920,8 +990,13 @@ Deno.test("an outfit is named while waiting, worn whole in its order, and its ca
     outfitEvent,
   );
 
-  assertEquals(textOf(sent.replies[0][0]), "收到，正在幫你試穿「週末休閒」，請稍等！");
-  assertEquals(params.garments, [{ productId: OUTFIT_P }, { wardrobeItemId: OUTFIT_W }]);
+  assertEquals(
+    textOf(sent.replies[0][0]),
+    "收到，正在幫你試穿「週末休閒」，請稍等！",
+  );
+  assertEquals(params.garments, [{ productId: OUTFIT_P }, {
+    wardrobeItemId: OUTFIT_W,
+  }]);
   assertEquals(params.mode, "image");
   // deno-lint-ignore no-explicit-any
   assertEquals((sent.pushes[0][0] as any).altText, "為你試穿了「週末休閒」");
@@ -929,13 +1004,22 @@ Deno.test("an outfit is named while waiting, worn whole in its order, and its ca
 
 Deno.test("a finished outfit try-on is remembered by its pieces", async () => {
   const conversations = fakeConversations();
-  await handleOutfitTryon(outfitDeps({ conversations: conversations.store }), outfitEvent);
+  await handleOutfitTryon(
+    outfitDeps({ conversations: conversations.store }),
+    outfitEvent,
+  );
 
   const saved = await conversations.store.load(USER);
-  assertEquals(saved.at(-1), outfitTryonNote({
-    title: "週末休閒",
-    pieces: [{ kind: "product", item: outfitProduct }, { kind: "wardrobe", item: outfitWardrobe }],
-  }));
+  assertEquals(
+    saved.at(-1),
+    outfitTryonNote({
+      title: "週末休閒",
+      pieces: [{ kind: "product", item: outfitProduct }, {
+        kind: "wardrobe",
+        item: outfitWardrobe,
+      }],
+    }),
+  );
 });
 
 Deno.test("an outfit that would not generate can be retried by the same card data", async () => {
@@ -950,11 +1034,17 @@ Deno.test("an outfit that would not generate can be retried by the same card dat
     outfitEvent,
   );
 
-  assertEquals(textOf(sent.pushes[0][0]), "這套沒能生成，請換一套或再試一次看看！");
+  assertEquals(
+    textOf(sent.pushes[0][0]),
+    "這套沒能生成，請換一套或再試一次看看！",
+  );
   assertEquals(chipActions(sent.pushes[0][0])[0], {
     type: "postback",
     label: "再試一次",
-    data: outfitTryonPostbackData({ title: "週末休閒", pieces: outfitEvent.pieces }),
+    data: outfitTryonPostbackData({
+      title: "週末休閒",
+      pieces: outfitEvent.pieces,
+    }),
     displayText: "試穿「週末休閒」",
   });
   assertEquals(await conversations.store.load(USER), []);

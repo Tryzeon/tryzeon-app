@@ -1,8 +1,12 @@
 import { assertEquals, assertStringIncludes } from "@std/assert";
-import { type RouterDeps, routeEvent } from "./router.ts";
+import { routeEvent, type RouterDeps } from "./router.ts";
 import type { LineApi } from "./line-api.ts";
 import { fakeConversations } from "./conversation.testing.ts";
-import { outfitTryonPostbackData, productTryonPostbackData, wardrobeTryonPostbackData } from "./postback.ts";
+import {
+  outfitTryonPostbackData,
+  productTryonPostbackData,
+  wardrobeTryonPostbackData,
+} from "./postback.ts";
 
 const line: LineApi = {
   reply: () => Promise.resolve(),
@@ -78,8 +82,16 @@ Deno.test("text is routed to a handler", () => {
 });
 
 Deno.test("whitespace-only text is nudged, not answered", async () => {
-  for (const message of [{ type: "text", text: "   \n " }, { type: "text", text: "" }, { type: "text" }]) {
-    assertStringIncludes(textOf((await repliedWith(messageEvent(message)))[0]), "傳一張衣服的照片");
+  for (
+    const message of [{ type: "text", text: "   \n " }, {
+      type: "text",
+      text: "",
+    }, { type: "text" }]
+  ) {
+    assertStringIncludes(
+      textOf((await repliedWith(messageEvent(message)))[0]),
+      "傳一張衣服的照片",
+    );
   }
 });
 
@@ -109,13 +121,19 @@ Deno.test("a postback we did not issue is nudged", async () => {
       undefined,
     ]
   ) {
-    assertStringIncludes(textOf((await repliedWith(postbackEvent(data)))[0]), "傳一張衣服的照片");
+    assertStringIncludes(
+      textOf((await repliedWith(postbackEvent(data)))[0]),
+      "傳一張衣服的照片",
+    );
   }
 });
 
 Deno.test("an event kind this module does not route returns nothing", () => {
   assertEquals(routed({ type: "unsend", source: { userId: "U1" } }), false);
-  assertEquals(routed({ type: "join", replyToken: "rt", source: { userId: "U1" } }), false);
+  assertEquals(
+    routed({ type: "join", replyToken: "rt", source: { userId: "U1" } }),
+    false,
+  );
 });
 
 Deno.test("a new follower is greeted on the reply token", async () => {
@@ -141,7 +159,10 @@ Deno.test("a new follower is greeted on the reply token", async () => {
 });
 
 Deno.test("a follower LINE will not name is greeted anyway", () => {
-  assertEquals(routed({ type: "follow", replyToken: "rt", source: { type: "user" } }), true);
+  assertEquals(
+    routed({ type: "follow", replyToken: "rt", source: { type: "user" } }),
+    true,
+  );
 });
 
 Deno.test("an event with no source.userId reaches no handler", async () => {
@@ -151,21 +172,25 @@ Deno.test("an event with no source.userId reaches no handler", async () => {
   const noId = { type: "user" };
 
   assertStringIncludes(
-    textOf((await repliedWith({
-      type: "message",
-      replyToken: "rt",
-      source: noId,
-      message: { type: "text", text: "hi" },
-    }))[0]),
+    textOf(
+      (await repliedWith({
+        type: "message",
+        replyToken: "rt",
+        source: noId,
+        message: { type: "text", text: "hi" },
+      }))[0],
+    ),
     "傳一張衣服的照片",
   );
   assertStringIncludes(
-    textOf((await repliedWith({
-      type: "postback",
-      replyToken: "rt",
-      source: noId,
-      postback: { data: productTryonPostbackData(PID) },
-    }))[0]),
+    textOf(
+      (await repliedWith({
+        type: "postback",
+        replyToken: "rt",
+        source: noId,
+        postback: { data: productTryonPostbackData(PID) },
+      }))[0],
+    ),
     "傳一張衣服的照片",
   );
 });
@@ -190,12 +215,14 @@ Deno.test("a wardrobe try-on postback is routed to a handler", () => {
 
 Deno.test("a wardrobe postback with no sender is nudged", async () => {
   assertStringIncludes(
-    textOf((await repliedWith({
-      type: "postback",
-      replyToken: "rt",
-      source: { type: "user" },
-      postback: { data: wardrobeTryonPostbackData(WID) },
-    }))[0]),
+    textOf(
+      (await repliedWith({
+        type: "postback",
+        replyToken: "rt",
+        source: { type: "user" },
+        postback: { data: wardrobeTryonPostbackData(WID) },
+      }))[0],
+    ),
     "傳一張衣服的照片",
   );
 });
@@ -207,5 +234,8 @@ Deno.test("an outfit try-on postback is routed to a handler, not nudged", async 
   });
   assertEquals(routed(postbackEvent(data)), true);
   const replies = await repliedWith(postbackEvent(data));
-  assertEquals(replies.some((m) => JSON.stringify(m).includes("傳一張衣服的照片")), false);
+  assertEquals(
+    replies.some((m) => JSON.stringify(m).includes("傳一張衣服的照片")),
+    false,
+  );
 });

@@ -8,18 +8,29 @@ const schemaProperties = (): Record<string, PropertySpec> =>
   (ANALYSIS_SCHEMA as { properties: Record<string, PropertySpec> }).properties;
 
 Deno.test("toResponse passes each valid garment type through", () => {
-  for (const type of ["top", "pants", "skirt", "one_piece", "outerwear", "others"]) {
-    assertEquals(toResponse({ garment_type: type, tags: [] }).garment_type, type);
+  for (
+    const type of ["top", "pants", "skirt", "one_piece", "outerwear", "others"]
+  ) {
+    assertEquals(
+      toResponse({ garment_type: type, tags: [] }).garment_type,
+      type,
+    );
   }
 });
 
 Deno.test("toResponse maps the unknown sentinel to null", () => {
-  assertEquals(toResponse({ garment_type: "unknown", tags: [] }).garment_type, null);
+  assertEquals(
+    toResponse({ garment_type: "unknown", tags: [] }).garment_type,
+    null,
+  );
 });
 
 Deno.test("toResponse nulls a garment type outside the list, including the retired values", () => {
   for (const retired of ["shoes", "bottoms", "sets", "dress"]) {
-    assertEquals(toResponse({ garment_type: retired, tags: [] }).garment_type, null);
+    assertEquals(
+      toResponse({ garment_type: retired, tags: [] }).garment_type,
+      null,
+    );
   }
 });
 
@@ -57,20 +68,28 @@ Deno.test("toResponse treats a non-array tags field as empty", () => {
 });
 
 Deno.test("toResponse passes a fully valid answer through", () => {
-  assertEquals(toResponse({ garment_type: "outerwear", tags: ["黑", "皮革"] }), {
-    garment_type: "outerwear",
-    tags: ["黑", "皮革"],
-  });
+  assertEquals(
+    toResponse({ garment_type: "outerwear", tags: ["黑", "皮革"] }),
+    {
+      garment_type: "outerwear",
+      tags: ["黑", "皮革"],
+    },
+  );
 });
 
 Deno.test("toResponse keeps duplicate tags — the app does not expect them collapsed", () => {
-  assertEquals(toResponse({ garment_type: "top", tags: ["黑", "黑"] }).tags, ["黑", "黑"]);
+  assertEquals(toResponse({ garment_type: "top", tags: ["黑", "黑"] }).tags, [
+    "黑",
+    "黑",
+  ]);
 });
 
 // Locked so a future pass at parity with the sibling module doesn't add
 // `.trim()` unnoticed.
 Deno.test("toResponse does not trim tags", () => {
-  assertEquals(toResponse({ garment_type: "top", tags: [" 黑 "] }).tags, [" 黑 "]);
+  assertEquals(toResponse({ garment_type: "top", tags: [" 黑 "] }).tags, [
+    " 黑 ",
+  ]);
 });
 
 // The three below lock the prompt, the schema and the sanitiser to one
@@ -87,7 +106,10 @@ Deno.test("ANALYSIS_PROMPT offers every garment type the schema accepts", () => 
 });
 
 Deno.test("ANALYSIS_SCHEMA accepts exactly the database's garment types plus the sentinel", () => {
-  assertEquals(schemaProperties().garment_type.enum, [...GARMENT_TYPE_VALUES, "unknown"]);
+  assertEquals(schemaProperties().garment_type.enum, [
+    ...GARMENT_TYPE_VALUES,
+    "unknown",
+  ]);
 });
 
 Deno.test("ANALYSIS_PROMPT teaches the one garment type the sanitiser rejects", () => {

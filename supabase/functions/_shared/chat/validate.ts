@@ -34,7 +34,10 @@ function checkMessage(message: ChatMessage, index: number): void {
         `messages[${index}].content[${i}] must be an object`,
       );
     }
-    if (typeof block.text === "string" && block.text.length > LIMITS.MAX_TEXT_LENGTH) {
+    if (
+      typeof block.text === "string" &&
+      block.text.length > LIMITS.MAX_TEXT_LENGTH
+    ) {
       throw new ValidationError(
         `messages[${index}].content[${i}].text too long ` +
           `(max ${LIMITS.MAX_TEXT_LENGTH})`,

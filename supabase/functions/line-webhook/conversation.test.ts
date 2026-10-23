@@ -164,8 +164,15 @@ Deno.test("a finished wardrobe try-on is written back with what it was", () => {
 });
 
 Deno.test("a tag-less wardrobe note still reads as a sentence", () => {
-  const note = wardrobeTryonNote({ id: "w1", garmentTypeLabel: "外套", tags: [] });
-  assertEquals(note.content[0].text, "（使用者剛試穿了自己衣櫃裡的單品 id:w1「外套」）");
+  const note = wardrobeTryonNote({
+    id: "w1",
+    garmentTypeLabel: "外套",
+    tags: [],
+  });
+  assertEquals(
+    note.content[0].text,
+    "（使用者剛試穿了自己衣櫃裡的單品 id:w1「外套」）",
+  );
 });
 
 Deno.test("a pathologically long tag cannot blow up the transcript note", () => {

@@ -7,13 +7,16 @@ import {
   productUnavailableMessage,
   tryonErrorMessage,
   wardrobeProcessingMessage,
-  wardrobeUnavailableMessage,
   wardrobeResultMessage,
   wardrobeTryonErrorMessage,
+  wardrobeUnavailableMessage,
   welcomeMessage,
 } from "./messages.ts";
 import type { LineProduct } from "./product-card.ts";
-import { productTryonPostbackData, wardrobeTryonPostbackData } from "./postback.ts";
+import {
+  productTryonPostbackData,
+  wardrobeTryonPostbackData,
+} from "./postback.ts";
 import type { WardrobeItemInfo } from "./wardrobe-card.ts";
 
 const PID = "8f14e45f-ceea-467a-9c8d-1b2c3d4e5f60";
@@ -41,7 +44,8 @@ const chipActions = (message: object): object[] =>
   );
 
 const templateUri = (message: object): string =>
-  (message as { template: { actions: { uri: string }[] } }).template.actions[0].uri;
+  (message as { template: { actions: { uri: string }[] } }).template.actions[0]
+    .uri;
 
 Deno.test("the model prompt reaches both liff-web screens from one base URL", () => {
   const message = chooseModelMessage("https://liff.example");
@@ -91,7 +95,11 @@ Deno.test("a spent try-on quota offers the chat the sender still has", () => {
 Deno.test("a photo that would not generate offers another photo, not a retry", () => {
   assertEquals(chipActions(tryonErrorMessage("generation", null)), [
     { type: "cameraRoll", label: "換一張再試" },
-    { type: "message", label: "找類似的商品", text: "幫我找類似剛剛那件的商品" },
+    {
+      type: "message",
+      label: "找類似的商品",
+      text: "幫我找類似剛剛那件的商品",
+    },
   ]);
 });
 
@@ -113,43 +121,57 @@ Deno.test("both try-on paths report a failed generation in the same words", () =
   // saying only one of them would need two strings again.
   const text = "這件沒能生成，請換一件或再試一次看看！";
 
-  assertEquals((tryonErrorMessage("generation", null) as { text: string }).text, text);
   assertEquals(
-    (productTryonErrorMessage("generation", null, product, LIFF) as { text: string }).text,
+    (tryonErrorMessage("generation", null) as { text: string }).text,
+    text,
+  );
+  assertEquals(
+    (productTryonErrorMessage("generation", null, product, LIFF) as {
+      text: string;
+    }).text,
     text,
   );
 });
 
 Deno.test("a spent try-on quota on the product path offers the chat the sender still has", () => {
-  assertEquals(chipActions(productTryonErrorMessage("quota", null, product, LIFF)), [
-    { type: "message", label: "找衣服看看", text: "有什麼推薦的商品" },
-  ]);
+  assertEquals(
+    chipActions(productTryonErrorMessage("quota", null, product, LIFF)),
+    [
+      { type: "message", label: "找衣服看看", text: "有什麼推薦的商品" },
+    ],
+  );
 });
 
 Deno.test("a product that would not generate offers both remedies its text names", () => {
   // Without the catalog link, "請換一件" names a remedy with no button behind it.
-  assertEquals(chipActions(productTryonErrorMessage("generation", null, product, LIFF)), [
-    {
-      type: "postback",
-      label: "再試一次",
-      data: productTryonPostbackData(PID),
-      displayText: "試穿「短版牛仔外套」",
-    },
-    { type: "uri", label: "換一件試試", uri: LIFF },
-  ]);
+  assertEquals(
+    chipActions(productTryonErrorMessage("generation", null, product, LIFF)),
+    [
+      {
+        type: "postback",
+        label: "再試一次",
+        data: productTryonPostbackData(PID),
+        displayText: "試穿「短版牛仔外套」",
+      },
+      { type: "uri", label: "換一件試試", uri: LIFF },
+    ],
+  );
 });
 
 Deno.test("an unknown failure offers only the retry, not a different product", () => {
   // "出了點狀況，請稍後再試" is a fault on our side rather than this product's,
   // so a different product would likely fail the same way.
-  assertEquals(chipActions(productTryonErrorMessage("unknown", null, product, LIFF)), [
-    {
-      type: "postback",
-      label: "再試一次",
-      data: productTryonPostbackData(PID),
-      displayText: "試穿「短版牛仔外套」",
-    },
-  ]);
+  assertEquals(
+    chipActions(productTryonErrorMessage("unknown", null, product, LIFF)),
+    [
+      {
+        type: "postback",
+        label: "再試一次",
+        data: productTryonPostbackData(PID),
+        displayText: "試穿「短版牛仔外套」",
+      },
+    ],
+  );
 });
 
 Deno.test("a product that is gone offers three ways to find another", () => {
@@ -162,7 +184,10 @@ Deno.test("a product that is gone offers three ways to find another", () => {
 
 Deno.test("a busy try-on offers no chip on either path", () => {
   assertEquals(chipActions(tryonErrorMessage("busy", null)), []);
-  assertEquals(chipActions(productTryonErrorMessage("busy", null, product, LIFF)), []);
+  assertEquals(
+    chipActions(productTryonErrorMessage("busy", null, product, LIFF)),
+    [],
+  );
 });
 
 const wardrobeItem: WardrobeItemInfo = {
@@ -204,12 +229,19 @@ Deno.test("the wardrobe result card leads with the way to shop", () => {
   assertEquals(card.contents.hero.url, "https://img/r.png");
   assertEquals(card.contents.hero.aspectRatio, "9:16");
   assertEquals(card.contents.footer, undefined);
-  assertEquals(card.quickReply.items[0].action.text, "幫我找可以搭配剛剛試穿那件的商品");
+  assertEquals(
+    card.quickReply.items[0].action.text,
+    "幫我找可以搭配剛剛試穿那件的商品",
+  );
 });
 
 Deno.test("a wardrobe try-on can be retried by its own id", () => {
-  // deno-lint-ignore no-explicit-any
-  const message = wardrobeTryonErrorMessage("generation", null, wardrobeItem) as any;
+  const message = wardrobeTryonErrorMessage(
+    "generation",
+    null,
+    wardrobeItem,
+    // deno-lint-ignore no-explicit-any
+  ) as any;
   const [retry] = message.quickReply.items;
 
   assertEquals(retry.action.type, "postback");
@@ -227,7 +259,10 @@ Deno.test("an outfit retry chip clamps an over-long title in its displayText and
   const clamped = "長".repeat(12);
   const outfit = {
     title: "長".repeat(200),
-    pieces: [{ kind: "product" as const, item: product }, { kind: "product" as const, item: { ...product, id: "a1b2c3d4-e5f6-4789-8abc-def012345678" } }],
+    pieces: [{ kind: "product" as const, item: product }, {
+      kind: "product" as const,
+      item: { ...product, id: "a1b2c3d4-e5f6-4789-8abc-def012345678" },
+    }],
   };
   // deno-lint-ignore no-explicit-any
   const message = outfitTryonErrorMessage("generation", null, outfit) as any;

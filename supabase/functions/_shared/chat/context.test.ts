@@ -29,7 +29,10 @@ Deno.test("buildChatContext grounds the system instruction in the styling guide"
 
 Deno.test("buildChatContext asks for rows of picks or of whole outfits, never part rows", async () => {
   const { systemInstruction } = await buildChatContext(client, "u1");
-  assertStringIncludes(systemInstruction, "每個 block 的 type 只能是 text、picks 或 outfits");
+  assertStringIncludes(
+    systemInstruction,
+    "每個 block 的 type 只能是 text、picks 或 outfits",
+  );
   assertStringIncludes(systemInstruction, "每套 2–3 件");
   assertStringIncludes(systemInstruction, "highlight");
   assertEquals(systemInstruction.includes("recommendation"), false);

@@ -41,7 +41,10 @@ function fakeAgent(
     seen,
     runner: (req) => {
       seen.push(req);
-      return Promise.resolve({ output: answer.output, rounds: answer.rounds ?? [] });
+      return Promise.resolve({
+        output: answer.output,
+        rounds: answer.rounds ?? [],
+      });
     },
   };
 }
@@ -66,7 +69,10 @@ Deno.test("answers with item refs in the model's order and their rows alongside"
           { type: "text", text: "上身" },
           {
             type: "picks",
-            picks: [{ type: "product", id: PRODUCT_ID }, { type: "wardrobe", id: WARDROBE_ID }],
+            picks: [{ type: "product", id: PRODUCT_ID }, {
+              type: "wardrobe",
+              id: WARDROBE_ID,
+            }],
           },
         ],
       },
@@ -83,7 +89,10 @@ Deno.test("answers with item refs in the model's order and their rows alongside"
       { type: "text", text: "上身" },
       {
         type: "picks",
-        picks: [{ type: "product", id: PRODUCT_ID }, { type: "wardrobe", id: WARDROBE_ID }],
+        picks: [{ type: "product", id: PRODUCT_ID }, {
+          type: "wardrobe",
+          id: WARDROBE_ID,
+        }],
       },
     ],
   }]);
@@ -98,18 +107,28 @@ Deno.test("returns the tool rounds followed by the answer, ready to append", asy
   const rounds: ChatMessage[] = [
     {
       role: "assistant",
-      content: [{ type: "tool_use", id: "t0", name: "search_products", input: {} }],
+      content: [{
+        type: "tool_use",
+        id: "t0",
+        name: "search_products",
+        input: {},
+      }],
     },
     {
       role: "user",
-      content: [{ type: "tool_result", tool_use_id: "t0", content: { items: [] } }],
+      content: [{
+        type: "tool_result",
+        tool_use_id: "t0",
+        content: { items: [] },
+      }],
     },
   ];
   const result = await runChatAgent(client, params, {
     checkLimit: allow,
     loadContext: context,
-    runAgent: fakeAgent({ output: { blocks: [{ type: "text", text: "好" }] }, rounds })
-      .runner,
+    runAgent:
+      fakeAgent({ output: { blocks: [{ type: "text", text: "好" }] }, rounds })
+        .runner,
     hydrate: hydrator({}),
   });
 
@@ -137,7 +156,11 @@ Deno.test("stores the answer as answerBlocksOf reads it, keeping ids with no row
     {
       type: "picks",
       picks: [
-        { type: "product", id: PRODUCT_ID, highlight: "超過八個字的亮點說明文字" },
+        {
+          type: "product",
+          id: PRODUCT_ID,
+          highlight: "超過八個字的亮點說明文字",
+        },
         { type: "product", id: PRODUCT_ID },
         { type: "wardrobe", id: "not-a-uuid" },
       ],
@@ -153,7 +176,11 @@ Deno.test("stores the answer as answerBlocksOf reads it, keeping ids with no row
   const answer: AnswerBlock[] = [{
     type: "picks",
     picks: [
-      { type: "product", id: PRODUCT_ID, highlight: "超過八個字的亮點說明文字" },
+      {
+        type: "product",
+        id: PRODUCT_ID,
+        highlight: "超過八個字的亮點說明文字",
+      },
       { type: "wardrobe", id: "not-a-uuid" },
     ],
   }];
@@ -171,7 +198,13 @@ Deno.test("an answer whose every row reads as nothing falls back to text without
       output: {
         blocks: [
           { type: "text", text: "  " },
-          { type: "outfits", outfits: [{ title: "單件", pieces: [{ type: "product", id: PRODUCT_ID }] }] },
+          {
+            type: "outfits",
+            outfits: [{
+              title: "單件",
+              pieces: [{ type: "product", id: PRODUCT_ID }],
+            }],
+          },
         ],
       },
     }).runner,
@@ -191,12 +224,23 @@ Deno.test("items holds every hydrated row", async () => {
     checkLimit: allow,
     loadContext: context,
     runAgent: fakeAgent({
-      output: { blocks: [{ type: "picks", picks: [{ type: "product", id: PRODUCT_ID }] }] },
+      output: {
+        blocks: [{
+          type: "picks",
+          picks: [{ type: "product", id: PRODUCT_ID }],
+        }],
+      },
     }).runner,
-    hydrate: hydrator({ [PRODUCT_ID]: { id: PRODUCT_ID }, [other]: { id: other } }),
+    hydrate: hydrator({
+      [PRODUCT_ID]: { id: PRODUCT_ID },
+      [other]: { id: other },
+    }),
   });
 
-  assertEquals(Object.keys(result.items.products).sort(), [PRODUCT_ID, other].sort());
+  assertEquals(
+    Object.keys(result.items.products).sort(),
+    [PRODUCT_ID, other].sort(),
+  );
 });
 
 Deno.test("empty blocks fall back to text without hydrating", async () => {
@@ -244,7 +288,10 @@ const OUTFIT_BLOCK = {
   outfits: [{
     title: "週末休閒",
     reason: "好搭",
-    pieces: [{ type: "product", id: PRODUCT_ID }, { type: "wardrobe", id: WARDROBE_ID }],
+    pieces: [{ type: "product", id: PRODUCT_ID }, {
+      type: "wardrobe",
+      id: WARDROBE_ID,
+    }],
   }],
 };
 
@@ -259,7 +306,10 @@ Deno.test("answers with an outfits block as stored, and every piece's row alongs
     ),
   });
 
-  assertEquals(result.messages, [{ role: "assistant", content: [OUTFIT_BLOCK] }]);
+  assertEquals(result.messages, [{
+    role: "assistant",
+    content: [OUTFIT_BLOCK],
+  }]);
   assertEquals(result.items, {
     products: { [PRODUCT_ID]: { id: PRODUCT_ID, name: "襯衫" } },
     wardrobe: { [WARDROBE_ID]: { id: WARDROBE_ID } },
@@ -274,11 +324,16 @@ Deno.test("an outfit with a missing row is stored whole", async () => {
     hydrate: hydrator({ [PRODUCT_ID]: { id: PRODUCT_ID, name: "襯衫" } }),
   });
 
-  assertEquals(result.messages, [{ role: "assistant", content: [OUTFIT_BLOCK] }]);
+  assertEquals(result.messages, [{
+    role: "assistant",
+    content: [OUTFIT_BLOCK],
+  }]);
 });
 
 Deno.test("passes the loaded grounding through to the agent", async () => {
-  const agent = fakeAgent({ output: { blocks: [{ type: "text", text: "好" }] } });
+  const agent = fakeAgent({
+    output: { blocks: [{ type: "text", text: "好" }] },
+  });
   const events: ChatEvent[] = [];
   await runChatAgent(client, { ...params, onEvent: (ev) => events.push(ev) }, {
     checkLimit: allow,
@@ -352,7 +407,12 @@ Deno.test("fails a turn whose hydration fails — a lost row is not a graceful a
         checkLimit: allow,
         loadContext: context,
         runAgent: fakeAgent({
-          output: { blocks: [{ type: "picks", picks: [{ type: "product", id: PRODUCT_ID }] }] },
+          output: {
+            blocks: [{
+              type: "picks",
+              picks: [{ type: "product", id: PRODUCT_ID }],
+            }],
+          },
         }).runner,
         hydrate: () => Promise.reject(new Error("db down")),
       }),
@@ -384,7 +444,8 @@ Deno.test("returns the model's suggestions beside the answer, not inside it", as
   const result = await runChatAgent(client, params, {
     checkLimit: allow,
     loadContext: context,
-    runAgent: fakeAgent({ output: { blocks, suggestions: ["單品", "整套"] } }).runner,
+    runAgent:
+      fakeAgent({ output: { blocks, suggestions: ["單品", "整套"] } }).runner,
     hydrate: hydrator({}),
   });
 

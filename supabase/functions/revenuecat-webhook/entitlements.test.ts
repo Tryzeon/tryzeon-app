@@ -1,12 +1,20 @@
 import { assertEquals } from "@std/assert";
-import { type ResolvedSubscription, resolveSubscription, type Subscriber } from "./entitlements.ts";
+import {
+  type ResolvedSubscription,
+  resolveSubscription,
+  type Subscriber,
+} from "./entitlements.ts";
 
 const NOW = new Date("2026-08-30T00:00:00Z");
 const PURCHASED = "2026-08-15T09:30:00Z";
 const FUTURE = "2026-09-15T09:30:00Z";
 const PAST = "2026-08-29T00:00:00Z";
 
-const FREE: ResolvedSubscription = { tier: "free", periodStart: null, periodEnd: null };
+const FREE: ResolvedSubscription = {
+  tier: "free",
+  periodStart: null,
+  periodEnd: null,
+};
 
 Deno.test("a lapsed entitlement does not cancel an active one", () => {
   const subscriber: Subscriber = {
@@ -26,7 +34,10 @@ Deno.test("a lapsed entitlement does not cancel an active one", () => {
 Deno.test("the best held entitlement wins and carries its own period", () => {
   const subscriber: Subscriber = {
     entitlements: {
-      pro: { purchase_date: "2026-08-01T00:00:00Z", expires_date: "2026-09-01T00:00:00Z" },
+      pro: {
+        purchase_date: "2026-08-01T00:00:00Z",
+        expires_date: "2026-09-01T00:00:00Z",
+      },
       max: { purchase_date: PURCHASED, expires_date: FUTURE },
     },
   };
@@ -85,7 +96,9 @@ Deno.test("a customer with no entitlements resolves to free", () => {
 
 Deno.test("an unknown entitlement id is ignored", () => {
   const subscriber: Subscriber = {
-    entitlements: { legacy_unlimited: { purchase_date: PURCHASED, expires_date: FUTURE } },
+    entitlements: {
+      legacy_unlimited: { purchase_date: PURCHASED, expires_date: FUTURE },
+    },
   };
 
   assertEquals(resolveSubscription(subscriber, NOW), FREE);
@@ -93,7 +106,9 @@ Deno.test("an unknown entitlement id is ignored", () => {
 
 Deno.test("an unparseable expiry is not treated as access", () => {
   const subscriber: Subscriber = {
-    entitlements: { max: { purchase_date: PURCHASED, expires_date: "not a date" } },
+    entitlements: {
+      max: { purchase_date: PURCHASED, expires_date: "not a date" },
+    },
   };
 
   assertEquals(resolveSubscription(subscriber, NOW), FREE);

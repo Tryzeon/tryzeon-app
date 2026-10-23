@@ -1,4 +1,4 @@
-import { type UsageFeature, supabaseUsageCounter } from "../quota.ts";
+import { supabaseUsageCounter, type UsageFeature } from "../quota.ts";
 import type { QuotaFactory, TryonMode } from "./types.ts";
 import type { DbClient } from "../supabase.ts";
 
@@ -11,5 +11,6 @@ const FEATURE_BY_MODE: Record<TryonMode, UsageFeature> = {
   video: "tryon_video",
 };
 
-export const supabaseQuota = (admin: DbClient): QuotaFactory =>
-(userId, mode) => supabaseUsageCounter(admin, userId, FEATURE_BY_MODE[mode]);
+export const supabaseQuota =
+  (admin: DbClient): QuotaFactory => (userId, mode) =>
+    supabaseUsageCounter(admin, userId, FEATURE_BY_MODE[mode]);

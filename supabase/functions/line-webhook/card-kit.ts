@@ -50,7 +50,11 @@ const PILL_PADDING = {
  * horizontal box it would default to 1, and LINE for PC sizes a box to its
  * content, so a flexible label collapses to nothing.
  */
-export function whitePill(label: string, action: object, size: "compact" | "regular"): object {
+export function whitePill(
+  label: string,
+  action: object,
+  size: "compact" | "regular",
+): object {
   const pad = PILL_PADDING[size];
   return {
     type: "box",
@@ -67,14 +71,28 @@ export function whitePill(label: string, action: object, size: "compact" | "regu
       paddingBottom: pad.vertical,
       paddingStart: pad.start,
       paddingEnd: pad.end,
-      contents: [{ type: "text", text: label, flex: 0, size: pad.text, weight: "bold", color: CARD_COLOR.primary }],
+      contents: [{
+        type: "text",
+        text: label,
+        flex: 0,
+        size: pad.text,
+        weight: "bold",
+        color: CARD_COLOR.primary,
+      }],
     }],
   };
 }
 
 /** The line above a card's name saying where the piece comes from: a store, or the wardrobe. */
 export function sourceLine(text: string): object {
-  return { type: "text", text, size: "xxs", weight: "bold", color: CARD_COLOR.primary, maxLines: 1 };
+  return {
+    type: "text",
+    text,
+    size: "xxs",
+    weight: "bold",
+    color: CARD_COLOR.primary,
+    maxLines: 1,
+  };
 }
 
 const MAX_TAG_CHARS = 8;
@@ -86,7 +104,9 @@ const MAX_TAG_CHARS = 8;
  */
 export function clampTagLabel(label: string): string {
   const chars = Array.from(label);
-  return chars.length > MAX_TAG_CHARS ? `${chars.slice(0, MAX_TAG_CHARS - 1).join("")}…` : label;
+  return chars.length > MAX_TAG_CHARS
+    ? `${chars.slice(0, MAX_TAG_CHARS - 1).join("")}…`
+    : label;
 }
 
 /**
@@ -212,7 +232,9 @@ function scrim(height: number): object {
 }
 
 function scrimColor(alpha: number): string {
-  return `${CARD_COLOR.scrim.slice(0, 7)}${alpha.toString(16).padStart(2, "0").toUpperCase()}`;
+  return `${CARD_COLOR.scrim.slice(0, 7)}${
+    alpha.toString(16).padStart(2, "0").toUpperCase()
+  }`;
 }
 
 function percent(fraction: number): string {
@@ -236,7 +258,14 @@ export interface PickView {
  */
 export function pickBubble(view: PickView): object {
   const value = view.value.muted
-    ? { type: "text", text: view.value.text, size: "xs", color: CARD_COLOR.onImageMuted, gravity: "center", flex: 1 }
+    ? {
+      type: "text",
+      text: view.value.text,
+      size: "xs",
+      color: CARD_COLOR.onImageMuted,
+      gravity: "center",
+      flex: 1,
+    }
     : {
       type: "text",
       text: view.value.text,
@@ -260,7 +289,13 @@ export function pickBubble(view: PickView): object {
       },
       overlay: [
         ...(view.source
-          ? [{ type: "text", text: view.source, size: "xxs", color: CARD_COLOR.onImageMuted, maxLines: 1 }]
+          ? [{
+            type: "text",
+            text: view.source,
+            size: "xxs",
+            color: CARD_COLOR.onImageMuted,
+            maxLines: 1,
+          }]
           : []),
         {
           type: "text",

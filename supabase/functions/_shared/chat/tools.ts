@@ -51,7 +51,9 @@ export async function runSearchProducts(
   });
   const { data, error } = await client.rpc("list_shop_products", params);
   if (error) throw error;
-  return { items: ((data ?? []) as Record<string, unknown>[]).map(toSearchResultItem) };
+  return {
+    items: ((data ?? []) as Record<string, unknown>[]).map(toSearchResultItem),
+  };
 }
 
 // The `.eq("user_id", …)` is the filter, not the guard: with a user-scoped `client`
@@ -82,20 +84,26 @@ const SEARCH_PRODUCTS_SCHEMA = z.object({
       "適合放：品牌或店家名，系列、聯名、作品或角色等專有名詞（電影、動漫、遊戲，如『鬼滅』『蜘蛛人』『寶可夢』）。\n" +
       "不要放：材質、風格、季節、版型、彈性、厚度、性別、價格、分類——這些都有對應參數。也不要把品類和專有名詞併成同一個 query（『蜘蛛人 T恤』會要求名稱同時含這兩個詞），品類請改用 category_code。\n",
   ),
-  category_code: z.string().optional().describe("商品分類 code，需與【可用商品分類清單】一致"),
+  category_code: z.string().optional().describe(
+    "商品分類 code，需與【可用商品分類清單】一致",
+  ),
   gender: z.enum(GENDER_VALUES).optional().describe(
     "選填。依商品適用性別篩選。可參考使用者資訊自行決定是否使用。",
   ),
   materials: z.array(z.string()).optional().describe(
-    "選填。材質關鍵字（自由文字，子字串比對），如 棉、麻、羊毛、聚酯纖維。"
+    "選填。材質關鍵字（自由文字，子字串比對），如 棉、麻、羊毛、聚酯纖維。",
   ),
   styles: z.array(z.enum(STYLE_VALUES)).optional().describe("選填。風格。"),
   seasons: z.array(z.enum(SEASON_VALUES)).optional().describe("選填。季節。"),
   fits: z.array(z.enum(FIT_VALUES)).optional().describe(
     "選填。版型：slim（合身）, regular（常規）, loose（寬鬆）, oversize（超大寬版）。",
   ),
-  elasticities: z.array(z.enum(ELASTICITY_VALUES)).optional().describe("選填。彈性。"),
-  thicknesses: z.array(z.enum(THICKNESS_VALUES)).optional().describe("選填。厚度。"),
+  elasticities: z.array(z.enum(ELASTICITY_VALUES)).optional().describe(
+    "選填。彈性。",
+  ),
+  thicknesses: z.array(z.enum(THICKNESS_VALUES)).optional().describe(
+    "選填。厚度。",
+  ),
   channels: z.array(z.enum(CHANNEL_VALUES)).optional().describe(
     "選填。購物管道：physical（實體店面）, online（線上）。",
   ),
@@ -137,8 +145,12 @@ export const answerSchema = z.object({
       z.object({
         type: z.literal("outfits"),
         outfits: z.array(z.object({
-          title: z.string().describe("套名，≤ 8 字，描述場合或風格（例：週末休閒）"),
-          reason: z.string().optional().describe("這套最關鍵的搭配依據，≤ 20 字，只引用確知的顏色與屬性"),
+          title: z.string().describe(
+            "套名，≤ 8 字，描述場合或風格（例：週末休閒）",
+          ),
+          reason: z.string().optional().describe(
+            "這套最關鍵的搭配依據，≤ 20 字，只引用確知的顏色與屬性",
+          ),
           pieces: z.array(answerItemRef).describe(
             "這套的 2–3 件，每個部位最多一件，依上身（或連身）→ 下身 → 外套排序",
           ),

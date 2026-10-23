@@ -5,14 +5,24 @@ const CATEGORY_OPTIONS = [
   { code: "shirt_polo", name: "襯衫·POLO衫" },
   { code: "pants", name: "褲子" },
 ];
-const CATEGORIES = new Map([["shirt_polo", "cat-shirt"], ["pants", "cat-pants"]]);
+const CATEGORIES = new Map([["shirt_polo", "cat-shirt"], [
+  "pants",
+  "cat-pants",
+]]);
 
-type PropertySpec = { type: string; enum?: string[]; items?: { enum?: string[] } };
+type PropertySpec = {
+  type: string;
+  enum?: string[];
+  items?: { enum?: string[] };
+};
 
 const schemaProperties = (): Record<string, PropertySpec> =>
-  (buildSchema(CATEGORY_OPTIONS) as { properties: Record<string, PropertySpec> }).properties;
+  (buildSchema(CATEGORY_OPTIONS) as {
+    properties: Record<string, PropertySpec>;
+  }).properties;
 
-const acceptedValues = (spec: PropertySpec): string[] => spec.enum ?? spec.items?.enum ?? [];
+const acceptedValues = (spec: PropertySpec): string[] =>
+  spec.enum ?? spec.items?.enum ?? [];
 
 const fullAnswer = {
   name: "白色寬鬆棉質襯衫",
@@ -44,7 +54,10 @@ Deno.test("toResponse maps the unknown sentinel to null on every field", () => {
   const unknowns = Object.fromEntries(
     Object.keys(fullAnswer).map((k) => [k, "unknown"]),
   );
-  const result = toResponse({ ...unknowns, styles: [], seasons: [] }, CATEGORIES);
+  const result = toResponse(
+    { ...unknowns, styles: [], seasons: [] },
+    CATEGORIES,
+  );
 
   assertEquals(result, {
     name: null,
@@ -99,27 +112,48 @@ Deno.test("toResponse treats missing fields as unanswered", () => {
 
 Deno.test("toResponse truncates an over-long name to 20 characters", () => {
   const long = "白".repeat(30);
-  assertEquals(toResponse({ ...fullAnswer, name: long }, CATEGORIES).name, "白".repeat(20));
+  assertEquals(
+    toResponse({ ...fullAnswer, name: long }, CATEGORIES).name,
+    "白".repeat(20),
+  );
 });
 
 Deno.test("toResponse caps styles at 3 and drops duplicates and unknown values", () => {
   const result = toResponse({
     ...fullAnswer,
-    styles: ["korean", "korean", "minimalist", "casual", "sporty", "not-a-style"],
+    styles: [
+      "korean",
+      "korean",
+      "minimalist",
+      "casual",
+      "sporty",
+      "not-a-style",
+    ],
   }, CATEGORIES);
   assertEquals(result.styles, ["korean", "minimalist", "casual"]);
 });
 
 Deno.test("toResponse nulls a category code that no longer exists", () => {
-  assertEquals(toResponse({ ...fullAnswer, category_code: "outerwear" }, CATEGORIES).categoryId, null);
+  assertEquals(
+    toResponse({ ...fullAnswer, category_code: "outerwear" }, CATEGORIES)
+      .categoryId,
+    null,
+  );
 });
 
 Deno.test("toResponse does not resolve a category answered by its display name", () => {
-  assertEquals(toResponse({ ...fullAnswer, category_code: "襯衫·POLO衫" }, CATEGORIES).categoryId, null);
+  assertEquals(
+    toResponse({ ...fullAnswer, category_code: "襯衫·POLO衫" }, CATEGORIES)
+      .categoryId,
+    null,
+  );
 });
 
 Deno.test("buildPrompt offers each category as its code with the name alongside", () => {
-  assertEquals(buildPrompt(CATEGORY_OPTIONS).includes("shirt_polo（襯衫·POLO衫）"), true);
+  assertEquals(
+    buildPrompt(CATEGORY_OPTIONS).includes("shirt_polo（襯衫·POLO衫）"),
+    true,
+  );
 });
 
 // These two lock the prompt and the schema to one vocabulary: teaching `null`
@@ -131,10 +165,15 @@ Deno.test("buildPrompt teaches the sentinel the schema accepts", () => {
     .map((spec) => spec.enum)
     .filter((e): e is string[] => e != null);
   const shared = enums.reduce((acc, e) => acc.filter((v) => e.includes(v)));
-  assertEquals(shared.length, 1, "expected exactly one sentinel common to all enums");
+  assertEquals(
+    shared.length,
+    1,
+    "expected exactly one sentinel common to all enums",
+  );
 
   // Once per field that can go unanswered, plus the rule stated up front.
-  const unanswerable = Object.values(props).filter((s) => s.type !== "array").length;
+  const unanswerable =
+    Object.values(props).filter((s) => s.type !== "array").length;
   const prompt = buildPrompt(CATEGORY_OPTIONS);
   assertEquals(prompt.split(shared[0]).length - 1, unanswerable + 1);
 });
@@ -143,7 +182,11 @@ Deno.test("buildPrompt spells out every value the schema accepts", () => {
   const prompt = buildPrompt(CATEGORY_OPTIONS);
   for (const [field, spec] of Object.entries(schemaProperties())) {
     for (const value of acceptedValues(spec)) {
-      assertEquals(prompt.includes(value), true, `prompt never offers ${field}=${value}`);
+      assertEquals(
+        prompt.includes(value),
+        true,
+        `prompt never offers ${field}=${value}`,
+      );
     }
   }
 });
@@ -151,7 +194,8 @@ Deno.test("buildPrompt spells out every value the schema accepts", () => {
 Deno.test("buildSchema requires every field and offers an unknown sentinel", () => {
   const props = schemaProperties();
   const fields = Object.keys(props);
-  const required = (buildSchema(CATEGORY_OPTIONS) as { required: string[] }).required;
+  const required =
+    (buildSchema(CATEGORY_OPTIONS) as { required: string[] }).required;
 
   assertEquals(required.sort(), fields.sort());
 

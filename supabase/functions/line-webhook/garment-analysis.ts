@@ -11,7 +11,10 @@
  * sent the wrong picture. A flag would buy a branch and two more test paths for
  * a case that is better served by telling the truth.
  */
-import { analyzeImage, IMAGE_ANALYSIS_RATE_LIMIT } from "../_shared/image-analysis.ts";
+import {
+  analyzeImage,
+  IMAGE_ANALYSIS_RATE_LIMIT,
+} from "../_shared/image-analysis.ts";
 import { checkWindowedRateLimit } from "../_shared/rate-limit.ts";
 
 /**

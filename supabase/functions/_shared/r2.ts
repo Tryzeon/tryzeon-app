@@ -1,4 +1,9 @@
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectsCommand } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectsCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { FetchHttpHandler } from "@smithy/fetch-http-handler";
 
@@ -72,7 +77,10 @@ async function uploadToR2(
   });
 }
 
-export async function uploadTryonVideoToR2(body: Uint8Array, fileName: string): Promise<string> {
+export async function uploadTryonVideoToR2(
+  body: Uint8Array,
+  fileName: string,
+): Promise<string> {
   const bucketName = Deno.env.get("R2_TRYON_VIDEOS_BUCKET_NAME")!;
   return await uploadToR2(bucketName, fileName, body, "video/mp4");
 }
@@ -89,7 +97,9 @@ export async function uploadTryonImageToR2(
 function getPublicImagesBucketName(): string {
   const bucket = Deno.env.get("R2_PUBLIC_IMAGES_BUCKET_NAME");
   if (!bucket) {
-    throw new Error("Missing required environment variable: R2_PUBLIC_IMAGES_BUCKET_NAME");
+    throw new Error(
+      "Missing required environment variable: R2_PUBLIC_IMAGES_BUCKET_NAME",
+    );
   }
   return bucket;
 }
@@ -97,12 +107,14 @@ function getPublicImagesBucketName(): string {
 export async function deletePublicImagesFromR2(keys: string[]): Promise<void> {
   const bucket = getPublicImagesBucketName();
   const s3Client = getR2Client();
-  
-  const result = await s3Client.send(new DeleteObjectsCommand({
-    Bucket: bucket,
-    Delete: { Objects: keys.map((Key) => ({ Key })) },
-  }));
-  
+
+  const result = await s3Client.send(
+    new DeleteObjectsCommand({
+      Bucket: bucket,
+      Delete: { Objects: keys.map((Key) => ({ Key })) },
+    }),
+  );
+
   const errors = result.Errors ?? [];
   if (errors.length > 0) {
     const summary = errors.map((e) => `${e.Key}: ${e.Code}`).join(", ");
@@ -110,12 +122,16 @@ export async function deletePublicImagesFromR2(keys: string[]): Promise<void> {
   }
 }
 
-export async function downloadPublicImageFromR2(key: string): Promise<Uint8Array> {
+export async function downloadPublicImageFromR2(
+  key: string,
+): Promise<Uint8Array> {
   const bucket = getPublicImagesBucketName();
-  const resp = await getR2Client().send(new GetObjectCommand({
-    Bucket: bucket,
-    Key: key,
-  }));
+  const resp = await getR2Client().send(
+    new GetObjectCommand({
+      Bucket: bucket,
+      Key: key,
+    }),
+  );
   if (!resp.Body) {
     throw new Error(`No body returned from R2 for key: ${key}`);
   }

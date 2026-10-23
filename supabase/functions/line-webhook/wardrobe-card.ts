@@ -1,6 +1,9 @@
 import { fetchRowsByIds } from "../_shared/chat/hydrate.ts";
 import { textArrayValues } from "../_shared/text.ts";
-import { ownsUserObjectPath, WARDROBE_IMAGES_BUCKET } from "../_shared/supabase-storage.ts";
+import {
+  ownsUserObjectPath,
+  WARDROBE_IMAGES_BUCKET,
+} from "../_shared/supabase-storage.ts";
 import { CARD_COLOR, pickBubble, sourceLine } from "./card-kit.ts";
 import { wardrobeTryonPostbackData } from "./postback.ts";
 import type { Enums, Tables } from "../_shared/database.types.ts";
@@ -51,7 +54,10 @@ export function toWardrobeItemInfo(row: WardrobeCardRow): WardrobeItemInfo {
   return {
     id: row.id,
     garmentTypeLabel: GARMENT_TYPE_LABEL[row.garment_type] ?? row.garment_type,
-    tags: textArrayValues(row.tags).filter((t) => t.length > 0).slice(0, MAX_TAGS),
+    tags: textArrayValues(row.tags).filter((t) => t.length > 0).slice(
+      0,
+      MAX_TAGS,
+    ),
   };
 }
 
@@ -60,7 +66,11 @@ export function toLineWardrobeItem(
   signedUrl: string | undefined,
 ): LineWardrobeItem | null {
   if (!signedUrl) return null;
-  return { ...toWardrobeItemInfo(row), imageUrl: signedUrl, garmentType: row.garment_type };
+  return {
+    ...toWardrobeItemInfo(row),
+    imageUrl: signedUrl,
+    garmentType: row.garment_type,
+  };
 }
 
 export function tagLine(tags: string[]): string {
@@ -105,12 +115,18 @@ export function wardrobeInfoContents(item: WardrobeItemInfo): object[] {
 const MAX_CARD_TAGS = 2;
 
 /** No tap target: the LIFF has no page for a wardrobe item. */
-export function wardrobeItemBubble(item: LineWardrobeItem, highlight: string | undefined): object {
+export function wardrobeItemBubble(
+  item: LineWardrobeItem,
+  highlight: string | undefined,
+): object {
   return pickBubble({
     imageUrl: item.imageUrl,
     highlight,
     source: "衣櫃",
-    name: tagLine([item.garmentTypeLabel, ...item.tags.slice(0, MAX_CARD_TAGS)]),
+    name: tagLine([
+      item.garmentTypeLabel,
+      ...item.tags.slice(0, MAX_CARD_TAGS),
+    ]),
     value: { text: "已擁有", muted: true },
     tryonAction: {
       type: "postback",
@@ -169,12 +185,18 @@ export async function fetchWardrobeRows(
   ids: string[],
 ): Promise<Map<string, LineWardrobeItem>> {
   const owned = await fetchRowsByIds(
-    admin.from("wardrobe_items").select(WARDROBE_CARD_SELECT).eq("user_id", userId),
+    admin.from("wardrobe_items").select(WARDROBE_CARD_SELECT).eq(
+      "user_id",
+      userId,
+    ),
     ids,
     (row) => (ownsUserObjectPath(userId, row.image_path) ? row : null),
   );
 
-  const urls = await signImageUrls(admin, [...owned.values()].map((r) => r.image_path));
+  const urls = await signImageUrls(
+    admin,
+    [...owned.values()].map((r) => r.image_path),
+  );
 
   const rows = new Map<string, LineWardrobeItem>();
   for (const [id, row] of owned) {

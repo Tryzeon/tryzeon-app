@@ -15,12 +15,17 @@ import {
   uriChip,
   withQuickReply,
 } from "./quick-reply.ts";
-import { clampOutfitTitle, outfitTryonPostbackData, productTryonPostbackData, wardrobeTryonPostbackData } from "./postback.ts";
+import {
+  clampOutfitTitle,
+  outfitTryonPostbackData,
+  productTryonPostbackData,
+  wardrobeTryonPostbackData,
+} from "./postback.ts";
 import { type LineOutfit, outfitPieceRefs } from "./outfit-card.ts";
 import {
   garmentNoun,
-  type WardrobeItemInfo,
   wardrobeInfoContents,
+  type WardrobeItemInfo,
 } from "./wardrobe-card.ts";
 
 export function processingMessage(): object {
@@ -72,7 +77,10 @@ export function productProcessingMessage(name: string): object {
 }
 
 export function productUnavailableMessage(liffUrl: string): object {
-  return withQuickReply({ type: "text", text: "這件商品已經下架了，換一件再試試。" }, [
+  return withQuickReply({
+    type: "text",
+    text: "這件商品已經下架了，換一件再試試。",
+  }, [
     messageChip("有什麼推薦", "有什麼推薦的商品"),
     uriChip("逛逛其他商品", liffUrl),
     cameraRollChip("試我自己的衣服"),
@@ -138,7 +146,9 @@ export function productResultMessage(
 export function wardrobeProcessingMessage(garmentTypeLabel: string): object {
   return {
     type: "text",
-    text: `收到，正在幫你試穿衣櫃裡這件${garmentNoun(garmentTypeLabel)}，請稍等！`,
+    text: `收到，正在幫你試穿衣櫃裡這件${
+      garmentNoun(garmentTypeLabel)
+    }，請稍等！`,
   };
 }
 
@@ -211,7 +221,9 @@ export function wardrobeTryonErrorMessage(
 
   switch (kind) {
     case "quota":
-      return withQuickReply(message, [messageChip("找衣服看看", "有什麼推薦的商品")]);
+      return withQuickReply(message, [
+        messageChip("找衣服看看", "有什麼推薦的商品"),
+      ]);
     case "generation":
       return withQuickReply(message, [
         retry,
@@ -229,7 +241,10 @@ export function outfitProcessingMessage(title: string): object {
 }
 
 export function outfitUnavailableMessage(): object {
-  return withQuickReply({ type: "text", text: "這套有單品已經下架或不在衣櫃裡了，換一套試試。" }, [
+  return withQuickReply({
+    type: "text",
+    text: "這套有單品已經下架或不在衣櫃裡了，換一套試試。",
+  }, [
     messageChip("再配一套", "再幫我配一套"),
   ]);
 }
@@ -245,15 +260,23 @@ export function outfitTryonErrorMessage(
   const message = { type: "text", text };
   const retry = postbackChip(
     "再試一次",
-    outfitTryonPostbackData({ title: outfit.title, pieces: outfitPieceRefs(outfit) }),
+    outfitTryonPostbackData({
+      title: outfit.title,
+      pieces: outfitPieceRefs(outfit),
+    }),
     `試穿「${clampOutfitTitle(outfit.title)}」`,
   );
 
   switch (kind) {
     case "quota":
-      return withQuickReply(message, [messageChip("找衣服看看", "有什麼推薦的商品")]);
+      return withQuickReply(message, [
+        messageChip("找衣服看看", "有什麼推薦的商品"),
+      ]);
     case "generation":
-      return withQuickReply(message, [retry, messageChip("再配一套", "再幫我配一套")]);
+      return withQuickReply(message, [
+        retry,
+        messageChip("再配一套", "再幫我配一套"),
+      ]);
     case "busy":
       return message;
     case "unknown":
@@ -268,7 +291,10 @@ const TRYON_ERROR_TEXT = {
   unknown: "出了點狀況，請稍後再試。",
 } as const;
 
-function tryonErrorText(kind: TryonErrorKind, quota: QuotaSnapshot | null): string {
+function tryonErrorText(
+  kind: TryonErrorKind,
+  quota: QuotaSnapshot | null,
+): string {
   return kind === "quota" ? tryonQuotaText(quota) : TRYON_ERROR_TEXT[kind];
 }
 
@@ -282,7 +308,9 @@ export function tryonErrorMessage(
   const message = { type: "text", text: tryonErrorText(kind, quota) };
   switch (kind) {
     case "quota":
-      return withQuickReply(message, [messageChip("找衣服看看", "有什麼推薦的商品")]);
+      return withQuickReply(message, [
+        messageChip("找衣服看看", "有什麼推薦的商品"),
+      ]);
     case "generation":
       return withQuickReply(message, [
         cameraRollChip("換一張再試"),
@@ -317,7 +345,9 @@ export function productTryonErrorMessage(
 
   switch (kind) {
     case "quota":
-      return withQuickReply(message, [messageChip("找衣服看看", "有什麼推薦的商品")]);
+      return withQuickReply(message, [
+        messageChip("找衣服看看", "有什麼推薦的商品"),
+      ]);
     case "generation":
       return withQuickReply(message, [retry, uriChip("換一件試試", liffUrl)]);
     case "busy":
@@ -341,7 +371,9 @@ export function chatErrorMessage(kind: ChatErrorKind): object {
     case "rate_limit":
       return withQuickReply(message, [cameraRollChip("直接傳衣服試穿")]);
     case "too_long":
-      return withQuickReply(message, [messageChip("有什麼推薦", "有什麼推薦的商品")]);
+      return withQuickReply(message, [
+        messageChip("有什麼推薦", "有什麼推薦的商品"),
+      ]);
     case "unknown":
       return withQuickReply(message, [
         messageChip("有什麼推薦", "有什麼推薦的商品嗎"),
@@ -375,7 +407,8 @@ export function welcomeMessage(): object {
 export function hintMessage(): object {
   return withQuickReply({
     type: "text",
-    text: "傳一張衣服的照片給我，我就幫你試穿；想找衣服的話，直接用文字告訴我你想要什麼。",
+    text:
+      "傳一張衣服的照片給我，我就幫你試穿；想找衣服的話，直接用文字告訴我你想要什麼。",
   }, [
     cameraRollChip("選一張衣服照"),
     messageChip("幫我配一套", "幫我配一套適合我的穿搭"),

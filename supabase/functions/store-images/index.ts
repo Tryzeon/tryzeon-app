@@ -1,6 +1,12 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
-import { type DbClient, getAuthenticatedUserClient } from "../_shared/supabase.ts";
-import { deletePublicImagesFromR2, generatePresignedPutUrl } from "../_shared/r2.ts";
+import {
+  type DbClient,
+  getAuthenticatedUserClient,
+} from "../_shared/supabase.ts";
+import {
+  deletePublicImagesFromR2,
+  generatePresignedPutUrl,
+} from "../_shared/r2.ts";
 import { json } from "../_shared/http.ts";
 
 const ALLOWED_MIMES = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -14,10 +20,16 @@ const MIME_TO_EXT: Record<string, string> = {
 
 function validateContentLength(value: unknown): Response | number {
   if (typeof value !== "number" || !Number.isInteger(value) || value <= 0) {
-    return json({ error: "Missing or invalid contentLength", code: "VALIDATION_ERROR" }, 400);
+    return json({
+      error: "Missing or invalid contentLength",
+      code: "VALIDATION_ERROR",
+    }, 400);
   }
   if (value > MAX_BYTES) {
-    return json({ error: `File too large: ${value} bytes`, code: "VALIDATION_ERROR" }, 400);
+    return json({
+      error: `File too large: ${value} bytes`,
+      code: "VALIDATION_ERROR",
+    }, 400);
   }
   return value;
 }
@@ -27,13 +39,19 @@ function logoKey(storeId: string, contentType: string): string {
   return `stores/${storeId}/logo/${crypto.randomUUID()}.${ext}`;
 }
 
-function productKey(storeId: string, productId: string, contentType: string): string {
+function productKey(
+  storeId: string,
+  productId: string,
+  contentType: string,
+): string {
   const ext = MIME_TO_EXT[contentType];
   return `stores/${storeId}/products/${productId}/${crypto.randomUUID()}.${ext}`;
 }
 
 function isUuid(s: string): boolean {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+    s,
+  );
 }
 
 // Reads through the caller's own client: `store_profiles` is world-readable, so
@@ -59,11 +77,16 @@ async function assertStoreOwner(
 }
 
 Deno.serve(async (req) => {
-  const { userClient, user, errorResponse } = await getAuthenticatedUserClient(req);
+  const { userClient, user, errorResponse } = await getAuthenticatedUserClient(
+    req,
+  );
   if (errorResponse) return errorResponse;
 
   const url = new URL(req.url);
-  const sub = url.pathname.replace(/^.*\/store-images\/?/, "").replace(/\/$/, "");
+  const sub = url.pathname.replace(/^.*\/store-images\/?/, "").replace(
+    /\/$/,
+    "",
+  );
 
   try {
     if (req.method === "POST" && sub === "presign-logo") {
@@ -95,7 +118,10 @@ async function handlePresignLogo(
     return json({ error: "Missing storeId", code: "VALIDATION_ERROR" }, 400);
   }
   if (typeof contentType !== "string" || !ALLOWED_MIMES.has(contentType)) {
-    return json({ error: `Invalid contentType: ${contentType}`, code: "VALIDATION_ERROR" }, 400);
+    return json({
+      error: `Invalid contentType: ${contentType}`,
+      code: "VALIDATION_ERROR",
+    }, 400);
   }
 
   const contentLength = validateContentLength(body?.contentLength);
@@ -105,7 +131,11 @@ async function handlePresignLogo(
   if (ownerErr) return ownerErr;
 
   const key = logoKey(storeId, contentType);
-  const uploadUrl = await generatePresignedPutUrl({ key, contentType, contentLength });
+  const uploadUrl = await generatePresignedPutUrl({
+    key,
+    contentType,
+    contentLength,
+  });
   return json({ key, uploadUrl });
 }
 
@@ -123,14 +153,22 @@ async function handlePresignProducts(
     return json({ error: "Missing storeId", code: "VALIDATION_ERROR" }, 400);
   }
   if (typeof productId !== "string" || !isUuid(productId)) {
-    return json({ error: "Missing or invalid productId", code: "VALIDATION_ERROR" }, 400);
+    return json({
+      error: "Missing or invalid productId",
+      code: "VALIDATION_ERROR",
+    }, 400);
   }
   if (!Array.isArray(files) || files.length === 0) {
     return json({ error: "Missing files", code: "VALIDATION_ERROR" }, 400);
   }
   for (const f of files) {
-    if (typeof f?.contentType !== "string" || !ALLOWED_MIMES.has(f.contentType)) {
-      return json({ error: `Invalid contentType: ${f?.contentType}`, code: "VALIDATION_ERROR" }, 400);
+    if (
+      typeof f?.contentType !== "string" || !ALLOWED_MIMES.has(f.contentType)
+    ) {
+      return json({
+        error: `Invalid contentType: ${f?.contentType}`,
+        code: "VALIDATION_ERROR",
+      }, 400);
     }
     const lenOrErr = validateContentLength(f?.contentLength);
     if (lenOrErr instanceof Response) return lenOrErr;
@@ -140,15 +178,17 @@ async function handlePresignProducts(
   if (ownerErr) return ownerErr;
 
   const items = await Promise.all(
-    (files as Array<{ contentType: string; contentLength: number }>).map(async (f) => {
-      const key = productKey(storeId, productId, f.contentType);
-      const uploadUrl = await generatePresignedPutUrl({
-        key,
-        contentType: f.contentType,
-        contentLength: f.contentLength,
-      });
-      return { key, uploadUrl };
-    }),
+    (files as Array<{ contentType: string; contentLength: number }>).map(
+      async (f) => {
+        const key = productKey(storeId, productId, f.contentType);
+        const uploadUrl = await generatePresignedPutUrl({
+          key,
+          contentType: f.contentType,
+          contentLength: f.contentLength,
+        });
+        return { key, uploadUrl };
+      },
+    ),
   );
   return json({ items });
 }
@@ -168,13 +208,16 @@ async function handleDelete(
   if (!Array.isArray(keys) || keys.length === 0) {
     return json({ error: "Missing keys", code: "VALIDATION_ERROR" }, 400);
   }
-  
+
   // Enforce that every key lives under this store's namespace so the caller
   // cannot delete another store's objects even if assertStoreOwner passes.
   const prefix = `stores/${storeId}/`;
   for (const k of keys) {
     if (typeof k !== "string" || !k.startsWith(prefix)) {
-      return json({ error: "Invalid key for store", code: "VALIDATION_ERROR" }, 400);
+      return json(
+        { error: "Invalid key for store", code: "VALIDATION_ERROR" },
+        400,
+      );
     }
   }
 

@@ -15,5 +15,8 @@ Deno.test("generatePresignedPutUrl signs a path-style URL", async () => {
     contentLength: 1,
   });
 
-  assertStringIncludes(url, "https://account.r2.example.com/public-images/stores/a.png?");
+  assertStringIncludes(
+    url,
+    "https://account.r2.example.com/public-images/stores/a.png?",
+  );
 });

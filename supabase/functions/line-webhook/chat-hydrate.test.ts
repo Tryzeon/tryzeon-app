@@ -76,7 +76,10 @@ Deno.test("hydrates only the referenced product ids", async () => {
   const hydrate = makeLineAnswerRows(BASE);
   const refs: AnswerBlock[] = [
     { type: "text", text: "為你找到" },
-    { type: "picks", picks: [{ type: "product", id: P1 }, { type: "product", id: P2 }] },
+    {
+      type: "picks",
+      picks: [{ type: "product", id: P1 }, { type: "product", id: P2 }],
+    },
   ];
 
   const rows = await hydrate(admin, "u1", refs);
@@ -146,7 +149,10 @@ Deno.test("an outfit's pieces are read along with the row picks, each id once", 
     { type: "picks", picks: [{ type: "product", id: P1 }] },
     {
       type: "outfits",
-      outfits: [{ title: "週末休閒", pieces: [{ type: "product", id: P1 }, { type: "product", id: P2 }] }],
+      outfits: [{
+        title: "週末休閒",
+        pieces: [{ type: "product", id: P1 }, { type: "product", id: P2 }],
+      }],
     },
   ]);
 
@@ -157,7 +163,13 @@ Deno.test("an id that is not a uuid is never queried", async () => {
   const { admin, queried } = fakeAdmin([row()]);
 
   await makeLineAnswerRows(BASE)(admin, "u1", [
-    { type: "picks", picks: [{ type: "product", id: "not-a-uuid" }, { type: "product", id: P1 }] },
+    {
+      type: "picks",
+      picks: [{ type: "product", id: "not-a-uuid" }, {
+        type: "product",
+        id: P1,
+      }],
+    },
   ]);
 
   assertEquals(queried, [[P1]]);

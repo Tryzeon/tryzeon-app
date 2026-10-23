@@ -15,13 +15,17 @@ Deno.test("parseServiceAccount reads a key file pasted as JSON", () => {
   assertEquals(parseServiceAccount(KEY_FILE), {
     projectId: "tryzeon-497616",
     clientEmail: "vertex@tryzeon-497616.iam.gserviceaccount.com",
-    privateKey: "-----BEGIN PRIVATE KEY-----\nMIIE\n-----END PRIVATE KEY-----\n",
+    privateKey:
+      "-----BEGIN PRIVATE KEY-----\nMIIE\n-----END PRIVATE KEY-----\n",
     privateKeyId: "abc123",
   });
 });
 
 Deno.test("parseServiceAccount tolerates surrounding whitespace", () => {
-  assertEquals(parseServiceAccount(`\n  ${KEY_FILE}\n`), parseServiceAccount(KEY_FILE));
+  assertEquals(
+    parseServiceAccount(`\n  ${KEY_FILE}\n`),
+    parseServiceAccount(KEY_FILE),
+  );
 });
 
 Deno.test("parseServiceAccount leaves the private key's newlines real", () => {

@@ -1,12 +1,12 @@
 import { assertEquals, assertStringIncludes } from "@std/assert";
 import { type ChatHandlerDeps, handleTextMessage } from "./chat-handler.ts";
 import {
+  type AnswerBlock,
   type AnswerItems,
   type ChatParams,
-  type AnswerBlock,
   LIMITS,
-  type RunChatAgentDeps,
   runChatAgent,
+  type RunChatAgentDeps,
 } from "../_shared/chat/index.ts";
 import { RateLimitedError } from "../_shared/errors.ts";
 import { ValidationError } from "../_shared/validation.ts";
@@ -23,7 +23,9 @@ function fakeLine(opts: { loadingFails?: boolean; replyFails?: boolean } = {}) {
   const loading: string[] = [];
   const line: LineApi = {
     reply: (_token, messages) => {
-      if (opts.replyFails) return Promise.reject(new Error("Invalid reply token"));
+      if (opts.replyFails) {
+        return Promise.reject(new Error("Invalid reply token"));
+      }
       replied.push(messages);
       return Promise.resolve();
     },
@@ -62,7 +64,10 @@ function fakeChat(
     seen.push({ params, deps: deps ?? {} });
     if ("throws" in outcome) return Promise.reject(outcome.throws);
     return Promise.resolve({
-      messages: [...outcome.rounds ?? [], { role: "assistant", content: outcome.blocks }],
+      messages: [...outcome.rounds ?? [], {
+        role: "assistant",
+        content: outcome.blocks,
+      }],
       answer: outcome.blocks,
       items: outcome.items ?? { products: {}, wardrobe: {} },
       suggestions: outcome.suggestions ?? [],
@@ -136,10 +141,16 @@ Deno.test("a chat answer is delivered with the model's suggestions as chips, and
     type: "text",
     text: "要單品還是整套？",
     quickReply: {
-      items: [{ type: "action", action: { type: "message", label: "單品", text: "單品" } }],
+      items: [{
+        type: "action",
+        action: { type: "message", label: "單品", text: "單品" },
+      }],
     },
   }]]);
-  assertEquals(conversations.writes[0].at(-1), { role: "assistant", content: blocks });
+  assertEquals(conversations.writes[0].at(-1), {
+    role: "assistant",
+    content: blocks,
+  });
 });
 
 Deno.test("substitutes this channel's hydrator, and nothing else", async () => {
@@ -185,12 +196,15 @@ Deno.test("reports an unexpected failure as a generic apology", async () => {
   const { line, replied } = fakeLine();
   const chat = fakeChat({ throws: new Error("vertex exploded") });
 
-  const errors = await captureConsole("error", () =>
-    handleTextMessage(deps({ line, runChat: chat.runChat }), {
-      replyToken: "rt",
-      sourceUserId: USER,
-      text: "找白襯衫",
-    }));
+  const errors = await captureConsole(
+    "error",
+    () =>
+      handleTextMessage(deps({ line, runChat: chat.runChat }), {
+        replyToken: "rt",
+        sourceUserId: USER,
+        text: "找白襯衫",
+      }),
+  );
 
   assertStringIncludes(textOf(replied[0][0]), "稍後再試");
   assertEquals(errors.length, 1);
@@ -200,12 +214,15 @@ Deno.test("a failed typing indicator does not cost the caller their answer", asy
   const { line, replied } = fakeLine({ loadingFails: true });
   const chat = fakeChat({ blocks: [{ type: "text", text: "為你找到" }] });
 
-  await captureConsole("warn", () =>
-    handleTextMessage(deps({ line, runChat: chat.runChat }), {
-      replyToken: "rt",
-      sourceUserId: USER,
-      text: "找白襯衫",
-    }));
+  await captureConsole(
+    "warn",
+    () =>
+      handleTextMessage(deps({ line, runChat: chat.runChat }), {
+        replyToken: "rt",
+        sourceUserId: USER,
+        text: "找白襯衫",
+      }),
+  );
 
   assertEquals(replied, [[{ type: "text", text: "為你找到" }]]);
 });
@@ -258,11 +275,20 @@ Deno.test("the whole turn is written back as the core recorded it", async () => 
     rounds: [
       {
         role: "assistant",
-        content: [{ type: "tool_use", id: "t1", name: "search_products", input: {} }],
+        content: [{
+          type: "tool_use",
+          id: "t1",
+          name: "search_products",
+          input: {},
+        }],
       },
       {
         role: "user",
-        content: [{ type: "tool_result", tool_use_id: "t1", content: { items: [] } }],
+        content: [{
+          type: "tool_result",
+          tool_use_id: "t1",
+          content: { items: [] },
+        }],
       },
     ],
   });
@@ -277,11 +303,20 @@ Deno.test("the whole turn is written back as the core recorded it", async () => 
     { role: "user", content: [{ type: "text", text: "找外套" }] },
     {
       role: "assistant",
-      content: [{ type: "tool_use", id: "t1", name: "search_products", input: {} }],
+      content: [{
+        type: "tool_use",
+        id: "t1",
+        name: "search_products",
+        input: {},
+      }],
     },
     {
       role: "user",
-      content: [{ type: "tool_result", tool_use_id: "t1", content: { items: [] } }],
+      content: [{
+        type: "tool_result",
+        tool_use_id: "t1",
+        content: { items: [] },
+      }],
     },
     {
       role: "assistant",
@@ -351,12 +386,15 @@ Deno.test("an expired reply token costs a push, not the answer", async () => {
   const { line, replied, pushed } = fakeLine({ replyFails: true });
   const chat = fakeChat({ blocks: [{ type: "text", text: "為你找到" }] });
 
-  const warnings = await captureConsole("warn", () =>
-    handleTextMessage(deps({ line, runChat: chat.runChat }), {
-      replyToken: "rt",
-      sourceUserId: USER,
-      text: "找白襯衫",
-    }));
+  const warnings = await captureConsole(
+    "warn",
+    () =>
+      handleTextMessage(deps({ line, runChat: chat.runChat }), {
+        replyToken: "rt",
+        sourceUserId: USER,
+        text: "找白襯衫",
+      }),
+  );
 
   assertEquals(replied, []);
   assertEquals(pushed, [[{ type: "text", text: "為你找到" }]]);

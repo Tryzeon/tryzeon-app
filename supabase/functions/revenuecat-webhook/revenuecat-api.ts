@@ -20,13 +20,19 @@ export async function fetchSubscriber(
 ): Promise<Subscriber> {
   const response = await fetch(
     `${SUBSCRIBERS_ENDPOINT}/${encodeURIComponent(appUserId)}`,
-    { headers: { Authorization: `Bearer ${apiKey}`, Accept: "application/json" } },
+    {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        Accept: "application/json",
+      },
+    },
   );
 
   if (!response.ok) {
     throw new RevenueCatApiError(
       response.status,
-      `RevenueCat subscriber fetch failed (${response.status}): ${await response.text()}`,
+      `RevenueCat subscriber fetch failed (${response.status}): ${await response
+        .text()}`,
     );
   }
 

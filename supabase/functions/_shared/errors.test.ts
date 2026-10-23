@@ -1,15 +1,22 @@
 import { assertEquals } from "@std/assert";
-import { classifyCoreError, RateLimitedError, ServiceBusyError } from "./errors.ts";
+import {
+  classifyCoreError,
+  RateLimitedError,
+  ServiceBusyError,
+} from "./errors.ts";
 import { coreErrorResponse } from "./http.ts";
 import { ValidationError } from "./validation.ts";
 import { QuotaExceededError } from "./quota.ts";
 import { SAMPLE_QUOTA } from "./quota.testing.ts";
 
 Deno.test("classifyCoreError carries the message for validation errors", () => {
-  assertEquals(classifyCoreError(new ValidationError("messages must be an array")), {
-    kind: "validation",
-    message: "messages must be an array",
-  });
+  assertEquals(
+    classifyCoreError(new ValidationError("messages must be an array")),
+    {
+      kind: "validation",
+      message: "messages must be an array",
+    },
+  );
 });
 
 Deno.test("classifyCoreError carries quota for quota errors", () => {
@@ -20,9 +27,12 @@ Deno.test("classifyCoreError carries quota for quota errors", () => {
 });
 
 Deno.test("classifyCoreError narrows a service that refused for capacity", () => {
-  assertEquals(classifyCoreError(new ServiceBusyError("image generation is at capacity")), {
-    kind: "busy",
-  });
+  assertEquals(
+    classifyCoreError(new ServiceBusyError("image generation is at capacity")),
+    {
+      kind: "busy",
+    },
+  );
 });
 
 Deno.test("classifyCoreError returns null for anything else", () => {
@@ -53,7 +63,9 @@ Deno.test("coreErrorResponse keeps an unreadable quota snapshot as null", async 
 });
 
 Deno.test("classifyCoreError classifies RateLimitedError as rateLimit", () => {
-  assertEquals(classifyCoreError(new RateLimitedError()), { kind: "rateLimit" });
+  assertEquals(classifyCoreError(new RateLimitedError()), {
+    kind: "rateLimit",
+  });
 });
 
 Deno.test("coreErrorResponse maps rateLimit to a 429 without a quota payload", async () => {

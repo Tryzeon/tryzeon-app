@@ -19,12 +19,20 @@ Deno.test("parseLineAuthBody keeps a supplied nonce", () => {
 Deno.test("parseLineAuthBody drops every field but idToken and nonce", () => {
   // The security invariant: a caller-supplied email must never reach
   // `generateLink`, which would create an account for it rather than failing.
-  const hostile = { ...valid, email: "victim@example.com", userId: "other-user" };
+  const hostile = {
+    ...valid,
+    email: "victim@example.com",
+    userId: "other-user",
+  };
   assertEquals(parseLineAuthBody(JSON.stringify(hostile)), decoded);
 });
 
 Deno.test("parseLineAuthBody rejects unparseable JSON as a validation error", () => {
-  assertThrows(() => parseLineAuthBody("{not json"), ValidationError, "valid JSON");
+  assertThrows(
+    () => parseLineAuthBody("{not json"),
+    ValidationError,
+    "valid JSON",
+  );
 });
 
 Deno.test("parseLineAuthBody rejects a non-object body", () => {

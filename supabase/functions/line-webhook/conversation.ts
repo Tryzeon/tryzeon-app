@@ -27,7 +27,9 @@ export interface ConversationStore {
  * Neither method throws, and that is the contract callers are written against:
  * an outage degrades to a turn of one, so no handler needs an error path for it.
  */
-export function redisConversations(client: RedisLike = redis()): ConversationStore {
+export function redisConversations(
+  client: RedisLike = redis(),
+): ConversationStore {
   return {
     async load(lineUserId) {
       try {
@@ -40,7 +42,9 @@ export function redisConversations(client: RedisLike = redis()): ConversationSto
     },
     async save(lineUserId, messages) {
       try {
-        await client.set(KEY_PREFIX + lineUserId, windowHistory(messages), { ex: IDLE_TTL_SECONDS });
+        await client.set(KEY_PREFIX + lineUserId, windowHistory(messages), {
+          ex: IDLE_TTL_SECONDS,
+        });
       } catch (err) {
         console.warn("line-webhook conversation save failed:", err);
       }
@@ -53,7 +57,9 @@ export function tryonNote(product: ProductInfo): ChatMessage {
     role: "user",
     content: [{
       type: "text",
-      text: `（使用者剛試穿了商品 id:${product.id}「${clampProductName(product.name)}」）`,
+      text: `（使用者剛試穿了商品 id:${product.id}「${
+        clampProductName(product.name)
+      }」）`,
     }],
   };
 }
@@ -99,6 +105,9 @@ export function outfitTryonNote(outfit: LineOutfit): ChatMessage {
   );
   return {
     role: "user",
-    content: [{ type: "text", text: `（使用者剛試穿了整套「${outfit.title}」：${named.join("、")}）` }],
+    content: [{
+      type: "text",
+      text: `（使用者剛試穿了整套「${outfit.title}」：${named.join("、")}）`,
+    }],
   };
 }

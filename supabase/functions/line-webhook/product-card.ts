@@ -52,7 +52,11 @@ export function toLineProduct(
   if (!info) return null;
 
   const key = (row.image_paths as string[])[0];
-  return { ...info, imageUrl: publicImageUrl(imagesBaseUrl, key), garmentType: row.garment_type };
+  return {
+    ...info,
+    imageUrl: publicImageUrl(imagesBaseUrl, key),
+    garmentType: row.garment_type,
+  };
 }
 
 export function fetchProductRows(
@@ -112,7 +116,8 @@ export function purchaseAction(product: ProductInfo): object | null {
     return null;
   }
 
-  const isHttpOrHttps = parsed.protocol === "http:" || parsed.protocol === "https:";
+  const isHttpOrHttps = parsed.protocol === "http:" ||
+    parsed.protocol === "https:";
   const hasDoubleSlash = url.toLowerCase().startsWith(`${parsed.protocol}//`);
   return isHttpOrHttps && hasDoubleSlash
     ? { type: "uri", label: "前往購買", uri: url }
@@ -175,7 +180,11 @@ export function productItemBubble(
       // product name has no length constraint.
       displayText: `試穿「${clampProductName(product.name)}」`,
     },
-    detailAction: { type: "uri", label: "商品詳情", uri: productDetailUrl(liffUrl, product.id) },
+    detailAction: {
+      type: "uri",
+      label: "商品詳情",
+      uri: productDetailUrl(liffUrl, product.id),
+    },
   });
 }
 

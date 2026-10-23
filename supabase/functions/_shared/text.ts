@@ -13,8 +13,12 @@ export function nonEmptyStr(value: unknown): string | null {
  * trusting the declaration: the alternative is a `.trim()` on null taking down
  * the whole request instead of dropping one element.
  */
-export function textArrayValues(value: readonly unknown[] | null | undefined): string[] {
-  return Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : [];
+export function textArrayValues(
+  value: readonly unknown[] | null | undefined,
+): string[] {
+  return Array.isArray(value)
+    ? value.filter((v): v is string => typeof v === "string")
+    : [];
 }
 
 const UUID_RE =

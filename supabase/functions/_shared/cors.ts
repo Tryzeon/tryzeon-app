@@ -36,8 +36,9 @@ export function makeCors(options: CorsOptions): Cors {
   const headers: Record<string, string> = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": [...methods, "OPTIONS"].join(", "),
-    "Access-Control-Allow-Headers": (options.allowHeaders ?? DEFAULT_ALLOW_HEADERS)
-      .join(", "),
+    "Access-Control-Allow-Headers":
+      (options.allowHeaders ?? DEFAULT_ALLOW_HEADERS)
+        .join(", "),
     "Access-Control-Max-Age": String(MAX_AGE_SECONDS),
   };
 

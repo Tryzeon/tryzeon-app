@@ -19,7 +19,14 @@ Deno.test("vocabularies match the schema enums", () => {
 });
 
 Deno.test("garment types name one_piece, not dress", () => {
-  assertEquals([...GARMENT_TYPE_VALUES], ["top", "outerwear", "pants", "skirt", "one_piece", "others"]);
+  assertEquals([...GARMENT_TYPE_VALUES], [
+    "top",
+    "outerwear",
+    "pants",
+    "skirt",
+    "one_piece",
+    "others",
+  ]);
 });
 
 Deno.test("no vocabulary is empty", () => {

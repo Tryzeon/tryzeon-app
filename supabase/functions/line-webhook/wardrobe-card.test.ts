@@ -56,7 +56,10 @@ Deno.test("an unknown garment type shows its own code rather than dropping the c
   // The cast stands in for a deployed function reading a schema newer than the
   // types it was built against.
   const grown = "hats" as Enums<"garment_type">;
-  assertEquals(toLineWardrobeItem(row({ garment_type: grown }), URL)?.garmentTypeLabel, "hats");
+  assertEquals(
+    toLineWardrobeItem(row({ garment_type: grown }), URL)?.garmentTypeLabel,
+    "hats",
+  );
 });
 
 Deno.test("toLineWardrobeItem drops an item whose image could not be signed", () => {
@@ -148,8 +151,9 @@ Deno.test("a wardrobe bubble is the same pick bubble: 衣櫃, garment and two ta
 });
 
 Deno.test("a wardrobe bubble with no tags is named by its garment type alone", () => {
-  // deno-lint-ignore no-explicit-any
-  const overlay = (wardrobeItemBubble(item({ tags: [] }), undefined) as any).hero.contents[2];
+  const overlay =
+    // deno-lint-ignore no-explicit-any
+    (wardrobeItemBubble(item({ tags: [] }), undefined) as any).hero.contents[2];
   assertEquals(overlay.contents[1].text, "上衣");
 });
 
@@ -197,7 +201,11 @@ function fakeAdmin(
 }
 
 const signedOk = (paths: string[]) => ({
-  data: paths.map((p) => ({ error: null, path: p, signedUrl: `https://sig.example/${p}?t=1` })),
+  data: paths.map((p) => ({
+    error: null,
+    path: p,
+    signedUrl: `https://sig.example/${p}?t=1`,
+  })),
   error: null,
 });
 
@@ -241,9 +249,16 @@ Deno.test("fetchWardrobeRows signs the whole set in one call", async () => {
 });
 
 Deno.test("an item whose url came back null is absent, so its block drops", async () => {
-  const { admin } = fakeAdmin([row(), row({ id: "w2", image_path: "u1/top/w2.png" })], {
+  const { admin } = fakeAdmin([
+    row(),
+    row({ id: "w2", image_path: "u1/top/w2.png" }),
+  ], {
     data: [
-      { error: null, path: "u1/top/w1.png", signedUrl: "https://sig.example/w1?t=1" },
+      {
+        error: null,
+        path: "u1/top/w1.png",
+        signedUrl: "https://sig.example/w1?t=1",
+      },
       { error: "not found", path: "u1/top/w2.png", signedUrl: null },
     ],
     error: null,
@@ -254,7 +269,10 @@ Deno.test("an item whose url came back null is absent, so its block drops", asyn
 });
 
 Deno.test("fetchWardrobeRows queries and signs nothing for an empty id list", async () => {
-  const { admin, inCalls, signCalls } = fakeAdmin([], { data: [], error: null });
+  const { admin, inCalls, signCalls } = fakeAdmin([], {
+    data: [],
+    error: null,
+  });
   const rows = await fetchWardrobeRows(admin, "u1", []);
 
   assertEquals(inCalls, []);
@@ -263,8 +281,15 @@ Deno.test("fetchWardrobeRows queries and signs nothing for an empty id list", as
 });
 
 Deno.test("fetchWardrobeRows throws when signing fails outright", async () => {
-  const { admin } = fakeAdmin([row()], { data: null, error: { message: "boom" } });
-  await assertRejects(() => fetchWardrobeRows(admin, "u1", ["w1"]), Error, "boom");
+  const { admin } = fakeAdmin([row()], {
+    data: null,
+    error: { message: "boom" },
+  });
+  await assertRejects(
+    () => fetchWardrobeRows(admin, "u1", ["w1"]),
+    Error,
+    "boom",
+  );
 });
 
 function fakeItemAdmin(row: Record<string, unknown> | null) {
@@ -318,7 +343,11 @@ Deno.test("fetchWardrobeItemInfo yields the text fields and no image url", async
   const { admin } = fakeItemAdmin(row());
   const info = await fetchWardrobeItemInfo(admin, "u1", "w1");
 
-  assertEquals(info, { id: "w1", garmentTypeLabel: "上衣", tags: ["寬鬆", "米色"] });
+  assertEquals(info, {
+    id: "w1",
+    garmentTypeLabel: "上衣",
+    tags: ["寬鬆", "米色"],
+  });
 });
 
 Deno.test("fetchWardrobeItemInfo is null for an item that is gone or never theirs", async () => {

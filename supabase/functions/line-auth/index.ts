@@ -17,11 +17,17 @@ Deno.serve(async (req) => {
   try {
     const channelId = Deno.env.get("LINE_CHANNEL_ID");
     if (!channelId) {
-      return cors.wrap(jsonError("Server misconfigured", "INTERNAL_ERROR", 500));
+      return cors.wrap(
+        jsonError("Server misconfigured", "INTERNAL_ERROR", 500),
+      );
     }
 
     const body = parseLineAuthBody(await req.text());
-    const profile = await verifyLineIdToken(body.idToken, channelId, body.nonce);
+    const profile = await verifyLineIdToken(
+      body.idToken,
+      channelId,
+      body.nonce,
+    );
     const admin = getAdminClient();
 
     // The order is load-bearing. `getOrCreateUserId` is what makes the session

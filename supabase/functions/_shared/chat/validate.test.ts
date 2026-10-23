@@ -55,7 +55,10 @@ Deno.test("windows a history past MAX_MESSAGES instead of rejecting it", () => {
     { length: LIMITS.MAX_MESSAGES + 5 },
     (_, i) => message(`m${i}`),
   );
-  assertEquals(validateChatParams(params({ messages })).messages, messages.slice(5));
+  assertEquals(
+    validateChatParams(params({ messages })).messages,
+    messages.slice(5),
+  );
 });
 
 Deno.test("rejects a history whose window holds no user turn", () => {
@@ -63,7 +66,10 @@ Deno.test("rejects a history whose window holds no user turn", () => {
     role: "user",
     content: [{ type: "tool_result", tool_use_id: "t", content: {} }],
   };
-  const messages = Array.from({ length: LIMITS.MAX_MESSAGES + 1 }, () => toolResult);
+  const messages = Array.from(
+    { length: LIMITS.MAX_MESSAGES + 1 },
+    () => toolResult,
+  );
   assertThrows(
     () => validateChatParams(params({ messages })),
     ValidationError,
@@ -76,11 +82,17 @@ Deno.test("accepts a history exactly at MAX_MESSAGES", () => {
     { length: LIMITS.MAX_MESSAGES },
     () => message("hi"),
   );
-  assertEquals(validateChatParams(params({ messages })).messages.length, LIMITS.MAX_MESSAGES);
+  assertEquals(
+    validateChatParams(params({ messages })).messages.length,
+    LIMITS.MAX_MESSAGES,
+  );
 });
 
 Deno.test("rejects an unknown role", () => {
-  const messages = [{ role: "system", content: [] }] as unknown as ChatMessage[];
+  const messages = [{
+    role: "system",
+    content: [],
+  }] as unknown as ChatMessage[];
   assertThrows(
     () => validateChatParams(params({ messages })),
     ValidationError,
@@ -89,7 +101,10 @@ Deno.test("rejects an unknown role", () => {
 });
 
 Deno.test("rejects content that is not an array", () => {
-  const messages = [{ role: "user", content: "hi" }] as unknown as ChatMessage[];
+  const messages = [{
+    role: "user",
+    content: "hi",
+  }] as unknown as ChatMessage[];
   assertThrows(
     () => validateChatParams(params({ messages })),
     ValidationError,

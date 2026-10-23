@@ -52,6 +52,11 @@ export async function checkWindowedRateLimit(
   bucket: string,
   limit: WindowedLimit,
 ): Promise<boolean> {
-  return await checkRateLimit(userId, `${bucket}:minute`, limit.perMinute, 60) &&
+  return await checkRateLimit(
+    userId,
+    `${bucket}:minute`,
+    limit.perMinute,
+    60,
+  ) &&
     await checkRateLimit(userId, `${bucket}:day`, limit.perDay, 86400);
 }

@@ -42,7 +42,8 @@ export const ANSWER_LIMITS = {
   MAX_SUGGESTION_CHARS: 20,
 } as const;
 
-export const WARDROBE_SELECT = "id, image_path, garment_type, tags, created_at, updated_at";
+export const WARDROBE_SELECT =
+  "id, image_path, garment_type, tags, created_at, updated_at";
 
 // Shop product shape for an answer card — mirrors the product detail page so the
 // client renders it directly (sizes + the owning store's public fields).
@@ -50,16 +51,25 @@ export const PRODUCT_SELECT =
   "*, product_sizes(*), store_profiles!products_store_id_fkey(id, name, address, logo_path, channels)";
 
 type Enums = Database["public"]["Enums"];
-type ListShopProductsArgs = Database["public"]["Functions"]["list_shop_products"]["Args"];
+type ListShopProductsArgs =
+  Database["public"]["Functions"]["list_shop_products"]["Args"];
 
 const nonEmptyStringArray = (v: unknown): string[] | undefined =>
   Array.isArray(v) && v.length > 0 ? v.map(String) : undefined;
 
-function isInVocabulary<T extends string>(value: unknown, vocab: readonly T[]): value is T {
-  return typeof value === "string" && (vocab as readonly string[]).includes(value);
+function isInVocabulary<T extends string>(
+  value: unknown,
+  vocab: readonly T[],
+): value is T {
+  return typeof value === "string" &&
+    (vocab as readonly string[]).includes(value);
 }
 
-const vocabularyError = (field: string, bad: unknown, vocab: readonly string[]): string =>
+const vocabularyError = (
+  field: string,
+  bad: unknown,
+  vocab: readonly string[],
+): string =>
   `${field} 參數包含不支援的值「${String(bad)}」。請改用允許的值（${
     vocab.join("、")
   }）其中之一，或省略 ${field} 參數後重試。`;
@@ -100,22 +110,39 @@ export type VocabularyFilter =
   | { ok: true; filters: VocabularyFilters }
   | { ok: false; error: string };
 
-export function validateVocabularyFilters(args: Record<string, unknown>): VocabularyFilter {
+export function validateVocabularyFilters(
+  args: Record<string, unknown>,
+): VocabularyFilter {
   const fits = readVocabularyArray(args.fits, "fits", FIT_VALUES);
   if (!fits.ok) return fits;
   const seasons = readVocabularyArray(args.seasons, "seasons", SEASON_VALUES);
   if (!seasons.ok) return seasons;
-  const elasticities = readVocabularyArray(args.elasticities, "elasticities", ELASTICITY_VALUES);
+  const elasticities = readVocabularyArray(
+    args.elasticities,
+    "elasticities",
+    ELASTICITY_VALUES,
+  );
   if (!elasticities.ok) return elasticities;
-  const thicknesses = readVocabularyArray(args.thicknesses, "thicknesses", THICKNESS_VALUES);
+  const thicknesses = readVocabularyArray(
+    args.thicknesses,
+    "thicknesses",
+    THICKNESS_VALUES,
+  );
   if (!thicknesses.ok) return thicknesses;
-  const channels = readVocabularyArray(args.channels, "channels", CHANNEL_VALUES);
+  const channels = readVocabularyArray(
+    args.channels,
+    "channels",
+    CHANNEL_VALUES,
+  );
   if (!channels.ok) return channels;
 
   const gender = args.gender;
   const hasGender = gender !== undefined && gender !== null;
   if (hasGender && !isInVocabulary(gender, GENDER_VALUES)) {
-    return { ok: false, error: vocabularyError("gender", gender, GENDER_VALUES) };
+    return {
+      ok: false,
+      error: vocabularyError("gender", gender, GENDER_VALUES),
+    };
   }
 
   return {
@@ -171,8 +198,12 @@ export function mapSearchProductsArgs(
     p_category_ids: opts.categoryIds && opts.categoryIds.length > 0
       ? opts.categoryIds
       : undefined,
-    p_min_price: typeof args.min_price === "number" ? args.min_price : undefined,
-    p_max_price: typeof args.max_price === "number" ? args.max_price : undefined,
+    p_min_price: typeof args.min_price === "number"
+      ? args.min_price
+      : undefined,
+    p_max_price: typeof args.max_price === "number"
+      ? args.max_price
+      : undefined,
     p_channels: filters.channels,
     p_gender: filters.gender,
     p_materials: nonEmptyStringArray(args.materials),
@@ -197,10 +228,13 @@ const withSetFields = (o: Record<string, unknown>): Record<string, unknown> =>
     ),
   );
 
-
-export function toSearchResultItem(row: Record<string, unknown>): Record<string, unknown> {
+export function toSearchResultItem(
+  row: Record<string, unknown>,
+): Record<string, unknown> {
   const store = (row.store_profiles ?? null) as Record<string, unknown> | null;
-  const variants = Array.isArray(row.product_variants) ? row.product_variants : [];
+  const variants = Array.isArray(row.product_variants)
+    ? row.product_variants
+    : [];
 
   return withSetFields({
     id: String(row.id),
@@ -261,7 +295,11 @@ export async function recordRounds(
   let results: ContentBlock[] = [];
 
   const answer = (toolUseId: string, content: unknown) => {
-    const event: ChatEvent = { type: "tool_result", tool_use_id: toolUseId, content };
+    const event: ChatEvent = {
+      type: "tool_result",
+      tool_use_id: toolUseId,
+      content,
+    };
     results.push(event);
     onEvent?.(event);
   };
@@ -287,7 +325,10 @@ export async function recordRounds(
         break;
       case "finish-step":
         if (calls.length > 0) {
-          rounds.push({ role: "assistant", content: calls }, { role: "user", content: results });
+          rounds.push({ role: "assistant", content: calls }, {
+            role: "user",
+            content: results,
+          });
         }
         calls = [];
         results = [];
@@ -301,7 +342,9 @@ function readItemRef(entry: unknown): ItemRef | null {
   const item = asRecord(entry);
   const type = item?.type;
   const id = nonEmptyStr(item?.id);
-  return (type === "product" || type === "wardrobe") && id !== null ? { type, id } : null;
+  return (type === "product" || type === "wardrobe") && id !== null
+    ? { type, id }
+    : null;
 }
 
 const refKey = ({ type, id }: ItemRef): string => `${type}:${id}`;
@@ -329,7 +372,9 @@ export function outfitsOf(block: ContentBlock): OutfitRef[] {
   for (const entry of block.outfits) {
     const look = asRecord(entry);
     const title = nonEmptyStr(look?.title);
-    const read = (Array.isArray(look?.pieces) ? look.pieces : []).map(readItemRef);
+    const read = (Array.isArray(look?.pieces) ? look.pieces : []).map(
+      readItemRef,
+    );
     if (title === null || read.some((piece) => piece === null)) continue;
     const pieces = dedupeRefs(read as ItemRef[]);
     if (
@@ -379,7 +424,9 @@ export function suggestionsOf(raw: unknown): string[] {
   for (const entry of raw) {
     if (typeof entry !== "string") continue;
     const text = entry.trim();
-    if (text.length === 0 || text.length > ANSWER_LIMITS.MAX_SUGGESTION_CHARS) continue;
+    if (text.length === 0 || text.length > ANSWER_LIMITS.MAX_SUGGESTION_CHARS) {
+      continue;
+    }
     if (/[\r\n\t]/.test(text)) continue;
     kept.add(text);
   }
@@ -396,7 +443,9 @@ export function toModelMessages(messages: ChatMessage[]): ModelMessage[] {
   for (const m of messages ?? []) {
     if (m?.role !== "assistant") continue;
     for (const b of Array.isArray(m.content) ? m.content : []) {
-      if (b?.type === "tool_use" && b.id && b.name) nameOf.set(String(b.id), String(b.name));
+      if (b?.type === "tool_use" && b.id && b.name) {
+        nameOf.set(String(b.id), String(b.name));
+      }
     }
   }
 

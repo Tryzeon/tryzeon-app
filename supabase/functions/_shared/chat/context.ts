@@ -33,7 +33,9 @@ export const buildChatContext: ContextLoader = async (client, userId) => {
     (categories ?? []).map((c) => [c.code, c.id]),
   );
 
-  const categoryLines = (categories ?? []).map((c) => `- ${c.code}（${c.name}）`).join("\n");
+  const categoryLines = (categories ?? []).map((c) =>
+    `- ${c.code}（${c.name}）`
+  ).join("\n");
 
   const userContextLines = [
     userName && `- 姓名：${userName}`,
@@ -48,7 +50,8 @@ export const buildChatContext: ContextLoader = async (client, userId) => {
     ? `\n\n【使用者資訊】（推薦時可參考；是否套用到搜尋條件由你自行判斷，不強制。例如可視情況把性別或偏好風格帶入 search_products 的 gender / styles 參數）\n${userContextLines}`
     : "";
 
-  const systemInstruction = `你是「Tryzeon 時尚助理」，Tryzeon App 的專屬 AI 穿搭與購物顧問，親切而專業，正在和使用者對話。
+  const systemInstruction =
+    `你是「Tryzeon 時尚助理」，Tryzeon App 的專屬 AI 穿搭與購物顧問，親切而專業，正在和使用者對話。
 當使用者問你是誰、你叫什麼，或向你打招呼自我介紹時，表明「我是 Tryzeon 時尚助理」，並簡短說明你能幫忙找單品、用衣櫃既有衣物配整套穿搭。平常對話不需要主動反覆強調這個身分。
 你有兩個搜尋工具：search_wardrobe（使用者衣櫃既有衣物）、search_products（商店真實商品）。
 判斷意圖再決定搜哪裡：

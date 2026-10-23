@@ -50,7 +50,10 @@ Deno.test("parseChatParams rejects a non-array messages field", () => {
 
 Deno.test("parseChatParams defers invariants to the core", () => {
   const messages = [{ role: "system", content: "nope" }];
-  assertEquals(parseChatParams(body({ messages }), "u1").messages, messages as never);
+  assertEquals(
+    parseChatParams(body({ messages }), "u1").messages,
+    messages as never,
+  );
   assertEquals(parseChatParams(body({ messages: [] }), "u1").messages, []);
 });
 

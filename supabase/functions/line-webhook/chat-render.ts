@@ -4,10 +4,19 @@
  * becomes its own carousel and each run of text one message, preserving the ordering the model
  * meant for as long as it fits in a single send.
  */
-import type { AnswerBlock, AnswerItems, OutfitRef, PickRef } from "../_shared/chat/index.ts";
+import type {
+  AnswerBlock,
+  AnswerItems,
+  OutfitRef,
+  PickRef,
+} from "../_shared/chat/index.ts";
 import { type LineProduct, productItemBubble } from "./product-card.ts";
 import { type LineWardrobeItem, wardrobeItemBubble } from "./wardrobe-card.ts";
-import { type LineOutfit, outfitBubble, resolveOutfitPieces } from "./outfit-card.ts";
+import {
+  type LineOutfit,
+  outfitBubble,
+  resolveOutfitPieces,
+} from "./outfit-card.ts";
 import { chatErrorMessage } from "./messages.ts";
 import { dressLast, messageChip } from "./quick-reply.ts";
 
@@ -32,10 +41,18 @@ function pickCards(picks: PickRef[], items: AnswerItems): LineCard[] {
     const tag = highlight ? { highlight } : {};
     if (type === "product") {
       const item = items.products[id];
-      if (item) cards.push({ kind: "product", item: item as LineProduct, ...tag });
+      if (item) {
+        cards.push({ kind: "product", item: item as LineProduct, ...tag });
+      }
     } else {
       const item = items.wardrobe[id];
-      if (item) cards.push({ kind: "wardrobe", item: item as LineWardrobeItem, ...tag });
+      if (item) {
+        cards.push({
+          kind: "wardrobe",
+          item: item as LineWardrobeItem,
+          ...tag,
+        });
+      }
     }
   }
   return cards;
@@ -48,7 +65,13 @@ function rowOutfits(outfits: OutfitRef[], items: AnswerItems): LineOutfit[] {
       product: (id) => items.products[id] as LineProduct | undefined,
       wardrobe: (id) => items.wardrobe[id] as LineWardrobeItem | undefined,
     });
-    if (pieces) looks.push({ title: look.title, ...(look.reason ? { reason: look.reason } : {}), pieces });
+    if (pieces) {
+      looks.push({
+        title: look.title,
+        ...(look.reason ? { reason: look.reason } : {}),
+        pieces,
+      });
+    }
   }
   return looks;
 }
@@ -98,7 +121,10 @@ function carouselMessage(items: LineCard[], liffUrl: string): object {
   return {
     type: "flex",
     altText: carouselAltText(items),
-    contents: { type: "carousel", contents: items.map((card) => bubble(card, liffUrl)) },
+    contents: {
+      type: "carousel",
+      contents: items.map((card) => bubble(card, liffUrl)),
+    },
   };
 }
 
@@ -115,7 +141,9 @@ function outfitsMessage(outfits: LineOutfit[], liffUrl: string): object {
 
 function chunk<T>(items: T[], size: number): T[][] {
   const out: T[][] = [];
-  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
+  for (let i = 0; i < items.length; i += size) {
+    out.push(items.slice(i, i + size));
+  }
   return out;
 }
 
@@ -124,9 +152,13 @@ function sectionMessages(section: Section, liffUrl: string): object[] {
     case "text":
       return [textMessage(section.lines)];
     case "picks":
-      return chunk(section.picks, MAX_BUBBLES).map((cards) => carouselMessage(cards, liffUrl));
+      return chunk(section.picks, MAX_BUBBLES).map((cards) =>
+        carouselMessage(cards, liffUrl)
+      );
     case "outfits":
-      return chunk(section.outfits, MAX_BUBBLES).map((looks) => outfitsMessage(looks, liffUrl));
+      return chunk(section.outfits, MAX_BUBBLES).map((looks) =>
+        outfitsMessage(looks, liffUrl)
+      );
   }
 }
 
@@ -166,7 +198,10 @@ export function renderAnswer(
   const detailed = sections.flatMap((s) => sectionMessages(s, liffUrl));
   const messages = detailed.length <= MAX_LINE_MESSAGES
     ? detailed
-    : foldSections(sections).flatMap((s) => sectionMessages(s, liffUrl)).slice(0, MAX_LINE_MESSAGES);
+    : foldSections(sections).flatMap((s) => sectionMessages(s, liffUrl)).slice(
+      0,
+      MAX_LINE_MESSAGES,
+    );
 
   return dressLast(messages, suggestions.map((s) => messageChip(s, s)));
 }

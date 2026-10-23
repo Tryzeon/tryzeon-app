@@ -18,7 +18,10 @@ export async function verifyLineIdToken(
   nonce?: string,
   fetchFn: typeof fetch = fetch,
 ): Promise<LineProfile> {
-  const params = new URLSearchParams({ id_token: idToken, client_id: channelId });
+  const params = new URLSearchParams({
+    id_token: idToken,
+    client_id: channelId,
+  });
   if (nonce) params.set("nonce", nonce);
 
   const resp = await fetchFn(LINE_VERIFY_URL, {
@@ -29,7 +32,9 @@ export async function verifyLineIdToken(
 
   if (!resp.ok) {
     const reason = await resp.text().catch(() => "");
-    throw new LineAuthError(`LINE token verification failed (${resp.status}): ${reason}`);
+    throw new LineAuthError(
+      `LINE token verification failed (${resp.status}): ${reason}`,
+    );
   }
 
   const payload = (await resp.json()) as Record<string, unknown>;

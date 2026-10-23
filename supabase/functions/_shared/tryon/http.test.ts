@@ -6,7 +6,9 @@ import { QuotaExceededError } from "../quota.ts";
 import { SAMPLE_QUOTA } from "../quota.testing.ts";
 
 Deno.test("tryonErrorResponse renders a missing avatar as 400 NO_AVATAR", async () => {
-  const res = tryonErrorResponse(new MissingAvatarError("no avatar on profile"))!;
+  const res = tryonErrorResponse(
+    new MissingAvatarError("no avatar on profile"),
+  )!;
   assertEquals(res.status, 400);
   assertEquals(await res.json(), {
     error: "No model photo on file",
@@ -15,7 +17,9 @@ Deno.test("tryonErrorResponse renders a missing avatar as 400 NO_AVATAR", async 
 });
 
 Deno.test("tryonErrorResponse renders a busy service as 503 SERVICE_BUSY", async () => {
-  const res = tryonErrorResponse(new ServiceBusyError("image generation is at capacity"))!;
+  const res = tryonErrorResponse(
+    new ServiceBusyError("image generation is at capacity"),
+  )!;
   assertEquals(res.status, 503);
   assertEquals(await res.json(), {
     error: "Service is busy, please try again shortly",

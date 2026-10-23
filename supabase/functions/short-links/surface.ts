@@ -14,7 +14,8 @@ export function codeFromPathname(pathname: string): string | null {
 
 /** Crawlers are matched first: preview prefetches masquerade as ordinary browser
  * traffic, and counting them as scans dilutes the performance metrics. */
-const BOT_PATTERN = /bot\b|crawler|spider|preview|facebookexternalhit|embedly|quora link/i;
+const BOT_PATTERN =
+  /bot\b|crawler|spider|preview|facebookexternalhit|embedly|quora link/i;
 
 export function detectSurface(userAgent: string | null): Surface {
   if (!userAgent) return "web";

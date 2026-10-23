@@ -17,5 +17,6 @@ export function isAuthorized(header: string | null, secret: string): boolean {
   const received = encoder.encode(token);
   const want = encoder.encode(secret);
 
-  return received.byteLength === want.byteLength && timingSafeEqual(received, want);
+  return received.byteLength === want.byteLength &&
+    timingSafeEqual(received, want);
 }

@@ -11,7 +11,8 @@ import { buildPrompt, buildSchema, toResponse } from "./analysis.ts";
 
 Deno.serve(async (req) => {
   try {
-    const { userClient, user, errorResponse } = await getAuthenticatedUserClient(req);
+    const { userClient, user, errorResponse } =
+      await getAuthenticatedUserClient(req);
     if (errorResponse) return errorResponse;
 
     const body = await req.json().catch(() => null);
@@ -19,7 +20,10 @@ Deno.serve(async (req) => {
     if (!validation.ok) return validation.response;
     const base64 = validation.value;
 
-    const limited = await checkImageAnalysisRateLimit(user!.id, "product_image_analysis");
+    const limited = await checkImageAnalysisRateLimit(
+      user!.id,
+      "product_image_analysis",
+    );
     if (limited) return limited;
 
     // The caller's own client: `product_categories` is world-readable, so this
@@ -28,8 +32,15 @@ Deno.serve(async (req) => {
       .from("product_categories")
       .select("id, code, name");
     if (categoriesError || !categories || categories.length === 0) {
-      console.error("analyze-product-image: product_categories unavailable", categoriesError);
-      return jsonError("Product categories unavailable", "CATEGORIES_UNAVAILABLE", 500);
+      console.error(
+        "analyze-product-image: product_categories unavailable",
+        categoriesError,
+      );
+      return jsonError(
+        "Product categories unavailable",
+        "CATEGORIES_UNAVAILABLE",
+        500,
+      );
     }
     const idByCode = new Map<string, string>(
       categories.map((c) => [c.code, c.id]),

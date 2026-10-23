@@ -20,7 +20,10 @@ Deno.serve(async (req) => {
     if (!validation.ok) return validation.response;
     const base64 = validation.value;
 
-    const limited = await checkImageAnalysisRateLimit(user!.id, "wardrobe_image_analysis");
+    const limited = await checkImageAnalysisRateLimit(
+      user!.id,
+      "wardrobe_image_analysis",
+    );
     if (limited) return limited;
 
     const parsed = await analyzeImage({

@@ -9,7 +9,8 @@ const OPEN_WITH = ["liff"] as const;
 export type OpenWith = typeof OPEN_WITH[number];
 
 export function isOpenWith(value: unknown): value is OpenWith {
-  return typeof value === "string" && (OPEN_WITH as readonly string[]).includes(value);
+  return typeof value === "string" &&
+    (OPEN_WITH as readonly string[]).includes(value);
 }
 
 export interface DestinationConfig {

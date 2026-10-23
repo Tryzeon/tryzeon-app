@@ -56,7 +56,11 @@ Deno.test("runSearchProducts resolves a known category_code into the RPC's id fi
     },
   } as unknown as DbClient;
 
-  const result = await runSearchProducts(client, { category_code: "pants" }, CATEGORIES);
+  const result = await runSearchProducts(
+    client,
+    { category_code: "pants" },
+    CATEGORIES,
+  );
 
   assertEquals(seen.length, 1);
   assertEquals(seen[0].p_category_ids, ["cat-pants"]);
@@ -66,7 +70,9 @@ Deno.test("runSearchProducts resolves a known category_code into the RPC's id fi
 
 Deno.test("runSearchWardrobe filters on garment_type", async () => {
   const { client, eqCalls } = fakeWardrobeClient([{ id: "w1" }]);
-  const result = await runSearchWardrobe(client, "u1", { garment_type: "pants" });
+  const result = await runSearchWardrobe(client, "u1", {
+    garment_type: "pants",
+  });
 
   assertEquals(eqCalls, [["user_id", "u1"], ["garment_type", "pants"]]);
   assertEquals(result, { items: [{ id: "w1" }] });
@@ -87,8 +93,14 @@ Deno.test("answerSchema emits its block union as anyOf, which Vertex constrains,
 });
 
 Deno.test("answerSchema rejects a block missing the field its type requires", () => {
-  for (const block of [{ type: "text" }, { type: "picks" }, { type: "outfits" }]) {
-    assertEquals(answerSchema.safeParse({ blocks: [block] }).success, false, block.type);
+  for (
+    const block of [{ type: "text" }, { type: "picks" }, { type: "outfits" }]
+  ) {
+    assertEquals(
+      answerSchema.safeParse({ blocks: [block] }).success,
+      false,
+      block.type,
+    );
   }
 });
 
@@ -96,10 +108,19 @@ Deno.test("answerSchema accepts each block type with its field", () => {
   const parsed = answerSchema.safeParse({
     blocks: [
       { type: "text", text: "hi" },
-      { type: "picks", picks: [{ type: "product", id: "p1", highlight: "麻料" }] },
+      {
+        type: "picks",
+        picks: [{ type: "product", id: "p1", highlight: "麻料" }],
+      },
       {
         type: "outfits",
-        outfits: [{ title: "週末", pieces: [{ type: "product", id: "p1" }, { type: "wardrobe", id: "w1" }] }],
+        outfits: [{
+          title: "週末",
+          pieces: [{ type: "product", id: "p1" }, {
+            type: "wardrobe",
+            id: "w1",
+          }],
+        }],
       },
     ],
   });
@@ -117,6 +138,12 @@ Deno.test("answerSchema asks Vertex for suggestions as a required string array",
 Deno.test("answerSchema never rejects an answer over its suggestions", () => {
   const blocks = [{ type: "text", text: "嗨" }];
   assertEquals(answerSchema.safeParse({ blocks }).success, true);
-  assertEquals(answerSchema.safeParse({ blocks, suggestions: [1] }).success, true);
-  assertEquals(answerSchema.safeParse({ blocks, suggestions: "單品" }).success, true);
+  assertEquals(
+    answerSchema.safeParse({ blocks, suggestions: [1] }).success,
+    true,
+  );
+  assertEquals(
+    answerSchema.safeParse({ blocks, suggestions: "單品" }).success,
+    true,
+  );
 });

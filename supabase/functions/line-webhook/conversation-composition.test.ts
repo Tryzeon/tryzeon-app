@@ -4,13 +4,13 @@
  */
 import { assertEquals } from "@std/assert";
 import { handleProductTryon, type ProductTryonDeps } from "./tryon-handler.ts";
-import { handleTextMessage, type ChatHandlerDeps } from "./chat-handler.ts";
+import { type ChatHandlerDeps, handleTextMessage } from "./chat-handler.ts";
 import {
   type AnswerBlock,
   type ChatMessage,
   type ChatParams,
-  type RunChatAgentDeps,
   runChatAgent,
+  type RunChatAgentDeps,
 } from "../_shared/chat/index.ts";
 import type { LineApi } from "./line-api.ts";
 import type { LineProduct } from "./product-card.ts";

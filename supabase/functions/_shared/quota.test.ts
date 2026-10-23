@@ -4,7 +4,8 @@ import { fakeQuotaAdmin, SAMPLE_DAILY_QUOTA } from "./quota.testing.ts";
 
 Deno.test("supabaseUsageCounter charges consume_quota with the feature", async () => {
   const admin = fakeQuotaAdmin();
-  const result = await supabaseUsageCounter(admin.client, "u1", "tryon_image").charge();
+  const result = await supabaseUsageCounter(admin.client, "u1", "tryon_image")
+    .charge();
   assertEquals(result, { allowed: true });
   assertEquals(admin.calls, [{
     fn: "consume_quota",

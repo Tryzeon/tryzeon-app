@@ -10,7 +10,10 @@ import type { DbClient } from "../supabase.ts";
  * schema type parameters that would otherwise erase it.
  */
 interface IdInFilter<Row> {
-  in(column: "id", values: string[]): PromiseLike<{ data: Row[] | null; error: unknown }>;
+  in(
+    column: "id",
+    values: string[],
+  ): PromiseLike<{ data: Row[] | null; error: unknown }>;
 }
 
 export async function fetchRowsByIds<Row extends { id: string }, Block = Row>(
@@ -44,7 +47,10 @@ function blockItems(block: AnswerBlock): ItemRef[] {
 
 // The model can misquote an id, and Postgres fails the whole `.in("id", …)`
 // batch (22P02) on a malformed uuid, so only uuid ids are queried.
-export const idsOf = (blocks: AnswerBlock[], type: ItemRef["type"]): string[] => [
+export const idsOf = (
+  blocks: AnswerBlock[],
+  type: ItemRef["type"],
+): string[] => [
   ...new Set(
     blocks
       .flatMap(blockItems)
@@ -54,7 +60,9 @@ export const idsOf = (blocks: AnswerBlock[], type: ItemRef["type"]): string[] =>
 ];
 
 /** An image-less product cannot be tried on, so no surface is handed one to offer. */
-export const hasProductImage = (row: { image_paths?: string[] | null }): boolean =>
+export const hasProductImage = (
+  row: { image_paths?: string[] | null },
+): boolean =>
   typeof row.image_paths?.[0] === "string" && row.image_paths[0].length > 0;
 
 export const supabaseAnswerRows: AnswerHydrator = async (
@@ -69,7 +77,10 @@ export const supabaseAnswerRows: AnswerHydrator = async (
       (row) => (hasProductImage(row) ? row : null),
     ),
     fetchRowsByIds(
-      client.from("wardrobe_items").select(WARDROBE_SELECT).eq("user_id", userId),
+      client.from("wardrobe_items").select(WARDROBE_SELECT).eq(
+        "user_id",
+        userId,
+      ),
       idsOf(blocks, "wardrobe"),
     ),
   ]);

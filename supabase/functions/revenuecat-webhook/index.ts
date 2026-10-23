@@ -45,7 +45,10 @@ function affectedAppUserIds(event: RevenueCatEvent): string[] {
 }
 
 /** Throws on a transient failure so the caller can answer 5xx and be retried. */
-async function syncSubscription(admin: DbClient, appUserId: string): Promise<void> {
+async function syncSubscription(
+  admin: DbClient,
+  appUserId: string,
+): Promise<void> {
   // `Purchases.logIn` sets the app user id to the Supabase auth user id.
   // Anonymous ids ($RCAnonymousID:…) belong to no account and never will.
   if (!UUID_PATTERN.test(appUserId)) {
@@ -54,7 +57,10 @@ async function syncSubscription(admin: DbClient, appUserId: string): Promise<voi
   }
 
   const subscriber = await fetchSubscriber(API_KEY, appUserId);
-  const { tier, periodStart, periodEnd } = resolveSubscription(subscriber, new Date());
+  const { tier, periodStart, periodEnd } = resolveSubscription(
+    subscriber,
+    new Date(),
+  );
 
   const { error } = await admin
     .from(SUBSCRIPTIONS_TABLE)

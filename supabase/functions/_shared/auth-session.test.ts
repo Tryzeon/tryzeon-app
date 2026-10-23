@@ -25,7 +25,9 @@ function fakeAdmin(stub: AdminStub): DbClient {
             data: stub.generateLinkError
               ? null
               : { properties: { hashed_token: stub.hashedToken } },
-            error: stub.generateLinkError ? { message: stub.generateLinkError } : null,
+            error: stub.generateLinkError
+              ? { message: stub.generateLinkError }
+              : null,
           });
         },
       },
@@ -49,23 +51,40 @@ function fakeAnon(
 }
 
 Deno.test("mintSessionForUser returns the refresh token of the minted session", async () => {
-  const admin = fakeAdmin({ email: "line_U1@liff.tryzeon.app", hashedToken: "hash", seen: {} });
-  const result = await mintSessionForUser(admin, "user-1", fakeAnon({ refresh_token: "rt" }));
+  const admin = fakeAdmin({
+    email: "line_U1@liff.tryzeon.app",
+    hashedToken: "hash",
+    seen: {},
+  });
+  const result = await mintSessionForUser(
+    admin,
+    "user-1",
+    fakeAnon({ refresh_token: "rt" }),
+  );
   assertEquals(result, { refreshToken: "rt" });
 });
 
 Deno.test("mintSessionForUser generates the link for the user's own email", async () => {
   // The invariant that keeps this endpoint from being an account factory: the
   // email is read back from the user id, never supplied by a caller.
-  const stub: AdminStub = { email: "line_U9@liff.tryzeon.app", hashedToken: "hash", seen: {} };
-  await mintSessionForUser(fakeAdmin(stub), "user-9", fakeAnon({ refresh_token: "rt" }));
+  const stub: AdminStub = {
+    email: "line_U9@liff.tryzeon.app",
+    hashedToken: "hash",
+    seen: {},
+  };
+  await mintSessionForUser(
+    fakeAdmin(stub),
+    "user-9",
+    fakeAnon({ refresh_token: "rt" }),
+  );
   assertEquals(stub.seen.email, "line_U9@liff.tryzeon.app");
 });
 
 Deno.test("mintSessionForUser rejects when the user lookup fails", async () => {
   const admin = fakeAdmin({ getUserError: "boom", seen: {} });
   await assertRejects(
-    () => mintSessionForUser(admin, "user-1", fakeAnon({ refresh_token: "rt" })),
+    () =>
+      mintSessionForUser(admin, "user-1", fakeAnon({ refresh_token: "rt" })),
     Error,
     "user lookup failed",
   );
@@ -74,7 +93,8 @@ Deno.test("mintSessionForUser rejects when the user lookup fails", async () => {
 Deno.test("mintSessionForUser rejects when the user has no email", async () => {
   const admin = fakeAdmin({ email: null, seen: {} });
   await assertRejects(
-    () => mintSessionForUser(admin, "user-1", fakeAnon({ refresh_token: "rt" })),
+    () =>
+      mintSessionForUser(admin, "user-1", fakeAnon({ refresh_token: "rt" })),
     Error,
     "user lookup failed",
   );
@@ -83,7 +103,8 @@ Deno.test("mintSessionForUser rejects when the user has no email", async () => {
 Deno.test("mintSessionForUser rejects when generateLink returns no hashed token", async () => {
   const admin = fakeAdmin({ email: "a@b.c", hashedToken: null, seen: {} });
   await assertRejects(
-    () => mintSessionForUser(admin, "user-1", fakeAnon({ refresh_token: "rt" })),
+    () =>
+      mintSessionForUser(admin, "user-1", fakeAnon({ refresh_token: "rt" })),
     Error,
     "generateLink failed",
   );

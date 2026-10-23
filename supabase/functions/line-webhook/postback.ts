@@ -15,7 +15,8 @@ export function productTryonPostbackData(productId: string): string {
 }
 
 export function wardrobeTryonPostbackData(wardrobeItemId: string): string {
-  return new URLSearchParams({ a: TRYON_WARDROBE, wid: wardrobeItemId }).toString();
+  return new URLSearchParams({ a: TRYON_WARDROBE, wid: wardrobeItemId })
+    .toString();
 }
 
 export const MAX_OUTFIT_TITLE_CHARS = 12;
@@ -30,10 +31,14 @@ const GARMENT_KIND = { product: "p", wardrobe: "w" } as const;
  * The title rides along because the reply names the outfit and nothing else
  * still knows it: a card can be tapped long after the conversation expired.
  */
-export function outfitTryonPostbackData(outfit: { title: string; pieces: ItemRef[] }): string {
+export function outfitTryonPostbackData(
+  outfit: { title: string; pieces: ItemRef[] },
+): string {
   return new URLSearchParams({
     a: TRYON_OUTFIT,
-    g: outfit.pieces.map(({ type, id }) => `${GARMENT_KIND[type]}:${id}`).join(","),
+    g: outfit.pieces.map(({ type, id }) => `${GARMENT_KIND[type]}:${id}`).join(
+      ",",
+    ),
     t: clampOutfitTitle(outfit.title),
   }).toString();
 }
@@ -63,7 +68,9 @@ export function parsePostback(data: unknown): Postback | null {
 
   if (action === TRYON_PRODUCT) {
     const productId = params.get("pid");
-    return productId && isUuid(productId) ? { kind: "product", productId } : null;
+    return productId && isUuid(productId)
+      ? { kind: "product", productId }
+      : null;
   }
   if (action === TRYON_WARDROBE) {
     const wardrobeItemId = params.get("wid");
@@ -74,8 +81,7 @@ export function parsePostback(data: unknown): Postback | null {
   if (action === TRYON_OUTFIT) {
     const tokens = (params.get("g") ?? "").split(",");
     const title = nonEmptyStr(clampOutfitTitle(params.get("t") ?? ""));
-    const counted =
-      tokens.length >= ANSWER_LIMITS.MIN_OUTFIT_PIECES &&
+    const counted = tokens.length >= ANSWER_LIMITS.MIN_OUTFIT_PIECES &&
       tokens.length <= ANSWER_LIMITS.MAX_OUTFIT_PIECES;
     if (!counted || title === null) return null;
     const pieces = tokens.map(parseGarment);

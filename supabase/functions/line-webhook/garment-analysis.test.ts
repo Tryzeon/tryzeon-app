@@ -41,12 +41,16 @@ Deno.test("the photo is sent with this channel's own prompt and schema", async (
   // Not the wardrobe endpoint's: its controlled vocabulary would drop the very
   // words ("淺", "抽繩") that make a follow-up search land.
   const seen: { prompt?: string; schema?: unknown; base64?: string }[] = [];
-  await describeGarment(USER, B64, seams({
-    analyze: (args) => {
-      seen.push(args);
-      return Promise.resolve({ description: "白襯衫" });
-    },
-  }));
+  await describeGarment(
+    USER,
+    B64,
+    seams({
+      analyze: (args) => {
+        seen.push(args);
+        return Promise.resolve({ description: "白襯衫" });
+      },
+    }),
+  );
 
   assertEquals(seen.length, 1);
   assertEquals(seen[0].base64, B64);
@@ -56,17 +60,25 @@ Deno.test("the photo is sent with this channel's own prompt and schema", async (
 
 Deno.test("a surrounding-whitespace description is trimmed", async () => {
   assertEquals(
-    await describeGarment(USER, B64, seams({
-      analyze: () => Promise.resolve({ description: "  白襯衫  " }),
-    })),
+    await describeGarment(
+      USER,
+      B64,
+      seams({
+        analyze: () => Promise.resolve({ description: "  白襯衫  " }),
+      }),
+    ),
     "白襯衫",
   );
 });
 
 Deno.test("an over-long description is clamped", async () => {
-  const result = await describeGarment(USER, B64, seams({
-    analyze: () => Promise.resolve({ description: "藍".repeat(50) }),
-  }));
+  const result = await describeGarment(
+    USER,
+    B64,
+    seams({
+      analyze: () => Promise.resolve({ description: "藍".repeat(50) }),
+    }),
+  );
 
   assertEquals(result, `${"藍".repeat(20)}…`);
 });
@@ -74,9 +86,13 @@ Deno.test("an over-long description is clamped", async () => {
 Deno.test("clamping counts characters, not UTF-16 code units", async () => {
   // `slice` would cut an astral character in half and leave a lone surrogate in
   // the transcript.
-  const result = await describeGarment(USER, B64, seams({
-    analyze: () => Promise.resolve({ description: "👗".repeat(30) }),
-  }));
+  const result = await describeGarment(
+    USER,
+    B64,
+    seams({
+      analyze: () => Promise.resolve({ description: "👗".repeat(30) }),
+    }),
+  );
 
   assertEquals(result, `${"👗".repeat(20)}…`);
 });
@@ -84,9 +100,13 @@ Deno.test("clamping counts characters, not UTF-16 code units", async () => {
 Deno.test("an empty or non-string description is no description at all", async () => {
   for (const description of ["", "   ", 7, null, undefined]) {
     assertEquals(
-      await describeGarment(USER, B64, seams({
-        analyze: () => Promise.resolve({ description }),
-      })),
+      await describeGarment(
+        USER,
+        B64,
+        seams({
+          analyze: () => Promise.resolve({ description }),
+        }),
+      ),
       null,
     );
   }
@@ -95,9 +115,13 @@ Deno.test("an empty or non-string description is no description at all", async (
 Deno.test("a failed analysis costs the note, not the caller's turn", async () => {
   let result: string | null = "unset";
   const warnings = await captureWarnings(async () => {
-    result = await describeGarment(USER, B64, seams({
-      analyze: () => Promise.reject(new Error("vertex down")),
-    }));
+    result = await describeGarment(
+      USER,
+      B64,
+      seams({
+        analyze: () => Promise.reject(new Error("vertex down")),
+      }),
+    );
   });
 
   assertEquals(result, null);
@@ -108,13 +132,17 @@ Deno.test("a rate-limited caller is not analysed at all", async () => {
   let analysed = false;
   let result: string | null = "unset";
   const warnings = await captureWarnings(async () => {
-    result = await describeGarment(USER, B64, seams({
-      checkLimit: () => Promise.resolve(false),
-      analyze: () => {
-        analysed = true;
-        return Promise.resolve({ description: "白襯衫" });
-      },
-    }));
+    result = await describeGarment(
+      USER,
+      B64,
+      seams({
+        checkLimit: () => Promise.resolve(false),
+        analyze: () => {
+          analysed = true;
+          return Promise.resolve({ description: "白襯衫" });
+        },
+      }),
+    );
   });
 
   assertEquals(analysed, false);
@@ -124,22 +152,34 @@ Deno.test("a rate-limited caller is not analysed at all", async () => {
 
 Deno.test("the limit is this channel's own budget at the image-analysis rate", async () => {
   const checks: unknown[][] = [];
-  await describeGarment(USER, B64, seams({
-    checkLimit: (...args) => {
-      checks.push(args);
-      return Promise.resolve(true);
-    },
-  }));
+  await describeGarment(
+    USER,
+    B64,
+    seams({
+      checkLimit: (...args) => {
+        checks.push(args);
+        return Promise.resolve(true);
+      },
+    }),
+  );
 
-  assertEquals(checks, [[USER, "line_garment_analysis", IMAGE_ANALYSIS_RATE_LIMIT]]);
+  assertEquals(checks, [[
+    USER,
+    "line_garment_analysis",
+    IMAGE_ANALYSIS_RATE_LIMIT,
+  ]]);
 });
 
 // A cap the prompt states but the code does not enforce is a transcript-bloat
 // bug waiting for one verbose model response.
 Deno.test("ANALYSIS_PROMPT states the length cap describeGarment enforces", async () => {
-  const clamped = await describeGarment(USER, B64, seams({
-    analyze: () => Promise.resolve({ description: "藍".repeat(50) }),
-  }));
+  const clamped = await describeGarment(
+    USER,
+    B64,
+    seams({
+      analyze: () => Promise.resolve({ description: "藍".repeat(50) }),
+    }),
+  );
 
   // Derived, not hardcoded: the ellipsis isn't part of the cap, which is
   // measured in code points.

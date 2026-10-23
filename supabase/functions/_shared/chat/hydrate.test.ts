@@ -11,10 +11,16 @@ const pick = (type: "product" | "wardrobe", id: string) => ({ type, id });
 Deno.test("idsOf collects uuid ids of one type from picks and outfits, once each", () => {
   const blocks: AnswerBlock[] = [
     { type: "text", text: "x" },
-    { type: "picks", picks: [pick("product", A), pick("wardrobe", B), pick("product", A)] },
+    {
+      type: "picks",
+      picks: [pick("product", A), pick("wardrobe", B), pick("product", A)],
+    },
     {
       type: "outfits",
-      outfits: [{ title: "L", pieces: [pick("product", C), pick("wardrobe", B)] }],
+      outfits: [{
+        title: "L",
+        pieces: [pick("product", C), pick("wardrobe", B)],
+      }],
     },
   ];
   assertEquals(idsOf(blocks, "product"), [A, C]);
@@ -22,7 +28,10 @@ Deno.test("idsOf collects uuid ids of one type from picks and outfits, once each
 });
 
 Deno.test("idsOf skips ids that are not uuids", () => {
-  const blocks: AnswerBlock[] = [{ type: "picks", picks: [pick("product", "p1"), pick("product", A)] }];
+  const blocks: AnswerBlock[] = [{
+    type: "picks",
+    picks: [pick("product", "p1"), pick("product", A)],
+  }];
   assertEquals(idsOf(blocks, "product"), [A]);
 });
 

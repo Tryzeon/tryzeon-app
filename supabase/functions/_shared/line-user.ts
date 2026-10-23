@@ -31,15 +31,18 @@ export async function getOrCreateUserId(
     }
   }
 
-  const { data: created, error: createError } = await admin.auth.admin.createUser({
-    email: `line_${profile.sub}@${SYNTHETIC_EMAIL_DOMAIN}`,
-    email_confirm: true,
-    app_metadata: { provider: "line", line_user_id: profile.sub },
-    user_metadata: name ? { name } : {},
-  });
+  const { data: created, error: createError } = await admin.auth.admin
+    .createUser({
+      email: `line_${profile.sub}@${SYNTHETIC_EMAIL_DOMAIN}`,
+      email_confirm: true,
+      app_metadata: { provider: "line", line_user_id: profile.sub },
+      user_metadata: name ? { name } : {},
+    });
 
   if (createError || !created?.user) {
-    throw new Error(`createUser failed: ${createError?.message ?? "no user returned"}`);
+    throw new Error(
+      `createUser failed: ${createError?.message ?? "no user returned"}`,
+    );
   }
   const userId = created.user.id;
 

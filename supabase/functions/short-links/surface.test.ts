@@ -12,7 +12,10 @@ const SAFARI_UA =
   "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 Version/17.5 Safari/604.1";
 
 Deno.test("codeFromPathname takes the last segment and lowercases it", () => {
-  assertEquals(codeFromPathname("/functions/v1/short-links/PinkyRabbit"), "pinkyrabbit");
+  assertEquals(
+    codeFromPathname("/functions/v1/short-links/PinkyRabbit"),
+    "pinkyrabbit",
+  );
   assertEquals(codeFromPathname("/short-links/pinkyrabbit"), "pinkyrabbit");
   assertEquals(codeFromPathname("/short-links/pinkyrabbit/"), "pinkyrabbit");
 });
@@ -45,7 +48,10 @@ Deno.test("detectSurface identifies preview crawlers before anything else", () =
 
 Deno.test("platformFromUserAgent reports os for analytics", () => {
   assertEquals(platformFromUserAgent(LINE_UA), "ios");
-  assertEquals(platformFromUserAgent("Mozilla/5.0 (Linux; Android 14)"), "android");
+  assertEquals(
+    platformFromUserAgent("Mozilla/5.0 (Linux; Android 14)"),
+    "android",
+  );
   assertEquals(platformFromUserAgent("Mozilla/5.0 (Macintosh)"), "other");
   assertEquals(platformFromUserAgent(null), "other");
 });

@@ -72,7 +72,9 @@ Deno.serve(async (req) => {
     const client = getAnonClient();
     const { data: link, error } = await client
       .from("short_links")
-      .select("code, store_id, open_with, store_profiles!inner(name, logo_path)")
+      .select(
+        "code, store_id, open_with, store_profiles!inner(name, logo_path)",
+      )
       .eq("code", code)
       .eq("is_active", true)
       .maybeSingle();
@@ -89,8 +91,12 @@ Deno.serve(async (req) => {
     // The DB check constraint only allows implemented values, so reaching here
     // means the schema and the code are out of sync.
     if (!isOpenWith(link.open_with)) {
-      console.error(`short-links: unsupported open_with "${link.open_with}" on "${link.code}"`);
-      return noStore(jsonError("Unsupported link target", "INTERNAL_ERROR", 500));
+      console.error(
+        `short-links: unsupported open_with "${link.open_with}" on "${link.code}"`,
+      );
+      return noStore(
+        jsonError("Unsupported link target", "INTERNAL_ERROR", 500),
+      );
     }
 
     const url = buildStoreDestination(
@@ -99,7 +105,9 @@ Deno.serve(async (req) => {
       DESTINATION_CONFIG,
     );
     if (url === null) {
-      console.error(`short-links: missing config for open_with "${link.open_with}"`);
+      console.error(
+        `short-links: missing config for open_with "${link.open_with}"`,
+      );
       return noStore(jsonError("Server misconfigured", "INTERNAL_ERROR", 500));
     }
 

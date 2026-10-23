@@ -36,7 +36,10 @@ Deno.test("classifyTryonError returns null for foreign errors", () => {
 });
 
 Deno.test("classifyTryonError narrows a missing avatar", () => {
-  assertEquals(classifyTryonError(new MissingAvatarError("no avatar on profile")), {
-    kind: "missingAvatar",
-  });
+  assertEquals(
+    classifyTryonError(new MissingAvatarError("no avatar on profile")),
+    {
+      kind: "missingAvatar",
+    },
+  );
 });

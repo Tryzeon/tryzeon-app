@@ -21,8 +21,16 @@ import {
  * Chinese strings are the stored value and the displayed value at once.
  */
 const MATERIAL_VALUES = [
-  "棉", "麻", "羊毛", "蠶絲", "聚酯纖維",
-  "尼龍", "嫘縈", "天絲", "萊卡", "混紡",
+  "棉",
+  "麻",
+  "羊毛",
+  "蠶絲",
+  "聚酯纖維",
+  "尼龍",
+  "嫘縈",
+  "天絲",
+  "萊卡",
+  "混紡",
 ];
 
 const list = (vocab: readonly string[]): string => vocab.join(" / ");
@@ -48,9 +56,17 @@ const freeText = (v: unknown): string | null => {
 const inList = (v: unknown, list: readonly string[]): string | null =>
   typeof v === "string" && list.includes(v) ? v : null;
 
-const filterList = (v: unknown, list: readonly string[], cap: number): string[] =>
+const filterList = (
+  v: unknown,
+  list: readonly string[],
+  cap: number,
+): string[] =>
   Array.isArray(v)
-    ? [...new Set(v.filter((x): x is string => typeof x === "string" && list.includes(x)))]
+    ? [
+      ...new Set(
+        v.filter((x): x is string => typeof x === "string" && list.includes(x)),
+      ),
+    ]
       .slice(0, cap)
     : [];
 
@@ -76,22 +92,32 @@ Every field is required. When the photo does not tell you, answer with the strin
     list(MATERIAL_VALUES)
   }
 - fit: ${list(FIT_VALUES)}; ${UNKNOWN} if you cannot tell.
-- thickness: how thick the fabric is — ${list(THICKNESS_VALUES)}; ${UNKNOWN} if you cannot tell.
+- thickness: how thick the fabric is — ${
+    list(THICKNESS_VALUES)
+  }; ${UNKNOWN} if you cannot tell.
 - elasticity: how stretchy the fabric is — ${
     list(ELASTICITY_VALUES)
   }; ${UNKNOWN} if you cannot tell.
 Return JSON only, with no surrounding text.`;
 }
 
-export function buildSchema(categories: CategoryOption[]): Record<string, unknown> {
+export function buildSchema(
+  categories: CategoryOption[],
+): Record<string, unknown> {
   return {
     type: "object",
     properties: {
       name: { type: "string" },
-      category_code: { type: "string", enum: [...categories.map((c) => c.code), UNKNOWN] },
+      category_code: {
+        type: "string",
+        enum: [...categories.map((c) => c.code), UNKNOWN],
+      },
       gender: { type: "string", enum: [...GENDER_VALUES, UNKNOWN] },
       styles: { type: "array", items: { type: "string", enum: STYLE_VALUES } },
-      seasons: { type: "array", items: { type: "string", enum: SEASON_VALUES } },
+      seasons: {
+        type: "array",
+        items: { type: "string", enum: SEASON_VALUES },
+      },
       material: { type: "string", enum: [...MATERIAL_VALUES, UNKNOWN] },
       fit: { type: "string", enum: [...FIT_VALUES, UNKNOWN] },
       thickness: { type: "string", enum: [...THICKNESS_VALUES, UNKNOWN] },
@@ -101,8 +127,15 @@ export function buildSchema(categories: CategoryOption[]): Record<string, unknow
     // so allowing both only gives the model a third option — writing the *word*
     // "null" into a field typed as a string.
     required: [
-      "name", "category_code", "gender", "styles",
-      "seasons", "material", "fit", "thickness", "elasticity",
+      "name",
+      "category_code",
+      "gender",
+      "styles",
+      "seasons",
+      "material",
+      "fit",
+      "thickness",
+      "elasticity",
     ],
   };
 }

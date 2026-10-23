@@ -29,7 +29,8 @@ export const BODY_MEASUREMENT_RANGE_KEYS = [
 export const UNIT_VALUES = ["centimeter", "cun", "inch"] as const;
 export type Unit = (typeof UNIT_VALUES)[number];
 
-const isUnit = (v: unknown): v is Unit => (UNIT_VALUES as readonly unknown[]).includes(v);
+const isUnit = (v: unknown): v is Unit =>
+  (UNIT_VALUES as readonly unknown[]).includes(v);
 
 /// Only the ingestion path normalizes: what a store owner types by hand is kept
 /// verbatim, because a custom size name is their decision. Values must stay in
@@ -159,7 +160,10 @@ export function validateRequest(body: unknown): {
   ok: false;
   response: Response;
 } {
-  const { audioBase64, mimeType, currentUnit } = (body ?? {}) as Record<string, unknown>;
+  const { audioBase64, mimeType, currentUnit } = (body ?? {}) as Record<
+    string,
+    unknown
+  >;
   if (typeof audioBase64 !== "string" || audioBase64.length < 16) {
     return {
       ok: false,
@@ -201,32 +205,44 @@ export interface ParsedSize {
 const isMeasurementKey = (v: unknown): v is (typeof MEASUREMENT_KEYS)[number] =>
   (MEASUREMENT_KEYS as readonly unknown[]).includes(v);
 
-const isBodyMeasurementRangeKey = (v: unknown): v is (typeof BODY_MEASUREMENT_RANGE_KEYS)[number] =>
+const isBodyMeasurementRangeKey = (
+  v: unknown,
+): v is (typeof BODY_MEASUREMENT_RANGE_KEYS)[number] =>
   (BODY_MEASUREMENT_RANGE_KEYS as readonly unknown[]).includes(v);
 
 const entries = (raw: unknown): Record<string, unknown>[] =>
   Array.isArray(raw)
-    ? raw.filter((e): e is Record<string, unknown> => e !== null && typeof e === "object")
+    ? raw.filter((e): e is Record<string, unknown> =>
+      e !== null && typeof e === "object"
+    )
     : [];
 
 // A type spoken twice keeps its last value: a store owner who repeats a
 // measurement is correcting it.
-function normalizeGarmentMeasurements(raw: unknown): ParsedSize["garment_measurements"] {
+function normalizeGarmentMeasurements(
+  raw: unknown,
+): ParsedSize["garment_measurements"] {
   const out: ParsedSize["garment_measurements"] = {};
   for (const e of entries(raw)) {
     const value = toNumber(e.value);
-    if (!isMeasurementKey(e.type) || !isUnit(e.unit) || value === null) continue;
+    if (!isMeasurementKey(e.type) || !isUnit(e.unit) || value === null) {
+      continue;
+    }
     out[e.type] = { value, unit: e.unit };
   }
   return out;
 }
 
-function normalizeBodyMeasurementRanges(raw: unknown): ParsedSize["body_measurement_ranges"] {
+function normalizeBodyMeasurementRanges(
+  raw: unknown,
+): ParsedSize["body_measurement_ranges"] {
   const out: ParsedSize["body_measurement_ranges"] = {};
   for (const e of entries(raw)) {
     const min = toNumber(e.min);
     const max = toNumber(e.max);
-    if (!isBodyMeasurementRangeKey(e.type) || min === null || max === null) continue;
+    if (!isBodyMeasurementRangeKey(e.type) || min === null || max === null) {
+      continue;
+    }
     out[e.type] = { min, max };
   }
   return out;
@@ -242,8 +258,12 @@ function normalizeBodyMeasurementRanges(raw: unknown): ParsedSize["body_measurem
  */
 export function normalizeParsedSizes(raw: unknown): ParsedSize[] {
   return entries((raw as { sizes?: unknown })?.sizes).map((s) => ({
-    name: typeof s.name === "string" ? normalizeSizeName(s.name.slice(0, 20)) : "",
+    name: typeof s.name === "string"
+      ? normalizeSizeName(s.name.slice(0, 20))
+      : "",
     garment_measurements: normalizeGarmentMeasurements(s.garment_measurements),
-    body_measurement_ranges: normalizeBodyMeasurementRanges(s.body_measurement_ranges),
+    body_measurement_ranges: normalizeBodyMeasurementRanges(
+      s.body_measurement_ranges,
+    ),
   }));
 }

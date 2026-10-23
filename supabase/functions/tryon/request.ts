@@ -10,10 +10,7 @@ import {
   parseJsonObject,
   ValidationError,
 } from "../_shared/tryon/index.ts";
-import type {
-  GarmentInput,
-  TryonParams,
-} from "../_shared/tryon/index.ts";
+import type { GarmentInput, TryonParams } from "../_shared/tryon/index.ts";
 
 /**
  * Takes raw text rather than pre-parsed JSON so that a malformed body raises the

@@ -11,15 +11,24 @@ type ValidationResult =
 
 export function validateBase64(base64: unknown): ValidationResult {
   if (typeof base64 !== "string" || base64.length < 16) {
-    return { ok: false, response: jsonError("Missing or invalid base64", "BAD_REQUEST", 400) };
+    return {
+      ok: false,
+      response: jsonError("Missing or invalid base64", "BAD_REQUEST", 400),
+    };
   }
   if (base64.length > MAX_BASE64_LENGTH) {
-    return { ok: false, response: jsonError("Image payload too large", "PAYLOAD_TOO_LARGE", 413) };
+    return {
+      ok: false,
+      response: jsonError("Image payload too large", "PAYLOAD_TOO_LARGE", 413),
+    };
   }
   return { ok: true, value: base64 };
 }
 
-export const IMAGE_ANALYSIS_RATE_LIMIT: WindowedLimit = { perMinute: 15, perDay: 200 };
+export const IMAGE_ANALYSIS_RATE_LIMIT: WindowedLimit = {
+  perMinute: 15,
+  perDay: 200,
+};
 
 export async function checkImageAnalysisRateLimit(
   userId: string,
@@ -38,7 +47,9 @@ export async function checkImageAnalysisRateLimit(
 // answered as busy instead of surfacing as a client timeout.
 const IMAGE_ANALYSIS_DEADLINE_MS = 15_000;
 
-export function analyzeImage<T extends Record<string, unknown> = Record<string, unknown>>(
+export function analyzeImage<
+  T extends Record<string, unknown> = Record<string, unknown>,
+>(
   { base64, prompt, schema }: {
     base64: string;
     prompt: string;

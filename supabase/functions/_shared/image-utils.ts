@@ -11,7 +11,9 @@ export async function downloadStorageImageAsBase64(
   const { data, error } = await supabase.storage.from(bucket).download(path);
 
   if (error) {
-    throw new Error(`Failed to download image from ${bucket}/${path}: ${error.message}`);
+    throw new Error(
+      `Failed to download image from ${bucket}/${path}: ${error.message}`,
+    );
   }
 
   if (!data) {
@@ -22,7 +24,9 @@ export async function downloadStorageImageAsBase64(
   return encodeBase64(arrayBuffer);
 }
 
-export async function downloadPublicImageAsBase64(key: string): Promise<string> {
+export async function downloadPublicImageAsBase64(
+  key: string,
+): Promise<string> {
   return encodeBase64(await downloadPublicImageFromR2(key));
 }
 

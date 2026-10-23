@@ -8,7 +8,7 @@ import {
 import { makeLineAnswerRows } from "./chat-hydrate.ts";
 import { renderAnswer } from "./chat-render.ts";
 import type { ConversationStore } from "./conversation.ts";
-import { chatErrorMessage, type ChatErrorKind } from "./messages.ts";
+import { type ChatErrorKind, chatErrorMessage } from "./messages.ts";
 import { LineApi } from "./line-api.ts";
 import type { DbClient } from "../_shared/supabase.ts";
 
@@ -102,7 +102,11 @@ export async function handleTextMessage(
       },
     );
 
-    await deliver(deps, event, renderAnswer(answer, items, deps.liffUrl, suggestions));
+    await deliver(
+      deps,
+      event,
+      renderAnswer(answer, items, deps.liffUrl, suggestions),
+    );
 
     await deps.conversations.save(
       event.sourceUserId,

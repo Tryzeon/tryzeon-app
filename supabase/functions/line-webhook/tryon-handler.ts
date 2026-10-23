@@ -13,7 +13,11 @@ import { getAvatar as defaultGetAvatar } from "../_shared/user-profile.ts";
 import type { ItemRef } from "../_shared/chat/index.ts";
 import { fetchProductInfo, fetchProductRows } from "./product-card.ts";
 import { fetchWardrobeItemInfo, fetchWardrobeRows } from "./wardrobe-card.ts";
-import { type LineOutfit, outfitResultMessage, resolveOutfitPieces } from "./outfit-card.ts";
+import {
+  type LineOutfit,
+  outfitResultMessage,
+  resolveOutfitPieces,
+} from "./outfit-card.ts";
 import { describeGarment as defaultDescribeGarment } from "./garment-analysis.ts";
 import {
   chooseModelMessage,
@@ -141,7 +145,9 @@ export async function handleImageTryon(
     bytes = await deps.line.getContent(event.messageId);
   } catch (err) {
     console.warn("line-webhook failed to download garment image:", err);
-    await deps.line.push(event.sourceUserId, [tryonErrorMessage("download", null)]);
+    await deps.line.push(event.sourceUserId, [
+      tryonErrorMessage("download", null),
+    ]);
     return;
   }
 
@@ -158,13 +164,18 @@ export async function handleImageTryon(
   });
 
   await deps.line.push(event.sourceUserId, [
-    outcome.ok ? resultMessage(outcome.imageUrl) : tryonErrorMessage(outcome.kind, outcome.quota),
+    outcome.ok
+      ? resultMessage(outcome.imageUrl)
+      : tryonErrorMessage(outcome.kind, outcome.quota),
   ]);
 
   const description = await described;
   if (description !== null) {
     const prior = await deps.conversations.load(event.sourceUserId);
-    await deps.conversations.save(event.sourceUserId, [...prior, photoNote(description)]);
+    await deps.conversations.save(event.sourceUserId, [
+      ...prior,
+      photoNote(description),
+    ]);
   }
 }
 
@@ -198,11 +209,15 @@ export async function handleProductTryon(
 
   const product = await fetchProduct(deps.admin, event.productId);
   if (!product) {
-    await deps.line.reply(event.replyToken, [productUnavailableMessage(deps.liffUrl)]);
+    await deps.line.reply(event.replyToken, [
+      productUnavailableMessage(deps.liffUrl),
+    ]);
     return;
   }
 
-  await deps.line.reply(event.replyToken, [productProcessingMessage(product.name)]);
+  await deps.line.reply(event.replyToken, [
+    productProcessingMessage(product.name),
+  ]);
 
   const outcome = await runTryon(deps, {
     userId,
@@ -212,12 +227,20 @@ export async function handleProductTryon(
   await deps.line.push(event.sourceUserId, [
     outcome.ok
       ? productResultMessage(outcome.imageUrl, product)
-      : productTryonErrorMessage(outcome.kind, outcome.quota, product, deps.liffUrl),
+      : productTryonErrorMessage(
+        outcome.kind,
+        outcome.quota,
+        product,
+        deps.liffUrl,
+      ),
   ]);
 
   if (outcome.ok) {
     const prior = await deps.conversations.load(event.sourceUserId);
-    await deps.conversations.save(event.sourceUserId, [...prior, tryonNote(product)]);
+    await deps.conversations.save(event.sourceUserId, [
+      ...prior,
+      tryonNote(product),
+    ]);
   }
 }
 
@@ -318,7 +341,10 @@ export async function handleOutfitTryon(
     return;
   }
 
-  const idsOf = (type: ItemRef["type"]) => event.pieces.filter((piece) => piece.type === type).map((piece) => piece.id);
+  const idsOf = (type: ItemRef["type"]) =>
+    event.pieces.filter((piece) => piece.type === type).map((piece) =>
+      piece.id
+    );
   const [products, wardrobe] = await Promise.all([
     fetchProducts(deps.admin, idsOf("product"), deps.imagesBaseUrl),
     fetchWardrobe(deps.admin, userId, idsOf("wardrobe")),
@@ -333,9 +359,14 @@ export async function handleOutfitTryon(
   }
   const outfit: LineOutfit = { title: event.title, pieces };
 
-  await deps.line.reply(event.replyToken, [outfitProcessingMessage(outfit.title)]);
+  await deps.line.reply(event.replyToken, [
+    outfitProcessingMessage(outfit.title),
+  ]);
 
-  const outcome = await runTryon(deps, { userId, garments: event.pieces.map(garmentOf) });
+  const outcome = await runTryon(deps, {
+    userId,
+    garments: event.pieces.map(garmentOf),
+  });
 
   await deps.line.push(event.sourceUserId, [
     outcome.ok
@@ -345,7 +376,10 @@ export async function handleOutfitTryon(
 
   if (outcome.ok) {
     const prior = await deps.conversations.load(event.sourceUserId);
-    await deps.conversations.save(event.sourceUserId, [...prior, outfitTryonNote(outfit)]);
+    await deps.conversations.save(event.sourceUserId, [
+      ...prior,
+      outfitTryonNote(outfit),
+    ]);
   }
 }
 
@@ -354,7 +388,9 @@ export async function handleOutfitTryon(
  * params, and each kind of ref is checked for existence before any job starts —
  * so it is reported as an unknown fault.
  */
-function tryonFailure(err: unknown): { kind: TryonJobErrorKind; quota: QuotaSnapshot | null } {
+function tryonFailure(
+  err: unknown,
+): { kind: TryonJobErrorKind; quota: QuotaSnapshot | null } {
   const info = classifyTryonError(err);
   if (info === null) return { kind: "unknown", quota: null };
   switch (info.kind) {

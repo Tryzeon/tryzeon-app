@@ -72,7 +72,11 @@ Deno.test("SECURITY: getAvatar refuses an avatar_path in another user's folder",
 
 Deno.test("SECURITY: getAvatar needs the folder separator, not just the prefix", async () => {
   const { admin } = fakeAdmin({
-    row: { user_id: "u1", avatar_path: "u10/avatar/1.jpg", avatar_preset: null },
+    row: {
+      user_id: "u1",
+      avatar_path: "u10/avatar/1.jpg",
+      avatar_preset: null,
+    },
   });
   assertEquals(await getAvatar(admin, "u1"), null);
 });

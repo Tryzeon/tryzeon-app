@@ -1,4 +1,7 @@
-import { ownsUserObjectPath, WARDROBE_IMAGES_BUCKET } from "../supabase-storage.ts";
+import {
+  ownsUserObjectPath,
+  WARDROBE_IMAGES_BUCKET,
+} from "../supabase-storage.ts";
 import { isUuid, textArrayValues } from "../text.ts";
 import { ValidationError } from "./errors.ts";
 import { garmentCategoryOf, LIMITS } from "./types.ts";
@@ -22,7 +25,9 @@ function trimmedString(value: unknown): string {
 export function buildWardrobeGarmentDetail(row: WardrobeGarmentRow): string {
   const parts = [`Garment type: ${row.garment_type}`];
 
-  const tags = textArrayValues(row.tags).map((t) => t.trim()).filter((t) => t.length > 0);
+  const tags = textArrayValues(row.tags).map((t) => t.trim()).filter((t) =>
+    t.length > 0
+  );
   if (tags.length > 0) parts.push(`Tags: ${tags.join(", ")}`);
 
   return parts.join(". ").slice(0, LIMITS.MAX_GARMENT_DETAIL_LENGTH);

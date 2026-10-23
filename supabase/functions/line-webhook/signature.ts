@@ -1,4 +1,7 @@
-export async function hmacBase64(secret: string, body: string): Promise<string> {
+export async function hmacBase64(
+  secret: string,
+  body: string,
+): Promise<string> {
   const key = await crypto.subtle.importKey(
     "raw",
     new TextEncoder().encode(secret),
@@ -6,7 +9,11 @@ export async function hmacBase64(secret: string, body: string): Promise<string> 
     false,
     ["sign"],
   );
-  const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(body));
+  const mac = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    new TextEncoder().encode(body),
+  );
   return btoa(String.fromCharCode(...new Uint8Array(mac)));
 }
 

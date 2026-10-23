@@ -21,12 +21,12 @@ export type {
   ImageGenerator,
   ImageUploader,
   ProductResolver,
-  WardrobeResolver,
   QuotaFactory,
   TryonRecorder,
   UsageCounter,
   VideoGenerator,
   VideoUploader,
+  WardrobeResolver,
 } from "./types.ts";
 
 // Describing a job and reading its result.
@@ -35,14 +35,14 @@ export type {
   GarmentCategory,
   GarmentInput,
   GarmentMaterial,
-  ProductRef,
-  WardrobeRef,
   ImageSource,
+  ProductRef,
   ResolvedGarment,
   TryonEngine,
   TryonMode,
   TryonParams,
   TryonResult,
+  WardrobeRef,
 } from "./types.ts";
 
 // Classifying a failure. `ValidationError` is a constructor too: adapter

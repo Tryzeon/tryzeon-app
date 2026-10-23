@@ -72,7 +72,9 @@ export function parseServiceAccount(raw: string): VertexServiceAccount {
     throw new Error("GOOGLE_SERVICE_ACCOUNT is not valid JSON");
   }
 
-  const missing = REQUIRED_FIELDS.filter((field) => typeof key[field] !== "string");
+  const missing = REQUIRED_FIELDS.filter((field) =>
+    typeof key[field] !== "string"
+  );
   if (missing.length > 0) {
     throw new Error(`GOOGLE_SERVICE_ACCOUNT is missing: ${missing.join(", ")}`);
   }
@@ -81,7 +83,9 @@ export function parseServiceAccount(raw: string): VertexServiceAccount {
     projectId: key.project_id as string,
     clientEmail: key.client_email as string,
     privateKey: key.private_key as string,
-    privateKeyId: typeof key.private_key_id === "string" ? key.private_key_id : undefined,
+    privateKeyId: typeof key.private_key_id === "string"
+      ? key.private_key_id
+      : undefined,
   };
 }
 
@@ -93,17 +97,23 @@ let serviceAccount: VertexServiceAccount | null = null;
  * what it cannot see as a 404 naming the model — indistinguishable from a typo.
  */
 export function vertexServiceAccount(): VertexServiceAccount {
-  return serviceAccount ??= parseServiceAccount(requireEnv("GOOGLE_SERVICE_ACCOUNT"));
+  return serviceAccount ??= parseServiceAccount(
+    requireEnv("GOOGLE_SERVICE_ACCOUNT"),
+  );
 }
 
-export const vertexLocation = (): string => Deno.env.get("VERTEX_LOCATION") ?? "global";
+export const vertexLocation = (): string =>
+  Deno.env.get("VERTEX_LOCATION") ?? "global";
 
 export const chatModel = (): string => requireEnv("CHAT_MODEL"); // gemini-3.6-flash
 export const analysisModel = (): string => requireEnv("ANALYSIS_MODEL"); // gemini-3.6-flash
 
 export const tryonImageModel = (): string => requireEnv("TRYON_MODEL"); // gemini-nano-banana-2.1
-export const tryonFallbackImageModel = (): string => requireEnv("TRYON_MODEL_FALLBACK"); // gemini-3-pro-image
-export const tryonExperimentalImageModel = (): string => requireEnv("TRYON_MODEL_EXPERIMENTAL"); // gemini-3-pro-image
+export const tryonFallbackImageModel = (): string =>
+  requireEnv("TRYON_MODEL_FALLBACK"); // gemini-3-pro-image
+export const tryonExperimentalImageModel = (): string =>
+  requireEnv("TRYON_MODEL_EXPERIMENTAL"); // gemini-3-pro-image
 
 export const tryonVideoModel = (): string => requireEnv("VIDEO_MODEL"); // gemini-omni-1.1-flash-preview
-export const tryonExperimentalVideoModel = (): string => requireEnv("VIDEO_MODEL_EXPERIMENTAL"); // veo-3.1-fast-generate-001
+export const tryonExperimentalVideoModel = (): string =>
+  requireEnv("VIDEO_MODEL_EXPERIMENTAL"); // veo-3.1-fast-generate-001

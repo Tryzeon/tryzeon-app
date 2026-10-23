@@ -15,11 +15,11 @@ export const asJsonObject = <T>(value: Json | null | undefined): T | null =>
     : null;
 
 function requireEnv(name: string): string {
-    const value = Deno.env.get(name);
-    if (!value) {
-        throw new Error(`Missing required environment variable: ${name}`);
-    }
-    return value;
+  const value = Deno.env.get(name);
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+  return value;
 }
 
 /**
@@ -33,40 +33,47 @@ export const supabaseUrl = (): string => requireEnv("SUPABASE_URL");
 export const supabaseAnonKey = (): string => requireEnv("SUPABASE_ANON_KEY");
 
 /** Service-role key. Unexported: `getAdminClient` is the only sanctioned reader. */
-const supabaseServiceRoleKey = (): string => requireEnv("SUPABASE_SERVICE_ROLE_KEY");
+const supabaseServiceRoleKey = (): string =>
+  requireEnv("SUPABASE_SERVICE_ROLE_KEY");
 
 export const getAuthenticatedUserClient = async (
-    req: Request
-): Promise<{ userClient: DbClient | null; user: User | null; errorResponse: Response | null }> => {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-        return {
-            userClient: null,
-            user: null,
-            errorResponse: jsonError("Unauthorized", "UNAUTHORIZED", 401),
-        };
-    }
+  req: Request,
+): Promise<
+  {
+    userClient: DbClient | null;
+    user: User | null;
+    errorResponse: Response | null;
+  }
+> => {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader) {
+    return {
+      userClient: null,
+      user: null,
+      errorResponse: jsonError("Unauthorized", "UNAUTHORIZED", 401),
+    };
+  }
 
-    const userClient = createClient<Database>(
-        supabaseUrl(),
-        supabaseAnonKey(),
-        { global: { headers: { Authorization: authHeader } } }
-    );
+  const userClient = createClient<Database>(
+    supabaseUrl(),
+    supabaseAnonKey(),
+    { global: { headers: { Authorization: authHeader } } },
+  );
 
-    const {
-        data: { user },
-        error: authError,
-    } = await userClient.auth.getUser();
+  const {
+    data: { user },
+    error: authError,
+  } = await userClient.auth.getUser();
 
-    if (authError || !user) {
-        return {
-            userClient: null,
-            user: null,
-            errorResponse: jsonError("Unauthorized", "UNAUTHORIZED", 401),
-        };
-    }
+  if (authError || !user) {
+    return {
+      userClient: null,
+      user: null,
+      errorResponse: jsonError("Unauthorized", "UNAUTHORIZED", 401),
+    };
+  }
 
-    return { userClient, user, errorResponse: null };
+  return { userClient, user, errorResponse: null };
 };
 
 /**
@@ -75,10 +82,10 @@ export const getAuthenticatedUserClient = async (
  * widens what a bug on that path can reach.
  */
 export const getAnonClient = (): DbClient => {
-    return createClient<Database>(supabaseUrl(), supabaseAnonKey());
+  return createClient<Database>(supabaseUrl(), supabaseAnonKey());
 };
 
 /** Service-role client. Bypasses Row Level Security — use with caution. */
 export const getAdminClient = (): DbClient => {
-    return createClient<Database>(supabaseUrl(), supabaseServiceRoleKey());
+  return createClient<Database>(supabaseUrl(), supabaseServiceRoleKey());
 };

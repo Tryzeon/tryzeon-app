@@ -80,14 +80,18 @@ export async function runChatAgent(
   const content: AnswerBlock[] = blocks.length > 0
     ? blocks
     : [{ type: "text", text: FALLBACK_TEXT }];
-  const rows = blocks.length > 0 ? await hydrate(client, turn.userId, content) : NO_ROWS;
+  const rows = blocks.length > 0
+    ? await hydrate(client, turn.userId, content)
+    : NO_ROWS;
   const answer: ChatMessage = { role: "assistant", content };
   const items: AnswerItems = {
     products: Object.fromEntries(rows.products),
     wardrobe: Object.fromEntries(rows.wardrobe),
   };
 
-  const suggestions = blocks.length > 0 ? suggestionsOf(output?.suggestions) : [];
+  const suggestions = blocks.length > 0
+    ? suggestionsOf(output?.suggestions)
+    : [];
 
   return { messages: [...rounds, answer], answer: content, items, suggestions };
 }

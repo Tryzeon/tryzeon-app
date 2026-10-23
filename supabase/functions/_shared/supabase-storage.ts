@@ -6,6 +6,9 @@ export type SupabaseImageBucket =
   | typeof USER_AVATARS_BUCKET
   | typeof WARDROBE_IMAGES_BUCKET;
 
-export function ownsUserObjectPath(userId: string, path: unknown): path is string {
+export function ownsUserObjectPath(
+  userId: string,
+  path: unknown,
+): path is string {
   return typeof path === "string" && path.startsWith(`${userId}/`);
 }

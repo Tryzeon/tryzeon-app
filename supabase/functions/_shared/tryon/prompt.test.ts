@@ -27,7 +27,10 @@ Deno.test("buildTaskPrompt asks the model to classify only an uncategorized garm
     prompt,
     "- Garment 2: image 3 — category: classify it yourself using GARMENT SCOPE below",
   );
-  assertStringIncludes(prompt, "A category stated above is final — do NOT reclassify it.");
+  assertStringIncludes(
+    prompt,
+    "A category stated above is final — do NOT reclassify it.",
+  );
 });
 
 Deno.test("a full-body garment drops the rule that would paint the original bottom back", () => {
@@ -36,7 +39,10 @@ Deno.test("a full-body garment drops the rule that would paint the original bott
   });
   const occluded = "If the original lower garment is partially occluded";
   assertEquals(withDress.includes(occluded), false);
-  assertStringIncludes(withDress, "Never paint an original lower garment back beneath it.");
+  assertStringIncludes(
+    withDress,
+    "Never paint an original lower garment back beneath it.",
+  );
 
   const topOnly = buildTaskPrompt([["a"]], { garments: [{ category: "top" }] });
   assertStringIncludes(topOnly, occluded);

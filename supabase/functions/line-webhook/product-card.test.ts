@@ -3,8 +3,8 @@ import {
   clampProductName,
   fetchProductInfo,
   fetchProductRows,
-  priceText,
   type LineProduct,
+  priceText,
   productDetailUrl,
   productInfoContents,
   productItemBubble,
@@ -107,7 +107,10 @@ Deno.test("toLineProduct drops a product with no image", () => {
 });
 
 Deno.test("toLineProduct tolerates a product with no store", () => {
-  assertEquals(toLineProduct(row({ store_profiles: null }), BASE)?.storeName, null);
+  assertEquals(
+    toLineProduct(row({ store_profiles: null }), BASE)?.storeName,
+    null,
+  );
 });
 
 Deno.test("toLineProduct does not double up a trailing slash on the base", () => {
@@ -193,22 +196,31 @@ Deno.test("fetchProductInfo will not act on an unlisted product", async () => {
 });
 
 Deno.test("purchaseAction is offered only for an absolute http link", () => {
-  assertEquals(purchaseAction(product({ purchaseUrl: "https://shop.example/p1" })), {
-    type: "uri",
-    label: "前往購買",
-    uri: "https://shop.example/p1",
-  });
-  assertEquals(purchaseAction(product({ purchaseUrl: "shop.example/p1" })), null);
+  assertEquals(
+    purchaseAction(product({ purchaseUrl: "https://shop.example/p1" })),
+    {
+      type: "uri",
+      label: "前往購買",
+      uri: "https://shop.example/p1",
+    },
+  );
+  assertEquals(
+    purchaseAction(product({ purchaseUrl: "shop.example/p1" })),
+    null,
+  );
   assertEquals(purchaseAction(product({ purchaseUrl: "" })), null);
   assertEquals(purchaseAction(product()), null);
 });
 
-Deno.test("purchaseAction rejects strings a bare startsWith(\"http\") check let through", () => {
+Deno.test('purchaseAction rejects strings a bare startsWith("http") check let through', () => {
   assertEquals(purchaseAction(product({ purchaseUrl: "http" })), null);
   assertEquals(purchaseAction(product({ purchaseUrl: "httpfoo://x" })), null);
   // `new URL` normalizes a single-slash scheme to a valid "https://one-slash/",
   // so a bare protocol check on the parsed result would wave it through.
-  assertEquals(purchaseAction(product({ purchaseUrl: "https:/one-slash" })), null);
+  assertEquals(
+    purchaseAction(product({ purchaseUrl: "https:/one-slash" })),
+    null,
+  );
 });
 
 Deno.test("priceText prefixes NT$, groups thousands and drops cents", () => {
@@ -218,8 +230,10 @@ Deno.test("priceText prefixes NT$, groups thousands and drops cents", () => {
 });
 
 Deno.test("the info block is store in ink, then the name muted, then the price", () => {
-  // deno-lint-ignore no-explicit-any
-  const contents = productInfoContents(product({ storeName: "Studio Muji" })) as any[];
+  const contents = productInfoContents(
+    product({ storeName: "Studio Muji" }),
+    // deno-lint-ignore no-explicit-any
+  ) as any[];
 
   assertEquals(contents.length, 3);
   assertEquals(contents[0], sourceLine("STUDIO MUJI"));
@@ -261,10 +275,17 @@ Deno.test("clampProductName truncates a long name with an ellipsis", () => {
 });
 
 Deno.test("productDetailUrl points at the LIFF product page", () => {
-  assertEquals(productDetailUrl("https://liff.line.me/123-abc", "p1"), "https://liff.line.me/123-abc/product/p1");
+  assertEquals(
+    productDetailUrl("https://liff.line.me/123-abc", "p1"),
+    "https://liff.line.me/123-abc/product/p1",
+  );
 });
 
-const detail = { type: "uri", label: "商品詳情", uri: "https://liff.example/product/p1" };
+const detail = {
+  type: "uri",
+  label: "商品詳情",
+  uri: "https://liff.example/product/p1",
+};
 
 Deno.test("an item bubble is the shared pick bubble, opening its LIFF page", () => {
   assertEquals(
@@ -287,15 +308,23 @@ Deno.test("an item bubble is the shared pick bubble, opening its LIFF page", () 
 });
 
 Deno.test("an item bubble uppercases a Latin store name", () => {
-  // deno-lint-ignore no-explicit-any
-  const overlay = (productItemBubble(product({ storeName: "uniqlo" }), undefined, "https://liff.example") as any)
+  const overlay = (productItemBubble(
+    product({ storeName: "uniqlo" }),
+    undefined,
+    "https://liff.example",
+    // deno-lint-ignore no-explicit-any
+  ) as any)
     .hero.contents[2];
   assertEquals(overlay.contents[0].text, "UNIQLO");
 });
 
 Deno.test("an item bubble for a product with no store has no source line", () => {
-  // deno-lint-ignore no-explicit-any
-  const overlay = (productItemBubble(product({ storeName: null }), undefined, "https://liff.example") as any)
+  const overlay = (productItemBubble(
+    product({ storeName: null }),
+    undefined,
+    "https://liff.example",
+    // deno-lint-ignore no-explicit-any
+  ) as any)
     .hero.contents[2];
   assertEquals(overlay.contents.length, 2);
   assertEquals(overlay.contents[0].text, "白襯衫");
@@ -303,8 +332,12 @@ Deno.test("an item bubble for a product with no store has no source line", () =>
 
 Deno.test("an item bubble clamps a long name in the try-on displayText", () => {
   const name = "很長的商品名稱".repeat(60);
-  // deno-lint-ignore no-explicit-any
-  const overlay = (productItemBubble(product({ name }), undefined, "https://liff.example") as any).hero.contents[2];
+  const overlay = (productItemBubble(
+    product({ name }),
+    undefined,
+    "https://liff.example",
+    // deno-lint-ignore no-explicit-any
+  ) as any).hero.contents[2];
   const pill = overlay.contents.at(-1).contents[1];
   assertEquals(pill.action.displayText, `試穿「${clampProductName(name)}」`);
 });

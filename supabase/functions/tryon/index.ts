@@ -1,5 +1,8 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
-import { getAdminClient, getAuthenticatedUserClient } from "../_shared/supabase.ts";
+import {
+  getAdminClient,
+  getAuthenticatedUserClient,
+} from "../_shared/supabase.ts";
 import { json, jsonError } from "../_shared/http.ts";
 import { makeCors } from "../_shared/cors.ts";
 import { tryonErrorResponse } from "../_shared/tryon/http.ts";
@@ -18,7 +21,8 @@ Deno.serve(async (req) => {
   if (guarded) return guarded;
 
   try {
-    const { userClient, user, errorResponse } = await getAuthenticatedUserClient(req);
+    const { userClient, user, errorResponse } =
+      await getAuthenticatedUserClient(req);
     if (errorResponse) return cors.wrap(errorResponse);
 
     // Unparseable JSON raises a ValidationError too, so decoding needs no

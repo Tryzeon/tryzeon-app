@@ -11,7 +11,11 @@ import {
   whitePill,
 } from "./card-kit.ts";
 
-const action = { type: "postback", label: "試穿", data: "a=tryon_product&pid=p1" };
+const action = {
+  type: "postback",
+  label: "試穿",
+  data: "a=tryon_product&pid=p1",
+};
 
 Deno.test("the palette is the design system's, plus translucent steps for controls and type on a photo", () => {
   assertEquals(CARD_COLOR, {
@@ -31,7 +35,12 @@ Deno.test("the palette is the design system's, plus translucent steps for contro
 });
 
 Deno.test("a button's action is on the box, so the whole button is tappable", () => {
-  for (const button of [primaryButton("前往購買", action), whitePill("✦ 試穿", action, "compact")]) {
+  for (
+    const button of [
+      primaryButton("前往購買", action),
+      whitePill("✦ 試穿", action, "compact"),
+    ]
+  ) {
     // deno-lint-ignore no-explicit-any
     const b = button as any;
     assertEquals(b.type, "box");
@@ -71,8 +80,9 @@ Deno.test("a white pill is a filled white capsule with ink type, carrying its ac
 Deno.test("a regular pill is taller and larger-type than a compact one", () => {
   // deno-lint-ignore no-explicit-any
   const compact = (whitePill("✦ 試穿", action, "compact") as any).contents[0];
-  // deno-lint-ignore no-explicit-any
-  const regular = (whitePill("✦ 試穿整套", action, "regular") as any).contents[0];
+  const regular =
+    // deno-lint-ignore no-explicit-any
+    (whitePill("✦ 試穿整套", action, "regular") as any).contents[0];
 
   assertEquals(compact.contents[0].size, "xs");
   assertEquals(regular.contents[0].size, "sm");
@@ -113,7 +123,13 @@ Deno.test("a source line is small bold ink, one line", () => {
   });
 });
 
-const media = { type: "image", url: "https://img.example/p.jpg", size: "full", aspectRatio: "4:5", aspectMode: "cover" };
+const media = {
+  type: "image",
+  url: "https://img.example/p.jpg",
+  size: "full",
+  aspectRatio: "4:5",
+  aspectMode: "cover",
+};
 const overlay = [{ type: "text", text: "白襯衫" }];
 
 // deno-lint-ignore no-explicit-any
@@ -121,8 +137,13 @@ const layersOf = (hero: any) => hero.contents[1].contents;
 const alphaOf = (color: string) => parseInt(color.slice(7), 16) / 255;
 
 Deno.test("an overlay hero keeps the media first, then the scrim, then the words over it", () => {
-  // deno-lint-ignore no-explicit-any
-  const hero = overlayHero({ media, overlay, paddingAll: "14px", scrimHeight: 192 }) as any;
+  const hero = overlayHero({
+    media,
+    overlay,
+    paddingAll: "14px",
+    scrimHeight: 192,
+    // deno-lint-ignore no-explicit-any
+  }) as any;
 
   // Flex refuses an absolutely positioned first child, so the media must lead.
   assertEquals(hero.contents[0], media);
@@ -145,7 +166,9 @@ Deno.test("an overlay hero keeps the media first, then the scrim, then the words
 });
 
 Deno.test("every scrim layer rises from the foot and enters from clear, so no edge of one shows", () => {
-  const layers = layersOf(overlayHero({ media, overlay, paddingAll: "16px", scrimHeight: 104 }));
+  const layers = layersOf(
+    overlayHero({ media, overlay, paddingAll: "16px", scrimHeight: 104 }),
+  );
 
   // Flex refuses an absolutely positioned first child, so the tallest layer fills the scrim in flow.
   assertEquals(layers[0].flex, 1);
@@ -166,17 +189,22 @@ Deno.test("every scrim layer rises from the foot and enters from clear, so no ed
 });
 
 Deno.test("each layer's ramp ends where the next one's begins", () => {
-  const layers = layersOf(overlayHero({ media, overlay, paddingAll: "16px", scrimHeight: 104 }));
+  const layers = layersOf(
+    overlayHero({ media, overlay, paddingAll: "16px", scrimHeight: 104 }),
+  );
   const height = (i: number) => i === 0 ? 100 : parseFloat(layers[i].height);
 
   for (let i = 0; i + 1 < layers.length; i++) {
-    const rampEnd = height(i) * parseFloat(layers[i].background.centerPosition) / 100;
+    const rampEnd = height(i) *
+      parseFloat(layers[i].background.centerPosition) / 100;
     assertAlmostEquals(rampEnd, height(i + 1), 0.05);
   }
 });
 
 Deno.test("the layers build an S-curve from clear to the full scrim", () => {
-  const layers = layersOf(overlayHero({ media, overlay, paddingAll: "16px", scrimHeight: 104 }));
+  const layers = layersOf(
+    overlayHero({ media, overlay, paddingAll: "16px", scrimHeight: 104 }),
+  );
   let clear = 1;
   const knots = [0];
   // deno-lint-ignore no-explicit-any
@@ -193,7 +221,11 @@ Deno.test("the layers build an S-curve from clear to the full scrim", () => {
 });
 
 Deno.test("an overlay hero is tappable only when given an action", () => {
-  const tap = { type: "uri", label: "商品詳情", uri: "https://liff.example/product/p1" };
+  const tap = {
+    type: "uri",
+    label: "商品詳情",
+    uri: "https://liff.example/product/p1",
+  };
   const base = { media, overlay, paddingAll: "16px", scrimHeight: 104 };
   // deno-lint-ignore no-explicit-any
   assertEquals((overlayHero({ ...base, action: tap }) as any).action, tap);
@@ -202,16 +234,31 @@ Deno.test("an overlay hero is tappable only when given an action", () => {
 
 Deno.test("an overlay hero appends corner children after the words", () => {
   const tag = cornerTag("顯瘦");
-  // deno-lint-ignore no-explicit-any
-  const hero = overlayHero({ media, overlay, corner: [tag], paddingAll: "12px", scrimHeight: 120 }) as any;
+  const hero = overlayHero({
+    media,
+    overlay,
+    corner: [tag],
+    paddingAll: "12px",
+    scrimHeight: 120,
+    // deno-lint-ignore no-explicit-any
+  }) as any;
 
   assertEquals(hero.contents.length, 4);
   assertEquals(hero.contents[0], media);
   assertEquals(hero.contents[3], tag);
 });
 
-const tryon = { type: "postback", label: "試穿", data: "a=tryon_product&pid=p1", displayText: "試穿「白襯衫」" };
-const detail = { type: "uri", label: "商品詳情", uri: "https://liff.example/product/p1" };
+const tryon = {
+  type: "postback",
+  label: "試穿",
+  data: "a=tryon_product&pid=p1",
+  displayText: "試穿「白襯衫」",
+};
+const detail = {
+  type: "uri",
+  label: "商品詳情",
+  uri: "https://liff.example/product/p1",
+};
 const view = (over: Partial<PickView> = {}): PickView => ({
   imageUrl: "https://img.example/p.jpg",
   source: "UNIQLO",
@@ -262,8 +309,10 @@ Deno.test("a pick bubble's overlay reads source, a one-line name, then the value
 });
 
 Deno.test("a muted value is small and dimmed, not bold", () => {
-  // deno-lint-ignore no-explicit-any
-  const overlay = (pickBubble(view({ value: { text: "已擁有", muted: true } })) as any).hero.contents[2];
+  const overlay =
+    // deno-lint-ignore no-explicit-any
+    (pickBubble(view({ value: { text: "已擁有", muted: true } })) as any).hero
+      .contents[2];
   const value = overlay.contents[2].contents[0];
 
   assertEquals(value.text, "已擁有");
@@ -275,8 +324,10 @@ Deno.test("a muted value is small and dimmed, not bold", () => {
 Deno.test("a pick bubble is tappable only with a detail action, and tagged only with a highlight", () => {
   // deno-lint-ignore no-explicit-any
   const plain = pickBubble(view()) as any;
-  // deno-lint-ignore no-explicit-any
-  const full = pickBubble(view({ detailAction: detail, highlight: "顯瘦" })) as any;
+  const full = pickBubble(
+    view({ detailAction: detail, highlight: "顯瘦" }),
+    // deno-lint-ignore no-explicit-any
+  ) as any;
 
   assertEquals("action" in plain.hero, false);
   assertEquals(plain.hero.contents.length, 3);
@@ -285,8 +336,9 @@ Deno.test("a pick bubble is tappable only with a detail action, and tagged only 
 });
 
 Deno.test("a pick bubble with no source skips that line", () => {
-  // deno-lint-ignore no-explicit-any
-  const overlay = (pickBubble(view({ source: undefined })) as any).hero.contents[2];
+  const overlay =
+    // deno-lint-ignore no-explicit-any
+    (pickBubble(view({ source: undefined })) as any).hero.contents[2];
   assertEquals(overlay.contents.length, 2);
   assertEquals(overlay.contents[0].text, "白襯衫");
   assertEquals("margin" in overlay.contents[0], false);

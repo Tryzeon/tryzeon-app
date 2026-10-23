@@ -10,14 +10,13 @@ import { validateTryonParams } from "./validate.ts";
 import { GenerationFailedError } from "./errors.ts";
 import { QuotaExceededError } from "../quota.ts";
 import {
-  isProductRef,
-  isWardrobeRef,
   type AvatarResolver,
   type GenerationLog,
   type ImageGenerator,
   type ImageUploader,
+  isProductRef,
+  isWardrobeRef,
   type ProductResolver,
-  type WardrobeResolver,
   type QuotaFactory,
   type ResolvedGarment,
   type TryonMode,
@@ -26,6 +25,7 @@ import {
   type TryonResultFor,
   type VideoGenerator,
   type VideoUploader,
+  type WardrobeResolver,
 } from "./types.ts";
 import type { DbClient } from "../supabase.ts";
 

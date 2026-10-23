@@ -14,7 +14,9 @@ function fakeAdmin(stub: AdminStub): DbClient {
         eq: () => ({
           maybeSingle: () =>
             Promise.resolve({
-              data: stub.existingUserId ? { user_id: stub.existingUserId } : null,
+              data: stub.existingUserId
+                ? { user_id: stub.existingUserId }
+                : null,
               error: null,
             }),
         }),
@@ -25,7 +27,10 @@ function fakeAdmin(stub: AdminStub): DbClient {
       admin: {
         createUser: (params: Record<string, unknown>) => {
           stub.created.push(params.user_metadata as Record<string, unknown>);
-          return Promise.resolve({ data: { user: { id: "minted-user" } }, error: null });
+          return Promise.resolve({
+            data: { user: { id: "minted-user" } },
+            error: null,
+          });
         },
       },
     },

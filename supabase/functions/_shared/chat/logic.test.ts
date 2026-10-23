@@ -3,13 +3,13 @@ import {
   answerBlocksOf,
   mapSearchProductsArgs,
   outfitsOf,
+  picksOf,
   recordRounds,
   resolveCategoryFilter,
-  picksOf,
   SEARCH_LIMIT,
   suggestionsOf,
-  TOOL_FAILURE_TEXT,
   toModelMessages,
+  TOOL_FAILURE_TEXT,
   toSearchResultItem,
   validateVocabularyFilters,
   windowHistory,
@@ -25,8 +25,14 @@ Deno.test("resolveCategoryFilter maps a known code to its id", () => {
 });
 
 Deno.test("resolveCategoryFilter treats a missing code as no category filter", () => {
-  assertEquals(resolveCategoryFilter(undefined, CATEGORIES), { ok: true, categoryIds: null });
-  assertEquals(resolveCategoryFilter("   ", CATEGORIES), { ok: true, categoryIds: null });
+  assertEquals(resolveCategoryFilter(undefined, CATEGORIES), {
+    ok: true,
+    categoryIds: null,
+  });
+  assertEquals(resolveCategoryFilter("   ", CATEGORIES), {
+    ok: true,
+    categoryIds: null,
+  });
 });
 
 Deno.test("resolveCategoryFilter rejects an unknown code instead of dropping the filter", () => {
@@ -81,7 +87,10 @@ const outfit = (title: string, refs: Ref[], reason?: string) => ({
   ...(reason === undefined ? {} : { reason }),
   pieces: refs,
 });
-const outfits = (...looks: ReturnType<typeof outfit>[]) => ({ type: "outfits" as const, outfits: looks });
+const outfits = (...looks: ReturnType<typeof outfit>[]) => ({
+  type: "outfits" as const,
+  outfits: looks,
+});
 
 const p = (id: string, highlight?: string): Ref => ({
   type: "product",
@@ -91,12 +100,17 @@ const p = (id: string, highlight?: string): Ref => ({
 const w = (id: string): Ref => ({ type: "wardrobe", id });
 
 Deno.test("picksOf reads a stored row without judging its ids", () => {
-  assertEquals(picksOf(picks(p("p1", "顯瘦"), w("w1"))), [p("p1", "顯瘦"), w("w1")]);
+  assertEquals(picksOf(picks(p("p1", "顯瘦"), w("w1"))), [
+    p("p1", "顯瘦"),
+    w("w1"),
+  ]);
 });
 
 Deno.test("picksOf trims a highlight, omits a blank one and keeps the first of a repeated item", () => {
   assertEquals(
-    picksOf(picks(p("p1", "  顯瘦  "), p("p2", "   "), p("p1", "重複"), w("p1"))),
+    picksOf(
+      picks(p("p1", "  顯瘦  "), p("p2", "   "), p("p1", "重複"), w("p1")),
+    ),
     [p("p1", "顯瘦"), p("p2"), w("p1")],
   );
 });
@@ -105,7 +119,13 @@ Deno.test("picksOf reads nothing from a malformed block", () => {
   assertEquals(picksOf({ type: "text", text: "x" }), []);
   assertEquals(picksOf({ type: "picks" }), []);
   assertEquals(picksOf({ type: "picks", picks: "p1" }), []);
-  assertEquals(picksOf({ type: "picks", picks: [null, 3, { type: "product" }, { type: "hat", id: "h" }] }), []);
+  assertEquals(
+    picksOf({
+      type: "picks",
+      picks: [null, 3, { type: "product" }, { type: "hat", id: "h" }],
+    }),
+    [],
+  );
 });
 
 Deno.test("outfitsOf reads stored outfits and skips one it cannot read whole", () => {
@@ -114,7 +134,10 @@ Deno.test("outfitsOf reads stored outfits and skips one it cannot read whole", (
       type: "outfits",
       outfits: [
         outfit("週末休閒", [p("p1"), w("w1")], "白襯衫配深藍直筒"),
-        { title: "缺件", pieces: [{ type: "product", id: "p1" }, { type: "hat", id: "h" }] },
+        {
+          title: "缺件",
+          pieces: [{ type: "product", id: "p1" }, { type: "hat", id: "h" }],
+        },
         { title: "", pieces: [{ type: "product", id: "p1" }] },
         null,
       ],
@@ -130,7 +153,9 @@ Deno.test("outfitsOf counts a repeated piece once, then keeps two or three piece
   assertEquals(read(p("p1")), []);
   assertEquals(read(p("p1"), p("p1")), []);
   assertEquals(read(p("p1"), p("p1"), w("w1")), [look(p("p1"), w("w1"))]);
-  assertEquals(read(p("p1"), p("p2"), p("p3")), [look(p("p1"), p("p2"), p("p3"))]);
+  assertEquals(read(p("p1"), p("p2"), p("p3")), [
+    look(p("p1"), p("p2"), p("p3")),
+  ]);
   assertEquals(read(p("p1"), p("p2"), p("p3"), p("p4")), []);
 });
 
@@ -141,7 +166,10 @@ Deno.test("outfitsOf skips a blank title and omits a blank reason", () => {
       outfit("  週末  ", [p("p1"), p("p2")], "  "),
       outfit("通勤", [p("p1"), p("p2")], "  理由  "),
     )),
-    [outfit("週末", [p("p1"), p("p2")]), outfit("通勤", [p("p1"), p("p2")], "理由")],
+    [
+      outfit("週末", [p("p1"), p("p2")]),
+      outfit("通勤", [p("p1"), p("p2")], "理由"),
+    ],
   );
 });
 
@@ -182,11 +210,20 @@ Deno.test("toModelMessages maps a paired tool_use/tool_result conversation to Mo
     { role: "user", content: [{ type: "text", text: "找裙子" }] },
     {
       role: "assistant",
-      content: [{ type: "tool_use", id: "tu_0", name: "search_products", input: { query: "裙" } }],
+      content: [{
+        type: "tool_use",
+        id: "tu_0",
+        name: "search_products",
+        input: { query: "裙" },
+      }],
     },
     {
       role: "user",
-      content: [{ type: "tool_result", tool_use_id: "tu_0", content: { items: [{ id: "p1" }] } }],
+      content: [{
+        type: "tool_result",
+        tool_use_id: "tu_0",
+        content: { items: [{ id: "p1" }] },
+      }],
     },
     {
       role: "assistant",
@@ -197,7 +234,12 @@ Deno.test("toModelMessages maps a paired tool_use/tool_result conversation to Mo
     { role: "user", content: "找裙子" },
     {
       role: "assistant",
-      content: [{ type: "tool-call", toolCallId: "tu_0", toolName: "search_products", input: { query: "裙" } }],
+      content: [{
+        type: "tool-call",
+        toolCallId: "tu_0",
+        toolName: "search_products",
+        input: { query: "裙" },
+      }],
     },
     {
       role: "tool",
@@ -238,7 +280,12 @@ Deno.test("toModelMessages keeps text beside tool calls as a text part", () => {
     role: "assistant",
     content: [
       { type: "text", text: "我先找找" },
-      { type: "tool-call", toolCallId: "tu_0", toolName: "search_products", input: {} },
+      {
+        type: "tool-call",
+        toolCallId: "tu_0",
+        toolName: "search_products",
+        input: {},
+      },
     ],
   }]);
 });
@@ -250,7 +297,12 @@ Deno.test("toModelMessages replays a parallel step as one assistant message and 
       role: "assistant",
       content: [
         { type: "tool_use", id: "tu_0", name: "search_wardrobe", input: {} },
-        { type: "tool_use", id: "tu_1", name: "search_products", input: { query: "褲" } },
+        {
+          type: "tool_use",
+          id: "tu_1",
+          name: "search_products",
+          input: { query: "褲" },
+        },
       ],
     },
     {
@@ -266,8 +318,18 @@ Deno.test("toModelMessages replays a parallel step as one assistant message and 
     {
       role: "assistant",
       content: [
-        { type: "tool-call", toolCallId: "tu_0", toolName: "search_wardrobe", input: {} },
-        { type: "tool-call", toolCallId: "tu_1", toolName: "search_products", input: { query: "褲" } },
+        {
+          type: "tool-call",
+          toolCallId: "tu_0",
+          toolName: "search_wardrobe",
+          input: {},
+        },
+        {
+          type: "tool-call",
+          toolCallId: "tu_1",
+          toolName: "search_products",
+          input: { query: "褲" },
+        },
       ],
     },
     {
@@ -296,7 +358,10 @@ Deno.test("toModelMessages drops a blank user turn and an empty assistant one", 
     { role: "assistant", content: [] },
     { role: "assistant", content: [{ type: "text", text: "嗨" }] },
   ]);
-  assertEquals(out, [{ role: "assistant", content: JSON.stringify({ blocks: [{ type: "text", text: "嗨" }] }) }]);
+  assertEquals(out, [{
+    role: "assistant",
+    content: JSON.stringify({ blocks: [{ type: "text", text: "嗨" }] }),
+  }]);
 });
 
 const SHOP_ROW = {
@@ -317,8 +382,20 @@ const SHOP_ROW = {
   seasons: [],
   gender: "female",
   product_variants: [
-    { id: "v1", product_id: "8f3a-p1", name: "S", created_at: "x", measurements: { chest: 90 } },
-    { id: "v2", product_id: "8f3a-p1", name: "M", created_at: "x", measurements: { chest: 94 } },
+    {
+      id: "v1",
+      product_id: "8f3a-p1",
+      name: "S",
+      created_at: "x",
+      measurements: { chest: 90 },
+    },
+    {
+      id: "v2",
+      product_id: "8f3a-p1",
+      name: "M",
+      created_at: "x",
+      measurements: { chest: 94 },
+    },
   ],
   store_profiles: {
     id: "11aa-s1",
@@ -350,7 +427,14 @@ Deno.test("toSearchResultItem ships no uuid but the one the model must copy", ()
   // The whole point of the projection: `store_id`, `category_ids` and each
   // variant's own id are uuids that look exactly like the citable one, and
   // copying the wrong one drops the card with no error raised anywhere.
-  for (const key of ["store_id", "category_ids", "product_variants", "store_profiles"]) {
+  for (
+    const key of [
+      "store_id",
+      "category_ids",
+      "product_variants",
+      "store_profiles",
+    ]
+  ) {
     assertEquals(key in item, false, `${key} must not reach the model`);
   }
   assertStringIncludes(JSON.stringify(item), "8f3a-p1");
@@ -436,11 +520,20 @@ const toolTurn = (n: number): ChatMessage[] => [
   userText(`q${n}`),
   {
     role: "assistant",
-    content: [{ type: "tool_use", id: `t${n}`, name: "search_products", input: {} }],
+    content: [{
+      type: "tool_use",
+      id: `t${n}`,
+      name: "search_products",
+      input: {},
+    }],
   },
   {
     role: "user",
-    content: [{ type: "tool_result", tool_use_id: `t${n}`, content: { items: [] } }],
+    content: [{
+      type: "tool_result",
+      tool_use_id: `t${n}`,
+      content: { items: [] },
+    }],
   },
   { role: "assistant", content: [{ type: "text", text: `a${n}` }] },
 ];
@@ -464,7 +557,11 @@ type StreamPart = TextStreamPart<ToolSet>;
 
 const USAGE_ZERO = {
   inputTokens: 0,
-  inputTokenDetails: { noCacheTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 },
+  inputTokenDetails: {
+    noCacheTokens: 0,
+    cacheReadTokens: 0,
+    cacheWriteTokens: 0,
+  },
   outputTokens: 0,
   outputTokenDetails: { textTokens: 0, reasoningTokens: 0 },
   totalTokens: 0,
@@ -485,13 +582,19 @@ const finishStep = (finishReason: "tool-calls" | "stop"): StreamPart => ({
   providerMetadata: undefined,
 } as StreamPart);
 
-const toolCall = (id: string, name: string, signature?: string): StreamPart => ({
+const toolCall = (
+  id: string,
+  name: string,
+  signature?: string,
+): StreamPart => ({
   type: "tool-call",
   toolCallId: id,
   toolName: name,
   input: { query: id },
   dynamic: true,
-  ...(signature ? { providerMetadata: { vertex: { thoughtSignature: signature } } } : {}),
+  ...(signature
+    ? { providerMetadata: { vertex: { thoughtSignature: signature } } }
+    : {}),
 });
 
 const toolResult = (id: string, name: string): StreamPart => ({
@@ -523,15 +626,33 @@ Deno.test("recordRounds puts a parallel step's calls in one assistant message an
     {
       role: "assistant",
       content: [
-        { type: "tool_use", id: "tu_0", name: "search_wardrobe", input: { query: "tu_0" } },
-        { type: "tool_use", id: "tu_1", name: "search_products", input: { query: "tu_1" } },
+        {
+          type: "tool_use",
+          id: "tu_0",
+          name: "search_wardrobe",
+          input: { query: "tu_0" },
+        },
+        {
+          type: "tool_use",
+          id: "tu_1",
+          name: "search_products",
+          input: { query: "tu_1" },
+        },
       ],
     },
     {
       role: "user",
       content: [
-        { type: "tool_result", tool_use_id: "tu_1", content: { items: [{ id: "tu_1-item" }] } },
-        { type: "tool_result", tool_use_id: "tu_0", content: { items: [{ id: "tu_0-item" }] } },
+        {
+          type: "tool_result",
+          tool_use_id: "tu_1",
+          content: { items: [{ id: "tu_1-item" }] },
+        },
+        {
+          type: "tool_result",
+          tool_use_id: "tu_0",
+          content: { items: [{ id: "tu_0-item" }] },
+        },
       ],
     },
   ]);
@@ -549,12 +670,15 @@ Deno.test("recordRounds keeps sequential steps as separate rounds", async () => 
     finishStep("tool-calls"),
   ]));
 
-  assertEquals(rounds.map((m) => [m.role, m.content.map((b) => b.id ?? b.tool_use_id)]), [
-    ["assistant", ["tu_0"]],
-    ["user", ["tu_0"]],
-    ["assistant", ["tu_1"]],
-    ["user", ["tu_1"]],
-  ]);
+  assertEquals(
+    rounds.map((m) => [m.role, m.content.map((b) => b.id ?? b.tool_use_id)]),
+    [
+      ["assistant", ["tu_0"]],
+      ["user", ["tu_0"]],
+      ["assistant", ["tu_1"]],
+      ["user", ["tu_1"]],
+    ],
+  );
 });
 
 Deno.test("recordRounds answers a failed call with an error result so the round stays paired", async () => {
@@ -574,7 +698,11 @@ Deno.test("recordRounds answers a failed call with an error result so the round 
 
   assertEquals(rounds[1], {
     role: "user",
-    content: [{ type: "tool_result", tool_use_id: "tu_0", content: { error: TOOL_FAILURE_TEXT } }],
+    content: [{
+      type: "tool_result",
+      tool_use_id: "tu_0",
+      content: { error: TOOL_FAILURE_TEXT },
+    }],
   });
 });
 
@@ -605,8 +733,17 @@ Deno.test("recordRounds reports each call and result as it streams", async () =>
   );
 
   assertEquals(events, [
-    { type: "tool_use", id: "tu_0", name: "search_products", input: { query: "tu_0" } },
-    { type: "tool_result", tool_use_id: "tu_0", content: { items: [{ id: "tu_0-item" }] } },
+    {
+      type: "tool_use",
+      id: "tu_0",
+      name: "search_products",
+      input: { query: "tu_0" },
+    },
+    {
+      type: "tool_result",
+      tool_use_id: "tu_0",
+      content: { items: [{ id: "tu_0-item" }] },
+    },
   ]);
 });
 
@@ -620,11 +757,16 @@ Deno.test("suggestionsOf reads a non-array as none", () => {
 });
 
 Deno.test("suggestionsOf drops non-strings and blanks", () => {
-  assertEquals(suggestionsOf(["單品", 1, null, "  ", "整套"]), ["單品", "整套"]);
+  assertEquals(suggestionsOf(["單品", 1, null, "  ", "整套"]), [
+    "單品",
+    "整套",
+  ]);
 });
 
 Deno.test("suggestionsOf drops an over-long suggestion whole rather than cutting it", () => {
-  assertEquals(suggestionsOf(["一".repeat(21), "一".repeat(20)]), ["一".repeat(20)]);
+  assertEquals(suggestionsOf(["一".repeat(21), "一".repeat(20)]), [
+    "一".repeat(20),
+  ]);
 });
 
 Deno.test("suggestionsOf counts UTF-16 units, so an emoji costs two", () => {

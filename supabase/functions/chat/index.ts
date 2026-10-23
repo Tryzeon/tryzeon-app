@@ -4,10 +4,7 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 import { getAuthenticatedUserClient } from "../_shared/supabase.ts";
 import { coreErrorResponse, jsonError } from "../_shared/http.ts";
-import {
-  classifyCoreError,
-  runChatAgent,
-} from "../_shared/chat/index.ts";
+import { classifyCoreError, runChatAgent } from "../_shared/chat/index.ts";
 import { parseChatParams } from "./request.ts";
 import { encodeEvent, errorEvent } from "./stream.ts";
 import { makeCors } from "../_shared/cors.ts";
@@ -19,7 +16,8 @@ Deno.serve(async (req) => {
   if (guarded) return guarded;
 
   try {
-    const { userClient, user, errorResponse } = await getAuthenticatedUserClient(req);
+    const { userClient, user, errorResponse } =
+      await getAuthenticatedUserClient(req);
     if (errorResponse) return cors.wrap(errorResponse);
 
     const params = parseChatParams(await req.text(), user!.id);
@@ -28,7 +26,8 @@ Deno.serve(async (req) => {
 
     const stream = new ReadableStream({
       async start(controller) {
-        const send = (ev: Record<string, unknown>) => controller.enqueue(encodeEvent(ev));
+        const send = (ev: Record<string, unknown>) =>
+          controller.enqueue(encodeEvent(ev));
         try {
           // The client stores `messages` as sent rather than rebuilding the
           // turn from the tool events, which only drive its progress display.
@@ -45,12 +44,14 @@ Deno.serve(async (req) => {
       },
     });
 
-    return cors.wrap(new Response(stream, {
-      headers: {
-        "Content-Type": "application/x-ndjson",
-        "Cache-Control": "no-cache",
-      },
-    }));
+    return cors.wrap(
+      new Response(stream, {
+        headers: {
+          "Content-Type": "application/x-ndjson",
+          "Cache-Control": "no-cache",
+        },
+      }),
+    );
   } catch (err) {
     const info = classifyCoreError(err);
     if (info) return cors.wrap(coreErrorResponse(info));

@@ -4,7 +4,11 @@
 // creates an account for an unknown email instead of failing, so a body that
 // could name an email would make this endpoint an account factory. Extra
 // fields are dropped, never honoured.
-import { normalizeText, parseJsonObject, requireString } from "../_shared/validation.ts";
+import {
+  normalizeText,
+  parseJsonObject,
+  requireString,
+} from "../_shared/validation.ts";
 
 export interface LineAuthBody {
   idToken: string;

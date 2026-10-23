@@ -1,6 +1,9 @@
 import { assertEquals } from "@std/assert";
 import { loadGarments, makeSourceLoader } from "./sources.ts";
-import { USER_AVATARS_BUCKET, WARDROBE_IMAGES_BUCKET } from "../supabase-storage.ts";
+import {
+  USER_AVATARS_BUCKET,
+  WARDROBE_IMAGES_BUCKET,
+} from "../supabase-storage.ts";
 import type { SourceLoader } from "./sources.ts";
 
 function fakeClient() {
@@ -12,7 +15,9 @@ function fakeClient() {
           download(path: string) {
             downloads.push(`${bucket}/${path}`);
             return Promise.resolve({
-              data: { arrayBuffer: () => Promise.resolve(new Uint8Array([65]).buffer) },
+              data: {
+                arrayBuffer: () => Promise.resolve(new Uint8Array([65]).buffer),
+              },
               error: null,
             });
           },
@@ -46,8 +51,14 @@ Deno.test("makeSourceLoader downloads a storage object from the bucket it names"
   const { client, downloads } = fakeClient();
   const publicImages = fakePublicImages();
   const load = makeSourceLoader(client, publicImages.download);
-  assertEquals(await load({ bucket: USER_AVATARS_BUCKET, path: "u1/avatar.jpg" }), "QQ==");
-  assertEquals(await load({ bucket: WARDROBE_IMAGES_BUCKET, path: "u1/top/a.jpg" }), "QQ==");
+  assertEquals(
+    await load({ bucket: USER_AVATARS_BUCKET, path: "u1/avatar.jpg" }),
+    "QQ==",
+  );
+  assertEquals(
+    await load({ bucket: WARDROBE_IMAGES_BUCKET, path: "u1/top/a.jpg" }),
+    "QQ==",
+  );
   assertEquals(downloads, [
     `${USER_AVATARS_BUCKET}/u1/avatar.jpg`,
     `${WARDROBE_IMAGES_BUCKET}/u1/top/a.jpg`,
@@ -59,7 +70,10 @@ Deno.test("makeSourceLoader fetches a public image key from the public images st
   const { client, downloads } = fakeClient();
   const publicImages = fakePublicImages();
   const load = makeSourceLoader(client, publicImages.download);
-  assertEquals(await load({ publicImageKey: "presets/female.jpg" }), "UFVCTElD");
+  assertEquals(
+    await load({ publicImageKey: "presets/female.jpg" }),
+    "UFVCTElD",
+  );
   assertEquals(publicImages.keys, ["presets/female.jpg"]);
   assertEquals(downloads, []);
 });
@@ -80,5 +94,7 @@ Deno.test("loadGarments preserves garment grouping and image order", async () =>
     ],
     load,
   );
-  assertEquals(groups, [["A1", "@stores/a2.jpg"], [`@${WARDROBE_IMAGES_BUCKET}/u1/b1.jpg`]]);
+  assertEquals(groups, [["A1", "@stores/a2.jpg"], [
+    `@${WARDROBE_IMAGES_BUCKET}/u1/b1.jpg`,
+  ]]);
 });

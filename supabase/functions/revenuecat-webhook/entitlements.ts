@@ -22,7 +22,8 @@ export const SUBSCRIPTION_TIER = {
   max: "max",
 } as const;
 
-export type SubscriptionTier = typeof SUBSCRIPTION_TIER[keyof typeof SUBSCRIPTION_TIER];
+export type SubscriptionTier =
+  typeof SUBSCRIPTION_TIER[keyof typeof SUBSCRIPTION_TIER];
 
 /** Best first. */
 const TIER_PRECEDENCE: readonly SubscriptionTier[] = [
@@ -40,7 +41,9 @@ function isActive(entitlement: SubscriberEntitlement, now: Date): boolean {
   if (!expires) return true;
 
   const grace = entitlement.grace_period_expires_date;
-  const deadline = grace ? Math.max(Date.parse(expires), Date.parse(grace)) : Date.parse(expires);
+  const deadline = grace
+    ? Math.max(Date.parse(expires), Date.parse(grace))
+    : Date.parse(expires);
 
   return Number.isFinite(deadline) && deadline > now.getTime();
 }
@@ -63,7 +66,10 @@ const FREE_SUBSCRIPTION: ResolvedSubscription = {
  * says nothing about the others — a sandbox subscription lapsing while a
  * dashboard grant is active must not drop the customer to free.
  */
-export function resolveSubscription(subscriber: Subscriber, now: Date): ResolvedSubscription {
+export function resolveSubscription(
+  subscriber: Subscriber,
+  now: Date,
+): ResolvedSubscription {
   const entitlements = subscriber.entitlements ?? {};
 
   for (const tier of TIER_PRECEDENCE) {
