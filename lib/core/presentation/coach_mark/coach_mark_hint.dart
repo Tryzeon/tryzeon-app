@@ -20,15 +20,11 @@ enum CoachMarkPlacement {
 
   /// Left of the target, as wide as the room beside it allows.
   left,
-
-  /// Above a target that sits in the bottom chrome itself, such as a tab.
-  aboveChrome,
 }
 
 /// Never blocks the screen: outside the bubble every tap reaches the real UI,
 /// and nothing is mounted while the target is not fully visible clear of the
-/// status bar, bottom chrome (unless [CoachMarkPlacement.aboveChrome]) and
-/// pinned headers. The target is tracked every frame, and only while this
+/// status bar, bottom chrome and pinned headers. The target is tracked every frame, and only while this
 /// hint is mounted. The first frame is invisible: the bubble is measured
 /// before it picks a side.
 ///
@@ -49,6 +45,8 @@ class CoachMarkHint extends HookConsumerWidget {
   });
 
   static const skipLabel = '略過';
+  static const nextLabel = '下一步';
+  static const doneLabel = '完成';
   static const maxWidth = 280.0;
   static const _minWidth = 160.0;
   static const _screenMargin = AppSpacing.md;
@@ -119,26 +117,24 @@ class CoachMarkHint extends HookConsumerWidget {
     );
     // Placed from the tracked target geometry, never with a
     // CompositedTransformFollower: on iOS 26 any follower layer in the scene
-    // makes the native tab bar (a UiKitView) drop its touches. Nothing is
-    // painted over a chrome target either, so it gets no beacon. The beacon
+    // makes the native tab bar (a UiKitView) drop its touches. The beacon
     // rings the target rather than sitting on it, so it never hides a label.
     final targetRect = geometry.target;
     final hint = Stack(
       fit: StackFit.expand,
       children: [
-        if (placement != CoachMarkPlacement.aboveChrome)
-          Positioned.fromRect(
-            rect: targetRect.inflate(targetGap + _Beacon.spread),
-            child: IgnorePointer(
-              child: _Beacon(
-                key: beaconKey,
-                targetRadius: switch (targetRadius) {
-                  final radius? => radius + Radius.circular(targetGap),
-                  null => null,
-                },
-              ),
+        Positioned.fromRect(
+          rect: targetRect.inflate(targetGap + _Beacon.spread),
+          child: IgnorePointer(
+            child: _Beacon(
+              key: beaconKey,
+              targetRadius: switch (targetRadius) {
+                final radius? => radius + Radius.circular(targetGap),
+                null => null,
+              },
             ),
           ),
+        ),
         Positioned(
           left: targetRect.left + layout.offset.dx,
           top: targetRect.top + layout.offset.dy,
@@ -189,15 +185,6 @@ class CoachMarkHint extends HookConsumerWidget {
     if (fullWidth < _minWidth) return null;
 
     switch (placement) {
-      case CoachMarkPlacement.aboveChrome:
-        final left = centeredLeft();
-        final top = rect.top - _gap - size.height;
-        if (top < clear.top) return null;
-        return (
-          offset: Offset(left - rect.left, top - rect.top),
-          maxWidth: fullWidth,
-          caret: (edge: _CaretEdge.bottom, offset: rect.center.dx - left),
-        );
       case CoachMarkPlacement.left:
         if (!unobstructed) return null;
         final width = math.min(maxWidth, rect.left - _gap - _screenMargin);
@@ -239,6 +226,58 @@ class CoachMarkHint extends HookConsumerWidget {
       inner.bottom <= outer.bottom + _epsilon;
 
   static const _epsilon = 0.5;
+}
+
+/// A hint about something in the bottom chrome whose exact position Flutter
+/// cannot see, such as a tab of the iOS 26 native tab bar: centred above the
+/// chrome, high enough to clear a floating action button, pointing down.
+///
+/// Must fill the screen (e.g. in an overlay), like [CoachMarkHint].
+class CoachMarkChromeHint extends StatelessWidget {
+  const CoachMarkChromeHint({
+    super.key,
+    required this.message,
+    this.onSkip,
+    this.action,
+    this.stepLabel,
+  });
+
+  final String message;
+  final VoidCallback? onSkip;
+  final CoachMarkAction? action;
+  final String? stepLabel;
+
+  @override
+  Widget build(final BuildContext context) {
+    final chromeTop =
+        MediaQuery.paddingOf(context).bottom + BottomNavBarInset.of(context);
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Positioned(
+          left: CoachMarkHint._screenMargin,
+          right: CoachMarkHint._screenMargin,
+          bottom: chromeTop + AppSpacing.fabClearance,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: CoachMarkHint.maxWidth,
+              ),
+              child: _Bubble(
+                key: CoachMarkHint.bubbleKey,
+                message: message,
+                caret: (edge: _CaretEdge.bottom, offset: null),
+                stepLabel: stepLabel,
+                onSkip: onSkip,
+                action: action,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 /// Global geometry of a painted target. [bounds] is the area its scroll views
@@ -352,7 +391,8 @@ double _pinnedBottom(
   return bottom;
 }
 
-typedef _Caret = ({_CaretEdge edge, double offset});
+/// [offset] runs along [edge] from the bubble's start; null centres it.
+typedef _Caret = ({_CaretEdge edge, double? offset});
 
 enum _CaretEdge { top, bottom, right }
 
@@ -362,7 +402,7 @@ class _Bubble extends StatelessWidget {
   const _Bubble({
     super.key,
     required this.message,
-    required this.caret,
+    this.caret,
     this.stepLabel,
     this.onSkip,
     this.action,
@@ -374,7 +414,7 @@ class _Bubble extends StatelessWidget {
   static const _messageLineHeight = 1.45;
 
   final String message;
-  final _Caret caret;
+  final _Caret? caret;
   final String? stepLabel;
   final VoidCallback? onSkip;
   final CoachMarkAction? action;
@@ -463,6 +503,9 @@ class _Bubble extends StatelessWidget {
       ),
     );
 
+    final caret = this.caret;
+    if (caret == null) return body;
+
     return Stack(
       children: [
         Padding(
@@ -509,7 +552,10 @@ class _CaretLayout extends SingleChildLayoutDelegate {
   Offset getPositionForChild(final Size size, final Size childSize) {
     const inset = AppRadius.dialog + _Bubble._caretBase / 2;
     final length = caret.edge == _CaretEdge.right ? size.height : size.width;
-    final center = caret.offset.clamp(inset, math.max(inset, length - inset));
+    final center = switch (caret.offset) {
+      final offset? => offset.clamp(inset, math.max(inset, length - inset)),
+      null => length / 2,
+    };
     const half = _Bubble._caretBase / 2;
     return switch (caret.edge) {
       _CaretEdge.top => Offset(center - half, 0),

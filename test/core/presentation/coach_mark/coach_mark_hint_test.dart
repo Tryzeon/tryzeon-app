@@ -637,33 +637,6 @@ void main() {
     expect(tester.getCenter(caret()).dy, moreOrLessEquals(target.center.dy));
   });
 
-  Widget chromeTarget() => Stack(
-    children: [
-      Positioned(
-        left: 300,
-        bottom: 40,
-        child: anchor(size: const Size(68, 50)),
-      ),
-    ],
-  );
-
-  testWidgets('an above-chrome bubble points down at a target inside the '
-      'bottom chrome', (final tester) async {
-    await pumpScene(
-      tester,
-      placement: CoachMarkPlacement.aboveChrome,
-      padding: const EdgeInsets.only(bottom: 34),
-      navBarInset: 60,
-      page: chromeTarget(),
-    );
-
-    final rect = tester.getRect(bubble());
-    final target = tester.getRect(find.byType(CoachMarkAnchor));
-    expect(rect.bottom, lessThan(target.top));
-    expect(tester.getRect(caret()).bottom, moreOrLessEquals(rect.bottom));
-    expect(tester.getCenter(caret()).dx, moreOrLessEquals(target.center.dx));
-  });
-
   testWidgets('never puts a follower layer in the scene, which would stop '
       'the iOS 26 native tab bar taking touches', (final tester) async {
     await pumpScene(tester, page: Center(child: anchor()));
@@ -671,42 +644,6 @@ void main() {
     expect(bubble(), findsOneWidget);
     expect(beacon(), findsOneWidget);
     expect(find.byType(CompositedTransformFollower), findsNothing);
-  });
-
-  testWidgets('an above-chrome hint neither paints over nor links to a '
-      'target under a native tab bar', (final tester) async {
-    await pumpScene(
-      tester,
-      placement: CoachMarkPlacement.aboveChrome,
-      padding: const EdgeInsets.only(bottom: 34),
-      navBarInset: 60,
-      page: chromeTarget(),
-    );
-
-    expect(bubble(), findsOneWidget);
-    expect(beacon(), findsNothing);
-    expect(
-      find.ancestor(
-        of: bubble(),
-        matching: find.byType(CompositedTransformFollower),
-      ),
-      findsNothing,
-    );
-  });
-
-  testWidgets('an above-chrome hint still needs its target painted', (
-    final tester,
-  ) async {
-    await pumpScene(
-      tester,
-      placement: CoachMarkPlacement.aboveChrome,
-      padding: const EdgeInsets.only(bottom: 34),
-      navBarInset: 60,
-      page: Offstage(child: chromeTarget()),
-    );
-
-    expect(bubble(), findsNothing);
-    expect(beacon(), findsNothing);
   });
 
   testWidgets('an anchor alone builds no tracking widgets and registers its '
@@ -797,5 +734,73 @@ void main() {
       expect(find.text('sort').hitTestable(), findsOneWidget);
     }
     expect(find.text(_longMessage).hitTestable(), findsOneWidget);
+  });
+
+  group('CoachMarkChromeHint', () {
+    Future<void> pumpChromeHint(
+      final WidgetTester tester, {
+      final VoidCallback? onSkip,
+    }) async {
+      tester.view.physicalSize = const Size(400, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.lightTheme,
+          builder: (final context, final child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              disableAnimations: true,
+              padding: const EdgeInsets.only(bottom: 34),
+            ),
+            child: BottomNavBarInset(overlap: 50, child: child!),
+          ),
+          home: Stack(
+            children: [
+              CoachMarkChromeHint(
+                message: 'hint',
+                stepLabel: '1 / 2',
+                onSkip: onSkip,
+              ),
+            ],
+          ),
+        ),
+      );
+      await settle(tester);
+    }
+
+    testWidgets('sits centred above the bottom chrome, clear of a FAB', (
+      final tester,
+    ) async {
+      await pumpChromeHint(tester);
+
+      final rect = tester.getRect(bubble());
+      expect(rect.center.dx, moreOrLessEquals(200));
+      expect(
+        rect.bottom,
+        moreOrLessEquals(800 - 34 - 50 - AppSpacing.fabClearance),
+      );
+    });
+
+    testWidgets('points down from its centre and rings nothing', (
+      final tester,
+    ) async {
+      await pumpChromeHint(tester);
+
+      expect(find.text('hint').hitTestable(), findsOneWidget);
+      final caretRect = tester.getRect(caret());
+      final bubbleRect = tester.getRect(bubble());
+      expect(caretRect.center.dx, moreOrLessEquals(bubbleRect.center.dx));
+      expect(caretRect.bottom, moreOrLessEquals(bubbleRect.bottom));
+      expect(beacon(), findsNothing);
+    });
+
+    testWidgets('skip calls back', (final tester) async {
+      var skips = 0;
+      await pumpChromeHint(tester, onSkip: () => skips++);
+
+      await tester.tap(find.text(CoachMarkHint.skipLabel));
+
+      expect(skips, 1);
+    });
   });
 }

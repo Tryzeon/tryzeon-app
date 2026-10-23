@@ -5,11 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/presentation/widgets/app_bottom_nav_bar.dart';
 import 'package:tryzeon/core/presentation/widgets/bottom_nav_bar_inset.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
-import 'package:tryzeon/core/router/shells/native_tab_bar_anchors.dart';
 import 'package:tryzeon/core/router/shells/personal_tab.dart';
 import 'package:tryzeon/core/router/shells/tab_reselect.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
@@ -24,11 +22,6 @@ class PersonalShell extends HookConsumerWidget {
   const PersonalShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
-
-  static CoachMarkTarget? _anchorOf(final PersonalTab tab) => switch (tab) {
-    PersonalTab.shop => CoachMarkTarget.shopTab,
-    _ => null,
-  };
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
@@ -115,12 +108,6 @@ class PersonalShell extends HookConsumerWidget {
                       AppSpacing.smMd,
                   child: OutfitDock(isVisible: showsDock),
                 ),
-                if (usesNativeTabBar)
-                  Positioned.fill(
-                    child: NativeTabBarAnchors(
-                      anchors: PersonalTab.values.map(_anchorOf).toList(),
-                    ),
-                  ),
               ],
             ),
           ),
@@ -162,7 +149,6 @@ class PersonalShell extends HookConsumerWidget {
                         icon: tab.icon,
                         selectedIcon: tab.selectedIcon,
                         label: tab.label,
-                        anchor: _anchorOf(tab),
                       ),
                     )
                     .toList(),

@@ -1,1 +1,1 @@
-enum CoachMarkTarget { shopTab, firstProductTryon, tryonRating }
+enum CoachMarkTarget { firstProductTryon, tryonRating }

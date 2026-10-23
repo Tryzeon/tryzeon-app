@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:tryzeon/core/presentation/coach_mark/coach_mark_anchor.dart';
-import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
 class AppBottomNavItem {
@@ -8,13 +6,11 @@ class AppBottomNavItem {
     required this.icon,
     required this.selectedIcon,
     required this.label,
-    this.anchor,
   });
 
   final IconData icon;
   final IconData selectedIcon;
   final String label;
-  final CoachMarkTarget? anchor;
 }
 
 class AppBottomNavBar extends StatelessWidget {
@@ -166,12 +162,7 @@ class _NavItem extends StatelessWidget {
       label: item.label,
       onTap: onTap,
       excludeSemantics: true,
-      child: Center(
-        child: switch (item.anchor) {
-          final target? => CoachMarkAnchor(target: target, child: pill),
-          null => pill,
-        },
-      ),
+      child: Center(child: pill),
     );
   }
 }

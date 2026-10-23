@@ -60,14 +60,6 @@ void main() {
             child: const Scaffold(
               body: Stack(
                 children: [
-                  Positioned(
-                    left: 100,
-                    bottom: 0,
-                    child: CoachMarkAnchor(
-                      target: CoachMarkTarget.shopTab,
-                      child: SizedBox(width: 68, height: 56),
-                    ),
-                  ),
                   Align(
                     alignment: Alignment(-0.3, 0.2),
                     child: CoachMarkAnchor(
@@ -107,26 +99,19 @@ void main() {
     expect(find.byType(CoachMarkHint), findsNothing);
   });
 
-  testWidgets('start try-on points at the shop tab and the product button', (
-    final tester,
-  ) async {
+  testWidgets('start try-on asks for the shop tab and points at the product '
+      'button', (final tester) async {
     await pumpOverlay(tester, const TutorialState.startTryon());
 
     expect(visible(TutorialOverlay.shopTabMessage), findsOneWidget);
-    expect(visible(TutorialOverlay.tapTryonMessage), findsOneWidget);
     expect(
-      tester.getRect(find.byKey(CoachMarkHint.bubbleKey).first).bottom,
-      lessThan(
-        tester
-            .getRect(
-              find.byWidgetPredicate(
-                (final w) =>
-                    w is CoachMarkAnchor && w.target == CoachMarkTarget.shopTab,
-              ),
-            )
-            .top,
+      find.ancestor(
+        of: find.text(TutorialOverlay.shopTabMessage),
+        matching: find.byType(CoachMarkChromeHint),
       ),
+      findsOneWidget,
     );
+    expect(visible(TutorialOverlay.tapTryonMessage), findsOneWidget);
 
     await tester.tap(
       find.descendant(
@@ -199,7 +184,7 @@ void main() {
     expect(visible(TutorialOverlay.reviewMessage), findsOneWidget);
     expect(find.text(CoachMarkHint.skipLabel), findsNothing);
 
-    await tester.tap(visible(TutorialOverlay.doneLabel));
+    await tester.tap(visible(CoachMarkHint.doneLabel));
     expect(tutorial.completions, 1);
   });
 

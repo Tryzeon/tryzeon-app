@@ -20,7 +20,6 @@ class TutorialOverlay extends HookConsumerWidget {
   static const shopTabMessage = '模特準備好了！點下方「試衣間」挑一件衣服試穿看看';
   static const tapTryonMessage = '點「試穿」，看看穿在模特身上的樣子';
   static const reviewMessage = '完成第一次試穿！左右滑動切換結果，喜歡就按讚';
-  static const doneLabel = '完成';
 
   final PersonalTab currentTab;
   final Widget child;
@@ -37,11 +36,8 @@ class TutorialOverlay extends HookConsumerWidget {
     final List<Widget> hints = switch (tutorial) {
       TutorialStartTryon() => [
         if (currentTab != PersonalTab.shop)
-          CoachMarkHint(
-            key: const ValueKey(CoachMarkTarget.shopTab),
-            target: CoachMarkTarget.shopTab,
+          CoachMarkChromeHint(
             message: shopTabMessage,
-            placement: CoachMarkPlacement.aboveChrome,
             stepLabel: '1 / 3',
             onSkip: controller.complete,
           ),
@@ -61,7 +57,10 @@ class TutorialOverlay extends HookConsumerWidget {
             key: const ValueKey(CoachMarkTarget.tryonRating),
             target: CoachMarkTarget.tryonRating,
             message: reviewMessage,
-            action: (label: doneLabel, onPressed: controller.complete),
+            action: (
+              label: CoachMarkHint.doneLabel,
+              onPressed: controller.complete,
+            ),
             placement: CoachMarkPlacement.left,
             stepLabel: '3 / 3',
           ),

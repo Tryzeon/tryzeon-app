@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/core/presentation/coach_mark/coach_mark_anchor.dart';
-import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/presentation/widgets/app_bottom_nav_bar.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 
@@ -235,38 +232,6 @@ void main() {
     expect(
       capsule.bottom,
       screen.height - 34 - AppSpacing.bottomNavBarBottomMargin,
-    );
-  });
-
-  testWidgets('an item with an anchor is wrapped in that coach mark anchor', (
-    final tester,
-  ) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        child: _subject(
-          selectedIndex: 0,
-          items: const [
-            ..._items,
-            AppBottomNavItem(
-              icon: Icons.shopping_cart_outlined,
-              selectedIcon: Icons.shopping_cart,
-              label: '試衣間',
-              anchor: CoachMarkTarget.shopTab,
-            ),
-          ],
-        ),
-      ),
-    );
-
-    final anchor = find.byType(CoachMarkAnchor);
-    expect(anchor, findsOneWidget);
-    expect(
-      tester.widget<CoachMarkAnchor>(anchor).target,
-      CoachMarkTarget.shopTab,
-    );
-    expect(
-      find.descendant(of: anchor, matching: find.text('試衣間')),
-      findsOneWidget,
     );
   });
 }

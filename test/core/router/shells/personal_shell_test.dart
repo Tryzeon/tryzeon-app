@@ -370,10 +370,7 @@ void main() {
         tester.getRect(find.byKey(CoachMarkHint.bubbleKey)).bottom,
         lessThan(tester.getRect(shopTab).top),
       );
-      expect(
-        tester.getCenter(find.byKey(CoachMarkHint.caretKey)).dx,
-        moreOrLessEquals(tester.getCenter(shopTab).dx),
-      );
+      expect(find.byType(CoachMarkChromeHint), findsOneWidget);
 
       await tester.tap(shopTab);
       await settle(tester);
