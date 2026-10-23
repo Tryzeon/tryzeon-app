@@ -1,4 +1,5 @@
 import { getUserProfile } from "../user-profile.ts";
+import { styleName } from "../vocabularies.ts";
 import { STYLING_GUIDE } from "./styling-guide.ts";
 import type { ContextLoader } from "./types.ts";
 
@@ -41,7 +42,8 @@ export const buildChatContext: ContextLoader = async (client, userId) => {
     userName && `- 姓名：${userName}`,
     userGender && `- 性別：${userGender}`,
     userAge && `- 年齡：${userAge}`,
-    userStyles.length > 0 && `- 偏好風格：${userStyles.join("、")}`,
+    userStyles.length > 0 &&
+    `- 偏好風格：${userStyles.map(styleName).join("、")}`,
   ]
     .filter((line): line is string => Boolean(line))
     .join("\n");

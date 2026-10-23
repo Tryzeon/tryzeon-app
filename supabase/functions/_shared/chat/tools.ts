@@ -15,6 +15,7 @@ import {
   GARMENT_TYPE_VALUES,
   GENDER_VALUES,
   SEASON_VALUES,
+  STYLE_GUIDE,
   STYLE_VALUES,
   THICKNESS_VALUES,
 } from "../vocabularies.ts";
@@ -93,7 +94,11 @@ const SEARCH_PRODUCTS_SCHEMA = z.object({
   materials: z.array(z.string()).optional().describe(
     "選填。材質關鍵字（自由文字，子字串比對），如 棉、麻、羊毛、聚酯纖維。",
   ),
-  styles: z.array(z.enum(STYLE_VALUES)).optional().describe("選填。風格。"),
+  styles: z.array(z.enum(STYLE_VALUES)).optional().describe(
+    `選填。風格：${
+      STYLE_VALUES.map((v) => `${v}（${STYLE_GUIDE[v].name}）`).join(", ")
+    }。`,
+  ),
   seasons: z.array(z.enum(SEASON_VALUES)).optional().describe("選填。季節。"),
   fits: z.array(z.enum(FIT_VALUES)).optional().describe(
     "選填。版型：slim（合身）, regular（常規）, loose（寬鬆）, oversize（超大寬版）。",

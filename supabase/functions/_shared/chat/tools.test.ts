@@ -1,7 +1,12 @@
 import { assert, assertEquals, assertStringIncludes } from "@std/assert";
 import { z } from "zod";
-import { zodSchema } from "ai";
-import { answerSchema, runSearchProducts, runSearchWardrobe } from "./tools.ts";
+import { asSchema, zodSchema } from "ai";
+import {
+  answerSchema,
+  buildTools,
+  runSearchProducts,
+  runSearchWardrobe,
+} from "./tools.ts";
 import type { DbClient } from "../supabase.ts";
 
 const CATEGORIES = new Map([["pants", "cat-pants"]]);
@@ -146,4 +151,18 @@ Deno.test("answerSchema never rejects an answer over its suggestions", () => {
     answerSchema.safeParse({ blocks, suggestions: "單品" }).success,
     true,
   );
+});
+
+Deno.test("search_products explains each style value with its Chinese name", async () => {
+  const tools = buildTools({
+    client: rpcMustNotRun,
+    userId: "u1",
+    categoryIdByCode: CATEGORIES,
+  });
+  // deno-lint-ignore no-explicit-any
+  const json =
+    (await asSchema(tools.search_products.inputSchema).jsonSchema) as any;
+  const description: string = json.properties.styles.description;
+  assertStringIncludes(description, "basic（簡約基本）");
+  assertStringIncludes(description, "homewear（居家舒適）");
 });

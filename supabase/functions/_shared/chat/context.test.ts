@@ -3,24 +3,41 @@ import { buildChatContext } from "./context.ts";
 import { STYLING_GUIDE } from "./styling-guide.ts";
 import type { DbClient } from "../supabase.ts";
 
-const client = {
-  from: (table: string) =>
-    table === "product_categories"
-      ? {
-        select: () =>
-          Promise.resolve({
-            data: [{ id: "cat-1", code: "tops", name: "上衣" }],
-            error: null,
+const makeClient = (profile: Record<string, unknown> | null): DbClient =>
+  ({
+    from: (table: string) =>
+      table === "product_categories"
+        ? {
+          select: () =>
+            Promise.resolve({
+              data: [{ id: "cat-1", code: "tops", name: "上衣" }],
+              error: null,
+            }),
+        }
+        : {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: () =>
+                Promise.resolve({ data: profile, error: null }),
+            }),
           }),
-      }
-      : {
-        select: () => ({
-          eq: () => ({
-            maybeSingle: () => Promise.resolve({ data: null, error: null }),
-          }),
-        }),
-      },
-} as unknown as DbClient;
+        },
+  }) as unknown as DbClient;
+
+const client = makeClient(null);
+
+Deno.test("buildChatContext names the user's preferred styles in Chinese", async () => {
+  const { systemInstruction } = await buildChatContext(
+    makeClient({
+      name: "Amy",
+      gender: "female",
+      age_range: "25_34",
+      style_preferences: ["basic", "party"],
+    }),
+    "u1",
+  );
+  assertStringIncludes(systemInstruction, "偏好風格：簡約基本、性感派對");
+});
 
 Deno.test("buildChatContext grounds the system instruction in the styling guide", async () => {
   const { systemInstruction } = await buildChatContext(client, "u1");
