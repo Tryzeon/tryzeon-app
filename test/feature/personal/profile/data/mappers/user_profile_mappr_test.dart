@@ -114,12 +114,12 @@ void main() {
       'order', () {
     final request = mappr.convert<UserProfileUpdate, UpdateUserProfileRequest>(
       const UserProfileUpdate(
-        stylePreferences: {ClothingStyle.streetwear, ClothingStyle.japanese},
+        stylePreferences: {ClothingStyle.streetwear, ClothingStyle.basic},
       ),
     );
 
     expect(request.stylePreferences, [
-      ClothingStyle.japanese,
+      ClothingStyle.basic,
       ClothingStyle.streetwear,
     ]);
   });

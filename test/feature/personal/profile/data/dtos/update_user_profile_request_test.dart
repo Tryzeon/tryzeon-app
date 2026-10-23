@@ -17,13 +17,13 @@ void main() {
       const UpdateUserProfileRequest(
         gender: Gender.female,
         ageRange: AgeRange.age25to34,
-        stylePreferences: [ClothingStyle.korean, ClothingStyle.streetwear],
+        stylePreferences: [ClothingStyle.casual, ClothingStyle.streetwear],
         isOnboarded: true,
       ).toJson(),
       {
         'gender': 'female',
         'age_range': '25_34',
-        'style_preferences': ['korean', 'streetwear'],
+        'style_preferences': ['casual', 'streetwear'],
         'is_onboarded': true,
       },
     );

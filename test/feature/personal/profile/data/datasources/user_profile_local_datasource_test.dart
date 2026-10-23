@@ -58,7 +58,7 @@ void main() {
       ),
       gender: Gender.female,
       ageRange: AgeRange.age25to34,
-      stylePreferences: const {ClothingStyle.korean, ClothingStyle.minimalist},
+      stylePreferences: const {ClothingStyle.casual, ClothingStyle.basic},
       isOnboarded: true,
     );
     final local = build();

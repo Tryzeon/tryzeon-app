@@ -49,7 +49,7 @@ void main() {
   testWidgets('counts filled fields as they change', (final tester) async {
     await pumpEditor(tester);
 
-    styles.value = {ClothingStyle.korean};
+    styles.value = {ClothingStyle.casual};
     material.value = '棉 100%';
     fit.value = ProductFit.regular;
     await tester.pump();

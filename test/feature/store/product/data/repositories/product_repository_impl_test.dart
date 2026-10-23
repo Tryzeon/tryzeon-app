@@ -95,7 +95,7 @@ void main() {
     final String? gender = 'female',
     final String? fit = 'regular',
     final List<String>? seasons = const ['summer'],
-    final List<String>? styles = const ['korean'],
+    final List<String>? styles = const ['casual'],
   }) => harness.isar.writeTxn(() async {
     await harness.isar.productCaches.putByProductId(
       ProductCache()
@@ -286,7 +286,7 @@ void main() {
             categoryId: 'c1',
             garmentType: GarmentType.onePiece,
             price: 1280,
-            styles: {ClothingStyle.western, ClothingStyle.japanese},
+            styles: {ClothingStyle.edgy, ClothingStyle.natural},
             seasons: {ProductSeason.winter, ProductSeason.spring},
           ),
           imagePaths: ['p1.jpg'],
@@ -296,7 +296,7 @@ void main() {
 
       expect(result.isSuccess, isTrue);
       final row = remote.inserted!.toJson();
-      expect(row['styles'], ['japanese', 'western']);
+      expect(row['styles'], ['edgy', 'natural']);
       expect(row['seasons'], ['spring', 'winter']);
     },
   );

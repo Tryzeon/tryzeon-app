@@ -45,7 +45,7 @@ void main() {
         gender: ProductGender.female,
         materials: {'cotton'},
         fits: {ProductFit.regular},
-        styles: {ClothingStyle.korean},
+        styles: {ClothingStyle.casual},
         seasons: {ProductSeason.summer},
         sort: ShopSort.priceLowToHigh(),
       ),
@@ -59,7 +59,7 @@ void main() {
     expect(json['p_gender'], 'female');
     expect(json['p_materials'], ['cotton']);
     expect(json['p_fits'], ['regular']);
-    expect(json['p_styles'], ['korean']);
+    expect(json['p_styles'], ['casual']);
     expect(json['p_seasons'], ['summer']);
     expect(json['p_sort_column'], 'price');
     expect(json['p_sort_ascending'], true);

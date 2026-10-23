@@ -24,7 +24,7 @@ void main() {
         'name': '碎花洋裝',
         'categoryId': 'c1',
         'gender': 'female',
-        'styles': ['korean', 'y2k'],
+        'styles': ['casual', 'y2k'],
         'seasons': <String>[],
         'material': null,
         'fit': 'oversized',
@@ -39,7 +39,7 @@ void main() {
     expect(analysis.name, '碎花洋裝');
     expect(analysis.categoryId, 'c1');
     expect(analysis.gender, ProductGender.female);
-    expect(analysis.styles, {ClothingStyle.korean});
+    expect(analysis.styles, {ClothingStyle.casual});
     expect(analysis.fit, isNull);
   });
 

@@ -44,7 +44,7 @@ void main() {
     elasticity: ProductElasticity.low,
     fit: ProductFit.loose,
     thickness: ProductThickness.medium,
-    styles: {ClothingStyle.minimalist, ClothingStyle.japanese},
+    styles: {ClothingStyle.basic, ClothingStyle.natural},
     seasons: {ProductSeason.summer, ProductSeason.spring},
     sizes: [
       ProductSize(
@@ -96,7 +96,7 @@ void main() {
 
     final cached = await harness.isar.productCaches.getByProductId('p1');
 
-    expect(cached!.styles, ['japanese', 'minimalist']);
+    expect(cached!.styles, ['basic', 'natural']);
     expect(cached.seasons, ['spring', 'summer']);
   });
 

@@ -18,7 +18,7 @@ final _original = UserProfile(
   gender: Gender.female,
   ageRange: AgeRange.age25to34,
   measurements: const BodyMeasurements(height: 160, weight: 50),
-  stylePreferences: const {ClothingStyle.korean, ClothingStyle.casual},
+  stylePreferences: const {ClothingStyle.casual, ClothingStyle.basic},
   createdAt: DateTime(2026),
   updatedAt: DateTime(2026),
   isTutorialCompleted: true,
@@ -101,7 +101,7 @@ void main() {
   test('UpdateStylePreferences skips an unchanged selection', () async {
     final result = await UpdateStylePreferences(repository)(
       original: _original,
-      stylePreferences: const {ClothingStyle.casual, ClothingStyle.korean},
+      stylePreferences: const {ClothingStyle.basic, ClothingStyle.casual},
     );
 
     expect(result.get(), _original);

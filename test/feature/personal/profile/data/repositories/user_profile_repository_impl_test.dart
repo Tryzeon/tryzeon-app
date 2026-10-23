@@ -95,7 +95,7 @@ void main() {
   Future<void> seedCache({
     final String? gender = 'female',
     final String? ageRange = '25_34',
-    final List<String>? stylePreferences = const ['korean'],
+    final List<String>? stylePreferences = const ['casual'],
     final AvatarEmbedded? avatar,
   }) => harness.isar.writeTxn(() async {
     await harness.isar.userProfileCaches.putByUserId(
@@ -127,7 +127,7 @@ void main() {
     updatedAt: DateTime(2026),
     gender: Gender.female,
     ageRange: AgeRange.age25to34,
-    stylePreferences: const [ClothingStyle.korean],
+    stylePreferences: const [ClothingStyle.casual],
     avatarPreset: PresetAvatar.male,
     isOnboarded: true,
   );
@@ -156,16 +156,16 @@ void main() {
   });
 
   test('re-fetches when a cached style preference no longer decodes', () async {
-    await seedCache(stylePreferences: const ['korean', 'y2k']);
+    await seedCache(stylePreferences: const ['casual', 'y2k']);
 
     final remote = _FakeRemote(remoteProfile);
     final profile = (await buildRepository(remote).getUserProfile()).get()!;
 
     expect(remote.calls, 1);
-    expect(profile.stylePreferences, {ClothingStyle.korean});
+    expect(profile.stylePreferences, {ClothingStyle.casual});
 
     final cached = await harness.isar.userProfileCaches.getByUserId('u1');
-    expect(cached!.stylePreferences, ['korean']);
+    expect(cached!.stylePreferences, ['casual']);
   });
 
   test('re-fetches when a cached gender no longer decodes', () async {
@@ -200,7 +200,7 @@ void main() {
     expect(remote.calls, 0);
     expect(profile.gender, Gender.female);
     expect(profile.ageRange, AgeRange.age25to34);
-    expect(profile.stylePreferences, {ClothingStyle.korean});
+    expect(profile.stylePreferences, {ClothingStyle.casual});
   });
 
   test(

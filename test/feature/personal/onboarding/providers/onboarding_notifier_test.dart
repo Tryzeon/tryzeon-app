@@ -51,7 +51,7 @@ void main() {
     final notifier = container.read(onboardingProvider.notifier)
       ..setGender(Gender.female)
       ..setAgeRange(AgeRange.age25to34)
-      ..toggleStylePreference(ClothingStyle.korean);
+      ..toggleStylePreference(ClothingStyle.casual);
 
     final result = await notifier.completeOnboarding();
 
@@ -61,7 +61,7 @@ void main() {
       const CompleteOnboardingParams(
         gender: Gender.female,
         ageRange: AgeRange.age25to34,
-        stylePreferences: {ClothingStyle.korean},
+        stylePreferences: {ClothingStyle.casual},
       ),
     );
     expect(container.read(onboardingProvider).isSubmitting, isFalse);
