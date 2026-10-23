@@ -13,6 +13,7 @@ class ProductDraftDto {
     required this.garmentType,
     required this.price,
     required this.gender,
+    required this.status,
     this.purchaseLink,
     this.description,
     this.material,
@@ -28,6 +29,7 @@ class ProductDraftDto {
   final GarmentType garmentType;
   final double price;
   final ProductGender gender;
+  final ProductStatus status;
   final String? purchaseLink;
   final String? description;
   final String? material;
