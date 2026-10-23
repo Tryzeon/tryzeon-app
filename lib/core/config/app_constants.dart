@@ -44,6 +44,8 @@ class AppConstants {
   static const String keyTryonTransitionPrompt = 'tryon_transition_prompt';
   static const String keyTryonEngine = 'tryon_engine';
   static const String keyOwnPhotoInviteDismissed = 'own_photo_invite_dismissed';
+  static const String keyStoreTutorialFinishedPrefix =
+      'store_tutorial_finished_';
 
   static const Duration staleDurationProductCategories = Duration(days: 7);
   static const Duration staleDurationUserProfile = Duration(days: 7);
