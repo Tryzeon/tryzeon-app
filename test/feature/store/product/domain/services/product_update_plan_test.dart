@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/domain/services/product_update_plan.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.dart';
@@ -142,5 +143,19 @@ void main() {
       ),
       throwsArgumentError,
     );
+  });
+
+  test('a status-only change is a product change', () {
+    final plan = planProductUpdate(
+      original: original,
+      draft: unchangedDraft.copyWith(status: ProductStatus.archived),
+      images: keptImages,
+      uploadedPaths: const [],
+      sizes: keptSizes,
+    );
+
+    expect(plan.hasProductChanges, isTrue);
+    expect(plan.target.status, ProductStatus.archived);
+    expect(plan.sizeDiff.isEmpty, isTrue);
   });
 }
