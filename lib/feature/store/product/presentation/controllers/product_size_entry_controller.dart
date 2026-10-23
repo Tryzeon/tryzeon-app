@@ -81,7 +81,8 @@ class ProductSizeEntryController {
   }) {
     for (final entry in parsed.garmentMeasurements.entries) {
       final m = entry.value;
-      final factor = m.unit.toCmFactor / targetUnit.toCmFactor;
+      final unit = m.unit.resolve(formUnit: targetUnit);
+      final factor = unit.toCmFactor / targetUnit.toCmFactor;
       measurementControllers[entry.key]?.text = _formatValue(m.value * factor);
     }
     for (final entry in parsed.bodyMeasurementRanges.entries) {

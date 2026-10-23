@@ -61,11 +61,7 @@ SizeVoiceInput useSizeVoiceInput({
         return;
       }
       final result = await ref.read(parseSizeVoiceUseCaseProvider)(
-        ParseSizeVoiceParams(
-          audioBytes: bytes,
-          mimeType: recording.mimeType,
-          currentUnit: sizeManager.selectedUnit,
-        ),
+        ParseSizeVoiceParams(audioBytes: bytes, mimeType: recording.mimeType),
       );
       final parsed = result.get();
       if (parsed == null) {

@@ -3,6 +3,7 @@ import 'package:tryzeon/feature/common/measurement/domain/entities/measurement_u
 import 'package:tryzeon/feature/common/product_size/domain/entities/body_measurement_ranges.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/garment_measurement_type.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/parsed_size.dart';
+import 'package:tryzeon/feature/store/product/domain/entities/spoken_unit.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/size_item.dart';
 import 'package:tryzeon/feature/store/product/presentation/controllers/product_size_entry_controller.dart';
 
@@ -138,8 +139,32 @@ void main() {
         '170',
       );
     });
+  });
 
-    test('applies a parsed body measurement range', () {
+  group('applyParsed', () {
+    test('converts a garment value through the unit the store meant', () {
+      final entry = ProductSizeEntryController(label: 'M');
+      entry.applyParsed(
+        const ParsedSize(
+          name: 'M',
+          garmentMeasurements: {
+            GarmentMeasurementType.chestCircumference: ParsedMeasurement(
+              value: 10,
+              unit: SpokenUnit.cunAmbiguous,
+            ),
+          },
+        ),
+        targetUnit: MeasurementUnit.centimeter,
+      );
+      expect(
+        entry
+            .measurementControllers[GarmentMeasurementType.chestCircumference]!
+            .text,
+        '25.4',
+      );
+    });
+
+    test('applies a body measurement range as is', () {
       final entry = ProductSizeEntryController(label: 'M');
       entry.applyParsed(
         const ParsedSize(
