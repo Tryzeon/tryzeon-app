@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
@@ -53,8 +54,12 @@ class StoreProductSliverGrid extends HookConsumerWidget {
             childAspectRatio: 0.6,
           ),
           itemCount: products.length,
-          itemBuilder: (final context, final index) =>
-              StoreProductCard(product: products[index]),
+          itemBuilder: (final context, final index) => StoreProductCard(
+            product: products[index],
+            statsAnchor: index == 0
+                ? CoachMarkTarget.storeFirstProductStats
+                : null,
+          ),
         ),
       );
     }

@@ -3,6 +3,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tryzeon/core/extensions/count_format_extension.dart';
 import 'package:tryzeon/core/extensions/percent_format_extension.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_anchor.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/store/analytics/domain/entities/store_traffic_totals.dart';
@@ -35,9 +37,12 @@ class StorePerformanceSection extends ConsumerWidget {
     final isLoading = totals == null || totalsAsync.isReloading;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: _PerformanceCard(
-        totals: isLoading ? _skeletonTotals : totals,
-        isLoading: isLoading,
+      child: CoachMarkAnchor(
+        target: CoachMarkTarget.storePerformance,
+        child: _PerformanceCard(
+          totals: isLoading ? _skeletonTotals : totals,
+          isLoading: isLoading,
+        ),
       ),
     );
   }

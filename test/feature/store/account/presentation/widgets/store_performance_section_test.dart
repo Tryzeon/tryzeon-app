@@ -5,6 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:hooks_riverpod/misc.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_anchor.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/store/account/presentation/widgets/store_performance_section.dart';
@@ -164,5 +166,28 @@ void main() {
 
     expect(find.byType(ErrorView), findsOneWidget);
     expect(find.text('180'), findsNothing);
+  });
+
+  testWidgets('the coach-mark target is the card, not its page padding', (
+    final tester,
+  ) async {
+    await pumpTotals(
+      tester,
+      () async => const StoreTrafficTotals(
+        viewCount: 10,
+        tryonCount: 1,
+        purchaseClickCount: 0,
+      ),
+    );
+
+    final anchor = tester.getRect(
+      find.byWidgetPredicate(
+        (final w) =>
+            w is CoachMarkAnchor &&
+            w.target == CoachMarkTarget.storePerformance,
+      ),
+    );
+    expect(anchor.left, AppSpacing.lg);
+    expect(anchor.right, 800 - AppSpacing.lg);
   });
 }

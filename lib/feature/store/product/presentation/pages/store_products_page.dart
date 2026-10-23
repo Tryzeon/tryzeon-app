@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/refresh_feedback_extension.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/presentation/widgets/app_page_header.dart';
 import 'package:tryzeon/core/router/shells/store_tab.dart';
 import 'package:tryzeon/core/router/shells/tab_reselect.dart';
@@ -89,7 +90,9 @@ class StoreProductsPage extends HookConsumerWidget {
           ),
         ),
       ),
-      floatingActionButton: const StoreAddProductFab(),
+      floatingActionButton: const StoreAddProductFab(
+        anchor: CoachMarkTarget.storeProductsAddFab,
+      ),
     );
   }
 }

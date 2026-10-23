@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/price_format_extension.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_anchor.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/presentation/widgets/app_action_sheet.dart';
 import 'package:tryzeon/core/presentation/widgets/image_placeholder.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
@@ -17,9 +19,10 @@ import 'package:tryzeon/feature/store/product/presentation/mappers/product_statu
 import 'package:tryzeon/feature/store/product/presentation/state/product_sort_condition.dart';
 
 class StoreProductCard extends HookConsumerWidget {
-  const StoreProductCard({super.key, required this.product});
+  const StoreProductCard({super.key, required this.product, this.statsAnchor});
 
   final Product product;
+  final CoachMarkTarget? statsAnchor;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
@@ -105,7 +108,18 @@ class StoreProductCard extends HookConsumerWidget {
               padding: const EdgeInsets.only(left: AppSpacing.smMd),
               child: Row(
                 children: [
-                  Expanded(child: _AnalyticsRow(productId: product.id)),
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: switch (statsAnchor) {
+                        final target? => CoachMarkAnchor(
+                          target: target,
+                          child: _AnalyticsRow(productId: product.id),
+                        ),
+                        null => _AnalyticsRow(productId: product.id),
+                      },
+                    ),
+                  ),
                   _ProductCardMenuButton(product: product),
                 ],
               ),

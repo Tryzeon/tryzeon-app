@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/refresh_feedback_extension.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/store/account/presentation/widgets/store_account_header.dart';
 import 'package:tryzeon/feature/store/account/presentation/widgets/store_performance_section.dart';
@@ -43,7 +44,9 @@ class StoreAccountPage extends HookConsumerWidget {
           ),
         ),
       ),
-      floatingActionButton: const StoreAddProductFab(),
+      floatingActionButton: const StoreAddProductFab(
+        anchor: CoachMarkTarget.storeAccountAddFab,
+      ),
     );
   }
 }

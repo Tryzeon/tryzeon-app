@@ -11,6 +11,7 @@ import 'package:tryzeon/core/router/shells/tab_reselect.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/auth/domain/entities/user_type.dart';
 import 'package:tryzeon/feature/common/settings/providers/settings_controller.dart';
+import 'package:tryzeon/feature/store/tutorial/presentation/widgets/store_tutorial_overlay.dart';
 
 class StoreShell extends HookConsumerWidget {
   const StoreShell({super.key, required this.navigationShell});
@@ -59,7 +60,13 @@ class StoreShell extends HookConsumerWidget {
     final body = ScaffoldMessenger(
       child: BottomNavBarInset(
         overlap: AppSpacing.bottomNavBarOverlap,
-        child: MediaQuery(data: mediaQuery, child: navigationShell),
+        child: MediaQuery(
+          data: mediaQuery,
+          child: StoreTutorialOverlay(
+            currentTab: StoreTab.values[navigationShell.currentIndex],
+            child: navigationShell,
+          ),
+        ),
       ),
     );
 
