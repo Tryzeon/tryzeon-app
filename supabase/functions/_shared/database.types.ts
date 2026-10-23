@@ -1,10 +1,6 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[];
+export type Json = string | number | boolean | null | {
+  [key: string]: Json | undefined;
+} | Json[];
 
 export type Database = {
   graphql_public: {
@@ -39,6 +35,7 @@ export type Database = {
           created_at: string;
           user_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           user_id: string;
@@ -58,6 +55,7 @@ export type Database = {
           store_id: string;
           user_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           event_type: Database["public"]["Enums"]["analytics_event_type"];
@@ -91,6 +89,7 @@ export type Database = {
           reporter_id: string;
           tryon_generation_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           id?: string;
@@ -122,6 +121,7 @@ export type Database = {
           window_end: string;
           window_start: string;
         };
+        ComputedFields: never;
         Insert: {
           feature: Database["public"]["Enums"]["usage_feature"];
           period: Database["public"]["Enums"]["quota_period"];
@@ -146,6 +146,7 @@ export type Database = {
           line_user_id: string;
           user_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           line_user_id: string;
@@ -167,6 +168,7 @@ export type Database = {
           platform: string | null;
           source: string;
         };
+        ComputedFields: never;
         Insert: {
           channel?: string | null;
           code: string;
@@ -205,6 +207,7 @@ export type Database = {
           name: string;
           order: number;
         };
+        ComputedFields: never;
         Insert: {
           code: string;
           created_at?: string;
@@ -239,6 +242,7 @@ export type Database = {
           product_id: string;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           body_measurement_ranges?: Json | null;
           created_at?: string;
@@ -277,18 +281,19 @@ export type Database = {
           garment_type: Database["public"]["Enums"]["garment_type"];
           gender: Database["public"]["Enums"]["product_gender"];
           id: string;
-          image_paths: string[] | null;
+          image_paths: (string)[] | null;
           material: string | null;
           name: string;
           price: number;
           purchase_link: string | null;
-          seasons: Database["public"]["Enums"]["product_season"][] | null;
+          seasons: (Database["public"]["Enums"]["product_season"])[] | null;
           status: string;
           store_id: string;
-          styles: string[] | null;
+          styles: (string)[] | null;
           thickness: Database["public"]["Enums"]["product_thickness"] | null;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           category_id: string;
           created_at?: string;
@@ -298,15 +303,15 @@ export type Database = {
           garment_type: Database["public"]["Enums"]["garment_type"];
           gender?: Database["public"]["Enums"]["product_gender"];
           id?: string;
-          image_paths?: string[] | null;
+          image_paths?: (string)[] | null;
           material?: string | null;
           name: string;
           price: number;
           purchase_link?: string | null;
-          seasons?: Database["public"]["Enums"]["product_season"][] | null;
+          seasons?: (Database["public"]["Enums"]["product_season"])[] | null;
           status?: string;
           store_id: string;
-          styles?: string[] | null;
+          styles?: (string)[] | null;
           thickness?: Database["public"]["Enums"]["product_thickness"] | null;
           updated_at?: string;
         };
@@ -319,15 +324,15 @@ export type Database = {
           garment_type?: Database["public"]["Enums"]["garment_type"];
           gender?: Database["public"]["Enums"]["product_gender"];
           id?: string;
-          image_paths?: string[] | null;
+          image_paths?: (string)[] | null;
           material?: string | null;
           name?: string;
           price?: number;
           purchase_link?: string | null;
-          seasons?: Database["public"]["Enums"]["product_season"][] | null;
+          seasons?: (Database["public"]["Enums"]["product_season"])[] | null;
           status?: string;
           store_id?: string;
-          styles?: string[] | null;
+          styles?: (string)[] | null;
           thickness?: Database["public"]["Enums"]["product_thickness"] | null;
           updated_at?: string;
         };
@@ -357,6 +362,7 @@ export type Database = {
           open_with: string;
           store_id: string;
         };
+        ComputedFields: never;
         Insert: {
           code: string;
           created_at?: string;
@@ -386,42 +392,43 @@ export type Database = {
       store_profiles: {
         Row: {
           address: string | null;
-          channels: Database["public"]["Enums"]["store_channel"][];
+          channels: (Database["public"]["Enums"]["store_channel"])[];
           created_at: string;
           id: string;
           latitude: number | null;
           logo_path: string | null;
           longitude: number | null;
           name: string;
-          order_contacts: Json;
+          order_contacts: NonNullable<Json>;
           owner_id: string;
           slug: string | null;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           address?: string | null;
-          channels?: Database["public"]["Enums"]["store_channel"][];
+          channels?: (Database["public"]["Enums"]["store_channel"])[];
           created_at?: string;
           id?: string;
           latitude?: number | null;
           logo_path?: string | null;
           longitude?: number | null;
           name?: string;
-          order_contacts?: Json;
+          order_contacts?: NonNullable<Json>;
           owner_id: string;
           slug?: string | null;
           updated_at?: string;
         };
         Update: {
           address?: string | null;
-          channels?: Database["public"]["Enums"]["store_channel"][];
+          channels?: (Database["public"]["Enums"]["store_channel"])[];
           created_at?: string;
           id?: string;
           latitude?: number | null;
           logo_path?: string | null;
           longitude?: number | null;
           name?: string;
-          order_contacts?: Json;
+          order_contacts?: NonNullable<Json>;
           owner_id?: string;
           slug?: string | null;
           updated_at?: string;
@@ -439,6 +446,7 @@ export type Database = {
           video_limit: number;
           wardrobe_limit: number;
         };
+        ComputedFields: never;
         Insert: {
           chat_limit: number;
           created_at?: string;
@@ -470,6 +478,7 @@ export type Database = {
           updated_at: string;
           user_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           current_period_end?: string | null;
@@ -509,6 +518,7 @@ export type Database = {
           user_id: string;
           video_model: string | null;
         };
+        ComputedFields: never;
         Insert: {
           completed_at?: string | null;
           created_at?: string;
@@ -537,26 +547,27 @@ export type Database = {
       };
       tryon_ratings: {
         Row: {
+          comment: string | null;
           created_at: string;
           rating: Database["public"]["Enums"]["tryon_rating"];
           reason: string | null;
-          comment: string | null;
           tryon_generation_id: string;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
+          comment?: string | null;
           created_at?: string;
           rating: Database["public"]["Enums"]["tryon_rating"];
           reason?: string | null;
-          comment?: string | null;
           tryon_generation_id: string;
           updated_at?: string;
         };
         Update: {
+          comment?: string | null;
           created_at?: string;
           rating?: Database["public"]["Enums"]["tryon_rating"];
           reason?: string | null;
-          comment?: string | null;
           tryon_generation_id?: string;
           updated_at?: string;
         };
@@ -578,6 +589,7 @@ export type Database = {
           user_id: string;
           video_count: number;
         };
+        ComputedFields: never;
         Insert: {
           chat_count?: number;
           tryon_count?: number;
@@ -606,10 +618,11 @@ export type Database = {
           is_tutorial_completed: boolean;
           measurements: Json | null;
           name: string;
-          style_preferences: string[] | null;
+          style_preferences: (string)[] | null;
           updated_at: string;
           user_id: string;
         };
+        ComputedFields: never;
         Insert: {
           age_range?: string | null;
           avatar_path?: string | null;
@@ -621,7 +634,7 @@ export type Database = {
           is_tutorial_completed?: boolean;
           measurements?: Json | null;
           name: string;
-          style_preferences?: string[] | null;
+          style_preferences?: (string)[] | null;
           updated_at?: string;
           user_id: string;
         };
@@ -636,7 +649,7 @@ export type Database = {
           is_tutorial_completed?: boolean;
           measurements?: Json | null;
           name?: string;
-          style_preferences?: string[] | null;
+          style_preferences?: (string)[] | null;
           updated_at?: string;
           user_id?: string;
         };
@@ -648,25 +661,26 @@ export type Database = {
           garment_type: Database["public"]["Enums"]["garment_type"];
           id: string;
           image_path: string;
-          tags: string[] | null;
+          tags: (string)[] | null;
           updated_at: string;
           user_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           garment_type: Database["public"]["Enums"]["garment_type"];
           id?: string;
           image_path: string;
-          tags?: string[] | null;
+          tags?: (string)[] | null;
           updated_at?: string;
-          user_id: string;
+          user_id?: string;
         };
         Update: {
           created_at?: string;
           garment_type?: Database["public"]["Enums"]["garment_type"];
           id?: string;
           image_path?: string;
-          tags?: string[] | null;
+          tags?: (string)[] | null;
           updated_at?: string;
           user_id?: string;
         };
@@ -684,6 +698,7 @@ export type Database = {
           view_count: number | null;
           year: number | null;
         };
+        ComputedFields: never;
         Relationships: [
           {
             foreignKeyName: "analytics_events_store_id_fkey";
@@ -703,6 +718,7 @@ export type Database = {
           view_count: number | null;
           year: number | null;
         };
+        ComputedFields: never;
         Relationships: [
           {
             foreignKeyName: "analytics_events_store_id_fkey";
@@ -720,6 +736,7 @@ export type Database = {
           store_id: string | null;
           year: number | null;
         };
+        ComputedFields: never;
         Relationships: [
           {
             foreignKeyName: "short_links_store_id_fkey";
@@ -732,7 +749,10 @@ export type Database = {
       };
     };
     Functions: {
-      cleanup_old_daily_usage: { Args: never; Returns: undefined };
+      cleanup_old_daily_usage: {
+        Args: Record<PropertyKey, never>;
+        Returns: undefined;
+      };
       consume_quota: {
         Args: {
           p_feature: Database["public"]["Enums"]["usage_feature"];
@@ -744,32 +764,33 @@ export type Database = {
         Args: { p_feature_name: string; p_user_id: string };
         Returns: boolean;
       };
-      get_quota_snapshot: { Args: never; Returns: Json };
+      get_quota_snapshot: { Args: Record<PropertyKey, never>; Returns: Json };
       get_shop_product: { Args: { p_id: string }; Returns: Json };
       increment_feature_usage: {
         Args: { p_feature_name: string; p_user_id: string };
         Returns: Json;
       };
-      is_admin: { Args: never; Returns: boolean };
+      is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       list_shop_products: {
         Args: {
-          p_category_ids?: string[];
-          p_channels?: Database["public"]["Enums"]["store_channel"][];
-          p_elasticities?: Database["public"]["Enums"]["product_elasticity"][];
-          p_fits?: Database["public"]["Enums"]["product_fit"][];
+          p_category_ids?: (string)[];
+          p_channels?: (Database["public"]["Enums"]["store_channel"])[];
+          p_elasticities?:
+            (Database["public"]["Enums"]["product_elasticity"])[];
+          p_fits?: (Database["public"]["Enums"]["product_fit"])[];
           p_gender?: Database["public"]["Enums"]["product_gender"];
           p_limit?: number;
-          p_materials?: string[];
+          p_materials?: (string)[];
           p_max_price?: number;
           p_min_price?: number;
           p_offset?: number;
           p_search_query?: string;
-          p_seasons?: Database["public"]["Enums"]["product_season"][];
+          p_seasons?: (Database["public"]["Enums"]["product_season"])[];
           p_sort_ascending?: boolean;
           p_sort_column?: string;
           p_store_id?: string;
-          p_styles?: string[];
-          p_thicknesses?: Database["public"]["Enums"]["product_thickness"][];
+          p_styles?: (string)[];
+          p_thicknesses?: (Database["public"]["Enums"]["product_thickness"])[];
           p_user_lat?: number;
           p_user_lng?: number;
         };
@@ -777,7 +798,7 @@ export type Database = {
       };
       log_analytics_events: { Args: { p_events: Json }; Returns: undefined };
       log_tryon_events: {
-        Args: { p_product_ids: string[]; p_user_id: string };
+        Args: { p_product_ids: (string)[]; p_user_id: string };
         Returns: undefined;
       };
       quota_months_elapsed: {
@@ -786,11 +807,7 @@ export type Database = {
       };
       quota_snapshot: { Args: { p_user_id: string }; Returns: Json };
       quota_window: {
-        Args: {
-          p_now: string;
-          p_period_end: string;
-          p_period_start: string;
-        };
+        Args: { p_now: string; p_period_end: string; p_period_start: string };
         Returns: Record<string, unknown>;
       };
       release_quota: {
@@ -853,9 +870,8 @@ export type Tables<
       ]
     )
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-} ? (
+> = DefaultSchemaTableNameOrOptions extends
+  { schema: keyof DatabaseWithoutInternals } ? (
     & DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]][
       "Tables"
     ]
@@ -866,13 +882,11 @@ export type Tables<
     Row: infer R;
   } ? R
   : never
-  : DefaultSchemaTableNameOrOptions extends keyof (
-    & DefaultSchema["Tables"]
-    & DefaultSchema["Views"]
-  ) ? (
-      & DefaultSchema["Tables"]
-      & DefaultSchema["Views"]
-    )[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends
+    keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] & DefaultSchema["Views"])[
+      DefaultSchemaTableNameOrOptions
+    ] extends {
       Row: infer R;
     } ? R
     : never
@@ -888,9 +902,9 @@ export type TablesInsert<
       "Tables"
     ]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-} ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]][
+> = DefaultSchemaTableNameOrOptions extends
+  { schema: keyof DatabaseWithoutInternals }
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]][
     "Tables"
   ][TableName] extends {
     Insert: infer I;
@@ -913,9 +927,9 @@ export type TablesUpdate<
       "Tables"
     ]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-} ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]][
+> = DefaultSchemaTableNameOrOptions extends
+  { schema: keyof DatabaseWithoutInternals }
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]][
     "Tables"
   ][TableName] extends {
     Update: infer U;
@@ -938,9 +952,9 @@ export type Enums<
       "Enums"
     ]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-} ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][
+> = DefaultSchemaEnumNameOrOptions extends
+  { schema: keyof DatabaseWithoutInternals }
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][
     EnumName
   ]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
@@ -957,9 +971,9 @@ export type CompositeTypes<
       PublicCompositeTypeNameOrOptions["schema"]
     ]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-} ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]][
+> = PublicCompositeTypeNameOrOptions extends
+  { schema: keyof DatabaseWithoutInternals }
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]][
     "CompositeTypes"
   ][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends
