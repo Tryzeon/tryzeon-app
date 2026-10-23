@@ -13,7 +13,7 @@ void main() {
 
   Future<void> pumpSheet(
     final WidgetTester tester,
-    final GarmentType type,
+    final GarmentType? type,
   ) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
@@ -31,7 +31,7 @@ void main() {
   ) async {
     await pumpSheet(tester, GarmentType.pants);
 
-    expect(find.text('褲子測量方式'), findsOneWidget);
+    expect(find.text('測量方式'), findsOneWidget);
     expect(find.byType(PhotoView), findsOneWidget);
     expect(find.byType(SmoothPageIndicator), findsNothing);
   });
@@ -41,7 +41,6 @@ void main() {
   ) async {
     await pumpSheet(tester, GarmentType.onePiece);
 
-    expect(find.text('連身測量方式'), findsOneWidget);
     expect(find.byType(SmoothPageIndicator), findsOneWidget);
 
     expect(findGuide('assets/images/size_guide/top.webp'), findsOneWidget);
@@ -50,6 +49,24 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
 
     expect(findGuide('assets/images/size_guide/pants.webp'), findsOneWidget);
+  });
+
+  testWidgets('no garment type pages through every guide', (
+    final tester,
+  ) async {
+    await pumpSheet(tester, null);
+
+    expect(find.text('測量方式'), findsOneWidget);
+    expect(find.byType(SmoothPageIndicator), findsOneWidget);
+    expect(findGuide('assets/images/size_guide/top.webp'), findsOneWidget);
+
+    await tester.drag(find.byType(PageView), const Offset(-300, 0));
+    await tester.pump(const Duration(seconds: 1));
+    expect(findGuide('assets/images/size_guide/pants.webp'), findsOneWidget);
+
+    await tester.drag(find.byType(PageView), const Offset(-300, 0));
+    await tester.pump(const Duration(seconds: 1));
+    expect(findGuide('assets/images/size_guide/skirt.webp'), findsOneWidget);
   });
 
   testWidgets('a zoomed guide pans instead of flipping the page', (

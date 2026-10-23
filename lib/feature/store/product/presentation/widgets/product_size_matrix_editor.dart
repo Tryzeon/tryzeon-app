@@ -76,8 +76,7 @@ class ProductSizeMatrixEditor extends HookWidget {
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (garmentType case final type?)
-                  MeasurementGuideButton(garmentType: type),
+                MeasurementGuideButton(garmentType: garmentType),
                 _UnitSelector(
                   selectedUnit: manager.selectedUnit,
                   onUnitChanged: manager.changeUnit,

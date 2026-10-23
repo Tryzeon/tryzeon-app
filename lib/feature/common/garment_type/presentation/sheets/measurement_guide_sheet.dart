@@ -6,7 +6,6 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:tryzeon/core/presentation/widgets/app_sheet.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
-import 'package:tryzeon/feature/common/garment_type/presentation/mappers/garment_type_display.dart';
 import 'package:tryzeon/feature/common/garment_type/presentation/mappers/garment_type_measurement_guide.dart';
 
 const double _guideAspectRatio = 1;
@@ -14,13 +13,13 @@ const double _maxGuideHeightFraction = 0.7;
 const double _maxGuideZoom = 4;
 
 class MeasurementGuideSheet extends HookWidget {
-  const MeasurementGuideSheet({super.key, required this.garmentType});
+  const MeasurementGuideSheet({super.key, this.garmentType});
 
-  final GarmentType garmentType;
+  final GarmentType? garmentType;
 
   static Future<void> show({
     required final BuildContext context,
-    required final GarmentType garmentType,
+    final GarmentType? garmentType,
   }) {
     return showAppSheet<void>(
       context: context,
@@ -36,7 +35,7 @@ class MeasurementGuideSheet extends HookWidget {
     final pageController = usePageController();
 
     return AppSheet(
-      title: '${garmentType.displayName}測量方式',
+      title: '測量方式',
       icon: Icons.straighten_rounded,
       body: Column(
         children: [

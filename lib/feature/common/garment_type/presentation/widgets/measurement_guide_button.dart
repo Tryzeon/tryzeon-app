@@ -1,20 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
-import 'package:tryzeon/feature/common/garment_type/presentation/mappers/garment_type_measurement_guide.dart';
 import 'package:tryzeon/feature/common/garment_type/presentation/sheets/measurement_guide_sheet.dart';
 
 class MeasurementGuideButton extends StatelessWidget {
-  const MeasurementGuideButton({super.key, required this.garmentType});
+  const MeasurementGuideButton({super.key, this.garmentType});
 
-  final GarmentType garmentType;
+  final GarmentType? garmentType;
 
   @override
   Widget build(final BuildContext context) {
-    if (garmentType.measurementGuideAssets.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
     return TextButton.icon(
       onPressed: () => MeasurementGuideSheet.show(
         context: context,

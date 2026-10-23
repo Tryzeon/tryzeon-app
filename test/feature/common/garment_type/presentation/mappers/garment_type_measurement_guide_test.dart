@@ -22,8 +22,14 @@ void main() {
       expect(GarmentType.onePiece.measurementGuideAssets, const [top, pants]);
     });
 
-    test('others has no guide', () {
-      expect(GarmentType.others.measurementGuideAssets, isEmpty);
+    test('others and no type show every guide', () {
+      expect(GarmentType.others.measurementGuideAssets, const [
+        top,
+        pants,
+        skirt,
+      ]);
+      const GarmentType? none = null;
+      expect(none.measurementGuideAssets, const [top, pants, skirt]);
     });
   });
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/garment_type/presentation/sheets/measurement_guide_sheet.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/product_size.dart';
@@ -73,34 +74,38 @@ void main() {
     expect(find.text('長度'), findsNothing);
   });
 
-  testWidgets(
-    'offers the measurement guide only for garment types that have one',
-    (final tester) async {
-      final size = _size(
-        garmentMeasurements: const GarmentMeasurements(length: 60),
-      );
+  testWidgets('opens the measurement guide for the garment type', (
+    final tester,
+  ) async {
+    final size = _size(
+      garmentMeasurements: const GarmentMeasurements(length: 60),
+    );
 
-      await tester.pumpWidget(
-        _table(
-          size: size,
-          columnTypes: const [GarmentMeasurementType.length],
-          garmentType: GarmentType.others,
-        ),
-      );
-      expect(find.text('測量方式'), findsNothing);
+    await tester.pumpWidget(
+      _table(
+        size: size,
+        columnTypes: const [GarmentMeasurementType.length],
+        garmentType: GarmentType.others,
+      ),
+    );
+    await tester.tap(find.text('測量方式'));
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.byType(MeasurementGuideSheet), findsOneWidget);
+    expect(find.byType(SmoothPageIndicator), findsOneWidget);
+    await tester.tapAt(const Offset(10, 10));
+    await tester.pump(const Duration(seconds: 1));
 
-      await tester.pumpWidget(
-        _table(
-          size: size,
-          columnTypes: const [GarmentMeasurementType.length],
-          garmentType: GarmentType.top,
-        ),
-      );
-      await tester.tap(find.text('測量方式'));
-      await tester.pump(const Duration(seconds: 1));
+    await tester.pumpWidget(
+      _table(
+        size: size,
+        columnTypes: const [GarmentMeasurementType.length],
+        garmentType: GarmentType.top,
+      ),
+    );
+    await tester.tap(find.text('測量方式'));
+    await tester.pump(const Duration(seconds: 1));
 
-      expect(find.byType(MeasurementGuideSheet), findsOneWidget);
-      expect(find.text('上衣測量方式'), findsOneWidget);
-    },
-  );
+    expect(find.byType(MeasurementGuideSheet), findsOneWidget);
+    expect(find.byType(SmoothPageIndicator), findsNothing);
+  });
 }
