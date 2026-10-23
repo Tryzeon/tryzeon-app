@@ -325,31 +325,26 @@ class ProductEditNotifier extends _$ProductEditNotifier {
   @override
   ProductMutation? build() => null;
 
-  /// A saved product shows up where it landed: a product saved as 下架 would
-  /// otherwise vanish behind the 上架中 tab the list opens on.
   Future<Result<void, Failure>> create({
     required final ProductDraft draft,
     required final List<File> images,
     required final List<NewSizeItem> sizes,
-  }) async {
-    final result = await _write(
-      ProductMutation.create,
-      () => _products.createProduct(draft: draft, images: images, sizes: sizes),
-    );
-    if (result.isSuccess) {
-      ref.read(productQueryProvider.notifier).updateStatus(draft.status);
-    }
-    return result;
-  }
+  }) => _saveForm(
+    ProductMutation.create,
+    status: draft.status,
+    write: () =>
+        _products.createProduct(draft: draft, images: images, sizes: sizes),
+  );
 
   Future<Result<void, Failure>> update({
     required final Product original,
     required final ProductDraft draft,
     required final List<ImageItem> images,
     required final List<SizeItem> sizes,
-  }) => _write(
+  }) => _saveForm(
     ProductMutation.update,
-    () => _products.updateProduct(
+    status: draft.status,
+    write: () => _products.updateProduct(
       original: original,
       draft: draft,
       images: images,
@@ -369,6 +364,21 @@ class ProductEditNotifier extends _$ProductEditNotifier {
       _write(ProductMutation.delete, () => _products.deleteProduct(product));
 
   ProductsNotifier get _products => ref.read(productsProvider.notifier);
+
+  /// A form save lands the list on the saved product's tab, so a product
+  /// saved as 下架 does not just vanish from the 上架中 tab the list opens on.
+  /// The quick toggle on the card is not a form save and leaves the tab alone.
+  Future<Result<void, Failure>> _saveForm(
+    final ProductMutation mutation, {
+    required final ProductStatus status,
+    required final Future<Result<Object?, Failure>> Function() write,
+  }) => _write(mutation, () async {
+    final result = await write();
+    if (result.isSuccess) {
+      ref.read(productQueryProvider.notifier).updateStatus(status);
+    }
+    return result;
+  });
 
   /// Kept alive for the duration, so a form popped mid-write doesn't dispose
   /// this notifier out from under the pending `state` write.

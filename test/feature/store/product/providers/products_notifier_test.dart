@@ -159,6 +159,19 @@ void main() {
     expect(container.read(productQueryProvider).status, ProductStatus.archived);
   });
 
+  test('an edit that unlists switches the list to the archived tab', () async {
+    await container
+        .read(productEditProvider.notifier)
+        .update(
+          original: product('b'),
+          draft: _draft.copyWith(status: ProductStatus.archived),
+          images: const [],
+          sizes: const [],
+        );
+
+    expect(container.read(productQueryProvider).status, ProductStatus.archived);
+  });
+
   test('a failed create leaves the list tab alone', () async {
     create.result = const Err(NetworkFailure());
 
