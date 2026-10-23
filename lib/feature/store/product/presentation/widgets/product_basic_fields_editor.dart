@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_anchor.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/presentation/widgets/error_view.dart';
 import 'package:tryzeon/core/presentation/widgets/selection_form_field.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
@@ -36,6 +38,8 @@ class ProductBasicFieldsEditor extends HookWidget {
   final AsyncValue<List<ProductCategory>> productCategoriesAsync;
   final VoidCallback onRetryCategories;
 
+  static const purchaseLinkHelper = '留空則顧客會透過你在「設定 → 店家資料」中的訂購聯絡方式私訊下單';
+
   @override
   Widget build(final BuildContext context) {
     final priceFocusNode = useFocusNode();
@@ -46,26 +50,32 @@ class ProductBasicFieldsEditor extends HookWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const _FieldLabel('商品名稱', required: true),
-        TextFormField(
-          controller: nameController,
-          decoration: const InputDecoration(hintText: '輸入商品名稱'),
-          textInputAction: TextInputAction.next,
-          onFieldSubmitted: (final _) => priceFocusNode.requestFocus(),
-          validator: AppValidators.validateProductName,
-          autovalidateMode: AutovalidateMode.onUserInteractionIfError,
+        CoachMarkAnchor(
+          target: CoachMarkTarget.productName,
+          child: TextFormField(
+            controller: nameController,
+            decoration: const InputDecoration(hintText: '輸入商品名稱'),
+            textInputAction: TextInputAction.next,
+            onFieldSubmitted: (final _) => priceFocusNode.requestFocus(),
+            validator: AppValidators.validateProductName,
+            autovalidateMode: AutovalidateMode.onUserInteractionIfError,
+          ),
         ),
         const SizedBox(height: AppSpacing.md),
         const _FieldLabel('價格 · TWD', required: true),
-        TextFormField(
-          controller: priceController,
-          focusNode: priceFocusNode,
-          decoration: const InputDecoration(hintText: '請輸入價格'),
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          textInputAction: TextInputAction.next,
-          onFieldSubmitted: (final _) => purchaseLinkFocusNode.requestFocus(),
-          validator: AppValidators.validatePrice,
-          autovalidateMode: AutovalidateMode.onUserInteractionIfError,
+        CoachMarkAnchor(
+          target: CoachMarkTarget.productPrice,
+          child: TextFormField(
+            controller: priceController,
+            focusNode: priceFocusNode,
+            decoration: const InputDecoration(hintText: '請輸入價格'),
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            textInputAction: TextInputAction.next,
+            onFieldSubmitted: (final _) => purchaseLinkFocusNode.requestFocus(),
+            validator: AppValidators.validatePrice,
+            autovalidateMode: AutovalidateMode.onUserInteractionIfError,
+          ),
         ),
         const SizedBox(height: AppSpacing.md),
         const _FieldLabel('性別', required: true),
@@ -113,19 +123,34 @@ class ProductBasicFieldsEditor extends HookWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         const _FieldLabel('購買連結（選填）'),
-        TextFormField(
-          controller: purchaseLinkController,
-          focusNode: purchaseLinkFocusNode,
-          decoration: const InputDecoration(
-            hintText: 'https://...',
-            helperText: '留空則顧客會透過你在「設定 → 店家資料」中的訂購聯絡方式私訊下單',
-            helperMaxLines: 2,
+        CoachMarkAnchor(
+          target: CoachMarkTarget.productPurchaseLink,
+          child: TextFormField(
+            controller: purchaseLinkController,
+            focusNode: purchaseLinkFocusNode,
+            decoration: const InputDecoration(hintText: 'https://...'),
+            keyboardType: TextInputType.url,
+            textInputAction: TextInputAction.next,
+            onFieldSubmitted: (final _) => descriptionFocusNode.requestFocus(),
+            validator: AppValidators.validateUrl,
+            autovalidateMode: AutovalidateMode.onUserInteractionIfError,
           ),
-          keyboardType: TextInputType.url,
-          textInputAction: TextInputAction.next,
-          onFieldSubmitted: (final _) => descriptionFocusNode.requestFocus(),
-          validator: AppValidators.validateUrl,
-          autovalidateMode: AutovalidateMode.onUserInteractionIfError,
+        ),
+        // Kept outside the field so the coach mark can hug the input box.
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            AppSpacing.xs,
+            AppSpacing.md,
+            0,
+          ),
+          child: Text(
+            purchaseLinkHelper,
+            maxLines: 2,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
         ),
         const SizedBox(height: AppSpacing.md),
         const _FieldLabel('商品描述（選填）'),

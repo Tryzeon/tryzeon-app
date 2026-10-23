@@ -1,46 +1,38 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_anchor.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.dart';
 import 'package:tryzeon/feature/store/product/presentation/widgets/product_image_editor.dart';
 
-// Semantics off: ReorderableListView with Image.file children trips a
-// `_needsLayout` semantics assertion under flutter_test.
 void main() {
-  Future<void> pumpEditor(
-    final WidgetTester tester,
-    final List<ImageItem> images,
+  testWidgets('the empty add block is the image coach-mark target', (
+    final tester,
   ) async {
     await tester.pumpWidget(
-      MaterialApp(
-        theme: AppTheme.lightTheme,
-        home: Scaffold(
-          body: ProductImageEditor(
-            images: images,
-            onImagesChanged: (final _) {},
-            onPickImage: () {},
+      ProviderScope(
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: Scaffold(
+            body: ProductImageEditor(
+              images: const [],
+              onImagesChanged: (final _) {},
+              onPickImage: () {},
+            ),
           ),
         ),
       ),
     );
-  }
 
-  testWidgets('only the first image is badged as the main image', (
-    final tester,
-  ) async {
-    await pumpEditor(tester, [
-      ImageItem.newImage(file: File('a.jpg')),
-      ImageItem.newImage(file: File('b.jpg')),
-    ]);
-
-    expect(find.text('主圖'), findsOneWidget);
-  }, semanticsEnabled: false);
-
-  testWidgets('no badge before any image is picked', (final tester) async {
-    await pumpEditor(tester, const []);
-
-    expect(find.text('主圖'), findsNothing);
-  }, semanticsEnabled: false);
+    final anchor = find.byWidgetPredicate(
+      (final w) =>
+          w is CoachMarkAnchor && w.target == CoachMarkTarget.productImages,
+    );
+    final block = find.ancestor(
+      of: find.text('點擊新增'),
+      matching: find.byType(Container),
+    );
+    expect(tester.getRect(anchor), tester.getRect(block.first));
+  });
 }

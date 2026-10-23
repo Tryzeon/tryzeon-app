@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/failure_extension.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_anchor.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/presentation/widgets/loading_button.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
@@ -14,6 +18,8 @@ import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_siz
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_size_voice_input.dart';
 import 'package:tryzeon/feature/store/product/presentation/widgets/product_form_layout.dart';
 import 'package:tryzeon/feature/store/product/providers/store_product_providers.dart';
+import 'package:tryzeon/feature/store/tutorial/presentation/controllers/store_tutorial_controller.dart';
+import 'package:tryzeon/feature/store/tutorial/presentation/widgets/add_product_tutorial_overlay.dart';
 import 'package:typed_result/typed_result.dart';
 
 class AddProductPage extends HookConsumerWidget {
@@ -35,12 +41,24 @@ class AddProductPage extends HookConsumerWidget {
         : productImageAnalysisProvider(mainImagePath);
     final isAnalyzing =
         analysisProvider != null && ref.watch(analysisProvider).isLoading;
+    final tutorial = ref.read(storeTutorialControllerProvider.notifier);
+    useEffect(() {
+      unawaited(
+        Future.microtask(
+          mainImagePath == null
+              ? tutorial.mainImageRemoved
+              : tutorial.mainImagePicked,
+        ),
+      );
+      return null;
+    }, [mainImagePath]);
     if (analysisProvider != null) {
       ref.listen(analysisProvider, (_, final next) {
         if (next case AsyncData(:final value)) {
           formData.applyAnalysis(value);
           if (value.attributes.hasAdvancedFields) advancedController.expand();
         }
+        tutorial.imageAnalysisChanged(next);
       });
     }
 
@@ -60,6 +78,7 @@ class AddProductPage extends HookConsumerWidget {
       if (!context.mounted) return;
 
       if (result.isSuccess) {
+        tutorial.productCreated();
         context.go(AppRoutes.dashboardProducts);
       } else {
         TopNotification.show(
@@ -69,38 +88,43 @@ class AddProductPage extends HookConsumerWidget {
       }
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('新增商品'),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: AppSpacing.smMd),
-            child: LoadingButton.text(
-              isLoading: isSaving,
-              onPressed: addProduct,
-              child: const Text('儲存'),
+    return AddProductTutorialOverlay(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('新增商品'),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: AppSpacing.smMd),
+              child: CoachMarkAnchor(
+                target: CoachMarkTarget.productSave,
+                child: LoadingButton.text(
+                  isLoading: isSaving,
+                  onPressed: addProduct,
+                  child: const Text('儲存'),
+                ),
+              ),
             ),
+          ],
+        ),
+        body: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
+          child: ProductFormLayout(
+            formData: formData,
+            sizeManager: sizeManager,
+            productCategoriesAsync: productCategoriesAsync,
+            onRetryCategories: () => ref.invalidate(productCategoriesProvider),
+            isAnalyzing: isAnalyzing,
+            advancedController: advancedController,
+            voiceStatus: voiceInput.status,
+            onVoicePressed: voiceInput.toggle,
+            onPickImage: (final remainingCount) async {
+              return ImagePickerHelper.pickImages(
+                context,
+                maxImages: remainingCount,
+              );
+            },
           ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-        padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
-        child: ProductFormLayout(
-          formData: formData,
-          sizeManager: sizeManager,
-          productCategoriesAsync: productCategoriesAsync,
-          onRetryCategories: () => ref.invalidate(productCategoriesProvider),
-          isAnalyzing: isAnalyzing,
-          advancedController: advancedController,
-          voiceStatus: voiceInput.status,
-          onVoicePressed: voiceInput.toggle,
-          onPickImage: (final remainingCount) async {
-            return ImagePickerHelper.pickImages(
-              context,
-              maxImages: remainingCount,
-            );
-          },
         ),
       ),
     );

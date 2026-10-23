@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_anchor.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.dart';
 
@@ -49,7 +51,10 @@ class ProductImageEditor extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             child: GestureDetector(
               onTap: onPickImage,
-              child: _AddPlaceholder(hasError: hasError),
+              child: CoachMarkAnchor(
+                target: CoachMarkTarget.productImages,
+                child: _AddPlaceholder(hasError: hasError),
+              ),
             ),
           )
         else

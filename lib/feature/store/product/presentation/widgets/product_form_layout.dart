@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_anchor.dart';
+import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/presentation/widgets/selection_form_field.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/validators.dart';
@@ -101,7 +103,10 @@ class ProductFormLayout extends StatelessWidget {
                 AppSpacing.lg,
                 0,
               ),
-              child: _AnalyzingIndicator(),
+              child: CoachMarkAnchor(
+                target: CoachMarkTarget.productImageAnalyzing,
+                child: _AnalyzingIndicator(),
+              ),
             ),
           const SizedBox(height: AppSpacing.lg),
           const Divider(),
@@ -150,9 +155,12 @@ class ProductFormLayout extends StatelessWidget {
                 const Expanded(
                   child: _FormSectionLabel(number: '03', title: '尺寸資訊'),
                 ),
-                _SizeVoiceButton(
-                  status: voiceStatus,
-                  onPressed: onVoicePressed,
+                CoachMarkAnchor(
+                  target: CoachMarkTarget.productSizeVoice,
+                  child: _SizeVoiceButton(
+                    status: voiceStatus,
+                    onPressed: onVoicePressed,
+                  ),
                 ),
               ],
             ),
