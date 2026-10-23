@@ -1,6 +1,6 @@
 import { assert, assertEquals, assertStringIncludes } from "@std/assert";
 import { z } from "zod";
-import { asSchema, zodSchema } from "ai";
+import { asSchema, type JSONSchema7, zodSchema } from "ai";
 import {
   answerSchema,
   buildTools,
@@ -10,6 +10,17 @@ import {
 import type { DbClient } from "../supabase.ts";
 
 const CATEGORIES = new Map([["pants", "cat-pants"]]);
+
+function schemaObject(
+  definition: JSONSchema7["items"],
+  label: string,
+): JSONSchema7 {
+  assert(
+    typeof definition === "object" && !Array.isArray(definition),
+    `${label} must be a single schema object`,
+  );
+  return definition;
+}
 
 const rpcMustNotRun = {
   rpc: () => {
@@ -133,11 +144,15 @@ Deno.test("answerSchema accepts each block type with its field", () => {
 });
 
 Deno.test("answerSchema asks Vertex for suggestions as a required string array", async () => {
-  // deno-lint-ignore no-explicit-any
-  const json = (await zodSchema(answerSchema).jsonSchema) as any;
-  assertEquals(json.required.includes("suggestions"), true);
-  assertEquals(json.properties.suggestions.type, "array");
-  assertEquals(json.properties.suggestions.items.type, "string");
+  const json = await zodSchema(answerSchema).jsonSchema;
+  assert(
+    json.required?.includes("suggestions"),
+    "suggestions must be required",
+  );
+  const suggestions = schemaObject(json.properties?.suggestions, "suggestions");
+  assertEquals(suggestions.type, "array");
+  const items = schemaObject(suggestions.items, "suggestions.items");
+  assertEquals(items.type, "string");
 });
 
 Deno.test("answerSchema never rejects an answer over its suggestions", () => {
@@ -159,10 +174,9 @@ Deno.test("search_products explains each style value with its Chinese name", asy
     userId: "u1",
     categoryIdByCode: CATEGORIES,
   });
-  // deno-lint-ignore no-explicit-any
-  const json =
-    (await asSchema(tools.search_products.inputSchema).jsonSchema) as any;
-  const description: string = json.properties.styles.description;
+  const json = await asSchema(tools.search_products.inputSchema).jsonSchema;
+  const { description } = schemaObject(json.properties?.styles, "styles");
+  assert(description, "styles must carry a description");
   assertStringIncludes(description, "basic（簡約基本）");
   assertStringIncludes(description, "homewear（居家舒適）");
 });
