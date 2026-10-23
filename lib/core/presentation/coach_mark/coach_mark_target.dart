@@ -1,1 +1,15 @@
-enum CoachMarkTarget { firstProductTryon, tryonRating }
+enum CoachMarkTarget {
+  firstProductTryon,
+  tryonRating,
+  storeProductsAddFab,
+  storeAccountAddFab,
+  storeFirstProductStats,
+  storePerformance,
+  productImages,
+  productImageAnalyzing,
+  productName,
+  productPrice,
+  productPurchaseLink,
+  productSizeVoice,
+  productSave,
+}
