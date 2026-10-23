@@ -325,14 +325,22 @@ class ProductEditNotifier extends _$ProductEditNotifier {
   @override
   ProductMutation? build() => null;
 
+  /// A saved product shows up where it landed: a product saved as 下架 would
+  /// otherwise vanish behind the 上架中 tab the list opens on.
   Future<Result<void, Failure>> create({
     required final ProductDraft draft,
     required final List<File> images,
     required final List<NewSizeItem> sizes,
-  }) => _write(
-    ProductMutation.create,
-    () => _products.createProduct(draft: draft, images: images, sizes: sizes),
-  );
+  }) async {
+    final result = await _write(
+      ProductMutation.create,
+      () => _products.createProduct(draft: draft, images: images, sizes: sizes),
+    );
+    if (result.isSuccess) {
+      ref.read(productQueryProvider.notifier).updateStatus(draft.status);
+    }
+    return result;
+  }
 
   Future<Result<void, Failure>> update({
     required final Product original,

@@ -145,6 +145,34 @@ void main() {
     },
   );
 
+  test('an unlisted create switches the list to the archived tab', () async {
+    create.result = Ok(product('new', status: ProductStatus.archived));
+
+    await container
+        .read(productEditProvider.notifier)
+        .create(
+          draft: _draft.copyWith(status: ProductStatus.archived),
+          images: const [],
+          sizes: const [],
+        );
+
+    expect(container.read(productQueryProvider).status, ProductStatus.archived);
+  });
+
+  test('a failed create leaves the list tab alone', () async {
+    create.result = const Err(NetworkFailure());
+
+    await container
+        .read(productEditProvider.notifier)
+        .create(
+          draft: _draft.copyWith(status: ProductStatus.archived),
+          images: const [],
+          sizes: const [],
+        );
+
+    expect(container.read(productQueryProvider).status, ProductStatus.active);
+  });
+
   test('updateProduct replaces the product in place', () async {
     await owner().updateProduct(
       original: product('b'),
