@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/bottom_nav_bar_inset.dart';
 import 'package:tryzeon/core/router/shells/store_tab.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/product_category/domain/entities/product_category.dart';
 import 'package:tryzeon/feature/common/product_category/providers/product_category_providers.dart';
 import 'package:tryzeon/feature/store/analytics/domain/entities/product_analytics_summary.dart';
@@ -18,7 +19,8 @@ import '../../../../../support/store_test_doubles.dart';
 
 class _ReviewProduct extends StoreTutorialController {
   @override
-  StoreTutorialState build() => const StoreTutorialState.reviewProduct();
+  StoreTutorialState build() =>
+      const StoreTutorialState.reviewProduct(status: ProductStatus.active);
 }
 
 class _NoCategories extends ProductCategoriesNotifier {
@@ -73,7 +75,7 @@ void main() {
     }
 
     expect(
-      find.text(StoreTutorialOverlay.reviewProductMessage).hitTestable(),
+      find.text(StoreTutorialOverlay.reviewActiveProductMessage).hitTestable(),
       findsOneWidget,
     );
   });

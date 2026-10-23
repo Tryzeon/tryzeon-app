@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 
 part 'store_tutorial_state.freezed.dart';
 
@@ -14,13 +15,16 @@ sealed class StoreTutorialState with _$StoreTutorialState {
   const factory StoreTutorialState.price() = StoreTutorialPrice;
   const factory StoreTutorialState.purchaseLink() = StoreTutorialPurchaseLink;
   const factory StoreTutorialState.sizes() = StoreTutorialSizes;
+  const factory StoreTutorialState.publish() = StoreTutorialPublish;
   const factory StoreTutorialState.save() = StoreTutorialSave;
-  const factory StoreTutorialState.reviewProduct() = StoreTutorialReviewProduct;
+  const factory StoreTutorialState.reviewProduct({
+    required final ProductStatus status,
+  }) = StoreTutorialReviewProduct;
   const factory StoreTutorialState.openAccount() = StoreTutorialOpenAccount;
   const factory StoreTutorialState.viewPerformance() =
       StoreTutorialViewPerformance;
 
-  static const stepCount = 11;
+  static const stepCount = 12;
 
   bool get isFormStep => switch (this) {
     StoreTutorialPickImage() ||
@@ -29,6 +33,7 @@ sealed class StoreTutorialState with _$StoreTutorialState {
     StoreTutorialPrice() ||
     StoreTutorialPurchaseLink() ||
     StoreTutorialSizes() ||
+    StoreTutorialPublish() ||
     StoreTutorialSave() => true,
     _ => false,
   };
@@ -47,9 +52,10 @@ sealed class StoreTutorialState with _$StoreTutorialState {
     StoreTutorialPrice() => 5,
     StoreTutorialPurchaseLink() => 6,
     StoreTutorialSizes() => 7,
-    StoreTutorialSave() => 8,
-    StoreTutorialReviewProduct() => 9,
-    StoreTutorialOpenAccount() => 10,
-    StoreTutorialViewPerformance() => 11,
+    StoreTutorialPublish() => 8,
+    StoreTutorialSave() => 9,
+    StoreTutorialReviewProduct() => 10,
+    StoreTutorialOpenAccount() => 11,
+    StoreTutorialViewPerformance() => 12,
   };
 }

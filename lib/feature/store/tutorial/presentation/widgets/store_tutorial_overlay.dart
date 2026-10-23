@@ -7,6 +7,7 @@ import 'package:tryzeon/core/presentation/coach_mark/coach_mark_hint.dart';
 import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/router/shells/store_tab.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/store/tutorial/presentation/controllers/store_tutorial_controller.dart';
 import 'package:tryzeon/feature/store/tutorial/presentation/state/store_tutorial_state.dart';
 
@@ -20,8 +21,16 @@ class StoreTutorialOverlay extends HookConsumerWidget {
   });
 
   static const addProductMessage = '歡迎加入 Tryzeon！從這裡上架你的第一件商品';
-  static const reviewProductMessage =
+  static const reviewActiveProductMessage =
       '上架完成！顧客現在就能在試衣間試穿它。卡片下方是這件商品的瀏覽、試穿和購買點擊，點商品可以編輯或下架';
+  static const reviewArchivedProductMessage =
+      '已儲存但還沒上架，顧客暫時看不到；想上架時點卡片右下角的「⋯」選「重新上架」。卡片下方是這件商品的瀏覽、試穿和購買點擊';
+
+  static String reviewProductMessage(final ProductStatus status) =>
+      switch (status) {
+        ProductStatus.active => reviewActiveProductMessage,
+        ProductStatus.archived => reviewArchivedProductMessage,
+      };
   static const accountTabMessage = '點下方的「我的」，看整間店的成效總覽';
   static const performanceMessage = '這裡是整間店每個月的試穿、瀏覽和購買點擊，右上角可以切換月份';
 
@@ -56,11 +65,11 @@ class StoreTutorialOverlay extends HookConsumerWidget {
         onSkip: controller.finish,
         stepLabel: tutorial.stepLabel,
       ),
-      StoreTutorialReviewProduct() => CoachMarkHint(
+      StoreTutorialReviewProduct(:final status) => CoachMarkHint(
         key: const ValueKey(CoachMarkTarget.storeFirstProductStats),
         target: CoachMarkTarget.storeFirstProductStats,
         targetGap: AppSpacing.xs,
-        message: reviewProductMessage,
+        message: reviewProductMessage(status),
         placement: CoachMarkPlacement.above,
         onSkip: controller.finish,
         action: (label: CoachMarkHint.nextLabel, onPressed: controller.next),

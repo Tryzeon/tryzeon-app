@@ -41,6 +41,7 @@ const _anchors = [
   (CoachMarkTarget.productPrice, Alignment(0, 0.05)),
   (CoachMarkTarget.productPurchaseLink, Alignment(0, 0.3)),
   (CoachMarkTarget.productSizeVoice, Alignment(0.8, 0.5)),
+  (CoachMarkTarget.productPublish, Alignment(0, 0.75)),
   (CoachMarkTarget.productSave, Alignment(0.9, -0.95)),
 ];
 
@@ -111,7 +112,7 @@ void main() {
     await pumpOverlay(tester, const StoreTutorialState.pickImage());
 
     expect(visible(AddProductTutorialOverlay.pickImageMessage), findsOneWidget);
-    expect(find.text('2 / 11'), findsOneWidget);
+    expect(find.text('2 / 12'), findsOneWidget);
     expect(
       tester
           .widget<CoachMarkHint>(
@@ -143,7 +144,7 @@ void main() {
       findsOneWidget,
     );
     expect(visible(AddProductTutorialOverlay.analyzingMessage), findsOneWidget);
-    expect(find.text('3 / 11'), findsOneWidget);
+    expect(find.text('3 / 12'), findsOneWidget);
     expect(
       tester
           .widget<CoachMarkHint>(
@@ -158,7 +159,7 @@ void main() {
     await pumpOverlay(tester, const StoreTutorialState.reviewInfo());
 
     expect(visible(AddProductTutorialOverlay.reviewMessage), findsOneWidget);
-    expect(find.text('4 / 11'), findsOneWidget);
+    expect(find.text('4 / 12'), findsOneWidget);
 
     await tester.tap(visible(CoachMarkHint.nextLabel));
     expect(tutorial.nexts, 1);
@@ -179,12 +180,32 @@ void main() {
     );
   });
 
-  testWidgets('save shows step 6 without a next button', (final tester) async {
+  testWidgets('save shows step 9 without a next button', (final tester) async {
     await pumpOverlay(tester, const StoreTutorialState.save());
 
     expect(visible(AddProductTutorialOverlay.saveMessage), findsOneWidget);
-    expect(find.text('8 / 11'), findsOneWidget);
+    expect(find.text('9 / 12'), findsOneWidget);
     expect(find.text(CoachMarkHint.nextLabel), findsNothing);
+  });
+
+  testWidgets('the publish step points at the switch and advances with next', (
+    final tester,
+  ) async {
+    await pumpOverlay(tester, const StoreTutorialState.publish());
+
+    expect(visible(AddProductTutorialOverlay.publishMessage), findsOneWidget);
+    expect(find.text('8 / 12'), findsOneWidget);
+    expect(
+      tester
+          .widget<CoachMarkHint>(
+            find.byKey(const ValueKey(CoachMarkTarget.productPublish)),
+          )
+          .placement,
+      CoachMarkPlacement.above,
+    );
+
+    await tester.tap(find.text(CoachMarkHint.nextLabel));
+    expect(tutorial.nexts, 1);
   });
 
   testWidgets('shell steps show nothing here', (final tester) async {
@@ -252,7 +273,7 @@ void main() {
       find.byKey(const ValueKey(CoachMarkTarget.productPrice)),
     );
     expect(visible(AddProductTutorialOverlay.priceMessage), findsOneWidget);
-    expect(find.text('5 / 11'), findsOneWidget);
+    expect(find.text('5 / 12'), findsOneWidget);
     expect(hint.targetRadius, const Radius.circular(AppRadius.input));
     expect(hint.revealTarget, isTrue);
 
@@ -263,6 +284,6 @@ void main() {
   testWidgets('the purchase-link step is step 5', (final tester) async {
     await pumpOverlay(tester, const StoreTutorialState.purchaseLink());
 
-    expect(find.text('6 / 11'), findsOneWidget);
+    expect(find.text('6 / 12'), findsOneWidget);
   });
 }

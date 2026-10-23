@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/store/tutorial/presentation/state/store_tutorial_state.dart';
 
 void main() {
@@ -11,8 +12,9 @@ void main() {
       StoreTutorialState.price(),
       StoreTutorialState.purchaseLink(),
       StoreTutorialState.sizes(),
+      StoreTutorialState.publish(),
       StoreTutorialState.save(),
-      StoreTutorialState.reviewProduct(),
+      StoreTutorialState.reviewProduct(status: ProductStatus.active),
       StoreTutorialState.openAccount(),
       StoreTutorialState.viewPerformance(),
     ];

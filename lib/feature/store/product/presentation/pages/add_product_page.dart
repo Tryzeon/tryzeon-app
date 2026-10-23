@@ -65,10 +65,11 @@ class AddProductPage extends HookConsumerWidget {
     Future<void> addProduct() async {
       if (!formData.validate(context)) return;
 
+      final draft = formData.toDraft();
       final result = await ref
           .read(productEditProvider.notifier)
           .create(
-            draft: formData.toDraft(),
+            draft: draft,
             images: formData.newImageFiles,
             sizes: sizeManager.toNewSizeItems(
               visibleTypes: formData.visibleMeasurementTypes,
@@ -78,7 +79,7 @@ class AddProductPage extends HookConsumerWidget {
       if (!context.mounted) return;
 
       if (result.isSuccess) {
-        tutorial.productCreated();
+        tutorial.productCreated(draft.status);
         context.go(AppRoutes.dashboardProducts);
       } else {
         TopNotification.show(

@@ -21,7 +21,8 @@ class AddProductTutorialOverlay extends HookConsumerWidget {
   static const purchaseLinkMessage =
       '貼上商品購買連結，顧客試穿完就能直接購買；沒有購買連結的話，可以在「設定 → 店家資料」設定聯絡方式，讓顧客私訊你下單';
   static const sizesMessage = '尺寸可以自行填入也可以用說的：按下麥克風，念出每個尺寸的量測數字就能幫你填進表格';
-  static const saveMessage = '都確認好了就按儲存，商品會馬上上架';
+  static const publishMessage = '預設儲存後馬上上架；還沒準備好的話可以先關掉，之後隨時能在商品頁重新上架';
+  static const saveMessage = '都確認好了就按儲存';
 
   final Widget child;
 
@@ -93,6 +94,17 @@ class AddProductTutorialOverlay extends HookConsumerWidget {
         target: CoachMarkTarget.productSizeVoice,
         placement: CoachMarkPlacement.above,
         message: sizesMessage,
+        onSkip: controller.finish,
+        action: next,
+        revealTarget: true,
+        stepLabel: tutorial.stepLabel,
+      ),
+      StoreTutorialPublish() => CoachMarkHint(
+        key: const ValueKey(CoachMarkTarget.productPublish),
+        target: CoachMarkTarget.productPublish,
+        targetRadius: const Radius.circular(AppRadius.input),
+        placement: CoachMarkPlacement.above,
+        message: publishMessage,
         onSkip: controller.finish,
         action: next,
         revealTarget: true,

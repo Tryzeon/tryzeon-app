@@ -6,6 +6,7 @@ import 'package:tryzeon/core/presentation/coach_mark/coach_mark_hint.dart';
 import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/router/shells/store_tab.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/store/tutorial/presentation/controllers/store_tutorial_controller.dart';
 import 'package:tryzeon/feature/store/tutorial/presentation/state/store_tutorial_state.dart';
 import 'package:tryzeon/feature/store/tutorial/presentation/widgets/store_tutorial_overlay.dart';
@@ -121,24 +122,57 @@ void main() {
     expect(hintFor(CoachMarkTarget.storeAccountAddFab), findsOneWidget);
     expect(hintFor(CoachMarkTarget.storeProductsAddFab), findsNothing);
     expect(visible(StoreTutorialOverlay.addProductMessage), findsOneWidget);
-    expect(find.text('1 / 11'), findsOneWidget);
+    expect(find.text('1 / 12'), findsOneWidget);
 
     await tester.tap(visible(CoachMarkHint.skipLabel));
     expect(tutorial.finishes, 1);
   });
 
   testWidgets('step 9 advances with next', (final tester) async {
-    await pumpOverlay(tester, const StoreTutorialState.reviewProduct());
+    await pumpOverlay(
+      tester,
+      const StoreTutorialState.reviewProduct(status: ProductStatus.active),
+    );
 
-    expect(visible(StoreTutorialOverlay.reviewProductMessage), findsOneWidget);
-    expect(find.text('9 / 11'), findsOneWidget);
+    expect(
+      visible(StoreTutorialOverlay.reviewActiveProductMessage),
+      findsOneWidget,
+    );
+    expect(find.text('10 / 12'), findsOneWidget);
 
     await tester.tap(visible(CoachMarkHint.nextLabel));
     expect(tutorial.nexts, 1);
   });
 
+  testWidgets('reviewing an unlisted product explains how to publish it', (
+    final tester,
+  ) async {
+    await pumpOverlay(
+      tester,
+      const StoreTutorialState.reviewProduct(status: ProductStatus.archived),
+    );
+
+    expect(
+      visible(StoreTutorialOverlay.reviewArchivedProductMessage),
+      findsOneWidget,
+    );
+    expect(find.text('10 / 12'), findsOneWidget);
+  });
+
+  // The card menu sits in the card's bottom row beside the stats this hint
+  // rings, so the copy must send the brand there and not to the image corner.
+  test('the archived copy points at the bottom corner that holds the menu', () {
+    expect(
+      StoreTutorialOverlay.reviewArchivedProductMessage,
+      allOf(contains('右下角'), isNot(contains('右上角'))),
+    );
+  });
+
   testWidgets('skipping step 9 finishes the tour', (final tester) async {
-    await pumpOverlay(tester, const StoreTutorialState.reviewProduct());
+    await pumpOverlay(
+      tester,
+      const StoreTutorialState.reviewProduct(status: ProductStatus.active),
+    );
 
     await tester.tap(visible(CoachMarkHint.skipLabel));
 
@@ -152,7 +186,7 @@ void main() {
 
     expect(find.byType(CoachMarkChromeHint), findsOneWidget);
     expect(visible(StoreTutorialOverlay.accountTabMessage), findsOneWidget);
-    expect(find.text('10 / 11'), findsOneWidget);
+    expect(find.text('11 / 12'), findsOneWidget);
     expect(find.text(CoachMarkHint.doneLabel), findsNothing);
 
     await tester.tap(visible(CoachMarkHint.skipLabel));
@@ -182,7 +216,7 @@ void main() {
 
     expect(hintFor(CoachMarkTarget.storePerformance), findsOneWidget);
     expect(visible(StoreTutorialOverlay.performanceMessage), findsOneWidget);
-    expect(find.text('11 / 11'), findsOneWidget);
+    expect(find.text('12 / 12'), findsOneWidget);
     expect(
       tester
           .widget<CoachMarkHint>(hintFor(CoachMarkTarget.storePerformance))
@@ -202,7 +236,10 @@ void main() {
   testWidgets('step 9 sits above the product stats it describes', (
     final tester,
   ) async {
-    await pumpOverlay(tester, const StoreTutorialState.reviewProduct());
+    await pumpOverlay(
+      tester,
+      const StoreTutorialState.reviewProduct(status: ProductStatus.active),
+    );
 
     final hint = tester.widget<CoachMarkHint>(
       hintFor(CoachMarkTarget.storeFirstProductStats),

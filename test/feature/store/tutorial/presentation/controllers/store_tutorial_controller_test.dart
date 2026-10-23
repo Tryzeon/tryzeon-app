@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/providers/store_product_providers.dart';
 import 'package:tryzeon/feature/store/profile/providers/store_profile_providers.dart';
@@ -90,6 +91,7 @@ void main() {
       ..next()
       ..next()
       ..next()
+      ..next()
       ..next();
     return controller;
   }
@@ -142,6 +144,9 @@ void main() {
 
     controller.next();
     expect(state(), const StoreTutorialState.sizes());
+
+    controller.next();
+    expect(state(), const StoreTutorialState.publish());
 
     controller.next();
     expect(state(), const StoreTutorialState.save());
@@ -223,12 +228,18 @@ void main() {
   test('saving the first product shows it, then analytics', () async {
     final controller = await startAtSave();
 
-    controller.productCreated();
-    expect(state(), const StoreTutorialState.reviewProduct());
+    controller.productCreated(ProductStatus.active);
+    expect(
+      state(),
+      const StoreTutorialState.reviewProduct(status: ProductStatus.active),
+    );
 
     products.emit([product('p1')]);
     controller.leaveAddProduct();
-    expect(state(), const StoreTutorialState.reviewProduct());
+    expect(
+      state(),
+      const StoreTutorialState.reviewProduct(status: ProductStatus.active),
+    );
 
     controller.next();
     expect(state(), const StoreTutorialState.openAccount());
@@ -240,7 +251,20 @@ void main() {
     expect(state(), const StoreTutorialState.inactive());
   });
 
-  test('opening the account tab outside step 10 does nothing', () async {
+  test('saving an unlisted first product reviews it as archived', () async {
+    final controller = await startAtSave();
+
+    controller.productCreated(ProductStatus.archived);
+
+    expect(
+      state(),
+      const StoreTutorialState.reviewProduct(status: ProductStatus.archived),
+    );
+    await pumpEventQueue();
+    expect(finished.finishes, 1);
+  });
+
+  test('opening the account tab outside step 11 does nothing', () async {
     final controller = await startAtSave();
 
     controller.accountTabOpened();
@@ -252,9 +276,12 @@ void main() {
     final controller = await startAtSave();
 
     products.emit([product('p1')]);
-    controller.productCreated();
+    controller.productCreated(ProductStatus.active);
 
-    expect(state(), const StoreTutorialState.reviewProduct());
+    expect(
+      state(),
+      const StoreTutorialState.reviewProduct(status: ProductStatus.active),
+    );
   });
 
   test(
@@ -262,19 +289,22 @@ void main() {
     () async {
       final controller = await startAtSave();
 
-      controller.productCreated();
+      controller.productCreated(ProductStatus.active);
       products.startReload();
       await pumpEventQueue();
       controller.leaveAddProduct();
 
-      expect(state(), const StoreTutorialState.reviewProduct());
+      expect(
+        state(),
+        const StoreTutorialState.reviewProduct(status: ProductStatus.active),
+      );
     },
   );
 
   test('a product created outside the form steps changes nothing', () async {
     final controller = await start();
 
-    controller.productCreated();
+    controller.productCreated(ProductStatus.active);
 
     expect(state(), const StoreTutorialState.addProduct());
   });
@@ -306,11 +336,14 @@ void main() {
     () async {
       final controller = await startAtSave();
 
-      controller.productCreated();
+      controller.productCreated(ProductStatus.active);
       await pumpEventQueue();
 
       expect(finished.finishes, 1);
-      expect(state(), const StoreTutorialState.reviewProduct());
+      expect(
+        state(),
+        const StoreTutorialState.reviewProduct(status: ProductStatus.active),
+      );
 
       controller.next();
       expect(state(), const StoreTutorialState.openAccount());
@@ -320,7 +353,7 @@ void main() {
   test('finishing after the save persists only once', () async {
     final controller = await startAtSave();
     controller
-      ..productCreated()
+      ..productCreated(ProductStatus.active)
       ..next();
 
     await controller.finish();

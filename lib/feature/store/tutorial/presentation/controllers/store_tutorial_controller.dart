@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/providers/store_product_providers.dart';
 import 'package:tryzeon/feature/store/tutorial/presentation/state/store_tutorial_finished_provider.dart';
@@ -66,9 +67,9 @@ class StoreTutorialController extends _$StoreTutorialController {
   /// Persists right away, like the personal tour's first try-on, so a brand
   /// who leaves during the last steps never sees the tour again; those steps
   /// only live in this session.
-  void productCreated() {
+  void productCreated(final ProductStatus status) {
     if (!state.isFormStep) return;
-    state = const StoreTutorialState.reviewProduct();
+    state = StoreTutorialState.reviewProduct(status: status);
     unawaited(_persist());
   }
 
@@ -77,7 +78,8 @@ class StoreTutorialController extends _$StoreTutorialController {
       StoreTutorialReviewInfo() => const StoreTutorialState.price(),
       StoreTutorialPrice() => const StoreTutorialState.purchaseLink(),
       StoreTutorialPurchaseLink() => const StoreTutorialState.sizes(),
-      StoreTutorialSizes() => const StoreTutorialState.save(),
+      StoreTutorialSizes() => const StoreTutorialState.publish(),
+      StoreTutorialPublish() => const StoreTutorialState.save(),
       StoreTutorialReviewProduct() => const StoreTutorialState.openAccount(),
       final current => current,
     };
