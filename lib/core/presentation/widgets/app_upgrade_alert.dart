@@ -10,9 +10,28 @@ Upgrader createAppUpgrader({
   final http.Client? client,
 }) => Upgrader(
   durationUntilAlertAgain: Duration.zero,
+  messages: _TraditionalChineseUpgraderMessages(),
   upgraderOS: upgraderOS,
   client: client,
 );
+
+/// upgrader's built-in `zh` messages are Simplified Chinese.
+class _TraditionalChineseUpgraderMessages extends UpgraderMessages {
+  _TraditionalChineseUpgraderMessages() : super(code: 'zh');
+
+  @override
+  String message(final UpgraderMessage messageKey) => switch (messageKey) {
+    UpgraderMessage.title => '有新版本',
+    UpgraderMessage.body =>
+      '{{appName}} 已推出 {{currentAppStoreVersion}} 版，你目前使用的是 '
+          '{{currentInstalledVersion}} 版。',
+    UpgraderMessage.prompt => '請更新至最新版本以繼續使用。',
+    UpgraderMessage.releaseNotes => '更新內容',
+    UpgraderMessage.buttonTitleUpdate => '立即更新',
+    UpgraderMessage.buttonTitleLater => '稍後',
+    UpgraderMessage.buttonTitleIgnore => '忽略',
+  };
+}
 
 class AppUpgradeAlert extends StatelessWidget {
   const AppUpgradeAlert({

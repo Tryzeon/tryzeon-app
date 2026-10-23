@@ -8,6 +8,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   smooth_page_indicator: ^2.0.1
   image_picker: ^1.0.4
   adaptive_platform_ui: ^0.1.95

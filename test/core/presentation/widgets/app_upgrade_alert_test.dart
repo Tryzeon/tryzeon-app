@@ -55,16 +55,18 @@ Future<void> pumpAlert(
 }
 
 void main() {
-  testWidgets('a newer store version offers only Update Now', (
-    final tester,
-  ) async {
-    await pumpAlert(tester, savedPrefs: {});
+  testWidgets(
+    'a newer store version offers only Update Now, in Traditional Chinese',
+    (final tester) async {
+      await pumpAlert(tester, savedPrefs: {});
 
-    expect(find.byType(AlertDialog), findsOneWidget);
-    expect(find.text('UPDATE NOW'), findsOneWidget);
-    expect(find.text('IGNORE'), findsNothing);
-    expect(find.text('LATER'), findsNothing);
-  });
+      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(find.text('有新版本'), findsOneWidget);
+      expect(find.text('立即更新'), findsOneWidget);
+      expect(find.text('忽略'), findsNothing);
+      expect(find.text('稍後'), findsNothing);
+    },
+  );
 
   testWidgets(
     'the dialog comes back on every launch, however recent the last',
