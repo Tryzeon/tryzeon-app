@@ -2,7 +2,10 @@ import "@supabase/functions-js/edge-runtime.d.ts";
 import { type DbClient, getAdminClient } from "../_shared/supabase.ts";
 import { json } from "../_shared/http.ts";
 import { resolveSubscription } from "./entitlements.ts";
-import { fetchSubscriber } from "./revenuecat-api.ts";
+import {
+  fetchCustomerSubscriptions,
+  type RevenueCatProject,
+} from "./revenuecat-api.ts";
 import { isAuthorized } from "./authorization.ts";
 
 function requireEnv(name: string): string {
@@ -12,7 +15,10 @@ function requireEnv(name: string): string {
 }
 
 const WEBHOOK_SECRET = requireEnv("REVENUECAT_WEBHOOK_SECRET");
-const API_KEY = requireEnv("REVENUECAT_SECRET_API_KEY");
+const REVENUECAT_PROJECT: RevenueCatProject = {
+  projectId: requireEnv("REVENUECAT_PROJECT_ID"),
+  apiKey: requireEnv("REVENUECAT_SECRET_API_KEY"),
+};
 
 const SUBSCRIPTIONS_TABLE = "subscriptions";
 
@@ -56,11 +62,11 @@ async function syncSubscription(
     return;
   }
 
-  const subscriber = await fetchSubscriber(API_KEY, appUserId);
-  const { tier, periodStart, periodEnd } = resolveSubscription(
-    subscriber,
-    new Date(),
+  const subscriptions = await fetchCustomerSubscriptions(
+    REVENUECAT_PROJECT,
+    appUserId,
   );
+  const { tier, periodStart, periodEnd } = resolveSubscription(subscriptions);
 
   const { error } = await admin
     .from(SUBSCRIPTIONS_TABLE)

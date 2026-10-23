@@ -1,20 +1,16 @@
-/** One entry of `subscriber.entitlements` in `GET /v1/subscribers/{id}`. */
-export interface SubscriberEntitlement {
-  expires_date?: string | null;
-  grace_period_expires_date?: string | null;
-  product_identifier?: string;
-  /** The latest purchase or renewal, i.e. the start of the current period. */
-  purchase_date: string;
-}
-
-export interface Subscriber {
-  entitlements?: Record<string, SubscriberEntitlement> | null;
+export interface Subscription {
+  /** RevenueCat's verdict, already covering trials, grace periods and pauses. */
+  gives_access: boolean;
+  current_period_starts_at: number;
+  current_period_ends_at: number | null;
+  entitlements: { items: { lookup_key: string }[] };
 }
 
 /**
- * Entitlement ids in RevenueCat, which are also the `subscription_tiers.id`
- * values — the two are deliberately the same string so no mapping table is
- * needed. Mirrors `AppConstants.entitlement*Id` on the client.
+ * Entitlement lookup keys in RevenueCat, which are also the
+ * `subscription_tiers.id` values — the two are deliberately the same string so
+ * no mapping table is needed. Mirrors `AppConstants.entitlement*Id` on the
+ * client.
  */
 export const SUBSCRIPTION_TIER = {
   free: "free",
@@ -31,23 +27,6 @@ const TIER_PRECEDENCE: readonly SubscriptionTier[] = [
   SUBSCRIPTION_TIER.pro,
 ];
 
-/**
- * A missing `expires_date` is an entitlement that never ends — a lifetime
- * purchase or a dashboard grant. A billing-retry grace period is still access,
- * so it extends the deadline rather than being a state of its own.
- */
-function isActive(entitlement: SubscriberEntitlement, now: Date): boolean {
-  const expires = entitlement.expires_date;
-  if (!expires) return true;
-
-  const grace = entitlement.grace_period_expires_date;
-  const deadline = grace
-    ? Math.max(Date.parse(expires), Date.parse(grace))
-    : Date.parse(expires);
-
-  return Number.isFinite(deadline) && deadline > now.getTime();
-}
-
 export interface ResolvedSubscription {
   tier: SubscriptionTier;
   periodStart: string | null;
@@ -60,25 +39,51 @@ const FREE_SUBSCRIPTION: ResolvedSubscription = {
   periodEnd: null,
 };
 
+function grants(subscription: Subscription, tier: SubscriptionTier): boolean {
+  return subscription.entitlements.items.some((entitlement) =>
+    entitlement.lookup_key === tier
+  );
+}
+
+function periodEndMs(subscription: Subscription): number {
+  return subscription.current_period_ends_at ?? Infinity;
+}
+
+function toIso(ms: number | null): string | null {
+  return ms === null ? null : new Date(ms).toISOString();
+}
+
 /**
- * The customer's whole entitlement set decides the tier, never a single event.
- * RevenueCat does not guarantee webhook ordering, and one entitlement expiring
- * says nothing about the others — a sandbox subscription lapsing while a
- * dashboard grant is active must not drop the customer to free.
+ * The customer's whole subscription set decides the tier, never a single
+ * event. RevenueCat does not guarantee webhook ordering, and one subscription
+ * expiring says nothing about the others — a sandbox subscription lapsing while
+ * a promotional grant is active must not drop the customer to free. When
+ * several subscriptions grant the best tier, the one running longest supplies
+ * the period, as that is when access actually ends.
  */
 export function resolveSubscription(
-  subscriber: Subscriber,
-  now: Date,
+  subscriptions: readonly Subscription[],
 ): ResolvedSubscription {
-  const entitlements = subscriber.entitlements ?? {};
+  const granting = subscriptions.filter((subscription) =>
+    subscription.gives_access
+  );
 
   for (const tier of TIER_PRECEDENCE) {
-    const entitlement = entitlements[tier];
-    if (entitlement && isActive(entitlement, now)) {
+    const longest = granting
+      .filter((subscription) => grants(subscription, tier))
+      .reduce<Subscription | undefined>(
+        (best, subscription) =>
+          !best || periodEndMs(subscription) > periodEndMs(best)
+            ? subscription
+            : best,
+        undefined,
+      );
+
+    if (longest) {
       return {
         tier,
-        periodStart: entitlement.purchase_date,
-        periodEnd: entitlement.expires_date ?? null,
+        periodStart: toIso(longest.current_period_starts_at),
+        periodEnd: toIso(longest.current_period_ends_at),
       };
     }
   }

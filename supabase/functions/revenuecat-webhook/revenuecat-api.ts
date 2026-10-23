@@ -1,6 +1,7 @@
-import type { Subscriber } from "./entitlements.ts";
+import type { Subscription } from "./entitlements.ts";
 
-const SUBSCRIBERS_ENDPOINT = "https://api.revenuecat.com/v1/subscribers";
+const API_ORIGIN = "https://api.revenuecat.com";
+const PAGE_SIZE = 100;
 
 export class RevenueCatApiError extends Error {
   constructor(readonly status: number, message: string) {
@@ -9,33 +10,54 @@ export class RevenueCatApiError extends Error {
   }
 }
 
+export interface RevenueCatProject {
+  projectId: string;
+  /** A v2 secret key with `customer_information:subscriptions:read`. */
+  apiKey: string;
+}
+
+interface SubscriptionPage {
+  items: Subscription[];
+  next_page: string | null;
+}
+
 /**
  * The customer's current state, which is the only thing the webhook trusts.
- * The response merges sandbox and production receipts under one customer, so a
- * TestFlight tester and a paying user resolve through the same path.
+ * Leaving out the `environment` filter returns sandbox and production
+ * subscriptions together, so a TestFlight tester and a paying user resolve
+ * through the same path. Promotional grants are subscriptions too.
  */
-export async function fetchSubscriber(
-  apiKey: string,
+export async function fetchCustomerSubscriptions(
+  project: RevenueCatProject,
   appUserId: string,
-): Promise<Subscriber> {
-  const response = await fetch(
-    `${SUBSCRIBERS_ENDPOINT}/${encodeURIComponent(appUserId)}`,
-    {
+): Promise<Subscription[]> {
+  const subscriptions: Subscription[] = [];
+  let url: string | null = `${API_ORIGIN}/v2/projects/${
+    encodeURIComponent(project.projectId)
+  }/customers/${
+    encodeURIComponent(appUserId)
+  }/subscriptions?limit=${PAGE_SIZE}`;
+
+  while (url) {
+    const response: Response = await fetch(url, {
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${project.apiKey}`,
         Accept: "application/json",
       },
-    },
-  );
+    });
 
-  if (!response.ok) {
-    throw new RevenueCatApiError(
-      response.status,
-      `RevenueCat subscriber fetch failed (${response.status}): ${await response
-        .text()}`,
-    );
+    if (!response.ok) {
+      throw new RevenueCatApiError(
+        response.status,
+        `RevenueCat subscriptions fetch failed (${response.status}): ${await response
+          .text()}`,
+      );
+    }
+
+    const page = await response.json() as SubscriptionPage;
+    subscriptions.push(...page.items);
+    url = page.next_page ? new URL(page.next_page, API_ORIGIN).href : null;
   }
 
-  const body = await response.json() as { subscriber?: Subscriber };
-  return body.subscriber ?? {};
+  return subscriptions;
 }

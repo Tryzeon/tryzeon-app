@@ -2,13 +2,13 @@ import { assertEquals } from "@std/assert";
 import {
   type ResolvedSubscription,
   resolveSubscription,
-  type Subscriber,
+  type Subscription,
 } from "./entitlements.ts";
 
-const NOW = new Date("2026-08-30T00:00:00Z");
-const PURCHASED = "2026-08-15T09:30:00Z";
-const FUTURE = "2026-09-15T09:30:00Z";
-const PAST = "2026-08-29T00:00:00Z";
+const STARTED = Date.parse("2026-08-15T09:30:00Z");
+const ENDS = Date.parse("2026-09-15T09:30:00Z");
+const ENDS_LATER = Date.parse("2026-10-15T09:30:00Z");
+const LAPSED = Date.parse("2026-08-29T00:00:00Z");
 
 const FREE: ResolvedSubscription = {
   tier: "free",
@@ -16,100 +16,99 @@ const FREE: ResolvedSubscription = {
   periodEnd: null,
 };
 
-Deno.test("a lapsed entitlement does not cancel an active one", () => {
-  const subscriber: Subscriber = {
-    entitlements: {
-      pro: { purchase_date: "2026-07-29T00:00:00Z", expires_date: PAST },
-      max: { purchase_date: PURCHASED, expires_date: null },
-    },
+function subscription(
+  lookupKeys: string[],
+  overrides: Partial<Subscription> = {},
+): Subscription {
+  return {
+    gives_access: true,
+    current_period_starts_at: STARTED,
+    current_period_ends_at: ENDS,
+    entitlements: { items: lookupKeys.map((lookup_key) => ({ lookup_key })) },
+    ...overrides,
   };
+}
 
-  assertEquals(resolveSubscription(subscriber, NOW), {
-    tier: "max",
-    periodStart: PURCHASED,
-    periodEnd: null,
-  });
-});
+Deno.test("a subscription without access does not cancel one with access", () => {
+  const subscriptions = [
+    subscription(["max"], { gives_access: false }),
+    subscription(["pro"]),
+  ];
 
-Deno.test("the best held entitlement wins and carries its own period", () => {
-  const subscriber: Subscriber = {
-    entitlements: {
-      pro: {
-        purchase_date: "2026-08-01T00:00:00Z",
-        expires_date: "2026-09-01T00:00:00Z",
-      },
-      max: { purchase_date: PURCHASED, expires_date: FUTURE },
-    },
-  };
-
-  assertEquals(resolveSubscription(subscriber, NOW), {
-    tier: "max",
-    periodStart: PURCHASED,
-    periodEnd: FUTURE,
-  });
-});
-
-Deno.test("a grace period still counts as access and keeps the lapsed period end", () => {
-  const subscriber: Subscriber = {
-    entitlements: {
-      pro: {
-        purchase_date: "2026-07-29T00:00:00Z",
-        expires_date: PAST,
-        grace_period_expires_date: FUTURE,
-      },
-    },
-  };
-
-  assertEquals(resolveSubscription(subscriber, NOW), {
+  assertEquals(resolveSubscription(subscriptions), {
     tier: "pro",
-    periodStart: "2026-07-29T00:00:00Z",
-    periodEnd: PAST,
+    periodStart: "2026-08-15T09:30:00.000Z",
+    periodEnd: "2026-09-15T09:30:00.000Z",
   });
 });
 
-Deno.test("an entitlement with no expiry has no period end", () => {
-  const subscriber: Subscriber = {
-    entitlements: { pro: { purchase_date: PURCHASED } },
-  };
+Deno.test("the best granted tier wins and carries its own period", () => {
+  const subscriptions = [
+    subscription(["pro"], { current_period_ends_at: ENDS_LATER }),
+    subscription(["max"]),
+  ];
 
-  assertEquals(resolveSubscription(subscriber, NOW), {
+  assertEquals(resolveSubscription(subscriptions), {
+    tier: "max",
+    periodStart: "2026-08-15T09:30:00.000Z",
+    periodEnd: "2026-09-15T09:30:00.000Z",
+  });
+});
+
+Deno.test("a subscription granting several entitlements resolves to the best", () => {
+  assertEquals(resolveSubscription([subscription(["pro", "max"])]).tier, "max");
+});
+
+Deno.test("the longest-running subscription of the best tier supplies the period", () => {
+  const subscriptions = [
+    subscription(["pro"]),
+    subscription(["pro"], {
+      current_period_starts_at: ENDS,
+      current_period_ends_at: ENDS_LATER,
+    }),
+  ];
+
+  assertEquals(resolveSubscription(subscriptions), {
     tier: "pro",
-    periodStart: PURCHASED,
-    periodEnd: null,
+    periodStart: "2026-09-15T09:30:00.000Z",
+    periodEnd: "2026-10-15T09:30:00.000Z",
   });
 });
 
-Deno.test("every entitlement expired resolves to free with no period", () => {
-  const subscriber: Subscriber = {
-    entitlements: {
-      pro: { purchase_date: "2026-07-29T00:00:00Z", expires_date: PAST },
-      max: { purchase_date: "2026-07-29T00:00:00Z", expires_date: PAST },
-    },
-  };
+Deno.test("access past the period end keeps the lapsed period end", () => {
+  const subscriptions = [
+    subscription(["pro"], { current_period_ends_at: LAPSED }),
+  ];
 
-  assertEquals(resolveSubscription(subscriber, NOW), FREE);
+  assertEquals(resolveSubscription(subscriptions), {
+    tier: "pro",
+    periodStart: "2026-08-15T09:30:00.000Z",
+    periodEnd: "2026-08-29T00:00:00.000Z",
+  });
 });
 
-Deno.test("a customer with no entitlements resolves to free", () => {
-  assertEquals(resolveSubscription({}, NOW), FREE);
+Deno.test("a subscription with no period end has no period end", () => {
+  const subscriptions = [
+    subscription(["max"]),
+    subscription(["max"], { current_period_ends_at: null }),
+  ];
+
+  assertEquals(resolveSubscription(subscriptions).periodEnd, null);
 });
 
-Deno.test("an unknown entitlement id is ignored", () => {
-  const subscriber: Subscriber = {
-    entitlements: {
-      legacy_unlimited: { purchase_date: PURCHASED, expires_date: FUTURE },
-    },
-  };
+Deno.test("no subscription with access resolves to free with no period", () => {
+  const subscriptions = [
+    subscription(["pro"], { gives_access: false }),
+    subscription(["max"], { gives_access: false }),
+  ];
 
-  assertEquals(resolveSubscription(subscriber, NOW), FREE);
+  assertEquals(resolveSubscription(subscriptions), FREE);
 });
 
-Deno.test("an unparseable expiry is not treated as access", () => {
-  const subscriber: Subscriber = {
-    entitlements: {
-      max: { purchase_date: PURCHASED, expires_date: "not a date" },
-    },
-  };
+Deno.test("a customer with no subscriptions resolves to free", () => {
+  assertEquals(resolveSubscription([]), FREE);
+});
 
-  assertEquals(resolveSubscription(subscriber, NOW), FREE);
+Deno.test("an unknown lookup key is ignored", () => {
+  assertEquals(resolveSubscription([subscription(["legacy_unlimited"])]), FREE);
 });
