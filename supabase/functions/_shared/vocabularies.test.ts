@@ -6,6 +6,8 @@ import {
   GARMENT_TYPE_VALUES,
   GENDER_VALUES,
   SEASON_VALUES,
+  STYLE_GUIDE,
+  STYLE_VALUES,
   THICKNESS_VALUES,
 } from "./vocabularies.ts";
 
@@ -43,4 +45,33 @@ Deno.test("no vocabulary is empty", () => {
   ) {
     assertEquals(v.length > 0, true);
   }
+});
+
+Deno.test("styles are the thirteen shopper-facing styles in display order", () => {
+  assertEquals([...STYLE_VALUES], [
+    "basic",
+    "casual",
+    "business",
+    "elegant",
+    "sweet",
+    "streetwear",
+    "sporty",
+    "vintage",
+    "preppy",
+    "edgy",
+    "natural",
+    "party",
+    "homewear",
+  ]);
+});
+
+Deno.test("every style carries a Chinese name and a description", () => {
+  assertEquals(Object.keys(STYLE_GUIDE).sort(), [...STYLE_VALUES].sort());
+  for (const value of STYLE_VALUES) {
+    const { name, description } = STYLE_GUIDE[value];
+    assertEquals(name.length > 0, true, `${value} has no name`);
+    assertEquals(description.length > 0, true, `${value} has no description`);
+  }
+  assertEquals(STYLE_GUIDE.basic.name, "簡約基本");
+  assertEquals(STYLE_GUIDE.homewear.name, "居家舒適");
 });

@@ -378,7 +378,7 @@ const SHOP_ROW = {
   elasticity: "low",
   fit: "regular",
   thickness: null,
-  styles: ["minimalist"],
+  styles: ["basic"],
   seasons: [],
   gender: "female",
   product_variants: [
@@ -418,7 +418,7 @@ Deno.test("toSearchResultItem keeps what the model judges and cites on", () => {
     material: "棉",
     fit: "regular",
     elasticity: "low",
-    styles: ["minimalist"],
+    styles: ["basic"],
   });
 });
 
