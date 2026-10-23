@@ -21,7 +21,6 @@ import 'package:tryzeon/core/router/app_router.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/firebase_options.dart';
-import 'package:upgrader/upgrader.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -100,9 +99,7 @@ class Tryzeon extends HookConsumerWidget {
       }
     });
 
-    final upgrader = useMemoized(
-      () => Upgrader(durationUntilAlertAgain: const Duration(days: 3)),
-    );
+    final upgrader = useMemoized(createAppUpgrader);
 
     final router = ref.watch(appRouterProvider);
 
