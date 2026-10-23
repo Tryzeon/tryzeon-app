@@ -31,12 +31,6 @@ export type Unit = (typeof UNIT_VALUES)[number];
 
 const isUnit = (v: unknown): v is Unit => (UNIT_VALUES as readonly unknown[]).includes(v);
 
-export const TO_CM_FACTOR: Record<string, number> = {
-  centimeter: 1,
-  cun: 3.03,
-  inch: 2.54,
-};
-
 /// Only the ingestion path normalizes: what a store owner types by hand is kept
 /// verbatim, because a custom size name is their decision. Values must stay in
 /// sync with StandardSizeLabel.display in
@@ -80,7 +74,6 @@ const SUPPORTED_MIME = new Set([
   "audio/wav",
   "audio/x-m4a",
 ]);
-const MAX_CM = 300;
 
 /**
  * 寸 and 吋 are both read "cùn", so a bare one cannot say 台寸 from inch. The
@@ -205,21 +198,6 @@ export interface ParsedSize {
   body_measurement_ranges: Record<string, { min: number; max: number }>;
 }
 
-/**
- * Upper bounds are the app's `BodyMeasurementType` maxima, so a misheard
- * "1600" is dropped here rather than failing form validation after it has
- * been typed into the chart.
- */
-const BODY_MEASUREMENT_RANGE_MAX: Record<(typeof BODY_MEASUREMENT_RANGE_KEYS)[number], number> = {
-  height: 250,
-  weight: 300,
-  shoulder: 70,
-  chest: 200,
-  waist: 200,
-  hips: 200,
-  thigh: 120,
-};
-
 const isMeasurementKey = (v: unknown): v is (typeof MEASUREMENT_KEYS)[number] =>
   (MEASUREMENT_KEYS as readonly unknown[]).includes(v);
 
@@ -238,8 +216,6 @@ function normalizeGarmentMeasurements(raw: unknown): ParsedSize["garment_measure
   for (const e of entries(raw)) {
     const value = toNumber(e.value);
     if (!isMeasurementKey(e.type) || !isUnit(e.unit) || value === null) continue;
-    const cm = value * TO_CM_FACTOR[e.unit];
-    if (cm <= 0 || cm > MAX_CM) continue;
     out[e.type] = { value, unit: e.unit };
   }
   return out;
@@ -251,7 +227,6 @@ function normalizeBodyMeasurementRanges(raw: unknown): ParsedSize["body_measurem
     const min = toNumber(e.min);
     const max = toNumber(e.max);
     if (!isBodyMeasurementRangeKey(e.type) || min === null || max === null) continue;
-    if (min <= 0 || max < min || max > BODY_MEASUREMENT_RANGE_MAX[e.type]) continue;
     out[e.type] = { min, max };
   }
   return out;
@@ -260,6 +235,10 @@ function normalizeBodyMeasurementRanges(raw: unknown): ParsedSize["body_measurem
 /**
  * Turns the model's typed-entry arrays back into the keyed shape the app reads,
  * so the schema's layout stays a detail between this function and the model.
+ *
+ * Only the shape is checked here. Whether a value is plausible is the size
+ * form's call, for spoken and typed values alike, so a misheard number reaches
+ * the store owner as a flagged cell instead of vanishing.
  */
 export function normalizeParsedSizes(raw: unknown): ParsedSize[] {
   return entries((raw as { sizes?: unknown })?.sizes).map((s) => ({

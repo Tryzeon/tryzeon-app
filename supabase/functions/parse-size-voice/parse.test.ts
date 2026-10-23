@@ -100,20 +100,22 @@ Deno.test("normalizeParsedSizes keeps the last value of a measurement spoken twi
   });
 });
 
-Deno.test("normalizeParsedSizes drops a garment measurement outside 0–300 cm once converted", () => {
+// Plausibility is the size form's call, so a misheard number reaches the store
+// owner as a flagged cell rather than vanishing here.
+Deno.test("normalizeParsedSizes passes an implausible garment value through", () => {
   const parsed = normalizeParsedSizes({
     sizes: [{
       name: "M",
       garment_measurements: [
-        { type: "length", value: 120, unit: "inch" },
+        { type: "waist_circumference", value: 2800, unit: "centimeter" },
         { type: "chest_circumference", value: 0, unit: "centimeter" },
-        { type: "shoulder_width", value: 14, unit: "cun" },
       ],
       body_measurement_ranges: [],
     }],
   });
   assertEquals(parsed[0].garment_measurements, {
-    shoulder_width: { value: 14, unit: "cun" },
+    waist_circumference: { value: 2800, unit: "centimeter" },
+    chest_circumference: { value: 0, unit: "centimeter" },
   });
 });
 
@@ -164,20 +166,21 @@ Deno.test("normalizeParsedSizes accepts a single-point body measurement range", 
   });
 });
 
-Deno.test("normalizeParsedSizes drops a body range that is reversed, non-positive, implausibly large or unknown", () => {
+Deno.test("normalizeParsedSizes passes an implausible body range through and drops an unknown type", () => {
   const parsed = normalizeParsedSizes({
     sizes: [{
       name: "M",
       garment_measurements: [],
       body_measurement_ranges: [
-        { type: "height", min: 170, max: 160 },
-        { type: "weight", min: 0, max: 60 },
-        { type: "chest", min: 88, max: 201 },
+        { type: "height", min: 170, max: 1600 },
         { type: "arm", min: 20, max: 30 },
+        { type: "weight", min: "50", max: 60 },
       ],
     }],
   });
-  assertEquals(parsed[0].body_measurement_ranges, {});
+  assertEquals(parsed[0].body_measurement_ranges, {
+    height: { min: 170, max: 1600 },
+  });
 });
 
 Deno.test("normalizeParsedSizes treats missing arrays as empty", () => {
