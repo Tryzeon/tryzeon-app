@@ -1,5 +1,6 @@
 import { assertEquals } from "@std/assert";
 import { buildPrompt, buildSchema, toResponse } from "./analysis.ts";
+import { STYLE_GUIDE, STYLE_VALUES } from "../_shared/vocabularies.ts";
 
 const CATEGORY_OPTIONS = [
   { code: "shirt_polo", name: "襯衫·POLO衫" },
@@ -28,7 +29,7 @@ const fullAnswer = {
   name: "白色寬鬆棉質襯衫",
   category_code: "shirt_polo",
   gender: "female",
-  styles: ["korean", "minimalist"],
+  styles: ["casual", "basic"],
   seasons: ["spring", "summer"],
   material: "棉",
   fit: "loose",
@@ -41,7 +42,7 @@ Deno.test("toResponse passes a fully answered analysis through", () => {
     name: "白色寬鬆棉質襯衫",
     categoryId: "cat-shirt",
     gender: "female",
-    styles: ["korean", "minimalist"],
+    styles: ["casual", "basic"],
     seasons: ["spring", "summer"],
     material: "棉",
     fit: "loose",
@@ -122,15 +123,15 @@ Deno.test("toResponse caps styles at 3 and drops duplicates and unknown values",
   const result = toResponse({
     ...fullAnswer,
     styles: [
-      "korean",
-      "korean",
-      "minimalist",
       "casual",
+      "casual",
+      "basic",
+      "sweet",
       "sporty",
       "not-a-style",
     ],
   }, CATEGORIES);
-  assertEquals(result.styles, ["korean", "minimalist", "casual"]);
+  assertEquals(result.styles, ["casual", "basic", "sweet"]);
 });
 
 Deno.test("toResponse nulls a category code that no longer exists", () => {
@@ -189,6 +190,19 @@ Deno.test("buildPrompt spells out every value the schema accepts", () => {
       );
     }
   }
+});
+
+Deno.test("buildPrompt describes each style so the model labels by meaning, not by name", () => {
+  const prompt = buildPrompt(CATEGORY_OPTIONS);
+  for (const value of STYLE_VALUES) {
+    const { name, description } = STYLE_GUIDE[value];
+    assertEquals(
+      prompt.includes(`${value}（${name}）：${description}`),
+      true,
+      `prompt never describes ${value}`,
+    );
+  }
+  assertEquals(prompt.includes("只在沒有其他風格特徵時才選"), true);
 });
 
 Deno.test("buildSchema requires every field and offers an unknown sentinel", () => {

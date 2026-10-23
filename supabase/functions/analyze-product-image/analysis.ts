@@ -7,6 +7,7 @@
  */
 
 import {
+  describeStyles,
   ELASTICITY_VALUES,
   FIT_VALUES,
   GENDER_VALUES,
@@ -86,7 +87,8 @@ Every field is required. When the photo does not tell you, answer with the strin
     listCategories(categories)
   }
 - gender: ${list(GENDER_VALUES)}; ${UNKNOWN} if you cannot tell.
-- styles: at most ${MAX_STYLES} of: ${list(STYLE_VALUES)}.
+- styles: at most ${MAX_STYLES} of the following values, chosen by the description, not by name (value（名稱）：描述):
+  ${describeStyles()}
 - seasons: the seasons the garment suits, any number of: ${list(SEASON_VALUES)}.
 - material: exactly one of the following Traditional Chinese terms, or ${UNKNOWN} if you cannot tell: ${
     list(MATERIAL_VALUES)
