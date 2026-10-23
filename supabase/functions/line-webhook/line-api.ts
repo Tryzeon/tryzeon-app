@@ -21,7 +21,7 @@ export function makeLineApi(
   accessToken: string,
   fetchFn: typeof fetch = fetch,
 ): LineApi {
-  const authHeaders = { "Authorization": `Bearer ${accessToken}` };
+  const authHeaders = { Authorization: `Bearer ${accessToken}` };
   return {
     async reply(replyToken, messages) {
       const r = await fetchFn(REPLY_URL, {
