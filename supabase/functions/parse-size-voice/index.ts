@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
     if (limited) return limited;
 
     const raw = await analyzeFile({
-      prompt: buildPrompt(validation.currentUnit),
+      prompt: buildPrompt(),
       file: { mediaType: validation.mimeType, data: validation.base64 },
       schema: buildSchema(),
       deadlineMs: PARSE_DEADLINE_MS,

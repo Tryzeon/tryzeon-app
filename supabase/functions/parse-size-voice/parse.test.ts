@@ -192,53 +192,68 @@ Deno.test("normalizeParsedSizes treats missing arrays as empty", () => {
   assertEquals(normalizeParsedSizes({}), []);
 });
 
+Deno.test("normalizeParsedSizes passes a unit the model could not settle through", () => {
+  const parsed = normalizeParsedSizes({
+    sizes: [{
+      name: "M",
+      garment_measurements: [
+        { type: "waist_circumference", value: 28, unit: "cun_ambiguous" },
+        { type: "chest_circumference", value: 50, unit: "unspecified" },
+      ],
+      body_measurement_ranges: [],
+    }],
+  });
+  assertEquals(parsed[0].garment_measurements, {
+    waist_circumference: { value: 28, unit: "cun_ambiguous" },
+    chest_circumference: { value: 50, unit: "unspecified" },
+  });
+});
+
 const AUDIO = "A".repeat(32);
 
-Deno.test("validateRequest accepts each unit the app can be set to", () => {
-  for (const unit of ["centimeter", "cun", "inch"] as const) {
-    const result = validateRequest({
-      audioBase64: AUDIO,
-      mimeType: "audio/mp4",
-      currentUnit: unit,
-    });
-    assertEquals(result.ok && result.currentUnit, unit);
+Deno.test("validateRequest needs only the audio and its mime type", () => {
+  const result = validateRequest({ audioBase64: AUDIO, mimeType: "audio/mp4" });
+  assertEquals(result, { ok: true, base64: AUDIO, mimeType: "audio/mp4" });
+});
+
+Deno.test("validateRequest rejects an unsupported mime type", async () => {
+  const result = validateRequest({ audioBase64: AUDIO, mimeType: "audio/ogg" });
+  assertEquals(result.ok, false);
+  if (!result.ok) {
+    assertEquals(result.response.status, 400);
+    assertEquals((await result.response.json()).code, "BAD_REQUEST");
   }
 });
 
-Deno.test("validateRequest rejects a missing or unknown currentUnit", async () => {
-  for (const currentUnit of [undefined, "foot"]) {
-    const result = validateRequest({
-      audioBase64: AUDIO,
-      mimeType: "audio/mp4",
-      currentUnit,
-    });
-    assertEquals(result.ok, false);
-    if (!result.ok) assertEquals(result.response.status, 400);
-    if (!result.ok) {
-      assertEquals((await result.response.json()).code, "BAD_REQUEST");
-    }
-  }
+Deno.test("buildPrompt names every unit the model may answer with", () => {
+  const prompt = buildPrompt();
+  assertStringIncludes(prompt, "cun_ambiguous");
+  assertStringIncludes(prompt, "unspecified");
 });
 
-Deno.test("buildPrompt fills an unspoken unit with the store's current unit", () => {
-  assertStringIncludes(buildPrompt("cun"), "完全沒提單位時填 cun");
-  assertStringIncludes(
-    buildPrompt("centimeter"),
-    "完全沒提單位時填 centimeter",
-  );
+Deno.test("buildPrompt asks for no arithmetic and no default unit", () => {
+  const prompt = buildPrompt();
+  assertEquals(prompt.includes("乘以"), false);
+  assertEquals(prompt.includes("沒提單位時填"), false);
+  assertEquals(prompt.includes("currentUnit"), false);
 });
 
-Deno.test("buildPrompt reads a bare 寸 or 吋 as the store's unit when it is one, else inch", () => {
-  assertStringIncludes(buildPrompt("cun"), "只說「寸」或「吋」時填 cun");
-  assertStringIncludes(buildPrompt("inch"), "只說「寸」或「吋」時填 inch");
-  assertStringIncludes(
-    buildPrompt("centimeter"),
-    "只說「寸」或「吋」時填 inch",
-  );
+Deno.test("buildSchema offers the model the unsettled units", () => {
+  const schema = buildSchema() as SchemaNode;
+  const unit = schema.properties!.sizes.items!.properties!.garment_measurements
+    .items!.properties!.unit;
+  assertEquals(unit.enum, [
+    "centimeter",
+    "cun",
+    "inch",
+    "cun_ambiguous",
+    "unspecified",
+  ]);
 });
 
 type SchemaNode = {
   type?: string;
+  enum?: string[];
   properties?: Record<string, SchemaNode>;
   items?: SchemaNode;
   required?: string[];

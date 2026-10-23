@@ -26,7 +26,13 @@ export const BODY_MEASUREMENT_RANGE_KEYS = [
   "thigh",
 ] as const;
 
-export const UNIT_VALUES = ["centimeter", "cun", "inch"] as const;
+export const UNIT_VALUES = [
+  "centimeter",
+  "cun",
+  "inch",
+  "cun_ambiguous",
+  "unspecified",
+] as const;
 export type Unit = (typeof UNIT_VALUES)[number];
 
 const isUnit = (v: unknown): v is Unit =>
@@ -76,16 +82,7 @@ const SUPPORTED_MIME = new Set([
   "audio/x-m4a",
 ]);
 
-/**
- * 寸 and 吋 are both read "cùn", so a bare one cannot say 台寸 from inch. The
- * store's own unit settles it when that unit is one of the two; otherwise inch,
- * the one Taiwanese apparel listings mean by a bare 吋.
- */
-function bareCunUnit(currentUnit: Unit): Unit {
-  return currentUnit === "centimeter" ? "inch" : currentUnit;
-}
-
-export function buildPrompt(currentUnit: Unit): string {
+export function buildPrompt(): string {
   return [
     "你是服裝尺寸資料整理助手。輸入是一段店家的口語錄音（主要為繁體中文，尺寸代號可能夾雜英文如 M、L、US 10）。",
     "請從語音中萃取每一個尺寸與其量測值，輸出 JSON。",
@@ -94,11 +91,8 @@ export function buildPrompt(currentUnit: Unit): string {
     "2. garment_measurements 是陣列，每個講到的量測一筆，type 只允許：shoulder_width(肩寬)、chest_circumference(胸圍)、sleeve_length(袖長)、waist_circumference(腰圍)、hip_circumference(臀圍)、thigh_circumference(大腿圍)、length(長度)、leg_opening(褲口寬)。沒講到的量測不要輸出；一個都沒講到就給空陣列。",
     "2-0. length 是衣服本身的長度，衣長、褲長、裙長、洋裝長一律填 length。",
     "2-1. garment_measurements 是「衣服」的尺寸，不是人體的尺寸。身高、體重絕對不要放進 garment_measurements。",
-    "2-2. 胸圍、腰圍、臀圍、大腿圍是該部位一圈的長度。店家若說的是「平放衣服量的胸寬／腰寬／臀寬／大腿寬」（半圈），請乘以 2 後填入對應的圍度欄位。",
-    "3. 每個量測輸出 { type, value, unit }。value 為數字。",
-    `4. unit 依口語判斷：說「公分」填 centimeter、說「台寸」填 cun、說「英吋」或 inch 填 inch。只說「寸」或「吋」時填 ${
-      bareCunUnit(currentUnit)
-    }。完全沒提單位時填 ${currentUnit}。`,
+    "3. 每個量測輸出 { type, value, unit }。value 為店家說出的數字。",
+    "4. unit 依口語判斷：說「公分」填 centimeter、說「台寸」填 cun、說「英吋」或 inch 填 inch。只說「寸」或「吋」填 cun_ambiguous。完全沒提單位填 unspecified。",
     "5. name 填聽到的尺寸代號（例 M、L、US 10）；若聽不出名稱填空字串。標準尺碼一律用 XS、S、M、L、XL、2XL、均碼 這幾個字面值（例如聽到「XXL」填 2XL、「free size」填 均碼）；不屬於標準尺碼的照聽到的原樣填。",
     "6. 若聽不出任何尺寸，sizes 回空陣列。",
     "7. 店家若說某尺寸「適合／建議身高 160 到 170、體重 50 到 60」，這是建議穿著者的身形範圍，輸出到 body_measurement_ranges 陣列，每筆 { type, min, max }：type 為 height（公分）或 weight（公斤）。只說單一數字（例如「適合 165」）時 min 與 max 都填該數字。沒講到的不要輸出；一個都沒講到就給空陣列。",
@@ -155,15 +149,11 @@ export function validateRequest(body: unknown): {
   ok: true;
   base64: string;
   mimeType: string;
-  currentUnit: Unit;
 } | {
   ok: false;
   response: Response;
 } {
-  const { audioBase64, mimeType, currentUnit } = (body ?? {}) as Record<
-    string,
-    unknown
-  >;
+  const { audioBase64, mimeType } = (body ?? {}) as Record<string, unknown>;
   if (typeof audioBase64 !== "string" || audioBase64.length < 16) {
     return {
       ok: false,
@@ -183,13 +173,7 @@ export function validateRequest(body: unknown): {
       response: jsonError("Unsupported audio mime type", "BAD_REQUEST", 400),
     };
   }
-  if (!isUnit(currentUnit)) {
-    return {
-      ok: false,
-      response: jsonError("Missing or invalid currentUnit", "BAD_REQUEST", 400),
-    };
-  }
-  return { ok: true, base64: audioBase64, mimeType: mime, currentUnit };
+  return { ok: true, base64: audioBase64, mimeType: mime };
 }
 
 function toNumber(v: unknown): number | null {
@@ -198,7 +182,7 @@ function toNumber(v: unknown): number | null {
 
 export interface ParsedSize {
   name: string;
-  garment_measurements: Record<string, { value: number; unit: string }>;
+  garment_measurements: Record<string, { value: number; unit: Unit }>;
   body_measurement_ranges: Record<string, { min: number; max: number }>;
 }
 
