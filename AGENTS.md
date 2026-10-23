@@ -7,6 +7,7 @@
 - Dart/Flutter conventions (theme, state management, errors, logging) live in `lib/CLAUDE.md`.
 - **No code comments by default:** write self-explanatory code instead. Only annotate a non-obvious trade-off or constraint a reader cannot infer from the code — never restate what a symbol already says.
 - Jira tickets: use the `acli` CLI to fetch ticket details instead of asking the user to paste them.
+- After finishing all tasks in a request, run `/code-review` on the resulting changes before reporting completion.
 
 ## Engineering principles
 
