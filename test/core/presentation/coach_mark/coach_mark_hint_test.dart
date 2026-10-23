@@ -35,6 +35,8 @@ void main() {
     final double navBarInset = 0,
     final bool revealTarget = false,
     final String? stepLabel,
+    final Radius? targetRadius,
+    final double targetGap = 0,
   }) async {
     await tester.pumpWidget(
       ProviderScope(
@@ -58,6 +60,8 @@ void main() {
                   action: action,
                   revealTarget: revealTarget,
                   stepLabel: stepLabel,
+                  targetRadius: targetRadius,
+                  targetGap: targetGap,
                 ),
               ],
             ),
@@ -225,6 +229,53 @@ void main() {
     expect(ring.center, target.center);
     expect(ring.width, greaterThan(target.width));
     expect(ring.height, greaterThan(target.height));
+  });
+
+  testWidgets('a rectangular target gets a beacon hugging its corners', (
+    final tester,
+  ) async {
+    const radius = Radius.circular(AppRadius.button);
+    await pumpScene(tester, page: centered(), targetRadius: radius);
+
+    final ring = tester.getRect(beacon());
+    final target = tester.getRect(find.byType(CoachMarkAnchor));
+    const edge = AppStroke.medium / 2;
+    final hug = target.shift(-ring.topLeft).inflate(edge);
+    expect(
+      find.descendant(of: beacon(), matching: find.byType(CustomPaint)),
+      paints..rrect(
+        rrect: RRect.fromRectAndRadius(
+          hug,
+          radius + const Radius.circular(edge),
+        ),
+      ),
+    );
+  });
+
+  testWidgets('a target gap leaves room between the target and the beacon', (
+    final tester,
+  ) async {
+    const radius = Radius.circular(AppRadius.button);
+    const gap = AppSpacing.sm;
+    await pumpScene(
+      tester,
+      page: centered(),
+      targetRadius: radius,
+      targetGap: gap,
+    );
+
+    final ring = tester.getRect(beacon());
+    final target = tester.getRect(find.byType(CoachMarkAnchor));
+    const outset = gap + AppStroke.medium / 2;
+    expect(
+      find.descendant(of: beacon(), matching: find.byType(CustomPaint)),
+      paints..rrect(
+        rrect: RRect.fromRectAndRadius(
+          target.shift(-ring.topLeft).inflate(outset),
+          radius + const Radius.circular(outset),
+        ),
+      ),
+    );
   });
 
   testWidgets('the bubble shows its step and skip in a header', (

@@ -44,6 +44,8 @@ class CoachMarkHint extends HookConsumerWidget {
     this.action,
     this.revealTarget = false,
     this.stepLabel,
+    this.targetRadius,
+    this.targetGap = 0,
   });
 
   static const skipLabel = '略過';
@@ -70,6 +72,13 @@ class CoachMarkHint extends HookConsumerWidget {
 
   /// Where this hint sits in its sequence, e.g. `1 / 3`.
   final String? stepLabel;
+
+  /// Corner radius of a rectangular target; the beacon hugs it with these
+  /// corners instead of ringing it as a stadium.
+  final Radius? targetRadius;
+
+  /// Room left between the target and the beacon.
+  final double targetGap;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
@@ -119,8 +128,16 @@ class CoachMarkHint extends HookConsumerWidget {
       children: [
         if (placement != CoachMarkPlacement.aboveChrome)
           Positioned.fromRect(
-            rect: targetRect.inflate(_Beacon.spread),
-            child: const IgnorePointer(child: _Beacon(key: beaconKey)),
+            rect: targetRect.inflate(targetGap + _Beacon.spread),
+            child: IgnorePointer(
+              child: _Beacon(
+                key: beaconKey,
+                targetRadius: switch (targetRadius) {
+                  final radius? => radius + Radius.circular(targetGap),
+                  null => null,
+                },
+              ),
+            ),
           ),
         Positioned(
           left: targetRect.left + layout.offset.dx,
@@ -545,11 +562,13 @@ class _CaretPainter extends CustomPainter {
 }
 
 class _Beacon extends HookWidget {
-  const _Beacon({super.key});
+  const _Beacon({super.key, this.targetRadius});
 
   /// How far the pulse spreads beyond the target.
   static const spread = AppSpacing.smMd;
   static const _period = Duration(milliseconds: 1600);
+
+  final Radius? targetRadius;
 
   @override
   Widget build(final BuildContext context) {
@@ -569,21 +588,34 @@ class _Beacon extends HookWidget {
     // Painted, not built from FadeTransition/ScaleTransition: their opacity
     // and transform layers make iOS 26's native tab bar drop its touches.
     return CustomPaint(
-      painter: _BeaconPainter(pulse: controller, color: color),
+      painter: _BeaconPainter(
+        pulse: controller,
+        color: color,
+        targetRadius: targetRadius,
+      ),
     );
   }
 }
 
-/// A stadium hugging the target, plus a ring that eases outward and fades.
+/// An outline hugging the target, plus a ring that eases outward and fades.
 class _BeaconPainter extends CustomPainter {
-  _BeaconPainter({required this.pulse, required this.color})
-    : super(repaint: pulse);
+  _BeaconPainter({
+    required this.pulse,
+    required this.color,
+    required this.targetRadius,
+  }) : super(repaint: pulse);
 
   final Animation<double> pulse;
   final Color color;
+  final Radius? targetRadius;
 
-  RRect _stadium(final Rect rect) =>
-      RRect.fromRectAndRadius(rect, Radius.circular(rect.shortestSide / 2));
+  RRect _outline(final Rect target, final double inflate) {
+    final rect = target.inflate(inflate);
+    return RRect.fromRectAndRadius(rect, switch (targetRadius) {
+      final radius? => radius + Radius.circular(inflate),
+      null => Radius.circular(rect.shortestSide / 2),
+    });
+  }
 
   @override
   void paint(final Canvas canvas, final Size size) {
@@ -594,12 +626,9 @@ class _BeaconPainter extends CustomPainter {
       ..strokeWidth = AppStroke.medium;
 
     canvas
+      ..drawRRect(_outline(target, AppStroke.medium / 2), stroke..color = color)
       ..drawRRect(
-        _stadium(target.inflate(AppStroke.medium / 2)),
-        stroke..color = color,
-      )
-      ..drawRRect(
-        _stadium(target.inflate(AppStroke.medium / 2 + _Beacon.spread * t)),
+        _outline(target, AppStroke.medium / 2 + _Beacon.spread * t),
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = AppStroke.medium
@@ -609,5 +638,7 @@ class _BeaconPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(final _BeaconPainter oldDelegate) =>
-      oldDelegate.color != color || oldDelegate.pulse != pulse;
+      oldDelegate.color != color ||
+      oldDelegate.pulse != pulse ||
+      oldDelegate.targetRadius != targetRadius;
 }
