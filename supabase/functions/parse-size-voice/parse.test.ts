@@ -1,5 +1,11 @@
-import { assertEquals } from "@std/assert";
-import { normalizeParsedSizes, normalizeSizeName } from "./parse.ts";
+import { assertEquals, assertStringIncludes } from "@std/assert";
+import {
+  buildPrompt,
+  buildSchema,
+  normalizeParsedSizes,
+  normalizeSizeName,
+  validateRequest,
+} from "./parse.ts";
 
 Deno.test("normalizeSizeName maps aliases onto the canonical literal", () => {
   assertEquals(normalizeSizeName("XXL"), "2XL");
@@ -22,76 +28,103 @@ Deno.test("normalizeSizeName keeps an unrecognised name as spoken", () => {
   assertEquals(normalizeSizeName(""), "");
 });
 
-Deno.test("normalizeParsedSizes keeps thigh_circumference", () => {
+Deno.test("normalizeParsedSizes keys each garment measurement by its type", () => {
   const parsed = normalizeParsedSizes({
-    sizes: [
-      {
-        name: "L",
-        garment_measurements: {
-          thigh_circumference: { value: 60, unit: "centimeter" },
-        },
-      },
-    ],
+    sizes: [{
+      name: "M",
+      garment_measurements: [
+        { type: "shoulder_width", value: 40, unit: "centimeter" },
+        { type: "chest_circumference", value: 96, unit: "centimeter" },
+        { type: "length", value: 65, unit: "centimeter" },
+      ],
+      body_measurement_ranges: [],
+    }],
   });
-  assertEquals(parsed[0].garment_measurements.thigh_circumference, {
-    value: 60,
-    unit: "centimeter",
+  assertEquals(parsed, [{
+    name: "M",
+    garment_measurements: {
+      shoulder_width: { value: 40, unit: "centimeter" },
+      chest_circumference: { value: 96, unit: "centimeter" },
+      length: { value: 65, unit: "centimeter" },
+    },
+    body_measurement_ranges: {},
+  }]);
+});
+
+Deno.test("normalizeParsedSizes keeps thigh_circumference and leg_opening", () => {
+  const parsed = normalizeParsedSizes({
+    sizes: [{
+      name: "L",
+      garment_measurements: [
+        { type: "thigh_circumference", value: 60, unit: "centimeter" },
+        { type: "leg_opening", value: 18, unit: "centimeter" },
+      ],
+      body_measurement_ranges: [],
+    }],
+  });
+  assertEquals(parsed[0].garment_measurements, {
+    thigh_circumference: { value: 60, unit: "centimeter" },
+    leg_opening: { value: 18, unit: "centimeter" },
   });
 });
 
-Deno.test("normalizeParsedSizes keeps leg_opening and drops a key outside the garment vocabulary", () => {
+Deno.test("normalizeParsedSizes drops an entry outside the garment vocabulary or its units", () => {
   const parsed = normalizeParsedSizes({
-    sizes: [
-      {
-        name: "M",
-        garment_measurements: {
-          leg_opening: { value: 18, unit: "centimeter" },
-          inseam: { value: 72, unit: "centimeter" },
-        },
-      },
-    ],
+    sizes: [{
+      name: "M",
+      garment_measurements: [
+        { type: "inseam", value: 72, unit: "centimeter" },
+        { type: "length", value: 72, unit: "foot" },
+        { type: "waist_circumference", value: "70", unit: "centimeter" },
+        null,
+      ],
+      body_measurement_ranges: [],
+    }],
+  });
+  assertEquals(parsed[0].garment_measurements, {});
+});
+
+Deno.test("normalizeParsedSizes keeps the last value of a measurement spoken twice", () => {
+  const parsed = normalizeParsedSizes({
+    sizes: [{
+      name: "M",
+      garment_measurements: [
+        { type: "waist_circumference", value: 70, unit: "centimeter" },
+        { type: "waist_circumference", value: 68, unit: "centimeter" },
+      ],
+      body_measurement_ranges: [],
+    }],
   });
   assertEquals(parsed[0].garment_measurements, {
-    leg_opening: { value: 18, unit: "centimeter" },
+    waist_circumference: { value: 68, unit: "centimeter" },
+  });
+});
+
+Deno.test("normalizeParsedSizes drops a garment measurement outside 0–300 cm once converted", () => {
+  const parsed = normalizeParsedSizes({
+    sizes: [{
+      name: "M",
+      garment_measurements: [
+        { type: "length", value: 120, unit: "inch" },
+        { type: "chest_circumference", value: 0, unit: "centimeter" },
+        { type: "shoulder_width", value: 14, unit: "cun" },
+      ],
+      body_measurement_ranges: [],
+    }],
+  });
+  assertEquals(parsed[0].garment_measurements, {
+    shoulder_width: { value: 14, unit: "cun" },
   });
 });
 
 Deno.test("normalizeParsedSizes normalizes the name it returns", () => {
   const parsed = normalizeParsedSizes({
     sizes: [
-      {
-        name: "XXL",
-        garment_measurements: {
-          chest_circumference: { value: 100, unit: "centimeter" },
-        },
-      },
-      { name: "US 10", garment_measurements: {} },
+      { name: "XXL", garment_measurements: [], body_measurement_ranges: [] },
+      { name: "US 10", garment_measurements: [], body_measurement_ranges: [] },
     ],
   });
   assertEquals(parsed.map((s) => s.name), ["2XL", "US 10"]);
-  assertEquals(parsed[0].garment_measurements.chest_circumference, {
-    value: 100,
-    unit: "centimeter",
-  });
-});
-
-Deno.test("normalizeParsedSizes keeps a body measurement range whose bounds are ordered and plausible", () => {
-  const parsed = normalizeParsedSizes({
-    sizes: [
-      {
-        name: "M",
-        garment_measurements: {},
-        body_measurement_ranges: {
-          height: { min: 160, max: 170 },
-          weight: { min: 50, max: 60 },
-        },
-      },
-    ],
-  });
-  assertEquals(parsed[0].body_measurement_ranges, {
-    height: { min: 160, max: 170 },
-    weight: { min: 50, max: 60 },
-  });
 });
 
 Deno.test("normalizeParsedSizes keeps a body measurement range for every body dimension", () => {
@@ -105,53 +138,125 @@ Deno.test("normalizeParsedSizes keeps a body measurement range for every body di
     thigh: { min: 50, max: 56 },
   };
   const parsed = normalizeParsedSizes({
-    sizes: [{ name: "M", garment_measurements: {}, body_measurement_ranges: ranges }],
+    sizes: [{
+      name: "M",
+      garment_measurements: [],
+      body_measurement_ranges: Object.entries(ranges).map(([type, r]) => ({
+        type,
+        ...r,
+      })),
+    }],
   });
   assertEquals(parsed[0].body_measurement_ranges, ranges);
-});
-
-Deno.test("normalizeParsedSizes drops a circumference range above the app's body measurement maximum", () => {
-  const parsed = normalizeParsedSizes({
-    sizes: [
-      {
-        name: "M",
-        garment_measurements: {},
-        body_measurement_ranges: { chest: { min: 88, max: 201 } },
-      },
-    ],
-  });
-  assertEquals(parsed[0].body_measurement_ranges, {});
-});
-
-Deno.test("normalizeParsedSizes drops a body measurement range that is reversed, non-positive or implausibly large", () => {
-  const parsed = normalizeParsedSizes({
-    sizes: [
-      {
-        name: "M",
-        garment_measurements: {},
-        body_measurement_ranges: {
-          height: { min: 170, max: 160 },
-          weight: { min: 0, max: 60 },
-        },
-      },
-      {
-        name: "L",
-        garment_measurements: {},
-        body_measurement_ranges: { height: { min: 160, max: 1700 } },
-      },
-      { name: "XL", garment_measurements: {} },
-    ],
-  });
-  assertEquals(parsed.map((s) => s.body_measurement_ranges), [{}, {}, {}]);
 });
 
 Deno.test("normalizeParsedSizes accepts a single-point body measurement range", () => {
   const parsed = normalizeParsedSizes({
     sizes: [{
       name: "M",
-      garment_measurements: {},
-      body_measurement_ranges: { height: { min: 165, max: 165 } },
+      garment_measurements: [],
+      body_measurement_ranges: [{ type: "height", min: 165, max: 165 }],
     }],
   });
-  assertEquals(parsed[0].body_measurement_ranges.height, { min: 165, max: 165 });
+  assertEquals(parsed[0].body_measurement_ranges.height, {
+    min: 165,
+    max: 165,
+  });
+});
+
+Deno.test("normalizeParsedSizes drops a body range that is reversed, non-positive, implausibly large or unknown", () => {
+  const parsed = normalizeParsedSizes({
+    sizes: [{
+      name: "M",
+      garment_measurements: [],
+      body_measurement_ranges: [
+        { type: "height", min: 170, max: 160 },
+        { type: "weight", min: 0, max: 60 },
+        { type: "chest", min: 88, max: 201 },
+        { type: "arm", min: 20, max: 30 },
+      ],
+    }],
+  });
+  assertEquals(parsed[0].body_measurement_ranges, {});
+});
+
+Deno.test("normalizeParsedSizes treats missing arrays as empty", () => {
+  assertEquals(normalizeParsedSizes({ sizes: [{ name: "M" }] }), [{
+    name: "M",
+    garment_measurements: {},
+    body_measurement_ranges: {},
+  }]);
+  assertEquals(normalizeParsedSizes({}), []);
+});
+
+const AUDIO = "A".repeat(32);
+
+Deno.test("validateRequest accepts each unit the app can be set to", () => {
+  for (const unit of ["centimeter", "cun", "inch"] as const) {
+    const result = validateRequest({
+      audioBase64: AUDIO,
+      mimeType: "audio/mp4",
+      currentUnit: unit,
+    });
+    assertEquals(result.ok && result.currentUnit, unit);
+  }
+});
+
+Deno.test("validateRequest rejects a missing or unknown currentUnit", async () => {
+  for (const currentUnit of [undefined, "foot"]) {
+    const result = validateRequest({
+      audioBase64: AUDIO,
+      mimeType: "audio/mp4",
+      currentUnit,
+    });
+    assertEquals(result.ok, false);
+    if (!result.ok) assertEquals(result.response.status, 400);
+    if (!result.ok) {
+      assertEquals((await result.response.json()).code, "BAD_REQUEST");
+    }
+  }
+});
+
+Deno.test("buildPrompt fills an unspoken unit with the store's current unit", () => {
+  assertStringIncludes(buildPrompt("cun"), "完全沒提單位時填 cun");
+  assertStringIncludes(
+    buildPrompt("centimeter"),
+    "完全沒提單位時填 centimeter",
+  );
+});
+
+Deno.test("buildPrompt reads a bare 寸 or 吋 as the store's unit when it is one, else inch", () => {
+  assertStringIncludes(buildPrompt("cun"), "只說「寸」或「吋」時填 cun");
+  assertStringIncludes(buildPrompt("inch"), "只說「寸」或「吋」時填 inch");
+  assertStringIncludes(
+    buildPrompt("centimeter"),
+    "只說「寸」或「吋」時填 inch",
+  );
+});
+
+type SchemaNode = {
+  type?: string;
+  properties?: Record<string, SchemaNode>;
+  items?: SchemaNode;
+  required?: string[];
+};
+
+// Vertex writes an object's optional keys in a fixed order, which cost spoken
+// measurements their values; every object in this schema must require all its
+// keys.
+Deno.test("buildSchema leaves no object key optional", () => {
+  const visit = (node: SchemaNode, path: string) => {
+    if (node.properties) {
+      assertEquals(
+        [...(node.required ?? [])].sort(),
+        Object.keys(node.properties).sort(),
+        `${path} has an optional key`,
+      );
+      for (const [key, child] of Object.entries(node.properties)) {
+        visit(child, `${path}.${key}`);
+      }
+    }
+    if (node.items) visit(node.items, `${path}[]`);
+  };
+  visit(buildSchema() as SchemaNode, "$");
 });

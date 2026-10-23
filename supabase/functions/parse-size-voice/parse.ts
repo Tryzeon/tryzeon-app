@@ -27,6 +27,9 @@ export const BODY_MEASUREMENT_RANGE_KEYS = [
 ] as const;
 
 export const UNIT_VALUES = ["centimeter", "cun", "inch"] as const;
+export type Unit = (typeof UNIT_VALUES)[number];
+
+const isUnit = (v: unknown): v is Unit => (UNIT_VALUES as readonly unknown[]).includes(v);
 
 export const TO_CM_FACTOR: Record<string, number> = {
   centimeter: 1,
@@ -79,46 +82,61 @@ const SUPPORTED_MIME = new Set([
 ]);
 const MAX_CM = 300;
 
-export function buildPrompt(): string {
+/**
+ * 寸 and 吋 are both read "cùn", so a bare one cannot say 台寸 from inch. The
+ * store's own unit settles it when that unit is one of the two; otherwise inch,
+ * the one Taiwanese apparel listings mean by a bare 吋.
+ */
+function bareCunUnit(currentUnit: Unit): Unit {
+  return currentUnit === "centimeter" ? "inch" : currentUnit;
+}
+
+export function buildPrompt(currentUnit: Unit): string {
   return [
     "你是服裝尺寸資料整理助手。輸入是一段店家的口語錄音（主要為繁體中文，尺寸代號可能夾雜英文如 M、L、US 10）。",
     "請從語音中萃取每一個尺寸與其量測值，輸出 JSON。",
     "規則：",
     "1. 忽略口頭禪、語助詞、重複與與尺寸無關的閒聊，只保留尺寸資訊（去贅字）。",
-    "2. garment_measurements 的量測欄位只允許：shoulder_width(肩寬)、chest_circumference(胸圍)、sleeve_length(袖長)、waist_circumference(腰圍)、hip_circumference(臀圍)、thigh_circumference(大腿圍)、length(長度)、leg_opening(褲口寬)。沒講到的欄位不要輸出。",
+    "2. garment_measurements 是陣列，每個講到的量測一筆，type 只允許：shoulder_width(肩寬)、chest_circumference(胸圍)、sleeve_length(袖長)、waist_circumference(腰圍)、hip_circumference(臀圍)、thigh_circumference(大腿圍)、length(長度)、leg_opening(褲口寬)。沒講到的量測不要輸出；一個都沒講到就給空陣列。",
     "2-0. length 是衣服本身的長度，衣長、褲長、裙長、洋裝長一律填 length。",
     "2-1. garment_measurements 是「衣服」的尺寸，不是人體的尺寸。身高、體重絕對不要放進 garment_measurements。",
     "2-2. 胸圍、腰圍、臀圍、大腿圍是該部位一圈的長度。店家若說的是「平放衣服量的胸寬／腰寬／臀寬／大腿寬」（半圈），請乘以 2 後填入對應的圍度欄位。",
-    "3. 每個量測輸出 { value, unit }。value 為數字。",
-    "4. unit 依口語判斷：公分=centimeter、台寸/寸=cun、英吋/吋/inch=inch。若完全沒提單位，一律填 centimeter。",
+    "3. 每個量測輸出 { type, value, unit }。value 為數字。",
+    `4. unit 依口語判斷：說「公分」填 centimeter、說「台寸」填 cun、說「英吋」或 inch 填 inch。只說「寸」或「吋」時填 ${
+      bareCunUnit(currentUnit)
+    }。完全沒提單位時填 ${currentUnit}。`,
     "5. name 填聽到的尺寸代號（例 M、L、US 10）；若聽不出名稱填空字串。標準尺碼一律用 XS、S、M、L、XL、2XL、均碼 這幾個字面值（例如聽到「XXL」填 2XL、「free size」填 均碼）；不屬於標準尺碼的照聽到的原樣填。",
     "6. 若聽不出任何尺寸，sizes 回空陣列。",
-    "7. 店家若說某尺寸「適合／建議身高 160 到 170、體重 50 到 60」，這是建議穿著者的身形範圍，輸出到 body_measurement_ranges：height 填 { min, max }（公分）、weight 填 { min, max }（公斤）。只說單一數字（例如「適合 165」）時 min 與 max 都填該數字。沒講到的欄位不要輸出。",
-    "7-1. 肩寬、胸圍、腰圍、臀圍、大腿圍也可以是穿著者的身形範圍：店家說「適合／建議胸圍 88 到 96 的人穿」這類明確指人體的說法時，輸出到 body_measurement_ranges 的 shoulder、chest、waist、hips、thigh（公分）。沒有說「適合／建議」、只是報一個數字的，仍然是衣服尺寸，填 garment_measurements。",
+    "7. 店家若說某尺寸「適合／建議身高 160 到 170、體重 50 到 60」，這是建議穿著者的身形範圍，輸出到 body_measurement_ranges 陣列，每筆 { type, min, max }：type 為 height（公分）或 weight（公斤）。只說單一數字（例如「適合 165」）時 min 與 max 都填該數字。沒講到的不要輸出；一個都沒講到就給空陣列。",
+    "7-1. 肩寬、胸圍、腰圍、臀圍、大腿圍也可以是穿著者的身形範圍：店家說「適合／建議胸圍 88 到 96 的人穿」這類明確指人體的說法時，輸出到 body_measurement_ranges，type 為 shoulder、chest、waist、hips、thigh（公分）。沒有說「適合／建議」、只是報一個數字的，仍然是衣服尺寸，填 garment_measurements。",
   ].join("\n");
 }
 
+/**
+ * Measurements are arrays of typed entries, and every key is required, because
+ * Vertex writes an object's optional keys in a fixed order: a model that starts
+ * with the shoulder width it heard first cannot go back for the chest, and puts
+ * that number under a later key instead. An array takes them in spoken order.
+ */
 export function buildSchema(): Record<string, unknown> {
   const measurement = {
     type: "object",
     properties: {
+      type: { type: "string", enum: [...MEASUREMENT_KEYS] },
       value: { type: "number" },
       unit: { type: "string", enum: [...UNIT_VALUES] },
     },
-    required: ["value", "unit"],
+    required: ["type", "value", "unit"],
   };
-  const measurementProps: Record<string, unknown> = {};
-  for (const key of MEASUREMENT_KEYS) measurementProps[key] = measurement;
   const range = {
     type: "object",
     properties: {
+      type: { type: "string", enum: [...BODY_MEASUREMENT_RANGE_KEYS] },
       min: { type: "number" },
       max: { type: "number" },
     },
-    required: ["min", "max"],
+    required: ["type", "min", "max"],
   };
-  const rangeProps: Record<string, unknown> = {};
-  for (const key of BODY_MEASUREMENT_RANGE_KEYS) rangeProps[key] = range;
   return {
     type: "object",
     properties: {
@@ -128,10 +146,10 @@ export function buildSchema(): Record<string, unknown> {
           type: "object",
           properties: {
             name: { type: "string" },
-            garment_measurements: { type: "object", properties: measurementProps },
-            body_measurement_ranges: { type: "object", properties: rangeProps },
+            garment_measurements: { type: "array", items: measurement },
+            body_measurement_ranges: { type: "array", items: range },
           },
-          required: ["name", "garment_measurements"],
+          required: ["name", "garment_measurements", "body_measurement_ranges"],
         },
       },
     },
@@ -139,13 +157,16 @@ export function buildSchema(): Record<string, unknown> {
   };
 }
 
-export function validateAudio(
-  audioBase64: unknown,
-  mimeType: unknown,
-): { ok: true; base64: string; mimeType: string } | {
+export function validateRequest(body: unknown): {
+  ok: true;
+  base64: string;
+  mimeType: string;
+  currentUnit: Unit;
+} | {
   ok: false;
   response: Response;
 } {
+  const { audioBase64, mimeType, currentUnit } = (body ?? {}) as Record<string, unknown>;
   if (typeof audioBase64 !== "string" || audioBase64.length < 16) {
     return {
       ok: false,
@@ -165,7 +186,13 @@ export function validateAudio(
       response: jsonError("Unsupported audio mime type", "BAD_REQUEST", 400),
     };
   }
-  return { ok: true, base64: audioBase64, mimeType: mime };
+  if (!isUnit(currentUnit)) {
+    return {
+      ok: false,
+      response: jsonError("Missing or invalid currentUnit", "BAD_REQUEST", 400),
+    };
+  }
+  return { ok: true, base64: audioBase64, mimeType: mime, currentUnit };
 }
 
 function toNumber(v: unknown): number | null {
@@ -193,56 +220,51 @@ const BODY_MEASUREMENT_RANGE_MAX: Record<(typeof BODY_MEASUREMENT_RANGE_KEYS)[nu
   thigh: 120,
 };
 
-function normalizeBodyMeasurementRanges(raw: unknown): ParsedSize["body_measurement_ranges"] {
-  const out: ParsedSize["body_measurement_ranges"] = {};
-  if (!raw || typeof raw !== "object") return out;
-  for (const key of BODY_MEASUREMENT_RANGE_KEYS) {
-    const r = (raw as Record<string, unknown>)[key];
-    if (!r || typeof r !== "object") continue;
-    const min = toNumber((r as Record<string, unknown>).min);
-    const max = toNumber((r as Record<string, unknown>).max);
-    if (min === null || max === null) continue;
-    if (min <= 0 || max < min || max > BODY_MEASUREMENT_RANGE_MAX[key]) continue;
-    out[key] = { min, max };
+const isMeasurementKey = (v: unknown): v is (typeof MEASUREMENT_KEYS)[number] =>
+  (MEASUREMENT_KEYS as readonly unknown[]).includes(v);
+
+const isBodyMeasurementRangeKey = (v: unknown): v is (typeof BODY_MEASUREMENT_RANGE_KEYS)[number] =>
+  (BODY_MEASUREMENT_RANGE_KEYS as readonly unknown[]).includes(v);
+
+const entries = (raw: unknown): Record<string, unknown>[] =>
+  Array.isArray(raw)
+    ? raw.filter((e): e is Record<string, unknown> => e !== null && typeof e === "object")
+    : [];
+
+// A type spoken twice keeps its last value: a store owner who repeats a
+// measurement is correcting it.
+function normalizeGarmentMeasurements(raw: unknown): ParsedSize["garment_measurements"] {
+  const out: ParsedSize["garment_measurements"] = {};
+  for (const e of entries(raw)) {
+    const value = toNumber(e.value);
+    if (!isMeasurementKey(e.type) || !isUnit(e.unit) || value === null) continue;
+    const cm = value * TO_CM_FACTOR[e.unit];
+    if (cm <= 0 || cm > MAX_CM) continue;
+    out[e.type] = { value, unit: e.unit };
   }
   return out;
 }
 
-export function normalizeParsedSizes(raw: unknown): ParsedSize[] {
-  const sizes = (raw as { sizes?: unknown })?.sizes;
-  if (!Array.isArray(sizes)) return [];
-  const out: ParsedSize[] = [];
-  for (const s of sizes) {
-    if (s === null || typeof s !== "object") continue;
-    const nameRaw = (s as Record<string, unknown>).name;
-    const name = typeof nameRaw === "string"
-      ? normalizeSizeName(nameRaw.slice(0, 20))
-      : "";
-    const garmentMeasurements: Record<string, { value: number; unit: string }> = {};
-    const mRaw = (s as Record<string, unknown>).garment_measurements;
-    if (mRaw && typeof mRaw === "object") {
-      for (const key of MEASUREMENT_KEYS) {
-        const m = (mRaw as Record<string, unknown>)[key];
-        if (!m || typeof m !== "object") continue;
-        const value = toNumber((m as Record<string, unknown>).value);
-        const unitRaw = (m as Record<string, unknown>).unit;
-        const unit =
-          (UNIT_VALUES as readonly string[]).includes(unitRaw as string)
-            ? (unitRaw as string)
-            : "centimeter";
-        if (value === null) continue;
-        const cm = value * TO_CM_FACTOR[unit];
-        if (cm <= 0 || cm > MAX_CM) continue;
-        garmentMeasurements[key] = { value, unit };
-      }
-    }
-    out.push({
-      name,
-      garment_measurements: garmentMeasurements,
-      body_measurement_ranges: normalizeBodyMeasurementRanges(
-        (s as Record<string, unknown>).body_measurement_ranges,
-      ),
-    });
+function normalizeBodyMeasurementRanges(raw: unknown): ParsedSize["body_measurement_ranges"] {
+  const out: ParsedSize["body_measurement_ranges"] = {};
+  for (const e of entries(raw)) {
+    const min = toNumber(e.min);
+    const max = toNumber(e.max);
+    if (!isBodyMeasurementRangeKey(e.type) || min === null || max === null) continue;
+    if (min <= 0 || max < min || max > BODY_MEASUREMENT_RANGE_MAX[e.type]) continue;
+    out[e.type] = { min, max };
   }
   return out;
+}
+
+/**
+ * Turns the model's typed-entry arrays back into the keyed shape the app reads,
+ * so the schema's layout stays a detail between this function and the model.
+ */
+export function normalizeParsedSizes(raw: unknown): ParsedSize[] {
+  return entries((raw as { sizes?: unknown })?.sizes).map((s) => ({
+    name: typeof s.name === "string" ? normalizeSizeName(s.name.slice(0, 20)) : "",
+    garment_measurements: normalizeGarmentMeasurements(s.garment_measurements),
+    body_measurement_ranges: normalizeBodyMeasurementRanges(s.body_measurement_ranges),
+  }));
 }
