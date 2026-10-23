@@ -56,7 +56,6 @@ export async function generateTryonImage(
   opts: ImageGenerationOptions = {},
 ): Promise<GeneratedImage | null> {
   const taskPrompt = buildTaskPrompt(garmentGroups, opts);
-  console.log("[tryon] task prompt:\n" + taskPrompt);
 
   const images = [avatarImage, ...garmentGroups.flat()];
   const generate = async (
