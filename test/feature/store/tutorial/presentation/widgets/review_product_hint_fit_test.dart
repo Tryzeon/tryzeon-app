@@ -10,6 +10,7 @@ import 'package:tryzeon/feature/common/product_category/providers/product_catego
 import 'package:tryzeon/feature/store/analytics/domain/entities/product_analytics_summary.dart';
 import 'package:tryzeon/feature/store/analytics/providers/store_analytics_providers.dart';
 import 'package:tryzeon/feature/store/product/presentation/pages/store_products_page.dart';
+import 'package:tryzeon/feature/store/product/presentation/state/product_query_state.dart';
 import 'package:tryzeon/feature/store/product/providers/store_product_providers.dart';
 import 'package:tryzeon/feature/store/tutorial/presentation/controllers/store_tutorial_controller.dart';
 import 'package:tryzeon/feature/store/tutorial/presentation/state/store_tutorial_state.dart';
@@ -18,9 +19,19 @@ import 'package:tryzeon/feature/store/tutorial/presentation/widgets/store_tutori
 import '../../../../../support/store_test_doubles.dart';
 
 class _ReviewProduct extends StoreTutorialController {
+  _ReviewProduct(this._status);
+
+  final ProductStatus _status;
+
   @override
   StoreTutorialState build() =>
-      const StoreTutorialState.reviewProduct(status: ProductStatus.active);
+      StoreTutorialState.reviewProduct(status: _status);
+}
+
+class _ArchivedTab extends ProductQuery {
+  @override
+  ProductQueryState build() =>
+      const ProductQueryState(status: ProductStatus.archived);
 }
 
 class _NoCategories extends ProductCategoriesNotifier {
@@ -34,49 +45,64 @@ class _NoAnalytics extends ProductAnalyticsSummariesNotifier {
 }
 
 void main() {
-  testWidgets('step 9 still shows on an iPhone 15 Pro with larger text', (
-    final tester,
-  ) async {
-    tester.view.physicalSize = const Size(393, 852) * 3;
-    tester.view.devicePixelRatio = 3;
-    tester.view.padding = const FakeViewPadding(top: 59 * 3, bottom: 34 * 3);
-    addTearDown(tester.view.reset);
+  for (final status in ProductStatus.values) {
+    testWidgets(
+      'step 10 for a ${status.name} product still shows on an iPhone 15 Pro '
+      'with larger text',
+      (final tester) async {
+        tester.view.physicalSize = const Size(393, 852) * 3;
+        tester.view.devicePixelRatio = 3;
+        tester.view.padding = const FakeViewPadding(
+          top: 59 * 3,
+          bottom: 34 * 3,
+        );
+        addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          storeTutorialControllerProvider.overrideWith(_ReviewProduct.new),
-          productsProvider.overrideWith(() => FakeProducts([product('p1')])),
-          productAnalyticsSummariesProvider.overrideWith(_NoAnalytics.new),
-          productCategoriesProvider.overrideWith(_NoCategories.new),
-        ],
-        child: MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: BottomNavBarInset(
-            overlap: 50,
-            child: Builder(
-              builder: (final context) => MediaQuery(
-                data: MediaQuery.of(context).copyWith(
-                  disableAnimations: true,
-                  textScaler: const TextScaler.linear(1.24),
-                ),
-                child: const StoreTutorialOverlay(
-                  currentTab: StoreTab.products,
-                  child: StoreProductsPage(),
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              storeTutorialControllerProvider.overrideWith(
+                () => _ReviewProduct(status),
+              ),
+              productsProvider.overrideWith(
+                () => FakeProducts([product('p1', status: status)]),
+              ),
+              if (status == ProductStatus.archived)
+                productQueryProvider.overrideWith(_ArchivedTab.new),
+              productAnalyticsSummariesProvider.overrideWith(_NoAnalytics.new),
+              productCategoriesProvider.overrideWith(_NoCategories.new),
+            ],
+            child: MaterialApp(
+              theme: AppTheme.lightTheme,
+              home: BottomNavBarInset(
+                overlap: 50,
+                child: Builder(
+                  builder: (final context) => MediaQuery(
+                    data: MediaQuery.of(context).copyWith(
+                      disableAnimations: true,
+                      textScaler: const TextScaler.linear(1.24),
+                    ),
+                    child: const StoreTutorialOverlay(
+                      currentTab: StoreTab.products,
+                      child: StoreProductsPage(),
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      ),
-    );
-    for (var i = 0; i < 8; i++) {
-      await tester.pump(const Duration(milliseconds: 200));
-    }
+        );
+        for (var i = 0; i < 8; i++) {
+          await tester.pump(const Duration(milliseconds: 200));
+        }
 
-    expect(
-      find.text(StoreTutorialOverlay.reviewActiveProductMessage).hitTestable(),
-      findsOneWidget,
+        expect(
+          find
+              .text(StoreTutorialOverlay.reviewProductMessage(status))
+              .hitTestable(),
+          findsOneWidget,
+        );
+      },
     );
-  });
+  }
 }

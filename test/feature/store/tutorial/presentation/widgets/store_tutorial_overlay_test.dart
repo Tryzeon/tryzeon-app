@@ -128,7 +128,7 @@ void main() {
     expect(tutorial.finishes, 1);
   });
 
-  testWidgets('step 9 advances with next', (final tester) async {
+  testWidgets('step 10 advances with next', (final tester) async {
     await pumpOverlay(
       tester,
       const StoreTutorialState.reviewProduct(status: ProductStatus.active),
@@ -168,7 +168,7 @@ void main() {
     );
   });
 
-  testWidgets('skipping step 9 finishes the tour', (final tester) async {
+  testWidgets('skipping step 10 finishes the tour', (final tester) async {
     await pumpOverlay(
       tester,
       const StoreTutorialState.reviewProduct(status: ProductStatus.active),
@@ -179,7 +179,7 @@ void main() {
     expect(tutorial.finishes, 1);
   });
 
-  testWidgets('step 10 asks for the account tab and has no done button', (
+  testWidgets('step 11 asks for the account tab and has no done button', (
     final tester,
   ) async {
     await pumpOverlay(tester, const StoreTutorialState.openAccount());
@@ -193,7 +193,7 @@ void main() {
     expect(tutorial.finishes, 1);
   });
 
-  testWidgets('being on the account tab at step 10 moves on to step 11', (
+  testWidgets('being on the account tab at step 11 moves on to step 12', (
     final tester,
   ) async {
     await pumpOverlay(
@@ -205,7 +205,7 @@ void main() {
     expect(tutorial.accountTabOpens, 1);
   });
 
-  testWidgets('step 11 points at the performance card on the account tab', (
+  testWidgets('step 12 points at the performance card on the account tab', (
     final tester,
   ) async {
     await pumpOverlay(
@@ -233,7 +233,7 @@ void main() {
     expect(find.byType(CoachMarkHint), findsNothing);
   });
 
-  testWidgets('step 9 sits above the product stats it describes', (
+  testWidgets('step 10 sits above the product stats it describes', (
     final tester,
   ) async {
     await pumpOverlay(
