@@ -1,11 +1,11 @@
 import { assertEquals, assertRejects } from "@std/assert";
-import { ServiceBusyError } from "./errors.ts";
-import { analyzeImage } from "./image-analysis.ts";
+import { ServiceBusyError } from "../errors.ts";
+import { analyzeFile } from "./analyze-file.ts";
 
-const JPEG_BASE64 = btoa("\xFF\xD8\xFF\xE0jpeg-bytes");
 const ARGS = {
-  base64: JPEG_BASE64,
   prompt: "Label this.",
+  file: { mediaType: "image/jpeg", data: btoa("jpeg-bytes") },
+  deadlineMs: 15_000,
   schema: {
     type: "object",
     properties: { name: { type: "string" } },
@@ -73,11 +73,11 @@ const answer = (text: string) =>
     }],
   }));
 
-Deno.test("analyzeImage asks for minimal thinking", async () => {
+Deno.test("analyzeFile asks for minimal thinking", async () => {
   await installServiceAccount();
   const { captured, restore } = stubFetch(() => answer('{"name":"白色襯衫"}'));
   try {
-    assertEquals(await analyzeImage(ARGS), { name: "白色襯衫" });
+    assertEquals(await analyzeFile(ARGS), { name: "白色襯衫" });
     const config = captured[0].generationConfig as { thinkingConfig?: unknown };
     assertEquals(config.thinkingConfig, { thinkingLevel: "minimal" });
   } finally {
@@ -85,24 +85,24 @@ Deno.test("analyzeImage asks for minimal thinking", async () => {
   }
 });
 
-Deno.test("analyzeImage reports a stall past its deadline as busy", async () => {
+Deno.test("analyzeFile reports a stall past its deadline as busy", async () => {
   await installServiceAccount();
   const { restore } = stubFetch((_, signal) =>
     new Promise((_, reject) =>
       signal?.addEventListener("abort", () => reject(signal.reason))
     )
   );
-  const timeout = AbortSignal.timeout;
-  AbortSignal.timeout = () => timeout.call(AbortSignal, 50);
   try {
-    await assertRejects(() => analyzeImage(ARGS), ServiceBusyError);
+    await assertRejects(
+      () => analyzeFile({ ...ARGS, deadlineMs: 50 }),
+      ServiceBusyError,
+    );
   } finally {
-    AbortSignal.timeout = timeout;
     restore();
   }
 });
 
-Deno.test("analyzeImage reports a capacity refusal as busy", async () => {
+Deno.test("analyzeFile reports a capacity refusal as busy", async () => {
   await installServiceAccount();
   const { restore } = stubFetch(() =>
     Promise.resolve(Response.json(
@@ -111,17 +111,17 @@ Deno.test("analyzeImage reports a capacity refusal as busy", async () => {
     ))
   );
   try {
-    await assertRejects(() => analyzeImage(ARGS), ServiceBusyError);
+    await assertRejects(() => analyzeFile(ARGS), ServiceBusyError);
   } finally {
     restore();
   }
 });
 
-Deno.test("analyzeImage passes on a failure that is not about capacity", async () => {
+Deno.test("analyzeFile passes on a failure that is not about capacity", async () => {
   await installServiceAccount();
   const { restore } = stubFetch(() => answer("not json"));
   try {
-    const err = await assertRejects(() => analyzeImage(ARGS));
+    const err = await assertRejects(() => analyzeFile(ARGS));
     assertEquals(err instanceof ServiceBusyError, false);
   } finally {
     restore();
