@@ -16,7 +16,9 @@ import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_siz
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_size_voice_input.dart';
 import 'package:tryzeon/feature/store/product/presentation/widgets/product_advanced_fields_editor.dart';
 import 'package:tryzeon/feature/store/product/presentation/widgets/product_basic_fields_editor.dart';
+import 'package:tryzeon/feature/store/product/presentation/widgets/product_form_section_label.dart';
 import 'package:tryzeon/feature/store/product/presentation/widgets/product_image_editor.dart';
+import 'package:tryzeon/feature/store/product/presentation/widgets/product_publish_section.dart';
 import 'package:tryzeon/feature/store/product/presentation/widgets/product_size_matrix_editor.dart';
 
 class ProductFormLayout extends StatelessWidget {
@@ -56,7 +58,7 @@ class ProductFormLayout extends StatelessWidget {
               AppSpacing.lg,
               AppSpacing.smMd,
             ),
-            child: _FormSectionLabel(
+            child: ProductFormSectionLabel(
               number: '01',
               title: '商品圖片',
               helper: '最多 3 張 · 第一張為主圖，用於封面與 AI 試穿，請放完整正面照 · 長按拖曳調整順序',
@@ -113,7 +115,7 @@ class ProductFormLayout extends StatelessWidget {
           const SizedBox(height: AppSpacing.lg),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            child: _FormSectionLabel(number: '02', title: '商品資訊'),
+            child: ProductFormSectionLabel(number: '02', title: '商品資訊'),
           ),
           const SizedBox(height: AppSpacing.md),
           Padding(
@@ -153,7 +155,7 @@ class ProductFormLayout extends StatelessWidget {
             child: Row(
               children: [
                 const Expanded(
-                  child: _FormSectionLabel(number: '03', title: '尺寸資訊'),
+                  child: ProductFormSectionLabel(number: '03', title: '尺寸資訊'),
                 ),
                 CoachMarkAnchor(
                   target: CoachMarkTarget.productSizeVoice,
@@ -178,6 +180,10 @@ class ProductFormLayout extends StatelessWidget {
                   ),
             ),
           ),
+          const SizedBox(height: AppSpacing.lg),
+          const Divider(),
+          const SizedBox(height: AppSpacing.lg),
+          ProductPublishSection(status: formData.status),
         ],
       ),
     );
@@ -217,47 +223,6 @@ class _SizeVoiceButton extends StatelessWidget {
           color: colorScheme.onSurface,
         ),
       },
-    );
-  }
-}
-
-class _FormSectionLabel extends StatelessWidget {
-  const _FormSectionLabel({
-    required this.number,
-    required this.title,
-    this.helper,
-  });
-
-  final String number;
-  final String title;
-  final String? helper;
-
-  @override
-  Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-    final textTheme = theme.textTheme;
-    final colorScheme = theme.colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          number,
-          style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurface),
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        Text(title, style: textTheme.titleMedium),
-        if (helper != null) ...[
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            helper!,
-            style: textTheme.bodySmall?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ],
     );
   }
 }

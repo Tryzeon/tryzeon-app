@@ -16,7 +16,6 @@ import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_siz
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_size_voice_input.dart';
 import 'package:tryzeon/feature/store/product/presentation/widgets/product_danger_zone.dart';
 import 'package:tryzeon/feature/store/product/presentation/widgets/product_form_layout.dart';
-import 'package:tryzeon/feature/store/product/presentation/widgets/product_status_section.dart';
 import 'package:tryzeon/feature/store/product/providers/store_product_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -60,7 +59,6 @@ class _EditProductContent extends HookConsumerWidget {
     final mutation = ref.watch(productEditProvider);
     final isSaving = mutation == ProductMutation.update;
     final isDeleting = mutation == ProductMutation.delete;
-    final isUpdatingStatus = mutation == ProductMutation.setStatus;
     final isBusy = mutation != null;
     final productCategoriesAsync = ref.watch(productCategoriesProvider);
 
@@ -154,11 +152,6 @@ class _EditProductContent extends HookConsumerWidget {
                   maxImages: remainingCount,
                 );
               },
-            ),
-            ProductStatusSection(
-              product: product,
-              isBusy: isBusy,
-              isUpdating: isUpdatingStatus,
             ),
             ProductDangerZone(
               onDelete: deleteProduct,

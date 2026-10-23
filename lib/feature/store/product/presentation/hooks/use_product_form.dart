@@ -29,6 +29,7 @@ class ProductFormData {
     required this.selectedThickness,
     required this.selectedStyles,
     required this.selectedSeasons,
+    required this.status,
   });
 
   final GlobalKey<FormState> formKey;
@@ -46,6 +47,7 @@ class ProductFormData {
   final ValueNotifier<ProductThickness?> selectedThickness;
   final ValueNotifier<Set<ClothingStyle>?> selectedStyles;
   final ValueNotifier<Set<ProductSeason>?> selectedSeasons;
+  final ValueNotifier<ProductStatus> status;
 
   bool validate(final BuildContext context) {
     final form = formKey.currentState;
@@ -91,6 +93,7 @@ class ProductFormData {
       garmentType: selectedGarmentType.value!,
       price: double.parse(priceController.text),
       gender: selectedGender.value!,
+      status: status.value,
       purchaseLink: purchaseLinkController.text.isNotEmpty
           ? purchaseLinkController.text
           : null,
@@ -188,6 +191,9 @@ ProductFormData useProductForm({final Product? initialProduct}) {
   final selectedSeasons = useValueNotifier<Set<ProductSeason>?>(
     initialProduct?.seasons,
   );
+  final status = useValueNotifier<ProductStatus>(
+    initialProduct?.status ?? ProductStatus.active,
+  );
 
   return ProductFormData(
     formKey: formKey,
@@ -205,5 +211,6 @@ ProductFormData useProductForm({final Product? initialProduct}) {
     selectedThickness: selectedThickness,
     selectedStyles: selectedStyles,
     selectedSeasons: selectedSeasons,
+    status: status,
   );
 }

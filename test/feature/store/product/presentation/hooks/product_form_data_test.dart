@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type_measurements.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
 import 'package:tryzeon/feature/common/product_category/domain/entities/product_category.dart';
+import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product_analysis_result.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product_image_analysis.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.dart';
@@ -40,6 +42,21 @@ ProductFormData _formData() => ProductFormData(
   selectedThickness: ValueNotifier<ProductThickness?>(null),
   selectedStyles: ValueNotifier<Set<ClothingStyle>?>(null),
   selectedSeasons: ValueNotifier<Set<ProductSeason>?>(null),
+  status: ValueNotifier<ProductStatus>(ProductStatus.active),
+);
+
+final _archivedProduct = Product(
+  id: 'p1',
+  storeId: 's1',
+  name: 'Tee',
+  categoryId: _top.id,
+  garmentType: GarmentType.top,
+  price: 500,
+  imagePaths: const [],
+  imageUrls: const [],
+  status: ProductStatus.archived,
+  createdAt: DateTime(2026),
+  updatedAt: DateTime(2026),
 );
 
 void main() {
@@ -103,6 +120,48 @@ void main() {
 
       expect(form.selectedCategoryId.value, _pants.id);
       expect(form.selectedGarmentType.value, GarmentType.pants);
+    });
+
+    test('toDraft carries the publish switch', () {
+      final form = _formData()
+        ..nameController.text = 'Tee'
+        ..priceController.text = '500'
+        ..selectCategory(_top);
+      form.selectedGender.value = ProductGender.unisex;
+
+      form.status.value = ProductStatus.archived;
+
+      expect(form.toDraft().status, ProductStatus.archived);
+    });
+
+    testWidgets("the form starts from the product's status", (
+      final tester,
+    ) async {
+      late ProductFormData form;
+      await tester.pumpWidget(
+        HookBuilder(
+          builder: (final _) {
+            form = useProductForm(initialProduct: _archivedProduct);
+            return const SizedBox();
+          },
+        ),
+      );
+
+      expect(form.status.value, ProductStatus.archived);
+    });
+
+    testWidgets('a new product defaults to published', (final tester) async {
+      late ProductFormData form;
+      await tester.pumpWidget(
+        HookBuilder(
+          builder: (final _) {
+            form = useProductForm();
+            return const SizedBox();
+          },
+        ),
+      );
+
+      expect(form.status.value, ProductStatus.active);
     });
   });
 }

@@ -11,5 +11,6 @@ enum CoachMarkTarget {
   productPrice,
   productPurchaseLink,
   productSizeVoice,
+  productPublish,
   productSave,
 }
