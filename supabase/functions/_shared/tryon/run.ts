@@ -116,7 +116,7 @@ export async function runTryonJob<M extends TryonMode>(
     ]);
 
     const garments = materialGarments.map((g) => ({
-      category: g.category,
+      garmentType: g.garmentType,
       detail: g.detail,
     }));
 

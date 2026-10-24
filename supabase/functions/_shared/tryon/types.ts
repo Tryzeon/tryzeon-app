@@ -9,29 +9,6 @@ export type { UsageCounter };
 
 export type GarmentType = Enums<"garment_type">;
 
-/**
- * What the prompt reasons about, which is narrower than what a store or a
- * shopper tags a garment with: `pants` and `skirt` are one replacement scope,
- * and `others` names no scope at all, so it maps to nothing rather than to a
- * category the model would then apply.
- */
-export type GarmentCategory = "top" | "bottom" | "full_body" | "outerwear";
-
-const CATEGORY_BY_TYPE: Record<GarmentType, GarmentCategory | undefined> = {
-  top: "top",
-  outerwear: "outerwear",
-  pants: "bottom",
-  skirt: "bottom",
-  one_piece: "full_body",
-  others: undefined,
-};
-
-export function garmentCategoryOf(
-  garmentType: GarmentType,
-): GarmentCategory | undefined {
-  return CATEGORY_BY_TYPE[garmentType];
-}
-
 export function isGarmentType(value: unknown): value is GarmentType {
   return typeof value === "string" &&
     (GARMENT_TYPE_VALUES as readonly string[]).includes(value);
@@ -82,7 +59,7 @@ export interface GarmentMaterial {
  */
 export interface ResolvedGarment {
   images: ImageSource[];
-  category?: GarmentCategory;
+  garmentType?: GarmentType;
   detail?: string;
 }
 
@@ -134,7 +111,7 @@ export type TryonResultFor<M extends TryonMode> = M extends "image"
 export const LIMITS = {
   MAX_GARMENTS: 3,
   MAX_IMAGES_PER_GARMENT: 3,
-  MAX_GARMENT_DETAIL_LENGTH: 500,
+  MAX_GARMENT_DETAIL_LENGTH: 1000,
   MAX_PROMPT_LENGTH: 1000,
   MAX_BASE64_LENGTH: 16 * 1024 * 1024,
 } as const;

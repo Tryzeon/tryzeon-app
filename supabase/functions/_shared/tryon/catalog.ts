@@ -1,6 +1,6 @@
 import { isUuid } from "../text.ts";
 import { ValidationError } from "./errors.ts";
-import { garmentCategoryOf, isGarmentType, LIMITS } from "./types.ts";
+import { isGarmentType, LIMITS } from "./types.ts";
 import type { ProductRef, ResolvedGarment } from "./types.ts";
 import { asJsonObject, type DbClient } from "../supabase.ts";
 
@@ -12,6 +12,7 @@ export interface ProductGarmentRow {
   fit: unknown;
   elasticity: unknown;
   thickness: unknown;
+  description: unknown;
 }
 
 function trimmedString(value: unknown): string {
@@ -37,6 +38,8 @@ export function buildProductGarmentDetail(
   if (elasticity) parts.push(`Elasticity: ${elasticity}`);
   const thickness = trimmedString(row.thickness);
   if (thickness) parts.push(`Thickness: ${thickness}`);
+  const description = trimmedString(row.description);
+  if (description) parts.push(`Description: ${description}`);
   if (parts.length === 0) return undefined;
   return parts.join(". ").slice(0, LIMITS.MAX_GARMENT_DETAIL_LENGTH);
 }
@@ -75,13 +78,10 @@ export async function resolveProductGarment(
   // photo instead of describing the garment.
   const images = [{ publicImageKey: paths[0] }];
 
-  const category = isGarmentType(row.garment_type)
-    ? garmentCategoryOf(row.garment_type)
-    : undefined;
   const detail = buildProductGarmentDetail(row);
 
   const garment: ResolvedGarment = { images };
-  if (category !== undefined) garment.category = category;
+  if (isGarmentType(row.garment_type)) garment.garmentType = row.garment_type;
   if (detail !== undefined) garment.detail = detail;
   return garment;
 }

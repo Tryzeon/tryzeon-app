@@ -230,7 +230,7 @@ Deno.test("the job runs on validated params, not the raw input", async () => {
       now: () => 1,
     },
   );
-  assertEquals(seenGarments, [{ category: undefined, detail: undefined }]);
+  assertEquals(seenGarments, [{ garmentType: undefined, detail: undefined }]);
 });
 
 Deno.test("invalid params are rejected before quota is charged", async () => {
@@ -368,7 +368,7 @@ Deno.test("product-ref garments are resolved before loading", async () => {
   assertEquals(seenGarmentB64, ["PRODUCTB64"]);
 });
 
-Deno.test("the resolvers' category and detail reach the generator, garment by garment", async () => {
+Deno.test("the resolvers' garment type and text reach the generator, garment by garment", async () => {
   const quota = fakeQuota();
   let seenGarments: GarmentBrief[] | undefined;
   await runJob(
@@ -387,7 +387,7 @@ Deno.test("the resolvers' category and detail reach the generator, garment by ga
       resolveProduct: () =>
         Promise.resolve({
           images: [{ base64: "P" }],
-          category: "full_body",
+          garmentType: "skirt",
           detail: "Product: X",
         }),
       resolveWardrobe: () => Promise.resolve({ images: [{ base64: "W" }] }),
@@ -400,8 +400,8 @@ Deno.test("the resolvers' category and detail reach the generator, garment by ga
     },
   );
   assertEquals(seenGarments, [
-    { category: "full_body", detail: "Product: X" },
-    { category: undefined, detail: undefined },
+    { garmentType: "skirt", detail: "Product: X" },
+    { garmentType: undefined, detail: undefined },
   ]);
 });
 

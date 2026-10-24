@@ -47,37 +47,25 @@ function fakeAdmin(stub: LookupStub) {
   return { admin, filters };
 }
 
-Deno.test("buildWardrobeGarmentDetail joins garment type and tags", () => {
+Deno.test("buildWardrobeGarmentDetail lists the tags", () => {
   assertEquals(
     buildWardrobeGarmentDetail({
       image_path: "u1/top/a.png",
       garment_type: "top",
       tags: ["寬鬆", "米色"],
     }),
-    "Garment type: top. Tags: 寬鬆, 米色",
+    "Tags: 寬鬆, 米色",
   );
 });
 
-Deno.test("buildWardrobeGarmentDetail passes the enum code through untranslated", () => {
-  assertEquals(
-    buildWardrobeGarmentDetail({
-      image_path: "p",
-      garment_type: "others",
-      tags: [],
-    }),
-    "Garment type: others",
-  );
-});
-
-Deno.test("buildWardrobeGarmentDetail omits the tags part rather than leaving it blank", () => {
-  // `garment_type` is a NOT NULL enum, so only the tags half can ever be absent.
+Deno.test("buildWardrobeGarmentDetail has nothing to say for a row with no tags", () => {
   assertEquals(
     buildWardrobeGarmentDetail({
       image_path: "p",
       garment_type: "pants",
       tags: null,
     }),
-    "Garment type: pants",
+    undefined,
   );
   assertEquals(
     buildWardrobeGarmentDetail({
@@ -85,7 +73,7 @@ Deno.test("buildWardrobeGarmentDetail omits the tags part rather than leaving it
       garment_type: "pants",
       tags: [],
     }),
-    "Garment type: pants",
+    undefined,
   );
 });
 
@@ -98,7 +86,7 @@ Deno.test("buildWardrobeGarmentDetail ignores blank and non-string tags", () => 
       garment_type: "top",
       tags: ["a", 7, "", null, "  ", "b"] as unknown as string[],
     }),
-    "Garment type: top. Tags: a, b",
+    "Tags: a, b",
   );
 });
 
@@ -108,7 +96,7 @@ Deno.test("buildWardrobeGarmentDetail caps overlong detail at the limit", () => 
     garment_type: "top",
     tags: ["x".repeat(LIMITS.MAX_GARMENT_DETAIL_LENGTH + 200)],
   });
-  assertEquals(detail.length, LIMITS.MAX_GARMENT_DETAIL_LENGTH);
+  assertEquals(detail?.length, LIMITS.MAX_GARMENT_DETAIL_LENGTH);
 });
 
 Deno.test("resolveWardrobeGarment rejects an id that cannot name a row", async () => {
@@ -135,7 +123,7 @@ Deno.test("resolveWardrobeGarment binds the read to the asking user", async () =
   assertEquals(filters, [["id", ID], ["user_id", "u1"]]);
 });
 
-Deno.test("resolveWardrobeGarment yields one image source, the category, and the detail", async () => {
+Deno.test("resolveWardrobeGarment yields one image source, the garment type, and the detail", async () => {
   const { admin } = fakeAdmin({
     row: {
       id: ID,
@@ -149,12 +137,12 @@ Deno.test("resolveWardrobeGarment yields one image source, the category, and the
 
   assertEquals(garment, {
     images: [{ bucket: WARDROBE_IMAGES_BUCKET, path: "u1/top/a.png" }],
-    category: "full_body",
-    detail: "Garment type: one_piece. Tags: 寬鬆",
+    garmentType: "one_piece",
+    detail: "Tags: 寬鬆",
   });
 });
 
-Deno.test("resolveWardrobeGarment leaves a scopeless row uncategorized", async () => {
+Deno.test("resolveWardrobeGarment passes a scopeless garment type through for the prompt to leave open", async () => {
   const { admin } = fakeAdmin({
     row: {
       id: ID,
@@ -168,11 +156,11 @@ Deno.test("resolveWardrobeGarment leaves a scopeless row uncategorized", async (
 
   assertEquals(garment, {
     images: [{ bucket: WARDROBE_IMAGES_BUCKET, path: "u1/top/a.png" }],
-    detail: "Garment type: others",
+    garmentType: "others",
   });
 });
 
-Deno.test("resolveWardrobeGarment still describes a row with no tags", async () => {
+Deno.test("resolveWardrobeGarment leaves the detail out for a row with no tags", async () => {
   const { admin } = fakeAdmin({
     row: {
       id: ID,
@@ -186,8 +174,7 @@ Deno.test("resolveWardrobeGarment still describes a row with no tags", async () 
 
   assertEquals(garment, {
     images: [{ bucket: WARDROBE_IMAGES_BUCKET, path: "u1/top/a.png" }],
-    category: "top",
-    detail: "Garment type: top",
+    garmentType: "top",
   });
 });
 

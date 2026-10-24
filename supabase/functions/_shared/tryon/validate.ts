@@ -1,9 +1,9 @@
 /**
  * Policy: normalization never silently changes the meaning of user input — it
  * only trims and narrows shapes. Every limit is enforced by
- * `validateTryonParams`, which throws. Truncation is reserved for
- * server-generated text (see `buildProductGarmentDetail`), so a caller is never
- * told "accepted" while its input was quietly cut short.
+ * `validateTryonParams`, which throws. Truncation is reserved for text the
+ * server assembles from its own rows (see `buildProductGarmentDetail`), so a
+ * caller is never told "accepted" while its input was quietly cut short.
  */
 import { requireString, ValidationError } from "../validation.ts";
 import { isUuid } from "../text.ts";
@@ -84,8 +84,8 @@ function validateGarment(garment: GarmentInput): GarmentInput {
       `too many images for a garment (max ${LIMITS.MAX_IMAGES_PER_GARMENT})`,
     );
   }
-  // No `detail` to check: a caller cannot supply one. A resolver attaches it
-  // after this guard has run, capped where it is built.
+  // No garment text to check: a caller cannot supply any. A resolver attaches
+  // it after this guard has run, capped where it is built.
   return {
     images: garment.images.map((img) =>
       requireInlineImage(img, "garment image")

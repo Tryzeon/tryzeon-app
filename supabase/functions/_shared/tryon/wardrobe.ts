@@ -4,7 +4,7 @@ import {
 } from "../supabase-storage.ts";
 import { isUuid, textArrayValues } from "../text.ts";
 import { ValidationError } from "./errors.ts";
-import { garmentCategoryOf, LIMITS } from "./types.ts";
+import { LIMITS } from "./types.ts";
 import type { ResolvedGarment } from "./types.ts";
 import type { Tables } from "../database.types.ts";
 import type { DbClient } from "../supabase.ts";
@@ -18,19 +18,14 @@ function trimmedString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
-/**
- * The garment type goes in as its raw enum code: the one enum→Chinese map in
- * this codebase belongs to the LINE card, which dresses rows for people.
- */
-export function buildWardrobeGarmentDetail(row: WardrobeGarmentRow): string {
-  const parts = [`Garment type: ${row.garment_type}`];
-
+export function buildWardrobeGarmentDetail(
+  row: WardrobeGarmentRow,
+): string | undefined {
   const tags = textArrayValues(row.tags).map((t) => t.trim()).filter((t) =>
     t.length > 0
   );
-  if (tags.length > 0) parts.push(`Tags: ${tags.join(", ")}`);
-
-  return parts.join(". ").slice(0, LIMITS.MAX_GARMENT_DETAIL_LENGTH);
+  if (tags.length === 0) return undefined;
+  return `Tags: ${tags.join(", ")}`.slice(0, LIMITS.MAX_GARMENT_DETAIL_LENGTH);
 }
 
 /**
@@ -71,9 +66,9 @@ export async function resolveWardrobeGarment(
 
   const garment: ResolvedGarment = {
     images: [{ bucket: WARDROBE_IMAGES_BUCKET, path }],
-    detail: buildWardrobeGarmentDetail(data),
+    garmentType: data.garment_type,
   };
-  const category = garmentCategoryOf(data.garment_type);
-  if (category !== undefined) garment.category = category;
+  const detail = buildWardrobeGarmentDetail(data);
+  if (detail !== undefined) garment.detail = detail;
   return garment;
 }

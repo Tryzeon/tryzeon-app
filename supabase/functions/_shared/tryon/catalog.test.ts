@@ -52,6 +52,7 @@ const PRODUCT_ROW = {
   fit: null,
   elasticity: null,
   thickness: null,
+  description: null,
 };
 
 Deno.test("buildProductGarmentDetail joins present fields in fixed order", () => {
@@ -63,10 +64,11 @@ Deno.test("buildProductGarmentDetail joins present fields in fixed order", () =>
     fit: "regular",
     elasticity: "low",
     thickness: "medium",
+    description: " 有內襯 ",
   });
   assertEquals(
     detail,
-    "Product: Linen Shirt. Material: 100% Linen. Cut: regular. Elasticity: low. Thickness: medium",
+    "Product: Linen Shirt. Material: 100% Linen. Cut: regular. Elasticity: low. Thickness: medium. Description: 有內襯",
   );
 });
 
@@ -79,6 +81,7 @@ Deno.test("buildProductGarmentDetail skips empty and missing fields", () => {
     fit: null,
     elasticity: undefined,
     thickness: "high",
+    description: null,
   });
   assertEquals(detail, "Product: Tee. Thickness: high");
 });
@@ -92,6 +95,7 @@ Deno.test("buildProductGarmentDetail returns undefined when all empty", () => {
     fit: null,
     elasticity: null,
     thickness: null,
+    description: null,
   });
   assertEquals(detail, undefined);
 });
@@ -105,8 +109,27 @@ Deno.test("buildProductGarmentDetail caps overlong detail at the limit", () => {
     fit: null,
     elasticity: null,
     thickness: null,
+    description: null,
   });
   assertEquals(detail?.length, LIMITS.MAX_GARMENT_DETAIL_LENGTH);
+});
+
+Deno.test("buildProductGarmentDetail lets the cap cut the description, not an attribute", () => {
+  const detail = buildProductGarmentDetail({
+    image_paths: [],
+    garment_type: "top",
+    name: "Tee",
+    material: null,
+    fit: null,
+    elasticity: null,
+    thickness: "high",
+    description: "x".repeat(LIMITS.MAX_GARMENT_DETAIL_LENGTH),
+  });
+  assertEquals(detail?.length, LIMITS.MAX_GARMENT_DETAIL_LENGTH);
+  assertEquals(
+    detail?.startsWith("Product: Tee. Thickness: high. Description: x"),
+    true,
+  );
 });
 
 Deno.test("resolveProductGarment looks the product up through get_shop_product", async () => {
@@ -145,24 +168,14 @@ Deno.test("resolveProductGarment sends only the product's first image", async ()
   assertEquals(garment.images, [{ publicImageKey: "stores/main.jpg" }]);
 });
 
-Deno.test("resolveProductGarment carries the product's garment type as a category", async () => {
+Deno.test("resolveProductGarment carries the product's garment type", async () => {
   const { admin } = fakeAdmin({
-    products: { row: { ...PRODUCT_ROW, garment_type: "one_piece" } },
+    products: { row: { ...PRODUCT_ROW, garment_type: "skirt" } },
   });
 
   const garment = await resolveProductGarment(admin, { productId: PRODUCT_ID });
 
-  assertEquals(garment.category, "full_body");
-});
-
-Deno.test("resolveProductGarment leaves a scopeless garment type uncategorized", async () => {
-  const { admin } = fakeAdmin({
-    products: { row: { ...PRODUCT_ROW, garment_type: "others" } },
-  });
-
-  const garment = await resolveProductGarment(admin, { productId: PRODUCT_ID });
-
-  assertEquals("category" in garment, false);
+  assertEquals(garment.garmentType, "skirt");
 });
 
 Deno.test("resolveProductGarment ignores a garment type outside the vocabulary", async () => {
@@ -173,5 +186,5 @@ Deno.test("resolveProductGarment ignores a garment type outside the vocabulary",
 
   const garment = await resolveProductGarment(admin, { productId: PRODUCT_ID });
 
-  assertEquals("category" in garment, false);
+  assertEquals("garmentType" in garment, false);
 });
