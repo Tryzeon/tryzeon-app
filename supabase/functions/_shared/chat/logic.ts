@@ -232,9 +232,7 @@ export function toSearchResultItem(
   row: Record<string, unknown>,
 ): Record<string, unknown> {
   const store = (row.store_profiles ?? null) as Record<string, unknown> | null;
-  const variants = Array.isArray(row.product_variants)
-    ? row.product_variants
-    : [];
+  const sizes = Array.isArray(row.product_sizes) ? row.product_sizes : [];
 
   return withSetFields({
     id: String(row.id),
@@ -242,7 +240,7 @@ export function toSearchResultItem(
     price: row.price,
     store: store?.name ?? null,
     channels: store?.channels ?? null,
-    sizes: variants.map((v) => asRecord(v)?.name).filter(Boolean),
+    sizes: sizes.map((size) => asRecord(size)?.name).filter(Boolean),
     gender: row.gender,
     material: row.material,
     fit: row.fit,

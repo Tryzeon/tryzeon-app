@@ -368,7 +368,7 @@ const SHOP_ROW = {
   id: "8f3a-p1",
   store_id: "11aa-s1",
   name: "白襯衫",
-  category_ids: ["cat-1", "cat-2"],
+  category_id: "cat-1",
   price: 1200,
   image_paths: ["stores/s1/p1.jpg"],
   created_at: "2026-01-01T00:00:00Z",
@@ -381,20 +381,20 @@ const SHOP_ROW = {
   styles: ["basic"],
   seasons: [],
   gender: "female",
-  product_variants: [
+  product_sizes: [
     {
       id: "v1",
       product_id: "8f3a-p1",
       name: "S",
       created_at: "x",
-      measurements: { chest: 90 },
+      garment_measurements: { chest: 90 },
     },
     {
       id: "v2",
       product_id: "8f3a-p1",
       name: "M",
       created_at: "x",
-      measurements: { chest: 94 },
+      garment_measurements: { chest: 94 },
     },
   ],
   store_profiles: {
@@ -424,21 +424,28 @@ Deno.test("toSearchResultItem keeps what the model judges and cites on", () => {
 
 Deno.test("toSearchResultItem ships no uuid but the one the model must copy", () => {
   const item = toSearchResultItem(SHOP_ROW);
-  // The whole point of the projection: `store_id`, `category_ids` and each
-  // variant's own id are uuids that look exactly like the citable one, and
+  // The whole point of the projection: `store_id`, `category_id` and each
+  // size's own id are uuids that look exactly like the citable one, and
   // copying the wrong one drops the card with no error raised anywhere.
   for (
     const key of [
       "store_id",
-      "category_ids",
-      "product_variants",
+      "category_id",
+      "product_sizes",
       "store_profiles",
     ]
   ) {
     assertEquals(key in item, false, `${key} must not reach the model`);
   }
-  assertStringIncludes(JSON.stringify(item), "8f3a-p1");
-  assertEquals(JSON.stringify(item).includes("11aa-s1"), false);
+  const wire = JSON.stringify(item);
+  assertStringIncludes(wire, "8f3a-p1");
+  for (const leaked of ["11aa-s1", "cat-1", "v1", "v2"]) {
+    assertEquals(
+      wire.includes(leaked),
+      false,
+      `${leaked} must not reach the model`,
+    );
+  }
 });
 
 Deno.test("toSearchResultItem drops unset attributes rather than sending nulls", () => {
@@ -447,7 +454,7 @@ Deno.test("toSearchResultItem drops unset attributes rather than sending nulls",
   assertEquals("seasons" in item, false);
 });
 
-Deno.test("toSearchResultItem tolerates a row with no variants and no store", () => {
+Deno.test("toSearchResultItem tolerates a row with no sizes and no store", () => {
   const item = toSearchResultItem({ id: "p9", name: "褲", price: 500 });
   assertEquals(item, { id: "p9", name: "褲", price: 500 });
 });
