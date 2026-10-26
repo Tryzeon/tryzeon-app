@@ -755,6 +755,10 @@ export type Database = {
         Args: { p_product_ids: (string)[]; p_user_id: string };
         Returns: undefined;
       };
+      product_image_paths_owned: {
+        Args: { paths: (string)[]; product_id: string; store_id: string };
+        Returns: boolean;
+      };
       quota_months_elapsed: {
         Args: { p_from: string; p_to: string };
         Returns: number;
