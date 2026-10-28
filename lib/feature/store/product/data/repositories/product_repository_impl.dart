@@ -14,6 +14,7 @@ import 'package:tryzeon/feature/store/product/data/mappers/create_product_color_
 import 'package:tryzeon/feature/store/product/data/mappers/store_product_mappr.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/domain/repositories/product_repository.dart';
+import 'package:tryzeon/feature/store/product/domain/services/product_color_diff.dart';
 import 'package:tryzeon/feature/store/product/domain/services/product_size_diff.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/size_item.dart';
 import 'package:typed_result/typed_result.dart';
@@ -96,7 +97,11 @@ class ProductRepositoryImpl implements ProductRepository {
 
       if (product.colors.isNotEmpty) {
         await _remoteDataSource.insertProductColors(
-          toCreateProductColorRequests(product),
+          toCreateProductColorRequests(
+            productId: product.id,
+            storeId: product.storeId,
+            colors: product.colors,
+          ),
         );
       }
 
@@ -120,6 +125,7 @@ class ProductRepositoryImpl implements ProductRepository {
     required final Product original,
     required final Product target,
     final ProductSizeDiff sizeDiff = const ProductSizeDiff.empty(),
+    final ProductColorDiff colorDiff = const ProductColorDiff.empty(),
   }) async {
     try {
       for (final sizeId in sizeDiff.idsToDelete) {
@@ -155,19 +161,44 @@ class ProductRepositoryImpl implements ProductRepository {
         await _remoteDataSource.updateProduct(original.id, productChanges);
       }
 
-      final originalColors = {
-        for (final color in original.colors) color.id: color,
-      };
-      for (final color in target.colors) {
-        final before = originalColors[color.id];
-        if (before == null) continue;
+      for (final colorId in colorDiff.idsToDelete) {
+        await _remoteDataSource.deleteProductColor(colorId);
+      }
+
+      // The (product_id, name) unique index is not deferrable, so a rename or
+      // swap would collide mid-way unless every old name is released first.
+      for (final update in colorDiff.toUpdate) {
+        if (update.original.name != null &&
+            update.original.name != update.target.name) {
+          await _remoteDataSource.updateProductColor(update.original.id, {
+            'name': null,
+          });
+        }
+      }
+
+      for (final update in colorDiff.toUpdate) {
         final colorChanges = jsonDiff(
-          _mappr.convert<ProductColor, ProductColorDto>(before).toJson(),
-          _mappr.convert<ProductColor, ProductColorDto>(color).toJson(),
+          _mappr
+              .convert<ProductColor, ProductColorDto>(update.original)
+              .toJson(),
+          _mappr.convert<ProductColor, ProductColorDto>(update.target).toJson(),
         );
         if (colorChanges.isNotEmpty) {
-          await _remoteDataSource.updateProductColor(color.id, colorChanges);
+          await _remoteDataSource.updateProductColor(
+            update.original.id,
+            colorChanges,
+          );
         }
+      }
+
+      if (colorDiff.toAdd.isNotEmpty) {
+        await _remoteDataSource.insertProductColors(
+          toCreateProductColorRequests(
+            productId: original.id,
+            storeId: original.storeId,
+            colors: colorDiff.toAdd,
+          ),
+        );
       }
     } catch (e, stackTrace) {
       AppLogger.error('Failed to update product', e, stackTrace);

@@ -137,7 +137,7 @@ void main() {
           price: 1280,
         ),
         colors: [
-          NewProductColor(imagePaths: ['p1.jpg']),
+          NewProductColor(imagePaths: ['p1.jpg'], position: 0),
         ],
         sizes: [],
       ),
@@ -176,7 +176,7 @@ void main() {
           status: ProductStatus.archived,
         ),
         colors: [
-          NewProductColor(imagePaths: ['p1.jpg']),
+          NewProductColor(imagePaths: ['p1.jpg'], position: 0),
         ],
         sizes: [],
       ),
@@ -187,21 +187,12 @@ void main() {
 
   test("a new product's colours become insert rows numbered by order", () {
     final requests = toCreateProductColorRequests(
-      const NewProduct(
-        id: 'p1',
-        storeId: 's1',
-        draft: ProductDraft(
-          name: '碎花洋裝',
-          categoryId: 'c1',
-          garmentType: GarmentType.onePiece,
-          price: 1280,
-        ),
-        colors: [
-          NewProductColor(name: '黑', imagePaths: ['p1/black.jpg']),
-          NewProductColor(imagePaths: ['p1/navy.jpg']),
-        ],
-        sizes: [],
-      ),
+      productId: 'p1',
+      storeId: 's1',
+      colors: const [
+        NewProductColor(name: '黑', imagePaths: ['p1/black.jpg'], position: 0),
+        NewProductColor(imagePaths: ['p1/navy.jpg'], position: 1),
+      ],
     );
 
     expect(requests.map((final r) => r.toJson()), [

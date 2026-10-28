@@ -20,8 +20,10 @@ import 'package:tryzeon/feature/store/product/data/dtos/create_product_size_requ
 import 'package:tryzeon/feature/store/product/data/dtos/product_dto.dart';
 import 'package:tryzeon/feature/store/product/data/repositories/product_repository_impl.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
+import 'package:tryzeon/feature/store/product/domain/services/product_color_diff.dart';
 import 'package:tryzeon/feature/store/product/domain/services/product_size_diff.dart';
 import 'package:tryzeon/feature/store/product/domain/services/product_update_plan.dart';
+import 'package:tryzeon/feature/store/product/domain/value_objects/color_item.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/size_item.dart';
 import 'package:typed_result/typed_result.dart';
@@ -40,6 +42,7 @@ class _FakeRemote implements ProductRemoteDataSource {
   final Map<String, Map<String, dynamic>> colorChanges = {};
   Object? getError;
   Object? updateError;
+  final List<(String, Map<String, dynamic>)> colorWrites = [];
   final List<String> writes = [];
 
   @override
@@ -89,8 +92,13 @@ class _FakeRemote implements ProductRemoteDataSource {
     final Map<String, dynamic> changes,
   ) async {
     colorChanges[colorId] = changes;
+    colorWrites.add((colorId, changes));
     writes.add('updateColor:$colorId');
   }
+
+  @override
+  Future<void> deleteProductColor(final String colorId) async =>
+      writes.add('deleteColor:$colorId');
 
   @override
   Future<void> updateProduct(
@@ -337,7 +345,7 @@ void main() {
             seasons: {ProductSeason.winter, ProductSeason.spring},
           ),
           colors: [
-            NewProductColor(imagePaths: ['p1.jpg']),
+            NewProductColor(imagePaths: ['p1.jpg'], position: 0),
           ],
           sizes: [],
         ),
@@ -366,7 +374,7 @@ void main() {
             price: 1280,
           ),
           colors: [
-            NewProductColor(imagePaths: ['p1/a.jpg']),
+            NewProductColor(imagePaths: ['p1/a.jpg'], position: 0),
           ],
           sizes: [NewSizeItem(name: 'M')],
         ),
@@ -424,8 +432,14 @@ void main() {
       garmentType: GarmentType.onePiece,
       price: 1280,
     ),
-    images: [
-      for (final path in imagePaths) ImageItem.existing(path: path, url: path),
+    colors: [
+      ColorItem.existing(
+        id: original.colors.single.id,
+        images: [
+          for (final path in imagePaths)
+            ImageItem.existing(path: path, url: path),
+        ],
+      ),
     ],
     uploadedPaths: const [],
     sizes: sizes,
@@ -445,6 +459,7 @@ void main() {
         original: original,
         target: plan.target,
         sizeDiff: plan.sizeDiff,
+        colorDiff: plan.colorDiff,
       );
 
       expect(result.isSuccess, isTrue);
@@ -472,6 +487,7 @@ void main() {
         original: original,
         target: plan.target,
         sizeDiff: plan.sizeDiff,
+        colorDiff: plan.colorDiff,
       );
 
       expect(result.getError(), isA<Failure>());
@@ -495,6 +511,7 @@ void main() {
         original: original,
         target: plan.target,
         sizeDiff: plan.sizeDiff,
+        colorDiff: plan.colorDiff,
       );
 
       expect(result.isSuccess, isTrue);
@@ -519,6 +536,7 @@ void main() {
       original: original,
       target: plan.target,
       sizeDiff: plan.sizeDiff,
+      colorDiff: plan.colorDiff,
     );
 
     expect(result.isSuccess, isTrue);
@@ -592,4 +610,137 @@ void main() {
       expect(remote.getCalls, 0);
     },
   );
+
+  group('colour diff writes', () {
+    ProductColor color(
+      final String id,
+      final String? name,
+      final int position,
+    ) => ProductColor(
+      id: id,
+      productId: 'p1',
+      name: name,
+      imagePaths: ['$id.jpg'],
+      imageUrls: ['https://x/$id.jpg'],
+      position: position,
+      createdAt: DateTime(2026),
+      updatedAt: DateTime(2026),
+    );
+
+    Future<_FakeRemote> run(final ProductColorDiff colorDiff) async {
+      final remote = _FakeRemote(remoteProduct);
+      final result = await buildRepository(remote).updateProduct(
+        original: original,
+        target: original.copyWith(status: ProductStatus.archived),
+        colorDiff: colorDiff,
+      );
+      expect(result.isSuccess, isTrue);
+      return remote;
+    }
+
+    test(
+      'colour writes run after the product row: delete, release names, update, insert',
+      () async {
+        final renamed = color('a', '黑', 0);
+        final remote = await run(
+          ProductColorDiff(
+            idsToDelete: const ['gone'],
+            toUpdate: [
+              ProductColorUpdate(
+                original: renamed,
+                target: renamed.copyWith(name: '灰'),
+              ),
+            ],
+            toAdd: const [
+              NewProductColor(name: '白', imagePaths: ['n.jpg'], position: 1),
+            ],
+          ),
+        );
+
+        expect(remote.writes, [
+          'updateProduct',
+          'deleteColor:gone',
+          'updateColor:a',
+          'updateColor:a',
+          'insertProductColors',
+        ]);
+        expect(remote.colorWrites.map((final write) => write.$2), [
+          {'name': null},
+          {'name': '灰'},
+        ]);
+      },
+    );
+
+    test(
+      'swapping two colour names clears both before writing either',
+      () async {
+        final a = color('a', '黑', 0);
+        final b = color('b', '白', 1);
+        final remote = await run(
+          ProductColorDiff(
+            idsToDelete: const [],
+            toAdd: const [],
+            toUpdate: [
+              ProductColorUpdate(
+                original: a,
+                target: a.copyWith(name: '白'),
+              ),
+              ProductColorUpdate(
+                original: b,
+                target: b.copyWith(name: '黑'),
+              ),
+            ],
+          ),
+        );
+
+        expect(remote.colorWrites.map((final write) => write.$1), [
+          'a',
+          'b',
+          'a',
+          'b',
+        ]);
+        expect(remote.colorWrites.map((final write) => write.$2), [
+          {'name': null},
+          {'name': null},
+          {'name': '白'},
+          {'name': '黑'},
+        ]);
+      },
+    );
+
+    test('a position-only change sends only position', () async {
+      final a = color('a', '黑', 1);
+      final remote = await run(
+        ProductColorDiff(
+          idsToDelete: const [],
+          toAdd: const [],
+          toUpdate: [
+            ProductColorUpdate(original: a, target: a.copyWith(position: 0)),
+          ],
+        ),
+      );
+
+      expect(remote.colorWrites.single.$1, 'a');
+      expect(remote.colorWrites.single.$2, {'position': 0});
+    });
+
+    test('added colours are inserted with their positions', () async {
+      final remote = await run(
+        const ProductColorDiff(
+          idsToDelete: [],
+          toUpdate: [],
+          toAdd: [
+            NewProductColor(name: '黑', imagePaths: ['a.jpg'], position: 2),
+            NewProductColor(name: '白', imagePaths: ['b.jpg'], position: 3),
+          ],
+        ),
+      );
+
+      expect(remote.insertedColors!.map((final c) => c.position), [2, 3]);
+      expect(remote.insertedColors!.map((final c) => c.toJson()['name']), [
+        '黑',
+        '白',
+      ]);
+    });
+  });
 }
