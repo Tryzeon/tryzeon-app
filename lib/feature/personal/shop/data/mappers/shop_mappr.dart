@@ -3,6 +3,7 @@ import 'package:collection/collection.dart';
 import 'package:tryzeon/core/utils/public_image_url.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/product_color/data/mappers/product_color_mappr.dart';
 import 'package:tryzeon/feature/common/product_size/data/dtos/product_size_dto.dart';
 import 'package:tryzeon/feature/common/product_size/data/mappers/product_size_mappr.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/product_size.dart';
@@ -18,7 +19,6 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.da
   [
     MapType<ShopProductDto, ShopProduct>(
       fields: [
-        Field('imageUrls', custom: ShopMapprHelper.imageUrlsToEntity),
         Field('sizes', custom: ShopMapprHelper.sizesToEntity),
         Field('styles', custom: ShopMapprHelper.stylesToEntity),
         Field('seasons', custom: ShopMapprHelper.seasonsToEntity),
@@ -28,16 +28,13 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.da
       fields: [Field('logoUrl', custom: ShopMapprHelper.logoUrlToEntity)],
     ),
   ],
-  includes: [ProductSizeMappr(), CommonStoreMappr()],
+  includes: [ProductColorMappr(), ProductSizeMappr(), CommonStoreMappr()],
 )
 class ShopMappr extends $ShopMappr {
   const ShopMappr();
 }
 
 class ShopMapprHelper {
-  static List<String> imageUrlsToEntity(final ShopProductDto source) =>
-      source.imagePaths.map(PublicImageUrl.of).toList();
-
   /// Embedded `product_sizes` rows come back in no guaranteed order.
   static List<ProductSize>? sizesToEntity(final ShopProductDto source) {
     final dtos = source.sizes;
