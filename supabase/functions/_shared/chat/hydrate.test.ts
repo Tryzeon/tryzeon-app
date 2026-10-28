@@ -36,8 +36,19 @@ Deno.test("idsOf skips ids that are not uuids", () => {
 });
 
 Deno.test("hasProductImage needs a non-empty first image path", () => {
-  assertEquals(hasProductImage({ image_paths: ["stores/s1/p1.jpg"] }), true);
-  for (const image_paths of [[], null, [""], undefined]) {
-    assertEquals(hasProductImage({ image_paths }), false);
+  const color = (image_paths: string[]) => ({
+    id: "c1",
+    name: null,
+    image_paths,
+    position: 0,
+  });
+  assertEquals(
+    hasProductImage({ product_colors: [color(["stores/s1/p1.jpg"])] }),
+    true,
+  );
+  for (
+    const product_colors of [[], null, [color([])], [color([""])], undefined]
+  ) {
+    assertEquals(hasProductImage({ product_colors }), false);
   }
 });

@@ -48,7 +48,7 @@ export const WARDROBE_SELECT =
 // Shop product shape for an answer card — mirrors the product detail page so the
 // client renders it directly (sizes + the owning store's public fields).
 export const PRODUCT_SELECT =
-  "*, product_sizes(*), store_profiles!products_store_id_fkey(id, name, address, logo_path, channels)";
+  "*, product_colors(*), product_sizes(*), store_profiles!products_store_id_fkey(id, name, address, logo_path, channels)";
 
 type Enums = Database["public"]["Enums"];
 type ListShopProductsArgs =

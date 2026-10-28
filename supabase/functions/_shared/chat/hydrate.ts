@@ -2,6 +2,7 @@ import { isUuid } from "../text.ts";
 import { PRODUCT_SELECT, WARDROBE_SELECT } from "./logic.ts";
 import type { AnswerBlock, AnswerHydrator, ItemRef } from "./types.ts";
 import type { DbClient } from "../supabase.ts";
+import { coverImagePath, orderProductColors } from "../product-colors.ts";
 
 /**
  * The one thing this needs of a PostgREST query builder: `.in("id", …)`, then
@@ -61,9 +62,8 @@ export const idsOf = (
 
 /** An image-less product cannot be tried on, so no surface is handed one to offer. */
 export const hasProductImage = (
-  row: { image_paths?: string[] | null },
-): boolean =>
-  typeof row.image_paths?.[0] === "string" && row.image_paths[0].length > 0;
+  row: { product_colors?: unknown },
+): boolean => coverImagePath(row) !== undefined;
 
 export const supabaseAnswerRows: AnswerHydrator = async (
   client: DbClient,
@@ -72,7 +72,7 @@ export const supabaseAnswerRows: AnswerHydrator = async (
 ) => {
   const [products, wardrobe] = await Promise.all([
     fetchRowsByIds(
-      client.from("products").select(PRODUCT_SELECT),
+      orderProductColors(client.from("products").select(PRODUCT_SELECT)),
       idsOf(blocks, "product"),
       (row) => (hasProductImage(row) ? row : null),
     ),
