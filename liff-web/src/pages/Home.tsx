@@ -7,7 +7,9 @@ import { ModelChoiceSheet } from "../components/ModelChoiceSheet";
 import { Overlay } from "../components/Overlay";
 import { StyleSheet } from "../components/StyleSheet";
 import { TryonPager } from "../components/TryonPager";
+import { useAvatarPhotoPicker } from "../hooks/useAvatarPhotoPicker";
 import { useTryonCoordinator } from "../hooks/useTryonCoordinator";
+import type { JpegBlob } from "../lib/image";
 import { canShareToChat, shareImageToChat } from "../lib/liff";
 import type { PresetAvatar } from "../lib/presetAvatars";
 import {
@@ -85,9 +87,10 @@ export function Home() {
     if (isFirst) notify("模特設定完成！選衣服就能試穿，也可以回聊天室再傳一次衣服圖。");
   }
 
-  function replaceAvatar(file: File) {
-    return chooseModel(() => avatar.replace(file), "照片上傳失敗，換一張清楚的全身照再試。");
+  function replaceAvatar(jpeg: JpegBlob) {
+    return chooseModel(() => avatar.replace(jpeg), "照片上傳失敗，換一張清楚的全身照再試。");
   }
+  const avatarPhoto = useAvatarPhotoPicker(replaceAvatar);
 
   function applyPreset(preset: PresetAvatar) {
     return chooseModel(() => avatar.applyPreset(preset), "模特套用失敗，請稍後再試。");
@@ -241,7 +244,8 @@ export function Home() {
         </Overlay>
       )}
 
-      <PickerInput inputRef={avatarInput} onPick={replaceAvatar} />
+      <PickerInput inputRef={avatarInput} onPick={avatarPhoto.pick} />
+      {avatarPhoto.cropper}
       <PickerInput inputRef={garmentInput} onPick={tryon.fromGarmentPhoto} />
 
       {popup.kind === "menu" && (
