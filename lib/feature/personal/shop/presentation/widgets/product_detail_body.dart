@@ -8,6 +8,7 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type_measurements.dart';
 import 'package:tryzeon/feature/common/product_category/providers/product_category_providers.dart';
+import 'package:tryzeon/feature/common/product_color/domain/entities/product_color.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
@@ -43,8 +44,7 @@ class ProductDetailBody extends HookConsumerWidget {
     categoryId: 'category',
     garmentType: GarmentType.top,
     price: 8888.0,
-    imagePaths: ['skeleton_path'],
-    imageUrls: [],
+    colors: [],
     createdAt: DateTime(2000),
     updatedAt: DateTime(2000),
     description: 'Loading product description that spans a couple of lines',
@@ -107,7 +107,9 @@ class _ProductDetailContent extends HookConsumerWidget {
         children: [
           Stack(
             children: [
-              ProductImageViewer(imageUrls: product.imageUrls),
+              ProductImageViewer(
+                imageUrls: product.colors.cover?.imageUrls ?? const [],
+              ),
               Positioned(
                 bottom: AppSpacing.sm,
                 right: AppSpacing.sm,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/feature/common/product_color/domain/entities/product_color.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/providers/product_fit_provider.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
@@ -10,7 +11,7 @@ OutfitPiece outfitPieceFromProduct(
 ) {
   return OutfitPiece.product(
     productId: product.id,
-    imageUrl: product.imageUrls.firstOrNull ?? '',
+    imageUrl: product.colors.coverImageUrl ?? '',
     garmentType: product.garmentType,
     sizeId: ref.read(productFitResolverProvider).resolve(product).tryonSizeId,
   );
