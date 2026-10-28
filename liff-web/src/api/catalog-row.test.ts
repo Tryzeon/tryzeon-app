@@ -7,14 +7,27 @@ const row = {
   id: "11111111-1111-1111-1111-111111111111",
   name: "Linen Shirt",
   price: 1280,
-  image_paths: ["stores/a/1.jpg", "stores/a/2.jpg"],
+  product_colors: [
+    {
+      id: "c1",
+      name: "White",
+      image_paths: ["stores/a/1.jpg", "", "stores/a/2.jpg"],
+      position: 0,
+    },
+    {
+      id: "c2",
+      name: "Navy",
+      image_paths: ["stores/a/other.jpg"],
+      position: 1,
+    },
+  ],
   garment_type: "top",
   purchase_link: "https://shop.test/p/1",
   store_profiles: { id: "s1", name: "Island Select" },
 };
 
 describe("buildCatalogItem", () => {
-  it("projects every image path, not just the first", () => {
+  it("projects every image of the first colour, as the RPC orders them", () => {
     expect(buildCatalogItem(row, BASE).imageUrls).toEqual([
       "https://img.test/stores/a/1.jpg",
       "https://img.test/stores/a/2.jpg",
@@ -43,8 +56,10 @@ describe("buildCatalogItem", () => {
   });
 
   it("keeps a product with no usable image, with no urls", () => {
-    for (const imagePaths of [[], null, [""]]) {
-      const item = buildCatalogItem({ ...row, image_paths: imagePaths }, BASE);
+    const emptyCover = [{ id: "c", image_paths: [""], position: 0 }];
+    const cases = [undefined, null, [], emptyCover, [{ id: "c", image_paths: [], position: 0 }]];
+    for (const product_colors of cases) {
+      const item = buildCatalogItem({ ...row, product_colors }, BASE);
       expect(item.imageUrls).toEqual([]);
       expect(item.name).toBe("Linen Shirt");
     }

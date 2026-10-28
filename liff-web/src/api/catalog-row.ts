@@ -16,17 +16,25 @@ export interface CatalogStore {
   name: string;
 }
 
+/** Both shop RPCs return a product's colours in cover order. */
+function coverImageKeys(colors: unknown): string[] {
+  const cover: unknown = Array.isArray(colors) ? colors[0] : undefined;
+  if (typeof cover !== "object" || cover === null) return [];
+  const paths = (cover as Record<string, unknown>).image_paths;
+  return Array.isArray(paths)
+    ? paths.filter((k): k is string => typeof k === "string" && k.length > 0)
+    : [];
+}
+
 /**
- * A product with no usable image still becomes an item, just with an empty
+ * A product whose cover colour has no usable image still becomes an item, just with an empty
  * imageUrls. Dropping it here would put items.length out of step with the row
  * count the pagination arithmetic relies on, and would make the product vanish
  * from the store's own catalog instead of showing that it lacks photos.
  */
 export function buildCatalogItem(row: unknown, baseUrl: string): CatalogItem {
   const r = (row ?? {}) as Record<string, unknown>;
-  const keys = Array.isArray(r.image_paths)
-    ? r.image_paths.filter((k): k is string => typeof k === "string" && k.length > 0)
-    : [];
+  const keys = coverImageKeys(r.product_colors);
 
   const store = (r.store_profiles ?? null) as Record<string, unknown> | null;
   const link = r.purchase_link;
