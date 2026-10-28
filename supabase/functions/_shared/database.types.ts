@@ -48,6 +48,7 @@ export type Database = {
       };
       analytics_events: {
         Row: {
+          color_id: string | null;
           created_at: string;
           event_type: Database["public"]["Enums"]["analytics_event_type"];
           id: string;
@@ -57,6 +58,7 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          color_id?: string | null;
           created_at?: string;
           event_type: Database["public"]["Enums"]["analytics_event_type"];
           id?: string;
@@ -65,6 +67,7 @@ export type Database = {
           user_id: string;
         };
         Update: {
+          color_id?: string | null;
           created_at?: string;
           event_type?: Database["public"]["Enums"]["analytics_event_type"];
           id?: string;
@@ -232,6 +235,48 @@ export type Database = {
         };
         Relationships: [];
       };
+      product_colors: {
+        Row: {
+          created_at: string;
+          id: string;
+          image_paths: (string)[];
+          name: string | null;
+          position: number;
+          product_id: string;
+          store_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          id?: string;
+          image_paths: (string)[];
+          name?: string | null;
+          position: number;
+          product_id: string;
+          store_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          image_paths?: (string)[];
+          name?: string | null;
+          position?: number;
+          product_id?: string;
+          store_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "product_colors_product_id_store_id_fkey";
+            columns: ["product_id", "store_id"];
+            isOneToOne: false;
+            referencedRelation: "products";
+            referencedColumns: ["id", "store_id"];
+          },
+        ];
+      };
       product_sizes: {
         Row: {
           body_measurement_ranges: Json | null;
@@ -281,7 +326,6 @@ export type Database = {
           garment_type: Database["public"]["Enums"]["garment_type"];
           gender: Database["public"]["Enums"]["product_gender"];
           id: string;
-          image_paths: (string)[] | null;
           material: string | null;
           name: string;
           price: number;
@@ -303,7 +347,6 @@ export type Database = {
           garment_type: Database["public"]["Enums"]["garment_type"];
           gender?: Database["public"]["Enums"]["product_gender"];
           id?: string;
-          image_paths?: (string)[] | null;
           material?: string | null;
           name: string;
           price: number;
@@ -324,7 +367,6 @@ export type Database = {
           garment_type?: Database["public"]["Enums"]["garment_type"];
           gender?: Database["public"]["Enums"]["product_gender"];
           id?: string;
-          image_paths?: (string)[] | null;
           material?: string | null;
           name?: string;
           price?: number;
@@ -752,7 +794,7 @@ export type Database = {
       };
       log_analytics_events: { Args: { p_events: Json }; Returns: undefined };
       log_tryon_events: {
-        Args: { p_product_ids: (string)[]; p_user_id: string };
+        Args: { p_user_id: string; p_worn: Json };
         Returns: undefined;
       };
       product_image_paths_owned: {
