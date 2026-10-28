@@ -29,6 +29,7 @@ class StoreProductCard extends HookConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
+    final coverImageUrl = product.colors.coverImageUrl;
     final categoriesAsync = ref.watch(productCategoriesProvider);
     final categoryName = categoriesAsync.maybeWhen(
       data: (final categories) => categories
@@ -50,10 +51,10 @@ class StoreProductCard extends HookConsumerWidget {
             Expanded(
               child: Container(
                 color: colorScheme.surfaceContainerLow,
-                child: product.imageUrls.isEmpty
+                child: coverImageUrl == null
                     ? const ImagePlaceholder()
                     : CachedNetworkImage(
-                        imageUrl: product.imageUrls.first,
+                        imageUrl: coverImageUrl,
                         fit: BoxFit.cover,
                         width: double.infinity,
                         fadeInDuration: Duration.zero,

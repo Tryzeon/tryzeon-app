@@ -162,12 +162,14 @@ ProductFormData useProductForm({final Product? initialProduct}) {
   final selectedFit = useValueNotifier<ProductFit?>(initialProduct?.fit);
 
   final initialImages = useMemoized(() {
-    if (initialProduct == null) return <ImageItem>[];
-    final paths = initialProduct.imagePaths;
-    final urls = initialProduct.imageUrls;
+    final color = initialProduct?.colors.firstOrNull;
+    if (color == null) return <ImageItem>[];
     return List.generate(
-      paths.length,
-      (final i) => ImageItem.existing(path: paths[i], url: urls[i]),
+      color.imagePaths.length,
+      (final i) => ImageItem.existing(
+        path: color.imagePaths[i],
+        url: color.imageUrls[i],
+      ),
     );
   });
 

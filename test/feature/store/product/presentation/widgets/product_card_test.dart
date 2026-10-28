@@ -16,6 +16,7 @@ import 'package:tryzeon/feature/store/product/presentation/widgets/product_card.
 import 'package:tryzeon/feature/store/product/providers/store_product_providers.dart';
 import 'package:typed_result/typed_result.dart';
 
+import '../../../../../support/product_color_fixtures.dart';
 import '../../../../../support/sheet_test_host.dart';
 
 class _FakeCategories extends ProductCategoriesNotifier {
@@ -50,8 +51,7 @@ final _product = Product(
   categoryId: 'c1',
   garmentType: GarmentType.top,
   price: 590,
-  imagePaths: const [],
-  imageUrls: const [],
+  colors: const [],
   id: 'p1',
   createdAt: DateTime(2026),
   updatedAt: DateTime(2026),
@@ -170,5 +170,34 @@ void main() {
 
     expect(placeholder.width, card.width);
     expect(tester.getCenter(icon).dx, card.center.dx);
+  });
+
+  testWidgets('shows the placeholder when no colour has an image', (
+    final tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          productCategoriesProvider.overrideWith(_FakeCategories.new),
+          productAnalyticsSummariesProvider.overrideWith(_FakeAnalytics.new),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: Scaffold(
+            body: SizedBox(
+              width: 200,
+              height: 340,
+              child: StoreProductCard(
+                product: _product.copyWith(colors: [productColorFixture()]),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await settle(tester);
+
+    expect(tester.takeException(), isNull);
+    expect(find.byIcon(Icons.image_outlined), findsOneWidget);
   });
 }
