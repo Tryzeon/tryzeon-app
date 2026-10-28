@@ -1,3 +1,5 @@
+import { useAvatarPhotoPicker } from "../hooks/useAvatarPhotoPicker";
+import type { JpegBlob } from "../lib/image";
 import { type PresetAvatar, presetAvatarUrl, type PresetAvatarId } from "../lib/presetAvatars";
 import { CameraPlusIcon } from "./icons";
 
@@ -19,10 +21,12 @@ interface Props {
   selected: PresetAvatarId | null;
   disabled: boolean;
   onPreset(preset: PresetAvatar): void;
-  onUpload(file: File): void;
+  onUpload(jpeg: JpegBlob): void;
 }
 
 export function ModelChoicePicker({ presets, selected, disabled, onPreset, onUpload }: Props) {
+  const photo = useAvatarPhotoPicker(onUpload);
+
   return (
     <div className="models">
       {presets.map((preset) => {
@@ -61,10 +65,11 @@ export function ModelChoicePicker({ presets, selected, disabled, onPreset, onUpl
           onChange={(e) => {
             const file = e.target.files?.[0];
             e.target.value = "";
-            if (file) onUpload(file);
+            if (file) photo.pick(file);
           }}
         />
       </label>
+      {photo.cropper}
     </div>
   );
 }
