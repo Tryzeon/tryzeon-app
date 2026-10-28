@@ -136,7 +136,7 @@ void main() {
     () async {
       await owner().createProduct(
         draft: _draft,
-        images: const [],
+        colors: const [],
         sizes: const [],
       );
 
@@ -152,7 +152,7 @@ void main() {
         .read(productEditProvider.notifier)
         .create(
           draft: _draft.copyWith(status: ProductStatus.archived),
-          images: const [],
+          colors: const [],
           sizes: const [],
         );
 
@@ -165,7 +165,7 @@ void main() {
         .update(
           original: product('b'),
           draft: _draft.copyWith(status: ProductStatus.archived),
-          images: const [],
+          colors: const [],
           sizes: const [],
         );
 
@@ -179,7 +179,7 @@ void main() {
         .read(productEditProvider.notifier)
         .create(
           draft: _draft.copyWith(status: ProductStatus.archived),
-          images: const [],
+          colors: const [],
           sizes: const [],
         );
 
@@ -190,7 +190,7 @@ void main() {
     await owner().updateProduct(
       original: product('b'),
       draft: _draft,
-      images: const [],
+      colors: const [],
       sizes: const [],
     );
 
@@ -203,7 +203,7 @@ void main() {
 
     await owner().createProduct(
       draft: _draft,
-      images: const [],
+      colors: const [],
       sizes: const [],
     );
     await container.read(productsProvider.future);
@@ -242,7 +242,7 @@ void main() {
     await owner().updateProduct(
       original: product('b'),
       draft: _draft,
-      images: const [],
+      colors: const [],
       sizes: const [],
     );
     await container.pump();
@@ -261,7 +261,7 @@ void main() {
       await owner().updateProduct(
         original: baseline,
         draft: _draft,
-        images: const [],
+        colors: const [],
         sizes: const [],
       );
 

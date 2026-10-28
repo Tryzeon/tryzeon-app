@@ -32,7 +32,7 @@ import 'package:tryzeon/feature/store/product/domain/usecases/list_products.dart
 import 'package:tryzeon/feature/store/product/domain/usecases/parse_size_voice.dart';
 import 'package:tryzeon/feature/store/product/domain/usecases/set_product_status.dart';
 import 'package:tryzeon/feature/store/product/domain/usecases/update_product.dart';
-import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.dart';
+import 'package:tryzeon/feature/store/product/domain/value_objects/color_item.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/size_item.dart';
 import 'package:tryzeon/feature/store/product/presentation/state/product_query_state.dart';
 import 'package:tryzeon/feature/store/product/presentation/state/product_sort_condition.dart';
@@ -172,7 +172,7 @@ class ProductsNotifier extends _$ProductsNotifier
 
   Future<Result<Product?, Failure>> createProduct({
     required final ProductDraft draft,
-    required final List<File> images,
+    required final List<NewColorItem> colors,
     required final List<NewSizeItem> sizes,
   }) => applyWrite(
     () async {
@@ -189,7 +189,7 @@ class ProductsNotifier extends _$ProductsNotifier
         CreateProductParams(
           storeId: storeProfile.id,
           draft: draft,
-          images: images,
+          colors: colors,
           sizes: sizes,
         ),
       );
@@ -199,18 +199,18 @@ class ProductsNotifier extends _$ProductsNotifier
   );
 
   /// [original] is the product the form was filled from, so only what the
-  /// user changed is written and sizes or images added elsewhere are kept.
+  /// user changed is written and sizes or colours added elsewhere are kept.
   Future<Result<Product?, Failure>> updateProduct({
     required final Product original,
     required final ProductDraft draft,
-    required final List<ImageItem> images,
+    required final List<ColorItem> colors,
     required final List<SizeItem> sizes,
   }) => applyWrite(
     () => ref.read(updateProductUseCaseProvider)(
       UpdateProductParams(
         original: original,
         draft: draft,
-        images: images,
+        colors: colors,
         sizes: sizes,
       ),
     ),
@@ -327,19 +327,19 @@ class ProductEditNotifier extends _$ProductEditNotifier {
 
   Future<Result<void, Failure>> create({
     required final ProductDraft draft,
-    required final List<File> images,
+    required final List<NewColorItem> colors,
     required final List<NewSizeItem> sizes,
   }) => _saveForm(
     ProductMutation.create,
     status: draft.status,
     write: () =>
-        _products.createProduct(draft: draft, images: images, sizes: sizes),
+        _products.createProduct(draft: draft, colors: colors, sizes: sizes),
   );
 
   Future<Result<void, Failure>> update({
     required final Product original,
     required final ProductDraft draft,
-    required final List<ImageItem> images,
+    required final List<ColorItem> colors,
     required final List<SizeItem> sizes,
   }) => _saveForm(
     ProductMutation.update,
@@ -347,7 +347,7 @@ class ProductEditNotifier extends _$ProductEditNotifier {
     write: () => _products.updateProduct(
       original: original,
       draft: draft,
-      images: images,
+      colors: colors,
       sizes: sizes,
     ),
   );
