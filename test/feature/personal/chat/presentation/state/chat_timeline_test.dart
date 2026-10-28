@@ -10,6 +10,8 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart'
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 
+import '../../../../../support/product_color_fixtures.dart';
+
 const _greeting = ChatMessage(
   role: ChatRole.assistant,
   content: [ContentBlock.text('hi')],
@@ -27,8 +29,12 @@ ShopProduct _product(final String id) => ShopProduct(
   categoryId: 'c',
   garmentType: GarmentType.top,
   price: 690,
-  imagePaths: const ['p.jpg'],
-  imageUrls: const ['https://x/p.jpg'],
+  colors: [
+    productColorFixture(
+      imagePaths: const ['p.jpg'],
+      imageUrls: const ['https://x/p.jpg'],
+    ),
+  ],
   id: id,
   createdAt: DateTime(2026),
   updatedAt: DateTime(2026),
