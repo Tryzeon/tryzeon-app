@@ -39,6 +39,7 @@ const list = (vocab: readonly string[]): string => vocab.join(" / ");
 const UNKNOWN = "unknown";
 
 const MAX_NAME_LENGTH = 20;
+const MAX_COLOR_LENGTH = 20;
 const MAX_STYLES = 3;
 
 const str = (v: unknown): string | null =>
@@ -82,7 +83,8 @@ const listCategories = (categories: CategoryOption[]): string =>
 export function buildPrompt(categories: CategoryOption[]): string {
   return `You label products for an online clothing store. Analyse the product photo and return JSON.
 Every field is required. When the photo does not tell you, answer with the string "${UNKNOWN}" (an empty array for array fields) — never the word "null".
-- name: a concise product name in Traditional Chinese (colour + fit + material + garment type, e.g. 「白色寬鬆棉質襯衫」), at most ${MAX_NAME_LENGTH} characters; ${UNKNOWN} if you cannot tell.
+- name: a concise product name in Traditional Chinese without the colour (fit + material + garment type, e.g. 「寬鬆棉質襯衫」), at most ${MAX_NAME_LENGTH} characters; ${UNKNOWN} if you cannot tell.
+- color: the garment's main colour as a short Traditional Chinese colour name (e.g. 「白色」「霧灰」「燕麥」), at most ${MAX_COLOR_LENGTH} characters; ${UNKNOWN} if you cannot tell.
 - category_code: exactly one of the following codes (Chinese name in parentheses), or ${UNKNOWN} if you cannot tell: ${
     listCategories(categories)
   }
@@ -110,6 +112,7 @@ export function buildSchema(
     type: "object",
     properties: {
       name: { type: "string" },
+      color: { type: "string" },
       category_code: {
         type: "string",
         enum: [...categories.map((c) => c.code), UNKNOWN],
@@ -130,6 +133,7 @@ export function buildSchema(
     // "null" into a field typed as a string.
     required: [
       "name",
+      "color",
       "category_code",
       "gender",
       "styles",
@@ -144,6 +148,7 @@ export function buildSchema(
 
 export interface ProductAnalysisResponse {
   name: string | null;
+  color: string | null;
   categoryId: string | null;
   gender: string | null;
   styles: string[];
@@ -156,7 +161,7 @@ export interface ProductAnalysisResponse {
 
 /**
  * Anything outside the agreed vocabulary — sentinels, hallucinated enum members,
- * over-long names, category codes that no longer exist — comes back `null`,
+ * over-long names, over-long colours (never truncated: a cut colour name is a wrong one), category codes that no longer exist — comes back `null`,
  * which the app reads as "leave this input alone". The category is answered as
  * its `code` and resolved to the id the app stores.
  */
@@ -166,9 +171,11 @@ export function toResponse(
 ): ProductAnalysisResponse {
   const categoryCode = str(parsed.category_code);
   const name = freeText(parsed.name);
+  const color = freeText(parsed.color);
 
   return {
     name: name ? name.slice(0, MAX_NAME_LENGTH) : null,
+    color: color && color.length <= MAX_COLOR_LENGTH ? color : null,
     categoryId: categoryCode ? (idByCode.get(categoryCode) ?? null) : null,
     gender: inList(parsed.gender, GENDER_VALUES),
     styles: filterList(parsed.styles, STYLE_VALUES, MAX_STYLES),

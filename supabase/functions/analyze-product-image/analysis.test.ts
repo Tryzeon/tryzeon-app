@@ -26,7 +26,8 @@ const acceptedValues = (spec: PropertySpec): string[] =>
   spec.enum ?? spec.items?.enum ?? [];
 
 const fullAnswer = {
-  name: "白色寬鬆棉質襯衫",
+  name: "寬鬆棉質襯衫",
+  color: "霧灰",
   category_code: "shirt_polo",
   gender: "female",
   styles: ["casual", "basic"],
@@ -39,7 +40,8 @@ const fullAnswer = {
 
 Deno.test("toResponse passes a fully answered analysis through", () => {
   assertEquals(toResponse(fullAnswer, CATEGORIES), {
-    name: "白色寬鬆棉質襯衫",
+    name: "寬鬆棉質襯衫",
+    color: "霧灰",
     categoryId: "cat-shirt",
     gender: "female",
     styles: ["casual", "basic"],
@@ -62,6 +64,7 @@ Deno.test("toResponse maps the unknown sentinel to null on every field", () => {
 
   assertEquals(result, {
     name: null,
+    color: null,
     categoryId: null,
     gender: null,
     styles: [],
@@ -87,6 +90,19 @@ Deno.test("toResponse drops an unanswered name", () => {
   }
 });
 
+Deno.test("toResponse drops an unanswered or over-long colour", () => {
+  assertEquals(
+    toResponse({ ...fullAnswer, color: "unknown" }, CATEGORIES).color,
+    null,
+  );
+  assertEquals(
+    toResponse({ ...fullAnswer, color: "x".repeat(21) }, CATEGORIES).color,
+    null,
+  );
+  const { color: _color, ...withoutColor } = fullAnswer;
+  assertEquals(toResponse(withoutColor, CATEGORIES).color, null);
+});
+
 Deno.test("toResponse drops a material outside the preset list", () => {
   for (const offList of ["unknown", "cotton", "棉質", "牛仔"]) {
     assertEquals(
@@ -100,6 +116,7 @@ Deno.test("toResponse drops a material outside the preset list", () => {
 Deno.test("toResponse treats missing fields as unanswered", () => {
   assertEquals(toResponse({}, CATEGORIES), {
     name: null,
+    color: null,
     categoryId: null,
     gender: null,
     styles: [],
@@ -205,6 +222,14 @@ Deno.test("buildPrompt describes each style so the model labels by meaning, not 
   assertEquals(prompt.includes("只在沒有其他風格特徵時才選"), true);
 });
 
+Deno.test("buildPrompt keeps the colour out of the name", () => {
+  const lines = buildPrompt(CATEGORY_OPTIONS).split("\n");
+  const nameLine = lines.find((l) => l.startsWith("- name:")) ?? "";
+  assertEquals(lines.some((l) => l.startsWith("- color:")), true);
+  assertEquals(nameLine.includes("「寬鬆棉質襯衫」"), true);
+  assertEquals(nameLine.includes("白色"), false);
+});
+
 Deno.test("buildSchema requires every field and offers an unknown sentinel", () => {
   const props = schemaProperties();
   const fields = Object.keys(props);
@@ -212,10 +237,14 @@ Deno.test("buildSchema requires every field and offers an unknown sentinel", () 
     (buildSchema(CATEGORY_OPTIONS) as { required: string[] }).required;
 
   assertEquals(required.sort(), fields.sort());
+  assertEquals(required.includes("color"), true);
+  assertEquals(props.color, { type: "string" });
 
   // Without a legal way to say "I can't tell", the model invents a string.
   for (const [field, spec] of Object.entries(props)) {
-    if (spec.type === "array" || field === "name") continue;
+    if (spec.type === "array" || field === "name" || field === "color") {
+      continue;
+    }
     assertEquals(
       spec.enum?.includes("unknown"),
       true,
