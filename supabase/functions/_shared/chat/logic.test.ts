@@ -461,6 +461,25 @@ Deno.test("toSearchResultItem drops unset attributes rather than sending nulls",
   assertEquals("seasons" in item, false);
 });
 
+Deno.test("toSearchResultItem lists named colours in cover order", () => {
+  const item = toSearchResultItem({
+    ...SHOP_ROW,
+    product_colors: [
+      { id: "c2", name: "黑", image_paths: ["b.jpg"], position: 0 },
+      { id: "c3", name: "", image_paths: ["e.jpg"], position: 1 },
+      { id: "c1", name: "白", image_paths: ["a.jpg"], position: 2 },
+      { id: "c4", name: null, image_paths: ["n.jpg"], position: 3 },
+    ],
+  });
+  assertEquals(item.colors, ["黑", "白"]);
+});
+
+Deno.test("toSearchResultItem drops colours when none is named", () => {
+  const item = toSearchResultItem(SHOP_ROW);
+  assertEquals("colors" in item, false);
+  assertEquals("product_colors" in item, false);
+});
+
 Deno.test("toSearchResultItem tolerates a row with no sizes and no store", () => {
   const item = toSearchResultItem({ id: "p9", name: "褲", price: 500 });
   assertEquals(item, { id: "p9", name: "褲", price: 500 });

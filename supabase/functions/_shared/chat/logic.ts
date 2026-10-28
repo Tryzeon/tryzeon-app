@@ -233,6 +233,7 @@ export function toSearchResultItem(
 ): Record<string, unknown> {
   const store = (row.store_profiles ?? null) as Record<string, unknown> | null;
   const sizes = Array.isArray(row.product_sizes) ? row.product_sizes : [];
+  const colors = Array.isArray(row.product_colors) ? row.product_colors : [];
 
   return withSetFields({
     id: String(row.id),
@@ -241,6 +242,11 @@ export function toSearchResultItem(
     store: store?.name ?? null,
     channels: store?.channels ?? null,
     sizes: sizes.map((size) => asRecord(size)?.name).filter(Boolean),
+    colors: colors
+      .map((color) => asRecord(color)?.name)
+      .filter((name): name is string =>
+        typeof name === "string" && name !== ""
+      ),
     gender: row.gender,
     material: row.material,
     fit: row.fit,
