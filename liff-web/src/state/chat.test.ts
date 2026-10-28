@@ -9,7 +9,7 @@ const PRODUCT = {
   id: "p1",
   name: "白襯衫",
   price: 1280,
-  image_paths: ["s/p1.jpg"],
+  product_colors: [{ id: "c1", image_paths: ["s/p1.jpg"], position: 0 }],
   store_profiles: { name: "小森選物" },
 };
 
