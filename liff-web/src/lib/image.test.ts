@@ -29,7 +29,7 @@ describe("downscaleDimensions", () => {
   });
 });
 
-describe("downscaleToBlob", () => {
+describe("jpeg output", () => {
   // Asserts half the contract: canvas has no implementation under node, so the
   // actual drawing is left to manual verification. What is guarded here is that
   // the output is always jpeg — the storage path's extension and contentType are
