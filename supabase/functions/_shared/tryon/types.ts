@@ -52,6 +52,11 @@ export interface GarmentMaterial {
   images: { base64: string }[];
 }
 
+export interface WornProduct {
+  productId: string;
+  colorId: string;
+}
+
 /**
  * Declares its own `images` rather than extending {@link GarmentMaterial}: a
  * caller sends inline bytes, a resolver produces a storage key, and sharing one
@@ -61,6 +66,7 @@ export interface ResolvedGarment {
   images: ImageSource[];
   garmentType?: GarmentType;
   detail?: string;
+  worn?: WornProduct;
 }
 
 export type GarmentInput = ProductRef | WardrobeRef | GarmentMaterial;
@@ -129,14 +135,14 @@ export type QuotaFactory = (
 ) => UsageCounter;
 
 /**
- * Records a finished try-on against the products it wore, for the store
+ * Records a finished try-on against the product colours it wore, for the store
  * dashboards. Service-role only for the same reason as {@link QuotaFactory}:
  * the LINE adapter has no session, so the writer must name the user itself,
  * and a client able to do that could inflate any store's counts.
  */
 export type TryonRecorder = (
   userId: string,
-  productIds: string[],
+  worn: WornProduct[],
 ) => Promise<void>;
 
 export interface GenerationStart {

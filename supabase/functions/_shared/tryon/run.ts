@@ -161,7 +161,11 @@ export async function runTryonJob<M extends TryonMode>(
       videoModel,
     });
 
-    await recordProductTryons(deps.recordTryon, job);
+    await recordProductTryons(
+      deps.recordTryon,
+      job.userId,
+      materialGarments,
+    );
 
     return result;
   } catch (err) {
@@ -196,12 +200,13 @@ async function markGenerationFailed(
 
 async function recordProductTryons(
   record: TryonRecorder,
-  job: TryonParams,
+  userId: string,
+  materialGarments: ResolvedGarment[],
 ): Promise<void> {
-  const productIds = job.garments.filter(isProductRef).map((g) => g.productId);
-  if (productIds.length === 0) return;
+  const worn = materialGarments.flatMap((g) => g.worn ?? []);
+  if (worn.length === 0) return;
   try {
-    await record(job.userId, productIds);
+    await record(userId, worn);
   } catch (err) {
     console.error("try-on analytics record failed:", err);
   }

@@ -2,10 +2,11 @@ import { isUuid } from "../text.ts";
 import { ValidationError } from "./errors.ts";
 import { isGarmentType, LIMITS } from "./types.ts";
 import type { ProductRef, ResolvedGarment } from "./types.ts";
+import { coverColor } from "../product-colors.ts";
 import { asJsonObject, type DbClient } from "../supabase.ts";
 
 export interface ProductGarmentRow {
-  image_paths: unknown;
+  product_colors: unknown;
   garment_type: unknown;
   name: unknown;
   material: unknown;
@@ -66,21 +67,24 @@ export async function resolveProductGarment(
     throw new ValidationError(`no product for productId: ${productId}`);
   }
 
-  const paths = (row.image_paths as string[] | null) ?? [];
-  if (paths.length === 0) {
+  const cover = coverColor(row);
+  if (!cover) {
     throw new ValidationError(
       `no usable garment image for productId: ${productId}`,
     );
   }
 
-  // The main shot only: a store's later images are detail macros carrying no
+  // The cover shot only: a store's later images are detail macros carrying no
   // garment silhouette, and passing them off as extra angles dilutes the person
   // photo instead of describing the garment.
-  const images = [{ publicImageKey: paths[0] }];
+  const images = [{ publicImageKey: cover.image_paths[0] }];
 
   const detail = buildProductGarmentDetail(row);
 
-  const garment: ResolvedGarment = { images };
+  const garment: ResolvedGarment = {
+    images,
+    worn: { productId, colorId: cover.id },
+  };
   if (isGarmentType(row.garment_type)) garment.garmentType = row.garment_type;
   if (detail !== undefined) garment.detail = detail;
   return garment;

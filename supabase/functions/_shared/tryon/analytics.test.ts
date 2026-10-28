@@ -14,19 +14,25 @@ function fakeAdmin(error: { message: string } | null = null) {
   return { client, calls };
 }
 
-Deno.test("supabaseTryonRecorder logs every product for the user in one call", async () => {
+Deno.test("supabaseTryonRecorder logs every worn colour for the user in one call", async () => {
   const admin = fakeAdmin();
-  await supabaseTryonRecorder(admin.client)("u1", ["p1", "p2"]);
+  await supabaseTryonRecorder(admin.client)("u1", [
+    { productId: "p1", colorId: "c1" },
+  ]);
   assertEquals(admin.calls, [{
     fn: "log_tryon_events",
-    args: { p_user_id: "u1", p_product_ids: ["p1", "p2"] },
+    args: { p_user_id: "u1", p_worn: [{ product_id: "p1", color_id: "c1" }] },
   }]);
 });
 
 Deno.test("supabaseTryonRecorder surfaces an RPC error", async () => {
   const admin = fakeAdmin({ message: "permission denied" });
   await assertRejects(
-    () => supabaseTryonRecorder(admin.client)("u1", ["p1"]),
+    () =>
+      supabaseTryonRecorder(admin.client)("u1", [{
+        productId: "p1",
+        colorId: "c1",
+      }]),
     Error,
     "permission denied",
   );
