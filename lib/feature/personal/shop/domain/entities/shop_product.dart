@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/product_color/domain/entities/product_color.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/product_size.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 
@@ -15,8 +16,7 @@ sealed class ShopProduct with _$ShopProduct {
     required final String categoryId,
     required final GarmentType garmentType,
     required final double price,
-    required final List<String> imagePaths,
-    required final List<String> imageUrls,
+    required final List<ProductColor> colors,
     required final String id,
     final String? purchaseLink,
     final String? description,

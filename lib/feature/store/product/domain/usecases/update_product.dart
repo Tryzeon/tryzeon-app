@@ -37,6 +37,8 @@ class UpdateProduct {
     final UpdateProductParams params,
   ) async {
     final original = params.original;
+    if (original.colors.isEmpty) return const Err(UnknownFailure());
+
     final newFiles = <File>[
       for (final item in params.images)
         if (item case NewImageItem(:final file)) file,

@@ -22,10 +22,13 @@ class DeleteProduct {
     );
     if (deleted.isFailure) return deleted;
 
-    if (product.imagePaths.isNotEmpty) {
+    final imagePaths = product.colors
+        .expand((final color) => color.imagePaths)
+        .toList();
+    if (imagePaths.isNotEmpty) {
       final imagesDeleted = await _imageStorage.delete(
         storeId: product.storeId,
-        paths: product.imagePaths,
+        paths: imagePaths,
       );
       if (imagesDeleted.isFailure) {
         AppLogger.warning(

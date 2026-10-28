@@ -29,8 +29,7 @@ void main() {
     categoryId: 'c1',
     garmentType: GarmentType.onePiece,
     price: 1280,
-    imagePaths: const [],
-    imageUrls: const [],
+    colors: const [],
     createdAt: DateTime(2026),
     updatedAt: DateTime(2026),
   );

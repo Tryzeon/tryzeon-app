@@ -2,9 +2,11 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/product_color/domain/entities/product_color.dart';
 import 'package:tryzeon/feature/common/product_size/domain/entities/product_size.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/size_item.dart';
 
+export 'package:tryzeon/feature/common/product_color/domain/entities/product_color.dart';
 export 'package:tryzeon/feature/common/product_size/domain/entities/product_size.dart';
 
 part 'product.freezed.dart';
@@ -30,12 +32,20 @@ sealed class ProductDraft with _$ProductDraft {
 }
 
 @freezed
+sealed class NewProductColor with _$NewProductColor {
+  const factory NewProductColor({
+    final String? name,
+    required final List<String> imagePaths,
+  }) = _NewProductColor;
+}
+
+@freezed
 sealed class NewProduct with _$NewProduct {
   const factory NewProduct({
     required final String id,
     required final String storeId,
     required final ProductDraft draft,
-    required final List<String> imagePaths,
+    required final List<NewProductColor> colors,
     required final List<NewSizeItem> sizes,
   }) = _NewProduct;
 }
@@ -48,8 +58,7 @@ sealed class Product with _$Product {
     required final String categoryId,
     required final GarmentType garmentType,
     required final double price,
-    required final List<String> imagePaths,
-    required final List<String> imageUrls,
+    required final List<ProductColor> colors,
     required final String id,
     @Default(ProductStatus.active) final ProductStatus status,
     @Default(ProductGender.unisex) final ProductGender gender,

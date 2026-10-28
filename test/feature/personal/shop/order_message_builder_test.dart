@@ -5,14 +5,18 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart'
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:tryzeon/feature/personal/shop/domain/services/order_message_builder.dart';
 
+import '../../../support/product_color_fixtures.dart';
+
 ShopProduct product({required final List<String> imageUrls}) => ShopProduct(
   storeInfo: const ShopStoreInfo(id: 's1', name: 'Store', channels: {}),
   name: 'White Tee',
   categoryId: 'c1',
   garmentType: GarmentType.top,
   price: 590,
-  imagePaths: const [],
-  imageUrls: imageUrls,
+  colors: [
+    if (imageUrls.isNotEmpty)
+      productColorFixture(imagePaths: const ['a.jpg'], imageUrls: imageUrls),
+  ],
   id: 'p1',
   createdAt: DateTime(2026),
   updatedAt: DateTime(2026),

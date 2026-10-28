@@ -51,7 +51,7 @@ class CreateProduct {
         id: productId,
         storeId: params.storeId,
         draft: params.draft,
-        imagePaths: imagePaths,
+        colors: [NewProductColor(imagePaths: imagePaths)],
         sizes: params.sizes,
       ),
     );
