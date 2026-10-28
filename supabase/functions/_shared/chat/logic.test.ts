@@ -370,7 +370,14 @@ const SHOP_ROW = {
   name: "白襯衫",
   category_id: "cat-1",
   price: 1200,
-  image_paths: ["stores/s1/p1.jpg"],
+  product_colors: [
+    {
+      id: "c1",
+      name: null,
+      image_paths: ["stores/s1/p1.jpg"],
+      position: 0,
+    },
+  ],
   created_at: "2026-01-01T00:00:00Z",
   updated_at: "2026-01-02T00:00:00Z",
   purchase_link: "https://shop.example/p1",
