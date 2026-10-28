@@ -5,6 +5,7 @@ import { ValidationError } from "./errors.ts";
 import type { DbClient } from "../supabase.ts";
 
 const PRODUCT_ID = "11111111-1111-1111-1111-111111111111";
+const COVER_COLOR_ID = "c-cover";
 
 interface LookupStub {
   row: Record<string, unknown> | null;
@@ -45,7 +46,20 @@ function fakeAdmin(stubs: Record<string, LookupStub>) {
 const PRODUCT_ROW = {
   id: PRODUCT_ID,
   status: "active",
-  image_paths: ["stores/a.jpg"],
+  product_colors: [
+    {
+      id: COVER_COLOR_ID,
+      name: "Red",
+      image_paths: ["stores/a.jpg"],
+      position: 0,
+    },
+    {
+      id: "c-second",
+      name: "Navy",
+      image_paths: ["stores/b.jpg"],
+      position: 1,
+    },
+  ],
   garment_type: "top",
   name: "Shirt",
   material: null,
@@ -57,7 +71,7 @@ const PRODUCT_ROW = {
 
 Deno.test("buildProductGarmentDetail joins present fields in fixed order", () => {
   const detail = buildProductGarmentDetail({
-    image_paths: ["stores/x.jpg"],
+    product_colors: [],
     garment_type: "top",
     name: "Linen Shirt",
     material: "100% Linen",
@@ -74,7 +88,7 @@ Deno.test("buildProductGarmentDetail joins present fields in fixed order", () =>
 
 Deno.test("buildProductGarmentDetail skips empty and missing fields", () => {
   const detail = buildProductGarmentDetail({
-    image_paths: [],
+    product_colors: [],
     garment_type: "top",
     name: "  Tee  ",
     material: "",
@@ -88,7 +102,7 @@ Deno.test("buildProductGarmentDetail skips empty and missing fields", () => {
 
 Deno.test("buildProductGarmentDetail returns undefined when all empty", () => {
   const detail = buildProductGarmentDetail({
-    image_paths: [],
+    product_colors: [],
     garment_type: "top",
     name: null,
     material: null,
@@ -102,7 +116,7 @@ Deno.test("buildProductGarmentDetail returns undefined when all empty", () => {
 
 Deno.test("buildProductGarmentDetail caps overlong detail at the limit", () => {
   const detail = buildProductGarmentDetail({
-    image_paths: [],
+    product_colors: [],
     garment_type: "top",
     name: "x".repeat(LIMITS.MAX_GARMENT_DETAIL_LENGTH + 200),
     material: null,
@@ -116,7 +130,7 @@ Deno.test("buildProductGarmentDetail caps overlong detail at the limit", () => {
 
 Deno.test("buildProductGarmentDetail lets the cap cut the description, not an attribute", () => {
   const detail = buildProductGarmentDetail({
-    image_paths: [],
+    product_colors: [],
     garment_type: "top",
     name: "Tee",
     material: null,
@@ -158,7 +172,16 @@ Deno.test("resolveProductGarment sends only the product's first image", async ()
     products: {
       row: {
         ...PRODUCT_ROW,
-        image_paths: ["stores/main.jpg", "stores/label.jpg", "stores/hem.jpg"],
+        product_colors: [{
+          id: COVER_COLOR_ID,
+          name: null,
+          position: 0,
+          image_paths: [
+            "stores/main.jpg",
+            "stores/label.jpg",
+            "stores/hem.jpg",
+          ],
+        }],
       },
     },
   });
@@ -187,4 +210,28 @@ Deno.test("resolveProductGarment ignores a garment type outside the vocabulary",
   const garment = await resolveProductGarment(admin, { productId: PRODUCT_ID });
 
   assertEquals("garmentType" in garment, false);
+});
+
+Deno.test("resolveProductGarment sends the cover colour's image and reports it as worn", async () => {
+  const { admin } = fakeAdmin({ products: { row: PRODUCT_ROW } });
+
+  const garment = await resolveProductGarment(admin, { productId: PRODUCT_ID });
+
+  assertEquals(garment.images, [{ publicImageKey: "stores/a.jpg" }]);
+  assertEquals(garment.worn, {
+    productId: PRODUCT_ID,
+    colorId: COVER_COLOR_ID,
+  });
+});
+
+Deno.test("resolveProductGarment rejects a product with no usable colour image", async () => {
+  const { admin } = fakeAdmin({
+    products: { row: { ...PRODUCT_ROW, product_colors: [] } },
+  });
+
+  await assertRejects(
+    () => resolveProductGarment(admin, { productId: PRODUCT_ID }),
+    ValidationError,
+    "no usable garment image",
+  );
 });

@@ -13,6 +13,7 @@ import type {
   TryonMode,
   TryonParams,
   TryonRecorder,
+  WornProduct,
 } from "./types.ts";
 import type { DbClient } from "../supabase.ts";
 
@@ -44,9 +45,9 @@ function video(bytes: Uint8Array): GeneratedVideo {
 }
 
 function fakeRecorder(fail = false) {
-  const calls: Array<[string, string[]]> = [];
-  const record: TryonRecorder = (userId, productIds) => {
-    calls.push([userId, productIds]);
+  const calls: Array<[string, WornProduct[]]> = [];
+  const record: TryonRecorder = (userId, worn) => {
+    calls.push([userId, worn]);
     return fail
       ? Promise.reject(new Error("analytics down"))
       : Promise.resolve();
@@ -608,34 +609,37 @@ Deno.test("runTryonJob sends the standard engine when the caller names none", as
 });
 
 const PRODUCT_A = "11111111-1111-1111-1111-111111111111";
-const PRODUCT_B = "22222222-2222-2222-2222-222222222222";
 
 const productParams: TryonParams = {
   userId: "u1",
   garments: [
     { productId: PRODUCT_A },
     { wardrobeItemId: "44444444-4444-4444-4444-444444444444" },
-    { productId: PRODUCT_B },
   ],
   mode: "image",
 };
 
 const resolveAny = () => Promise.resolve({ images: [{ base64: "G" }] });
+const resolveWorn = () =>
+  Promise.resolve({
+    images: [{ base64: "G" }],
+    worn: { productId: "p1", colorId: "c1" },
+  });
 
-Deno.test("a finished job records one try-on per product garment, for the job's user", async () => {
+Deno.test("a finished job records the worn colour of each product garment, for the job's user", async () => {
   const quota = fakeQuota();
   const recorder = fakeRecorder();
   await runJob(productParams, {
     quota: quota.factory,
     recordTryon: recorder.record,
     generations: ignoreGenerations,
-    resolveProduct: resolveAny,
+    resolveProduct: resolveWorn,
     resolveWardrobe: resolveAny,
     generate: () => Promise.resolve(GENERATED),
     upload: () => Promise.resolve("https://img/result.png"),
     now: () => 1,
   });
-  assertEquals(recorder.calls, [["u1", [PRODUCT_A, PRODUCT_B]]]);
+  assertEquals(recorder.calls, [["u1", [{ productId: "p1", colorId: "c1" }]]]);
 });
 
 Deno.test("a video job records its product garments too", async () => {
@@ -645,14 +649,32 @@ Deno.test("a video job records its product garments too", async () => {
     quota: quota.factory,
     recordTryon: recorder.record,
     generations: ignoreGenerations,
-    resolveProduct: resolveAny,
+    resolveProduct: resolveWorn,
     resolveWardrobe: resolveAny,
     generate: () => Promise.resolve(GENERATED),
     generateVideo: () => Promise.resolve(video(new Uint8Array([1]))),
     uploadVideo: () => Promise.resolve("https://vid/x.mp4"),
     now: () => 1,
   });
-  assertEquals(recorder.calls, [["u1", [PRODUCT_A, PRODUCT_B]]]);
+  assertEquals(recorder.calls, [["u1", [{ productId: "p1", colorId: "c1" }]]]);
+});
+
+Deno.test("a job with only wardrobe garments records nothing", async () => {
+  const recorder = fakeRecorder();
+  await runJob({
+    userId: "u1",
+    garments: [{ wardrobeItemId: "44444444-4444-4444-4444-444444444444" }],
+    mode: "image",
+  }, {
+    quota: fakeQuota().factory,
+    recordTryon: recorder.record,
+    generations: ignoreGenerations,
+    resolveWardrobe: resolveAny,
+    generate: () => Promise.resolve(GENERATED),
+    upload: () => Promise.resolve("https://img/result.png"),
+    now: () => 1,
+  });
+  assertEquals(recorder.calls, []);
 });
 
 Deno.test("a job with no product garments records nothing", async () => {
@@ -678,7 +700,7 @@ Deno.test("a job that fails records no try-on", async () => {
         quota: quota.factory,
         recordTryon: recorder.record,
         generations: ignoreGenerations,
-        resolveProduct: resolveAny,
+        resolveProduct: resolveWorn,
         resolveWardrobe: resolveAny,
         generate: () => Promise.resolve(null),
       }),
@@ -696,7 +718,7 @@ Deno.test("a job whose upload fails records no try-on", async () => {
         quota: quota.factory,
         recordTryon: recorder.record,
         generations: ignoreGenerations,
-        resolveProduct: resolveAny,
+        resolveProduct: resolveWorn,
         resolveWardrobe: resolveAny,
         generate: () => Promise.resolve(GENERATED),
         upload: () => Promise.reject(new Error("r2 down")),
@@ -714,7 +736,7 @@ Deno.test("a recorder failure neither fails the job nor refunds it", async () =>
     quota: quota.factory,
     recordTryon: recorder.record,
     generations: ignoreGenerations,
-    resolveProduct: resolveAny,
+    resolveProduct: resolveWorn,
     resolveWardrobe: resolveAny,
     generate: () => Promise.resolve(GENERATED),
     upload: () => Promise.resolve("https://img/result.png"),
