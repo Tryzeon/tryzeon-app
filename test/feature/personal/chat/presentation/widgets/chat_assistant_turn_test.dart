@@ -14,8 +14,7 @@ final _product = ShopProduct(
   categoryId: 'c',
   garmentType: GarmentType.top,
   price: 690,
-  imagePaths: const [],
-  imageUrls: const [],
+  colors: const [],
   createdAt: DateTime(2026),
   updatedAt: DateTime(2026),
 );

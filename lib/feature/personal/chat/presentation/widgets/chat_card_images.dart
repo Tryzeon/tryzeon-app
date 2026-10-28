@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/common/product_color/domain/entities/product_color.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_card_style.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
@@ -14,12 +15,13 @@ class ChatProductImage extends StatelessWidget {
   @override
   Widget build(final BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    if (product.imageUrls.isEmpty) {
+    final imageUrl = product.colors.coverImageUrl;
+    if (imageUrl == null) {
       return Icon(Icons.image_outlined, color: colorScheme.onSurfaceVariant);
     }
     return CachedNetworkImage(
-      imageUrl: product.imageUrls.first,
-      cacheKey: product.imagePaths.isNotEmpty ? product.imagePaths.first : null,
+      imageUrl: imageUrl,
+      cacheKey: product.colors.coverImagePath,
       fit: BoxFit.cover,
       placeholder: (final _, final _) => const SizedBox.shrink(),
       errorWidget: (final _, final _, final _) => Icon(
