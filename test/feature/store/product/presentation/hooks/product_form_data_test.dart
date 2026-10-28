@@ -12,6 +12,8 @@ import 'package:tryzeon/feature/store/product/domain/entities/product_image_anal
 import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.dart';
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_form.dart';
 
+import '../../../../../support/product_color_fixtures.dart';
+
 const _pants = ProductCategory(
   id: 'cat-pants',
   code: 'jeans',
@@ -52,8 +54,7 @@ final _archivedProduct = Product(
   categoryId: _top.id,
   garmentType: GarmentType.top,
   price: 500,
-  imagePaths: const [],
-  imageUrls: const [],
+  colors: const [],
   status: ProductStatus.archived,
   createdAt: DateTime(2026),
   updatedAt: DateTime(2026),
@@ -148,6 +149,48 @@ void main() {
       );
 
       expect(form.status.value, ProductStatus.archived);
+    });
+
+    testWidgets("the form's images come from the product's first colour", (
+      final tester,
+    ) async {
+      late ProductFormData form;
+      await tester.pumpWidget(
+        HookBuilder(
+          builder: (final _) {
+            form = useProductForm(
+              initialProduct: _archivedProduct.copyWith(
+                colors: [
+                  productColorFixture(imagePaths: const ['a.jpg', 'b.jpg']),
+                  productColorFixture(imagePaths: const ['c.jpg'], position: 1),
+                ],
+              ),
+            );
+            return const SizedBox();
+          },
+        ),
+      );
+
+      expect(form.images.value, const [
+        ImageItem.existing(path: 'a.jpg', url: 'https://x/a.jpg'),
+        ImageItem.existing(path: 'b.jpg', url: 'https://x/b.jpg'),
+      ]);
+    });
+
+    testWidgets('a product without colours starts with no images', (
+      final tester,
+    ) async {
+      late ProductFormData form;
+      await tester.pumpWidget(
+        HookBuilder(
+          builder: (final _) {
+            form = useProductForm(initialProduct: _archivedProduct);
+            return const SizedBox();
+          },
+        ),
+      );
+
+      expect(form.images.value, isEmpty);
     });
 
     testWidgets('a new product defaults to published', (final tester) async {

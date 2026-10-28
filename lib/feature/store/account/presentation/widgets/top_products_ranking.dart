@@ -28,8 +28,7 @@ final _skeletonItems = [
         categoryId: '',
         garmentType: GarmentType.top,
         price: 0,
-        imagePaths: const [],
-        imageUrls: const [],
+        colors: const [],
         createdAt: DateTime(2000),
         updatedAt: DateTime(2000),
       ),
@@ -254,9 +253,10 @@ class _ProductImage extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
-    if (product.imageUrls.isEmpty) return const ImagePlaceholder();
+    final coverImageUrl = product.colors.coverImageUrl;
+    if (coverImageUrl == null) return const ImagePlaceholder();
     return CachedNetworkImage(
-      imageUrl: product.imageUrls.first,
+      imageUrl: coverImageUrl,
       fit: BoxFit.cover,
       fadeInDuration: Duration.zero,
       fadeOutDuration: Duration.zero,
