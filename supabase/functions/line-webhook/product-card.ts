@@ -4,9 +4,13 @@ import { publicImageUrl } from "../_shared/public-images.ts";
 import { CARD_COLOR, pickBubble, sourceLine } from "./card-kit.ts";
 import { productTryonPostbackData } from "./postback.ts";
 import { asJsonObject, type DbClient } from "../_shared/supabase.ts";
+import {
+  coverImagePath,
+  orderProductColors,
+} from "../_shared/product-colors.ts";
 
 export const PRODUCT_CARD_SELECT =
-  "id, name, price, image_paths, garment_type, purchase_link, store_profiles!products_store_id_fkey(name)";
+  "id, name, price, garment_type, purchase_link, product_colors(id, name, image_paths, position), store_profiles!products_store_id_fkey(name)";
 
 export interface ProductInfo {
   id: string;
@@ -51,7 +55,7 @@ export function toLineProduct(
   const info = toProductInfo(row);
   if (!info) return null;
 
-  const key = (row.image_paths as string[])[0];
+  const key = coverImagePath(row)!;
   return {
     ...info,
     imageUrl: publicImageUrl(imagesBaseUrl, key),
@@ -65,7 +69,9 @@ export function fetchProductRows(
   imagesBaseUrl: string,
 ): Promise<Map<string, LineProduct>> {
   return fetchRowsByIds(
-    admin.from("products").select(PRODUCT_CARD_SELECT).eq("status", "active"),
+    orderProductColors(
+      admin.from("products").select(PRODUCT_CARD_SELECT).eq("status", "active"),
+    ),
     ids,
     (row) => toLineProduct(row, imagesBaseUrl),
   );

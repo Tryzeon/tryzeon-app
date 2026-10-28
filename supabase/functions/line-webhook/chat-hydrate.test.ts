@@ -12,7 +12,14 @@ const row = (over: Record<string, unknown> = {}) => ({
   id: P1,
   name: "白襯衫",
   price: 1200,
-  image_paths: ["stores/s1/p1.jpg"],
+  product_colors: [
+    {
+      id: "c1",
+      name: null,
+      image_paths: ["stores/s1/p1.jpg"],
+      position: 0,
+    },
+  ],
   purchase_link: null,
   store_profiles: { name: "某店" },
   ...over,
@@ -43,7 +50,12 @@ function fakeAdmin(
             in: (_c: string, ids: string[]) => runIn(ids),
             eq(column: string, value: string) {
               eqCalls.push([column, value]);
-              return { in: (_c: string, ids: string[]) => runIn(ids) };
+              return {
+                in: (_c: string, ids: string[]) => runIn(ids),
+                order() {
+                  return this;
+                },
+              };
             },
           };
         },

@@ -20,7 +20,14 @@ const row = (over: Record<string, unknown> = {}) => ({
   id: "p1",
   name: "白襯衫",
   price: 1200,
-  image_paths: ["stores/s1/p1.jpg"],
+  product_colors: [
+    {
+      id: "c1",
+      name: null,
+      image_paths: ["stores/s1/p1.jpg"],
+      position: 0,
+    },
+  ],
   garment_type: "top",
   purchase_link: null,
   store_profiles: { name: "某店" },
@@ -78,7 +85,12 @@ function fakeBatchAdmin(result: { data: any; error: any }) {
             in: runIn,
             eq(column: string, value: string) {
               eqCalls.push([column, value]);
-              return { in: runIn };
+              return {
+                in: runIn,
+                order() {
+                  return this;
+                },
+              };
             },
           };
         },
@@ -102,8 +114,8 @@ Deno.test("toLineProduct joins the image key onto the public base", () => {
 });
 
 Deno.test("toLineProduct drops a product with no image", () => {
-  assertEquals(toLineProduct(row({ image_paths: [] }), BASE), null);
-  assertEquals(toLineProduct(row({ image_paths: null }), BASE), null);
+  assertEquals(toLineProduct(row({ product_colors: [] }), BASE), null);
+  assertEquals(toLineProduct(row({ product_colors: null }), BASE), null);
 });
 
 Deno.test("toLineProduct tolerates a product with no store", () => {
@@ -134,7 +146,10 @@ Deno.test("fetchProductInfo is null for a product that is gone", async () => {
 });
 
 Deno.test("fetchProductInfo is null for a product with no image", async () => {
-  const { admin } = fakeAdmin({ data: row({ image_paths: [] }), error: null });
+  const { admin } = fakeAdmin({
+    data: row({ product_colors: [] }),
+    error: null,
+  });
   assertEquals(await fetchProductInfo(admin, "p1"), null);
 });
 
@@ -157,7 +172,7 @@ Deno.test("fetchProductRows keys the rows by product id", async () => {
 
 Deno.test("fetchProductRows leaves out a product with no image", async () => {
   const { admin } = fakeBatchAdmin({
-    data: [row(), row({ id: "p2", image_paths: [] })],
+    data: [row(), row({ id: "p2", product_colors: [] })],
     error: null,
   });
   const rows = await fetchProductRows(admin, ["p1", "p2"], BASE);
