@@ -11,6 +11,7 @@ import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/feature/common/product_category/providers/product_category_providers.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
+import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_color_manager.dart';
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_form.dart';
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_size_manager.dart';
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_size_voice_input.dart';
@@ -54,6 +55,11 @@ class _EditProductContent extends HookConsumerWidget {
   Widget build(final BuildContext context, final WidgetRef ref) {
     final baseline = useMemoized(() => product);
     final formData = useProductForm(initialProduct: baseline);
+    final colorManager = useProductColorManager(
+      analyze: (final image) =>
+          ref.read(analyzeProductImageUseCaseProvider)(image),
+      initialColors: baseline.colors,
+    );
     final sizeManager = useProductSizeManager(initialSizes: baseline.sizes);
     final voiceInput = useSizeVoiceInput(ref: ref, sizeManager: sizeManager);
     final mutation = ref.watch(productEditProvider);
@@ -93,14 +99,14 @@ class _EditProductContent extends HookConsumerWidget {
     }
 
     Future<void> updateProduct() async {
-      if (!formData.validate(context)) return;
+      if (!formData.validate(colors: colorManager)) return;
 
       final result = await ref
           .read(productEditProvider.notifier)
           .update(
             original: baseline,
             draft: formData.toDraft(),
-            images: formData.images.value,
+            colors: colorManager.toColorItems(),
             sizes: sizeManager.toSizeItems(
               visibleTypes: formData.visibleMeasurementTypes,
             ),
@@ -140,6 +146,7 @@ class _EditProductContent extends HookConsumerWidget {
           children: [
             ProductFormLayout(
               formData: formData,
+              colorManager: colorManager,
               sizeManager: sizeManager,
               productCategoriesAsync: productCategoriesAsync,
               onRetryCategories: () =>

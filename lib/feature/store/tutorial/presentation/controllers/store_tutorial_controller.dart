@@ -57,8 +57,7 @@ class StoreTutorialController extends _$StoreTutorialController {
 
   /// A failed analysis moves on too: its indicator is gone, so staying would
   /// leave the brand with no hint and no way to skip.
-  void imageAnalysisChanged(final AsyncValue<Object?> analysis) {
-    if (analysis.isLoading) return;
+  void imageAnalysisFinished() {
     if (state is StoreTutorialPickImage || state is StoreTutorialAnalyzing) {
       state = const StoreTutorialState.reviewInfo();
     }

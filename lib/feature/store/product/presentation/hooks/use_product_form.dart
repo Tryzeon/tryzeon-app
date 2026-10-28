@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
@@ -10,7 +8,7 @@ import 'package:tryzeon/feature/common/product_attributes/domain/entities/produc
 import 'package:tryzeon/feature/common/product_category/domain/entities/product_category.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product_image_analysis.dart';
-import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.dart';
+import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_color_manager.dart';
 
 class ProductFormData {
   ProductFormData({
@@ -22,7 +20,6 @@ class ProductFormData {
     required this.selectedGender,
     required this.selectedMaterial,
     required this.selectedFit,
-    required this.images,
     required this.selectedCategoryId,
     required this.selectedGarmentType,
     required this.selectedElasticity,
@@ -40,7 +37,6 @@ class ProductFormData {
   final ValueNotifier<ProductGender?> selectedGender;
   final ValueNotifier<String?> selectedMaterial;
   final ValueNotifier<ProductFit?> selectedFit;
-  final ValueNotifier<List<ImageItem>> images;
   final ValueNotifier<String?> selectedCategoryId;
   final ValueNotifier<GarmentType?> selectedGarmentType;
   final ValueNotifier<ProductElasticity?> selectedElasticity;
@@ -49,11 +45,16 @@ class ProductFormData {
   final ValueNotifier<Set<ProductSeason>?> selectedSeasons;
   final ValueNotifier<ProductStatus> status;
 
-  bool validate(final BuildContext context) {
+  /// The colours sit above every other field, so a colour issue is the
+  /// topmost error and the colours reveal it themselves; the rest of the
+  /// form still shows its errors.
+  bool validate({required final ProductColorManager colors}) {
     final form = formKey.currentState;
     if (form == null) return false;
 
+    final hasColorIssues = colors.revealFirstIssue();
     final invalidFields = form.validateGranularly();
+    if (hasColorIssues) return false;
     if (invalidFields.isEmpty) return true;
 
     // Fields register in build order, not layout order (the advanced section
@@ -73,9 +74,6 @@ class ProductFormData {
     );
     return false;
   }
-
-  List<File> get newImageFiles =>
-      images.value.whereType<NewImageItem>().map((final e) => e.file).toList();
 
   void selectCategory(final ProductCategory category) {
     selectedCategoryId.value = category.id;
@@ -161,20 +159,6 @@ ProductFormData useProductForm({final Product? initialProduct}) {
   final selectedMaterial = useValueNotifier<String?>(initialProduct?.material);
   final selectedFit = useValueNotifier<ProductFit?>(initialProduct?.fit);
 
-  final initialImages = useMemoized(() {
-    final color = initialProduct?.colors.firstOrNull;
-    if (color == null) return <ImageItem>[];
-    return List.generate(
-      color.imagePaths.length,
-      (final i) => ImageItem.existing(
-        path: color.imagePaths[i],
-        url: color.imageUrls[i],
-      ),
-    );
-  });
-
-  final images = useState<List<ImageItem>>(initialImages);
-
   final selectedCategoryId = useValueNotifier<String?>(
     initialProduct?.categoryId,
   );
@@ -206,7 +190,6 @@ ProductFormData useProductForm({final Product? initialProduct}) {
     selectedGender: selectedGender,
     selectedMaterial: selectedMaterial,
     selectedFit: selectedFit,
-    images: images,
     selectedCategoryId: selectedCategoryId,
     selectedGarmentType: selectedGarmentType,
     selectedElasticity: selectedElasticity,

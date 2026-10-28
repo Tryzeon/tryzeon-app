@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
 import 'package:tryzeon/core/error/failure_from_error.dart';
@@ -19,7 +17,6 @@ import 'package:tryzeon/feature/store/product/data/services/product_image_analyz
 import 'package:tryzeon/feature/store/product/data/services/product_image_storage_impl.dart';
 import 'package:tryzeon/feature/store/product/data/services/size_voice_parser_impl.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
-import 'package:tryzeon/feature/store/product/domain/entities/product_image_analysis.dart';
 import 'package:tryzeon/feature/store/product/domain/repositories/product_repository.dart';
 import 'package:tryzeon/feature/store/product/domain/services/audio_recorder_service.dart';
 import 'package:tryzeon/feature/store/product/domain/services/product_image_analyzer.dart';
@@ -293,18 +290,6 @@ AnalyzeProductImage analyzeProductImageUseCase(final Ref ref) =>
       ref.watch(productImageAnalyzerProvider),
       ref.watch(productCategoryRepositoryProvider),
     );
-
-@riverpod
-Future<ProductImageAnalysis> productImageAnalysis(
-  final Ref ref,
-  final String imagePath,
-) async {
-  final result = await ref.watch(analyzeProductImageUseCaseProvider)(
-    File(imagePath),
-  );
-  if (result.isFailure) throw result.getError()!;
-  return result.get()!;
-}
 
 @riverpod
 SizeVoiceParser sizeVoiceParser(final Ref ref) =>

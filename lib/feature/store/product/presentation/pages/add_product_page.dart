@@ -13,6 +13,7 @@ import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/core/utils/image_picker_helper.dart';
 import 'package:tryzeon/feature/common/product_category/providers/product_category_providers.dart';
+import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_color_manager.dart';
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_form.dart';
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_size_manager.dart';
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_size_voice_input.dart';
@@ -28,49 +29,56 @@ class AddProductPage extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final formData = useProductForm();
+    final advancedController = useMemoized(ExpansibleController.new);
+    final tutorial = ref.read(storeTutorialControllerProvider.notifier);
+    final colorManager = useProductColorManager(
+      analyze: (final image) =>
+          ref.read(analyzeProductImageUseCaseProvider)(image),
+      onProductAnalysis: (final result) {
+        if (result.get() case final analysis?) {
+          formData.applyAnalysis(analysis);
+          if (analysis.attributes.hasAdvancedFields) {
+            advancedController.expand();
+          }
+        }
+      },
+    );
     final sizeManager = useProductSizeManager();
     final voiceInput = useSizeVoiceInput(ref: ref, sizeManager: sizeManager);
     final isSaving = ref.watch(productEditProvider) == ProductMutation.create;
     final productCategoriesAsync = ref.watch(productCategoriesProvider);
 
-    final advancedController = useMemoized(ExpansibleController.new);
-
-    final mainImagePath = formData.newImageFiles.firstOrNull?.path;
-    final analysisProvider = mainImagePath == null
-        ? null
-        : productImageAnalysisProvider(mainImagePath);
-    final isAnalyzing =
-        analysisProvider != null && ref.watch(analysisProvider).isLoading;
-    final tutorial = ref.read(storeTutorialControllerProvider.notifier);
+    final cover = colorManager.cover;
+    final coverPhoto = useListenableSelector(
+      useMemoized(
+        () => Listenable.merge([cover.images, cover.nameSuggestion]),
+        [cover],
+      ),
+      () => (
+        path: colorManager.mainNewImagePath,
+        isAnalyzing: colorManager.isAnalyzingCover,
+      ),
+    );
     useEffect(() {
       unawaited(
-        Future.microtask(
-          mainImagePath == null
-              ? tutorial.mainImageRemoved
-              : tutorial.mainImagePicked,
-        ),
+        Future.microtask(() {
+          if (coverPhoto.path == null) return tutorial.mainImageRemoved();
+          tutorial.mainImagePicked();
+          if (!coverPhoto.isAnalyzing) tutorial.imageAnalysisFinished();
+        }),
       );
       return null;
-    }, [mainImagePath]);
-    if (analysisProvider != null) {
-      ref.listen(analysisProvider, (_, final next) {
-        if (next case AsyncData(:final value)) {
-          formData.applyAnalysis(value);
-          if (value.attributes.hasAdvancedFields) advancedController.expand();
-        }
-        tutorial.imageAnalysisChanged(next);
-      });
-    }
+    }, [coverPhoto]);
 
     Future<void> addProduct() async {
-      if (!formData.validate(context)) return;
+      if (!formData.validate(colors: colorManager)) return;
 
       final draft = formData.toDraft();
       final result = await ref
           .read(productEditProvider.notifier)
           .create(
             draft: draft,
-            images: formData.newImageFiles,
+            colors: colorManager.toNewColorItems(),
             sizes: sizeManager.toNewSizeItems(
               visibleTypes: formData.visibleMeasurementTypes,
             ),
@@ -112,10 +120,10 @@ class AddProductPage extends HookConsumerWidget {
           padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
           child: ProductFormLayout(
             formData: formData,
+            colorManager: colorManager,
             sizeManager: sizeManager,
             productCategoriesAsync: productCategoriesAsync,
             onRetryCategories: () => ref.invalidate(productCategoriesProvider),
-            isAnalyzing: isAnalyzing,
             advancedController: advancedController,
             voiceStatus: voiceInput.status,
             onVoicePressed: voiceInput.toggle,

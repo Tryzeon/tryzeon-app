@@ -87,7 +87,7 @@ void main() {
     controller
       ..enterAddProduct()
       ..mainImagePicked()
-      ..imageAnalysisChanged(const AsyncData(null))
+      ..imageAnalysisFinished()
       ..next()
       ..next()
       ..next()
@@ -133,7 +133,7 @@ void main() {
     controller.mainImagePicked();
     expect(state(), const StoreTutorialState.analyzing());
 
-    controller.imageAnalysisChanged(const AsyncData(null));
+    controller.imageAnalysisFinished();
     expect(state(), const StoreTutorialState.reviewInfo());
 
     controller.next();
@@ -157,33 +157,9 @@ void main() {
 
     controller
       ..enterAddProduct()
-      ..imageAnalysisChanged(const AsyncData(null));
+      ..imageAnalysisFinished();
 
     expect(state(), const StoreTutorialState.reviewInfo());
-  });
-
-  test('a failed analysis still moves on to step 4', () async {
-    final controller = await start();
-
-    controller
-      ..enterAddProduct()
-      ..mainImagePicked()
-      ..imageAnalysisChanged(
-        const AsyncError(UnknownFailure('busy'), StackTrace.empty),
-      );
-
-    expect(state(), const StoreTutorialState.reviewInfo());
-  });
-
-  test('an analysis still running stays on step 3', () async {
-    final controller = await start();
-
-    controller
-      ..enterAddProduct()
-      ..mainImagePicked()
-      ..imageAnalysisChanged(const AsyncLoading());
-
-    expect(state(), const StoreTutorialState.analyzing());
   });
 
   test('removing the image during analysis returns to pick image', () async {
@@ -203,7 +179,7 @@ void main() {
     controller
       ..enterAddProduct()
       ..mainImagePicked()
-      ..imageAnalysisChanged(const AsyncData(null))
+      ..imageAnalysisFinished()
       ..next()
       ..next()
       ..leaveAddProduct();
@@ -215,7 +191,7 @@ void main() {
     final controller = await start();
     controller
       ..enterAddProduct()
-      ..imageAnalysisChanged(const AsyncData(null))
+      ..imageAnalysisFinished()
       ..next();
 
     products.startReload();
@@ -321,7 +297,7 @@ void main() {
     final controller = await start();
     controller
       ..enterAddProduct()
-      ..imageAnalysisChanged(const AsyncData(null));
+      ..imageAnalysisFinished();
 
     await controller.finish();
     expect(state(), const StoreTutorialState.inactive());

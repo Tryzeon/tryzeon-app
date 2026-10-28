@@ -1,6 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
+import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type_measurements.dart';
@@ -10,9 +15,10 @@ import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product_analysis_result.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product_image_analysis.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.dart';
+import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_color_manager.dart';
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_form.dart';
-
-import '../../../../../support/product_color_fixtures.dart';
+import 'package:tryzeon/feature/store/product/presentation/widgets/product_colors_editor.dart';
+import 'package:typed_result/typed_result.dart';
 
 const _pants = ProductCategory(
   id: 'cat-pants',
@@ -37,7 +43,6 @@ ProductFormData _formData() => ProductFormData(
   selectedGender: ValueNotifier<ProductGender?>(null),
   selectedMaterial: ValueNotifier<String?>(null),
   selectedFit: ValueNotifier<ProductFit?>(null),
-  images: ValueNotifier<List<ImageItem>>(const []),
   selectedCategoryId: ValueNotifier<String?>(null),
   selectedGarmentType: ValueNotifier<GarmentType?>(null),
   selectedElasticity: ValueNotifier<ProductElasticity?>(null),
@@ -60,8 +65,91 @@ final _archivedProduct = Product(
   updatedAt: DateTime(2026),
 );
 
+ImageItem _photo(final String path) => ImageItem.newImage(file: File(path));
+
+Future<ProductColorManager Function()> _pumpForm(
+  final WidgetTester tester,
+  final ProductFormData data,
+) async {
+  late ProductColorManager manager;
+  await tester.pumpWidget(
+    ProviderScope(
+      child: MaterialApp(
+        theme: AppTheme.lightTheme,
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: HookBuilder(
+              builder: (final _) {
+                manager = useProductColorManager(
+                  analyze: (final _) async => const Ok(
+                    ProductImageAnalysis(attributes: ProductAnalysisResult()),
+                  ),
+                );
+                return Form(
+                  key: data.formKey,
+                  child: Column(
+                    children: [
+                      ProductColorsEditor(
+                        manager: manager,
+                        onPickImage: (final _) async => null,
+                      ),
+                      TextFormField(
+                        controller: data.nameController,
+                        validator: (final value) =>
+                            value!.isEmpty ? '請輸入商品名稱' : null,
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+  return () => manager;
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  group('validate', () {
+    testWidgets('opening a collapsed colour still flags the rest of the form', (
+      final tester,
+    ) async {
+      final data = _formData();
+      final manager = await _pumpForm(tester, data);
+      manager().entries.single
+        ..images.value = [_photo('a.jpg')]
+        ..nameController.text = '黑';
+      manager().addColor();
+      await tester.pumpAndSettle();
+      manager().expand(manager().entries.first);
+      await tester.pumpAndSettle();
+
+      expect(data.validate(colors: manager()), isFalse);
+      await tester.pumpAndSettle();
+
+      expect(manager().expanded, manager().entries.last);
+      expect(find.text('請為這個顏色選擇至少一張照片'), findsOneWidget);
+      expect(find.text('請輸入商品名稱'), findsOneWidget);
+    });
+
+    testWidgets('a colour issue with no field of its own still blocks saving', (
+      final tester,
+    ) async {
+      final data = _formData()..nameController.text = 'Tee';
+      final manager = await _pumpForm(tester, data);
+      manager().entries.single.images.value = [
+        for (var i = 0; i <= AppConstants.maxProductImages; i++)
+          _photo('$i.jpg'),
+      ];
+      await tester.pumpAndSettle();
+
+      expect(data.validate(colors: manager()), isFalse);
+    });
+  });
 
   group('ProductFormData', () {
     test('offers every measurement before a category is chosen', () {
@@ -149,48 +237,6 @@ void main() {
       );
 
       expect(form.status.value, ProductStatus.archived);
-    });
-
-    testWidgets("the form's images come from the product's first colour", (
-      final tester,
-    ) async {
-      late ProductFormData form;
-      await tester.pumpWidget(
-        HookBuilder(
-          builder: (final _) {
-            form = useProductForm(
-              initialProduct: _archivedProduct.copyWith(
-                colors: [
-                  productColorFixture(imagePaths: const ['a.jpg', 'b.jpg']),
-                  productColorFixture(imagePaths: const ['c.jpg'], position: 1),
-                ],
-              ),
-            );
-            return const SizedBox();
-          },
-        ),
-      );
-
-      expect(form.images.value, const [
-        ImageItem.existing(path: 'a.jpg', url: 'https://x/a.jpg'),
-        ImageItem.existing(path: 'b.jpg', url: 'https://x/b.jpg'),
-      ]);
-    });
-
-    testWidgets('a product without colours starts with no images', (
-      final tester,
-    ) async {
-      late ProductFormData form;
-      await tester.pumpWidget(
-        HookBuilder(
-          builder: (final _) {
-            form = useProductForm(initialProduct: _archivedProduct);
-            return const SizedBox();
-          },
-        ),
-      );
-
-      expect(form.images.value, isEmpty);
     });
 
     testWidgets('a new product defaults to published', (final tester) async {

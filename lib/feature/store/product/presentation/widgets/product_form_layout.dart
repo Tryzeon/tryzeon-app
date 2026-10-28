@@ -2,46 +2,43 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/presentation/coach_mark/coach_mark_anchor.dart';
 import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
-import 'package:tryzeon/core/presentation/widgets/selection_form_field.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
-import 'package:tryzeon/core/utils/validators.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_category/domain/entities/product_category.dart';
-import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.dart';
+import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_color_manager.dart';
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_form.dart';
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_product_size_manager.dart';
 import 'package:tryzeon/feature/store/product/presentation/hooks/use_size_voice_input.dart';
 import 'package:tryzeon/feature/store/product/presentation/widgets/product_advanced_fields_editor.dart';
 import 'package:tryzeon/feature/store/product/presentation/widgets/product_basic_fields_editor.dart';
+import 'package:tryzeon/feature/store/product/presentation/widgets/product_colors_editor.dart';
 import 'package:tryzeon/feature/store/product/presentation/widgets/product_form_section_label.dart';
-import 'package:tryzeon/feature/store/product/presentation/widgets/product_image_editor.dart';
 import 'package:tryzeon/feature/store/product/presentation/widgets/product_publish_section.dart';
 import 'package:tryzeon/feature/store/product/presentation/widgets/product_size_matrix_editor.dart';
 
 class ProductFormLayout extends StatelessWidget {
   const ProductFormLayout({
     required this.formData,
+    required this.colorManager,
     required this.sizeManager,
     required this.onPickImage,
     required this.productCategoriesAsync,
     required this.onRetryCategories,
     required this.voiceStatus,
     required this.onVoicePressed,
-    this.isAnalyzing = false,
     this.advancedController,
     super.key,
   });
   final ProductFormData formData;
+  final ProductColorManager colorManager;
   final ProductSizeManager sizeManager;
   final Future<List<File>?> Function(int remainingCount) onPickImage;
   final AsyncValue<List<ProductCategory>> productCategoriesAsync;
   final VoidCallback onRetryCategories;
   final SizeVoiceStatus voiceStatus;
   final VoidCallback onVoicePressed;
-  final bool isAnalyzing;
   final ExpansibleController? advancedController;
 
   @override
@@ -51,65 +48,7 @@ class ProductFormLayout extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(
-              AppSpacing.lg,
-              AppSpacing.lg,
-              AppSpacing.lg,
-              AppSpacing.smMd,
-            ),
-            child: ProductFormSectionLabel(
-              number: '01',
-              title: '商品圖片',
-              helper: '最多 3 張 · 第一張為主圖，用於封面與 AI 試穿，請放完整正面照 · 長按拖曳調整順序',
-            ),
-          ),
-          SelectionFormField<List<ImageItem>>(
-            controller: formData.images,
-            validator: (final value) =>
-                AppValidators.validateNonEmpty(value, message: '請選擇至少一張商品圖片'),
-            builder: (final state) => Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ProductImageEditor(
-                  images: formData.images.value,
-                  hasError: state.hasError,
-                  onImagesChanged: (final updated) =>
-                      formData.images.value = updated,
-                  onPickImage: () async {
-                    final currentCount = formData.images.value.length;
-                    final remaining =
-                        AppConstants.maxProductImages - currentCount;
-                    if (remaining <= 0) return;
-                    final files = await onPickImage(remaining);
-                    if (files != null && files.isNotEmpty) {
-                      final newItems = files
-                          .map((final f) => ImageItem.newImage(file: f))
-                          .toList();
-                      formData.images.value = [
-                        ...formData.images.value,
-                        ...newItems,
-                      ];
-                    }
-                  },
-                ),
-                if (state.hasError) _ImageErrorText(state.errorText!),
-              ],
-            ),
-          ),
-          if (isAnalyzing)
-            const Padding(
-              padding: EdgeInsets.fromLTRB(
-                AppSpacing.xl,
-                AppSpacing.sm,
-                AppSpacing.lg,
-                0,
-              ),
-              child: CoachMarkAnchor(
-                target: CoachMarkTarget.productImageAnalyzing,
-                child: _AnalyzingIndicator(),
-              ),
-            ),
+          ProductColorsEditor(manager: colorManager, onPickImage: onPickImage),
           const SizedBox(height: AppSpacing.lg),
           const Divider(),
           const SizedBox(height: AppSpacing.lg),
@@ -223,57 +162,6 @@ class _SizeVoiceButton extends StatelessWidget {
           color: colorScheme.onSurface,
         ),
       },
-    );
-  }
-}
-
-class _AnalyzingIndicator extends StatelessWidget {
-  const _AnalyzingIndicator();
-
-  @override
-  Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const SizedBox(
-          width: 14,
-          height: 14,
-          child: CircularProgressIndicator(strokeWidth: AppStroke.regular),
-        ),
-        const SizedBox(width: AppSpacing.sm),
-        Text(
-          'AI 分析中…',
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ImageErrorText extends StatelessWidget {
-  const _ImageErrorText(this.text);
-
-  final String text;
-
-  @override
-  Widget build(final BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.xl,
-        AppSpacing.sm,
-        AppSpacing.lg,
-        0,
-      ),
-      child: Text(
-        text,
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: theme.colorScheme.error,
-        ),
-      ),
     );
   }
 }
