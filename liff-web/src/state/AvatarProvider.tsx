@@ -10,6 +10,7 @@ import {
 } from "react";
 import { avatarUrl, setPresetAvatar, uploadAvatar } from "../api/avatar";
 import type { StoredAvatar } from "../api/avatar-wire";
+import type { JpegBlob } from "../lib/image";
 import { type Gender, type PresetAvatar, presetsForGender } from "../lib/presetAvatars";
 import {
   type AvatarPreview,
@@ -32,7 +33,7 @@ interface AvatarValue {
   status: AvatarStatus;
   busy: boolean;
   presets: readonly PresetAvatar[];
-  replace(file: File): Promise<boolean>;
+  replace(jpeg: JpegBlob): Promise<boolean>;
   applyPreset(preset: PresetAvatar): Promise<boolean>;
 }
 
@@ -102,10 +103,10 @@ export function AvatarProvider(
   );
 
   const replace = useCallback(
-    (file: File) =>
+    (jpeg: JpegBlob) =>
       save(
-        () => ({ kind: "upload", objectUrl: URL.createObjectURL(file), savedAs: null }),
-        () => uploadAvatar(file),
+        () => ({ kind: "upload", objectUrl: URL.createObjectURL(jpeg), savedAs: null }),
+        () => uploadAvatar(jpeg),
       ),
     [save],
   );
