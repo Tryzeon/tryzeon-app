@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/presentation/coach_mark/coach_mark_anchor.dart';
 import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
+import 'package:tryzeon/core/presentation/widgets/lifted_reorder_proxy.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.dart';
 
@@ -12,13 +13,19 @@ class ProductImageEditor extends StatelessWidget {
     required this.images,
     required this.onImagesChanged,
     required this.onPickImage,
-    this.hasError = false,
+    required this.hasError,
+    required this.hostsCoachMark,
+    required this.horizontalPadding,
+    required this.showsCount,
   });
 
   final List<ImageItem> images;
   final ValueChanged<List<ImageItem>> onImagesChanged;
   final VoidCallback onPickImage;
   final bool hasError;
+  final bool hostsCoachMark;
+  final double horizontalPadding;
+  final bool showsCount;
 
   @override
   Widget build(final BuildContext context) {
@@ -30,45 +37,39 @@ class ProductImageEditor extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-          child: Row(
-            children: [
-              Text(
-                '${images.length}/${AppConstants.maxProductImages}',
-                style: textTheme.labelMedium?.copyWith(
-                  color: images.length >= AppConstants.maxProductImages
-                      ? colorScheme.error
-                      : colorScheme.onSurfaceVariant,
-                ),
+        if (showsCount) ...[
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+            child: Text(
+              photoCountLabel(images.length),
+              style: textTheme.labelMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
               ),
-            ],
+            ),
           ),
-        ),
-        const SizedBox(height: AppSpacing.smMd),
+          const SizedBox(height: AppSpacing.smMd),
+        ],
         if (images.isEmpty)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
             child: GestureDetector(
               onTap: onPickImage,
-              child: CoachMarkAnchor(
-                target: CoachMarkTarget.productImages,
-                child: _AddPlaceholder(hasError: hasError),
-              ),
+              child: hostsCoachMark
+                  ? CoachMarkAnchor(
+                      target: CoachMarkTarget.productImages,
+                      child: _AddPlaceholder(hasError: hasError),
+                    )
+                  : _AddPlaceholder(hasError: hasError),
             ),
           )
         else
           SizedBox(
-            height: 96,
+            height: _thumbnailSize,
             child: ReorderableListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
               buildDefaultDragHandles: false,
-              proxyDecorator: (final child, final _, final _) => Material(
-                color: Colors.transparent,
-                shadowColor: Colors.transparent,
-                child: child,
-              ),
+              proxyDecorator: liftedReorderProxy,
               itemCount: images.length + (canAddMore ? 1 : 0),
               onReorderItem: (final oldIndex, final newIndex) {
                 if (oldIndex >= images.length) return;
@@ -92,7 +93,7 @@ class ProductImageEditor extends StatelessWidget {
                 return Padding(
                   key: ValueKey(item),
                   padding: const EdgeInsets.only(right: AppSpacing.sm),
-                  child: ReorderableDragStartListener(
+                  child: ReorderableDelayedDragStartListener(
                     index: index,
                     child: _ImageCard(
                       item: item,
@@ -108,10 +109,28 @@ class ProductImageEditor extends StatelessWidget {
               },
             ),
           ),
+        if (images.length > 1) ...[
+          const SizedBox(height: AppSpacing.sm),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+            child: Text(
+              '長按照片拖曳調整順序',
+              style: textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }
 }
+
+String photoCountLabel(final int count) =>
+    '照片 $count/${AppConstants.maxProductImages}';
+
+const _thumbnailSize = 96.0;
+const _removeHitSize = 40.0;
 
 class _ImageCard extends StatelessWidget {
   const _ImageCard({
@@ -128,31 +147,13 @@ class _ImageCard extends StatelessWidget {
   Widget build(final BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return SizedBox(
-      width: 96,
-      height: 96,
+    return SizedBox.square(
+      dimension: _thumbnailSize,
       child: Stack(
         children: [
           ClipRRect(
             borderRadius: AppRadius.buttonAll,
-            child: switch (item) {
-              ExistingImageItem(:final url) => CachedNetworkImage(
-                imageUrl: url,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-                placeholder: (final context, final url) =>
-                    Container(color: colorScheme.surfaceContainerLow),
-                errorWidget: (final context, final url, final error) =>
-                    const Center(child: Icon(Icons.broken_image_outlined)),
-              ),
-              NewImageItem(:final file) => Image.file(
-                file,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-              ),
-            },
+            child: ProductImageView(item: item, size: _thumbnailSize),
           ),
           if (isMain)
             Positioned(
@@ -170,7 +171,7 @@ class _ImageCard extends StatelessWidget {
                   borderRadius: AppRadius.pillAll,
                 ),
                 child: Text(
-                  '主圖',
+                  '試穿主圖',
                   style: Theme.of(
                     context,
                   ).textTheme.labelSmall?.copyWith(color: Colors.white),
@@ -178,24 +179,72 @@ class _ImageCard extends StatelessWidget {
               ),
             ),
           Positioned(
-            top: 4,
-            right: 4,
+            top: 0,
+            right: 0,
             child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: onRemove,
-              child: Container(
-                width: 18,
-                height: 18,
-                decoration: BoxDecoration(
-                  color: colorScheme.scrim,
-                  shape: BoxShape.circle,
+              child: SizedBox.square(
+                dimension: _removeHitSize,
+                child: Align(
+                  alignment: Alignment.topRight,
+                  child: Container(
+                    margin: const EdgeInsets.all(AppSpacing.xs),
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      color: colorScheme.scrim,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.close,
+                      size: 14,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
-                child: const Icon(Icons.close, size: 12, color: Colors.white),
               ),
             ),
           ),
         ],
       ),
     );
+  }
+}
+
+class ProductImageView extends StatelessWidget {
+  const ProductImageView({super.key, required this.item, required this.size});
+
+  final ImageItem item;
+  final double size;
+
+  @override
+  Widget build(final BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    // Product photos are portrait garment shots, so decoding at the tile's
+    // width still leaves the cover crop's height sharp.
+    final decodeWidth = (size * MediaQuery.devicePixelRatioOf(context)).round();
+
+    return switch (item) {
+      ExistingImageItem(:final url) => CachedNetworkImage(
+        imageUrl: url,
+        fit: BoxFit.cover,
+        width: size,
+        height: size,
+        memCacheWidth: decodeWidth,
+        placeholder: (final context, final url) =>
+            Container(color: colorScheme.surfaceContainerLow),
+        errorWidget: (final context, final url, final error) =>
+            const Center(child: Icon(Icons.broken_image_outlined)),
+      ),
+      NewImageItem(:final file) => Image.file(
+        file,
+        fit: BoxFit.cover,
+        width: size,
+        height: size,
+        cacheWidth: decodeWidth,
+      ),
+    };
   }
 }
 
@@ -206,8 +255,8 @@ class _AddTile extends StatelessWidget {
   Widget build(final BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      width: 96,
-      height: 96,
+      width: _thumbnailSize,
+      height: _thumbnailSize,
       decoration: BoxDecoration(
         borderRadius: AppRadius.buttonAll,
         border: Border.all(
