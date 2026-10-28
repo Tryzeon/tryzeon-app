@@ -2,6 +2,8 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/product_color/data/dtos/product_color_dto.dart';
+import 'package:tryzeon/feature/common/product_color/data/product_color_table.dart';
 import 'package:tryzeon/feature/common/product_size/data/dtos/product_size_dto.dart';
 import 'package:tryzeon/feature/common/product_size/data/product_size_table.dart';
 import 'package:tryzeon/feature/personal/shop/data/dtos/shop_store_info_dto.dart';
@@ -18,7 +20,7 @@ class ShopProductDto {
     required this.categoryId,
     required this.garmentType,
     required this.price,
-    required this.imagePaths,
+    required this.colors,
     required this.id,
     required this.createdAt,
     required this.updatedAt,
@@ -43,8 +45,8 @@ class ShopProductDto {
   @JsonKey(unknownEnumValue: GarmentType.others)
   final GarmentType garmentType;
   final double price;
-  @JsonKey(defaultValue: <String>[])
-  final List<String> imagePaths;
+  @JsonKey(name: ProductColorTable.name, defaultValue: <ProductColorDto>[])
+  final List<ProductColorDto> colors;
   final String id;
   final String? purchaseLink;
   final String? description;

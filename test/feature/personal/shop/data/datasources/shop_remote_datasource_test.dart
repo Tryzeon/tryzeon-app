@@ -60,7 +60,7 @@ void main() {
       'category_id': 'c1',
       'garment_type': 'one_piece',
       'price': 1280,
-      'image_paths': <String>[],
+      'product_colors': <Object>[],
       'created_at': '2026-01-01T00:00:00Z',
       'updated_at': '2026-01-01T00:00:00Z',
       'product_sizes': <Object>[],
@@ -72,6 +72,14 @@ void main() {
     expect(
       requests.single.queryParameters['select'],
       contains('order_contacts'),
+    );
+    expect(
+      requests.single.queryParameters['select'],
+      contains('product_colors(*)'),
+    );
+    expect(
+      requests.single.queryParameters['product_colors.order'],
+      'position.asc.nullslast,created_at.asc.nullslast,id.asc.nullslast',
     );
     expect(product.storeInfo.orderContacts.single.type, OrderContactType.line);
     expect(product.storeInfo.orderContacts.single.value, '@mia');

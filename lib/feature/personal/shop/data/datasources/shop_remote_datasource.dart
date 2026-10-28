@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tryzeon/core/error/exceptions.dart';
+import 'package:tryzeon/feature/common/product_color/data/product_color_order.dart';
+import 'package:tryzeon/feature/common/product_color/data/product_color_table.dart';
 import 'package:tryzeon/feature/common/product_size/data/product_size_table.dart';
 import 'package:tryzeon/feature/personal/shop/data/dtos/list_shop_products_request.dart';
 import 'package:tryzeon/feature/personal/shop/data/dtos/shop_product_dto.dart';
@@ -12,6 +14,7 @@ class ShopRemoteDataSource {
   static const _productsTable = 'products';
   static const _storeProfileTable = 'store_profiles';
   static const _productSizesTable = ProductSizeTable.name;
+  static const _productColorsTable = ProductColorTable.name;
   static const _productsStoreIdFk = 'products_store_id_fkey';
   static const _storeInfoColumns =
       'id, name, slug, address, logo_path, channels, order_contacts';
@@ -41,9 +44,11 @@ class ShopRemoteDataSource {
         .select('''
           *,
           $_productSizesTable(*),
+          $_productColorsTable(*),
           $_storeProfileTable!$_productsStoreIdFk($_storeInfoColumns)
         ''')
         .eq('id', productId)
+        .orderProductColors()
         .single();
 
     return ShopProductDto.fromJson(response);
