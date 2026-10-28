@@ -1,3 +1,4 @@
+import type { JpegBlob } from "../lib/image";
 import type { PresetAvatar, PresetAvatarId } from "../lib/presetAvatars";
 import { shouldApplyPreset } from "../state/avatar";
 import { MODEL_CHOICE_HINT, ModelChoicePicker, OwnPhotoTip } from "./ModelChoicePicker";
@@ -7,7 +8,7 @@ interface Props {
   presets: readonly PresetAvatar[];
   selected: PresetAvatarId | null;
   onPreset(preset: PresetAvatar): void;
-  onUpload(file: File): void;
+  onUpload(jpeg: JpegBlob): void;
   onClose(): void;
 }
 
@@ -28,9 +29,9 @@ export function ModelChoiceSheet({ presets, selected, onPreset, onUpload, onClos
                 onClose();
                 if (shouldApplyPreset(selected, preset.id)) onPreset(preset);
               }}
-              onUpload={(file) => {
+              onUpload={(jpeg) => {
                 onClose();
-                onUpload(file);
+                onUpload(jpeg);
               }}
             />
             <OwnPhotoTip />

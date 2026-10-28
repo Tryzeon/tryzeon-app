@@ -837,6 +837,61 @@ button, label { touch-action: manipulation; }
   cursor: pointer;
 }
 
+/* ── Avatar cropper ────────────────────────────────────────────────────── */
+.cropper {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  background: #000;
+  color: #fff;
+  animation: fade 0.2s ease both;
+}
+.cropper__title {
+  margin: 0;
+  padding: 16px 20px 12px;
+  font-size: 17px;
+  font-weight: 600;
+  text-align: center;
+}
+.cropper__stage { position: relative; flex: 1; min-height: 0; }
+.cropper__hint {
+  margin: 0;
+  padding: 14px 20px 0;
+  font-size: 13px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+}
+.cropper__hint.is-error { color: #ffb4ab; }
+.cropper__bar {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 12px;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 14px 20px 20px;
+}
+.cropper__cancel,
+.cropper__ok {
+  display: grid;
+  place-items: center;
+  min-height: 50px;
+  border-radius: var(--r-btn);
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+.cropper__cancel { background: transparent; border: 1px solid rgba(255, 255, 255, 0.5); color: #fff; }
+.cropper__ok { background: #fff; border: none; color: var(--ink); }
+.cropper__ok:disabled,
+.cropper__cancel:disabled { opacity: 0.4; cursor: default; }
+.cropper__cancel:active:not(:disabled),
+.cropper__ok:active:not(:disabled) { transform: scale(0.97); }
+
 /* ── Product detail page ───────────────────────────────────────────────── */
 /* The tab bar stays up under the product page, so the sticky action bar's
    resting place has to be above it. */

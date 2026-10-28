@@ -1,3 +1,4 @@
+import type { JpegBlob } from "../lib/image";
 import type { PresetAvatar } from "../lib/presetAvatars";
 import { useAvatar } from "../state/AvatarProvider";
 import { FadeImage } from "./FadeImage";
@@ -6,7 +7,7 @@ import { MODEL_CHOICE_HINT, ModelChoicePicker } from "./ModelChoicePicker";
 interface Props {
   onReplaceTap(): void;
   onPreset(preset: PresetAvatar): void;
-  onUpload(file: File): void;
+  onUpload(jpeg: JpegBlob): void;
 }
 
 export function AvatarPage({ onReplaceTap, onPreset, onUpload }: Props) {

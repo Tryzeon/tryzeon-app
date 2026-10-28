@@ -37,7 +37,7 @@ export function useModelGatedTryon() {
       presets={avatar.presets}
       selected={selectedPresetId(avatar.avatar)}
       onPreset={(preset) => chooseThenTryon(() => avatar.applyPreset(preset))}
-      onUpload={(file) => chooseThenTryon(() => avatar.replace(file))}
+      onUpload={(jpeg) => chooseThenTryon(() => avatar.replace(jpeg))}
       onClose={() => setChoosing(false)}
     />
   );
