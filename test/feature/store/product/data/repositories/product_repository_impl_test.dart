@@ -9,9 +9,12 @@ import 'package:tryzeon/core/utils/public_image_url.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/product_color/data/collections/product_color_embedded.dart';
+import 'package:tryzeon/feature/common/product_color/data/dtos/product_color_dto.dart';
 import 'package:tryzeon/feature/store/product/data/collections/product_cache.dart';
 import 'package:tryzeon/feature/store/product/data/datasources/product_local_datasource.dart';
 import 'package:tryzeon/feature/store/product/data/datasources/product_remote_datasource.dart';
+import 'package:tryzeon/feature/store/product/data/dtos/create_product_color_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/create_product_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/create_product_size_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/product_dto.dart';
@@ -24,6 +27,7 @@ import 'package:tryzeon/feature/store/product/domain/value_objects/size_item.dar
 import 'package:typed_result/typed_result.dart';
 
 import '../../../../../support/isar_test_harness.dart';
+import '../../../../../support/product_color_fixtures.dart';
 
 class _FakeRemote implements ProductRemoteDataSource {
   _FakeRemote(this.product);
@@ -32,6 +36,8 @@ class _FakeRemote implements ProductRemoteDataSource {
   int listCalls = 0;
   int getCalls = 0;
   CreateProductRequest? inserted;
+  List<CreateProductColorRequest>? insertedColors;
+  final Map<String, Map<String, dynamic>> colorChanges = {};
   Object? getError;
   Object? updateError;
   final List<String> writes = [];
@@ -49,6 +55,19 @@ class _FakeRemote implements ProductRemoteDataSource {
   }
 
   @override
+  Future<void> insertProductColors(
+    final List<CreateProductColorRequest> requests,
+  ) async {
+    insertedColors = requests;
+    writes.add('insertProductColors');
+  }
+
+  @override
+  Future<void> insertProductSizes(
+    final List<CreateProductSizeRequest> requests,
+  ) async => writes.add('insertProductSizes');
+
+  @override
   Future<ProductDto> getProduct(final String productId) async {
     getCalls++;
     if (getError case final error?) throw error;
@@ -63,6 +82,15 @@ class _FakeRemote implements ProductRemoteDataSource {
   Future<void> insertProductSize(
     final CreateProductSizeRequest request,
   ) async => writes.add('insertSize:${request.size.name}');
+
+  @override
+  Future<void> updateProductColor(
+    final String colorId,
+    final Map<String, dynamic> changes,
+  ) async {
+    colorChanges[colorId] = changes;
+    writes.add('updateColor:$colorId');
+  }
 
   @override
   Future<void> updateProduct(
@@ -105,7 +133,15 @@ void main() {
         ..categoryId = 'c1'
         ..garmentType = garmentType
         ..price = 1280
-        ..imagePaths = ['p1.jpg']
+        ..colors = [
+          ProductColorEmbedded()
+            ..id = 'k1'
+            ..productId = 'p1'
+            ..imagePaths = ['p1.jpg']
+            ..position = 0
+            ..createdAt = DateTime(2026)
+            ..updatedAt = DateTime(2026),
+        ]
         ..status = status
         ..gender = gender
         ..fit = fit
@@ -129,7 +165,16 @@ void main() {
     categoryId: 'c1',
     garmentType: GarmentType.onePiece,
     price: 1280,
-    imagePaths: const ['p1.jpg'],
+    colors: [
+      ProductColorDto(
+        id: 'k1',
+        productId: 'p1',
+        imagePaths: const ['p1.jpg'],
+        position: 0,
+        createdAt: DateTime(2026),
+        updatedAt: DateTime(2026),
+      ),
+    ],
     status: ProductStatus.active,
     gender: ProductGender.female,
     fit: ProductFit.regular,
@@ -222,7 +267,9 @@ void main() {
     ).listProducts(storeId: 's1')).get()!;
 
     expect(remote.listCalls, 0);
-    expect(products.single.imageUrls, [PublicImageUrl.of('p1.jpg')]);
+    expect(products.single.colors.single.imageUrls, [
+      PublicImageUrl.of('p1.jpg'),
+    ]);
     expect(products.single.garmentType, GarmentType.onePiece);
     expect(products.single.gender, ProductGender.female);
     expect(products.single.fit, ProductFit.regular);
@@ -289,7 +336,9 @@ void main() {
             styles: {ClothingStyle.edgy, ClothingStyle.natural},
             seasons: {ProductSeason.winter, ProductSeason.spring},
           ),
-          imagePaths: ['p1.jpg'],
+          colors: [
+            NewProductColor(imagePaths: ['p1.jpg']),
+          ],
           sizes: [],
         ),
       );
@@ -301,6 +350,45 @@ void main() {
     },
   );
 
+  test(
+    'createProduct writes the product, then its colours, then its sizes',
+    () async {
+      final remote = _FakeRemote(remoteProduct);
+
+      final result = await buildRepository(remote).createProduct(
+        const NewProduct(
+          id: 'p1',
+          storeId: 's1',
+          draft: ProductDraft(
+            name: '碎花洋裝',
+            categoryId: 'c1',
+            garmentType: GarmentType.onePiece,
+            price: 1280,
+          ),
+          colors: [
+            NewProductColor(imagePaths: ['p1/a.jpg']),
+          ],
+          sizes: [NewSizeItem(name: 'M')],
+        ),
+      );
+
+      expect(result.isSuccess, isTrue);
+      expect(remote.writes, [
+        'insertProduct',
+        'insertProductColors',
+        'insertProductSizes',
+      ]);
+      expect(remote.inserted!.toJson(), isNot(contains('image_paths')));
+      expect(remote.insertedColors!.single.toJson(), {
+        'product_id': 'p1',
+        'store_id': 's1',
+        'name': null,
+        'image_paths': ['p1/a.jpg'],
+        'position': 0,
+      });
+    },
+  );
+
   final original = Product(
     id: 'p1',
     storeId: 's1',
@@ -308,8 +396,9 @@ void main() {
     categoryId: 'c1',
     garmentType: GarmentType.onePiece,
     price: 1280,
-    imagePaths: const ['p1.jpg'],
-    imageUrls: const ['https://cdn/p1.jpg'],
+    colors: [
+      productColorFixture(imagePaths: const ['a.jpg', 'b.jpg']),
+    ],
     sizes: [
       ProductSize(
         id: 'm',
@@ -325,11 +414,12 @@ void main() {
 
   ProductUpdatePlan planFor(
     final List<String> imagePaths,
-    final List<SizeItem> sizes,
-  ) => planProductUpdate(
+    final List<SizeItem> sizes, {
+    final String name = '碎花洋裝',
+  }) => planProductUpdate(
     original: original,
-    draft: const ProductDraft(
-      name: '碎花洋裝',
+    draft: ProductDraft(
+      name: name,
       categoryId: 'c1',
       garmentType: GarmentType.onePiece,
       price: 1280,
@@ -342,10 +432,14 @@ void main() {
   );
 
   test(
-    'updateProduct writes sizes before the product row that references images',
+    'updateProduct writes the image-referencing colour after every other row',
     () async {
       final remote = _FakeRemote(remoteProduct);
-      final plan = planFor(const [], const [SizeItem.newSize(name: 'L')]);
+      final plan = planFor(
+        const ['b.jpg'],
+        const [SizeItem.newSize(name: 'L')],
+        name: '素面洋裝',
+      );
 
       final result = await buildRepository(remote).updateProduct(
         original: original,
@@ -354,9 +448,82 @@ void main() {
       );
 
       expect(result.isSuccess, isTrue);
-      expect(remote.writes, ['deleteSize:m', 'insertSize:L', 'updateProduct']);
+      expect(remote.writes, [
+        'deleteSize:m',
+        'insertSize:L',
+        'updateProduct',
+        'updateColor:${original.colors.single.id}',
+      ]);
     },
   );
+
+  test(
+    'updateProduct leaves the colour images alone when the product row fails',
+    () async {
+      final remote = _FakeRemote(remoteProduct)
+        ..updateError = const SocketException('offline');
+      final plan = planFor(
+        const ['b.jpg'],
+        const [SizeItem.existing(id: 'm', name: 'M')],
+        name: '素面洋裝',
+      );
+
+      final result = await buildRepository(remote).updateProduct(
+        original: original,
+        target: plan.target,
+        sizeDiff: plan.sizeDiff,
+      );
+
+      expect(result.getError(), isA<Failure>());
+      expect(
+        remote.writes.where((final write) => write.startsWith('updateColor:')),
+        isEmpty,
+      );
+    },
+  );
+
+  test(
+    'updateProduct writes a removed image to the colour, not the product row',
+    () async {
+      final remote = _FakeRemote(remoteProduct);
+      final plan = planFor(
+        const ['b.jpg'],
+        const [SizeItem.existing(id: 'm', name: 'M')],
+      );
+
+      final result = await buildRepository(remote).updateProduct(
+        original: original,
+        target: plan.target,
+        sizeDiff: plan.sizeDiff,
+      );
+
+      expect(result.isSuccess, isTrue);
+      expect(remote.writes, ['updateColor:${original.colors.single.id}']);
+      expect(remote.colorChanges, {
+        original.colors.single.id: {
+          'image_paths': ['b.jpg'],
+        },
+      });
+    },
+  );
+
+  test('updateProduct leaves an unchanged colour alone', () async {
+    final remote = _FakeRemote(remoteProduct);
+    final plan = planFor(
+      const ['a.jpg', 'b.jpg'],
+      const [SizeItem.existing(id: 'm', name: 'M')],
+      name: '素面洋裝',
+    );
+
+    final result = await buildRepository(remote).updateProduct(
+      original: original,
+      target: plan.target,
+      sizeDiff: plan.sizeDiff,
+    );
+
+    expect(result.isSuccess, isTrue);
+    expect(remote.writes, ['updateProduct']);
+  });
 
   test('updateProduct skips a size whose row would not change', () async {
     final remote = _FakeRemote(remoteProduct);

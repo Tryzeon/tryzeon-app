@@ -2,6 +2,8 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/product_color/data/dtos/product_color_dto.dart';
+import 'package:tryzeon/feature/common/product_color/data/product_color_table.dart';
 import 'package:tryzeon/feature/common/product_size/data/dtos/product_size_dto.dart';
 import 'package:tryzeon/feature/common/product_size/data/product_size_table.dart';
 
@@ -17,7 +19,6 @@ class ProductDto {
     required this.categoryId,
     required this.garmentType,
     required this.price,
-    required this.imagePaths,
     required this.id,
     required this.createdAt,
     required this.updatedAt,
@@ -32,6 +33,7 @@ class ProductDto {
     this.styles,
     this.seasons,
     this.sizes,
+    this.colors = const [],
   });
 
   factory ProductDto.fromJson(final Map<String, dynamic> json) =>
@@ -44,8 +46,6 @@ class ProductDto {
   @JsonKey(unknownEnumValue: GarmentType.others)
   final GarmentType garmentType;
   final double price;
-  @JsonKey(defaultValue: <String>[])
-  final List<String> imagePaths;
   @JsonKey(includeToJson: false)
   final String id;
   @JsonKey(unknownEnumValue: ProductStatus.active)
@@ -67,6 +67,12 @@ class ProductDto {
   final List<ProductSeason>? seasons;
   @JsonKey(name: ProductSizeTable.name, includeToJson: false)
   final List<ProductSizeDto>? sizes;
+  @JsonKey(
+    name: ProductColorTable.name,
+    includeToJson: false,
+    defaultValue: <ProductColorDto>[],
+  )
+  final List<ProductColorDto> colors;
   @JsonKey(includeToJson: false)
   final DateTime createdAt;
   @JsonKey(includeToJson: false)

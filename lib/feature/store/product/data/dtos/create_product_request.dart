@@ -10,13 +10,11 @@ class CreateProductRequest {
   const CreateProductRequest({
     required this.id,
     required this.storeId,
-    required this.imagePaths,
     required this.draft,
   });
 
   final String id;
   final String storeId;
-  final List<String> imagePaths;
   @JsonKey(includeToJson: false)
   final ProductDraftDto draft;
 

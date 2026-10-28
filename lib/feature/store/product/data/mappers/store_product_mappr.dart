@@ -1,11 +1,11 @@
 import 'package:auto_mappr_annotation/auto_mappr_annotation.dart';
-import 'package:tryzeon/core/utils/public_image_url.dart';
 import 'package:tryzeon/feature/common/clothing_style/data/mappers/clothing_style_cache_converters.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/garment_type/data/mappers/garment_type_cache_converters.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/data/mappers/product_attributes_cache_converters.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
+import 'package:tryzeon/feature/common/product_color/data/mappers/product_color_mappr.dart';
 import 'package:tryzeon/feature/common/product_size/data/dtos/body_measurement_ranges_dto.dart';
 import 'package:tryzeon/feature/common/product_size/data/mappers/product_size_mappr.dart';
 import 'package:tryzeon/feature/store/product/data/collections/product_cache.dart';
@@ -40,7 +40,6 @@ import 'package:tryzeon/feature/store/product/domain/value_objects/size_item.dar
 
     MapType<ProductDto, Product>(
       fields: [
-        Field('imageUrls', custom: StoreProductMapprHelper.imageUrlsFromDto),
         Field('status', custom: StoreProductMapprHelper.statusFromDto),
         Field('gender', custom: StoreProductMapprHelper.genderFromDto),
         Field('styles', custom: StoreProductMapprHelper.stylesFromDto),
@@ -93,7 +92,6 @@ import 'package:tryzeon/feature/store/product/domain/value_objects/size_item.dar
     MapType<ProductCache, Product>(
       fields: [
         Field('id', from: 'productId'),
-        Field('imageUrls', custom: StoreProductMapprHelper.imageUrlsFromCache),
         Field('status', custom: StoreProductMapprHelper.statusFromCache),
         Field('gender', custom: StoreProductMapprHelper.genderFromCache),
       ],
@@ -119,7 +117,7 @@ import 'package:tryzeon/feature/store/product/domain/value_objects/size_item.dar
       ],
     ),
   ],
-  includes: [ProductSizeMappr()],
+  includes: [ProductColorMappr(), ProductSizeMappr()],
 )
 class StoreProductMappr extends $StoreProductMappr {
   const StoreProductMappr();
@@ -148,12 +146,6 @@ class StoreProductMapprHelper {
         );
     return {for (final type in BodyMeasurementType.values) type: ?ranges[type]};
   }
-
-  static List<String> imageUrlsFromDto(final ProductDto source) =>
-      source.imagePaths.map(PublicImageUrl.of).toList();
-
-  static List<String> imageUrlsFromCache(final ProductCache source) =>
-      source.imagePaths.map(PublicImageUrl.of).toList();
 
   static ProductStatus statusFromDto(final ProductDto source) =>
       source.status ?? ProductStatus.active;
