@@ -10,6 +10,7 @@ class ProductAnalysisResultDto {
     required this.styles,
     required this.seasons,
     this.name,
+    this.color,
     this.categoryId,
     this.gender,
     this.material,
@@ -22,6 +23,7 @@ class ProductAnalysisResultDto {
       _$ProductAnalysisResultDtoFromJson(json);
 
   final String? name;
+  final String? color;
   final String? categoryId;
   @JsonKey(unknownEnumValue: JsonKey.nullForUndefinedEnumValue)
   final ProductGender? gender;

@@ -5,11 +5,13 @@ import 'package:tryzeon/feature/common/product_attributes/domain/entities/produc
 import 'package:tryzeon/feature/store/product/data/collections/product_cache.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/create_product_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/create_product_size_request.dart';
+import 'package:tryzeon/feature/store/product/data/dtos/product_analysis_result_dto.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/product_dto.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/product_size_draft_dto.dart';
 import 'package:tryzeon/feature/store/product/data/mappers/create_product_color_requests.dart';
 import 'package:tryzeon/feature/store/product/data/mappers/store_product_mappr.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
+import 'package:tryzeon/feature/store/product/domain/entities/product_analysis_result.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/size_item.dart';
 
 void main() {
@@ -218,6 +220,19 @@ void main() {
         'position': 1,
       },
     ]);
+  });
+
+  test('an analysis result carries the inferred colour', () {
+    final result = mappr
+        .convert<ProductAnalysisResultDto, ProductAnalysisResult>(
+          ProductAnalysisResultDto.fromJson(const {
+            'color': '霧灰',
+            'styles': <String>[],
+            'seasons': <String>[],
+          }),
+        );
+
+    expect(result.color, '霧灰');
   });
 
   test('a new size serializes its nested measurements', () {

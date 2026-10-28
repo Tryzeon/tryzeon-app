@@ -9,6 +9,7 @@ part 'product_analysis_result.freezed.dart';
 sealed class ProductAnalysisResult with _$ProductAnalysisResult {
   const factory ProductAnalysisResult({
     final String? name,
+    final String? color,
     final String? categoryId,
     final ProductGender? gender,
     @Default(<ClothingStyle>{}) final Set<ClothingStyle> styles,

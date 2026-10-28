@@ -69,6 +69,12 @@ void main() {
     );
   });
 
+  test('carries the analyzed colour', () async {
+    final result = await analyze(const Ok(ProductAnalysisResult(color: '霧灰')));
+
+    expect(result.get()?.attributes.color, '霧灰');
+  });
+
   test('an unknown category id leaves the category empty', () async {
     final result = await analyze(
       const Ok(ProductAnalysisResult(categoryId: 'cat-unknown')),
