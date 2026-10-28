@@ -1,5 +1,5 @@
 import { currentUserId } from "../lib/auth";
-import { downscaleToBlob, JPEG_MIME } from "../lib/image";
+import { JPEG_MIME, type JpegBlob } from "../lib/image";
 import type { PresetAvatarId } from "../lib/presetAvatars";
 import { supabase } from "../lib/supabase";
 import {
@@ -23,14 +23,13 @@ export async function setPresetAvatar(id: PresetAvatarId): Promise<StoredAvatar>
   return next;
 }
 
-export async function uploadAvatar(file: File): Promise<StoredAvatar> {
+export async function uploadAvatar(jpeg: JpegBlob): Promise<StoredAvatar> {
   const userId = await currentUserId();
-  const blob = await downscaleToBlob(file);
   const path = avatarUploadPath(userId, Date.now());
 
   const { error } = await supabase.storage
     .from(AVATARS_BUCKET)
-    .upload(path, blob, { contentType: JPEG_MIME, upsert: true });
+    .upload(path, jpeg, { contentType: JPEG_MIME, upsert: true });
   if (error) throw error;
 
   const next: StoredAvatar = { kind: "uploaded", path };
