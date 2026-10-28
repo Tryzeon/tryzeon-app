@@ -5,6 +5,7 @@ import 'package:tryzeon/core/modules/analytics/domain/services/analytics_event_q
 import 'package:tryzeon/core/presentation/coach_mark/coach_mark_anchor.dart';
 import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/presentation/widgets/glass_pill.dart';
+import 'package:tryzeon/core/presentation/widgets/image_placeholder.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/store_channel.dart';
@@ -35,8 +36,7 @@ ShopProduct _product(final String id) => ShopProduct(
   categoryId: 'c1',
   garmentType: GarmentType.top,
   price: 100,
-  imagePaths: const [],
-  imageUrls: const [],
+  colors: const [],
   createdAt: DateTime(2026),
   updatedAt: DateTime(2026),
 );
@@ -124,5 +124,17 @@ void main() {
     );
 
     expect(anchors, findsNothing);
+  });
+
+  testWidgets('a product without images renders the placeholder', (
+    final tester,
+  ) async {
+    await pumpGrid(
+      tester,
+      AsyncData(ShopProductsState(items: [_product('p1')], hasMore: false)),
+    );
+
+    expect(find.byType(ImagePlaceholder), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }

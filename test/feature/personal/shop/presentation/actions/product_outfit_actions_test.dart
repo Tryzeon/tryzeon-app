@@ -13,6 +13,7 @@ import 'package:tryzeon/feature/personal/tryon/presentation/actions/outfit_actio
 import 'package:tryzeon/feature/personal/tryon/presentation/state/outfit_tray_controller.dart';
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 
+import '../../../../../support/product_color_fixtures.dart';
 import '../../../../../support/wardrobe_test_doubles.dart';
 
 void main() {
@@ -25,8 +26,12 @@ void main() {
         categoryId: 'c',
         garmentType: GarmentType.top,
         price: 690,
-        imagePaths: const ['p.jpg'],
-        imageUrls: const ['https://x/p.jpg'],
+        colors: [
+          productColorFixture(
+            imagePaths: const ['p.jpg'],
+            imageUrls: const ['https://x/p.jpg'],
+          ),
+        ],
         id: 'p1',
         createdAt: DateTime(2026),
         updatedAt: DateTime(2026),
@@ -77,4 +82,47 @@ void main() {
       expect(container.read(outfitTrayProvider).pieces, isEmpty);
     },
   );
+
+  testWidgets('a product without images yields an empty piece image url', (
+    final tester,
+  ) async {
+    final product = ShopProduct(
+      storeInfo: const ShopStoreInfo(id: 's1', name: 'Store', channels: {}),
+      name: 'Tee',
+      categoryId: 'c',
+      garmentType: GarmentType.top,
+      price: 690,
+      colors: const [],
+      id: 'p1',
+      createdAt: DateTime(2026),
+      updatedAt: DateTime(2026),
+    );
+    late WidgetRef capturedRef;
+    final container = ProviderContainer(
+      overrides: [
+        isAuthenticatedProvider.overrideWithValue(true),
+        wardrobeItemsProvider.overrideWith(() => FakeWardrobeItems(const [])),
+        productFitResolverProvider.overrideWithValue(
+          const ProductFitResolver(body: null),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: Consumer(
+          builder: (final _, final ref, final _) {
+            capturedRef = ref;
+            return const SizedBox();
+          },
+        ),
+      ),
+    );
+
+    final piece =
+        outfitPieceFromProduct(capturedRef, product) as OutfitPieceProduct;
+    expect(piece.imageUrl, '');
+  });
 }

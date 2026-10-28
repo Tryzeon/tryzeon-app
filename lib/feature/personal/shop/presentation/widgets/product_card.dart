@@ -10,6 +10,7 @@ import 'package:tryzeon/core/presentation/coach_mark/coach_mark_target.dart';
 import 'package:tryzeon/core/presentation/widgets/image_placeholder.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/common/product_color/domain/entities/product_color.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/actions/product_outfit_actions.dart';
@@ -49,6 +50,7 @@ class ProductCard extends HookConsumerWidget {
     final recommendedSize = fitResult?.displayState == FitDisplayState.match
         ? fitResult?.recommendedSize
         : null;
+    final coverImageUrl = product.colors.coverImageUrl;
 
     return GestureDetector(
       onTap: () {
@@ -72,10 +74,10 @@ class ProductCard extends HookConsumerWidget {
                   child: Stack(
                     children: [
                       Positioned.fill(
-                        child: product.imageUrls.isEmpty
+                        child: coverImageUrl == null
                             ? const ImagePlaceholder()
                             : CachedNetworkImage(
-                                imageUrl: product.imageUrls.first,
+                                imageUrl: coverImageUrl,
                                 fit: BoxFit.cover,
                                 width: double.infinity,
                                 fadeInDuration: Duration.zero,
