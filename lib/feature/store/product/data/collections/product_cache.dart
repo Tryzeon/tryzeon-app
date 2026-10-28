@@ -1,4 +1,5 @@
 import 'package:isar_community/isar.dart';
+import 'package:tryzeon/feature/common/product_color/data/collections/product_color_embedded.dart';
 import 'package:tryzeon/feature/common/product_size/data/collections/body_measurement_ranges_embedded.dart';
 import 'package:tryzeon/feature/common/product_size/data/collections/garment_measurements_embedded.dart';
 import 'package:tryzeon/feature/common/product_size/data/collections/measurement_range_embedded.dart';
@@ -19,7 +20,6 @@ class ProductCache {
   late String categoryId;
   late String garmentType;
   late double price;
-  late List<String> imagePaths;
   String? status;
   String? gender;
   String? purchaseLink;
@@ -37,4 +37,5 @@ class ProductCache {
   late DateTime updatedAt;
 
   List<ProductSizeEmbedded>? sizes;
+  List<ProductColorEmbedded> colors = [];
 }

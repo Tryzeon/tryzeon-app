@@ -1,5 +1,8 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tryzeon/feature/common/product_color/data/product_color_order.dart';
+import 'package:tryzeon/feature/common/product_color/data/product_color_table.dart';
 import 'package:tryzeon/feature/common/product_size/data/product_size_table.dart';
+import 'package:tryzeon/feature/store/product/data/dtos/create_product_color_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/create_product_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/create_product_size_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/product_dto.dart';
@@ -10,12 +13,16 @@ class ProductRemoteDataSource {
   final SupabaseClient _supabaseClient;
   static const _productsTable = 'products';
   static const _productSizesTable = ProductSizeTable.name;
+  static const _productColorsTable = ProductColorTable.name;
+  static const _productSelect =
+      '*, $_productSizesTable(*), $_productColorsTable(*)';
 
   Future<List<ProductDto>> listProducts({required final String storeId}) async {
     final response = await _supabaseClient
         .from(_productsTable)
-        .select('*, $_productSizesTable(*)')
-        .eq('store_id', storeId);
+        .select(_productSelect)
+        .eq('store_id', storeId)
+        .orderProductColors();
 
     return (response as List<dynamic>)
         .map((final e) => ProductDto.fromJson(e as Map<String, dynamic>))
@@ -24,6 +31,14 @@ class ProductRemoteDataSource {
 
   Future<void> insertProduct(final CreateProductRequest request) async {
     await _supabaseClient.from(_productsTable).insert(request.toJson());
+  }
+
+  Future<void> insertProductColors(
+    final List<CreateProductColorRequest> requests,
+  ) async {
+    await _supabaseClient.from(_productColorsTable).insert([
+      for (final request in requests) request.toJson(),
+    ]);
   }
 
   Future<void> insertProductSizes(
@@ -37,8 +52,9 @@ class ProductRemoteDataSource {
   Future<ProductDto> getProduct(final String productId) async {
     final response = await _supabaseClient
         .from(_productsTable)
-        .select('*, $_productSizesTable(*)')
+        .select(_productSelect)
         .eq('id', productId)
+        .orderProductColors()
         .single();
 
     return ProductDto.fromJson(response);
@@ -52,6 +68,18 @@ class ProductRemoteDataSource {
         .from(_productsTable)
         .update(changes)
         .eq('id', productId)
+        .select('id')
+        .single();
+  }
+
+  Future<void> updateProductColor(
+    final String colorId,
+    final Map<String, dynamic> changes,
+  ) async {
+    await _supabaseClient
+        .from(_productColorsTable)
+        .update(changes)
+        .eq('id', colorId)
         .select('id')
         .single();
   }

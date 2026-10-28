@@ -3,12 +3,14 @@ import 'package:tryzeon/core/data/utils/json_diff.dart';
 import 'package:tryzeon/core/domain/cache/cache_lookup.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
+import 'package:tryzeon/feature/common/product_color/data/dtos/product_color_dto.dart';
 import 'package:tryzeon/feature/store/product/data/datasources/product_local_datasource.dart';
 import 'package:tryzeon/feature/store/product/data/datasources/product_remote_datasource.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/create_product_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/create_product_size_request.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/product_dto.dart';
 import 'package:tryzeon/feature/store/product/data/dtos/product_size_draft_dto.dart';
+import 'package:tryzeon/feature/store/product/data/mappers/create_product_color_requests.dart';
 import 'package:tryzeon/feature/store/product/data/mappers/store_product_mappr.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
 import 'package:tryzeon/feature/store/product/domain/repositories/product_repository.dart';
@@ -92,6 +94,12 @@ class ProductRepositoryImpl implements ProductRepository {
         _mappr.convert<NewProduct, CreateProductRequest>(product),
       );
 
+      if (product.colors.isNotEmpty) {
+        await _remoteDataSource.insertProductColors(
+          toCreateProductColorRequests(product),
+        );
+      }
+
       if (product.sizes.isNotEmpty) {
         await _remoteDataSource.insertProductSizes([
           for (final size in product.sizes) _sizeRequest(product.id, size),
@@ -145,6 +153,21 @@ class ProductRepositoryImpl implements ProductRepository {
       );
       if (productChanges.isNotEmpty) {
         await _remoteDataSource.updateProduct(original.id, productChanges);
+      }
+
+      final originalColors = {
+        for (final color in original.colors) color.id: color,
+      };
+      for (final color in target.colors) {
+        final before = originalColors[color.id];
+        if (before == null) continue;
+        final colorChanges = jsonDiff(
+          _mappr.convert<ProductColor, ProductColorDto>(before).toJson(),
+          _mappr.convert<ProductColor, ProductColorDto>(color).toJson(),
+        );
+        if (colorChanges.isNotEmpty) {
+          await _remoteDataSource.updateProductColor(color.id, colorChanges);
+        }
       }
     } catch (e, stackTrace) {
       AppLogger.error('Failed to update product', e, stackTrace);

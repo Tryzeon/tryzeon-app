@@ -71,7 +71,6 @@ void main() {
         ..categoryId = 'c1'
         ..garmentType = ''
         ..price = 1
-        ..imagePaths = []
         ..createdAt = DateTime(2026)
         ..updatedAt = DateTime(2026),
     );

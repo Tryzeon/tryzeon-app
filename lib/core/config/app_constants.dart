@@ -29,7 +29,7 @@ class AppConstants {
   static const int maxTryonGarments = 3;
   static const int otpResendCountdownSeconds = 60;
   static const int otpCodeLength = 6;
-  static const int cacheSchemaVersion = 7;
+  static const int cacheSchemaVersion = 8;
   static const double productVisibilityThreshold = 0.5;
   static const int signedUrlTtlSeconds = 3600;
 
