@@ -15,6 +15,8 @@ import 'package:tryzeon/feature/store/product/domain/usecases/update_product.dar
 import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.dart';
 import 'package:typed_result/typed_result.dart';
 
+import '../../../../../support/product_color_fixtures.dart';
+
 class _FakeRepository implements ProductRepository {
   Result<Product?, Failure> createResult = const Ok(null);
   Result<Product?, Failure>? updateResult;
@@ -100,8 +102,13 @@ void main() {
     categoryId: 'c1',
     garmentType: GarmentType.top,
     price: 500,
-    imagePaths: const ['a.jpg'],
-    imageUrls: const ['https://cdn/a.jpg'],
+    colors: [
+      productColorFixture(
+        imagePaths: const ['a.jpg'],
+        imageUrls: const ['https://cdn/a.jpg'],
+      ),
+      productColorFixture(imagePaths: const ['b.jpg'], position: 1),
+    ],
     createdAt: DateTime(2026),
     updatedAt: DateTime(2026),
   );
@@ -121,12 +128,14 @@ void main() {
       sizes: const [],
     );
 
-    test('creates the row with the uploaded paths', () async {
+    test('creates one colour holding the uploaded paths', () async {
       final result = await build()(params());
 
       expect(result.isSuccess, isTrue);
       final created = repository.created!;
-      expect(created.imagePaths, ['${created.id}/new-0.jpg']);
+      expect(created.colors, [
+        NewProductColor(imagePaths: ['${created.id}/new-0.jpg']),
+      ]);
       expect(imageStorage.deleted, isEmpty);
     });
 
@@ -193,7 +202,9 @@ void main() {
       );
 
       expect(result.isSuccess, isTrue);
-      expect(repository.appliedTarget!.imagePaths, ['p1/new-0.jpg']);
+      expect(repository.appliedTarget!.colors.first.imagePaths, [
+        'p1/new-0.jpg',
+      ]);
       expect(imageStorage.deleted, ['a.jpg']);
     });
 
@@ -227,18 +238,33 @@ void main() {
       expect(result.getError(), const NetworkFailure());
       expect(repository.appliedTarget, isNull);
     });
+
+    test('a product without colours fails before uploading', () async {
+      final result = await build()(
+        UpdateProductParams(
+          original: original.copyWith(colors: const []),
+          draft: draft,
+          images: [ImageItem.newImage(file: File('x.jpg'))],
+          sizes: const [],
+        ),
+      );
+
+      expect(result.getError(), isA<UnknownFailure>());
+      expect(imageStorage.uploadCalls, 0);
+      expect(repository.appliedTarget, isNull);
+    });
   });
 
   group('DeleteProduct', () {
     DeleteProduct build() =>
         DeleteProduct(repository: repository, imageStorage: imageStorage);
 
-    test('deletes images only after the row is gone', () async {
+    test("deletes every colour's images only after the row is gone", () async {
       final result = await build()(original);
 
       expect(result.isSuccess, isTrue);
       expect(repository.deletedProductIds, ['p1']);
-      expect(imageStorage.deleted, ['a.jpg']);
+      expect(imageStorage.deleted, ['a.jpg', 'b.jpg']);
     });
 
     test('keeps images when the row delete fails', () async {

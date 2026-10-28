@@ -26,6 +26,15 @@ ProductUpdatePlan planProductUpdate({
   required final List<String> uploadedPaths,
   required final List<SizeItem> sizes,
 }) {
+  final editedColor = original.colors.firstOrNull;
+  if (editedColor == null) {
+    throw ArgumentError.value(
+      original.colors,
+      'original.colors',
+      'a product has at least one colour',
+    );
+  }
+
   final newImageCount = images.whereType<NewImageItem>().length;
   if (newImageCount != uploadedPaths.length) {
     throw ArgumentError.value(
@@ -44,11 +53,18 @@ ProductUpdatePlan planProductUpdate({
       },
   ];
 
-  final target = original.applyDraft(draft).copyWith(imagePaths: imagePaths);
+  final target = original
+      .applyDraft(draft)
+      .copyWith(
+        colors: [
+          editedColor.copyWith(imagePaths: imagePaths),
+          ...original.colors.skip(1),
+        ],
+      );
 
   return ProductUpdatePlan(
     target: target,
-    removedImagePaths: original.imagePaths
+    removedImagePaths: editedColor.imagePaths
         .where((final path) => !imagePaths.contains(path))
         .toList(),
     sizeDiff: computeSizeDiff(original.sizes, sizes),

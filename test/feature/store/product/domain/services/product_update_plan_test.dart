@@ -8,6 +8,8 @@ import 'package:tryzeon/feature/store/product/domain/services/product_update_pla
 import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/size_item.dart';
 
+import '../../../../../support/product_color_fixtures.dart';
+
 void main() {
   final sizeM = ProductSize(
     id: 'm',
@@ -30,8 +32,13 @@ void main() {
     categoryId: 'c1',
     garmentType: GarmentType.top,
     price: 500,
-    imagePaths: const ['a.jpg', 'b.jpg'],
-    imageUrls: const ['https://cdn/a.jpg', 'https://cdn/b.jpg'],
+    colors: [
+      productColorFixture(
+        imagePaths: const ['a.jpg', 'b.jpg'],
+        imageUrls: const ['https://cdn/a.jpg', 'https://cdn/b.jpg'],
+      ),
+      productColorFixture(imagePaths: const ['c.jpg'], position: 1),
+    ],
     sizes: [sizeM, sizeL],
     createdAt: DateTime(2026),
     updatedAt: DateTime(2026),
@@ -79,11 +86,47 @@ void main() {
         sizes: keptSizes,
       );
 
-      expect(plan.target.imagePaths, ['new-x.jpg', 'b.jpg', 'new-y.jpg']);
+      expect(plan.target.colors.first.imagePaths, [
+        'new-x.jpg',
+        'b.jpg',
+        'new-y.jpg',
+      ]);
       expect(plan.removedImagePaths, ['a.jpg']);
       expect(plan.hasProductChanges, isTrue);
     },
   );
+
+  test('image edits apply to the first colour and leave the others alone', () {
+    final plan = planProductUpdate(
+      original: original,
+      draft: unchangedDraft,
+      images: [
+        const ImageItem.existing(path: 'a.jpg', url: 'https://cdn/a.jpg'),
+        ImageItem.newImage(file: File('x.jpg')),
+      ],
+      uploadedPaths: const ['uploaded.jpg'],
+      sizes: keptSizes,
+    );
+
+    expect(plan.target.colors.first.imagePaths, ['a.jpg', 'uploaded.jpg']);
+    expect(plan.target.colors.first.id, original.colors.first.id);
+    expect(plan.target.colors[1], original.colors[1]);
+    expect(plan.removedImagePaths, ['b.jpg']);
+    expect(plan.isEmpty, isFalse);
+  });
+
+  test('a product without colours is a programming error', () {
+    expect(
+      () => planProductUpdate(
+        original: original.copyWith(colors: const []),
+        draft: unchangedDraft,
+        images: keptImages,
+        uploadedPaths: const [],
+        sizes: keptSizes,
+      ),
+      throwsArgumentError,
+    );
+  });
 
   test('a draft-only change is a product change without size changes', () {
     final plan = planProductUpdate(
