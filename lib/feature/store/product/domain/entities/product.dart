@@ -36,6 +36,7 @@ sealed class NewProductColor with _$NewProductColor {
   const factory NewProductColor({
     final String? name,
     required final List<String> imagePaths,
+    required final int position,
   }) = _NewProductColor;
 }
 

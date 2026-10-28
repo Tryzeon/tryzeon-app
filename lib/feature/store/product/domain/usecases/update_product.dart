@@ -1,13 +1,13 @@
-import 'dart:io';
-
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/core/utils/app_logger.dart';
 import 'package:tryzeon/feature/store/product/domain/entities/product.dart';
+import 'package:tryzeon/feature/store/product/domain/failures/invalid_product_colors_failure.dart';
 import 'package:tryzeon/feature/store/product/domain/repositories/product_repository.dart';
+import 'package:tryzeon/feature/store/product/domain/services/product_color_rules.dart';
 import 'package:tryzeon/feature/store/product/domain/services/product_image_storage.dart';
 import 'package:tryzeon/feature/store/product/domain/services/product_update_plan.dart';
-import 'package:tryzeon/feature/store/product/domain/value_objects/image_item.dart';
+import 'package:tryzeon/feature/store/product/domain/value_objects/color_item.dart';
 import 'package:tryzeon/feature/store/product/domain/value_objects/size_item.dart';
 import 'package:typed_result/typed_result.dart';
 
@@ -18,7 +18,7 @@ sealed class UpdateProductParams with _$UpdateProductParams {
   const factory UpdateProductParams({
     required final Product original,
     required final ProductDraft draft,
-    required final List<ImageItem> images,
+    required final List<ColorItem> colors,
     required final List<SizeItem> sizes,
   }) = _UpdateProductParams;
 }
@@ -37,12 +37,11 @@ class UpdateProduct {
     final UpdateProductParams params,
   ) async {
     final original = params.original;
-    if (original.colors.isEmpty) return const Err(UnknownFailure());
+    if (!isValidColorSet(params.colors)) {
+      return const Err(InvalidProductColorsFailure());
+    }
 
-    final newFiles = <File>[
-      for (final item in params.images)
-        if (item case NewImageItem(:final file)) file,
-    ];
+    final newFiles = params.colors.newImageFiles;
 
     var uploadedPaths = const <String>[];
     if (newFiles.isNotEmpty) {
@@ -58,16 +57,22 @@ class UpdateProduct {
     final plan = planProductUpdate(
       original: original,
       draft: params.draft,
-      images: params.images,
+      colors: params.colors,
       uploadedPaths: uploadedPaths,
       sizes: params.sizes,
     );
-    if (plan.isEmpty) return Ok(original);
+    if (plan.isEmpty) {
+      if (plan.removedImagePaths.isNotEmpty) {
+        await _deleteImages(original.storeId, plan.removedImagePaths);
+      }
+      return Ok(original);
+    }
 
     final saved = await _repository.updateProduct(
       original: original,
       target: plan.target,
       sizeDiff: plan.sizeDiff,
+      colorDiff: plan.colorDiff,
     );
     if (saved.isFailure) {
       final failure = saved.getError()!;
