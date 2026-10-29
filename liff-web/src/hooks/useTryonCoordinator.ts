@@ -1,8 +1,10 @@
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import type { CatalogItem } from "../api/catalog";
+import type { CatalogColor } from "../api/catalog-row";
 import { tryonFailureMessage } from "../api/errors";
 import { runTryon, type Garment } from "../api/tryon";
+import { productCaption, productGarment } from "../lib/garment";
 import { downscaleToBase64 } from "../lib/image";
 import { newId } from "../lib/id";
 import { loadPromptConfig } from "../lib/promptConfig";
@@ -59,7 +61,8 @@ export function useTryonCoordinator() {
   );
 
   const fromProduct = useCallback(
-    (item: CatalogItem) => submit(begin(item.name), [{ productId: item.productId }]),
+    (item: CatalogItem, color: CatalogColor) =>
+      submit(begin(productCaption(item, color)), [productGarment(item, color)]),
     [begin, submit],
   );
 

@@ -986,6 +986,31 @@ button, label { touch-action: manipulation; }
   text-align: center;
 }
 
+.pdp__colors { margin: -4px 0 16px; }
+.pdp__colorlabel { margin: 0 0 8px; font-size: 13px; color: var(--muted-text); }
+.pdp__swatches {
+  display: flex;
+  gap: 8px;
+  margin: -3px -16px;
+  padding: 3px 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.pdp__swatches::-webkit-scrollbar { display: none; }
+.pdp__swatch {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-btn);
+  overflow: hidden;
+  background: var(--surface-2);
+  cursor: pointer;
+}
+.pdp__swatch img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.pdp__swatch.is-active { border-color: var(--ink); box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--ink); }
+
 .pdp__skgallery { aspect-ratio: 25 / 26; border-radius: 0; }
 .pdp__media--blank { background: var(--surface-2); }
 .pdp__skline { height: 18px; margin-bottom: 10px; }

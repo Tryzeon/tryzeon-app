@@ -1,6 +1,8 @@
-import { useEffect, useState, type ReactNode } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { fetchProduct, type CatalogItem } from "../api/catalog";
+import { hasColorChoice, resolveColor } from "../api/catalog-row";
+import { FadeImage } from "../components/FadeImage";
 import { Header } from "../components/Header";
 import { ChevronLeftIcon } from "../components/icons";
 import { ProductGallery } from "../components/ProductGallery";
@@ -19,6 +21,8 @@ type Load =
  * user to home, and the result lands in that gallery. */
 export function ProductDetail() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const colorParam = searchParams.get("color");
   const navigate = useNavigate();
 
   const location = useLocation();
@@ -55,9 +59,11 @@ export function ProductDetail() {
   // entry that was already there on arrival. Not history.length: LIFF reaches
   // this URL through a chain of redirects, so on a deep link it is already
   // greater than 1, and using it would send the user back to a redirect page,
-  // straight out of this app.
+  // straight out of this app. Read once on arrival: picking a colour replaces
+  // the entry, and even a replace gets a fresh key.
+  const [isEntry] = useState(location.key === "default");
   function goBack() {
-    if (location.key === "default") navigate("/");
+    if (isEntry) navigate("/");
     else navigate(-1);
   }
 
@@ -72,7 +78,19 @@ export function ProductDetail() {
       <Header title={load.status === "ready" ? load.item.storeName : null} />
 
       {load.status === "ready"
-        ? <Detail item={load.item} back={back} />
+        ? (
+          <Detail
+            item={load.item}
+            colorId={colorParam}
+            onSelectColor={(colorId) =>
+              setSearchParams((prev) => {
+                const next = new URLSearchParams(prev);
+                next.set("color", colorId);
+                return next;
+              }, { replace: true, state: location.state })}
+            back={back}
+          />
+        )
         : (
           <main className="main pdp">
             <div className="pdp__media">
@@ -105,26 +123,64 @@ export function ProductDetail() {
   );
 }
 
-function Detail({ item, back }: { item: CatalogItem; back: ReactNode }) {
+function Detail(
+  { item, colorId, onSelectColor, back }: {
+    item: CatalogItem;
+    colorId: string | null;
+    onSelectColor(colorId: string): void;
+    back: ReactNode;
+  },
+) {
+  const selected = resolveColor(item, colorId);
+  const swatchesRef = useRef<HTMLDivElement>(null);
+
+  // A deep link may open on a colour past the row's edge; centre it once on
+  // arrival, while a tapped swatch is already in view. Scrolls only the row:
+  // scrollIntoView would also move the page.
+  useEffect(() => {
+    const row = swatchesRef.current;
+    const active = row?.querySelector<HTMLElement>(".pdp__swatch.is-active");
+    if (!row || !active) return;
+    const offset = active.getBoundingClientRect().left - row.getBoundingClientRect().left;
+    row.scrollLeft += offset - (row.clientWidth - active.offsetWidth) / 2;
+  }, []);
   const tryon = useTryonCoordinator();
   const gate = useModelGatedTryon();
 
   const buyUrl = item.purchaseLink && isExternalUrl(item.purchaseLink)
     ? item.purchaseLink
     : null;
-  const hasPhotos = item.imageUrls.length > 0;
 
   return (
     <>
       <main className="main pdp">
         <div className="pdp__media">
           {back}
-          <ProductGallery imageUrls={item.imageUrls} />
+          <ProductGallery key={selected?.id} imageUrls={selected?.imageUrls ?? []} />
         </div>
 
         {item.storeName && <p className="pdp__store">{item.storeName}</p>}
         <h1 className="pdp__name">{item.name}</h1>
         <p className="pdp__price">{priceText(item.price)}</p>
+        {hasColorChoice(item) && selected && (
+          <div className="pdp__colors">
+            {selected.name && <p className="pdp__colorlabel">{selected.name}</p>}
+            <div className="pdp__swatches" ref={swatchesRef}>
+              {item.colors.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  className={`pdp__swatch${c.id === selected.id ? " is-active" : ""}`}
+                  aria-label={c.name ?? undefined}
+                  aria-pressed={c.id === selected.id}
+                  onClick={() => onSelectColor(c.id)}
+                >
+                  <FadeImage src={c.imageUrls[0]} alt="" loading="lazy" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         {item.description && <p className="pdp__description">{item.description}</p>}
 
         {gate.choiceFailed && (
@@ -133,14 +189,14 @@ function Detail({ item, back }: { item: CatalogItem; back: ReactNode }) {
       </main>
 
       <div className="actionbar">
-        {!hasPhotos
+        {!selected
           ? <p className="pdp__note">這件商品還沒有照片，無法試穿。</p>
           : (
             <button
               type="button"
               className={`cta${gate.busy ? " is-loading" : ""}`}
               disabled={gate.busy}
-              onClick={() => gate.start(() => tryon.fromProduct(item))}
+              onClick={() => gate.start(() => tryon.fromProduct(item, selected))}
             >
               {gate.busy
                 ? (
