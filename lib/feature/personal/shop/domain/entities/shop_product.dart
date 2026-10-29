@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/feature/common/clothing_style/domain/entities/clothing_style.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
 import 'package:tryzeon/feature/common/product_attributes/domain/entities/product_attributes.dart';
@@ -30,4 +31,9 @@ sealed class ShopProduct with _$ShopProduct {
     required final DateTime createdAt,
     required final DateTime updatedAt,
   }) = _ShopProduct;
+}
+
+extension ShopProductWebUrl on ShopProduct {
+  String webUrl({final ProductColor? color}) =>
+      AppConstants.productWebUrl(id, colorId: colors.distinguishing(color)?.id);
 }

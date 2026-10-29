@@ -1,4 +1,3 @@
-import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/feature/common/product_color/domain/entities/product_color.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
@@ -16,16 +15,10 @@ class OrderMessageBuilder {
       '【Tryzeon 試穿下單】',
       '商品：${product.name}',
       if (named?.name != null) '顏色：${named!.name}',
-      '尺寸：${_sizeLine(fitResult)}',
+      '尺寸：${fitResult.sizeToOrder ?? '（未提供）'}',
       '數量：1',
-      AppConstants.productWebUrl(product.id, colorId: named?.id),
+      product.webUrl(color: color),
     ];
     return lines.join('\n');
-  }
-
-  static String _sizeLine(final FitResult fitResult) {
-    final size = fitResult.recommendedSize;
-    if (fitResult.noUserData || size == null) return '（未提供）';
-    return size;
   }
 }

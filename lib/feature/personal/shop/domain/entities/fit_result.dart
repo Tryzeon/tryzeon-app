@@ -34,6 +34,8 @@ sealed class FitResult with _$FitResult {
   }) = _FitResult;
   const FitResult._();
 
+  String? get sizeToOrder => noUserData ? null : recommendedSize;
+
   FitDisplayState get displayState {
     if (noUserData) return FitDisplayState.noUserData;
     if (outOfRange) return FitDisplayState.outOfRange;
