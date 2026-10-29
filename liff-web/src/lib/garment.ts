@@ -1,3 +1,4 @@
+import { coverColor, hasColorChoice, type CatalogColor, type CatalogItem } from "../api/catalog-row";
 import type { Garment } from "../api/tryon";
 import type { ResolvedItem } from "../state/chat";
 
@@ -15,7 +16,18 @@ export function garmentTypeLabel(code: string | null): string {
 }
 
 export function tryonGarment(piece: ResolvedItem): Garment {
-  return piece.kind === "product" ? { productId: piece.item.productId } : { wardrobeItemId: piece.id };
+  return piece.kind === "product" ? productGarment(piece.item) : { wardrobeItemId: piece.id };
+}
+
+export function productGarment(
+  item: CatalogItem,
+  color: CatalogColor | null = coverColor(item),
+): Garment {
+  return color ? { productId: item.productId, colorId: color.id } : { productId: item.productId };
+}
+
+export function productCaption(item: CatalogItem, color: CatalogColor): string {
+  return hasColorChoice(item) && color.name ? `${item.name} · ${color.name}` : item.name;
 }
 
 const CARD_TAG_COUNT = 2;

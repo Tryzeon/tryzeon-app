@@ -42,15 +42,23 @@ function buildColors(raw: unknown, baseUrl: string): CatalogColor[] {
   return colors;
 }
 
+export function coverColor(item: CatalogItem): CatalogColor | null {
+  return item.colors[0] ?? null;
+}
+
 export function coverImageUrl(item: CatalogItem): string | null {
-  return item.colors[0]?.imageUrls[0] ?? null;
+  return coverColor(item)?.imageUrls[0] ?? null;
+}
+
+export function hasColorChoice(item: CatalogItem): boolean {
+  return item.colors.length > 1;
 }
 
 export function resolveColor(
   item: CatalogItem,
   colorId: string | null | undefined,
 ): CatalogColor | null {
-  return item.colors.find((c) => c.id === colorId) ?? item.colors[0] ?? null;
+  return item.colors.find((c) => c.id === colorId) ?? coverColor(item);
 }
 
 /**
