@@ -1,7 +1,7 @@
 import { assertEquals, assertRejects } from "@std/assert";
 import { buildProductGarmentDetail, resolveProductGarment } from "./catalog.ts";
 import { LIMITS } from "./types.ts";
-import { ValidationError } from "./errors.ts";
+import { ColorUnavailableError, ValidationError } from "./errors.ts";
 import type { DbClient } from "../supabase.ts";
 
 const PRODUCT_ID = "11111111-1111-1111-1111-111111111111";
@@ -253,7 +253,7 @@ Deno.test("resolveProductGarment wears the requested colour", async () => {
   assertEquals(garment.detail?.includes("Color: Navy"), true);
 });
 
-Deno.test("resolveProductGarment an unknown colorId is a validation error", async () => {
+Deno.test("resolveProductGarment reports a colour the product no longer has as unavailable", async () => {
   const { admin } = fakeAdmin({ products: { row: PRODUCT_ROW } });
 
   await assertRejects(
@@ -262,7 +262,7 @@ Deno.test("resolveProductGarment an unknown colorId is a validation error", asyn
         productId: PRODUCT_ID,
         colorId: "33333333-cccc-4ccc-8ccc-cccccccccccc",
       }),
-    ValidationError,
+    ColorUnavailableError,
     "no colour 33333333-cccc-4ccc-8ccc-cccccccccccc for productId",
   );
 });

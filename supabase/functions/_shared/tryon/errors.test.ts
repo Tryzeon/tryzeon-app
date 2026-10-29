@@ -1,6 +1,7 @@
 import { assertEquals } from "@std/assert";
 import {
   classifyTryonError,
+  ColorUnavailableError,
   GenerationFailedError,
   MissingAvatarError,
   ValidationError,
@@ -19,6 +20,12 @@ Deno.test("classifyTryonError carries quota for quota errors", () => {
   assertEquals(classifyTryonError(new QuotaExceededError(SAMPLE_QUOTA)), {
     kind: "quota",
     quota: SAMPLE_QUOTA,
+  });
+});
+
+Deno.test("classifyTryonError narrows a colour that is no longer available", () => {
+  assertEquals(classifyTryonError(new ColorUnavailableError("gone")), {
+    kind: "colorUnavailable",
   });
 });
 

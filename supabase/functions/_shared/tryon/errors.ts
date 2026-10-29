@@ -12,10 +12,18 @@ export class GenerationFailedError extends Error {}
 
 export class MissingAvatarError extends Error {}
 
+/**
+ * A colour the caller picked that the product no longer has. Never answered by
+ * wearing another colour: the shopper saw this one, and a swap would spend a
+ * try-on on something they did not choose.
+ */
+export class ColorUnavailableError extends Error {}
+
 export type TryonErrorInfo =
   | CoreErrorInfo
   | { kind: "generation" }
-  | { kind: "missingAvatar" };
+  | { kind: "missingAvatar" }
+  | { kind: "colorUnavailable" };
 
 export function classifyTryonError(err: unknown): TryonErrorInfo | null {
   if (err instanceof GenerationFailedError) {
@@ -23,6 +31,9 @@ export function classifyTryonError(err: unknown): TryonErrorInfo | null {
   }
   if (err instanceof MissingAvatarError) {
     return { kind: "missingAvatar" };
+  }
+  if (err instanceof ColorUnavailableError) {
+    return { kind: "colorUnavailable" };
   }
   return classifyCoreError(err);
 }

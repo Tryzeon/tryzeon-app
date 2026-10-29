@@ -16,6 +16,12 @@ export function tryonErrorResponse(err: unknown): Response | null {
       return jsonError("Image generation failed", "AI_GENERATION_FAILED", 422);
     case "missingAvatar":
       return jsonError("No model photo on file", "NO_AVATAR", 400);
+    case "colorUnavailable":
+      return jsonError(
+        "This colour is no longer available",
+        "COLOR_UNAVAILABLE",
+        409,
+      );
     case "validation":
     case "rateLimit":
     case "quota":

@@ -1,5 +1,5 @@
 import { isUuid } from "../text.ts";
-import { ValidationError } from "./errors.ts";
+import { ColorUnavailableError, ValidationError } from "./errors.ts";
 import { isGarmentType, LIMITS } from "./types.ts";
 import type { ProductRef, ResolvedGarment } from "./types.ts";
 import { productColor } from "../product-colors.ts";
@@ -75,10 +75,13 @@ export async function resolveProductGarment(
 
   const color = productColor(row, colorId);
   if (!color) {
+    if (colorId !== undefined) {
+      throw new ColorUnavailableError(
+        `no colour ${colorId} for productId: ${productId}`,
+      );
+    }
     throw new ValidationError(
-      colorId === undefined
-        ? `no usable garment image for productId: ${productId}`
-        : `no colour ${colorId} for productId: ${productId}`,
+      `no usable garment image for productId: ${productId}`,
     );
   }
 

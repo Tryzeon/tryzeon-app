@@ -192,9 +192,9 @@ export interface ProductTryonDeps extends TryonHandlerDeps {
 
 /**
  * The product is read before anything is charged: `fetchProductInfo` returns
- * null for exactly the cases the core would later reject as validation
- * errors — the row is gone, it has no image, or the colour was deleted — so checking here turns both
- * into a sentence the user understands at no quota cost.
+ * null for exactly the cases the core would later reject — the row is gone, it
+ * has no image, or the colour was deleted — so checking here turns each into a
+ * sentence the user understands at no quota cost.
  */
 export async function handleProductTryon(
   deps: ProductTryonDeps,
@@ -389,9 +389,9 @@ export async function handleOutfitTryon(
 }
 
 /**
- * A validation error is not user-actionable here — this adapter builds its own
- * params, and each kind of ref is checked for existence before any job starts —
- * so it is reported as an unknown fault.
+ * A validation error or a removed colour is not user-actionable here — this
+ * adapter builds its own params, and each ref, colour included, is checked for
+ * existence before any job starts — so either is reported as an unknown fault.
  */
 function tryonFailure(
   err: unknown,
@@ -408,6 +408,7 @@ function tryonFailure(
     case "validation":
     case "rateLimit":
     case "missingAvatar":
+    case "colorUnavailable":
       return { kind: "unknown", quota: null };
   }
 }

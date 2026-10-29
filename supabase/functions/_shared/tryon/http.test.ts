@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert";
 import { tryonErrorResponse } from "./http.ts";
-import { MissingAvatarError } from "./errors.ts";
+import { ColorUnavailableError, MissingAvatarError } from "./errors.ts";
 import { ServiceBusyError } from "../errors.ts";
 import { QuotaExceededError } from "../quota.ts";
 import { SAMPLE_QUOTA } from "../quota.testing.ts";
@@ -13,6 +13,15 @@ Deno.test("tryonErrorResponse renders a missing avatar as 400 NO_AVATAR", async 
   assertEquals(await res.json(), {
     error: "No model photo on file",
     code: "NO_AVATAR",
+  });
+});
+
+Deno.test("tryonErrorResponse renders a removed colour as 409 COLOR_UNAVAILABLE", async () => {
+  const res = tryonErrorResponse(new ColorUnavailableError("gone"))!;
+  assertEquals(res.status, 409);
+  assertEquals(await res.json(), {
+    error: "This colour is no longer available",
+    code: "COLOR_UNAVAILABLE",
   });
 });
 
