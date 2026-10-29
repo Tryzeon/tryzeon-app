@@ -1,13 +1,14 @@
 import 'package:tryzeon/feature/common/product_color/domain/entities/product_color.dart';
 
 ProductColor productColorFixture({
+  final String? id,
   final List<String> imagePaths = const [],
   final List<String>? imageUrls,
   final int position = 0,
   final String? name,
   final String productId = 'p1',
 }) => ProductColor(
-  id: 'color-$productId-$position',
+  id: id ?? 'color-$productId-$position',
   productId: productId,
   name: name,
   imagePaths: imagePaths,
