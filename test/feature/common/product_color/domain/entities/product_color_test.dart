@@ -29,4 +29,41 @@ void main() {
     expect(<ProductColor>[].coverImageUrl, isNull);
     expect(<ProductColor>[].coverImagePath, isNull);
   });
+
+  test('resolve returns the colour with that id', () {
+    final colors = [
+      color(0, ['k0']),
+      color(1, ['k1']),
+    ];
+
+    expect(colors.resolve('c1'), colors[1]);
+  });
+
+  test('resolve falls back to the cover for an unknown or null id', () {
+    final colors = [
+      color(0, ['k0']),
+      color(1, ['k1']),
+    ];
+
+    expect(colors.resolve('gone'), colors.first);
+    expect(colors.resolve(null), colors.first);
+  });
+
+  test('resolve on an empty list is null', () {
+    expect(<ProductColor>[].resolve('c0'), isNull);
+  });
+
+  test('distinguishing keeps the selection only when there is a choice', () {
+    final red = color(0, []);
+    final blue = color(1, []);
+    expect([red, blue].distinguishing(blue), blue);
+    expect([red, blue].distinguishing(null), isNull);
+    expect([red].distinguishing(red), isNull);
+  });
+
+  test('hasChoice needs two colours', () {
+    expect(<ProductColor>[].hasChoice, isFalse);
+    expect([color(0, [])].hasChoice, isFalse);
+    expect([color(0, []), color(1, [])].hasChoice, isTrue);
+  });
 }

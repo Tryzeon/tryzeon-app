@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'product_color.freezed.dart';
@@ -22,4 +23,12 @@ extension ProductColorsCover on List<ProductColor> {
   String? get coverImageUrl => cover?.imageUrls.firstOrNull;
 
   String? get coverImagePath => cover?.imagePaths.firstOrNull;
+
+  ProductColor? resolve(final String? colorId) =>
+      firstWhereOrNull((final color) => color.id == colorId) ?? cover;
+
+  bool get hasChoice => length > 1;
+
+  ProductColor? distinguishing(final ProductColor? selected) =>
+      hasChoice ? selected : null;
 }
