@@ -56,9 +56,12 @@ StatefulShellRoute personalShellRoute(
               path: AppRoutes.personalShopProductSegment,
               builder: (final context, final state) {
                 final productId = state.pathParameters[AppRoutes.paramId]!;
+                final colorId = state.uri.queryParameters[AppRoutes.queryColor];
                 return ProductDetailPage(
+                  key: ValueKey('$productId/$colorId'),
                   productId: productId,
                   initialProduct: state.extra as ShopProduct?,
+                  initialColorId: colorId,
                 );
               },
             ),

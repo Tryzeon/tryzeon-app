@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/feature/auth/providers/auth_providers.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/common/product_color/domain/entities/product_color.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:tryzeon/feature/personal/shop/domain/services/product_fit_resolver.dart';
@@ -16,54 +17,60 @@ import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.d
 import '../../../../../support/product_color_fixtures.dart';
 import '../../../../../support/wardrobe_test_doubles.dart';
 
+ShopProduct _tee(final List<ProductColor> colors) => ShopProduct(
+  storeInfo: const ShopStoreInfo(id: 's1', name: 'Store', channels: {}),
+  name: 'Tee',
+  categoryId: 'c',
+  garmentType: GarmentType.top,
+  price: 690,
+  colors: colors,
+  id: 'p1',
+  createdAt: DateTime(2026),
+  updatedAt: DateTime(2026),
+);
+
+Future<(WidgetRef, ProviderContainer)> _captureRef(
+  final WidgetTester tester,
+) async {
+  late WidgetRef capturedRef;
+  final container = ProviderContainer(
+    overrides: [
+      isAuthenticatedProvider.overrideWithValue(true),
+      wardrobeItemsProvider.overrideWith(() => FakeWardrobeItems(const [])),
+      productFitResolverProvider.overrideWithValue(
+        const ProductFitResolver(body: null),
+      ),
+    ],
+  );
+  addTearDown(container.dispose);
+
+  await tester.pumpWidget(
+    UncontrolledProviderScope(
+      container: container,
+      child: Consumer(
+        builder: (final _, final ref, final _) {
+          capturedRef = ref;
+          return const SizedBox();
+        },
+      ),
+    ),
+  );
+  return (capturedRef, container);
+}
+
 void main() {
   testWidgets(
     'a product piece carries its store, image and resolved size into the tray',
     (final tester) async {
-      final product = ShopProduct(
-        storeInfo: const ShopStoreInfo(id: 's1', name: 'Store', channels: {}),
-        name: 'Tee',
-        categoryId: 'c',
-        garmentType: GarmentType.top,
-        price: 690,
-        colors: [
-          productColorFixture(
-            imagePaths: const ['p.jpg'],
-            imageUrls: const ['https://x/p.jpg'],
-          ),
-        ],
-        id: 'p1',
-        createdAt: DateTime(2026),
-        updatedAt: DateTime(2026),
-      );
-      late WidgetRef capturedRef;
-      final container = ProviderContainer(
-        overrides: [
-          isAuthenticatedProvider.overrideWithValue(true),
-          wardrobeItemsProvider.overrideWith(() => FakeWardrobeItems(const [])),
-          productFitResolverProvider.overrideWithValue(
-            const ProductFitResolver(body: null),
-          ),
-        ],
-      );
-      addTearDown(container.dispose);
-
-      await tester.pumpWidget(
-        UncontrolledProviderScope(
-          container: container,
-          child: Consumer(
-            builder: (final _, final ref, final _) {
-              capturedRef = ref;
-              return const SizedBox();
-            },
-          ),
+      final product = _tee([
+        productColorFixture(
+          imagePaths: const ['p.jpg'],
+          imageUrls: const ['https://x/p.jpg'],
         ),
-      );
+      ]);
+      final (ref, container) = await _captureRef(tester);
 
-      toggleOutfitPiece(
-        capturedRef,
-        outfitPieceFromProduct(capturedRef, product),
-      );
+      toggleOutfitPiece(ref, outfitPieceFromProduct(ref, product));
 
       final state = container.read(outfitTrayProvider);
       expect(state.isOpen, isTrue);
@@ -75,54 +82,46 @@ void main() {
         const ProductFitResolver(body: null).resolve(product).tryonSizeId,
       );
 
-      toggleOutfitPiece(
-        capturedRef,
-        outfitPieceFromProduct(capturedRef, product),
-      );
+      toggleOutfitPiece(ref, outfitPieceFromProduct(ref, product));
       expect(container.read(outfitTrayProvider).pieces, isEmpty);
     },
   );
 
+  for (final (label, given) in [
+    ('no colour', null),
+    ('the cover colour', 0),
+    ('another colour', 1),
+  ]) {
+    testWidgets('a product piece given $label wears and shows that colour', (
+      final tester,
+    ) async {
+      final colors = [
+        productColorFixture(imagePaths: const ['a.jpg', 'a2.jpg']),
+        productColorFixture(imagePaths: const ['b.jpg'], position: 1),
+      ];
+      final (ref, _) = await _captureRef(tester);
+
+      final expected = colors[given ?? 0];
+      final piece =
+          outfitPieceFromProduct(
+                ref,
+                _tee(colors),
+                color: given == null ? null : colors[given],
+              )
+              as OutfitPieceProduct;
+
+      expect(piece.colorId, expected.id);
+      expect(piece.imageUrl, expected.imageUrls.first);
+    });
+  }
+
   testWidgets('a product without images yields an empty piece image url', (
     final tester,
   ) async {
-    final product = ShopProduct(
-      storeInfo: const ShopStoreInfo(id: 's1', name: 'Store', channels: {}),
-      name: 'Tee',
-      categoryId: 'c',
-      garmentType: GarmentType.top,
-      price: 690,
-      colors: const [],
-      id: 'p1',
-      createdAt: DateTime(2026),
-      updatedAt: DateTime(2026),
-    );
-    late WidgetRef capturedRef;
-    final container = ProviderContainer(
-      overrides: [
-        isAuthenticatedProvider.overrideWithValue(true),
-        wardrobeItemsProvider.overrideWith(() => FakeWardrobeItems(const [])),
-        productFitResolverProvider.overrideWithValue(
-          const ProductFitResolver(body: null),
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
-
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: Consumer(
-          builder: (final _, final ref, final _) {
-            capturedRef = ref;
-            return const SizedBox();
-          },
-        ),
-      ),
-    );
+    final (ref, _) = await _captureRef(tester);
 
     final piece =
-        outfitPieceFromProduct(capturedRef, product) as OutfitPieceProduct;
+        outfitPieceFromProduct(ref, _tee(const [])) as OutfitPieceProduct;
     expect(piece.imageUrl, '');
   });
 }

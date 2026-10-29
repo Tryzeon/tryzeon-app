@@ -7,11 +7,14 @@ import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 
 OutfitPiece outfitPieceFromProduct(
   final WidgetRef ref,
-  final ShopProduct product,
-) {
+  final ShopProduct product, {
+  final ProductColor? color,
+}) {
+  final shown = color ?? product.colors.cover;
   return OutfitPiece.product(
     productId: product.id,
-    imageUrl: product.colors.coverImageUrl ?? '',
+    colorId: shown?.id,
+    imageUrl: shown?.imageUrls.firstOrNull ?? '',
     garmentType: product.garmentType,
     sizeId: ref.read(productFitResolverProvider).resolve(product).tryonSizeId,
   );

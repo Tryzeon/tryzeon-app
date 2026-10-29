@@ -92,10 +92,8 @@ class ProductImageViewer extends HookWidget {
         if (imageUrls.length > 1)
           Positioned(
             bottom: AppSpacing.md,
-            left: 0,
-            right: 0,
+            left: AppSpacing.md,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
                 imageUrls.length,
                 (final index) => Container(

@@ -14,6 +14,7 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart'
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/actions/launch_product_purchase.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/actions/product_outfit_actions.dart';
+import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_color_swatches.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_description_section.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_image_viewer.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/widgets/product_info_section.dart';
@@ -27,10 +28,14 @@ class ProductDetailBody extends HookConsumerWidget {
     super.key,
     required this.productAsync,
     required this.onRetry,
+    required this.selectedColor,
+    required this.onColorSelected,
   });
 
   final AsyncValue<ShopProduct> productAsync;
   final VoidCallback onRetry;
+  final ProductColor? selectedColor;
+  final ValueChanged<ProductColor> onColorSelected;
 
   static final _skeletonProduct = ShopProduct(
     id: 'skeleton_product',
@@ -57,7 +62,11 @@ class ProductDetailBody extends HookConsumerWidget {
     if (productAsync.hasValue) {
       return Skeletonizer(
         enabled: productAsync.isLoading,
-        child: _ProductDetailContent(product: productAsync.requireValue),
+        child: _ProductDetailContent(
+          product: productAsync.requireValue,
+          selectedColor: selectedColor,
+          onColorSelected: onColorSelected,
+        ),
       );
     }
 
@@ -65,7 +74,11 @@ class ProductDetailBody extends HookConsumerWidget {
     if (productAsync.isLoading) {
       return Skeletonizer(
         enabled: true,
-        child: _ProductDetailContent(product: _skeletonProduct),
+        child: _ProductDetailContent(
+          product: _skeletonProduct,
+          selectedColor: null,
+          onColorSelected: onColorSelected,
+        ),
       );
     }
 
@@ -78,9 +91,15 @@ class ProductDetailBody extends HookConsumerWidget {
 }
 
 class _ProductDetailContent extends HookConsumerWidget {
-  const _ProductDetailContent({required this.product});
+  const _ProductDetailContent({
+    required this.product,
+    required this.selectedColor,
+    required this.onColorSelected,
+  });
 
   final ShopProduct product;
+  final ProductColor? selectedColor;
+  final ValueChanged<ProductColor> onColorSelected;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
@@ -108,14 +127,19 @@ class _ProductDetailContent extends HookConsumerWidget {
           Stack(
             children: [
               ProductImageViewer(
-                imageUrls: product.colors.cover?.imageUrls ?? const [],
+                key: ValueKey(selectedColor?.id),
+                imageUrls: selectedColor?.imageUrls ?? const [],
               ),
               Positioned(
                 bottom: AppSpacing.sm,
                 right: AppSpacing.sm,
                 child: Skeleton.ignore(
                   child: OutfitPillRow(
-                    piece: outfitPieceFromProduct(ref, product),
+                    piece: outfitPieceFromProduct(
+                      ref,
+                      product,
+                      color: selectedColor,
+                    ),
                   ),
                 ),
               ),
@@ -174,11 +198,30 @@ class _ProductDetailContent extends HookConsumerWidget {
                           context,
                           ref,
                           product,
+                          selectedColor,
                           fitResult,
                         ),
                       ),
                   ],
                 ),
+              ],
+            ),
+          ),
+          if (selectedColor case final selected?
+              when product.colors.hasChoice) ...[
+            const SizedBox(height: AppSpacing.md),
+            ProductColorSwatches(
+              colors: product.colors,
+              selected: selected,
+              onSelected: onColorSelected,
+              inset: AppSpacing.mdLg,
+            ),
+          ],
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.mdLg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 const SizedBox(height: AppSpacing.mdLg),
                 const Divider(),
                 const SizedBox(height: AppSpacing.mdLg),
