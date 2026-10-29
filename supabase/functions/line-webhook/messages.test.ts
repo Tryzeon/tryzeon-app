@@ -19,6 +19,7 @@ import {
 } from "./postback.ts";
 import type { WardrobeItemInfo } from "./wardrobe-card.ts";
 
+const COLOR_ID = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const PID = "8f14e45f-ceea-467a-9c8d-1b2c3d4e5f60";
 const LIFF = "https://liff.example";
 
@@ -30,6 +31,7 @@ const product: LineProduct = {
   garmentType: "outerwear",
   storeName: "某店",
   purchaseUrl: null,
+  color: { id: COLOR_ID, name: null },
 };
 
 /**
@@ -150,7 +152,7 @@ Deno.test("a product that would not generate offers both remedies its text names
       {
         type: "postback",
         label: "再試一次",
-        data: productTryonPostbackData(PID),
+        data: productTryonPostbackData(PID, COLOR_ID),
         displayText: "試穿「短版牛仔外套」",
       },
       { type: "uri", label: "換一件試試", uri: LIFF },
@@ -167,7 +169,7 @@ Deno.test("an unknown failure offers only the retry, not a different product", (
       {
         type: "postback",
         label: "再試一次",
-        data: productTryonPostbackData(PID),
+        data: productTryonPostbackData(PID, COLOR_ID),
         displayText: "試穿「短版牛仔外套」",
       },
     ],

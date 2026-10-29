@@ -14,6 +14,7 @@ import {
 import { CARD_COLOR, pickBubble, sourceLine } from "./card-kit.ts";
 import { productTryonPostbackData } from "./postback.ts";
 
+const COLOR_ID = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const BASE = "https://img.example";
 
 const row = (over: Record<string, unknown> = {}) => ({
@@ -42,6 +43,7 @@ const product = (over: Partial<LineProduct> = {}): LineProduct => ({
   garmentType: "top",
   storeName: "某店",
   purchaseUrl: null,
+  color: { id: COLOR_ID, name: null },
   ...over,
 });
 
@@ -110,7 +112,21 @@ Deno.test("toLineProduct joins the image key onto the public base", () => {
     garmentType: "top",
     storeName: "某店",
     purchaseUrl: null,
+    color: { id: "c1", name: null },
   });
+});
+
+Deno.test("toLineProduct carries the cover colour", () => {
+  const two = row({
+    product_colors: [
+      { id: "c1", name: "霧灰", image_paths: ["k1.jpg"], position: 0 },
+      { id: "c2", name: "黑", image_paths: ["k2.jpg"], position: 1 },
+    ],
+  });
+  const found = toLineProduct(two, BASE);
+
+  assertEquals(found?.color, { id: "c1", name: "霧灰" });
+  assertEquals(found?.imageUrl, "https://img.example/k1.jpg");
 });
 
 Deno.test("toLineProduct drops a product with no image", () => {
@@ -134,15 +150,37 @@ Deno.test("toLineProduct does not double up a trailing slash on the base", () =>
 
 Deno.test("fetchProductInfo reads the asked-for id", async () => {
   const { admin, queried } = fakeAdmin({ data: row(), error: null });
-  const found = await fetchProductInfo(admin, "p1");
+  const found = await fetchProductInfo(admin, "p1", "c1");
 
   assertEquals(queried, ["p1"]);
   assertEquals(found?.name, "白襯衫");
 });
 
+Deno.test("fetchProductInfo wears the asked-for colour", async () => {
+  const { admin } = fakeAdmin({
+    data: row({
+      product_colors: [
+        { id: "c1", name: "霧灰", image_paths: ["k1.jpg"], position: 0 },
+        { id: "c2", name: "黑", image_paths: ["k2.jpg"], position: 1 },
+      ],
+    }),
+    error: null,
+  });
+
+  assertEquals(
+    (await fetchProductInfo(admin, "p1", "c2"))?.color,
+    { id: "c2", name: "黑" },
+  );
+});
+
+Deno.test("fetchProductInfo is null for a colour the product does not have", async () => {
+  const { admin } = fakeAdmin({ data: row(), error: null });
+  assertEquals(await fetchProductInfo(admin, "p1", "gone"), null);
+});
+
 Deno.test("fetchProductInfo is null for a product that is gone", async () => {
   const { admin } = fakeAdmin({ data: null, error: null });
-  assertEquals(await fetchProductInfo(admin, "p1"), null);
+  assertEquals(await fetchProductInfo(admin, "p1", "c1"), null);
 });
 
 Deno.test("fetchProductInfo is null for a product with no image", async () => {
@@ -150,12 +188,12 @@ Deno.test("fetchProductInfo is null for a product with no image", async () => {
     data: row({ product_colors: [] }),
     error: null,
   });
-  assertEquals(await fetchProductInfo(admin, "p1"), null);
+  assertEquals(await fetchProductInfo(admin, "p1", "c1"), null);
 });
 
 Deno.test("fetchProductInfo throws when the lookup itself failed", async () => {
   const { admin } = fakeAdmin({ data: null, error: { message: "boom" } });
-  await assertRejects(() => fetchProductInfo(admin, "p1"), Error, "boom");
+  await assertRejects(() => fetchProductInfo(admin, "p1", "c1"), Error, "boom");
 });
 
 Deno.test("fetchProductRows keys the rows by product id", async () => {
@@ -205,7 +243,7 @@ Deno.test("fetchProductRows reads only listed products, as get_shop_product does
 
 Deno.test("fetchProductInfo will not act on an unlisted product", async () => {
   const { admin, calls } = fakeAdmin({ data: row(), error: null });
-  await fetchProductInfo(admin, "p1");
+  await fetchProductInfo(admin, "p1", "c1");
 
   assertEquals(calls, [["get_shop_product", { p_id: "p1" }]]);
 });
@@ -289,17 +327,17 @@ Deno.test("clampProductName truncates a long name with an ellipsis", () => {
   assertEquals(clampProductName(long), `${"a".repeat(40)}…`);
 });
 
-Deno.test("productDetailUrl points at the LIFF product page", () => {
+Deno.test("productDetailUrl points at the colour on the LIFF product page", () => {
   assertEquals(
-    productDetailUrl("https://liff.line.me/123-abc", "p1"),
-    "https://liff.line.me/123-abc/product/p1",
+    productDetailUrl("https://liff.line.me/123-abc", "p1", "c2"),
+    "https://liff.line.me/123-abc/product/p1?color=c2",
   );
 });
 
 const detail = {
   type: "uri",
   label: "商品詳情",
-  uri: "https://liff.example/product/p1",
+  uri: `https://liff.example/product/p1?color=${COLOR_ID}`,
 };
 
 Deno.test("an item bubble is the shared pick bubble, opening its LIFF page", () => {
@@ -314,7 +352,7 @@ Deno.test("an item bubble is the shared pick bubble, opening its LIFF page", () 
       tryonAction: {
         type: "postback",
         label: "試穿",
-        data: productTryonPostbackData("p1"),
+        data: productTryonPostbackData("p1", COLOR_ID),
         displayText: "試穿「白襯衫」",
       },
       detailAction: detail,
@@ -355,4 +393,44 @@ Deno.test("an item bubble clamps a long name in the try-on displayText", () => {
   ) as any).hero.contents[2];
   const pill = overlay.contents.at(-1).contents[1];
   assertEquals(pill.action.displayText, `試穿「${clampProductName(name)}」`);
+});
+
+Deno.test("an item bubble's detail link carries the shown colour", () => {
+  const json = (over: Partial<LineProduct>) =>
+    JSON.stringify(
+      productItemBubble(product(over), undefined, "https://liff.example"),
+    );
+  const detailUri = (over: Partial<LineProduct>) =>
+    json(over).match(/"uri":"([^"]*\/product\/[^"]*)"/)?.[1];
+  assertEquals(
+    detailUri({}),
+    `https://liff.example/product/p1?color=${COLOR_ID}`,
+  );
+});
+
+Deno.test("an item bubble's try-on postback carries the shown colour", () => {
+  const other = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
+  assertEquals(
+    productItemBubble(
+      product({ color: { id: other, name: "黑" } }),
+      undefined,
+      "https://liff.example",
+    ),
+    pickBubble({
+      imageUrl: "https://img.example/stores/s1/p1.jpg",
+      source: "某店",
+      name: "白襯衫",
+      value: { text: "NT$1,200", muted: false },
+      tryonAction: {
+        type: "postback",
+        label: "試穿",
+        data: productTryonPostbackData("p1", other),
+        displayText: "試穿「白襯衫」",
+      },
+      detailAction: {
+        ...detail,
+        uri: `https://liff.example/product/p1?color=${other}`,
+      },
+    }),
+  );
 });

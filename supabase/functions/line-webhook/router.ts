@@ -136,6 +136,7 @@ function routePostback(
           replyToken: ev.replyToken,
           sourceUserId,
           productId: postback.productId,
+          colorId: postback.colorId,
         },
       );
     case "wardrobe":

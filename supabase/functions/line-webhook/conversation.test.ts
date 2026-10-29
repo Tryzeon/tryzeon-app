@@ -10,6 +10,7 @@ import {
 import type { ChatMessage } from "../_shared/chat/index.ts";
 import type { LineProduct } from "./product-card.ts";
 
+const COLOR_ID = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const PID = "8f14e45f-ceea-467a-9c8d-1b2c3d4e5f60";
 
 const someProduct = (over: Partial<LineProduct> = {}): LineProduct => ({
@@ -20,6 +21,7 @@ const someProduct = (over: Partial<LineProduct> = {}): LineProduct => ({
   garmentType: "outerwear",
   storeName: "某店",
   purchaseUrl: null,
+  color: { id: COLOR_ID, name: null },
   ...over,
 });
 
@@ -31,6 +33,17 @@ Deno.test("a try-on is recorded as a user turn naming the product", () => {
     type: "text",
     text: `（使用者剛試穿了商品 id:${PID}「短版牛仔外套」）`,
   }]);
+});
+
+Deno.test("a try-on in a named colour records the colour too", () => {
+  const note = tryonNote(
+    someProduct({ color: { id: COLOR_ID, name: "霧灰" } }),
+  );
+
+  assertEquals(
+    (note.content[0] as { text: string }).text,
+    `（使用者剛試穿了商品 id:${PID}「短版牛仔外套」，顏色：霧灰）`,
+  );
 });
 
 Deno.test("an absurd product name cannot dominate the transcript", () => {

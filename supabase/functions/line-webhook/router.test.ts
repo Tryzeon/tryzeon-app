@@ -25,6 +25,7 @@ const deps: RouterDeps = {
   conversations: fakeConversations().store,
 };
 
+const COLOR_ID = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const PID = "8f14e45f-ceea-467a-9c8d-1b2c3d4e5f60";
 const WID = "44444444-4444-4444-4444-444444444444";
 
@@ -188,7 +189,7 @@ Deno.test("an event with no source.userId reaches no handler", async () => {
         type: "postback",
         replyToken: "rt",
         source: noId,
-        postback: { data: productTryonPostbackData(PID) },
+        postback: { data: productTryonPostbackData(PID, COLOR_ID) },
       }))[0],
     ),
     "傳一張衣服的照片",

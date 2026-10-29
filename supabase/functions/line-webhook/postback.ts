@@ -10,8 +10,15 @@ const TRYON_PRODUCT = "tryon_product";
 const TRYON_WARDROBE = "tryon_wardrobe";
 const TRYON_OUTFIT = "tryon_outfit";
 
-export function productTryonPostbackData(productId: string): string {
-  return new URLSearchParams({ a: TRYON_PRODUCT, pid: productId }).toString();
+export function productTryonPostbackData(
+  productId: string,
+  colorId: string,
+): string {
+  return new URLSearchParams({
+    a: TRYON_PRODUCT,
+    pid: productId,
+    cid: colorId,
+  }).toString();
 }
 
 export function wardrobeTryonPostbackData(wardrobeItemId: string): string {
@@ -56,7 +63,7 @@ function isGarment(item: ItemRef | null): item is ItemRef {
 }
 
 export type Postback =
-  | { kind: "product"; productId: string }
+  | { kind: "product"; productId: string; colorId: string }
   | { kind: "wardrobe"; wardrobeItemId: string }
   | { kind: "outfit"; pieces: ItemRef[]; title: string };
 
@@ -68,8 +75,9 @@ export function parsePostback(data: unknown): Postback | null {
 
   if (action === TRYON_PRODUCT) {
     const productId = params.get("pid");
-    return productId && isUuid(productId)
-      ? { kind: "product", productId }
+    const colorId = params.get("cid");
+    return productId && isUuid(productId) && colorId && isUuid(colorId)
+      ? { kind: "product", productId, colorId }
       : null;
   }
   if (action === TRYON_WARDROBE) {

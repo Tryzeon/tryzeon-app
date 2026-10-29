@@ -183,6 +183,7 @@ export interface ProductTryonEvent {
   replyToken: string;
   sourceUserId: string;
   productId: string;
+  colorId: string;
 }
 
 export interface ProductTryonDeps extends TryonHandlerDeps {
@@ -191,8 +192,8 @@ export interface ProductTryonDeps extends TryonHandlerDeps {
 
 /**
  * The product is read before anything is charged: `fetchProductInfo` returns
- * null for exactly the two cases the core would later reject as validation
- * errors — the row is gone, or it has no image — so checking here turns both
+ * null for exactly the cases the core would later reject as validation
+ * errors — the row is gone, it has no image, or the colour was deleted — so checking here turns both
  * into a sentence the user understands at no quota cost.
  */
 export async function handleProductTryon(
@@ -207,7 +208,11 @@ export async function handleProductTryon(
     return;
   }
 
-  const product = await fetchProduct(deps.admin, event.productId);
+  const product = await fetchProduct(
+    deps.admin,
+    event.productId,
+    event.colorId,
+  );
   if (!product) {
     await deps.line.reply(event.replyToken, [
       productUnavailableMessage(deps.liffUrl),
@@ -221,7 +226,7 @@ export async function handleProductTryon(
 
   const outcome = await runTryon(deps, {
     userId,
-    garments: [{ productId: product.id }],
+    garments: [{ productId: product.id, colorId: product.color.id }],
   });
 
   await deps.line.push(event.sourceUserId, [

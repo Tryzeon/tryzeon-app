@@ -268,6 +268,7 @@ Deno.test("the whole turn is written back as the core recorded it", async () => 
           imageUrl: "https://img.example/p.jpg",
           storeName: "某店",
           purchaseUrl: null,
+          color: { id: "c1", name: null },
         },
       },
       wardrobe: {},
@@ -414,6 +415,7 @@ Deno.test("a recommended product in the reply opens its LIFF product page", asyn
           imageUrl: "https://img.example/p.jpg",
           storeName: "某店",
           purchaseUrl: null,
+          color: { id: "c1", name: null },
         },
       },
       wardrobe: {},
@@ -428,5 +430,8 @@ Deno.test("a recommended product in the reply opens its LIFF product page", asyn
 
   // deno-lint-ignore no-explicit-any
   const [bubble] = (replied[0][0] as any).contents.contents;
-  assertEquals(bubble.hero.action.uri, `https://liff.example/product/${PID}`);
+  assertEquals(
+    bubble.hero.action.uri,
+    `https://liff.example/product/${PID}?color=c1`,
+  );
 });

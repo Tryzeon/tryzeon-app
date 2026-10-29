@@ -17,6 +17,7 @@ import type { LineProduct } from "./product-card.ts";
 import { fakeConversations } from "./conversation.testing.ts";
 import { tryonNote } from "./conversation.ts";
 
+const COLOR_ID = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const USER = "Uline123";
 const PID = "8f14e45f-ceea-467a-9c8d-1b2c3d4e5f60";
 
@@ -38,6 +39,7 @@ const someProduct: LineProduct = {
   garmentType: "outerwear",
   storeName: "某店",
   purchaseUrl: null,
+  color: { id: COLOR_ID, name: null },
 };
 
 function fakeChat(blocks: AnswerBlock[]) {
@@ -84,6 +86,7 @@ Deno.test("a chat turn sees the try-on note the previous turn recorded", async (
     replyToken: "rt",
     sourceUserId: USER,
     productId: PID,
+    colorId: COLOR_ID,
   });
 
   const chat = fakeChat([{ type: "text", text: "配深色長褲" }]);

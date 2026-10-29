@@ -1,13 +1,10 @@
-import { fetchRowsByIds, hasProductImage } from "../_shared/chat/hydrate.ts";
+import { fetchRowsByIds } from "../_shared/chat/hydrate.ts";
 import type { Enums } from "../_shared/database.types.ts";
 import { publicImageUrl } from "../_shared/public-images.ts";
 import { CARD_COLOR, pickBubble, sourceLine } from "./card-kit.ts";
 import { productTryonPostbackData } from "./postback.ts";
 import { asJsonObject, type DbClient } from "../_shared/supabase.ts";
-import {
-  coverImagePath,
-  orderProductColors,
-} from "../_shared/product-colors.ts";
+import { orderProductColors, productColor } from "../_shared/product-colors.ts";
 
 export const PRODUCT_CARD_SELECT =
   "id, name, price, garment_type, purchase_link, product_colors(id, name, image_paths, position), store_profiles!products_store_id_fkey(name)";
@@ -18,6 +15,7 @@ export interface ProductInfo {
   price: number;
   storeName: string | null;
   purchaseUrl: string | null;
+  color: { id: string; name: string | null };
 }
 
 export interface LineProduct extends ProductInfo {
@@ -30,12 +28,18 @@ export interface LineProduct extends ProductInfo {
  * image-less product is not merely an invisible card, it is un-try-on-able —
  * `resolveProductGarment` rejects it for having no garment material — so the one
  * check answers both questions.
+ *
+ * A `colorId` the product does not carry is null too, never another colour: the
+ * user tapped one specific colour, and wearing a different one would spend a
+ * try-on on something they did not ask for.
  */
 export function toProductInfo(
   // deno-lint-ignore no-explicit-any
   row: Record<string, any>,
+  colorId?: string,
 ): ProductInfo | null {
-  if (!hasProductImage(row)) return null;
+  const color = productColor(row, colorId);
+  if (!color) return null;
 
   const store = row.store_profiles as { name?: string } | null;
   return {
@@ -44,6 +48,7 @@ export function toProductInfo(
     price: Number(row.price),
     storeName: store?.name ?? null,
     purchaseUrl: row.purchase_link ?? null,
+    color: { id: color.id, name: color.name },
   };
 }
 
@@ -55,10 +60,10 @@ export function toLineProduct(
   const info = toProductInfo(row);
   if (!info) return null;
 
-  const key = coverImagePath(row)!;
+  const cover = productColor(row, undefined)!;
   return {
     ...info,
-    imageUrl: publicImageUrl(imagesBaseUrl, key),
+    imageUrl: publicImageUrl(imagesBaseUrl, cover.image_paths[0]),
     garmentType: row.garment_type,
   };
 }
@@ -91,6 +96,7 @@ export function fetchProductRows(
 export async function fetchProductInfo(
   admin: DbClient,
   productId: string,
+  colorId: string,
 ): Promise<ProductInfo | null> {
   const { data, error } = await admin.rpc("get_shop_product", {
     p_id: productId,
@@ -98,7 +104,7 @@ export async function fetchProductInfo(
 
   if (error) throw new Error(`product lookup failed: ${error.message}`);
   const row = asJsonObject<Record<string, unknown>>(data);
-  return row ? toProductInfo(row) : null;
+  return row ? toProductInfo(row, colorId) : null;
 }
 
 /**
@@ -163,8 +169,12 @@ export function productInfoContents(product: ProductInfo): object[] {
 
 const LIFF_PRODUCT_PATH = "/product";
 
-export function productDetailUrl(liffUrl: string, productId: string): string {
-  return `${liffUrl}${LIFF_PRODUCT_PATH}/${productId}`;
+export function productDetailUrl(
+  liffUrl: string,
+  productId: string,
+  colorId: string,
+): string {
+  return `${liffUrl}${LIFF_PRODUCT_PATH}/${productId}?color=${colorId}`;
 }
 
 export function productItemBubble(
@@ -181,7 +191,7 @@ export function productItemBubble(
     tryonAction: {
       type: "postback",
       label: "試穿",
-      data: productTryonPostbackData(product.id),
+      data: productTryonPostbackData(product.id, product.color.id),
       // Clamped: `displayText` fails the whole send past 300 characters, and a
       // product name has no length constraint.
       displayText: `試穿「${clampProductName(product.name)}」`,
@@ -189,7 +199,7 @@ export function productItemBubble(
     detailAction: {
       type: "uri",
       label: "商品詳情",
-      uri: productDetailUrl(liffUrl, product.id),
+      uri: productDetailUrl(liffUrl, product.id, product.color.id),
     },
   });
 }

@@ -339,7 +339,7 @@ export function productTryonErrorMessage(
   const message = { type: "text", text: tryonErrorText(kind, quota) };
   const retry = postbackChip(
     "再試一次",
-    productTryonPostbackData(product.id),
+    productTryonPostbackData(product.id, product.color.id),
     `試穿「${clampProductName(product.name)}」`,
   );
 

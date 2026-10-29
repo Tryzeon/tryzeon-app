@@ -53,13 +53,14 @@ export function redisConversations(
 }
 
 export function tryonNote(product: ProductInfo): ChatMessage {
+  const color = product.color.name ? `，顏色：${product.color.name}` : "";
   return {
     role: "user",
     content: [{
       type: "text",
       text: `（使用者剛試穿了商品 id:${product.id}「${
         clampProductName(product.name)
-      }」）`,
+      }」${color}）`,
     }],
   };
 }

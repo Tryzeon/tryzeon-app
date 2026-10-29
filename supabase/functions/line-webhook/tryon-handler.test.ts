@@ -27,6 +27,7 @@ import {
 } from "./postback.ts";
 import type { LineWardrobeItem } from "./wardrobe-card.ts";
 
+const COLOR_ID = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const USER = "Uline123";
 
 interface Sent {
@@ -300,7 +301,12 @@ Deno.test("the photo is described from the same bytes the try-on wears", async (
 
 const PID = "8f14e45f-ceea-467a-9c8d-1b2c3d4e5f60";
 
-const productEvent = { replyToken: "rt", sourceUserId: USER, productId: PID };
+const productEvent = {
+  replyToken: "rt",
+  sourceUserId: USER,
+  productId: PID,
+  colorId: COLOR_ID,
+};
 
 const someProduct = (over: Partial<LineProduct> = {}): LineProduct => ({
   id: PID,
@@ -310,6 +316,7 @@ const someProduct = (over: Partial<LineProduct> = {}): LineProduct => ({
   garmentType: "outerwear",
   storeName: "某店",
   purchaseUrl: null,
+  color: { id: COLOR_ID, name: null },
   ...over,
 });
 
@@ -322,6 +329,21 @@ function makeProductDeps(
     ...over,
   };
 }
+
+Deno.test("the tapped colour reaches the product lookup", async () => {
+  const seen: Array<[string, string]> = [];
+  await handleProductTryon(
+    makeProductDeps({
+      fetchProduct: (_admin, productId, colorId) => {
+        seen.push([productId, colorId]);
+        return Promise.resolve(someProduct());
+      },
+    }),
+    productEvent,
+  );
+
+  assertEquals(seen, [[PID, COLOR_ID]]);
+});
 
 Deno.test("a product that is gone is said so, and no quota is spent", async () => {
   const { line, sent } = fakeLine();
@@ -384,7 +406,7 @@ Deno.test("the product is named while waiting, and tried on by reference", async
     textOf(sent.replies[0][0]),
     "收到，正在幫你試穿「短版牛仔外套」，請稍等！",
   );
-  assertEquals(jobs[0].garments, [{ productId: PID }]);
+  assertEquals(jobs[0].garments, [{ productId: PID, colorId: COLOR_ID }]);
 });
 
 Deno.test("the result card carries the product back with the image", async () => {
@@ -651,7 +673,7 @@ Deno.test("a product that would not generate can be retried by id alone", async 
   // deno-lint-ignore no-explicit-any
   const action = (sent.pushes[0][0] as any).quickReply.items[0].action;
   assertEquals(action.type, "postback");
-  assertEquals(action.data, productTryonPostbackData(PID));
+  assertEquals(action.data, productTryonPostbackData(PID, COLOR_ID));
   assertEquals(action.displayText, "試穿「短版牛仔外套」");
 });
 
@@ -849,6 +871,7 @@ const outfitProduct: LineProduct = {
   garmentType: "top",
   storeName: "某店",
   purchaseUrl: null,
+  color: { id: COLOR_ID, name: null },
 };
 
 const outfitWardrobe: LineWardrobeItem = {

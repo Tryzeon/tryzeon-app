@@ -15,6 +15,7 @@ import type { LineProduct } from "./product-card.ts";
 import type { LineWardrobeItem } from "./wardrobe-card.ts";
 import type { Enums } from "../_shared/database.types.ts";
 
+const COLOR_ID = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const LIFF = "https://liff.example";
 
 type GarmentType = Enums<"garment_type">;
@@ -31,6 +32,7 @@ const product = (
   garmentType,
   storeName: "某店",
   purchaseUrl: null,
+  color: { id: COLOR_ID, name: null },
 });
 
 const wardrobe = (
@@ -216,7 +218,7 @@ Deno.test("a product cell opens its LIFF page, unpriced; a wardrobe cell fills o
   assertEquals(productCell.action, {
     type: "uri",
     label: "商品詳情",
-    uri: `${LIFF}/product/p2`,
+    uri: `${LIFF}/product/p2?color=${COLOR_ID}`,
   });
   assertEquals(productCell.contents.length, 1);
   assertEquals(productCell.contents[0].aspectMode, "cover");
@@ -359,7 +361,7 @@ Deno.test("the result card leads with the try-on, then lists every piece", () =>
   assertEquals(rows[1].action, {
     type: "uri",
     label: "商品詳情",
-    uri: `${LIFF}/product/p2`,
+    uri: `${LIFF}/product/p2?color=${COLOR_ID}`,
   });
   assertEquals(JSON.stringify(rows[1]).includes("NT$1,380"), true);
   // deno-lint-ignore no-explicit-any

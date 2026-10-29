@@ -9,13 +9,21 @@ import {
 } from "./postback.ts";
 
 const PID = "8f14e45f-ceea-467a-9c8d-1b2c3d4e5f60";
+const CID = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const WID = "44444444-4444-4444-4444-444444444444";
 
 Deno.test("what a product card encodes is what the webhook reads back", () => {
-  assertEquals(parsePostback(productTryonPostbackData(PID)), {
+  assertEquals(parsePostback(productTryonPostbackData(PID, CID)), {
     kind: "product",
     productId: PID,
+    colorId: CID,
   });
+});
+
+Deno.test("a product postback without a valid colour id is rejected", () => {
+  assertEquals(parsePostback(`a=tryon_product&pid=${PID}`), null);
+  assertEquals(parsePostback(`a=tryon_product&pid=${PID}&cid=nope`), null);
+  assertEquals(parsePostback(`a=tryon_product&cid=${CID}`), null);
 });
 
 Deno.test("what a wardrobe card encodes is what the webhook reads back", () => {

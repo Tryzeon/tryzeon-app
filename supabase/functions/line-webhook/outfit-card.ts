@@ -162,7 +162,7 @@ function cell(
       action: {
         type: "uri",
         label: "商品詳情",
-        uri: productDetailUrl(liffUrl, piece.item.id),
+        uri: productDetailUrl(liffUrl, piece.item.id, piece.item.color.id),
       },
       contents: [{ ...image, aspectMode: "cover" }],
     };
@@ -299,7 +299,7 @@ function pieceRow(piece: OutfitPiece, liffUrl: string): object {
         action: {
           type: "uri",
           label: "商品詳情",
-          uri: productDetailUrl(liffUrl, piece.item.id),
+          uri: productDetailUrl(liffUrl, piece.item.id, piece.item.color.id),
         },
       }
       : {}),

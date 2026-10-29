@@ -10,6 +10,7 @@ import {
   wardrobeTryonPostbackData,
 } from "./postback.ts";
 
+const COLOR_ID = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const product = (id: string, over: Partial<LineProduct> = {}): LineProduct => ({
   id,
   name: `商品 ${id}`,
@@ -18,6 +19,7 @@ const product = (id: string, over: Partial<LineProduct> = {}): LineProduct => ({
   garmentType: "top",
   storeName: "某店",
   purchaseUrl: null,
+  color: { id: COLOR_ID, name: null },
   ...over,
 });
 
@@ -142,11 +144,14 @@ Deno.test("every product card offers a try-on, keyed by its own id", () => {
   assertEquals(ctaOf(first).action, {
     type: "postback",
     label: "試穿",
-    data: productTryonPostbackData("p1"),
+    data: productTryonPostbackData("p1", COLOR_ID),
     displayText: "試穿「商品 p1」",
   });
   assertEquals(ctaOf(first).contents[0].contents[0].text, "✦ 試穿");
-  assertEquals(ctaOf(second).action.data, productTryonPostbackData("p2"));
+  assertEquals(
+    ctaOf(second).action.data,
+    productTryonPostbackData("p2", COLOR_ID),
+  );
 });
 
 Deno.test("an over-long product name is clamped in the postback displayText", () => {
@@ -170,7 +175,7 @@ Deno.test("a product card opens its LIFF product page from the photo, with no bo
   assertEquals(bubble.hero.action, {
     type: "uri",
     label: "商品詳情",
-    uri: `${LIFF}/product/p1`,
+    uri: `${LIFF}/product/p1?color=${COLOR_ID}`,
   });
   assertEquals(bubble.body, undefined);
   assertEquals(bubble.footer, undefined);
@@ -356,10 +361,10 @@ Deno.test("adjacent rows stay separate carousels", () => {
   ]);
 
   assertEquals(out.length, 2);
-  assertEquals(tryonIdsOf(out[0]), [productTryonPostbackData("p1")]);
+  assertEquals(tryonIdsOf(out[0]), [productTryonPostbackData("p1", COLOR_ID)]);
   assertEquals(tryonIdsOf(out[1]), [
-    productTryonPostbackData("p2"),
-    productTryonPostbackData("p3"),
+    productTryonPostbackData("p2", COLOR_ID),
+    productTryonPostbackData("p3", COLOR_ID),
   ]);
 });
 
@@ -394,9 +399,9 @@ Deno.test("more sections than LINE allows fold the prose to the top and keep eve
     type: "text",
     text: "這套清爽\n下面配寬褲\n早晚涼加外套",
   });
-  assertEquals(tryonIdsOf(out[1]), [productTryonPostbackData("p1")]);
-  assertEquals(tryonIdsOf(out[2]), [productTryonPostbackData("p2")]);
-  assertEquals(tryonIdsOf(out[3]), [productTryonPostbackData("p3")]);
+  assertEquals(tryonIdsOf(out[1]), [productTryonPostbackData("p1", COLOR_ID)]);
+  assertEquals(tryonIdsOf(out[2]), [productTryonPostbackData("p2", COLOR_ID)]);
+  assertEquals(tryonIdsOf(out[3]), [productTryonPostbackData("p3", COLOR_ID)]);
 });
 
 Deno.test("rows beyond LINE's limit are dropped after the fold, chips kept on the last message", () => {
@@ -409,7 +414,7 @@ Deno.test("rows beyond LINE's limit are dropped after the fold, chips kept on th
   assertEquals(out[0], { type: "text", text: "這幾套都可以" });
   assertEquals(
     out.slice(1).map((m) => tryonIdsOf(m)[0]),
-    [0, 1, 2, 3].map((i) => productTryonPostbackData(`p${i}`)),
+    [0, 1, 2, 3].map((i) => productTryonPostbackData(`p${i}`, COLOR_ID)),
   );
   assertEquals(chipActions(out.at(-1)!), SUGGESTED_CHIPS);
 });
@@ -449,7 +454,7 @@ Deno.test("a card whose row is missing is left out rather than drawn empty", () 
   );
 
   assertEquals(out.length, 2);
-  assertEquals(tryonIdsOf(out[1]), [productTryonPostbackData("p1")]);
+  assertEquals(tryonIdsOf(out[1]), [productTryonPostbackData("p1", COLOR_ID)]);
 });
 
 Deno.test("a row whose picks are all missing draws no carousel", () => {
