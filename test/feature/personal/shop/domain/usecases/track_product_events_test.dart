@@ -4,6 +4,7 @@ import 'package:tryzeon/core/modules/analytics/domain/entities/analytics_event.d
 import 'package:tryzeon/core/modules/analytics/domain/entities/analytics_event_type.dart';
 import 'package:tryzeon/core/modules/analytics/domain/services/analytics_event_queue.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/common/product_color/domain/entities/product_color.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:tryzeon/feature/personal/shop/domain/usecases/track_product_purchase_click.dart';
@@ -34,6 +35,16 @@ void main() {
     updatedAt: DateTime(2026),
   );
 
+  final color = ProductColor(
+    id: 'c1',
+    productId: 'p1',
+    imagePaths: const [],
+    imageUrls: const [],
+    position: 0,
+    createdAt: DateTime(2026),
+    updatedAt: DateTime(2026),
+  );
+
   setUp(() => queue = _RecordingQueue());
 
   test('a view is queued against the product and its store', () {
@@ -42,11 +53,23 @@ void main() {
     expect(queue.events.single.productId, 'p1');
     expect(queue.events.single.storeId, 's1');
     expect(queue.events.single.eventType, AnalyticsEventType.view);
+    expect(queue.events.single.colorId, isNull);
   });
 
   test('a purchase click is queued as its own event type', () {
-    TrackProductPurchaseClick(queue)(product);
+    TrackProductPurchaseClick(queue)(
+      TrackProductPurchaseClickParams(product: product, color: color),
+    );
 
     expect(queue.events.single.eventType, AnalyticsEventType.purchaseClick);
+    expect(queue.events.single.colorId, 'c1');
+  });
+
+  test('a purchase click without a colour carries no colour id', () {
+    TrackProductPurchaseClick(queue)(
+      TrackProductPurchaseClickParams(product: product, color: null),
+    );
+
+    expect(queue.events.single.colorId, isNull);
   });
 }

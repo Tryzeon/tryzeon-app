@@ -9,5 +9,6 @@ sealed class AnalyticsEvent with _$AnalyticsEvent {
     required final String productId,
     required final String storeId,
     required final AnalyticsEventType eventType,
+    final String? colorId,
   }) = _AnalyticsEvent;
 }
