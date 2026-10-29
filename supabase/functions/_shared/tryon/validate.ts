@@ -64,6 +64,9 @@ function validateGarment(garment: GarmentInput): GarmentInput {
     if (garment.sizeId !== undefined) {
       ref.sizeId = requireString(garment.sizeId, "garment sizeId");
     }
+    if (garment.colorId !== undefined) {
+      ref.colorId = requireString(garment.colorId, "garment colorId");
+    }
     return ref;
   }
   if (isWardrobeRef(garment)) {

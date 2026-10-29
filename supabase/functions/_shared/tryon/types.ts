@@ -27,11 +27,13 @@ export type ImageSource =
 /**
  * `sizeId` is accepted and carried through unchanged but nothing reads it: the
  * prompt no longer describes how a size sits on the wearer, and the model is
- * left to judge that from the images alone.
+ * left to judge that from the images alone. A missing `colorId` means the
+ * cover colour.
  */
 export interface ProductRef {
   productId: string;
   sizeId?: string;
+  colorId?: string;
 }
 
 /**

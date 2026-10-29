@@ -252,6 +252,34 @@ Deno.test("validateTryonParams rejects a non-string sizeId", () => {
   );
 });
 
+Deno.test("validateTryonParams a product garment keeps its colorId", () => {
+  const params = validateTryonParams({
+    userId: "u1",
+    garments: [{ productId: "p1", colorId: "c1" }],
+    mode: "image",
+  });
+
+  assertEquals(params.garments[0], { productId: "p1", colorId: "c1" });
+});
+
+Deno.test("validateTryonParams a non-string colorId is rejected", () => {
+  assertThrows(
+    () =>
+      validateTryonParams({
+        userId: "u1",
+        garments: [
+          {
+            productId: "p1",
+            colorId: 1,
+          } as unknown as TryonParams["garments"][number],
+        ],
+        mode: "image",
+      }),
+    ValidationError,
+    "garment colorId",
+  );
+});
+
 Deno.test("validateTryonParams keeps the transitionPrompt on a video job", () => {
   const job = validateTryonParams({
     ...validParams,
