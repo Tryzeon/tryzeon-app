@@ -6,6 +6,7 @@ import 'package:tryzeon/feature/common/usage_quota/domain/entities/usage_quota.d
 import 'package:tryzeon/feature/personal/tryon/data/datasources/tryon_remote_data_source.dart';
 import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_function_request.dart';
 import 'package:tryzeon/feature/personal/tryon/data/exceptions/avatar_missing_exception.dart';
+import 'package:tryzeon/feature/personal/tryon/data/exceptions/color_unavailable_exception.dart';
 import 'package:tryzeon/feature/personal/tryon/data/exceptions/quota_exceeded_exception.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_engine.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
@@ -134,6 +135,21 @@ void main() {
         ),
       ).tryon(_request),
       throwsA(isA<AvatarMissingException>()),
+    );
+  });
+
+  test('a removed colour surfaces as a ColorUnavailableException', () async {
+    await expectLater(
+      dataSource(
+        const FunctionException(
+          status: 409,
+          details: {
+            'error': 'This colour is no longer available',
+            'code': 'COLOR_UNAVAILABLE',
+          },
+        ),
+      ).tryon(_request),
+      throwsA(isA<ColorUnavailableException>()),
     );
   });
 

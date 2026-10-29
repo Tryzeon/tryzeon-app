@@ -6,6 +6,7 @@ import 'package:tryzeon/feature/common/usage_quota/data/mappers/usage_quota_payl
 import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_function_request.dart';
 import 'package:tryzeon/feature/personal/tryon/data/dtos/tryon_response_dto.dart';
 import 'package:tryzeon/feature/personal/tryon/data/exceptions/avatar_missing_exception.dart';
+import 'package:tryzeon/feature/personal/tryon/data/exceptions/color_unavailable_exception.dart';
 import 'package:tryzeon/feature/personal/tryon/data/exceptions/quota_exceeded_exception.dart';
 import 'package:tryzeon/feature/personal/tryon/domain/entities/tryon_mode.dart';
 
@@ -15,6 +16,7 @@ class TryonRemoteDataSource {
 
   static const _tryonFunction = 'tryon';
   static const _noAvatarCode = 'NO_AVATAR';
+  static const _colorUnavailableCode = 'COLOR_UNAVAILABLE';
   static const _aiGenerationFailedCode = 'AI_GENERATION_FAILED';
 
   /// Client-side ceilings slightly above the edge function's worst case
@@ -45,6 +47,7 @@ class TryonRemoteDataSource {
           quota: tryParseUsageQuotaPayload(body['quota']),
         ),
         _noAvatarCode => const AvatarMissingException(),
+        _colorUnavailableCode => const ColorUnavailableException(),
         _aiGenerationFailedCode => const ServerException('AI 無法辨識圖片，請換一張試試'),
         _ => null,
       };
