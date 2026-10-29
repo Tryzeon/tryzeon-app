@@ -33,21 +33,27 @@ class PrePurchaseSheet extends StatelessWidget {
   const PrePurchaseSheet({
     super.key,
     required this.product,
+    required this.color,
     required this.fitResult,
   });
 
   final ShopProduct product;
+  final ProductColor? color;
   final FitResult fitResult;
 
   static Future<PurchaseChoice?> show({
     required final BuildContext context,
     required final ShopProduct product,
+    required final ProductColor? color,
     required final FitResult fitResult,
   }) {
     return showAppSheet<PurchaseChoice>(
       context: context,
-      builder: (final _) =>
-          PrePurchaseSheet(product: product, fitResult: fitResult),
+      builder: (final _) => PrePurchaseSheet(
+        product: product,
+        color: color,
+        fitResult: fitResult,
+      ),
     );
   }
 
@@ -59,6 +65,7 @@ class PrePurchaseSheet extends StatelessWidget {
     final hasOnlineLink =
         product.purchaseLink != null && product.purchaseLink!.isNotEmpty;
     final contacts = product.storeInfo.orderContacts;
+    final colorName = product.colors.distinguishing(color)?.name;
 
     return AppSheet(
       body: Padding(
@@ -70,7 +77,7 @@ class PrePurchaseSheet extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _ProductThumb(imageUrl: product.colors.coverImageUrl),
+                _ProductThumb(imageUrl: color?.imageUrls.firstOrNull),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Column(
@@ -87,7 +94,7 @@ class PrePurchaseSheet extends StatelessWidget {
                       ),
                       const SizedBox(height: AppSpacing.xs),
                       Text(
-                        product.name,
+                        [product.name, ?colorName].join(' · '),
                         style: textTheme.titleSmall,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -129,6 +136,7 @@ class PrePurchaseSheet extends StatelessWidget {
                 contacts: contacts,
                 message: OrderMessageBuilder.build(
                   product: product,
+                  color: color,
                   fitResult: fitResult,
                 ),
               ),

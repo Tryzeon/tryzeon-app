@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/presentation/widgets/top_notification.dart';
+import 'package:tryzeon/feature/common/product_color/domain/entities/product_color.dart';
 import 'package:tryzeon/feature/common/store/domain/entities/order_contact_type.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/services/order_message_builder.dart';
+import 'package:tryzeon/feature/personal/shop/domain/usecases/track_product_purchase_click.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/sheets/pre_purchase_sheet.dart';
 import 'package:tryzeon/feature/personal/shop/providers/shop_providers.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -17,6 +19,7 @@ Future<void> launchProductPurchase(
   final BuildContext context,
   final WidgetRef ref,
   final ShopProduct product,
+  final ProductColor? color,
   final FitResult fitResult,
 ) async {
   if (!productHasPurchaseOptions(product)) return;
@@ -24,11 +27,12 @@ Future<void> launchProductPurchase(
   final choice = await PrePurchaseSheet.show(
     context: context,
     product: product,
+    color: color,
     fitResult: fitResult,
   );
   if (choice == null || !context.mounted) return;
 
-  final target = _resolveTarget(choice, product, fitResult);
+  final target = _resolveTarget(choice, product, color, fitResult);
 
   final trackPurchaseClick = ref.read(trackProductPurchaseClickProvider);
 
@@ -39,13 +43,16 @@ Future<void> launchProductPurchase(
     return;
   }
 
-  trackPurchaseClick(product);
+  trackPurchaseClick(
+    TrackProductPurchaseClickParams(product: product, color: color),
+  );
   await launchUrl(target.uri, mode: LaunchMode.externalApplication);
 }
 
 ({Uri uri, String failureMessage}) _resolveTarget(
   final PurchaseChoice choice,
   final ShopProduct product,
+  final ProductColor? color,
   final FitResult fitResult,
 ) {
   switch (choice) {
@@ -57,6 +64,7 @@ Future<void> launchProductPurchase(
     case ContactChoice(:final type, :final value):
       final message = OrderMessageBuilder.build(
         product: product,
+        color: color,
         fitResult: fitResult,
       );
       return (

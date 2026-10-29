@@ -4,11 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/common/product_color/domain/entities/product_color.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/fit_result.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:tryzeon/feature/personal/shop/presentation/sheets/pre_purchase_sheet.dart';
 
+import '../../../../../support/product_color_fixtures.dart';
 import '../../../../../support/sheet_test_host.dart';
 
 final _product = ShopProduct(
@@ -28,6 +30,8 @@ void main() {
   Future<({Future<PurchaseChoice?> result})> open(
     final WidgetTester tester, {
     required final FitResult fitResult,
+    final ShopProduct? product,
+    final ProductColor? color,
   }) async {
     late Future<PurchaseChoice?> result;
     final router = GoRouter(
@@ -39,7 +43,8 @@ void main() {
               builder: (final context) => TextButton(
                 onPressed: () => result = PrePurchaseSheet.show(
                   context: context,
-                  product: _product,
+                  product: product ?? _product,
+                  color: color,
                   fitResult: fitResult,
                 ),
                 child: const Text('open'),
@@ -96,5 +101,39 @@ void main() {
     await open(tester, fitResult: const FitResult());
 
     expect(find.text('取消'), findsNothing);
+  });
+
+  final twoColors = _product.copyWith(
+    colors: [
+      productColorFixture(imagePaths: const ['a.jpg'], name: '米白'),
+      productColorFixture(imagePaths: const ['b.jpg'], position: 1, name: '霧灰'),
+    ],
+  );
+
+  testWidgets('shows the chosen colour name when there is a choice', (
+    final tester,
+  ) async {
+    await open(
+      tester,
+      fitResult: const FitResult(recommendedSize: 'M'),
+      product: twoColors,
+      color: twoColors.colors[1],
+    );
+
+    expect(find.text('White Tee · 霧灰'), findsOneWidget);
+    expect(find.textContaining('米白'), findsNothing);
+  });
+
+  testWidgets('hides the colour name for a single colour', (
+    final tester,
+  ) async {
+    await open(
+      tester,
+      fitResult: const FitResult(recommendedSize: 'M'),
+      product: twoColors.copyWith(colors: [twoColors.colors[0]]),
+      color: twoColors.colors[0],
+    );
+
+    expect(find.textContaining('米白'), findsNothing);
   });
 }
