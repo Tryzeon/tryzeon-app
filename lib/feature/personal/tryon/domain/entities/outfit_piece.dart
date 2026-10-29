@@ -16,6 +16,7 @@ sealed class OutfitPiece with _$OutfitPiece {
 
   const factory OutfitPiece.product({
     required final String productId,
+    final String? colorId,
     required final String imageUrl,
     required final GarmentType garmentType,
     final String? sizeId,
@@ -32,15 +33,22 @@ sealed class OutfitPiece with _$OutfitPiece {
     OutfitPieceLocal(:final path) => path,
   };
 
+  String? get colorId => switch (this) {
+    OutfitPieceProduct(:final colorId) => colorId,
+    OutfitPieceWardrobe() || OutfitPieceLocal() => null,
+  };
+
   /// Null for a local photo: its bytes are read when the try-on launches.
   TryonGarment? get garment => switch (this) {
     OutfitPieceWardrobe(:final wardrobeItemId) => TryonGarment.wardrobe(
       wardrobeItemId: wardrobeItemId,
     ),
-    OutfitPieceProduct(:final productId, :final sizeId) => TryonGarment.product(
-      productId: productId,
-      sizeId: sizeId,
-    ),
+    OutfitPieceProduct(:final productId, :final sizeId, :final colorId) =>
+      TryonGarment.product(
+        productId: productId,
+        sizeId: sizeId,
+        colorId: colorId,
+      ),
     OutfitPieceLocal() => null,
   };
 }

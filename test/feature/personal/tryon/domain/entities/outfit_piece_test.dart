@@ -31,4 +31,19 @@ void main() {
     );
     expect(local.garment, isNull);
   });
+
+  test('a product piece passes its colour to the garment', () {
+    const coloured = OutfitPiece.product(
+      productId: 'p1',
+      colorId: 'c1',
+      imageUrl: 'https://x/p1.jpg',
+      garmentType: GarmentType.top,
+      sizeId: 'M',
+    );
+    expect(
+      coloured.garment,
+      const TryonGarment.product(productId: 'p1', sizeId: 'M', colorId: 'c1'),
+    );
+    expect(coloured, isNot(product));
+  });
 }

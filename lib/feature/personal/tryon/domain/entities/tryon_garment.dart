@@ -11,11 +11,14 @@ sealed class TryonGarment with _$TryonGarment {
     required final List<String> base64Images,
   }) = TryonGarmentImages;
 
+  /// A null [colorId] means the product's cover colour.
+  ///
   /// [sizeId] names which published size is being worn, so the backend can
   /// describe how that size sits on this shopper.
   const factory TryonGarment.product({
     required final String productId,
     final String? sizeId,
+    final String? colorId,
   }) = TryonGarmentProduct;
 
   /// A reference rather than the item's image path, so the backend can bind the
