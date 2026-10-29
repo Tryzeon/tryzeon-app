@@ -30,7 +30,7 @@ The local backend is fully separate from prod: secrets come from `supabase/funct
 
 Code generation is required after editing any annotated file (`@riverpod`, `@freezed`, `@JsonSerializable`, Isar `@collection`, `@AutoMappr`, `@Envied`).
 
-`Env` (`lib/core/config/env.dart`) is generated from a `.env` file via `envied`. The `.env` file must define all four keys or codegen fails: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `REVENUE_CAT_API_KEY`, `R2_PUBLIC_IMAGES_BASE_URL`.
+`Env` (`lib/core/config/env.dart`) is generated via `envied` from `.env` (prod) and `.env.local` (local backend, selected by `APP_ENV=local`); both are gitignored, use `.env.example` as their template, and must define all four keys or codegen fails: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `REVENUE_CAT_API_KEY`, `R2_PUBLIC_IMAGES_BASE_URL`.
 
 ## Architecture
 

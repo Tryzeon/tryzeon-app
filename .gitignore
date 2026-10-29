@@ -69,6 +69,7 @@ app.*.map.json
 
 # Environment variables
 .env
+.env.local
 
 # supabase temp files
 */.temp
