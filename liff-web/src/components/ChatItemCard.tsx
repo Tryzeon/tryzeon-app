@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { CatalogItem } from "../api/catalog";
+import { coverImageUrl } from "../api/catalog-row";
 import type { Garment } from "../api/tryon";
 import { useWardrobeImage } from "../hooks/useWardrobeImage";
 import { tryonGarment, wardrobeCardName } from "../lib/garment";
@@ -86,10 +87,11 @@ export function ChatItemCard(
     return <WardrobeItemCard item={item} highlight={highlight} onTryon={onTryon} tryonDisabled={tryonDisabled} />;
   }
   const product = item.item;
+  const cover = coverImageUrl(product);
   return (
     <CardFrame
       link
-      image={<FadeImage className="ccard__img" src={product.imageUrls[0]} alt="" loading="lazy" />}
+      image={cover && <FadeImage className="ccard__img" src={cover} alt="" loading="lazy" />}
       highlight={highlight}
       source={product.storeName ?? undefined}
       name={

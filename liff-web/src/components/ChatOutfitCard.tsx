@@ -1,4 +1,5 @@
 import type { CatalogItem } from "../api/catalog";
+import { coverImageUrl } from "../api/catalog-row";
 import { useWardrobeImage } from "../hooks/useWardrobeImage";
 import { tryonGarment } from "../lib/garment";
 import { collageOrder, outfitPurchase, purchaseCountText } from "../lib/outfit";
@@ -26,9 +27,10 @@ function WardrobeCell({ imagePath, labelled }: { imagePath: string; labelled: bo
 function Cell({ piece, labelled, onOpen }: { piece: ResolvedItem; labelled: boolean; onOpen(item: CatalogItem): void }) {
   if (piece.kind === "wardrobe") return <WardrobeCell imagePath={piece.imagePath} labelled={labelled} />;
   const { item } = piece;
+  const cover = coverImageUrl(item);
   return (
     <button type="button" className="look__cell" aria-label={item.name} onClick={() => onOpen(item)}>
-      <FadeImage className="look__img" src={item.imageUrls[0]} alt="" loading="lazy" />
+      {cover && <FadeImage className="look__img" src={cover} alt="" loading="lazy" />}
     </button>
   );
 }

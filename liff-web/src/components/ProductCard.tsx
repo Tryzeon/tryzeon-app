@@ -1,12 +1,14 @@
 import type { CatalogItem } from "../api/catalog";
+import { coverImageUrl } from "../api/catalog-row";
 import { priceText } from "../lib/price";
 import { FadeImage } from "./FadeImage";
 
 export function ProductCard({ item, onOpen }: { item: CatalogItem; onOpen(): void }) {
+  const cover = coverImageUrl(item);
   return (
     <button type="button" className="card" onClick={onOpen}>
-      {item.imageUrls.length > 0
-        ? <FadeImage className="card__img" src={item.imageUrls[0]} alt="" loading="lazy" />
+      {cover
+        ? <FadeImage className="card__img" src={cover} alt="" loading="lazy" />
         : <span className="card__img card__img--empty">暫無照片</span>}
       <span className="card__meta">
         <span className="card__name">{item.name}</span>
