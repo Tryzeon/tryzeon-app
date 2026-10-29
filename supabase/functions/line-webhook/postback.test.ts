@@ -1,7 +1,5 @@
 import { assertEquals } from "@std/assert";
 import {
-  clampOutfitTitle,
-  MAX_OUTFIT_TITLE_CHARS,
   outfitTryonPostbackData,
   parsePostback,
   productTryonPostbackData,
@@ -76,23 +74,17 @@ Deno.test("what an outfit card encodes is what the webhook reads back, in order"
     { type: "product" as const, id: P2 },
   ];
   assertEquals(
-    parsePostback(outfitTryonPostbackData({ title: "週末休閒", pieces })),
-    {
-      kind: "outfit",
-      pieces,
-      title: "週末休閒",
-    },
+    parsePostback(outfitTryonPostbackData(pieces)),
+    { kind: "outfit", pieces },
   );
 });
 
 Deno.test("an outfit postback stays under LINE's 300-character data cap at its longest", () => {
-  const data = outfitTryonPostbackData({
-    title: "一二三四五六七八九十甲乙",
-    pieces: [{ type: "product", id: P1 }, { type: "wardrobe", id: W1 }, {
-      type: "product",
-      id: P2,
-    }],
-  });
+  const data = outfitTryonPostbackData([
+    { type: "product", id: P1 },
+    { type: "wardrobe", id: W1 },
+    { type: "product", id: P2 },
+  ]);
   assertEquals(data.length <= 300, true);
 });
 
@@ -101,7 +93,6 @@ Deno.test("an outfit postback with a count no outfit can have is not ours", () =
     new URLSearchParams({
       a: "tryon_outfit",
       g: ids.map((id) => `p:${id}`).join(","),
-      t: "A",
     }).toString();
 
   assertEquals(parsePostback(encode([P1])), null);
@@ -111,62 +102,11 @@ Deno.test("an outfit postback with a count no outfit can have is not ours", () =
   );
 });
 
-Deno.test("an outfit postback with a bad piece or no title is not ours", () => {
-  const raw = (g: string, t?: string) =>
-    new URLSearchParams({
-      a: "tryon_outfit",
-      g,
-      ...(t === undefined ? {} : { t }),
-    }).toString();
+Deno.test("an outfit postback with a bad piece is not ours", () => {
+  const raw = (g: string) =>
+    new URLSearchParams({ a: "tryon_outfit", g }).toString();
 
-  assertEquals(parsePostback(raw(`p:${P1},p:not-a-uuid`, "A")), null);
-  assertEquals(parsePostback(raw(`p:${P1},x:${P2}`, "A")), null);
-  assertEquals(parsePostback(raw(`p:${P1},${P2}`, "A")), null);
-  assertEquals(parsePostback(raw(`p:${P1},p:${P2}`)), null);
-  assertEquals(parsePostback(raw(`p:${P1},p:${P2}`, "   ")), null);
-});
-
-Deno.test("a tampered outfit title is clamped before it can reach a displayText", () => {
-  const data = new URLSearchParams({
-    a: "tryon_outfit",
-    g: `p:${P1},p:${P2}`,
-    t: "長".repeat(200),
-  }).toString();
-  // deno-lint-ignore no-explicit-any
-  assertEquals((parsePostback(data) as any).title, "長".repeat(12));
-});
-
-Deno.test("an over-long outfit title is clamped by code point in the postback data", () => {
-  const pieces = [{ type: "product" as const, id: P1 }, {
-    type: "product" as const,
-    id: P2,
-  }];
-  const data = outfitTryonPostbackData({ title: "長".repeat(200), pieces });
-  assertEquals(
-    new URLSearchParams(data).get("t"),
-    "長".repeat(MAX_OUTFIT_TITLE_CHARS),
-  );
-  assertEquals(data.length <= 300, true);
-});
-
-Deno.test("clampOutfitTitle trims what the slice leaves and never splits a surrogate pair", () => {
-  assertEquals(
-    clampOutfitTitle("一二三四五六七八九十甲 乙丙"),
-    "一二三四五六七八九十甲",
-  );
-  assertEquals(
-    clampOutfitTitle("😀".repeat(20)),
-    "😀".repeat(MAX_OUTFIT_TITLE_CHARS),
-  );
-});
-
-Deno.test("an outfit postback of three pieces and a 12-emoji title stays within the 300-character cap", () => {
-  const data = outfitTryonPostbackData({
-    title: "😀".repeat(12),
-    pieces: [{ type: "product", id: P1 }, { type: "wardrobe", id: W1 }, {
-      type: "product",
-      id: P2,
-    }],
-  });
-  assertEquals(data.length <= 300, true);
+  assertEquals(parsePostback(raw(`p:${P1},p:not-a-uuid`)), null);
+  assertEquals(parsePostback(raw(`p:${P1},x:${P2}`)), null);
+  assertEquals(parsePostback(raw(`p:${P1},${P2}`)), null);
 });

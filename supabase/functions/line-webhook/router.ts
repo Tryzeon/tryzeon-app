@@ -166,7 +166,6 @@ function routePostback(
           replyToken: ev.replyToken,
           sourceUserId,
           pieces: postback.pieces,
-          title: postback.title,
         },
       );
   }

@@ -274,11 +274,11 @@ Deno.test("the overlay reads title, reason, then what to buy and its total besid
   assertEquals(cta.action, {
     type: "postback",
     label: "試穿整套",
-    data: outfitTryonPostbackData({
-      title: "週末休閒",
-      pieces: [{ type: "product", id: "p1" }, { type: "product", id: "p2" }],
-    }),
-    displayText: "試穿「週末休閒」",
+    data: outfitTryonPostbackData([
+      { type: "product", id: "p1" },
+      { type: "product", id: "p2" },
+    ]),
+    displayText: "試穿整套",
   });
 });
 
@@ -334,24 +334,20 @@ Deno.test("an outfit with no reason skips that line, a mixed one counts what is 
 Deno.test("the result card leads with the try-on, then lists every piece", () => {
   const message = outfitResultMessage(
     "https://img.example/result.jpg",
-    look([w("w1"), p("p2", 1380)]),
+    [w("w1"), p("p2", 1380)],
     LIFF,
     // deno-lint-ignore no-explicit-any
   ) as any;
   const bubble = message.contents;
 
-  assertEquals(message.altText, "為你試穿了「週末休閒」");
-  assertEquals(bubble.hero.contents[0].url, "https://img.example/result.jpg");
-  assertEquals(bubble.hero.contents[0].aspectRatio, "9:16");
+  assertEquals(message.altText, "為你試穿了整套穿搭");
+  assertEquals(bubble.hero.url, "https://img.example/result.jpg");
+  assertEquals(bubble.hero.aspectRatio, "9:16");
   assertEquals(bubble.hero.action, {
     type: "uri",
     label: "看大圖",
     uri: "https://img.example/result.jpg",
   });
-  // deno-lint-ignore no-explicit-any
-  assertEquals(bubble.hero.contents[2].contents.map((c: any) => c.text), [
-    "週末休閒",
-  ]);
 
   // deno-lint-ignore no-explicit-any
   const rows = bubble.body.contents.filter((c: any) => c.type === "box");
@@ -370,26 +366,4 @@ Deno.test("the result card leads with the try-on, then lists every piece", () =>
     "找類似的",
     "試我自己的衣服",
   ]);
-});
-
-Deno.test("an over-long title is clamped in the try-on displayText and the result card altText", () => {
-  const long: LineOutfit = {
-    ...look([w("w1"), p("p2")]),
-    title: "長".repeat(200),
-  };
-  const clamped = "長".repeat(12);
-
-  // deno-lint-ignore no-explicit-any
-  const action = outfitTryonAction(long) as any;
-  assertEquals(action.displayText, `試穿「${clamped}」`);
-  assertEquals(new URLSearchParams(action.data).get("t"), clamped);
-  assertEquals(action.data.length <= 300, true);
-
-  const message = outfitResultMessage(
-    "https://img.example/result.jpg",
-    long,
-    LIFF,
-    // deno-lint-ignore no-explicit-any
-  ) as any;
-  assertEquals(message.altText, `為你試穿了「${clamped}」`);
 });

@@ -4,7 +4,7 @@
  * rejects — back-compat for it was declined on purpose, not missed.
  */
 import { ANSWER_LIMITS, type ItemRef } from "../_shared/chat/index.ts";
-import { isUuid, nonEmptyStr } from "../_shared/text.ts";
+import { isUuid } from "../_shared/text.ts";
 
 const TRYON_PRODUCT = "tryon_product";
 const TRYON_WARDROBE = "tryon_wardrobe";
@@ -26,27 +26,12 @@ export function wardrobeTryonPostbackData(wardrobeItemId: string): string {
     .toString();
 }
 
-export const MAX_OUTFIT_TITLE_CHARS = 12;
-
-export function clampOutfitTitle(title: string): string {
-  return [...title].slice(0, MAX_OUTFIT_TITLE_CHARS).join("").trim();
-}
-
 const GARMENT_KIND = { product: "p", wardrobe: "w" } as const;
 
-/**
- * The title rides along because the reply names the outfit and nothing else
- * still knows it: a card can be tapped long after the conversation expired.
- */
-export function outfitTryonPostbackData(
-  outfit: { title: string; pieces: ItemRef[] },
-): string {
+export function outfitTryonPostbackData(pieces: ItemRef[]): string {
   return new URLSearchParams({
     a: TRYON_OUTFIT,
-    g: outfit.pieces.map(({ type, id }) => `${GARMENT_KIND[type]}:${id}`).join(
-      ",",
-    ),
-    t: clampOutfitTitle(outfit.title),
+    g: pieces.map(({ type, id }) => `${GARMENT_KIND[type]}:${id}`).join(","),
   }).toString();
 }
 
@@ -65,7 +50,7 @@ function isGarment(item: ItemRef | null): item is ItemRef {
 export type Postback =
   | { kind: "product"; productId: string; colorId: string }
   | { kind: "wardrobe"; wardrobeItemId: string }
-  | { kind: "outfit"; pieces: ItemRef[]; title: string };
+  | { kind: "outfit"; pieces: ItemRef[] };
 
 export function parsePostback(data: unknown): Postback | null {
   if (typeof data !== "string") return null;
@@ -88,13 +73,12 @@ export function parsePostback(data: unknown): Postback | null {
   }
   if (action === TRYON_OUTFIT) {
     const tokens = (params.get("g") ?? "").split(",");
-    const title = nonEmptyStr(clampOutfitTitle(params.get("t") ?? ""));
     const counted = tokens.length >= ANSWER_LIMITS.MIN_OUTFIT_PIECES &&
       tokens.length <= ANSWER_LIMITS.MAX_OUTFIT_PIECES;
-    if (!counted || title === null) return null;
+    if (!counted) return null;
     const pieces = tokens.map(parseGarment);
     if (!pieces.every(isGarment)) return null;
-    return { kind: "outfit", pieces, title };
+    return { kind: "outfit", pieces };
   }
   return null;
 }

@@ -13,7 +13,7 @@ import {
 } from "./product-card.ts";
 import { type LineWardrobeItem, tagLine } from "./wardrobe-card.ts";
 import { cameraRollChip, messageChip, withQuickReply } from "./quick-reply.ts";
-import { clampOutfitTitle, outfitTryonPostbackData } from "./postback.ts";
+import { outfitTryonPostbackData } from "./postback.ts";
 
 export type OutfitPiece =
   | { kind: "product"; item: LineProduct }
@@ -50,8 +50,8 @@ export function resolveOutfitPieces(
   return resolved.length > 0 ? resolved : null;
 }
 
-export function outfitPieceRefs(outfit: LineOutfit): ItemRef[] {
-  return outfit.pieces.map((piece) => ({
+export function outfitPieceRefs(pieces: OutfitPiece[]): ItemRef[] {
+  return pieces.map((piece) => ({
     type: piece.kind,
     id: piece.item.id,
   }));
@@ -61,11 +61,8 @@ export function outfitTryonAction(outfit: LineOutfit): object {
   return {
     type: "postback",
     label: "試穿整套",
-    data: outfitTryonPostbackData({
-      title: outfit.title,
-      pieces: outfitPieceRefs(outfit),
-    }),
-    displayText: `試穿「${clampOutfitTitle(outfit.title)}」`,
+    data: outfitTryonPostbackData(outfitPieceRefs(outfit.pieces)),
+    displayText: "試穿整套",
   };
 }
 
@@ -364,40 +361,27 @@ function pieceRow(piece: OutfitPiece, liffUrl: string): object {
 /** The one card that lists its pieces: the try-on has answered "does it look good", so buying comes next. */
 export function outfitResultMessage(
   imageUrl: string,
-  outfit: LineOutfit,
+  pieces: OutfitPiece[],
   liffUrl: string,
 ): object {
-  const rows = outfit.pieces.flatMap((piece, i) => [
+  const rows = pieces.flatMap((piece, i) => [
     ...(i > 0 ? [{ type: "separator", color: CARD_COLOR.outline }] : []),
     pieceRow(piece, liffUrl),
   ]);
   return withQuickReply({
     type: "flex",
-    altText: `為你試穿了「${clampOutfitTitle(outfit.title)}」`,
+    altText: "為你試穿了整套穿搭",
     contents: {
       type: "bubble",
       size: "mega",
-      hero: overlayHero({
-        media: {
-          type: "image",
-          url: imageUrl,
-          size: "full",
-          aspectRatio: "9:16",
-          aspectMode: "cover",
-        },
-        overlay: [
-          {
-            type: "text",
-            text: outfit.title,
-            size: "xl",
-            weight: "bold",
-            color: CARD_COLOR.onImage,
-          },
-        ],
+      hero: {
+        type: "image",
+        url: imageUrl,
+        size: "full",
+        aspectRatio: "9:16",
+        aspectMode: "cover",
         action: { type: "uri", label: "看大圖", uri: imageUrl },
-        paddingAll: "16px",
-        scrimHeight: 104,
-      }),
+      },
       body: {
         type: "box",
         layout: "vertical",

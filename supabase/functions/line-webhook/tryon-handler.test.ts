@@ -889,7 +889,6 @@ const outfitEvent = {
     type: "wardrobe" as const,
     id: OUTFIT_W,
   }],
-  title: "週末休閒",
 };
 
 function outfitDeps(over: Partial<OutfitTryonDeps> = {}): OutfitTryonDeps {
@@ -1015,14 +1014,14 @@ Deno.test("an outfit is named while waiting, worn whole in its order, and its ca
 
   assertEquals(
     textOf(sent.replies[0][0]),
-    "收到，正在幫你試穿「週末休閒」，請稍等！",
+    "收到，正在幫你試穿這套，請稍等！",
   );
   assertEquals(params.garments, [{ productId: OUTFIT_P }, {
     wardrobeItemId: OUTFIT_W,
   }]);
   assertEquals(params.mode, "image");
   // deno-lint-ignore no-explicit-any
-  assertEquals((sent.pushes[0][0] as any).altText, "為你試穿了「週末休閒」");
+  assertEquals((sent.pushes[0][0] as any).altText, "為你試穿了整套穿搭");
 });
 
 Deno.test("a finished outfit try-on is remembered by its pieces", async () => {
@@ -1035,13 +1034,10 @@ Deno.test("a finished outfit try-on is remembered by its pieces", async () => {
   const saved = await conversations.store.load(USER);
   assertEquals(
     saved.at(-1),
-    outfitTryonNote({
-      title: "週末休閒",
-      pieces: [{ kind: "product", item: outfitProduct }, {
-        kind: "wardrobe",
-        item: outfitWardrobe,
-      }],
-    }),
+    outfitTryonNote([
+      { kind: "product", item: outfitProduct },
+      { kind: "wardrobe", item: outfitWardrobe },
+    ]),
   );
 });
 
@@ -1064,11 +1060,8 @@ Deno.test("an outfit that would not generate can be retried by the same card dat
   assertEquals(chipActions(sent.pushes[0][0])[0], {
     type: "postback",
     label: "再試一次",
-    data: outfitTryonPostbackData({
-      title: "週末休閒",
-      pieces: outfitEvent.pieces,
-    }),
-    displayText: "試穿「週末休閒」",
+    data: outfitTryonPostbackData(outfitEvent.pieces),
+    displayText: "試穿整套",
   });
   assertEquals(await conversations.store.load(USER), []);
 });

@@ -13,11 +13,7 @@ import { getAvatar as defaultGetAvatar } from "../_shared/user-profile.ts";
 import type { ItemRef } from "../_shared/chat/index.ts";
 import { fetchProductInfo, fetchProductRows } from "./product-card.ts";
 import { fetchWardrobeItemInfo, fetchWardrobeRows } from "./wardrobe-card.ts";
-import {
-  type LineOutfit,
-  outfitResultMessage,
-  resolveOutfitPieces,
-} from "./outfit-card.ts";
+import { outfitResultMessage, resolveOutfitPieces } from "./outfit-card.ts";
 import { describeGarment as defaultDescribeGarment } from "./garment-analysis.ts";
 import {
   chooseModelMessage,
@@ -316,7 +312,6 @@ export interface OutfitTryonEvent {
   replyToken: string;
   sourceUserId: string;
   pieces: ItemRef[];
-  title: string;
 }
 
 export interface OutfitTryonDeps extends TryonHandlerDeps {
@@ -362,11 +357,7 @@ export async function handleOutfitTryon(
     await deps.line.reply(event.replyToken, [outfitUnavailableMessage()]);
     return;
   }
-  const outfit: LineOutfit = { title: event.title, pieces };
-
-  await deps.line.reply(event.replyToken, [
-    outfitProcessingMessage(outfit.title),
-  ]);
+  await deps.line.reply(event.replyToken, [outfitProcessingMessage()]);
 
   const outcome = await runTryon(deps, {
     userId,
@@ -375,15 +366,15 @@ export async function handleOutfitTryon(
 
   await deps.line.push(event.sourceUserId, [
     outcome.ok
-      ? outfitResultMessage(outcome.imageUrl, outfit, deps.liffUrl)
-      : outfitTryonErrorMessage(outcome.kind, outcome.quota, outfit),
+      ? outfitResultMessage(outcome.imageUrl, pieces, deps.liffUrl)
+      : outfitTryonErrorMessage(outcome.kind, outcome.quota, event.pieces),
   ]);
 
   if (outcome.ok) {
     const prior = await deps.conversations.load(event.sourceUserId);
     await deps.conversations.save(event.sourceUserId, [
       ...prior,
-      outfitTryonNote(outfit),
+      outfitTryonNote(pieces),
     ]);
   }
 }

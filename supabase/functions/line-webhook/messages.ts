@@ -1,4 +1,4 @@
-import { LIMITS } from "../_shared/chat/index.ts";
+import { type ItemRef, LIMITS } from "../_shared/chat/index.ts";
 import type { QuotaSnapshot } from "../_shared/quota.ts";
 import { tryonQuotaText } from "./quota-text.ts";
 import {
@@ -16,12 +16,10 @@ import {
   withQuickReply,
 } from "./quick-reply.ts";
 import {
-  clampOutfitTitle,
   outfitTryonPostbackData,
   productTryonPostbackData,
   wardrobeTryonPostbackData,
 } from "./postback.ts";
-import { type LineOutfit, outfitPieceRefs } from "./outfit-card.ts";
 import {
   garmentNoun,
   wardrobeInfoContents,
@@ -236,8 +234,8 @@ export function wardrobeTryonErrorMessage(
   }
 }
 
-export function outfitProcessingMessage(title: string): object {
-  return { type: "text", text: `收到，正在幫你試穿「${title}」，請稍等！` };
+export function outfitProcessingMessage(): object {
+  return { type: "text", text: "收到，正在幫你試穿這套，請稍等！" };
 }
 
 export function outfitUnavailableMessage(): object {
@@ -252,7 +250,7 @@ export function outfitUnavailableMessage(): object {
 export function outfitTryonErrorMessage(
   kind: TryonJobErrorKind,
   quota: QuotaSnapshot | null,
-  outfit: LineOutfit,
+  pieces: ItemRef[],
 ): object {
   const text = kind === "generation"
     ? "這套沒能生成，請換一套或再試一次看看！"
@@ -260,11 +258,8 @@ export function outfitTryonErrorMessage(
   const message = { type: "text", text };
   const retry = postbackChip(
     "再試一次",
-    outfitTryonPostbackData({
-      title: outfit.title,
-      pieces: outfitPieceRefs(outfit),
-    }),
-    `試穿「${clampOutfitTitle(outfit.title)}」`,
+    outfitTryonPostbackData(pieces),
+    "試穿整套",
   );
 
   switch (kind) {
