@@ -55,4 +55,21 @@ void main() {
     expect(result.getError(), const NetworkFailure());
     expect(remote.uploads, hasLength(1));
   });
+
+  test('a colour id survives the trip to the upload payload', () async {
+    final remote = _FakeRemote();
+    final queue = AnalyticsEventQueueImpl(remote)
+      ..enqueue(
+        const AnalyticsEvent(
+          productId: 'p1',
+          storeId: 's1',
+          eventType: AnalyticsEventType.purchaseClick,
+          colorId: 'c1',
+        ),
+      );
+
+    await queue.forceFlush();
+
+    expect(remote.uploads.single.single['color_id'], 'c1');
+  });
 }

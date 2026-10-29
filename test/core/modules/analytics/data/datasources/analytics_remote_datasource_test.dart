@@ -33,4 +33,21 @@ void main() {
       throwsA(isA<UnauthenticatedException>()),
     );
   });
+
+  test('a colour id is serialised as color_id and omitted when absent', () {
+    const withColor = AnalyticsEventDto(
+      productId: 'p1',
+      storeId: 's1',
+      eventType: 'purchase_click',
+      colorId: 'c1',
+    );
+    const withoutColor = AnalyticsEventDto(
+      productId: 'p1',
+      storeId: 's1',
+      eventType: 'view',
+    );
+
+    expect(withColor.toJson()['color_id'], 'c1');
+    expect(withoutColor.toJson().containsKey('color_id'), isFalse);
+  });
 }

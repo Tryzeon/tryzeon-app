@@ -8,6 +8,7 @@ class AnalyticsEventDto {
     required this.productId,
     required this.storeId,
     required this.eventType,
+    this.colorId,
   });
 
   factory AnalyticsEventDto.fromJson(final Map<String, dynamic> json) =>
@@ -16,6 +17,8 @@ class AnalyticsEventDto {
   final String productId;
   final String storeId;
   final String eventType;
+  @JsonKey(includeIfNull: false)
+  final String? colorId;
 
   Map<String, dynamic> toJson() => _$AnalyticsEventDtoToJson(this);
 }
