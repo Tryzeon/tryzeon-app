@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/config/app_constants.dart';
@@ -6,6 +7,8 @@ import 'package:tryzeon/feature/personal/tryon/domain/entities/outfit_piece.dart
 
 part 'outfit_tray_controller.freezed.dart';
 part 'outfit_tray_controller.g.dart';
+
+enum OutfitPieceStatus { absent, held, heldInOtherColor }
 
 @freezed
 sealed class OutfitTrayState with _$OutfitTrayState {
@@ -19,8 +22,16 @@ sealed class OutfitTrayState with _$OutfitTrayState {
 
   bool get isFull => pieces.length >= AppConstants.maxTryonGarments;
 
+  OutfitPieceStatus statusOf(final OutfitPiece piece) {
+    final held = pieces.firstWhereOrNull((final p) => p.id == piece.id);
+    if (held == null) return OutfitPieceStatus.absent;
+    return held.colorId == piece.colorId
+        ? OutfitPieceStatus.held
+        : OutfitPieceStatus.heldInOtherColor;
+  }
+
   bool holds(final OutfitPiece piece) =>
-      pieces.any((final p) => p.id == piece.id && p.colorId == piece.colorId);
+      statusOf(piece) == OutfitPieceStatus.held;
 }
 
 /// [rejectedCount] only ever grows: the dock listens to it to play the cap
@@ -38,17 +49,18 @@ class OutfitTrayController extends _$OutfitTrayController {
   void close() => state = state.copyWith(isOpen: false, pieces: const []);
 
   void add(final OutfitPiece piece) {
-    if (state.holds(piece)) return;
-    final index = state.pieces.indexWhere((final p) => p.id == piece.id);
-    if (index != -1) {
-      state = state.copyWith(pieces: [...state.pieces]..[index] = piece);
-      return;
+    switch (state.statusOf(piece)) {
+      case OutfitPieceStatus.held:
+        return;
+      case OutfitPieceStatus.heldInOtherColor:
+        state = state.copyWith(
+          pieces: [for (final p in state.pieces) p.id == piece.id ? piece : p],
+        );
+      case OutfitPieceStatus.absent when state.isFull:
+        state = state.copyWith(rejectedCount: state.rejectedCount + 1);
+      case OutfitPieceStatus.absent:
+        state = state.copyWith(pieces: [...state.pieces, piece]);
     }
-    if (state.isFull) {
-      state = state.copyWith(rejectedCount: state.rejectedCount + 1);
-      return;
-    }
-    state = state.copyWith(pieces: [...state.pieces, piece]);
   }
 
   void remove(final String id) {

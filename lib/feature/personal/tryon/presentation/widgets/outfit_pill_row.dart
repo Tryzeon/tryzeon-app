@@ -14,16 +14,21 @@ class OutfitPillRow extends ConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final isInOutfit = ref.watch(
-      outfitTrayProvider.select((final s) => s.holds(piece)),
+    final status = ref.watch(
+      outfitTrayProvider.select((final s) => s.statusOf(piece)),
     );
+    final (icon, label) = switch (status) {
+      OutfitPieceStatus.absent => (Icons.add_rounded, '搭配'),
+      OutfitPieceStatus.held => (Icons.check_rounded, '已加入'),
+      OutfitPieceStatus.heldInOtherColor => (Icons.swap_horiz_rounded, '換成此色'),
+    };
 
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         TryonFab(
-          icon: isInOutfit ? Icons.check_rounded : Icons.add_rounded,
-          label: isInOutfit ? '已加入' : '搭配',
+          icon: icon,
+          label: label,
           onTap: () => toggleOutfitPiece(ref, piece),
         ),
         const SizedBox(width: AppSpacing.sm),

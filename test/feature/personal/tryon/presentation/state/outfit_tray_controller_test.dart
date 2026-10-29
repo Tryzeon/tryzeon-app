@@ -124,6 +124,19 @@ void main() {
     expect(state().holds(_productIn('blue')), isFalse);
   });
 
+  test('statusOf tells an absent, held and other-colour piece apart', () {
+    expect(state().statusOf(_productIn('red')), OutfitPieceStatus.absent);
+
+    tray().add(_productIn('red'));
+
+    expect(state().statusOf(_productIn('red')), OutfitPieceStatus.held);
+    expect(
+      state().statusOf(_productIn('blue')),
+      OutfitPieceStatus.heldInOtherColor,
+    );
+    expect(state().statusOf(wardrobePiece('a')), OutfitPieceStatus.absent);
+  });
+
   test('holds ignores incidental fields of the same product and colour', () {
     tray().add(_productIn('red'));
     const resized = OutfitPiece.product(
