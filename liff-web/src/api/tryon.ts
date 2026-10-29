@@ -2,7 +2,7 @@ import { supabase } from "../lib/supabase";
 import { toTryonError } from "./errors";
 
 export type Garment =
-  | { productId: string }
+  | { productId: string; colorId?: string }
   | { wardrobeItemId: string }
   | { images: { base64: string }[] };
 

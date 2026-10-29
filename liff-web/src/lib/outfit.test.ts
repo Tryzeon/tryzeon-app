@@ -10,7 +10,7 @@ const product = (price: number, garmentType = "top", productId = "p"): ResolvedI
     name: "n",
     price,
     storeName: null,
-    imageUrls: [],
+    colors: [],
     garmentType,
     purchaseLink: null,
     description: null,

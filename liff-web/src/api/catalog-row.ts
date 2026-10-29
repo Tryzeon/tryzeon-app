@@ -1,11 +1,17 @@
 import { publicImageUrl } from "../lib/publicImage";
 
+export interface CatalogColor {
+  id: string;
+  name: string | null;
+  imageUrls: string[];
+}
+
 export interface CatalogItem {
   productId: string;
   name: string;
   price: number;
   storeName: string | null;
-  imageUrls: string[];
+  colors: CatalogColor[];
   garmentType: string | null;
   purchaseLink: string | null;
   description: string | null;
@@ -16,25 +22,46 @@ export interface CatalogStore {
   name: string;
 }
 
-/** Both shop RPCs return a product's colours in cover order. */
-function coverImageKeys(colors: unknown): string[] {
-  const cover: unknown = Array.isArray(colors) ? colors[0] : undefined;
-  if (typeof cover !== "object" || cover === null) return [];
-  const paths = (cover as Record<string, unknown>).image_paths;
-  return Array.isArray(paths)
-    ? paths.filter((k): k is string => typeof k === "string" && k.length > 0)
-    : [];
+function buildColors(raw: unknown, baseUrl: string): CatalogColor[] {
+  if (!Array.isArray(raw)) return [];
+  const colors: CatalogColor[] = [];
+  for (const entry of raw) {
+    if (typeof entry !== "object" || entry === null) continue;
+    const c = entry as Record<string, unknown>;
+    const paths = Array.isArray(c.image_paths) ? c.image_paths : [];
+    const imageUrls = paths
+      .filter((k): k is string => typeof k === "string" && k.length > 0)
+      .map((k) => publicImageUrl(baseUrl, k));
+    if (typeof c.id !== "string" || imageUrls.length === 0) continue;
+    colors.push({
+      id: c.id,
+      name: typeof c.name === "string" && c.name.length > 0 ? c.name : null,
+      imageUrls,
+    });
+  }
+  return colors;
+}
+
+export function coverImageUrl(item: CatalogItem): string | null {
+  return item.colors[0]?.imageUrls[0] ?? null;
+}
+
+export function resolveColor(
+  item: CatalogItem,
+  colorId: string | null | undefined,
+): CatalogColor | null {
+  return item.colors.find((c) => c.id === colorId) ?? item.colors[0] ?? null;
 }
 
 /**
- * A product whose cover colour has no usable image still becomes an item, just with an empty
- * imageUrls. Dropping it here would put items.length out of step with the row
- * count the pagination arithmetic relies on, and would make the product vanish
- * from the store's own catalog instead of showing that it lacks photos.
+ * A product with no colour that has a usable image still becomes an item, just
+ * with no colours. Dropping it here would put items.length out of step with the
+ * row count the pagination arithmetic relies on, and would make the product
+ * vanish from the store's own catalog instead of showing that it lacks photos.
+ * The RPCs return colours in cover order.
  */
 export function buildCatalogItem(row: unknown, baseUrl: string): CatalogItem {
   const r = (row ?? {}) as Record<string, unknown>;
-  const keys = coverImageKeys(r.product_colors);
 
   const store = (r.store_profiles ?? null) as Record<string, unknown> | null;
   const link = r.purchase_link;
@@ -46,7 +73,7 @@ export function buildCatalogItem(row: unknown, baseUrl: string): CatalogItem {
     name: typeof r.name === "string" ? r.name : "",
     price: Number(r.price),
     storeName: store && typeof store.name === "string" ? store.name : null,
-    imageUrls: keys.map((k) => publicImageUrl(baseUrl, k)),
+    colors: buildColors(r.product_colors, baseUrl),
     garmentType: typeof garmentType === "string" ? garmentType : null,
     purchaseLink: typeof link === "string" && link.length > 0 ? link : null,
     description:
