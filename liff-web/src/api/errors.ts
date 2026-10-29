@@ -39,6 +39,13 @@ export class QuotaExceededError extends Error {
   }
 }
 
+export class ColorUnavailableError extends Error {
+  constructor() {
+    super("colour unavailable");
+    this.name = "ColorUnavailableError";
+  }
+}
+
 const taipeiDate = new Intl.DateTimeFormat("en-US", {
   timeZone: "Asia/Taipei",
   month: "numeric",
@@ -85,20 +92,29 @@ export function parseQuotaSnapshot(value: unknown): QuotaSnapshot | null {
 }
 
 const QUOTA_EXCEEDED_CODE = "QUOTA_EXCEEDED";
+const COLOR_UNAVAILABLE_CODE = "COLOR_UNAVAILABLE";
+
+/** Only statuses that carry one of our codes are worth reading the body for. */
+const CODED_STATUSES = [409, 429];
 
 export async function toTryonError(error: unknown): Promise<Error> {
-  if (error instanceof FunctionsHttpError && (error.context as Response).status === 429) {
+  if (
+    error instanceof FunctionsHttpError &&
+    CODED_STATUSES.includes((error.context as Response).status)
+  ) {
     const body: unknown = await (error.context as Response).json().catch(() => null);
     const { code, quota } = (body ?? {}) as { code?: unknown; quota?: unknown };
     if (code === QUOTA_EXCEEDED_CODE) {
       return new QuotaExceededError(parseQuotaSnapshot(quota));
     }
+    if (code === COLOR_UNAVAILABLE_CODE) return new ColorUnavailableError();
   }
   return toApiError(error);
 }
 
 export function tryonFailureMessage(err: unknown): string {
   if (err instanceof QuotaExceededError) return quotaExceededMessage(err.quota);
+  if (err instanceof ColorUnavailableError) return "店家已移除這個顏色，請重新選擇。";
   if (err instanceof ApiError) {
     if (err.status === 422) return "這張照片沒能生成，請稍後再試。";
     if (err.status === 429) return "操作太頻繁，請稍後再試。";

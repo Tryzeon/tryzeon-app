@@ -2,6 +2,7 @@ import { FunctionsHttpError } from "@supabase/supabase-js";
 import { describe, expect, it } from "vitest";
 import {
   ApiError,
+  ColorUnavailableError,
   QuotaExceededError,
   type QuotaSnapshot,
   toTryonError,
@@ -81,6 +82,18 @@ describe("toTryonError", () => {
     expect(err).toBeInstanceOf(ApiError);
     expect((err as ApiError).status).toBe(429);
     expect(tryonFailureMessage(err)).toBe("操作太頻繁，請稍後再試。");
+  });
+
+  it("turns COLOR_UNAVAILABLE into ColorUnavailableError", async () => {
+    const err = await toTryonError(httpError(409, JSON.stringify({ code: "COLOR_UNAVAILABLE" })));
+    expect(err).toBeInstanceOf(ColorUnavailableError);
+    expect(tryonFailureMessage(err)).toBe("店家已移除這個顏色，請重新選擇。");
+  });
+
+  it("keeps a 409 without our code an ApiError", async () => {
+    const err = await toTryonError(httpError(409, "{}"));
+    expect(err).toBeInstanceOf(ApiError);
+    expect((err as ApiError).status).toBe(409);
   });
 
   it("maps other statuses to ApiError", async () => {
