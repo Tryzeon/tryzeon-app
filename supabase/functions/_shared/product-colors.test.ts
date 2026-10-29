@@ -1,22 +1,22 @@
 import { assertEquals } from "@std/assert";
 import {
-  coverColor,
   coverImagePath,
   orderProductColors,
+  productColor,
 } from "./product-colors.ts";
 
-Deno.test("coverColor takes the first colour as delivered", () => {
+Deno.test("the cover is the first colour as delivered", () => {
   const row = {
     product_colors: [
       { id: "b", name: "黑", image_paths: ["k2"], position: 1 },
       { id: "a", name: "白", image_paths: ["k1"], position: 0 },
     ],
   };
-  assertEquals(coverColor(row)?.id, "b");
+  assertEquals(productColor(row, undefined)?.id, "b");
   assertEquals(coverImagePath(row), "k2");
 });
 
-Deno.test("coverColor is undefined when the first colour is malformed", () => {
+Deno.test("no cover when the first colour is malformed", () => {
   for (
     const first of [
       null,
@@ -27,14 +27,14 @@ Deno.test("coverColor is undefined when the first colour is malformed", () => {
       { id: "a", image_paths: [""] },
     ]
   ) {
-    assertEquals(coverColor({ product_colors: [first] }), undefined);
+    assertEquals(coverImagePath({ product_colors: [first] }), undefined);
   }
 });
 
-Deno.test("coverColor is undefined for missing, non-array or empty colours", () => {
-  assertEquals(coverColor({}), undefined);
-  assertEquals(coverColor({ product_colors: null }), undefined);
-  assertEquals(coverColor({ product_colors: [] }), undefined);
+Deno.test("no cover for missing, non-array or empty colours", () => {
+  assertEquals(coverImagePath({}), undefined);
+  assertEquals(coverImagePath({ product_colors: null }), undefined);
+  assertEquals(coverImagePath({ product_colors: [] }), undefined);
 });
 
 Deno.test("orderProductColors orders the embed by position, created_at, id", () => {
@@ -51,4 +51,37 @@ Deno.test("orderProductColors orders the embed by position, created_at, id", () 
     ["created_at", "product_colors"],
     ["id", "product_colors"],
   ]);
+});
+
+const TWO_COLORS = {
+  product_colors: [
+    { id: "a", name: "白", image_paths: ["k1"], position: 0 },
+    { id: "b", name: "黑", image_paths: ["k2", "k3"], position: 1 },
+  ],
+};
+
+Deno.test("productColor picks the requested colour", () => {
+  assertEquals(productColor(TWO_COLORS, "b"), {
+    id: "b",
+    name: "黑",
+    image_paths: ["k2", "k3"],
+  });
+});
+
+Deno.test("productColor falls back to the cover only when no id is given", () => {
+  assertEquals(productColor(TWO_COLORS, undefined)?.id, "a");
+});
+
+Deno.test("productColor rejects an id the product does not have", () => {
+  assertEquals(productColor(TWO_COLORS, "zzz"), undefined);
+});
+
+Deno.test("productColor rejects a requested colour with no usable image", () => {
+  const row = {
+    product_colors: [
+      { id: "a", name: "白", image_paths: ["k1"], position: 0 },
+      { id: "b", name: "黑", image_paths: [""], position: 1 },
+    ],
+  };
+  assertEquals(productColor(row, "b"), undefined);
 });

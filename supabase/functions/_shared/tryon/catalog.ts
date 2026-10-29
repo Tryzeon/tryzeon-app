@@ -2,7 +2,7 @@ import { isUuid } from "../text.ts";
 import { ValidationError } from "./errors.ts";
 import { isGarmentType, LIMITS } from "./types.ts";
 import type { ProductRef, ResolvedGarment } from "./types.ts";
-import { coverColor } from "../product-colors.ts";
+import { productColor } from "../product-colors.ts";
 import { asJsonObject, type DbClient } from "../supabase.ts";
 
 export interface ProductGarmentRow {
@@ -27,10 +27,13 @@ function trimmedString(value: unknown): string {
  */
 export function buildProductGarmentDetail(
   row: ProductGarmentRow,
+  colorName: string | null,
 ): string | undefined {
   const parts: string[] = [];
   const name = trimmedString(row.name);
   if (name) parts.push(`Product: ${name}`);
+  const color = trimmedString(colorName);
+  if (color) parts.push(`Color: ${color}`);
   const material = trimmedString(row.material);
   if (material) parts.push(`Material: ${material}`);
   const cut = trimmedString(row.fit);
@@ -49,11 +52,14 @@ export async function resolveProductGarment(
   client: DbClient,
   ref: ProductRef,
 ): Promise<ResolvedGarment> {
-  const { productId } = ref;
+  const { productId, colorId } = ref;
   // Reject non-UUID ids up front so garbage yields a clean validation error
   // instead of a Postgres "invalid input syntax for type uuid".
   if (!isUuid(productId)) {
     throw new ValidationError(`invalid productId: ${productId}`);
+  }
+  if (colorId !== undefined && !isUuid(colorId)) {
+    throw new ValidationError(`invalid colorId: ${colorId}`);
   }
   const { data, error } = await client.rpc("get_shop_product", {
     p_id: productId,
@@ -67,23 +73,25 @@ export async function resolveProductGarment(
     throw new ValidationError(`no product for productId: ${productId}`);
   }
 
-  const cover = coverColor(row);
-  if (!cover) {
+  const color = productColor(row, colorId);
+  if (!color) {
     throw new ValidationError(
-      `no usable garment image for productId: ${productId}`,
+      colorId === undefined
+        ? `no usable garment image for productId: ${productId}`
+        : `no colour ${colorId} for productId: ${productId}`,
     );
   }
 
-  // The cover shot only: a store's later images are detail macros carrying no
+  // The colour's first shot only: a store's later images are detail macros carrying no
   // garment silhouette, and passing them off as extra angles dilutes the person
   // photo instead of describing the garment.
-  const images = [{ publicImageKey: cover.image_paths[0] }];
+  const images = [{ publicImageKey: color.image_paths[0] }];
 
-  const detail = buildProductGarmentDetail(row);
+  const detail = buildProductGarmentDetail(row, color.name);
 
   const garment: ResolvedGarment = {
     images,
-    worn: { productId, colorId: cover.id },
+    worn: { productId, colorId: color.id },
   };
   if (isGarmentType(row.garment_type)) garment.garmentType = row.garment_type;
   if (detail !== undefined) garment.detail = detail;

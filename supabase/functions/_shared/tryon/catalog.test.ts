@@ -5,7 +5,8 @@ import { ValidationError } from "./errors.ts";
 import type { DbClient } from "../supabase.ts";
 
 const PRODUCT_ID = "11111111-1111-1111-1111-111111111111";
-const COVER_COLOR_ID = "c-cover";
+const COVER_COLOR_ID = "11111111-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+const SECOND_COLOR_ID = "22222222-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 
 interface LookupStub {
   row: Record<string, unknown> | null;
@@ -54,7 +55,7 @@ const PRODUCT_ROW = {
       position: 0,
     },
     {
-      id: "c-second",
+      id: SECOND_COLOR_ID,
       name: "Navy",
       image_paths: ["stores/b.jpg"],
       position: 1,
@@ -79,7 +80,7 @@ Deno.test("buildProductGarmentDetail joins present fields in fixed order", () =>
     elasticity: "low",
     thickness: "medium",
     description: " 有內襯 ",
-  });
+  }, null);
   assertEquals(
     detail,
     "Product: Linen Shirt. Material: 100% Linen. Cut: regular. Elasticity: low. Thickness: medium. Description: 有內襯",
@@ -96,7 +97,7 @@ Deno.test("buildProductGarmentDetail skips empty and missing fields", () => {
     elasticity: undefined,
     thickness: "high",
     description: null,
-  });
+  }, null);
   assertEquals(detail, "Product: Tee. Thickness: high");
 });
 
@@ -110,7 +111,7 @@ Deno.test("buildProductGarmentDetail returns undefined when all empty", () => {
     elasticity: null,
     thickness: null,
     description: null,
-  });
+  }, null);
   assertEquals(detail, undefined);
 });
 
@@ -124,7 +125,7 @@ Deno.test("buildProductGarmentDetail caps overlong detail at the limit", () => {
     elasticity: null,
     thickness: null,
     description: null,
-  });
+  }, null);
   assertEquals(detail?.length, LIMITS.MAX_GARMENT_DETAIL_LENGTH);
 });
 
@@ -138,7 +139,7 @@ Deno.test("buildProductGarmentDetail lets the cap cut the description, not an at
     elasticity: null,
     thickness: "high",
     description: "x".repeat(LIMITS.MAX_GARMENT_DETAIL_LENGTH),
-  });
+  }, null);
   assertEquals(detail?.length, LIMITS.MAX_GARMENT_DETAIL_LENGTH);
   assertEquals(
     detail?.startsWith("Product: Tee. Thickness: high. Description: x"),
@@ -233,5 +234,71 @@ Deno.test("resolveProductGarment rejects a product with no usable colour image",
     () => resolveProductGarment(admin, { productId: PRODUCT_ID }),
     ValidationError,
     "no usable garment image",
+  );
+});
+
+Deno.test("resolveProductGarment wears the requested colour", async () => {
+  const { admin } = fakeAdmin({ products: { row: PRODUCT_ROW } });
+
+  const garment = await resolveProductGarment(admin, {
+    productId: PRODUCT_ID,
+    colorId: SECOND_COLOR_ID,
+  });
+
+  assertEquals(garment.images, [{ publicImageKey: "stores/b.jpg" }]);
+  assertEquals(garment.worn, {
+    productId: PRODUCT_ID,
+    colorId: SECOND_COLOR_ID,
+  });
+  assertEquals(garment.detail?.includes("Color: Navy"), true);
+});
+
+Deno.test("resolveProductGarment an unknown colorId is a validation error", async () => {
+  const { admin } = fakeAdmin({ products: { row: PRODUCT_ROW } });
+
+  await assertRejects(
+    () =>
+      resolveProductGarment(admin, {
+        productId: PRODUCT_ID,
+        colorId: "33333333-cccc-4ccc-8ccc-cccccccccccc",
+      }),
+    ValidationError,
+    "no colour 33333333-cccc-4ccc-8ccc-cccccccccccc for productId",
+  );
+});
+
+Deno.test("resolveProductGarment a non-uuid colorId is a validation error", async () => {
+  const { admin, rpcCalls } = fakeAdmin({ products: { row: PRODUCT_ROW } });
+
+  await assertRejects(
+    () =>
+      resolveProductGarment(admin, {
+        productId: PRODUCT_ID,
+        colorId: "not-a-uuid",
+      }),
+    ValidationError,
+    "invalid colorId",
+  );
+  assertEquals(rpcCalls, []);
+});
+
+Deno.test("buildProductGarmentDetail the garment detail names the colour", () => {
+  const row = {
+    product_colors: [],
+    garment_type: "top",
+    name: "Tee",
+    material: "Cotton",
+    fit: null,
+    elasticity: null,
+    thickness: null,
+    description: null,
+  };
+  assertEquals(
+    buildProductGarmentDetail(row, "霧灰"),
+    "Product: Tee. Color: 霧灰. Material: Cotton",
+  );
+  assertEquals(
+    buildProductGarmentDetail(row, null)?.includes("Color:"),
+    false,
   );
 });
