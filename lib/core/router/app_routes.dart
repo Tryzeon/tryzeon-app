@@ -7,6 +7,7 @@ abstract final class AppRoutes {
   static const String paramStoreId = 'storeId';
   static const String paramProductId = 'productId';
   static const String queryPath = 'path';
+  static const String queryColor = 'color';
 
   static const String personalRoot = '/personal';
   static const String dashboardRoot = '/dashboard';
@@ -80,8 +81,13 @@ abstract final class AppRoutes {
     queryParameters: {queryPath: filePath},
   ).toString();
 
-  static String personalShopProductPath(final String productId) =>
-      personalShopProduct.replaceFirst(':$paramId', productId);
+  static String personalShopProductPath(
+    final String productId, {
+    final String? colorId,
+  }) => Uri(
+    path: personalShopProduct.replaceFirst(':$paramId', productId),
+    queryParameters: colorId == null ? null : {queryColor: colorId},
+  ).toString();
 
   static String personalShopStorePath(final String storeId) =>
       personalShopStore.replaceFirst(':$paramStoreId', storeId);

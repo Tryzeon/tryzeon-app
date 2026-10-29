@@ -6,7 +6,8 @@ final deepLinkRoutes = [
     path: AppRoutes.deepLinkProduct,
     redirect: (final context, final state) {
       final productId = state.pathParameters[AppRoutes.paramProductId]!;
-      return AppRoutes.personalShopProductPath(productId);
+      final colorId = state.uri.queryParameters[AppRoutes.queryColor];
+      return AppRoutes.personalShopProductPath(productId, colorId: colorId);
     },
   ),
   GoRoute(

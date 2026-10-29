@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tryzeon/core/config/app_constants.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 
 void main() {
@@ -51,5 +52,28 @@ void main() {
     expect(AppRoutes.personalHome, '/personal/home');
     expect(AppRoutes.dashboardAccount, '/dashboard/account');
     expect(AppRoutes.dashboardProductAdd, '/dashboard/products/add');
+  });
+
+  test('product path carries an optional colour query', () {
+    expect(
+      AppRoutes.personalShopProductPath('p1', colorId: 'c1'),
+      '/personal/shop/product/p1?color=c1',
+    );
+    expect(
+      AppRoutes.personalShopProductPath('p1'),
+      '/personal/shop/product/p1',
+    );
+    expect(
+      AppRoutes.personalShopProductPath('p1', colorId: 'c1'),
+      startsWith(AppRoutes.personalShopProductPrefix),
+    );
+  });
+
+  test('productWebUrl carries an optional colour query', () {
+    expect(
+      AppConstants.productWebUrl('p1', colorId: 'c1'),
+      'https://tryzeon.com/product/p1?color=c1',
+    );
+    expect(AppConstants.productWebUrl('p1'), 'https://tryzeon.com/product/p1');
   });
 }

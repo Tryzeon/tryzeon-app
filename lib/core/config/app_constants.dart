@@ -1,3 +1,5 @@
+import 'package:tryzeon/core/router/app_routes.dart';
+
 class AppConstants {
   static const String webBaseUrl = 'https://tryzeon.com';
   static const String storeOnboardingFormUrl =
@@ -9,8 +11,16 @@ class AppConstants {
       '947162907000-46pmc6k02mdftuddmvpapahqt4nnnui1.apps.googleusercontent.com';
   static const String lineChannelId = '2010556446';
 
-  static String productWebUrl(final String productId) =>
-      '$webBaseUrl/product/$productId';
+  static String productWebUrl(
+    final String productId, {
+    final String? colorId,
+  }) => Uri.parse('$webBaseUrl/product/$productId')
+      .replace(
+        queryParameters: colorId == null
+            ? null
+            : {AppRoutes.queryColor: colorId},
+      )
+      .toString();
 
   static String storeWebUrl({required final String id, final String? slug}) =>
       '$webBaseUrl/store/${slug ?? id}';
