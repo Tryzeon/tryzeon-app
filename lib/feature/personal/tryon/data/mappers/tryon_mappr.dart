@@ -22,8 +22,12 @@ class TryonMapprHelper {
   static List<TryonGarmentDto> garmentsToDto(final TryonRequest source) => [
     for (final garment in source.garments)
       switch (garment) {
-        TryonGarmentProduct(:final productId, :final sizeId) =>
-          TryonProductGarmentDto(productId: productId, sizeId: sizeId),
+        TryonGarmentProduct(:final productId, :final sizeId, :final colorId) =>
+          TryonProductGarmentDto(
+            productId: productId,
+            sizeId: sizeId,
+            colorId: colorId,
+          ),
         TryonGarmentWardrobe(:final wardrobeItemId) => TryonWardrobeGarmentDto(
           wardrobeItemId: wardrobeItemId,
         ),

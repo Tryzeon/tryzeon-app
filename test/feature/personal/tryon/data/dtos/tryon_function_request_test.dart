@@ -28,6 +28,25 @@ void main() {
     ]);
   });
 
+  test('sends a product garment\'s colour only when one is chosen', () {
+    final body = _body(
+      const TryonRequest(
+        requestId: 'r1',
+        garments: [
+          TryonGarment.product(productId: 'p1', colorId: 'c1'),
+          TryonGarment.product(productId: 'p2'),
+        ],
+        mode: TryonMode.image,
+        engine: TryonEngine.standard,
+      ),
+    );
+
+    expect(body['garments'], [
+      {'productId': 'p1', 'colorId': 'c1'},
+      {'productId': 'p2'},
+    ]);
+  });
+
   test('wraps each of a garment\'s own photos as inline bytes', () {
     final body = _body(
       const TryonRequest(

@@ -11,10 +11,15 @@ sealed class TryonGarmentDto {
 
 @JsonSerializable(createFactory: false, includeIfNull: false)
 class TryonProductGarmentDto extends TryonGarmentDto {
-  const TryonProductGarmentDto({required this.productId, this.sizeId});
+  const TryonProductGarmentDto({
+    required this.productId,
+    this.sizeId,
+    this.colorId,
+  });
 
   final String productId;
   final String? sizeId;
+  final String? colorId;
 
   @override
   Map<String, dynamic> toJson() => _$TryonProductGarmentDtoToJson(this);
