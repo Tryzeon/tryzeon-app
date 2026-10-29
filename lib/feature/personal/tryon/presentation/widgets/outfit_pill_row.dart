@@ -15,7 +15,7 @@ class OutfitPillRow extends ConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final isInOutfit = ref.watch(
-      outfitTrayProvider.select((final s) => s.contains(piece.id)),
+      outfitTrayProvider.select((final s) => s.holds(piece)),
     );
 
     return Row(

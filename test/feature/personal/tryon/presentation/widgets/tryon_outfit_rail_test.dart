@@ -39,8 +39,10 @@ void main() {
         ),
         GoRoute(
           path: AppRoutes.personalShopProduct,
-          builder: (final _, final state) =>
-              Text('product ${state.pathParameters['id']}'),
+          builder: (final _, final state) => Text(
+            'product ${state.pathParameters['id']} '
+            '${state.uri.queryParameters['color']}',
+          ),
         ),
         GoRoute(
           path: AppRoutes.personalHomePhoto,
@@ -93,7 +95,23 @@ void main() {
     await tester.tap(find.byKey(const Key('outfit-rail-p1')));
     await tester.pumpAndSettle();
 
-    expect(find.text('product p1'), findsOneWidget);
+    expect(find.text('product p1 null'), findsOneWidget);
+  });
+
+  testWidgets('a product tile opens its chosen colour', (final tester) async {
+    await pumpRail(tester, [
+      const OutfitPiece.product(
+        productId: 'p1',
+        colorId: 'c1',
+        imageUrl: '',
+        garmentType: GarmentType.top,
+      ),
+    ]);
+
+    await tester.tap(find.byKey(const Key('outfit-rail-p1')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('product p1 c1'), findsOneWidget);
   });
 
   testWidgets('a wardrobe tile opens its wardrobe item', (final tester) async {

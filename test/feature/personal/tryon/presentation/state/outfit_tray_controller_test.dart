@@ -14,6 +14,13 @@ const _product = OutfitPiece.product(
   garmentType: GarmentType.top,
 );
 
+OutfitPiece _productIn(final String colorId) => OutfitPiece.product(
+  productId: 'p1',
+  colorId: colorId,
+  imageUrl: 'https://x/$colorId.jpg',
+  garmentType: GarmentType.top,
+);
+
 void main() {
   late FakeWardrobeItems items;
   late ProviderContainer container;
@@ -73,10 +80,63 @@ void main() {
 
   test('toggle removes a present piece and adds an absent one', () {
     tray().toggle(wardrobePiece('a'));
-    expect(state().contains('a'), isTrue);
+    expect(state().holds(wardrobePiece('a')), isTrue);
 
     tray().toggle(wardrobePiece('a'));
-    expect(state().contains('a'), isFalse);
+    expect(state().holds(wardrobePiece('a')), isFalse);
+  });
+
+  test('adding the same product in another colour replaces it in place', () {
+    tray()
+      ..add(_productIn('red'))
+      ..add(wardrobePiece('a'))
+      ..add(_productIn('blue'));
+    expect(state().pieces, [_productIn('blue'), wardrobePiece('a')]);
+  });
+
+  test('replacing works on a full tray', () {
+    tray()
+      ..add(_productIn('red'))
+      ..add(wardrobePiece('a'))
+      ..add(wardrobePiece('b'))
+      ..add(_productIn('blue'));
+    expect(state().pieces, [
+      _productIn('blue'),
+      wardrobePiece('a'),
+      wardrobePiece('b'),
+    ]);
+    expect(state().rejectedCount, 0);
+  });
+
+  test('toggle removes only the exact piece', () {
+    tray()
+      ..add(_productIn('red'))
+      ..toggle(_productIn('blue'));
+    expect(state().pieces, [_productIn('blue')]);
+
+    tray().toggle(_productIn('blue'));
+    expect(state().pieces, isEmpty);
+  });
+
+  test('holds is false for the same product in another colour', () {
+    tray().add(_productIn('red'));
+    expect(state().holds(_productIn('red')), isTrue);
+    expect(state().holds(_productIn('blue')), isFalse);
+  });
+
+  test('holds ignores incidental fields of the same product and colour', () {
+    tray().add(_productIn('red'));
+    const resized = OutfitPiece.product(
+      productId: 'p1',
+      colorId: 'red',
+      imageUrl: 'https://x/other.jpg',
+      garmentType: GarmentType.top,
+      sizeId: 's2',
+    );
+    expect(state().holds(resized), isTrue);
+
+    tray().toggle(resized);
+    expect(state().pieces, isEmpty);
   });
 
   test('remove by id', () {

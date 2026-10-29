@@ -53,9 +53,8 @@ class _RailTile extends StatelessWidget {
     final route = switch (piece) {
       OutfitPieceWardrobe(:final wardrobeItemId) =>
         AppRoutes.personalWardrobeItemPath(wardrobeItemId),
-      OutfitPieceProduct(:final productId) => AppRoutes.personalShopProductPath(
-        productId,
-      ),
+      OutfitPieceProduct(:final productId, :final colorId) =>
+        AppRoutes.personalShopProductPath(productId, colorId: colorId),
       OutfitPieceLocal(:final path) => AppRoutes.personalHomePhotoPath(path),
     };
 

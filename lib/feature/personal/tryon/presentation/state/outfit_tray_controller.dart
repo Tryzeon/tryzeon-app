@@ -19,7 +19,8 @@ sealed class OutfitTrayState with _$OutfitTrayState {
 
   bool get isFull => pieces.length >= AppConstants.maxTryonGarments;
 
-  bool contains(final String id) => pieces.any((final p) => p.id == id);
+  bool holds(final OutfitPiece piece) =>
+      pieces.any((final p) => p.id == piece.id && p.colorId == piece.colorId);
 }
 
 /// [rejectedCount] only ever grows: the dock listens to it to play the cap
@@ -37,7 +38,12 @@ class OutfitTrayController extends _$OutfitTrayController {
   void close() => state = state.copyWith(isOpen: false, pieces: const []);
 
   void add(final OutfitPiece piece) {
-    if (state.contains(piece.id)) return;
+    if (state.holds(piece)) return;
+    final index = state.pieces.indexWhere((final p) => p.id == piece.id);
+    if (index != -1) {
+      state = state.copyWith(pieces: [...state.pieces]..[index] = piece);
+      return;
+    }
     if (state.isFull) {
       state = state.copyWith(rejectedCount: state.rejectedCount + 1);
       return;
@@ -52,7 +58,7 @@ class OutfitTrayController extends _$OutfitTrayController {
   }
 
   void toggle(final OutfitPiece piece) =>
-      state.contains(piece.id) ? remove(piece.id) : add(piece);
+      state.holds(piece) ? remove(piece.id) : add(piece);
 
   void replaceWith(final List<OutfitPiece> pieces) {
     state = state.copyWith(
