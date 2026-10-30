@@ -27,6 +27,8 @@ const params: ChatParams = {
 
 const allow = () => Promise.resolve(true);
 
+const noColors = () => Promise.resolve(new Map());
+
 const context: ContextLoader = () =>
   Promise.resolve({
     systemInstruction: "SYSTEM",
@@ -61,6 +63,7 @@ const hydrator = (
 
 Deno.test("answers with item refs in the model's order and their rows alongside", async () => {
   const result = await runChatAgent(client, params, {
+    loadColors: noColors,
     checkLimit: allow,
     loadContext: context,
     runAgent: fakeAgent({
@@ -124,6 +127,7 @@ Deno.test("returns the tool rounds followed by the answer, ready to append", asy
     },
   ];
   const result = await runChatAgent(client, params, {
+    loadColors: noColors,
     checkLimit: allow,
     loadContext: context,
     runAgent:
@@ -140,6 +144,7 @@ Deno.test("returns the tool rounds followed by the answer, ready to append", asy
 
 Deno.test("an unusable model output falls back to text", async () => {
   const result = await runChatAgent(client, params, {
+    loadColors: noColors,
     checkLimit: allow,
     loadContext: context,
     runAgent: fakeAgent({ output: null }).runner,
@@ -167,6 +172,7 @@ Deno.test("stores the answer as answerBlocksOf reads it, keeping ids with no row
     },
   ];
   const result = await runChatAgent(client, params, {
+    loadColors: noColors,
     checkLimit: allow,
     loadContext: context,
     runAgent: fakeAgent({ output: { blocks } }).runner,
@@ -192,6 +198,7 @@ Deno.test("stores the answer as answerBlocksOf reads it, keeping ids with no row
 Deno.test("an answer whose every row reads as nothing falls back to text without hydrating", async () => {
   let hydrated = false;
   const result = await runChatAgent(client, params, {
+    loadColors: noColors,
     checkLimit: allow,
     loadContext: context,
     runAgent: fakeAgent({
@@ -221,6 +228,7 @@ Deno.test("an answer whose every row reads as nothing falls back to text without
 Deno.test("items holds every hydrated row", async () => {
   const other = "a1b2c3d4-e5f6-4789-8abc-def012345678";
   const result = await runChatAgent(client, params, {
+    loadColors: noColors,
     checkLimit: allow,
     loadContext: context,
     runAgent: fakeAgent({
@@ -246,6 +254,7 @@ Deno.test("items holds every hydrated row", async () => {
 Deno.test("empty blocks fall back to text without hydrating", async () => {
   let hydrated = false;
   const result = await runChatAgent(client, params, {
+    loadColors: noColors,
     checkLimit: allow,
     loadContext: context,
     runAgent: fakeAgent({ output: { blocks: [] } }).runner,
@@ -261,6 +270,7 @@ Deno.test("empty blocks fall back to text without hydrating", async () => {
 
 Deno.test("a non-object entry in blocks is dropped", async () => {
   const result = await runChatAgent(client, params, {
+    loadColors: noColors,
     checkLimit: allow,
     loadContext: context,
     runAgent: fakeAgent({
@@ -274,6 +284,7 @@ Deno.test("a non-object entry in blocks is dropped", async () => {
 
 Deno.test("blocks that are all non-objects fall back to text", async () => {
   const result = await runChatAgent(client, params, {
+    loadColors: noColors,
     checkLimit: allow,
     loadContext: context,
     runAgent: fakeAgent({ output: { blocks: [null, "x"] } }).runner,
@@ -297,6 +308,7 @@ const OUTFIT_BLOCK = {
 
 Deno.test("answers with an outfits block as stored, and every piece's row alongside", async () => {
   const result = await runChatAgent(client, params, {
+    loadColors: noColors,
     checkLimit: allow,
     loadContext: context,
     runAgent: fakeAgent({ output: { blocks: [OUTFIT_BLOCK] } }).runner,
@@ -318,6 +330,7 @@ Deno.test("answers with an outfits block as stored, and every piece's row alongs
 
 Deno.test("an outfit with a missing row is stored whole", async () => {
   const result = await runChatAgent(client, params, {
+    loadColors: noColors,
     checkLimit: allow,
     loadContext: context,
     runAgent: fakeAgent({ output: { blocks: [OUTFIT_BLOCK] } }).runner,
@@ -356,6 +369,7 @@ Deno.test("rejects with RateLimitedError when checkLimit denies and never loads 
   await assertRejects(
     () =>
       runChatAgent(client, params, {
+        loadColors: noColors,
         checkLimit: () => Promise.resolve(false),
         loadContext: () => {
           loaded = true;
@@ -376,6 +390,7 @@ Deno.test("rejects with RateLimitedError when checkLimit denies and never loads 
 Deno.test("passes the turn's userId to checkLimit", async () => {
   const seen: string[] = [];
   await runChatAgent(client, params, {
+    loadColors: noColors,
     checkLimit: (userId) => {
       seen.push(userId);
       return Promise.resolve(true);
@@ -391,6 +406,7 @@ Deno.test("rethrows the original error when the agent loop throws", async () => 
   const boom = new Error("vertex exploded");
   const err = await assertRejects(() =>
     runChatAgent(client, params, {
+      loadColors: noColors,
       checkLimit: allow,
       loadContext: context,
       runAgent: () => Promise.reject(boom),
@@ -404,6 +420,7 @@ Deno.test("fails a turn whose hydration fails — a lost row is not a graceful a
   await assertRejects(
     () =>
       runChatAgent(client, params, {
+        loadColors: noColors,
         checkLimit: allow,
         loadContext: context,
         runAgent: fakeAgent({
@@ -442,6 +459,7 @@ Deno.test("validates before checking the limit", async () => {
 Deno.test("returns the model's suggestions beside the answer, not inside it", async () => {
   const blocks: AnswerBlock[] = [{ type: "text", text: "要單品還是整套？" }];
   const result = await runChatAgent(client, params, {
+    loadColors: noColors,
     checkLimit: allow,
     loadContext: context,
     runAgent:
@@ -456,6 +474,7 @@ Deno.test("returns the model's suggestions beside the answer, not inside it", as
 Deno.test("a fallback answer carries no suggestions", async () => {
   for (const output of [null, { blocks: [], suggestions: ["單品"] }]) {
     const result = await runChatAgent(client, params, {
+      loadColors: noColors,
       checkLimit: allow,
       loadContext: context,
       runAgent: fakeAgent({ output }).runner,
@@ -468,6 +487,7 @@ Deno.test("a fallback answer carries no suggestions", async () => {
 Deno.test("an answer whose suggestions are missing still answers", async () => {
   const blocks: AnswerBlock[] = [{ type: "text", text: "嗨" }];
   const result = await runChatAgent(client, params, {
+    loadColors: noColors,
     checkLimit: allow,
     loadContext: context,
     runAgent: fakeAgent({ output: { blocks } }).runner,
@@ -476,4 +496,75 @@ Deno.test("an answer whose suggestions are missing still answers", async () => {
 
   assertEquals(result.answer, blocks);
   assertEquals(result.suggestions, []);
+});
+
+Deno.test("the stored answer carries the resolved colorId", async () => {
+  const result = await runChatAgent(client, params, {
+    checkLimit: allow,
+    loadContext: context,
+    runAgent: fakeAgent({
+      output: {
+        blocks: [{
+          type: "picks",
+          picks: [
+            { type: "product", id: PRODUCT_ID, color: "黑" },
+            { type: "wardrobe", id: WARDROBE_ID, color: "" },
+          ],
+        }],
+      },
+    }).runner,
+    hydrate: hydrator({}),
+    loadColors: () =>
+      Promise.resolve(new Map([[PRODUCT_ID, [{ id: "c-black", name: "黑" }]]])),
+  });
+  const expected: AnswerBlock[] = [{
+    type: "picks",
+    picks: [
+      { type: "product", id: PRODUCT_ID, colorId: "c-black" },
+      { type: "wardrobe", id: WARDROBE_ID },
+    ],
+  }];
+  assertEquals(result.answer, expected);
+  assertEquals(result.messages.at(-1)?.content, expected);
+});
+
+Deno.test("hydrate starts before the colours resolve and still gets every product id", async () => {
+  const seen: AnswerBlock[][] = [];
+  let release: () => void = () => {};
+  const gate = new Promise<void>((resolve) => (release = resolve));
+  const result = runChatAgent(client, params, {
+    checkLimit: allow,
+    loadContext: context,
+    runAgent: fakeAgent({
+      output: {
+        blocks: [{
+          type: "picks",
+          picks: [{ type: "product", id: PRODUCT_ID, color: "黑" }],
+        }],
+      },
+    }).runner,
+    hydrate: (_client, _userId, blocks) => {
+      seen.push(blocks);
+      release();
+      return Promise.resolve({ products: new Map(), wardrobe: new Map() });
+    },
+    loadColors: async () => {
+      await gate;
+      return new Map([[PRODUCT_ID, [{ id: "c-black", name: "黑" }]]]);
+    },
+  });
+  assertEquals(
+    (await result).answer,
+    [{
+      type: "picks",
+      picks: [{ type: "product", id: PRODUCT_ID, colorId: "c-black" }],
+    }],
+  );
+  assertEquals(seen.length, 1);
+  assertEquals(
+    seen[0].flatMap((b) =>
+      b.type === "picks" ? b.picks.map((pick) => pick.id) : []
+    ),
+    [PRODUCT_ID],
+  );
 });

@@ -14,7 +14,7 @@ import {
   validateVocabularyFilters,
   windowHistory,
 } from "./logic.ts";
-import type { ChatEvent, ChatMessage } from "./types.ts";
+import type { ChatEvent, ChatMessage, ProductColorNames } from "./types.ts";
 import type { TextStreamPart, ToolSet } from "ai";
 
 const CATEGORIES = new Map([["tops", "cat-1"], ["dresses", "cat-2"]]);
@@ -816,4 +816,111 @@ Deno.test("suggestionsOf keeps at most four", () => {
 
 Deno.test("suggestionsOf drops a suggestion that would break across lines", () => {
   assertEquals(suggestionsOf(["單品\n整套", "換個\t風格", "整套"]), ["整套"]);
+});
+
+const COLORS: ProductColorNames = new Map([
+  ["p1", [{ id: "c-black", name: "黑" }, { id: "c-white", name: "白" }]],
+]);
+
+Deno.test("answerBlocksOf turns an exactly named colour into its colorId", () => {
+  assertEquals(
+    answerBlocksOf([{
+      type: "picks",
+      picks: [
+        { type: "product", id: "p1", color: " 黑 ", highlight: "麻料" },
+        { type: "product", id: "p2", color: "黑" },
+      ],
+    }], COLORS),
+    [{
+      type: "picks",
+      picks: [
+        { type: "product", id: "p1", colorId: "c-black", highlight: "麻料" },
+        { type: "product", id: "p2" },
+      ],
+    }],
+  );
+});
+
+Deno.test("answerBlocksOf drops a colour the product does not have or that is empty", () => {
+  const [block] = answerBlocksOf([{
+    type: "picks",
+    picks: [
+      { type: "product", id: "p1", color: "黑色" },
+      { type: "product", id: "p1", color: "" },
+    ],
+  }], COLORS);
+  assertEquals(block, {
+    type: "picks",
+    picks: [{ type: "product", id: "p1" }],
+  });
+  const pick = (block as { picks: object[] }).picks[0];
+  assertEquals("color" in pick, false);
+  assertEquals("colorId" in pick, false);
+});
+
+Deno.test("answerBlocksOf keeps one product in two colours but not the same colour twice", () => {
+  assertEquals(
+    answerBlocksOf([{
+      type: "picks",
+      picks: [
+        { type: "product", id: "p1", color: "黑" },
+        { type: "product", id: "p1", color: "白" },
+        { type: "product", id: "p1", color: "黑" },
+      ],
+    }], COLORS),
+    [{
+      type: "picks",
+      picks: [
+        { type: "product", id: "p1", colorId: "c-black" },
+        { type: "product", id: "p1", colorId: "c-white" },
+      ],
+    }],
+  );
+});
+
+Deno.test("answerBlocksOf keeps no colour without the product's colours", () => {
+  assertEquals(
+    answerBlocksOf([{
+      type: "picks",
+      picks: [{ type: "product", id: "p1", color: "黑" }],
+    }]),
+    [{ type: "picks", picks: [{ type: "product", id: "p1" }] }],
+  );
+});
+
+Deno.test("answerBlocksOf drops a colour on a wardrobe ref", () => {
+  assertEquals(
+    answerBlocksOf([{
+      type: "picks",
+      picks: [{ type: "wardrobe", id: "w1", color: "黑" }],
+    }], COLORS),
+    [{ type: "picks", picks: [{ type: "wardrobe", id: "w1" }] }],
+  );
+});
+
+Deno.test("answerBlocksOf resolves colours inside outfits", () => {
+  assertEquals(
+    answerBlocksOf([{
+      type: "outfits",
+      outfits: [{
+        title: "L",
+        reason: "r",
+        pieces: [
+          { type: "product", id: "p1", color: "白" },
+          { type: "wardrobe", id: "w1", color: "" },
+        ],
+      }],
+    }], COLORS),
+    [{
+      type: "outfits",
+      outfits: [{
+        title: "L",
+        reason: "r",
+        pieces: [
+          { type: "product", id: "p1", colorId: "c-white" },
+          { type: "wardrobe", id: "w1" },
+        ],
+      }],
+    }],
+  );
 });

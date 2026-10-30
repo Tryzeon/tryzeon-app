@@ -29,6 +29,7 @@ import type {
   ItemRef,
   OutfitRef,
   PickRef,
+  ProductColorNames,
 } from "./types.ts";
 
 export const SEARCH_LIMIT = 10;
@@ -342,27 +343,43 @@ export async function recordRounds(
   return rounds;
 }
 
-function readItemRef(entry: unknown): ItemRef | null {
+const NO_COLORS: ProductColorNames = new Map();
+
+function readItemRef(
+  entry: unknown,
+  colors: ProductColorNames,
+): ItemRef | null {
   const item = asRecord(entry);
   const type = item?.type;
   const id = nonEmptyStr(item?.id);
-  return (type === "product" || type === "wardrobe") && id !== null
-    ? { type, id }
-    : null;
+  if (id === null) return null;
+  if (type === "wardrobe") return { type, id };
+  if (type !== "product") return null;
+  const name = nonEmptyStr(item?.color);
+  const color = name === null
+    ? undefined
+    : colors.get(id)?.find((c) => c.name === name);
+  return color ? { type, id, colorId: color.id } : { type, id };
 }
 
-const refKey = ({ type, id }: ItemRef): string => `${type}:${id}`;
+const refKey = (ref: ItemRef): string =>
+  ref.type === "product"
+    ? `${ref.type}:${ref.id}:${ref.colorId ?? ""}`
+    : `${ref.type}:${ref.id}`;
 
 function dedupeRefs<T extends ItemRef>(refs: T[]): T[] {
   const seen = new Set<string>();
   return refs.filter((ref) => !seen.has(refKey(ref)) && seen.add(refKey(ref)));
 }
 
-export function picksOf(block: ContentBlock): PickRef[] {
+export function picksOf(
+  block: ContentBlock,
+  colors: ProductColorNames = NO_COLORS,
+): PickRef[] {
   if (block?.type !== "picks" || !Array.isArray(block.picks)) return [];
   const picks: PickRef[] = [];
   for (const entry of block.picks) {
-    const ref = readItemRef(entry);
+    const ref = readItemRef(entry, colors);
     if (ref === null) continue;
     const highlight = nonEmptyStr(asRecord(entry)?.highlight);
     picks.push(highlight === null ? ref : { ...ref, highlight });
@@ -370,14 +387,17 @@ export function picksOf(block: ContentBlock): PickRef[] {
   return dedupeRefs(picks);
 }
 
-export function outfitsOf(block: ContentBlock): OutfitRef[] {
+export function outfitsOf(
+  block: ContentBlock,
+  colors: ProductColorNames = NO_COLORS,
+): OutfitRef[] {
   if (block?.type !== "outfits" || !Array.isArray(block.outfits)) return [];
   const looks: OutfitRef[] = [];
   for (const entry of block.outfits) {
     const look = asRecord(entry);
     const title = nonEmptyStr(look?.title);
     const read = (Array.isArray(look?.pieces) ? look.pieces : []).map(
-      readItemRef,
+      (piece) => readItemRef(piece, colors),
     );
     if (title === null || read.some((piece) => piece === null)) continue;
     const pieces = dedupeRefs(read as ItemRef[]);
@@ -394,8 +414,13 @@ export function outfitsOf(block: ContentBlock): OutfitRef[] {
 /**
  * The model's raw blocks as the answer every surface renders: a blank text, an
  * unreadable entry and a row left empty by `picksOf`/`outfitsOf` are dropped.
+ * A product's colour name becomes its `colorId` only when it exactly matches
+ * one of that product's `colors`; the name itself is not kept.
  */
-export function answerBlocksOf(raw: unknown): AnswerBlock[] {
+export function answerBlocksOf(
+  raw: unknown,
+  colors: ProductColorNames = NO_COLORS,
+): AnswerBlock[] {
   if (!Array.isArray(raw)) return [];
   const blocks: AnswerBlock[] = [];
   for (const entry of raw) {
@@ -406,10 +431,10 @@ export function answerBlocksOf(raw: unknown): AnswerBlock[] {
         blocks.push({ type: "text", text: block.text });
       }
     } else if (block.type === "picks") {
-      const picks = picksOf(block);
+      const picks = picksOf(block, colors);
       if (picks.length > 0) blocks.push({ type: "picks", picks });
     } else if (block.type === "outfits") {
-      const outfits = outfitsOf(block);
+      const outfits = outfitsOf(block, colors);
       if (outfits.length > 0) blocks.push({ type: "outfits", outfits });
     }
   }

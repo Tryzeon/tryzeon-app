@@ -1,6 +1,12 @@
 import { isUuid } from "../text.ts";
 import { PRODUCT_SELECT, WARDROBE_SELECT } from "./logic.ts";
-import type { AnswerBlock, AnswerHydrator, ItemRef } from "./types.ts";
+import type {
+  AnswerBlock,
+  AnswerColorLoader,
+  AnswerHydrator,
+  ItemRef,
+  ProductColorNames,
+} from "./types.ts";
 import type { DbClient } from "../supabase.ts";
 import { coverImagePath, orderProductColors } from "../product-colors.ts";
 
@@ -85,4 +91,25 @@ export const supabaseAnswerRows: AnswerHydrator = async (
     ),
   ]);
   return { products, wardrobe };
+};
+
+export const supabaseColorNames: AnswerColorLoader = async (
+  client: DbClient,
+  productIds: string[],
+) => {
+  const byProduct = new Map<string, { id: string; name: string }[]>();
+  if (productIds.length === 0) return byProduct;
+  const { data, error } = await client
+    .from("product_colors")
+    .select("id, product_id, name")
+    .in("product_id", productIds);
+  if (error) throw error;
+  for (const { id, product_id, name } of data ?? []) {
+    if (name === null) continue;
+    byProduct.set(product_id, [...byProduct.get(product_id) ?? [], {
+      id,
+      name,
+    }]);
+  }
+  return byProduct satisfies ProductColorNames;
 };

@@ -1,13 +1,14 @@
 import { RateLimitedError } from "../errors.ts";
 import { checkChatRateLimit } from "./rate-limit.ts";
 import { buildChatContext } from "./context.ts";
-import { supabaseAnswerRows } from "./hydrate.ts";
+import { idsOf, supabaseAnswerRows, supabaseColorNames } from "./hydrate.ts";
 import { answerBlocksOf, suggestionsOf } from "./logic.ts";
 import { validateChatParams } from "./validate.ts";
 import { runVertexAgent } from "./vertex.ts";
 import type {
   AgentRunner,
   AnswerBlock,
+  AnswerColorLoader,
   AnswerHydrator,
   AnswerItems,
   AnswerRows,
@@ -27,6 +28,7 @@ export interface RunChatAgentDeps {
   loadContext?: ContextLoader;
   runAgent?: AgentRunner;
   hydrate?: AnswerHydrator;
+  loadColors?: AnswerColorLoader;
 }
 
 /**
@@ -60,6 +62,7 @@ export async function runChatAgent(
   const loadContext = deps.loadContext ?? buildChatContext;
   const runAgent = deps.runAgent ?? runVertexAgent;
   const hydrate = deps.hydrate ?? supabaseAnswerRows;
+  const loadColors = deps.loadColors ?? supabaseColorNames;
 
   const checkLimit = deps.checkLimit ?? checkChatRateLimit;
   if (!await checkLimit(turn.userId)) {
@@ -76,13 +79,17 @@ export async function runChatAgent(
     onEvent: turn.onEvent,
   });
 
-  const blocks = answerBlocksOf(output?.blocks);
+  const written = answerBlocksOf(output?.blocks);
+  const [colors, rows] = written.length > 0
+    ? await Promise.all([
+      loadColors(client, idsOf(written, "product")),
+      hydrate(client, turn.userId, written),
+    ])
+    : [undefined, NO_ROWS];
+  const blocks = colors ? answerBlocksOf(output?.blocks, colors) : written;
   const content: AnswerBlock[] = blocks.length > 0
     ? blocks
     : [{ type: "text", text: FALLBACK_TEXT }];
-  const rows = blocks.length > 0
-    ? await hydrate(client, turn.userId, content)
-    : NO_ROWS;
   const answer: ChatMessage = { role: "assistant", content };
   const items: AnswerItems = {
     products: Object.fromEntries(rows.products),
