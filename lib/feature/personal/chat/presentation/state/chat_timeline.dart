@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/error/failures.dart';
+import 'package:tryzeon/feature/common/product_color/domain/entities/product_color.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_items.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
@@ -56,8 +57,10 @@ sealed class ResolvedPick with _$ResolvedPick {
 
 @freezed
 sealed class ResolvedItem with _$ResolvedItem {
-  const factory ResolvedItem.product(final ShopProduct product) =
-      ResolvedProduct;
+  const factory ResolvedItem.product(
+    final ShopProduct product,
+    final ProductColor? color,
+  ) = ResolvedProduct;
   const factory ResolvedItem.wardrobe(final WardrobeItem item) =
       ResolvedWardrobeItem;
 }
@@ -94,9 +97,12 @@ class _OpenTurn {
 
 ResolvedItem? _resolve(final ItemRef ref, final ChatItems items) =>
     switch (ref) {
-      ProductItemRef(:final id) => switch (items.products[id]) {
-        final product? => ResolvedItem.product(product),
-        null => null,
+      ProductItemRef(:final id, :final colorId) => switch (items.products[id]) {
+        final product?
+            when colorId == null ||
+                product.colors.any((final color) => color.id == colorId) =>
+          ResolvedItem.product(product, product.colors.resolve(colorId)),
+        _ => null,
       },
       WardrobeItemRef(:final id) => switch (items.wardrobe[id]) {
         final wardrobeItem? => ResolvedItem.wardrobe(wardrobeItem),

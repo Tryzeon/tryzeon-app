@@ -1,10 +1,16 @@
+import 'dart:async';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/price_format_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/glass_pill.dart';
+import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/common/usage_quota/domain/entities/usage_quota.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_card_images.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_card_rail.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_card_style.dart';
@@ -12,6 +18,9 @@ import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_product_
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart';
 import 'package:tryzeon/feature/personal/shop/domain/entities/shop_store_info.dart';
 import 'package:tryzeon/feature/personal/tryon/tryon.dart';
+import 'package:tryzeon/feature/personal/usage/providers/usage_quota_providers.dart';
+
+import '../../../../../support/product_color_fixtures.dart';
 
 final _product = ShopProduct(
   id: 'p1',
@@ -24,6 +33,38 @@ final _product = ShopProduct(
   createdAt: DateTime(2026),
   updatedAt: DateTime(2026),
 );
+
+final _black = productColorFixture(
+  id: 'black',
+  name: '黑',
+  imagePaths: const ['black.jpg'],
+);
+final _white = productColorFixture(
+  id: 'white',
+  name: '白',
+  position: 1,
+  imagePaths: const ['white.jpg'],
+);
+final _twoColours = _product.copyWith(colors: [_black, _white]);
+
+class _PendingUsageQuota extends UsageQuotaNotifier {
+  @override
+  Future<UsageQuota> build() => Completer<UsageQuota>().future;
+}
+
+class _RecordingCoordinator implements TryonCoordinator {
+  final pieces = <List<OutfitPiece>>[];
+
+  @override
+  Future<void> tryonFromOutfit(
+    final List<OutfitPiece> pieces, {
+    final TryonMode mode = TryonMode.image,
+  }) async => this.pieces.add(pieces);
+
+  @override
+  dynamic noSuchMethod(final Invocation invocation) =>
+      super.noSuchMethod(invocation);
+}
 
 Future<void> _pump(final WidgetTester tester, final Widget card) =>
     tester.pumpWidget(
@@ -42,7 +83,7 @@ void main() {
   testWidgets('the card is a 15:22 photo with source, name and price on it', (
     final tester,
   ) async {
-    await _pump(tester, ChatProductCard(product: _product));
+    await _pump(tester, ChatProductCard(product: _product, color: null));
 
     final card = tester.getRect(find.byType(AspectRatio));
     expect(card.width, 172);
@@ -61,7 +102,7 @@ void main() {
   testWidgets(
     'the try-on is the stock compact TryonFab beside store and price',
     (final tester) async {
-      await _pump(tester, ChatProductCard(product: _product));
+      await _pump(tester, ChatProductCard(product: _product, color: null));
 
       final fab = tester.widget<TryonFab>(find.byType(TryonFab));
       expect(fab.label, '試穿');
@@ -88,7 +129,10 @@ void main() {
   testWidgets('a long name stays on one line', (final tester) async {
     await _pump(
       tester,
-      ChatProductCard(product: _product.copyWith(name: '米色寬鬆麻質長褲' * 6)),
+      ChatProductCard(
+        color: null,
+        product: _product.copyWith(name: '米色寬鬆麻質長褲' * 6),
+      ),
     );
 
     expect(tester.widget<Text>(find.text('米色寬鬆麻質長褲' * 6)).maxLines, 1);
@@ -98,7 +142,10 @@ void main() {
   testWidgets('a highlight rides the top-left corner as a photo tag', (
     final tester,
   ) async {
-    await _pump(tester, ChatProductCard(product: _product, highlight: '麻料透氣'));
+    await _pump(
+      tester,
+      ChatProductCard(product: _product, color: null, highlight: '麻料透氣'),
+    );
 
     final photo = tester.getRect(find.byType(AspectRatio));
     final tag = tester.getRect(find.byType(ChatImageTag));
@@ -113,7 +160,7 @@ void main() {
   testWidgets('the text and the pill keep one inset from the sides and foot', (
     final tester,
   ) async {
-    await _pump(tester, ChatProductCard(product: _product));
+    await _pump(tester, ChatProductCard(product: _product, color: null));
 
     final card = tester.getRect(find.byType(AspectRatio));
     final pill = tester.getRect(
@@ -133,7 +180,7 @@ void main() {
     (final tester) async {
       await _pump(
         tester,
-        ChatProductCard(product: _product.copyWith(price: 12345)),
+        ChatProductCard(color: null, product: _product.copyWith(price: 12345)),
       );
 
       expect(
@@ -146,7 +193,7 @@ void main() {
   testWidgets('the scrim is a light gradient over less than half the card', (
     final tester,
   ) async {
-    await _pump(tester, ChatProductCard(product: _product));
+    await _pump(tester, ChatProductCard(product: _product, color: null));
 
     final card = tester.getRect(find.byType(AspectRatio));
     final scrim = tester.getRect(find.byType(ChatImageScrim));
@@ -170,5 +217,112 @@ void main() {
       ),
       findsNothing,
     );
+  });
+
+  testWidgets('the photo is the first image of the chosen colour', (
+    final tester,
+  ) async {
+    await _pump(tester, ChatProductCard(product: _twoColours, color: _white));
+
+    expect(
+      tester
+          .widget<CachedNetworkImage>(find.byType(CachedNetworkImage))
+          .imageUrl,
+      'https://x/white.jpg',
+    );
+  });
+
+  testWidgets('tapping opens the product on the chosen colour', (
+    final tester,
+  ) async {
+    final pushed = <Uri>[];
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (final context, final state) => Scaffold(
+            body: ChatProductCard(product: _twoColours, color: _white),
+          ),
+        ),
+        GoRoute(
+          path: AppRoutes.personalShopProductPath(':id'),
+          builder: (final context, final state) {
+            pushed.add(state.uri);
+            return const SizedBox();
+          },
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      ProviderScope(child: MaterialApp.router(routerConfig: router)),
+    );
+
+    await tester.tap(find.text('米色寬鬆麻質長褲'));
+    await tester.pumpAndSettle();
+    expect(pushed.map((final uri) => uri.toString()), [
+      AppRoutes.personalShopProductPath('p1', colorId: 'white'),
+    ]);
+  });
+
+  testWidgets('a one-colour product opens without a colour', (
+    final tester,
+  ) async {
+    final oneColour = _product.copyWith(colors: [_black]);
+    final pushed = <Uri>[];
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (final context, final state) => Scaffold(
+            body: ChatProductCard(product: oneColour, color: _black),
+          ),
+        ),
+        GoRoute(
+          path: AppRoutes.personalShopProductPath(':id'),
+          builder: (final context, final state) {
+            pushed.add(state.uri);
+            return const SizedBox();
+          },
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      ProviderScope(child: MaterialApp.router(routerConfig: router)),
+    );
+
+    await tester.tap(find.text('米色寬鬆麻質長褲'));
+    await tester.pumpAndSettle();
+    expect(pushed.single.toString(), AppRoutes.personalShopProductPath('p1'));
+  });
+
+  testWidgets('the try-on carries the chosen colour', (final tester) async {
+    final coordinator = _RecordingCoordinator();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          tryonCoordinatorProvider.overrideWithValue(coordinator),
+          usageQuotaProvider.overrideWith(_PendingUsageQuota.new),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: ChatCardRail.itemWidth,
+                child: ChatProductCard(product: _twoColours, color: _white),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byType(TryonFab));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('圖片試穿'));
+    await tester.pumpAndSettle();
+
+    final piece = coordinator.pieces.single.single as OutfitPieceProduct;
+    expect(piece.colorId, 'white');
+    expect(piece.imageUrl, 'https://x/white.jpg');
   });
 }

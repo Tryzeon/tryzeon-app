@@ -22,6 +22,7 @@ ResolvedItem _product(
     createdAt: DateTime(2026),
     updatedAt: DateTime(2026),
   ),
+  null,
 );
 
 ResolvedItem _wardrobe(

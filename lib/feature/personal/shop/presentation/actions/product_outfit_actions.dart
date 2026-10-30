@@ -23,5 +23,8 @@ OutfitPiece outfitPieceFromProduct(
 void triggerProductTryon(
   final BuildContext context,
   final WidgetRef ref,
-  final ShopProduct product,
-) => triggerOutfitTryon(context, ref, [outfitPieceFromProduct(ref, product)]);
+  final ShopProduct product, {
+  final ProductColor? color,
+}) => triggerOutfitTryon(context, ref, [
+  outfitPieceFromProduct(ref, product, color: color),
+]);

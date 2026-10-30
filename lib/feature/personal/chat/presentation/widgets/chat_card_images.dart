@@ -8,20 +8,22 @@ import 'package:tryzeon/feature/personal/shop/domain/entities/shop_product.dart'
 import 'package:tryzeon/feature/personal/wardrobe/providers/wardrobe_providers.dart';
 
 class ChatProductImage extends StatelessWidget {
-  const ChatProductImage({super.key, required this.product});
+  const ChatProductImage({super.key, required this.product, this.color});
 
   final ShopProduct product;
+  final ProductColor? color;
 
   @override
   Widget build(final BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final imageUrl = product.colors.coverImageUrl;
+    final shown = color ?? product.colors.cover;
+    final imageUrl = shown?.imageUrls.firstOrNull;
     if (imageUrl == null) {
       return Icon(Icons.image_outlined, color: colorScheme.onSurfaceVariant);
     }
     return CachedNetworkImage(
       imageUrl: imageUrl,
-      cacheKey: product.colors.coverImagePath,
+      cacheKey: shown?.imagePaths.firstOrNull,
       fit: BoxFit.cover,
       placeholder: (final _, final _) => const SizedBox.shrink(),
       errorWidget: (final _, final _, final _) => Icon(

@@ -80,10 +80,12 @@ class ChatAssistantTurn extends HookWidget {
                   cards: [
                     for (final pick in picks)
                       switch (pick.item) {
-                        ResolvedProduct(:final product) => ChatProductCard(
-                          product: product,
-                          highlight: pick.highlight,
-                        ),
+                        ResolvedProduct(:final product, :final color) =>
+                          ChatProductCard(
+                            product: product,
+                            color: color,
+                            highlight: pick.highlight,
+                          ),
                         ResolvedWardrobeItem(item: final wardrobeItem) =>
                           ChatWardrobeCard(
                             item: wardrobeItem,

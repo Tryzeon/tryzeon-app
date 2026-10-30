@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tryzeon/core/error/failures.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/common/product_color/domain/entities/product_color.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_items.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/chat_message.dart';
 import 'package:tryzeon/feature/personal/chat/domain/entities/content_block.dart';
@@ -46,6 +47,20 @@ WardrobeItem _wardrobe(final String id) => WardrobeItem(
   garmentType: GarmentType.top,
   createdAt: DateTime(2026),
   updatedAt: DateTime(2026),
+);
+
+ProductColor _cover(final String id) => _product(id).colors.first;
+
+ShopProduct _twoColourProduct(final String id) => _product(id).copyWith(
+  colors: [
+    _product(id).colors.first,
+    productColorFixture(
+      id: 'second',
+      position: 1,
+      imagePaths: const ['q.jpg'],
+      imageUrls: const ['https://x/q.jpg'],
+    ),
+  ],
 );
 
 const _toolUse = ContentBlock.toolUse(id: 't1', name: 'search_products');
@@ -140,8 +155,8 @@ void main() {
     expect(
       turn.segments[1],
       ChatPicksSegment([
-        ResolvedPick(item: ResolvedItem.product(_product('p1'))),
-        ResolvedPick(item: ResolvedItem.product(_product('p2'))),
+        ResolvedPick(item: ResolvedItem.product(_product('p1'), _cover('p1'))),
+        ResolvedPick(item: ResolvedItem.product(_product('p2'), _cover('p2'))),
       ]),
     );
     expect(turn.segments[2], const ChatTextSegment('b'));
@@ -173,7 +188,7 @@ void main() {
     final turn = entries[2] as ChatAssistantEntry;
     expect(turn.segments, [
       ChatPicksSegment([
-        ResolvedPick(item: ResolvedItem.product(_product('p1'))),
+        ResolvedPick(item: ResolvedItem.product(_product('p1'), _cover('p1'))),
       ]),
     ]);
   });
@@ -198,10 +213,10 @@ void main() {
     final turn = entries[2] as ChatAssistantEntry;
     expect(turn.segments, [
       ChatPicksSegment([
-        ResolvedPick(item: ResolvedItem.product(_product('p1'))),
+        ResolvedPick(item: ResolvedItem.product(_product('p1'), _cover('p1'))),
       ]),
       ChatPicksSegment([
-        ResolvedPick(item: ResolvedItem.product(_product('p2'))),
+        ResolvedPick(item: ResolvedItem.product(_product('p2'), _cover('p2'))),
       ]),
     ]);
   });
@@ -310,7 +325,7 @@ void main() {
     expect(turn.segments, [
       ChatPicksSegment([
         ResolvedPick(
-          item: ResolvedItem.product(_product('p1')),
+          item: ResolvedItem.product(_product('p1'), _cover('p1')),
           highlight: '麻料透氣',
         ),
       ]),
@@ -351,7 +366,7 @@ void main() {
           title: '週末休閒',
           reason: '好搭',
           pieces: [
-            ResolvedItem.product(_product('p1')),
+            ResolvedItem.product(_product('p1'), _cover('p1')),
             ResolvedItem.wardrobe(_wardrobe('w1')),
           ],
         ),
@@ -419,4 +434,47 @@ void main() {
     final turn = entries[2] as ChatAssistantEntry;
     expect(turn.segments, isEmpty);
   });
+
+  test(
+    'a pick and an outfit piece resolve the colour their ref names, and one whose colour is gone is left out',
+    () {
+      final product = _twoColourProduct('p1');
+      final entries = buildChatTimeline(
+        ChatState(
+          messages: [
+            _greeting,
+            _user([const ContentBlock.text('找')]),
+            _assistant([
+              const ContentBlock.picks([
+                ChatPick(ref: ItemRef.product('p1', colorId: 'second')),
+                ChatPick(ref: ItemRef.product('p1', colorId: 'removed')),
+                ChatPick(ref: ItemRef.product('p1')),
+              ]),
+              const ContentBlock.outfits([
+                ChatOutfit(
+                  title: 'look',
+                  pieces: [ItemRef.product('p1', colorId: 'second')],
+                ),
+                ChatOutfit(
+                  title: 'gone',
+                  pieces: [ItemRef.product('p1', colorId: 'removed')],
+                ),
+              ]),
+            ]),
+          ],
+          items: ChatItems(products: {'p1': product}, wardrobe: const {}),
+        ),
+      );
+
+      final turn = entries.last as ChatAssistantEntry;
+      final picks = (turn.segments[0] as ChatPicksSegment).picks;
+      expect(
+        [for (final pick in picks) (pick.item as ResolvedProduct).color?.id],
+        ['second', product.colors.first.id],
+      );
+      final piece =
+          (turn.segments[1] as ChatOutfitsSegment).outfits.single.pieces.single;
+      expect((piece as ResolvedProduct).color?.id, 'second');
+    },
+  );
 }

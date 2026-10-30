@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tryzeon/core/extensions/price_format_extension.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/core/theme/app_theme.dart';
+import 'package:tryzeon/feature/common/product_color/domain/entities/product_color.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/state/chat_outfit_labels.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/state/chat_timeline.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_card_images.dart';
@@ -61,8 +62,15 @@ class ChatOutfitCard extends ConsumerWidget {
                             onTap: () => triggerOutfitTryon(context, ref, [
                               for (final piece in outfit.pieces)
                                 switch (piece) {
-                                  ResolvedProduct(:final product) =>
-                                    outfitPieceFromProduct(ref, product),
+                                  ResolvedProduct(
+                                    :final product,
+                                    :final color,
+                                  ) =>
+                                    outfitPieceFromProduct(
+                                      ref,
+                                      product,
+                                      color: color,
+                                    ),
                                   ResolvedWardrobeItem(:final item) =>
                                     outfitPieceFromWardrobeItem(item),
                                 },
@@ -234,10 +242,13 @@ class _Cell extends StatelessWidget {
   @override
   Widget build(final BuildContext context) {
     final (image, onTap, tag) = switch (piece) {
-      ResolvedProduct(:final product) => (
-        ChatProductImage(product: product),
+      ResolvedProduct(:final product, :final color) => (
+        ChatProductImage(product: product, color: color),
         () => context.push(
-          AppRoutes.personalShopProductPath(product.id),
+          AppRoutes.personalShopProductPath(
+            product.id,
+            colorId: product.colors.distinguishing(color)?.id,
+          ),
           extra: product,
         ),
         null,

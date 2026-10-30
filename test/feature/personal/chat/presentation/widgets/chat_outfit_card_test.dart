@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +10,7 @@ import 'package:tryzeon/core/extensions/price_format_extension.dart';
 import 'package:tryzeon/core/presentation/widgets/glass_pill.dart';
 import 'package:tryzeon/core/router/app_routes.dart';
 import 'package:tryzeon/feature/common/garment_type/domain/entities/garment_type.dart';
+import 'package:tryzeon/feature/common/product_color/domain/entities/product_color.dart';
 import 'package:tryzeon/feature/common/usage_quota/domain/entities/usage_quota.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/state/chat_timeline.dart';
 import 'package:tryzeon/feature/personal/chat/presentation/widgets/chat_card_images.dart';
@@ -21,23 +23,31 @@ import 'package:tryzeon/feature/personal/tryon/tryon.dart';
 import 'package:tryzeon/feature/personal/usage/providers/usage_quota_providers.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 
+import '../../../../../support/product_color_fixtures.dart';
+
 ResolvedItem _product(
   final String id, {
   final GarmentType garmentType = GarmentType.top,
   final double price = 1000,
-}) => ResolvedItem.product(
-  ShopProduct(
+  final List<ProductColor> colors = const [],
+  final int colorIndex = 0,
+}) {
+  final product = ShopProduct(
     id: id,
     storeInfo: const ShopStoreInfo(id: 's1', name: 'Store', channels: {}),
     name: id,
     categoryId: 'c',
     garmentType: garmentType,
     price: price,
-    colors: const [],
+    colors: colors,
     createdAt: DateTime(2026),
     updatedAt: DateTime(2026),
-  ),
-);
+  );
+  return ResolvedItem.product(
+    product,
+    colors.isEmpty ? null : colors[colorIndex],
+  );
+}
 
 ResolvedItem _wardrobe(final String id) => ResolvedItem.wardrobe(
   WardrobeItem(
@@ -80,7 +90,7 @@ Future<List<String>> _pumpRouted(
       GoRoute(
         path: AppRoutes.personalShopProductPath(':id'),
         builder: (final context, final state) {
-          pushed.add(state.uri.path);
+          pushed.add(state.uri.toString());
           return const SizedBox();
         },
       ),
@@ -318,5 +328,38 @@ void main() {
       ),
       findsNothing,
     );
+  });
+
+  testWidgets('a piece shows, and opens on, the colour the look chose', (
+    final tester,
+  ) async {
+    final colors = [
+      productColorFixture(id: 'black', imagePaths: const ['black.jpg']),
+      productColorFixture(
+        id: 'white',
+        position: 1,
+        imagePaths: const ['white.jpg'],
+      ),
+    ];
+    final pushed = await _pumpRouted(
+      tester,
+      ResolvedOutfit(
+        title: '週末休閒',
+        pieces: [
+          _product('a', colors: colors, colorIndex: 1),
+          _product('b'),
+        ],
+      ),
+    );
+
+    expect(
+      tester
+          .widget<CachedNetworkImage>(find.byType(CachedNetworkImage))
+          .imageUrl,
+      'https://x/white.jpg',
+    );
+    await tester.tap(find.byType(ChatProductImage).first);
+    await tester.pumpAndSettle();
+    expect(pushed, [AppRoutes.personalShopProductPath('a', colorId: 'white')]);
   });
 }
