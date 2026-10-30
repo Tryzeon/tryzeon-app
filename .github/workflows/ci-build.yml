@@ -1,0 +1,103 @@
+name: CI - Build Check
+
+# Dart-only changes are covered by CI - Analyze & Test; a native build can only
+# break when dependencies or the platform projects change.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'firebase.json'
+      - 'android/**'
+      - '!android/fastlane/**'
+      - '!android/Gemfile*'
+      - 'ios/**'
+      - '!ios/fastlane/**'
+      - '!ios/Gemfile*'
+      - '.github/workflows/ci-build.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'firebase.json'
+      - 'android/**'
+      - '!android/fastlane/**'
+      - '!android/Gemfile*'
+      - 'ios/**'
+      - '!ios/fastlane/**'
+      - '!ios/Gemfile*'
+      - '.github/workflows/ci-build.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ci-build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build-android:
+    name: Build Android
+    runs-on: [self-hosted, macOS]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: pubspec.yaml
+
+      - name: Create env files
+        run: |
+          echo "SUPABASE_URL=https://placeholder.supabase.co" > .env
+          echo "SUPABASE_ANON_KEY=placeholder" >> .env
+          echo "REVENUE_CAT_API_KEY=placeholder" >> .env
+          echo "R2_PUBLIC_IMAGES_BASE_URL=https://placeholder.r2.dev" >> .env
+          cp .env.example .env.local
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Run build_runner
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Build APK (debug)
+        run: flutter build apk --debug
+
+  build-ios:
+    name: Build iOS
+    runs-on: [self-hosted, macOS]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: pubspec.yaml
+
+      - name: Create env files
+        run: |
+          echo "SUPABASE_URL=https://placeholder.supabase.co" > .env
+          echo "SUPABASE_ANON_KEY=placeholder" >> .env
+          echo "REVENUE_CAT_API_KEY=placeholder" >> .env
+          echo "R2_PUBLIC_IMAGES_BASE_URL=https://placeholder.r2.dev" >> .env
+          cp .env.example .env.local
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Run build_runner
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Build iOS (debug, no codesign)
+        run: flutter build ios --debug --no-codesign

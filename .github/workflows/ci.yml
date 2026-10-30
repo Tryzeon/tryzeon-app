@@ -1,35 +1,27 @@
-name: CI - Smoke Test
+name: CI - Analyze & Test
 
 on:
   push:
     branches: [main]
-    # Whitelist: only run the Flutter build smoke test when files that can
-    # actually affect the app build change.
     paths:
       - 'lib/**'
       - 'test/**'
-      - 'android/**'
-      - 'ios/Runner/**'
-      - 'ios/Podfile'
-      - 'ios/Podfile.lock'
       - 'assets/**'
       - 'pubspec.yaml'
       - 'pubspec.lock'
       - 'analysis_options.yaml'
+      - '.env.example'
       - '.github/workflows/ci.yml'
   pull_request:
     branches: [main]
     paths:
       - 'lib/**'
       - 'test/**'
-      - 'android/**'
-      - 'ios/Runner/**'
-      - 'ios/Podfile'
-      - 'ios/Podfile.lock'
       - 'assets/**'
       - 'pubspec.yaml'
       - 'pubspec.lock'
       - 'analysis_options.yaml'
+      - '.env.example'
       - '.github/workflows/ci.yml'
   workflow_dispatch:
 
@@ -43,23 +35,10 @@ permissions:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
-# ─────────────────────────────────────────────────────
-# Pipeline:
-#   analyze + format + test (Linux) → build-android (Linux)
-#                   → build-ios     (macOS)
-#
-# Cache strategy:
-#   Gradle → save on main only
-#   Flutter SDK / Pub  → managed by subosito/flutter-action
-# ─────────────────────────────────────────────────────
-
 jobs:
-  # ════════════════════════════════════════════════════
-  # Job 1: Platform-independent checks (Linux)
-  # ════════════════════════════════════════════════════
   analyze:
     name: Analyze
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macOS]
 
     steps:
       - name: Checkout code
@@ -74,7 +53,7 @@ jobs:
         run: |
           echo "SUPABASE_URL=https://placeholder.supabase.co" > .env
           echo "SUPABASE_ANON_KEY=placeholder" >> .env
-          echo "REVENUE_CAT_API_KEY=${{ secrets.REVENUE_CAT_API_KEY }}" >> .env
+          echo "REVENUE_CAT_API_KEY=placeholder" >> .env
           echo "R2_PUBLIC_IMAGES_BASE_URL=https://placeholder.r2.dev" >> .env
           cp .env.example .env.local
 
@@ -94,115 +73,3 @@ jobs:
 
       - name: Run tests
         run: flutter test
-
-  # ════════════════════════════════════════════════════
-  # Job 2: Android build (Linux)
-  # ════════════════════════════════════════════════════
-  build-android:
-    name: Build Android
-    needs: [analyze]
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Free up disk space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false   # keep Flutter/Java tool cache
-          android: false      # Android SDK is needed to build the APK
-          dotnet: true
-          haskell: true
-          large-packages: true
-          swap-storage: false  # 7.8GB runner needs the swap headroom; disk is not the constraint
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-
-      - name: Calculate Gradle Key
-        id: compute-gradle-key
-        run: echo "key=${{ runner.os }}-gradle-${{ hashFiles('android/build.gradle.kts', 'android/app/build.gradle.kts', 'android/settings.gradle.kts', 'android/gradle/wrapper/gradle-wrapper.properties', 'pubspec.lock') }}" >> $GITHUB_OUTPUT
-
-      - name: Restore Gradle cache
-        id: cache-gradle
-        uses: actions/cache/restore@v5
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ steps.compute-gradle-key.outputs.key }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version-file: pubspec.yaml
-
-      - name: Create env files
-        run: |
-          echo "SUPABASE_URL=https://placeholder.supabase.co" > .env
-          echo "SUPABASE_ANON_KEY=placeholder" >> .env
-          echo "REVENUE_CAT_API_KEY=${{ secrets.REVENUE_CAT_API_KEY }}" >> .env
-          echo "R2_PUBLIC_IMAGES_BASE_URL=https://placeholder.r2.dev" >> .env
-          cp .env.example .env.local
-
-      - name: Get Flutter dependencies
-        run: flutter pub get
-
-      - name: Run build_runner
-        run: dart run build_runner build --delete-conflicting-outputs
-
-      - name: Build APK (debug)
-        run: flutter build apk --debug
-
-      - name: Save Gradle cache
-        if: github.ref == 'refs/heads/main' && steps.cache-gradle.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v5
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ steps.compute-gradle-key.outputs.key }}
-
-  # ════════════════════════════════════════════════════
-  # Job 3: iOS build (macOS)
-  # ════════════════════════════════════════════════════
-  build-ios:
-    name: Build iOS
-    needs: [analyze]
-    runs-on: [self-hosted, macOS]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version-file: pubspec.yaml
-
-      - name: Create env files
-        run: |
-          echo "SUPABASE_URL=https://placeholder.supabase.co" > .env
-          echo "SUPABASE_ANON_KEY=placeholder" >> .env
-          echo "REVENUE_CAT_API_KEY=${{ secrets.REVENUE_CAT_API_KEY }}" >> .env
-          echo "R2_PUBLIC_IMAGES_BASE_URL=https://placeholder.r2.dev" >> .env
-          cp .env.example .env.local
-
-      - name: Install FlutterFire CLI
-        run: dart pub global activate flutterfire_cli
-
-      - name: Get Flutter dependencies
-        run: flutter pub get
-
-      - name: Run build_runner
-        run: dart run build_runner build --delete-conflicting-outputs
-
-      - name: Build iOS (debug, no codesign)
-        run: flutter build ios --debug --no-codesign
-
