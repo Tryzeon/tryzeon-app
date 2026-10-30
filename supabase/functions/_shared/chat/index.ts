@@ -5,7 +5,6 @@ export type {
   AgentAnswer,
   AgentRequest,
   AgentRunner,
-  AnswerColorLoader,
   AnswerHydrator,
   AnswerItems,
   AnswerRows,

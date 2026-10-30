@@ -90,14 +90,22 @@ export interface AgentAnswer {
 
 export type AgentRunner = (req: AgentRequest) => Promise<AgentAnswer>;
 
+/** productId -> that product's named colours. */
+export type ProductColorNames = ReadonlyMap<
+  string,
+  { id: string; name: string }[]
+>;
+
 /**
  * Read-only and item-typed as `unknown`: an adapter hydrates whatever shape its
  * renderer needs (a db row for the app, a LINE card model for the webhook), and
- * `runChatAgent` only ever passes the item through to `AnswerItems`.
+ * `runChatAgent` only ever passes the item through to `AnswerItems`. `colors`
+ * is read off those same rows, since only the adapter knows their shape.
  */
 export interface AnswerRows {
   products: ReadonlyMap<string, unknown>;
   wardrobe: ReadonlyMap<string, unknown>;
+  colors: ProductColorNames;
 }
 
 /** Keyed by id, as plain objects so the result goes on the wire unconverted. */
@@ -105,17 +113,6 @@ export interface AnswerItems {
   products: Record<string, unknown>;
   wardrobe: Record<string, unknown>;
 }
-
-/** productId -> that product's named colours. */
-export type ProductColorNames = ReadonlyMap<
-  string,
-  { id: string; name: string }[]
->;
-
-export type AnswerColorLoader = (
-  client: DbClient,
-  productIds: string[],
-) => Promise<ProductColorNames>;
 
 export type AnswerHydrator = (
   client: DbClient,

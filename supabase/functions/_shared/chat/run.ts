@@ -1,14 +1,13 @@
 import { RateLimitedError } from "../errors.ts";
 import { checkChatRateLimit } from "./rate-limit.ts";
 import { buildChatContext } from "./context.ts";
-import { idsOf, supabaseAnswerRows, supabaseColorNames } from "./hydrate.ts";
+import { supabaseAnswerRows } from "./hydrate.ts";
 import { answerBlocksOf, suggestionsOf } from "./logic.ts";
 import { validateChatParams } from "./validate.ts";
 import { runVertexAgent } from "./vertex.ts";
 import type {
   AgentRunner,
   AnswerBlock,
-  AnswerColorLoader,
   AnswerHydrator,
   AnswerItems,
   AnswerRows,
@@ -21,14 +20,17 @@ import type { DbClient } from "../supabase.ts";
 
 const FALLBACK_TEXT = "抱歉，我這次沒能幫你找到，可以再多說一點你的需求嗎？";
 
-const NO_ROWS: AnswerRows = { products: new Map(), wardrobe: new Map() };
+const NO_ROWS: AnswerRows = {
+  products: new Map(),
+  wardrobe: new Map(),
+  colors: new Map(),
+};
 
 export interface RunChatAgentDeps {
   checkLimit?: (userId: string) => Promise<boolean>;
   loadContext?: ContextLoader;
   runAgent?: AgentRunner;
   hydrate?: AnswerHydrator;
-  loadColors?: AnswerColorLoader;
 }
 
 /**
@@ -62,7 +64,6 @@ export async function runChatAgent(
   const loadContext = deps.loadContext ?? buildChatContext;
   const runAgent = deps.runAgent ?? runVertexAgent;
   const hydrate = deps.hydrate ?? supabaseAnswerRows;
-  const loadColors = deps.loadColors ?? supabaseColorNames;
 
   const checkLimit = deps.checkLimit ?? checkChatRateLimit;
   if (!await checkLimit(turn.userId)) {
@@ -80,13 +81,12 @@ export async function runChatAgent(
   });
 
   const written = answerBlocksOf(output?.blocks);
-  const [colors, rows] = written.length > 0
-    ? await Promise.all([
-      loadColors(client, idsOf(written, "product")),
-      hydrate(client, turn.userId, written),
-    ])
-    : [undefined, NO_ROWS];
-  const blocks = colors ? answerBlocksOf(output?.blocks, colors) : written;
+  const rows = written.length > 0
+    ? await hydrate(client, turn.userId, written)
+    : NO_ROWS;
+  const blocks = written.length > 0
+    ? answerBlocksOf(output?.blocks, rows.colors)
+    : written;
   const content: AnswerBlock[] = blocks.length > 0
     ? blocks
     : [{ type: "text", text: FALLBACK_TEXT }];

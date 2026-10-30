@@ -2,13 +2,16 @@ import { isUuid } from "../text.ts";
 import { PRODUCT_SELECT, WARDROBE_SELECT } from "./logic.ts";
 import type {
   AnswerBlock,
-  AnswerColorLoader,
   AnswerHydrator,
   ItemRef,
   ProductColorNames,
 } from "./types.ts";
 import type { DbClient } from "../supabase.ts";
-import { coverImagePath, orderProductColors } from "../product-colors.ts";
+import {
+  coverImagePath,
+  orderProductColors,
+  productColors,
+} from "../product-colors.ts";
 
 /**
  * The one thing this needs of a PostgREST query builder: `.in("id", …)`, then
@@ -71,6 +74,20 @@ export const hasProductImage = (
   row: { product_colors?: unknown },
 ): boolean => coverImagePath(row) !== undefined;
 
+export function namedColors<Product>(
+  products: ReadonlyMap<string, Product>,
+  colorsOf: (product: Product) => { id: string; name: string | null }[],
+): ProductColorNames {
+  const names = new Map<string, { id: string; name: string }[]>();
+  for (const [id, product] of products) {
+    const named = colorsOf(product).flatMap(({ id, name }) =>
+      name === null ? [] : [{ id, name }]
+    );
+    if (named.length > 0) names.set(id, named);
+  }
+  return names;
+}
+
 export const supabaseAnswerRows: AnswerHydrator = async (
   client: DbClient,
   userId: string,
@@ -90,26 +107,5 @@ export const supabaseAnswerRows: AnswerHydrator = async (
       idsOf(blocks, "wardrobe"),
     ),
   ]);
-  return { products, wardrobe };
-};
-
-export const supabaseColorNames: AnswerColorLoader = async (
-  client: DbClient,
-  productIds: string[],
-) => {
-  const byProduct = new Map<string, { id: string; name: string }[]>();
-  if (productIds.length === 0) return byProduct;
-  const { data, error } = await client
-    .from("product_colors")
-    .select("id, product_id, name")
-    .in("product_id", productIds);
-  if (error) throw error;
-  for (const { id, product_id, name } of data ?? []) {
-    if (name === null) continue;
-    byProduct.set(product_id, [...byProduct.get(product_id) ?? [], {
-      id,
-      name,
-    }]);
-  }
-  return byProduct satisfies ProductColorNames;
+  return { products, wardrobe, colors: namedColors(products, productColors) };
 };
