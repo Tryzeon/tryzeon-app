@@ -28,11 +28,18 @@ jobs:
           flutter-version-file: pubspec.yaml
 
       - name: Create env files
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          REVENUE_CAT_API_KEY: ${{ secrets.REVENUE_CAT_APPLE_API_KEY }}
+          R2_PUBLIC_IMAGES_BASE_URL: ${{ secrets.R2_PUBLIC_IMAGES_BASE_URL }}
         run: |
-          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" > .env
-          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
-          echo "REVENUE_CAT_API_KEY=${{ secrets.REVENUE_CAT_APPLE_API_KEY }}" >> .env
-          echo "R2_PUBLIC_IMAGES_BASE_URL=${{ secrets.R2_PUBLIC_IMAGES_BASE_URL }}" >> .env
+          {
+            echo "SUPABASE_URL=$SUPABASE_URL"
+            echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY"
+            echo "REVENUE_CAT_API_KEY=$REVENUE_CAT_API_KEY"
+            echo "R2_PUBLIC_IMAGES_BASE_URL=$R2_PUBLIC_IMAGES_BASE_URL"
+          } > .env
           cp .env.example .env.local
 
       - name: Get Flutter dependencies

@@ -33,11 +33,18 @@ jobs:
           bundle install
 
       - name: Create env files
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          REVENUE_CAT_API_KEY: ${{ secrets.REVENUE_CAT_GOOGLE_API_KEY }}
+          R2_PUBLIC_IMAGES_BASE_URL: ${{ secrets.R2_PUBLIC_IMAGES_BASE_URL }}
         run: |
-          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" > .env
-          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
-          echo "REVENUE_CAT_API_KEY=${{ secrets.REVENUE_CAT_GOOGLE_API_KEY }}" >> .env
-          echo "R2_PUBLIC_IMAGES_BASE_URL=${{ secrets.R2_PUBLIC_IMAGES_BASE_URL }}" >> .env
+          {
+            echo "SUPABASE_URL=$SUPABASE_URL"
+            echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY"
+            echo "REVENUE_CAT_API_KEY=$REVENUE_CAT_API_KEY"
+            echo "R2_PUBLIC_IMAGES_BASE_URL=$R2_PUBLIC_IMAGES_BASE_URL"
+          } > .env
           cp .env.example .env.local
 
       - name: Get Flutter dependencies
@@ -47,12 +54,19 @@ jobs:
         run: dart run build_runner build --delete-conflicting-outputs
 
       - name: Configure Keystore
+        env:
+          PLAYSTORE_KEYSTORE_BASE64: ${{ secrets.PLAYSTORE_KEYSTORE_BASE64 }}
+          PLAYSTORE_KEYSTORE_PASSWORD: ${{ secrets.PLAYSTORE_KEYSTORE_PASSWORD }}
+          PLAYSTORE_KEY_PASSWORD: ${{ secrets.PLAYSTORE_KEY_PASSWORD }}
+          PLAYSTORE_KEY_ALIAS: ${{ secrets.PLAYSTORE_KEY_ALIAS }}
         run: |
-          echo "${{ secrets.PLAYSTORE_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
-          echo "storePassword=${{ secrets.PLAYSTORE_KEYSTORE_PASSWORD }}" > android/key.properties
-          echo "keyPassword=${{ secrets.PLAYSTORE_KEY_PASSWORD }}" >> android/key.properties
-          echo "keyAlias=${{ secrets.PLAYSTORE_KEY_ALIAS }}" >> android/key.properties
-          echo "storeFile=upload-keystore.jks" >> android/key.properties
+          echo "$PLAYSTORE_KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+          {
+            echo "storePassword=$PLAYSTORE_KEYSTORE_PASSWORD"
+            echo "keyPassword=$PLAYSTORE_KEY_PASSWORD"
+            echo "keyAlias=$PLAYSTORE_KEY_ALIAS"
+            echo "storeFile=upload-keystore.jks"
+          } > android/key.properties
 
       - name: Deploy to Play internal testing
         run: |
