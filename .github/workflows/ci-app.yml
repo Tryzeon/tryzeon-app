@@ -1,4 +1,4 @@
-name: CI - Analyze & Test
+name: CI - App
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
       - 'pubspec.lock'
       - 'analysis_options.yaml'
       - '.env.example'
-      - '.github/workflows/ci.yml'
+      - '.github/workflows/ci-app.yml'
   pull_request:
     branches: [main]
     paths:
@@ -22,11 +22,11 @@ on:
       - 'pubspec.lock'
       - 'analysis_options.yaml'
       - '.env.example'
-      - '.github/workflows/ci.yml'
+      - '.github/workflows/ci-app.yml'
   workflow_dispatch:
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-app-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:

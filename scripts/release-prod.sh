@@ -7,7 +7,7 @@ usage() {
 Usage: scripts/release-prod.sh <version>
 
 Tags the current commit and pushes the tag, which triggers the
-release_ios / release_android / release_github workflows.
+release-ios / release-android / release-github workflows.
 
 The release lanes promote the build that is already on TestFlight and the Play
 internal track, so run scripts/release-beta.sh for this version first.

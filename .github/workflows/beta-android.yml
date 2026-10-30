@@ -1,4 +1,4 @@
-name: Beta Build - Android
+name: Beta - Android
 
 on:
   workflow_dispatch:

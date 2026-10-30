@@ -1,6 +1,6 @@
-name: CI - Build Check
+name: CI - App Build
 
-# Dart-only changes are covered by CI - Analyze & Test; a native build can only
+# Dart-only changes are covered by CI - App; a native build can only
 # break when dependencies or the platform projects change.
 on:
   push:
@@ -15,7 +15,7 @@ on:
       - 'ios/**'
       - '!ios/fastlane/**'
       - '!ios/Gemfile*'
-      - '.github/workflows/ci-build.yml'
+      - '.github/workflows/ci-app-build.yml'
   pull_request:
     branches: [main]
     paths:
@@ -28,11 +28,11 @@ on:
       - 'ios/**'
       - '!ios/fastlane/**'
       - '!ios/Gemfile*'
-      - '.github/workflows/ci-build.yml'
+      - '.github/workflows/ci-app-build.yml'
   workflow_dispatch:
 
 concurrency:
-  group: ci-build-${{ github.ref }}
+  group: ci-app-build-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:

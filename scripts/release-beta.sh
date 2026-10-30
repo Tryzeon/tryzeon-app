@@ -108,11 +108,11 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
 fi
 
 if [[ "$run_ios" == true ]]; then
-  gh workflow run beta_ios.yml -f version="$version"
+  gh workflow run beta-ios.yml -f version="$version"
   echo "Triggered iOS beta workflow for version $version"
 fi
 
 if [[ "$run_android" == true ]]; then
-  gh workflow run beta_android.yml -f version="$version"
+  gh workflow run beta-android.yml -f version="$version"
   echo "Triggered Android beta workflow for version $version"
 fi
