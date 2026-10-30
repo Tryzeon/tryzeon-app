@@ -87,6 +87,34 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
+  Future<Result<Product, Failure>> getProduct({
+    required final String storeId,
+    required final String productId,
+  }) async {
+    final Product product;
+    try {
+      product = _mappr.convert<ProductDto, Product>(
+        await _remoteDataSource.getProduct(productId),
+      );
+    } catch (e, stackTrace) {
+      AppLogger.warning('Failed to load product', e, stackTrace);
+      return Err(mapExceptionToFailure(e));
+    }
+
+    try {
+      await _localDataSource.saveProduct(product);
+    } catch (e, stackTrace) {
+      AppLogger.warning(
+        'Failed to cache the product, invalidating cache',
+        e,
+        stackTrace,
+      );
+      await _invalidate(storeId: storeId, productId: productId);
+    }
+    return Ok(product);
+  }
+
+  @override
   Future<Result<Product?, Failure>> createProduct(
     final NewProduct product,
   ) async {
@@ -243,32 +271,11 @@ class ProductRepositoryImpl implements ProductRepository {
     required final String storeId,
     required final String productId,
   }) async {
-    final Product product;
-    try {
-      product = _mappr.convert<ProductDto, Product>(
-        await _remoteDataSource.getProduct(productId),
-      );
-    } catch (e, stackTrace) {
-      AppLogger.warning(
-        'Product read-back failed, invalidating cache',
-        e,
-        stackTrace,
-      );
-      await _invalidate(storeId: storeId, productId: productId);
-      return null;
-    }
-
-    try {
-      await _localDataSource.saveProduct(product);
-    } catch (e, stackTrace) {
-      AppLogger.warning(
-        'Failed to cache the product, invalidating cache',
-        e,
-        stackTrace,
-      );
+    final product = await getProduct(storeId: storeId, productId: productId);
+    if (product.isFailure) {
       await _invalidate(storeId: storeId, productId: productId);
     }
-    return product;
+    return product.get();
   }
 
   Future<void> _invalidate({
