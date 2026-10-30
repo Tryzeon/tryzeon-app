@@ -9,7 +9,6 @@ on:
         type: string
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   BUNDLE_PATH: vendor/bundle
 
 permissions:
