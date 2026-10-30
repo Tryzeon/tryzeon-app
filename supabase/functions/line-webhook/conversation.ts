@@ -101,7 +101,9 @@ export function wardrobeTryonNote(item: WardrobeItemInfo): ChatMessage {
 export function outfitTryonNote(pieces: OutfitPiece[]): ChatMessage {
   const named = pieces.map((piece) =>
     piece.kind === "product"
-      ? `商品 id:${piece.item.id}「${clampProductName(piece.item.name)}」`
+      ? `商品 id:${piece.item.id}「${clampProductName(piece.item.name)}」${
+        piece.item.color.name ? `（${piece.item.color.name}）` : ""
+      }`
       : `衣櫃單品 id:${piece.item.id}「${piece.item.garmentTypeLabel}」`
   );
   return {

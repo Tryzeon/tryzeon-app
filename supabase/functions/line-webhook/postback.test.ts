@@ -69,9 +69,9 @@ const W1 = "44444444-4444-4444-4444-444444444444";
 
 Deno.test("what an outfit card encodes is what the webhook reads back, in order", () => {
   const pieces = [
-    { type: "product" as const, id: P1 },
+    { type: "product" as const, id: P1, colorId: CID },
     { type: "wardrobe" as const, id: W1 },
-    { type: "product" as const, id: P2 },
+    { type: "product" as const, id: P2, colorId: CID },
   ];
   assertEquals(
     parsePostback(outfitTryonPostbackData(pieces)),
@@ -81,9 +81,9 @@ Deno.test("what an outfit card encodes is what the webhook reads back, in order"
 
 Deno.test("an outfit postback stays under LINE's 300-character data cap at its longest", () => {
   const data = outfitTryonPostbackData([
-    { type: "product", id: P1 },
-    { type: "wardrobe", id: W1 },
-    { type: "product", id: P2 },
+    { type: "product", id: P1, colorId: CID },
+    { type: "product", id: P2, colorId: CID },
+    { type: "product", id: P1, colorId: CID },
   ]);
   assertEquals(data.length <= 300, true);
 });
@@ -92,7 +92,7 @@ Deno.test("an outfit postback with a count no outfit can have is not ours", () =
   const encode = (ids: string[]) =>
     new URLSearchParams({
       a: "tryon_outfit",
-      g: ids.map((id) => `p:${id}`).join(","),
+      g: ids.map((id) => `p:${id}:${CID}`).join(","),
     }).toString();
 
   assertEquals(parsePostback(encode([P1])), null);
@@ -106,7 +106,11 @@ Deno.test("an outfit postback with a bad piece is not ours", () => {
   const raw = (g: string) =>
     new URLSearchParams({ a: "tryon_outfit", g }).toString();
 
-  assertEquals(parsePostback(raw(`p:${P1},p:not-a-uuid`)), null);
-  assertEquals(parsePostback(raw(`p:${P1},x:${P2}`)), null);
-  assertEquals(parsePostback(raw(`p:${P1},${P2}`)), null);
+  assertEquals(parsePostback(raw(`p:${P1}:${CID},p:not-a-uuid`)), null);
+  assertEquals(parsePostback(raw(`p:${P1},w:${W1}`)), null);
+  assertEquals(parsePostback(raw(`p:${P1}:not-a-uuid,w:${W1}`)), null);
+  assertEquals(parsePostback(raw(`p:${P1}:${CID}:${CID},w:${W1}`)), null);
+  assertEquals(parsePostback(raw(`p:${P1}:${CID},w:${W1}:${CID}`)), null);
+  assertEquals(parsePostback(raw(`p:${P1}:${CID},x:${P2}`)), null);
+  assertEquals(parsePostback(raw(`p:${P1}:${CID},${P2}`)), null);
 });

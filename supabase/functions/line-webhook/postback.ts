@@ -3,7 +3,7 @@
  * card already sent under the old `tryon` name is one more shape parsing
  * rejects — back-compat for it was declined on purpose, not missed.
  */
-import { ANSWER_LIMITS, type ItemRef } from "../_shared/chat/index.ts";
+import { ANSWER_LIMITS, type WardrobeItemRef } from "../_shared/chat/index.ts";
 import { isUuid } from "../_shared/text.ts";
 
 const TRYON_PRODUCT = "tryon_product";
@@ -28,29 +28,46 @@ export function wardrobeTryonPostbackData(wardrobeItemId: string): string {
 
 const GARMENT_KIND = { product: "p", wardrobe: "w" } as const;
 
-export function outfitTryonPostbackData(pieces: ItemRef[]): string {
+export type OutfitPieceRef =
+  | { type: "product"; id: string; colorId: string }
+  | WardrobeItemRef;
+
+function garmentToken(piece: OutfitPieceRef): string {
+  if (piece.type === "wardrobe") {
+    return `${GARMENT_KIND.wardrobe}:${piece.id}`;
+  }
+  return `${GARMENT_KIND.product}:${piece.id}:${piece.colorId}`;
+}
+
+export function outfitTryonPostbackData(pieces: OutfitPieceRef[]): string {
   return new URLSearchParams({
     a: TRYON_OUTFIT,
-    g: pieces.map(({ type, id }) => `${GARMENT_KIND[type]}:${id}`).join(","),
+    g: pieces.map(garmentToken).join(","),
   }).toString();
 }
 
-function parseGarment(token: string): ItemRef | null {
-  const [kind, id, ...rest] = token.split(":");
-  if (rest.length > 0 || !id || !isUuid(id)) return null;
-  if (kind === GARMENT_KIND.product) return { type: "product", id };
-  if (kind === GARMENT_KIND.wardrobe) return { type: "wardrobe", id };
+function parseGarment(token: string): OutfitPieceRef | null {
+  const [kind, id, colorId, ...rest] = token.split(":");
+  if (!id || !isUuid(id)) return null;
+  if (kind === GARMENT_KIND.product) {
+    return rest.length === 0 && colorId && isUuid(colorId)
+      ? { type: "product", id, colorId }
+      : null;
+  }
+  if (kind === GARMENT_KIND.wardrobe) {
+    return colorId === undefined ? { type: "wardrobe", id } : null;
+  }
   return null;
 }
 
-function isGarment(item: ItemRef | null): item is ItemRef {
+function isGarment(item: OutfitPieceRef | null): item is OutfitPieceRef {
   return item !== null;
 }
 
 export type Postback =
   | { kind: "product"; productId: string; colorId: string }
   | { kind: "wardrobe"; wardrobeItemId: string }
-  | { kind: "outfit"; pieces: ItemRef[] };
+  | { kind: "outfit"; pieces: OutfitPieceRef[] };
 
 export function parsePostback(data: unknown): Postback | null {
   if (typeof data !== "string") return null;

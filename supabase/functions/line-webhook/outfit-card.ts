@@ -13,7 +13,7 @@ import {
 } from "./product-card.ts";
 import { type LineWardrobeItem, tagLine } from "./wardrobe-card.ts";
 import { cameraRollChip, messageChip, withQuickReply } from "./quick-reply.ts";
-import { outfitTryonPostbackData } from "./postback.ts";
+import { type OutfitPieceRef, outfitTryonPostbackData } from "./postback.ts";
 
 export type OutfitPiece =
   | { kind: "product"; item: LineProduct }
@@ -50,11 +50,12 @@ export function resolveOutfitPieces(
   return resolved.length > 0 ? resolved : null;
 }
 
-export function outfitPieceRefs(pieces: OutfitPiece[]): ItemRef[] {
-  return pieces.map((piece) => ({
-    type: piece.kind,
-    id: piece.item.id,
-  }));
+export function outfitPieceRefs(pieces: OutfitPiece[]): OutfitPieceRef[] {
+  return pieces.map((piece): OutfitPieceRef =>
+    piece.kind === "product"
+      ? { type: "product", id: piece.item.id, colorId: piece.item.color.id }
+      : { type: "wardrobe", id: piece.item.id }
+  );
 }
 
 export function outfitTryonAction(outfit: LineOutfit): object {

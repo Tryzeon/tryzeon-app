@@ -1,4 +1,4 @@
-import { type ItemRef, LIMITS } from "../_shared/chat/index.ts";
+import { LIMITS } from "../_shared/chat/index.ts";
 import type { QuotaSnapshot } from "../_shared/quota.ts";
 import { tryonQuotaText } from "./quota-text.ts";
 import {
@@ -16,6 +16,7 @@ import {
   withQuickReply,
 } from "./quick-reply.ts";
 import {
+  type OutfitPieceRef,
   outfitTryonPostbackData,
   productTryonPostbackData,
   wardrobeTryonPostbackData,
@@ -250,7 +251,7 @@ export function outfitUnavailableMessage(): object {
 export function outfitTryonErrorMessage(
   kind: TryonJobErrorKind,
   quota: QuotaSnapshot | null,
-  pieces: ItemRef[],
+  pieces: OutfitPieceRef[],
 ): object {
   const text = kind === "generation"
     ? "這套沒能生成，請換一套或再試一次看看！"

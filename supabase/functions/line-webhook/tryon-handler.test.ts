@@ -885,7 +885,7 @@ const outfitWardrobe: LineWardrobeItem = {
 const outfitEvent = {
   replyToken: "rt",
   sourceUserId: USER,
-  pieces: [{ type: "product" as const, id: OUTFIT_P }, {
+  pieces: [{ type: "product" as const, id: OUTFIT_P, colorId: COLOR_ID }, {
     type: "wardrobe" as const,
     id: OUTFIT_W,
   }],
@@ -1016,7 +1016,7 @@ Deno.test("an outfit is named while waiting, worn whole in its order, and its ca
     textOf(sent.replies[0][0]),
     "收到，正在幫你試穿這套，請稍等！",
   );
-  assertEquals(params.garments, [{ productId: OUTFIT_P }, {
+  assertEquals(params.garments, [{ productId: OUTFIT_P, colorId: COLOR_ID }, {
     wardrobeItemId: OUTFIT_W,
   }]);
   assertEquals(params.mode, "image");

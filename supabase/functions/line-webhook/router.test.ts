@@ -230,7 +230,7 @@ Deno.test("a wardrobe postback with no sender is nudged", async () => {
 
 Deno.test("an outfit try-on postback is routed to a handler, not nudged", async () => {
   const data = outfitTryonPostbackData([
-    { type: "product", id: PID },
+    { type: "product", id: PID, colorId: COLOR_ID },
     { type: "wardrobe", id: WID },
   ]);
   assertEquals(routed(postbackEvent(data)), true);

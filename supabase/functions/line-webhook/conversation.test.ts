@@ -1,6 +1,7 @@
 import { assertEquals } from "@std/assert";
 import { LIMITS } from "../_shared/chat/index.ts";
 import {
+  outfitTryonNote,
   photoNote,
   redisConversations,
   type RedisLike,
@@ -201,4 +202,19 @@ Deno.test("a pathologically long tag cannot blow up the transcript note", () => 
   const text = note.content[0].text as string;
   assertEquals(text.length < LIMITS.MAX_TEXT_LENGTH, true);
   assertEquals(text.includes("…"), true);
+});
+
+Deno.test("an outfit try-on names each product's colour when it has one", () => {
+  const note = outfitTryonNote([
+    {
+      kind: "product",
+      item: someProduct({ color: { id: COLOR_ID, name: "霧灰" } }),
+    },
+    { kind: "product", item: someProduct({ id: "p2", name: "黑褲" }) },
+  ]);
+
+  assertEquals(
+    (note.content[0] as { text: string }).text,
+    `（使用者剛試穿了整套：商品 id:${PID}「短版牛仔外套」（霧灰）、商品 id:p2「黑褲」）`,
+  );
 });

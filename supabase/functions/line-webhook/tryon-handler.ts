@@ -10,7 +10,7 @@ import {
 import type { QuotaSnapshot } from "../_shared/quota.ts";
 import type { GarmentInput } from "../_shared/tryon/types.ts";
 import { getAvatar as defaultGetAvatar } from "../_shared/user-profile.ts";
-import type { ItemRef } from "../_shared/chat/index.ts";
+import type { OutfitPieceRef } from "./postback.ts";
 import { fetchProductInfo, fetchProductRows } from "./product-card.ts";
 import { fetchWardrobeItemInfo, fetchWardrobeRows } from "./wardrobe-card.ts";
 import { outfitResultMessage, resolveOutfitPieces } from "./outfit-card.ts";
@@ -311,7 +311,7 @@ export async function handleWardrobeTryon(
 export interface OutfitTryonEvent {
   replyToken: string;
   sourceUserId: string;
-  pieces: ItemRef[];
+  pieces: OutfitPieceRef[];
 }
 
 export interface OutfitTryonDeps extends TryonHandlerDeps {
@@ -320,8 +320,10 @@ export interface OutfitTryonDeps extends TryonHandlerDeps {
   fetchWardrobe?: typeof fetchWardrobeRows;
 }
 
-const garmentOf = ({ type, id }: ItemRef): GarmentInput =>
-  type === "product" ? { productId: id } : { wardrobeItemId: id };
+const garmentOf = (ref: OutfitPieceRef): GarmentInput =>
+  ref.type === "product"
+    ? { productId: ref.id, colorId: ref.colorId }
+    : { wardrobeItemId: ref.id };
 
 /**
  * Every piece is read before anything is charged, with the same rules the
@@ -341,7 +343,7 @@ export async function handleOutfitTryon(
     return;
   }
 
-  const idsOf = (type: ItemRef["type"]) =>
+  const idsOf = (type: OutfitPieceRef["type"]) =>
     event.pieces.filter((piece) => piece.type === type).map((piece) =>
       piece.id
     );

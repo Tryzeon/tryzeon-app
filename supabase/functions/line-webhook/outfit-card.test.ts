@@ -4,6 +4,7 @@ import {
   type LineOutfit,
   outfitBubble,
   type OutfitPiece,
+  outfitPieceRefs,
   outfitPurchase,
   outfitResultMessage,
   outfitTryonAction,
@@ -104,6 +105,13 @@ Deno.test("resolveOutfitPieces keeps the outfit's order and is null when any pie
     }], find),
     null,
   );
+});
+
+Deno.test("outfitPieceRefs carries each product's colour and nothing on a wardrobe piece", () => {
+  assertEquals(outfitPieceRefs([p("p1"), w("w1")]), [
+    { type: "product", id: "p1", colorId: COLOR_ID },
+    { type: "wardrobe", id: "w1" },
+  ]);
 });
 
 Deno.test("the purchase counts and prices only the pieces left to buy", () => {
@@ -275,8 +283,8 @@ Deno.test("the overlay reads title, reason, then what to buy and its total besid
     type: "postback",
     label: "試穿整套",
     data: outfitTryonPostbackData([
-      { type: "product", id: "p1" },
-      { type: "product", id: "p2" },
+      { type: "product", id: "p1", colorId: COLOR_ID },
+      { type: "product", id: "p2", colorId: COLOR_ID },
     ]),
     displayText: "試穿整套",
   });
