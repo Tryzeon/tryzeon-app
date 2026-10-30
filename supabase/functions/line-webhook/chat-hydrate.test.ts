@@ -1,7 +1,7 @@
 import { assertEquals } from "@std/assert";
 import { makeLineAnswerRows } from "./chat-hydrate.ts";
 import type { AnswerBlock } from "../_shared/chat/index.ts";
-import type { LineProduct } from "./product-card.ts";
+import type { LineCatalogProduct } from "./product-card.ts";
 
 const BASE = "https://img.example";
 const P1 = "8f14e45f-ceea-467a-9c8d-1b2c3d4e5f60";
@@ -109,7 +109,7 @@ Deno.test("the base url reaches the card", async () => {
   ]);
 
   assertEquals(
-    (rows.products.get(P1) as LineProduct).imageUrl,
+    (rows.products.get(P1) as LineCatalogProduct).colors[0].imageUrl,
     "https://img.example/stores/s1/p1.jpg",
   );
 });

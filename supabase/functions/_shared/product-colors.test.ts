@@ -3,6 +3,7 @@ import {
   coverImagePath,
   orderProductColors,
   productColor,
+  productColors,
 } from "./product-colors.ts";
 
 Deno.test("the cover is the first colour as delivered", () => {
@@ -84,4 +85,17 @@ Deno.test("productColor rejects a requested colour with no usable image", () => 
     ],
   };
   assertEquals(productColor(row, "b"), undefined);
+});
+
+Deno.test("productColors keeps every usable colour in the order delivered", () => {
+  const row = {
+    product_colors: [
+      { id: "a", name: "白", image_paths: ["k1"] },
+      { id: "x", name: "無圖", image_paths: [] },
+      "junk",
+      { id: "b", name: null, image_paths: ["k2", "k3"] },
+    ],
+  };
+  assertEquals(productColors(row).map((c) => c.id), ["a", "b"]);
+  assertEquals(productColors({ product_colors: null }), []);
 });

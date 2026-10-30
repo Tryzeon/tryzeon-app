@@ -14,7 +14,7 @@ import { QuotaExceededError, type QuotaSnapshot } from "../_shared/quota.ts";
 import { ServiceBusyError } from "../_shared/errors.ts";
 import { GenerationFailedError } from "../_shared/tryon/errors.ts";
 import type { LineApi } from "./line-api.ts";
-import type { LineProduct } from "./product-card.ts";
+import type { LineCatalogProduct, LineProduct } from "./product-card.ts";
 import { fakeConversations } from "./conversation.testing.ts";
 import {
   outfitTryonNote,
@@ -861,6 +861,7 @@ Deno.test("a wardrobe try-on that failed is not remembered as one that happened"
 });
 
 const OUTFIT_P = "11111111-1111-4111-8111-111111111111";
+const GONE_COLOR_ID = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
 const OUTFIT_W = "22222222-2222-4222-8222-222222222222";
 
 const outfitProduct: LineProduct = {
@@ -872,6 +873,22 @@ const outfitProduct: LineProduct = {
   storeName: "某店",
   purchaseUrl: null,
   color: { id: COLOR_ID, name: null },
+};
+
+const outfitCatalog: LineCatalogProduct = {
+  info: {
+    id: OUTFIT_P,
+    name: "白色寬鬆棉質襯衫",
+    price: 1280,
+    storeName: "某店",
+    purchaseUrl: null,
+  },
+  garmentType: "top",
+  colors: [{
+    id: COLOR_ID,
+    name: null,
+    imageUrl: "https://img.example/p.jpg",
+  }],
 };
 
 const outfitWardrobe: LineWardrobeItem = {
@@ -895,7 +912,7 @@ function outfitDeps(over: Partial<OutfitTryonDeps> = {}): OutfitTryonDeps {
   return {
     ...baseDeps(),
     imagesBaseUrl: "https://img.example",
-    fetchProducts: () => Promise.resolve(new Map([[OUTFIT_P, outfitProduct]])),
+    fetchProducts: () => Promise.resolve(new Map([[OUTFIT_P, outfitCatalog]])),
     fetchWardrobe: () => Promise.resolve(new Map([[OUTFIT_W, outfitWardrobe]])),
     ...over,
   };
@@ -946,6 +963,35 @@ Deno.test("an outfit with a piece that is gone costs the sender no quota", async
   );
 });
 
+Deno.test("an outfit holding a colour its product no longer has costs the sender no quota", async () => {
+  const { line, sent } = fakeLine();
+  let ran = false;
+  await handleOutfitTryon(
+    outfitDeps({
+      line,
+      runJob: () => {
+        ran = true;
+        // deno-lint-ignore no-explicit-any
+        return Promise.resolve({} as any);
+      },
+    }),
+    {
+      ...outfitEvent,
+      pieces: [
+        { type: "product", id: OUTFIT_P, colorId: GONE_COLOR_ID },
+        outfitEvent.pieces[1],
+      ],
+    },
+  );
+
+  assertEquals(ran, false);
+  assertEquals(sent.pushes, []);
+  assertEquals(
+    textOf(sent.replies[0][0]),
+    "這套有單品已經下架或不在衣櫃裡了，換一套試試。",
+  );
+});
+
 Deno.test("an outfit holding a delisted product costs the sender no quota", async () => {
   const { line, sent } = fakeLine();
   let ran = false;
@@ -976,7 +1022,7 @@ Deno.test("an outfit reads its products on the image base and its wardrobe bound
     outfitDeps({
       fetchProducts: (_admin, ids, base) => {
         seen.push(["products", ids, base]);
-        return Promise.resolve(new Map([[OUTFIT_P, outfitProduct]]));
+        return Promise.resolve(new Map([[OUTFIT_P, outfitCatalog]]));
       },
       fetchWardrobe: (_admin, userId, ids) => {
         seen.push(["wardrobe", userId, ids]);

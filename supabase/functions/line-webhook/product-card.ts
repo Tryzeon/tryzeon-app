@@ -4,7 +4,11 @@ import { publicImageUrl } from "../_shared/public-images.ts";
 import { CARD_COLOR, pickBubble, sourceLine } from "./card-kit.ts";
 import { productTryonPostbackData } from "./postback.ts";
 import { asJsonObject, type DbClient } from "../_shared/supabase.ts";
-import { orderProductColors, productColor } from "../_shared/product-colors.ts";
+import {
+  orderProductColors,
+  productColor,
+  productColors,
+} from "../_shared/product-colors.ts";
 
 export const PRODUCT_CARD_SELECT =
   "id, name, price, garment_type, purchase_link, product_colors(id, name, image_paths, position), store_profiles!products_store_id_fkey(name)";
@@ -52,19 +56,57 @@ export function toProductInfo(
   };
 }
 
-export function toLineProduct(
+export interface LineColor {
+  id: string;
+  name: string | null;
+  imageUrl: string;
+}
+
+/**
+ * A product with every colour it can be shown in, because which one a card
+ * wears is the chat answer's choice and is made per ref, after the read.
+ */
+export interface LineCatalogProduct {
+  info: Omit<ProductInfo, "color">;
+  garmentType: Enums<"garment_type">;
+  colors: LineColor[];
+}
+
+export function toLineCatalogProduct(
   // deno-lint-ignore no-explicit-any
   row: Record<string, any>,
   imagesBaseUrl: string,
-): LineProduct | null {
+): LineCatalogProduct | null {
   const info = toProductInfo(row);
   if (!info) return null;
 
-  const cover = productColor(row, undefined)!;
+  const { color: _cover, ...rest } = info;
   return {
-    ...info,
-    imageUrl: publicImageUrl(imagesBaseUrl, cover.image_paths[0]),
+    info: rest,
     garmentType: row.garment_type,
+    colors: productColors(row).map((color) => ({
+      id: color.id,
+      name: color.name,
+      imageUrl: publicImageUrl(imagesBaseUrl, color.image_paths[0]),
+    })),
+  };
+}
+
+/** No id means the cover; an id the product does not carry is never swapped for another colour. */
+export function lineProductIn(
+  product: LineCatalogProduct,
+  colorId: string | undefined,
+): LineProduct | undefined {
+  const color = colorId === undefined
+    ? product.colors[0]
+    : product.colors.find((c) => c.id === colorId);
+  if (!color) return undefined;
+
+  return {
+    ...product.info,
+    color: { id: color.id, name: color.name },
+    imageUrl: color.imageUrl,
+    garmentType: product.garmentType,
   };
 }
 
@@ -72,13 +114,13 @@ export function fetchProductRows(
   admin: DbClient,
   ids: string[],
   imagesBaseUrl: string,
-): Promise<Map<string, LineProduct>> {
+): Promise<Map<string, LineCatalogProduct>> {
   return fetchRowsByIds(
     orderProductColors(
       admin.from("products").select(PRODUCT_CARD_SELECT).eq("status", "active"),
     ),
     ids,
-    (row) => toLineProduct(row, imagesBaseUrl),
+    (row) => toLineCatalogProduct(row, imagesBaseUrl),
   );
 }
 

@@ -2,10 +2,11 @@ import { assertEquals } from "@std/assert";
 import { renderAnswer } from "./chat-render.ts";
 import { chatErrorMessage } from "./messages.ts";
 import type { AnswerBlock, AnswerItems } from "../_shared/chat/index.ts";
-import type { LineProduct } from "./product-card.ts";
+import type { LineCatalogProduct, LineProduct } from "./product-card.ts";
 import { CARD_COLOR, cornerTag } from "./card-kit.ts";
 import type { LineWardrobeItem } from "./wardrobe-card.ts";
 import {
+  outfitTryonPostbackData,
   productTryonPostbackData,
   wardrobeTryonPostbackData,
 } from "./postback.ts";
@@ -24,7 +25,13 @@ const product = (id: string, over: Partial<LineProduct> = {}): LineProduct => ({
 });
 
 type Card =
-  | { type: "product"; item: LineProduct; highlight?: string }
+  | {
+    type: "product";
+    item: LineProduct;
+    colorId?: string;
+    catalog?: LineCatalogProduct;
+    highlight?: string;
+  }
   | { type: "wardrobe"; item: LineWardrobeItem; highlight?: string };
 
 type Look = { title: string; reason?: string; cards: Card[] };
@@ -42,6 +49,23 @@ const card = (p: LineProduct, highlight?: string): Card => ({
   item: p,
   ...(highlight === undefined ? {} : { highlight }),
 });
+const inColour = (
+  p: LineProduct,
+  colorId: string,
+  catalog: LineCatalogProduct,
+): Card => ({ type: "product", item: p, colorId, catalog });
+
+const { imageUrl: _image, garmentType: _type, color: _color, ...INFO } =
+  product("p1");
+const SECOND = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
+const twoColours = (id: string): LineCatalogProduct => ({
+  info: { ...INFO, id, name: `商品 ${id}` },
+  garmentType: "top",
+  colors: [
+    { id: COLOR_ID, name: null, imageUrl: `https://img.example/${id}.jpg` },
+    { id: SECOND, name: "黑", imageUrl: `https://img.example/${id}-2.jpg` },
+  ],
+});
 const row = (...cards: Card[]): Part => ({ type: "row", cards });
 const looks = (...l: Look[]): Part => ({ type: "outfits", looks: l });
 const look = (title: string, ...cards: Card[]): Look => ({
@@ -50,15 +74,24 @@ const look = (title: string, ...cards: Card[]): Look => ({
   cards,
 });
 
+const catalogOf = (p: LineProduct): LineCatalogProduct => {
+  const { imageUrl, garmentType, color, ...info } = p;
+  return { info, garmentType, colors: [{ ...color, imageUrl }] };
+};
+
 /** Splits fixture parts into what the core hands over: rows of id refs plus the rows they name. */
 function render(parts: Part[], suggestions: string[] = []): object[] {
   const items: AnswerItems = { products: {}, wardrobe: {} };
   const ref = (c: Card) => {
-    (c.type === "product" ? items.products : items.wardrobe)[c.item.id] =
-      c.item;
+    if (c.type === "product") {
+      items.products[c.item.id] = c.catalog ?? catalogOf(c.item);
+    } else {
+      items.wardrobe[c.item.id] = c.item;
+    }
     return {
       type: c.type,
       id: c.item.id,
+      ...(c.type === "product" && c.colorId ? { colorId: c.colorId } : {}),
       ...(c.highlight ? { highlight: c.highlight } : {}),
     };
   };
@@ -72,7 +105,10 @@ function render(parts: Part[], suggestions: string[] = []): object[] {
       outfits: part.looks.map((l) => ({
         title: l.title,
         ...(l.reason ? { reason: l.reason } : {}),
-        pieces: l.cards.map((c) => ({ type: c.type, id: ref(c).id })),
+        pieces: l.cards.map((c) => {
+          const { highlight: _h, ...piece } = ref(c);
+          return piece;
+        }),
       })),
     };
   });
@@ -448,7 +484,7 @@ Deno.test("a card whose row is missing is left out rather than drawn empty", () 
         picks: [{ type: "product", id: "gone" }, { type: "product", id: "p1" }],
       },
     ],
-    { products: { p1: product("p1") }, wardrobe: {} },
+    { products: { p1: catalogOf(product("p1")) }, wardrobe: {} },
     LIFF,
     [],
   );
@@ -492,6 +528,74 @@ Deno.test("an outfits row is one carousel, a bubble per look", () => {
   );
 });
 
+Deno.test("a pick in the colour its ref names shows that colour's photo and tries that colour on", () => {
+  const catalog = twoColours("p1");
+  const [bubble] = bubbles(
+    render([row(inColour(product("p1"), SECOND, catalog))])[0],
+  );
+
+  assertEquals(bubble.hero.contents[0].url, "https://img.example/p1-2.jpg");
+  assertEquals(
+    ctaOf(bubble).action.data,
+    productTryonPostbackData("p1", SECOND),
+  );
+});
+
+Deno.test("an outfit piece in the colour its ref names is worn in that colour", () => {
+  const catalog = twoColours("p1");
+  const out = render([
+    looks(
+      look(
+        "週末",
+        inColour(product("p1"), SECOND, catalog),
+        card(product("p2")),
+      ),
+    ),
+  ]);
+  const [bubble] = bubbles(out[0]);
+
+  assertEquals(
+    ctaOf(bubble).action.data,
+    outfitTryonPostbackData([
+      { type: "product", id: "p1", colorId: SECOND },
+      { type: "product", id: "p2", colorId: COLOR_ID },
+    ]),
+  );
+  assertEquals(
+    JSON.stringify(bubble).includes("https://img.example/p1-2.jpg"),
+    true,
+  );
+});
+
+Deno.test("a look with a piece in a colour the product lacks does not appear", () => {
+  const out = render([
+    text("這套"),
+    looks(
+      look(
+        "週末",
+        inColour(product("p1"), "gone", twoColours("p1")),
+        card(product("p2")),
+      ),
+    ),
+  ]);
+
+  assertEquals(out.length, 1);
+  assertEquals(
+    // deno-lint-ignore no-explicit-any
+    (out[0] as any).type,
+    "text",
+  );
+});
+
+Deno.test("a pick in a colour the product lacks is left out", () => {
+  const out = render([
+    text("這件"),
+    row(inColour(product("p1"), "gone", twoColours("p1")), card(product("p2"))),
+  ]);
+
+  assertEquals(bubbles(out[1]).length, 1);
+});
+
 Deno.test("a look missing a piece is left out, and a row of none draws no carousel", () => {
   const out = renderAnswer(
     [
@@ -516,7 +620,10 @@ Deno.test("a look missing a piece is left out, and a row of none draws no carous
         ],
       },
     ],
-    { products: { p1: product("p1"), p2: product("p2") }, wardrobe: {} },
+    {
+      products: { p1: catalogOf(product("p1")), p2: catalogOf(product("p2")) },
+      wardrobe: {},
+    },
     LIFF,
     [],
   );
@@ -537,7 +644,7 @@ Deno.test("a look missing a piece is left out, and a row of none draws no carous
         }],
       },
     ],
-    { products: { p1: product("p1") }, wardrobe: {} },
+    { products: { p1: catalogOf(product("p1")) }, wardrobe: {} },
     LIFF,
     [],
   );
@@ -577,7 +684,7 @@ Deno.test("looks beyond one carousel's cap spill into the next, in order", () =>
       products: Object.fromEntries(
         ids.flatMap((id) => [`${id}a`, `${id}b`]).map((
           id,
-        ) => [id, product(id)]),
+        ) => [id, catalogOf(product(id))]),
       ),
       wardrobe: {},
     },

@@ -26,7 +26,7 @@ export interface LineOutfit {
 }
 
 export interface PieceLookup {
-  product(id: string): LineProduct | undefined;
+  product(id: string, colorId: string | undefined): LineProduct | undefined;
   wardrobe(id: string): LineWardrobeItem | undefined;
 }
 
@@ -36,13 +36,13 @@ export function resolveOutfitPieces(
   find: PieceLookup,
 ): OutfitPiece[] | null {
   const resolved: OutfitPiece[] = [];
-  for (const { type, id } of pieces) {
-    if (type === "product") {
-      const item = find.product(id);
+  for (const ref of pieces) {
+    if (ref.type === "product") {
+      const item = find.product(ref.id, ref.colorId);
       if (!item) return null;
       resolved.push({ kind: "product", item });
     } else {
-      const item = find.wardrobe(id);
+      const item = find.wardrobe(ref.id);
       if (!item) return null;
       resolved.push({ kind: "wardrobe", item });
     }

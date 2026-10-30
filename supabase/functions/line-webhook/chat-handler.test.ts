@@ -262,13 +262,19 @@ Deno.test("the whole turn is written back as the core recorded it", async () => 
     items: {
       products: {
         [PID]: {
-          id: PID,
-          name: "短版牛仔外套",
-          price: 1280,
-          imageUrl: "https://img.example/p.jpg",
-          storeName: "某店",
-          purchaseUrl: null,
-          color: { id: "c1", name: null },
+          info: {
+            id: PID,
+            name: "短版牛仔外套",
+            price: 1280,
+            storeName: "某店",
+            purchaseUrl: null,
+          },
+          garmentType: "outerwear",
+          colors: [{
+            id: "c1",
+            name: null,
+            imageUrl: "https://img.example/p.jpg",
+          }],
         },
       },
       wardrobe: {},
@@ -409,13 +415,19 @@ Deno.test("a recommended product in the reply opens its LIFF product page", asyn
     items: {
       products: {
         [PID]: {
-          id: PID,
-          name: "短版牛仔外套",
-          price: 1280,
-          imageUrl: "https://img.example/p.jpg",
-          storeName: "某店",
-          purchaseUrl: null,
-          color: { id: "c1", name: null },
+          info: {
+            id: PID,
+            name: "短版牛仔外套",
+            price: 1280,
+            storeName: "某店",
+            purchaseUrl: null,
+          },
+          garmentType: "outerwear",
+          colors: [{
+            id: "c1",
+            name: null,
+            imageUrl: "https://img.example/p.jpg",
+          }],
         },
       },
       wardrobe: {},

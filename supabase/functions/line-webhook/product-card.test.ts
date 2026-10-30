@@ -4,12 +4,13 @@ import {
   fetchProductInfo,
   fetchProductRows,
   type LineProduct,
+  lineProductIn,
   priceText,
   productDetailUrl,
   productInfoContents,
   productItemBubble,
   purchaseAction,
-  toLineProduct,
+  toLineCatalogProduct,
 } from "./product-card.ts";
 import { CARD_COLOR, pickBubble, sourceLine } from "./card-kit.ts";
 import { productTryonPostbackData } from "./postback.ts";
@@ -103,49 +104,98 @@ function fakeBatchAdmin(result: { data: any; error: any }) {
   return { admin: client as any, queried, eqCalls };
 }
 
-Deno.test("toLineProduct joins the image key onto the public base", () => {
-  assertEquals(toLineProduct(row(), BASE), {
-    id: "p1",
-    name: "白襯衫",
-    price: 1200,
-    imageUrl: "https://img.example/stores/s1/p1.jpg",
-    garmentType: "top",
-    storeName: "某店",
-    purchaseUrl: null,
-    color: { id: "c1", name: null },
-  });
-});
-
-Deno.test("toLineProduct carries the cover colour", () => {
-  const two = row({
+const twoColours = () =>
+  row({
     product_colors: [
       { id: "c1", name: "霧灰", image_paths: ["k1.jpg"], position: 0 },
       { id: "c2", name: "黑", image_paths: ["k2.jpg"], position: 1 },
     ],
   });
-  const found = toLineProduct(two, BASE);
+
+Deno.test("toLineCatalogProduct joins each colour's image key onto the public base", () => {
+  assertEquals(toLineCatalogProduct(row(), BASE), {
+    info: {
+      id: "p1",
+      name: "白襯衫",
+      price: 1200,
+      storeName: "某店",
+      purchaseUrl: null,
+    },
+    garmentType: "top",
+    colors: [{
+      id: "c1",
+      name: null,
+      imageUrl: "https://img.example/stores/s1/p1.jpg",
+    }],
+  });
+});
+
+Deno.test("toLineCatalogProduct lists every usable colour in cover order", () => {
+  const found = toLineCatalogProduct(
+    row({
+      product_colors: [
+        { id: "c1", name: "霧灰", image_paths: ["k1.jpg"] },
+        { id: "bad", name: "無圖", image_paths: [] },
+        { id: "c2", name: "黑", image_paths: ["k2.jpg"] },
+      ],
+    }),
+    BASE,
+  );
+
+  assertEquals(found?.colors, [
+    { id: "c1", name: "霧灰", imageUrl: "https://img.example/k1.jpg" },
+    { id: "c2", name: "黑", imageUrl: "https://img.example/k2.jpg" },
+  ]);
+});
+
+Deno.test("toLineCatalogProduct drops a product with no image", () => {
+  assertEquals(toLineCatalogProduct(row({ product_colors: [] }), BASE), null);
+  assertEquals(
+    toLineCatalogProduct(row({ product_colors: null }), BASE),
+    null,
+  );
+});
+
+Deno.test("toLineCatalogProduct tolerates a product with no store", () => {
+  assertEquals(
+    toLineCatalogProduct(row({ store_profiles: null }), BASE)?.info.storeName,
+    null,
+  );
+});
+
+Deno.test("toLineCatalogProduct does not double up a trailing slash on the base", () => {
+  assertEquals(
+    toLineCatalogProduct(row(), `${BASE}/`)?.colors[0].imageUrl,
+    "https://img.example/stores/s1/p1.jpg",
+  );
+});
+
+Deno.test("lineProductIn picks the requested colour", () => {
+  const catalog = toLineCatalogProduct(twoColours(), BASE)!;
+
+  assertEquals(lineProductIn(catalog, "c2"), {
+    id: "p1",
+    name: "白襯衫",
+    price: 1200,
+    imageUrl: "https://img.example/k2.jpg",
+    garmentType: "top",
+    storeName: "某店",
+    purchaseUrl: null,
+    color: { id: "c2", name: "黑" },
+  });
+});
+
+Deno.test("lineProductIn falls back to the cover only without an id", () => {
+  const catalog = toLineCatalogProduct(twoColours(), BASE)!;
+  const found = lineProductIn(catalog, undefined);
 
   assertEquals(found?.color, { id: "c1", name: "霧灰" });
   assertEquals(found?.imageUrl, "https://img.example/k1.jpg");
 });
 
-Deno.test("toLineProduct drops a product with no image", () => {
-  assertEquals(toLineProduct(row({ product_colors: [] }), BASE), null);
-  assertEquals(toLineProduct(row({ product_colors: null }), BASE), null);
-});
-
-Deno.test("toLineProduct tolerates a product with no store", () => {
-  assertEquals(
-    toLineProduct(row({ store_profiles: null }), BASE)?.storeName,
-    null,
-  );
-});
-
-Deno.test("toLineProduct does not double up a trailing slash on the base", () => {
-  assertEquals(
-    toLineProduct(row(), `${BASE}/`)?.imageUrl,
-    "https://img.example/stores/s1/p1.jpg",
-  );
+Deno.test("lineProductIn rejects a colour the product does not have", () => {
+  const catalog = toLineCatalogProduct(twoColours(), BASE)!;
+  assertEquals(lineProductIn(catalog, "gone"), undefined);
 });
 
 Deno.test("fetchProductInfo reads the asked-for id", async () => {
@@ -205,7 +255,7 @@ Deno.test("fetchProductRows keys the rows by product id", async () => {
 
   assertEquals(queried, [["p1", "p2"]]);
   assertEquals([...rows.keys()], ["p1", "p2"]);
-  assertEquals(rows.get("p2")?.name, "黑褲");
+  assertEquals(rows.get("p2")?.info.name, "黑褲");
 });
 
 Deno.test("fetchProductRows leaves out a product with no image", async () => {

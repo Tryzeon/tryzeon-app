@@ -11,7 +11,11 @@ import type { QuotaSnapshot } from "../_shared/quota.ts";
 import type { GarmentInput } from "../_shared/tryon/types.ts";
 import { getAvatar as defaultGetAvatar } from "../_shared/user-profile.ts";
 import type { OutfitPieceRef } from "./postback.ts";
-import { fetchProductInfo, fetchProductRows } from "./product-card.ts";
+import {
+  fetchProductInfo,
+  fetchProductRows,
+  lineProductIn,
+} from "./product-card.ts";
 import { fetchWardrobeItemInfo, fetchWardrobeRows } from "./wardrobe-card.ts";
 import { outfitResultMessage, resolveOutfitPieces } from "./outfit-card.ts";
 import { describeGarment as defaultDescribeGarment } from "./garment-analysis.ts";
@@ -352,7 +356,10 @@ export async function handleOutfitTryon(
     fetchWardrobe(deps.admin, userId, idsOf("wardrobe")),
   ]);
   const pieces = resolveOutfitPieces(event.pieces, {
-    product: (id) => products.get(id),
+    product: (id, colorId) => {
+      const found = products.get(id);
+      return found && lineProductIn(found, colorId);
+    },
     wardrobe: (id) => wardrobe.get(id),
   });
   if (pieces === null) {

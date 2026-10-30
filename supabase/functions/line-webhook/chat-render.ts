@@ -10,7 +10,12 @@ import type {
   OutfitRef,
   PickRef,
 } from "../_shared/chat/index.ts";
-import { type LineProduct, productItemBubble } from "./product-card.ts";
+import {
+  type LineCatalogProduct,
+  type LineProduct,
+  lineProductIn,
+  productItemBubble,
+} from "./product-card.ts";
 import { type LineWardrobeItem, wardrobeItemBubble } from "./wardrobe-card.ts";
 import {
   type LineOutfit,
@@ -37,15 +42,14 @@ type Section =
 
 function pickCards(picks: PickRef[], items: AnswerItems): LineCard[] {
   const cards: LineCard[] = [];
-  for (const { type, id, highlight } of picks) {
-    const tag = highlight ? { highlight } : {};
-    if (type === "product") {
-      const item = items.products[id];
-      if (item) {
-        cards.push({ kind: "product", item: item as LineProduct, ...tag });
-      }
+  for (const pick of picks) {
+    const tag = pick.highlight ? { highlight: pick.highlight } : {};
+    if (pick.type === "product") {
+      const found = items.products[pick.id] as LineCatalogProduct | undefined;
+      const item = found && lineProductIn(found, pick.colorId);
+      if (item) cards.push({ kind: "product", item, ...tag });
     } else {
-      const item = items.wardrobe[id];
+      const item = items.wardrobe[pick.id];
       if (item) {
         cards.push({
           kind: "wardrobe",
@@ -62,7 +66,10 @@ function rowOutfits(outfits: OutfitRef[], items: AnswerItems): LineOutfit[] {
   const looks: LineOutfit[] = [];
   for (const look of outfits) {
     const pieces = resolveOutfitPieces(look.pieces, {
-      product: (id) => items.products[id] as LineProduct | undefined,
+      product: (id, colorId) => {
+        const found = items.products[id] as LineCatalogProduct | undefined;
+        return found && lineProductIn(found, colorId);
+      },
       wardrobe: (id) => items.wardrobe[id] as LineWardrobeItem | undefined,
     });
     if (pieces) {

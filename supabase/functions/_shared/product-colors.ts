@@ -36,6 +36,14 @@ function toColorRow(value: unknown): ProductColorRow | undefined {
   };
 }
 
+/** Every colour with a usable image, in the order delivered, so the first is the cover. */
+export function productColors(
+  row: { product_colors?: unknown },
+): ProductColorRow[] {
+  if (!Array.isArray(row.product_colors)) return [];
+  return row.product_colors.flatMap((entry) => toColorRow(entry) ?? []);
+}
+
 /** No id means the cover; an id the product does not carry is never swapped for another colour. */
 export function productColor(
   row: { product_colors?: unknown },

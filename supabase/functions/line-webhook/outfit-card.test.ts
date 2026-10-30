@@ -87,7 +87,8 @@ const imagesOf = (node: any): any[] =>
 
 Deno.test("resolveOutfitPieces keeps the outfit's order and is null when any piece is missing", () => {
   const find = {
-    product: (id: string) => (id === "p1" ? product("p1") : undefined),
+    product: (id: string, _colorId: string | undefined) =>
+      id === "p1" ? product("p1") : undefined,
     wardrobe: (id: string) => (id === "w1" ? wardrobe("w1") : undefined),
   };
 
@@ -105,6 +106,25 @@ Deno.test("resolveOutfitPieces keeps the outfit's order and is null when any pie
     }], find),
     null,
   );
+});
+
+Deno.test("resolveOutfitPieces asks for each product in the colour its ref names", () => {
+  const asked: Array<[string, string | undefined]> = [];
+  resolveOutfitPieces(
+    [{ type: "product", id: "p1", colorId: "c2" }, {
+      type: "product",
+      id: "p2",
+    }],
+    {
+      product: (id, colorId) => {
+        asked.push([id, colorId]);
+        return product(id);
+      },
+      wardrobe: () => undefined,
+    },
+  );
+
+  assertEquals(asked, [["p1", "c2"], ["p2", undefined]]);
 });
 
 Deno.test("outfitPieceRefs carries each product's colour and nothing on a wardrobe piece", () => {
