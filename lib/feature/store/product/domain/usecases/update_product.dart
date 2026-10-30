@@ -75,17 +75,45 @@ class UpdateProduct {
       colorDiff: plan.colorDiff,
     );
     if (saved.isFailure) {
-      final failure = saved.getError()!;
-      if (uploadedPaths.isNotEmpty) {
-        await _deleteImages(original.storeId, uploadedPaths);
-      }
-      return Err(failure);
+      await _deleteUnreferencedImages(original, uploadedPaths);
+      return Err(saved.getError()!);
     }
 
     if (plan.removedImagePaths.isNotEmpty) {
       await _deleteImages(original.storeId, plan.removedImagePaths);
     }
     return saved;
+  }
+
+  /// A failed update may still have written some colour rows, so only the
+  /// uploads the product's current rows do not reference are safe to delete.
+  /// Removed images stay: the caller keeps showing [original] after an `Err`.
+  Future<void> _deleteUnreferencedImages(
+    final Product original,
+    final List<String> candidates,
+  ) async {
+    if (candidates.isEmpty) return;
+    final current = await _repository.getProduct(
+      storeId: original.storeId,
+      productId: original.id,
+    );
+    if (current.isFailure) {
+      AppLogger.warning(
+        'Keeping product images $candidates: their references are unknown',
+        current.getError(),
+      );
+      return;
+    }
+    final referenced = {
+      for (final color in current.get()!.colors) ...color.imagePaths,
+    };
+    final unreferenced = [
+      for (final path in candidates)
+        if (!referenced.contains(path)) path,
+    ];
+    if (unreferenced.isNotEmpty) {
+      await _deleteImages(original.storeId, unreferenced);
+    }
   }
 
   Future<void> _deleteImages(

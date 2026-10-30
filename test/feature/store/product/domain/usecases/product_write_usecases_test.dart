@@ -24,11 +24,18 @@ class _FakeRepository implements ProductRepository {
   Result<Product?, Failure> createResult = const Ok(null);
   Result<Product?, Failure>? updateResult;
   Result<void, Failure> deleteResult = const Ok(null);
+  Result<Product, Failure>? getResult;
   NewProduct? created;
   Product? appliedTarget;
   ProductSizeDiff? appliedSizeDiff;
   ProductColorDiff? appliedColorDiff;
   final List<String> deletedProductIds = [];
+
+  @override
+  Future<Result<Product, Failure>> getProduct({
+    required final String storeId,
+    required final String productId,
+  }) async => getResult!;
 
   @override
   Future<Result<Product?, Failure>> createProduct(
@@ -296,22 +303,55 @@ void main() {
       },
     );
 
-    test("a failed write keeps a deleted colour's images and discards new "
-        'uploads', () async {
-      repository.updateResult = const Err(ServerFailure());
+    final replaceAImage = params([
+      ExistingColorItem(
+        id: 'color-p1-0',
+        name: '黑',
+        images: [ImageItem.newImage(file: File('x.jpg'))],
+      ),
+    ]);
 
-      await build()(
-        params([
-          ExistingColorItem(
-            id: 'color-p1-0',
-            name: '黑',
-            images: [ImageItem.newImage(file: File('x.jpg'))],
-          ),
-        ]),
-      );
+    test('a write that failed before landing keeps the old images and discards '
+        'new uploads', () async {
+      repository
+        ..updateResult = const Err(ServerFailure())
+        ..getResult = Ok(original);
 
+      final result = await build()(replaceAImage);
+
+      expect(result.getError(), const ServerFailure());
       expect(imageStorage.deleted, ['p1/new-0.jpg']);
     });
+
+    test('a write that failed part-way keeps the uploads a row references and '
+        'every old image', () async {
+      repository
+        ..updateResult = const Err(ServerFailure())
+        ..getResult = Ok(
+          original.copyWith(
+            colors: [
+              original.colors.first.copyWith(imagePaths: ['p1/new-0.jpg']),
+            ],
+          ),
+        );
+
+      await build()(replaceAImage);
+
+      expect(imageStorage.deleted, isEmpty);
+    });
+
+    test(
+      'a failed write keeps every image when the product cannot be re-read',
+      () async {
+        repository
+          ..updateResult = const Err(ServerFailure())
+          ..getResult = const Err(NetworkFailure());
+
+        await build()(replaceAImage);
+
+        expect(imageStorage.deleted, isEmpty);
+      },
+    );
 
     test('a failed upload never touches the database', () async {
       imageStorage.uploadResult = const Err(NetworkFailure());

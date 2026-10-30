@@ -10,6 +10,12 @@ abstract class ProductRepository {
     final bool forceRefresh = false,
   });
 
+  /// Always read from the server, and cached.
+  Future<Result<Product, Failure>> getProduct({
+    required final String storeId,
+    required final String productId,
+  });
+
   /// The written product is null when the write landed but reading it back
   /// failed.
   Future<Result<Product?, Failure>> createProduct(final NewProduct product);
