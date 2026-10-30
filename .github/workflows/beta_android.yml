@@ -10,53 +10,22 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  BUNDLE_PATH: vendor/bundle
 
 permissions:
   contents: read
 
 jobs:
   build-and-deploy-android-beta:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macOS]
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-
-      - name: Free up disk space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false   # keep Flutter/Java tool cache
-          android: false      # Android SDK is needed to build the app bundle
-          dotnet: true
-          haskell: true
-          large-packages: true
-          swap-storage: false  # 7.8GB runner needs the swap headroom for R8; disk is not the constraint
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-
-      - name: Restore Gradle cache
-        uses: actions/cache/restore@v5
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('android/build.gradle.kts', 'android/app/build.gradle.kts', 'android/settings.gradle.kts', 'android/gradle/wrapper/gradle-wrapper.properties', 'pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version-file: pubspec.yaml
-
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.2'
-          working-directory: android
 
       - name: Install Fastlane
         run: |
@@ -92,3 +61,7 @@ jobs:
         env:
           RELEASE_VERSION: ${{ inputs.version }}
           PLAYSTORE_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAYSTORE_SERVICE_ACCOUNT_JSON }}
+
+      - name: Clean up signing files
+        if: always()
+        run: rm -f android/app/upload-keystore.jks android/key.properties
