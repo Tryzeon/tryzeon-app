@@ -5,10 +5,12 @@ export type {
   AgentAnswer,
   AgentRequest,
   AgentRunner,
+  AnswerColorLoader,
   AnswerHydrator,
   AnswerItems,
   AnswerRows,
   ContextLoader,
+  ProductColorNames,
 } from "./types.ts";
 
 export { LIMITS } from "./types.ts";
@@ -24,6 +26,8 @@ export type {
   ItemRef,
   OutfitRef,
   PickRef,
+  ProductItemRef,
+  WardrobeItemRef,
 } from "./types.ts";
 
 export {

@@ -12,7 +12,11 @@ export type ChatMessage = { role: ChatRole; content: ContentBlock[] };
 
 export type ChatRole = "user" | "assistant";
 
-export type ItemRef = { type: "product" | "wardrobe"; id: string };
+export type ProductItemRef = { type: "product"; id: string; colorId?: string };
+
+export type WardrobeItemRef = { type: "wardrobe"; id: string };
+
+export type ItemRef = ProductItemRef | WardrobeItemRef;
 
 export type PickRef = ItemRef & { highlight?: string };
 
@@ -101,6 +105,17 @@ export interface AnswerItems {
   products: Record<string, unknown>;
   wardrobe: Record<string, unknown>;
 }
+
+/** productId -> that product's named colours. */
+export type ProductColorNames = ReadonlyMap<
+  string,
+  { id: string; name: string }[]
+>;
+
+export type AnswerColorLoader = (
+  client: DbClient,
+  productIds: string[],
+) => Promise<ProductColorNames>;
 
 export type AnswerHydrator = (
   client: DbClient,
