@@ -12,6 +12,10 @@ on:
 env:
   BUNDLE_PATH: vendor/bundle
 
+concurrency:
+  group: beta-ios
+  cancel-in-progress: false
+
 permissions:
   contents: read
 
