@@ -102,6 +102,20 @@ Deno.test("hydrates only the referenced product ids", async () => {
 
 // Which rows survive the read is `fetchProductRows`' rule and is tested there.
 
+Deno.test("each product's named colours come off the card rows", async () => {
+  const { admin } = fakeAdmin([row({
+    product_colors: [
+      { id: "c1", name: "黑", image_paths: ["stores/s1/p1.jpg"], position: 0 },
+      { id: "c2", name: null, image_paths: ["stores/s1/p2.jpg"], position: 1 },
+    ],
+  })]);
+  const rows = await makeLineAnswerRows(BASE)(admin, "u1", [
+    { type: "picks", picks: [{ type: "product", id: P1 }] },
+  ]);
+
+  assertEquals(rows.colors, new Map([[P1, [{ id: "c1", name: "黑" }]]]));
+});
+
 Deno.test("the base url reaches the card", async () => {
   const { admin } = fakeAdmin([row()]);
   const rows = await makeLineAnswerRows(`${BASE}/`)(admin, "u1", [
