@@ -1,4 +1,4 @@
-import type { CatalogItem } from "../api/catalog-row";
+import { resolveColor, type CatalogColor, type CatalogItem } from "../api/catalog-row";
 import {
   type ChatEvent,
   isRecord,
@@ -9,7 +9,7 @@ import {
 } from "../api/chat-wire";
 
 export type ResolvedItem =
-  | { kind: "product"; item: CatalogItem }
+  | { kind: "product"; item: CatalogItem; color: CatalogColor | null }
   | { kind: "wardrobe"; id: string; imagePath: string; garmentType: string | null; tags: string[] };
 
 export interface ResolvedPick {
@@ -87,7 +87,10 @@ export function createChatReducer(toItem: (row: unknown) => CatalogItem) {
     if (ref.type === "product") {
       const row = items.products[id];
       if (!isRecord(row)) return null;
-      return { kind: "product", item: toItem(row) };
+      const item = toItem(row);
+      const colorId = str(ref.colorId);
+      if (colorId !== undefined && !item.colors.some((c) => c.id === colorId)) return null;
+      return { kind: "product", item, color: resolveColor(item, colorId) };
     }
     if (ref.type === "wardrobe") {
       const row = items.wardrobe[id];

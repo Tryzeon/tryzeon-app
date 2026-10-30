@@ -69,7 +69,7 @@ describe("chat reducer", () => {
     ]);
     expect(s.entries.slice(1)).toEqual([
       { kind: "text", text: "推薦這件" },
-      { kind: "picks", picks: [{ item: { kind: "product", item: buildCatalogItem(PRODUCT, "https://img") } }] },
+      { kind: "picks", picks: [{ item: { kind: "product", item: buildCatalogItem(PRODUCT, "https://img"), color: buildCatalogItem(PRODUCT, "https://img").colors[0] } }] },
     ]);
   });
 
@@ -144,7 +144,7 @@ describe("chat reducer", () => {
     });
     expect(s.entries.slice(1)).toEqual([
       { kind: "text", text: "這些" },
-      { kind: "picks", picks: [{ item: { kind: "product", item: buildCatalogItem(PRODUCT, "https://img") } }] },
+      { kind: "picks", picks: [{ item: { kind: "product", item: buildCatalogItem(PRODUCT, "https://img"), color: buildCatalogItem(PRODUCT, "https://img").colors[0] } }] },
     ]);
   });
 
@@ -155,7 +155,7 @@ describe("chat reducer", () => {
     expect(lastEntry(s)).toEqual({
       kind: "picks",
       picks: [
-        { item: { kind: "product", item: buildCatalogItem(PRODUCT, "https://img") }, highlight: "麻料透氣" },
+        { item: { kind: "product", item: buildCatalogItem(PRODUCT, "https://img"), color: buildCatalogItem(PRODUCT, "https://img").colors[0] }, highlight: "麻料透氣" },
         { item: { kind: "wardrobe", id: "w1", imagePath: "u1/top/w1.png", garmentType: "top", tags: ["白色"] } },
       ],
     });
@@ -178,7 +178,7 @@ describe("chat reducer", () => {
         title: "週末休閒",
         reason: "白襯衫配深藍直筒",
         pieces: [
-          { kind: "product", item: buildCatalogItem(PRODUCT, "https://img") },
+          { kind: "product", item: buildCatalogItem(PRODUCT, "https://img"), color: buildCatalogItem(PRODUCT, "https://img").colors[0] },
           { kind: "wardrobe", id: "w1", imagePath: "u1/top/w1.png", garmentType: "top", tags: ["白色"] },
         ],
       }],
@@ -232,5 +232,47 @@ describe("chat reducer history cap", () => {
     }
     expect(s.history.length).toBeLessThanOrEqual(HISTORY_LIMIT);
     expect(s.history[0]).toEqual({ role: "user", content: [{ type: "text", text: expect.stringMatching(/^q/) }] });
+  });
+});
+
+describe("chat reducer product colour", () => {
+  const TWO_COLORS = {
+    ...PRODUCT,
+    product_colors: [
+      { id: "c1", name: "黑", image_paths: ["s/p1.jpg"], position: 0 },
+      { id: "c2", name: "白", image_paths: ["s/p1w.jpg"], position: 1 },
+    ],
+  };
+
+  const answeredWith = (colorId?: string) => {
+    const ref = { type: "product", id: "p1", ...(colorId === undefined ? {} : { colorId }) };
+    return lastEntry(
+      reduce(sent(), {
+        type: "event",
+        event: {
+          type: "done",
+          messages: [answer([{ type: "picks", picks: [ref] }])],
+          items: { products: { p1: TWO_COLORS }, wardrobe: {} },
+        },
+      }),
+    );
+  };
+
+  const pickedColor = (colorId?: string) => {
+    const entry = answeredWith(colorId);
+    if (entry.kind !== "picks" || entry.picks[0].item.kind !== "product") throw new Error("no product pick");
+    return entry.picks[0].item.color;
+  };
+
+  it("resolves the colour the answer chose", () => {
+    expect(pickedColor("c2")?.id).toBe("c2");
+  });
+
+  it("shows the cover when the answer chose no colour", () => {
+    expect(pickedColor()?.id).toBe("c1");
+  });
+
+  it("leaves out a pick whose colour the product no longer has", () => {
+    expect(answeredWith("gone").kind).toBe("notice");
   });
 });

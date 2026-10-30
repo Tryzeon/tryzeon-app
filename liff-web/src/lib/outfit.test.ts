@@ -5,6 +5,7 @@ import { collageOrder, outfitPurchase, purchaseCountText } from "./outfit";
 
 const product = (price: number, garmentType = "top", productId = "p"): ResolvedItem => ({
   kind: "product",
+  color: null,
   item: {
     productId,
     name: "n",

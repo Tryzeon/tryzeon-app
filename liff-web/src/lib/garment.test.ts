@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CatalogItem } from "../api/catalog-row";
-import { garmentTypeLabel, productCaption, productGarment, wardrobeCardName } from "./garment";
+import { garmentTypeLabel, productCaption, productGarment, tryonGarment, wardrobeCardName } from "./garment";
 
 describe("garmentTypeLabel", () => {
   it("names every wardrobe garment type", () => {
@@ -66,5 +66,24 @@ describe("productCaption", () => {
   it("is just the name for a single colour or an unnamed one", () => {
     expect(productCaption(item([color("navy")]), color("navy"))).toBe("Knit");
     expect(productCaption(item([color("a", null), color("b")]), color("a", null))).toBe("Knit");
+  });
+});
+
+describe("tryonGarment", () => {
+  it("wears the colour the piece resolved to", () => {
+    const knit = item();
+    expect(tryonGarment({ kind: "product", item: knit, color: knit.colors[1] }))
+      .toEqual({ productId: "p1", colorId: "cream" });
+  });
+
+  it("names no colour when the piece has none", () => {
+    const garment = tryonGarment({ kind: "product", item: item([]), color: null });
+    expect(garment).toEqual({ productId: "p1" });
+    expect("colorId" in garment).toBe(false);
+  });
+
+  it("wears a wardrobe item by id", () => {
+    expect(tryonGarment({ kind: "wardrobe", id: "w1", imagePath: "u/w.png", garmentType: null, tags: [] }))
+      .toEqual({ wardrobeItemId: "w1" });
   });
 });

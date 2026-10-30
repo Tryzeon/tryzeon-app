@@ -1,5 +1,5 @@
 import type { CatalogItem } from "../api/catalog";
-import { coverImageUrl } from "../api/catalog-row";
+import type { CatalogColor } from "../api/catalog-row";
 import { useWardrobeImage } from "../hooks/useWardrobeImage";
 import { tryonGarment } from "../lib/garment";
 import { collageOrder, outfitPurchase, purchaseCountText } from "../lib/outfit";
@@ -24,12 +24,12 @@ function WardrobeCell({ imagePath, labelled }: { imagePath: string; labelled: bo
  * an owned piece is marked, so an unmarked cell reads as one to buy. A look
  * made only of owned pieces needs no marks: the footer already says so.
  */
-function Cell({ piece, labelled, onOpen }: { piece: ResolvedItem; labelled: boolean; onOpen(item: CatalogItem): void }) {
+function Cell({ piece, labelled, onOpen }: { piece: ResolvedItem; labelled: boolean; onOpen(item: CatalogItem, color: CatalogColor | null): void }) {
   if (piece.kind === "wardrobe") return <WardrobeCell imagePath={piece.imagePath} labelled={labelled} />;
-  const { item } = piece;
-  const cover = coverImageUrl(item);
+  const { item, color } = piece;
+  const cover = color?.imageUrls[0];
   return (
-    <button type="button" className="look__cell" aria-label={item.name} onClick={() => onOpen(item)}>
+    <button type="button" className="look__cell" aria-label={item.name} onClick={() => onOpen(item, color)}>
       {cover && <FadeImage className="look__img" src={cover} alt="" loading="lazy" />}
     </button>
   );
@@ -48,7 +48,7 @@ function PurchaseLine({ pieces }: { pieces: ResolvedItem[] }) {
 
 export function ChatOutfitCard(
   { outfit, onOpen, onTryon, tryonDisabled }:
-    { outfit: ResolvedOutfit; onOpen(item: CatalogItem): void } & ChatTryonProps,
+    { outfit: ResolvedOutfit; onOpen(item: CatalogItem, color: CatalogColor | null): void } & ChatTryonProps,
 ) {
   const labelled = outfit.pieces.some((piece) => piece.kind === "product");
   return (

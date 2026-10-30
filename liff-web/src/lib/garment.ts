@@ -16,7 +16,7 @@ export function garmentTypeLabel(code: string | null): string {
 }
 
 export function tryonGarment(piece: ResolvedItem): Garment {
-  return piece.kind === "product" ? productGarment(piece.item) : { wardrobeItemId: piece.id };
+  return piece.kind === "product" ? productGarment(piece.item, piece.color) : { wardrobeItemId: piece.id };
 }
 
 export function productGarment(

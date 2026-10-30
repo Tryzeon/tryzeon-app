@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import type { CatalogItem } from "../api/catalog";
+import { hasColorChoice, type CatalogColor } from "../api/catalog-row";
 import type { Garment } from "../api/tryon";
 import { Header } from "../components/Header";
 import { ChatItemCard } from "../components/ChatItemCard";
@@ -30,8 +31,9 @@ export function Chat() {
     if (chat.send(draft)) setDraft("");
   }
 
-  function openProduct(item: CatalogItem) {
-    navigate(`/product/${item.productId}`, { state: { item } });
+  function openProduct(item: CatalogItem, color: CatalogColor | null) {
+    const query = hasColorChoice(item) && color ? `?color=${encodeURIComponent(color.id)}` : "";
+    navigate(`/product/${item.productId}${query}`, { state: { item } });
   }
 
   function startTryon(garments: Garment[], caption: string) {

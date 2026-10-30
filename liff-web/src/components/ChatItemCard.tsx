@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { CatalogItem } from "../api/catalog";
-import { coverImageUrl } from "../api/catalog-row";
+import type { CatalogColor } from "../api/catalog-row";
 import type { Garment } from "../api/tryon";
 import { useWardrobeImage } from "../hooks/useWardrobeImage";
 import { tryonGarment, wardrobeCardName } from "../lib/garment";
@@ -81,13 +81,13 @@ function WardrobeItemCard(
  */
 export function ChatItemCard(
   { item, highlight, onOpen, onTryon, tryonDisabled }:
-    { item: ResolvedItem; highlight?: string; onOpen(item: CatalogItem): void } & ChatTryonProps,
+    { item: ResolvedItem; highlight?: string; onOpen(item: CatalogItem, color: CatalogColor | null): void } & ChatTryonProps,
 ) {
   if (item.kind === "wardrobe") {
     return <WardrobeItemCard item={item} highlight={highlight} onTryon={onTryon} tryonDisabled={tryonDisabled} />;
   }
   const product = item.item;
-  const cover = coverImageUrl(product);
+  const cover = item.color?.imageUrls[0];
   return (
     <CardFrame
       link
@@ -95,7 +95,7 @@ export function ChatItemCard(
       highlight={highlight}
       source={product.storeName ?? undefined}
       name={
-        <button type="button" className="ccard__open" onClick={() => onOpen(product)}>
+        <button type="button" className="ccard__open" onClick={() => onOpen(product, item.color)}>
           <span className="ccard__name">{product.name}</span>
         </button>
       }
