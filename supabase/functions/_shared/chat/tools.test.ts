@@ -120,34 +120,21 @@ Deno.test("answerSchema rejects a block missing the field its type requires", ()
   }
 });
 
-Deno.test("answerSchema requires color on every item ref", () => {
-  const json = z.toJSONSchema(answerSchema, { io: "input" });
-  const text = JSON.stringify(json);
-  const refs = [...text.matchAll(/"required":\[([^\]]*)\]/g)]
-    .map((m) => m[1])
-    .filter((required) =>
-      required.includes('"type"') && required.includes('"id"')
-    );
-  assert(refs.length > 0);
-  for (const required of refs) assertStringIncludes(required, '"color"');
-});
-
 Deno.test("answerSchema accepts each block type with its field", () => {
   const parsed = answerSchema.safeParse({
     blocks: [
       { type: "text", text: "hi" },
       {
         type: "picks",
-        picks: [{ type: "product", id: "p1", color: "", highlight: "麻料" }],
+        picks: [{ type: "product", id: "p1", color: "黑", highlight: "麻料" }],
       },
       {
         type: "outfits",
         outfits: [{
           title: "週末",
-          pieces: [{ type: "product", id: "p1", color: "" }, {
+          pieces: [{ type: "product", id: "p1" }, {
             type: "wardrobe",
             id: "w1",
-            color: "",
           }],
         }],
       },

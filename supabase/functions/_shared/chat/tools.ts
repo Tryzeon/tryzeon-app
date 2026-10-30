@@ -128,8 +128,8 @@ const answerItemRef = z.object({
   id: z.string().describe(
     "product 為 search_products 回傳的商品 id；wardrobe 為 search_wardrobe 回傳的衣櫃單品 id",
   ),
-  color: z.string().describe(
-    "商品的顏色：原封不動抄該商品搜尋結果 colors 裡的一個名稱；使用者沒指定顏色、或你沒有依某個顏色推薦時填空字串。wardrobe 一律填空字串。",
+  color: z.string().optional().describe(
+    "只用於 product：要顯示與試穿的顏色，原封不動抄該商品搜尋結果 colors 裡的一個名稱。只在使用者指定了顏色、或你依某個顏色推薦時填；省略則使用封面色。",
   ),
 });
 
