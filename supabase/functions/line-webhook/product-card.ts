@@ -6,6 +6,7 @@ import { productTryonPostbackData } from "./postback.ts";
 import { asJsonObject, type DbClient } from "../_shared/supabase.ts";
 import {
   orderProductColors,
+  pickColor,
   productColor,
   productColors,
 } from "../_shared/product-colors.ts";
@@ -92,14 +93,11 @@ export function toLineCatalogProduct(
   };
 }
 
-/** No id means the cover; an id the product does not carry is never swapped for another colour. */
 export function lineProductIn(
   product: LineCatalogProduct,
   colorId: string | undefined,
 ): LineProduct | undefined {
-  const color = colorId === undefined
-    ? product.colors[0]
-    : product.colors.find((c) => c.id === colorId);
+  const color = pickColor(product.colors, colorId);
   if (!color) return undefined;
 
   return {

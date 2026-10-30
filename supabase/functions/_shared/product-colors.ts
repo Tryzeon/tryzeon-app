@@ -45,15 +45,21 @@ export function productColors(
 }
 
 /** No id means the cover; an id the product does not carry is never swapped for another colour. */
+export function pickColor<Color>(
+  colors: readonly Color[],
+  colorId: string | undefined,
+): Color | undefined {
+  return colorId === undefined
+    ? colors[0]
+    : colors.find((c) => isRecord(c) && c.id === colorId);
+}
+
 export function productColor(
   row: { product_colors?: unknown },
   colorId: string | undefined,
 ): ProductColorRow | undefined {
   if (!Array.isArray(row.product_colors)) return undefined;
-  const entry: unknown = colorId === undefined
-    ? row.product_colors[0]
-    : row.product_colors.find((c) => isRecord(c) && c.id === colorId);
-  return toColorRow(entry);
+  return toColorRow(pickColor(row.product_colors, colorId));
 }
 
 export const coverImagePath = (
