@@ -45,11 +45,6 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      - name: Install CocoaPods dependencies
-        run: |
-          cd ios
-          pod install
-
       - name: Install Bundle
         run: |
           cd ios
