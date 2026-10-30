@@ -491,4 +491,86 @@ void main() {
       ]),
     ]);
   });
+  test('a product ref keeps its colour id across decode and encode', () async {
+    final dataSource = _FakeChatRemoteDataSource([
+      {
+        'type': 'done',
+        'suggestions': <String>[],
+        'messages': [
+          {
+            'role': 'assistant',
+            'content': [
+              {
+                'type': 'picks',
+                'picks': [
+                  {'type': 'product', 'id': 'p1', 'colorId': 'c1'},
+                  {'type': 'product', 'id': 'p2'},
+                ],
+              },
+              {
+                'type': 'outfits',
+                'outfits': [
+                  {
+                    'title': '週末休閒',
+                    'pieces': [
+                      {'type': 'product', 'id': 'p1', 'colorId': 'c1'},
+                      {'type': 'wardrobe', 'id': 'w1'},
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        'items': {
+          'products': <String, Object>{},
+          'wardrobe': <String, Object>{},
+        },
+      },
+    ]);
+    final repository = ChatRepositoryImpl(remoteDataSource: dataSource);
+
+    final replied =
+        (await repository.sendMessageStream(const []).toList()).single
+            as ChatReplied;
+    expect(replied.messages.single.content, const [
+      ContentBlock.picks([
+        ChatPick(ref: ItemRef.product('p1', colorId: 'c1')),
+        ChatPick(ref: ItemRef.product('p2')),
+      ]),
+      ContentBlock.outfits([
+        ChatOutfit(
+          title: '週末休閒',
+          pieces: [
+            ItemRef.product('p1', colorId: 'c1'),
+            ItemRef.wardrobe('w1'),
+          ],
+        ),
+      ]),
+    ]);
+
+    await repository.sendMessageStream(replied.messages).drain<void>();
+    final sent = dataSource.sentRequest!.toJson()['messages'] as List;
+    expect(sent.single['content'], [
+      {
+        'type': 'picks',
+        'picks': [
+          {'type': 'product', 'id': 'p1', 'colorId': 'c1'},
+          {'type': 'product', 'id': 'p2'},
+        ],
+      },
+      {
+        'type': 'outfits',
+        'outfits': [
+          {
+            'title': '週末休閒',
+            'pieces': [
+              {'type': 'product', 'id': 'p1', 'colorId': 'c1'},
+              {'type': 'wardrobe', 'id': 'w1'},
+            ],
+          },
+        ],
+      },
+    ]);
+  });
 }

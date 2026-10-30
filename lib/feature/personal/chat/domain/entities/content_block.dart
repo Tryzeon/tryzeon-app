@@ -33,7 +33,8 @@ sealed class ContentBlock with _$ContentBlock {
 
 @freezed
 sealed class ItemRef with _$ItemRef {
-  const factory ItemRef.product(final String id) = ProductItemRef;
+  const factory ItemRef.product(final String id, {final String? colorId}) =
+      ProductItemRef;
 
   const factory ItemRef.wardrobe(final String id) = WardrobeItemRef;
 }

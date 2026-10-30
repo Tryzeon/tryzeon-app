@@ -82,9 +82,10 @@ class ChatMapprHelper {
   ];
 
   static ChatPickDto _pickToDto(final ChatPick pick) => switch (pick.ref) {
-    ProductItemRef(:final id) => ChatPickDto.product(
+    ProductItemRef(:final id, :final colorId) => ChatPickDto.product(
       id: id,
       highlight: pick.highlight,
+      colorId: colorId,
     ),
     WardrobeItemRef(:final id) => ChatPickDto.wardrobe(
       id: id,
@@ -93,8 +94,8 @@ class ChatMapprHelper {
   };
 
   static ChatPick? _pickToEntity(final ChatPickDto pick) => switch (pick) {
-    ChatProductPickDto(:final id, :final highlight) => ChatPick(
-      ref: ItemRef.product(id),
+    ChatProductPickDto(:final id, :final highlight, :final colorId) => ChatPick(
+      ref: ItemRef.product(id, colorId: colorId),
       highlight: _nonBlank(highlight),
     ),
     ChatWardrobePickDto(:final id, :final highlight) => ChatPick(
@@ -105,12 +106,18 @@ class ChatMapprHelper {
   };
 
   static ChatItemRefDto _refToDto(final ItemRef ref) => switch (ref) {
-    ProductItemRef(:final id) => ChatItemRefDto.product(id: id),
+    ProductItemRef(:final id, :final colorId) => ChatItemRefDto.product(
+      id: id,
+      colorId: colorId,
+    ),
     WardrobeItemRef(:final id) => ChatItemRefDto.wardrobe(id: id),
   };
 
   static ItemRef? _refToEntity(final ChatItemRefDto ref) => switch (ref) {
-    ChatProductRefDto(:final id) => ItemRef.product(id),
+    ChatProductRefDto(:final id, :final colorId) => ItemRef.product(
+      id,
+      colorId: colorId,
+    ),
     ChatWardrobeRefDto(:final id) => ItemRef.wardrobe(id),
     ChatUnknownRefDto() => null,
   };

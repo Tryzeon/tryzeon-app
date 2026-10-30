@@ -15,6 +15,7 @@ sealed class ChatPickDto with _$ChatPickDto {
   const factory ChatPickDto.product({
     required final String id,
     final String? highlight,
+    final String? colorId,
   }) = ChatProductPickDto;
 
   @JsonSerializable(checked: true, includeIfNull: false)

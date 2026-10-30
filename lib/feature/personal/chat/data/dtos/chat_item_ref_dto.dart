@@ -11,9 +11,11 @@ part 'chat_item_ref_dto.g.dart';
   fallbackUnion: 'unknown',
 )
 sealed class ChatItemRefDto with _$ChatItemRefDto {
-  @JsonSerializable(checked: true)
-  const factory ChatItemRefDto.product({required final String id}) =
-      ChatProductRefDto;
+  @JsonSerializable(checked: true, includeIfNull: false)
+  const factory ChatItemRefDto.product({
+    required final String id,
+    final String? colorId,
+  }) = ChatProductRefDto;
 
   @JsonSerializable(checked: true)
   const factory ChatItemRefDto.wardrobe({required final String id}) =
