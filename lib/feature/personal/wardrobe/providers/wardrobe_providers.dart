@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:tryzeon/core/di/core_providers.dart';
@@ -13,20 +12,17 @@ import 'package:tryzeon/feature/personal/subscription/providers/subscription_cap
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_local_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/datasources/wardrobe_remote_datasource.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/repositories/wardrobe_repository_impl.dart';
-import 'package:tryzeon/feature/personal/wardrobe/data/services/background_remover_impl.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/services/label_tagger_impl.dart';
 import 'package:tryzeon/feature/personal/wardrobe/data/services/wardrobe_image_storage_impl.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/label_result.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_capacity.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/repositories/wardrobe_repository.dart';
-import 'package:tryzeon/feature/personal/wardrobe/domain/services/background_remover.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/services/label_tagger.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/services/wardrobe_image_storage.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/delete_wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/get_wardrobe_item_image.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/get_wardrobe_items.dart';
-import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/remove_wardrobe_image_background.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/tag_wardrobe_image.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/update_wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/upload_wardrobe_item.dart';
@@ -104,19 +100,9 @@ GetWardrobeItemImage getWardrobeItemImageUseCase(final Ref ref) {
 LabelTagger labelTagger(final Ref ref) =>
     LabelTaggerImpl(ref.watch(supabaseClientProvider));
 
-@Riverpod(keepAlive: true)
-BackgroundRemover backgroundRemover(final Ref ref) => BackgroundRemoverImpl();
-
 @riverpod
 TagWardrobeImage tagWardrobeImageUseCase(final Ref ref) {
   return TagWardrobeImage(ref.watch(labelTaggerProvider));
-}
-
-@riverpod
-RemoveWardrobeImageBackground removeWardrobeImageBackgroundUseCase(
-  final Ref ref,
-) {
-  return RemoveWardrobeImageBackground(ref.watch(backgroundRemoverProvider));
 }
 
 @riverpod
@@ -129,18 +115,6 @@ Future<LabelResult> wardrobeImageLabels(
   );
   if (result.isFailure) throw result.getError()!;
   return result.get()!;
-}
-
-@riverpod
-Future<Uint8List?> wardrobeImageWithoutBackground(
-  final Ref ref,
-  final String imagePath,
-) async {
-  final result = await ref.watch(removeWardrobeImageBackgroundUseCaseProvider)(
-    File(imagePath),
-  );
-  if (result.isFailure) throw result.getError()!;
-  return result.get();
 }
 
 /// Keyed on the signed-in user, not on who is listening: a keepAlive holder

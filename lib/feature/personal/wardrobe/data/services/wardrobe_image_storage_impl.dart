@@ -20,15 +20,12 @@ class WardrobeImageStorageImpl implements WardrobeImageStorage {
   Future<Result<String, Failure>> upload({
     required final String itemId,
     required final File image,
-    final Uint8List? backgroundRemovedPng,
   }) async {
     final String path;
     final Uint8List bytes;
     try {
-      bytes = backgroundRemovedPng ?? await image.readAsBytes();
-      final extension = backgroundRemovedPng == null
-          ? p.extension(image.path).toLowerCase()
-          : '.png';
+      bytes = await image.readAsBytes();
+      final extension = p.extension(image.path).toLowerCase();
       path = await _remoteDataSource.uploadImage(
         fileName: '$itemId$extension',
         bytes: bytes,
