@@ -50,10 +50,6 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
     final isUploading = ref.watch(wardrobeEditProvider).isLoading;
     final tags = useState<List<String>>(const []);
     final tagController = useTextEditingController();
-    final useRemovedBg = useState(true);
-    final removedBgImage = ref
-        .watch(wardrobeImageWithoutBackgroundProvider(image.path))
-        .value;
 
     final labelsProvider = wardrobeImageLabelsProvider(image.path);
     final isAnalyzingTags = ref.watch(labelsProvider).isLoading;
@@ -93,7 +89,6 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
               image: image,
               garmentType: selectedGarmentType.value!,
               tags: tags.value,
-              backgroundRemovedPng: useRemovedBg.value ? removedBgImage : null,
             ),
           );
 
@@ -164,33 +159,16 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
         children: [
           ClipRRect(
             borderRadius: AppRadius.cardAll,
-            child: useRemovedBg.value && removedBgImage != null
-                ? Image.memory(
-                    removedBgImage,
-                    width: _previewSize,
-                    height: _previewSize,
-                    fit: BoxFit.cover,
-                  )
-                : Image.file(
-                    image,
-                    width: _previewSize,
-                    height: _previewSize,
-                    fit: BoxFit.cover,
-                  ),
+            child: Image.file(
+              image,
+              width: _previewSize,
+              height: _previewSize,
+              fit: BoxFit.cover,
+            ),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(child: buildCapacityIndicator()),
         ],
-      );
-    }
-
-    Widget buildBackgroundToggle() {
-      if (removedBgImage == null) return const SizedBox.shrink();
-      return SwitchListTile(
-        contentPadding: EdgeInsets.zero,
-        title: Text('自動去背', style: textTheme.labelLarge),
-        value: useRemovedBg.value,
-        onChanged: (final v) => useRemovedBg.value = v,
       );
     }
 
@@ -279,10 +257,6 @@ class UploadWardrobeItemSheet extends HookConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             buildImagePreviewRow(),
-            if (removedBgImage != null) ...[
-              const SizedBox(height: AppSpacing.lg),
-              buildBackgroundToggle(),
-            ],
             const SizedBox(height: AppSpacing.lg),
             buildCategorySelector(),
             const SizedBox(height: AppSpacing.lg),

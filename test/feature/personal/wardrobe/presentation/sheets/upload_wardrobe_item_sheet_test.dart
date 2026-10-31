@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,7 +11,6 @@ import 'package:tryzeon/feature/common/garment_type/presentation/mappers/garment
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/label_result.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/entities/wardrobe_capacity.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/failures/wardrobe_full_failure.dart';
-import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/remove_wardrobe_image_background.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/tag_wardrobe_image.dart';
 import 'package:tryzeon/feature/personal/wardrobe/domain/usecases/upload_wardrobe_item.dart';
 import 'package:tryzeon/feature/personal/wardrobe/presentation/sheets/upload_wardrobe_item_sheet.dart';
@@ -27,12 +25,6 @@ class _FakeTag implements TagWardrobeImage {
   @override
   Future<Result<LabelResult, Failure>> call(final File image) async =>
       Ok(await labelsResult.future);
-}
-
-class _NoBackgroundRemoval implements RemoveWardrobeImageBackground {
-  @override
-  Future<Result<Uint8List?, Failure>> call(final File image) async =>
-      const Ok(null);
 }
 
 class _FakeEdit extends WardrobeEditNotifier {
@@ -72,9 +64,6 @@ void main() {
       ),
       overrides: [
         tagWardrobeImageUseCaseProvider.overrideWithValue(tag),
-        removeWardrobeImageBackgroundUseCaseProvider.overrideWithValue(
-          _NoBackgroundRemoval(),
-        ),
         wardrobeEditProvider.overrideWith(() => edit),
         wardrobeCapacityProvider.overrideWith(
           (final ref) async => const WardrobeCapacity(used: 1, limit: 10),
