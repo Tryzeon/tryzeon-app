@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:tryzeon/core/error/failures.dart';
@@ -20,7 +19,6 @@ sealed class UploadWardrobeItemParams with _$UploadWardrobeItemParams {
     required final File image,
     required final GarmentType garmentType,
     @Default([]) final List<String> tags,
-    final Uint8List? backgroundRemovedPng,
   }) = _UploadWardrobeItemParams;
 }
 
@@ -42,7 +40,6 @@ class UploadWardrobeItem {
     final uploaded = await _imageStorage.upload(
       itemId: id,
       image: params.image,
-      backgroundRemovedPng: params.backgroundRemovedPng,
     );
     if (uploaded.isFailure) return Err(uploaded.getError()!);
     final imagePath = uploaded.get()!;
